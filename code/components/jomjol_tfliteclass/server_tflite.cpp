@@ -348,7 +348,7 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
         for (int i = 0; i < htmlinfoana.size(); ++i)
         {
             std::stringstream stream;
-            stream << std::fixed << std::setprecision(1) << htmlinfoana[i]->val;
+            stream << std::fixed << std::setprecision(2) << htmlinfoana[i]->val;
             zw = stream.str();
 
             txt = "<img src=\"/img_tmp/" +  htmlinfoana[i]->filename + "\"> " + zw;

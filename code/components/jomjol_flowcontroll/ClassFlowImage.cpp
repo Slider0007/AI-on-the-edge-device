@@ -64,9 +64,9 @@ void ClassFlowImage::LogImage(string logPath, string name, float *resultFloat, i
             sprintf(buf, "N.N_");
         else
         {
-            sprintf(buf, "%.1f_", *resultFloat);
-            if (strcmp(buf, "10.0_") == 0)
-                sprintf(buf, "0.0_");
+            sprintf(buf, "%.2f_", *resultFloat);
+            if (strcmp(buf, "10.00_") == 0)
+                sprintf(buf, "0.00_");
         }
             
 	} else if (resultInt != NULL) {

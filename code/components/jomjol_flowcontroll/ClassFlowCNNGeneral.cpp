@@ -38,15 +38,17 @@ string ClassFlowCNNGeneral::getReadout(int _analog = 0, bool _extendedResolution
  
     if (CNNType == Analogue || CNNType == Analogue100)
     {
-        float zahl = GENERAL[_analog]->ROI[GENERAL[_analog]->ROI.size() - 1]->result_float;
-        int ergebnis_nachkomma = ((int) floor(zahl * 10) + 10) % 10;
-        
         prev = ZeigerEvalAnalogNeu(GENERAL[_analog]->ROI[GENERAL[_analog]->ROI.size() - 1]->result_float, prev);
 //        if (debugdetailgeneral) LogFile.WriteToFile("ClassFlowCNNGeneral::getReadout(analog) zahl=" + std::to_string(zahl) + ", ergebnis_nachkomma=" + std::to_string(ergebnis_nachkomma) + ", prev=" + std::to_string(prev));
         result = std::to_string(prev);
 
         if (_extendedResolution && (CNNType != Digital))
-            result = result + std::to_string(ergebnis_nachkomma);
+        {
+            float zahl = GENERAL[_analog]->ROI[GENERAL[_analog]->ROI.size() - 1]->result_float;
+            int ergebnis_nachkomma = ((int) floor(zahl * 100));
+            result = std::to_string(ergebnis_nachkomma);
+            if (debugdetailgeneral) LogFile.WriteToFile("ClassFlowCNNGeneral::getReadout(analog) zahl=" + std::to_string(zahl) + ", ergebnis_nachkomma=" + std::to_string(ergebnis_nachkomma) + ", prev=" + std::to_string(prev));
+        }
 
         for (int i = GENERAL[_analog]->ROI.size() - 2; i >= 0; --i)
         {
