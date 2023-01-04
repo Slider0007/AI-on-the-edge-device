@@ -160,7 +160,7 @@ esp_err_t handler_get_heap(httpd_req_t *req)
 
     if (zw.length() > 0) 
     {
-        httpd_resp_sendstr(req, zw.c_str());
+        httpd_resp_send(req, zw.c_str(), zw.length());
     }
     else 
     {
@@ -184,7 +184,7 @@ esp_err_t handler_init(httpd_req_t *req)
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     const char* resp_str = "Init started<br>";
-    httpd_resp_sendstr(req, resp_str);     
+    httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);     
 
     doInit();
 
@@ -215,12 +215,12 @@ esp_err_t handler_flow_start(httpd_req_t *req) {
         xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state. If task is already running, no action
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Flow start triggered by REST API /flow_start");
         const char* resp_str = "The flow is going to be started immediately or is already running";
-        httpd_resp_sendstr(req, resp_str);  
+        httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);  
     }
     else {
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Flow start triggered by REST API, but flow is not active!");
         const char* resp_str = "WARNING: Flow start triggered by REST API, but flow is not active";
-        httpd_resp_sendstr(req, resp_str);  
+        httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);  
     }
 
     /* Respond with an empty chunk to signal HTTP response completion */
@@ -627,7 +627,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         Camera.SetLEDIntensity(intens);
         ESP_LOGD(TAG, "test_take - vor MakeImage");
         std::string zw = tfliteflow.doSingleStep("[MakeImage]", _host);
-        httpd_resp_sendstr(req, zw.c_str()); 
+        httpd_resp_send(req, zw.c_str(), zw.length()); 
     } 
 
 
@@ -641,7 +641,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
 //        string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         std::string zw = tfliteflow.doSingleStep("[Alignment]", _host);
-        httpd_resp_sendstr(req, zw.c_str()); 
+        httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
 
     /* Respond with an empty chunk to signal HTTP response completion */
@@ -673,7 +673,7 @@ esp_err_t handler_statusflow(httpd_req_t *req)
         resp_str = zw->c_str();
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_sendstr(req, resp_str);   
+        httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);   
         /* Respond with an empty chunk to signal HTTP response completion */
         //httpd_resp_send_chunk(req, NULL, 0); 
     }
@@ -705,7 +705,7 @@ esp_err_t handler_cputemp(httpd_req_t *req)
     resp_str = cputemp;
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_sendstr(req, resp_str);   
+    httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);   
     /* Respond with an empty chunk to signal HTTP response completion */
     //httpd_resp_send_chunk(req, NULL, 0);  
 
@@ -733,7 +733,7 @@ esp_err_t handler_rssi(httpd_req_t *req)
         resp_str = rssi;
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_sendstr(req, resp_str);   
+        httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);   
         /* Respond with an empty chunk to signal HTTP response completion */
         //httpd_resp_send_chunk(req, NULL, 0);
     }
@@ -761,7 +761,7 @@ esp_err_t handler_uptime(httpd_req_t *req)
     std::string formatedUptime = getFormatedUptime(false);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_sendstr(req, formatedUptime.c_str());   
+    httpd_resp_send(req, formatedUptime.c_str(), formatedUptime.length());   
     /* Respond with an empty chunk to signal HTTP response completion */
     //httpd_resp_send_chunk(req, NULL, 0);      
 
@@ -820,7 +820,7 @@ esp_err_t handler_prevalue(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
 
-    httpd_resp_sendstr(req, resp_str);   
+    httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);   
     /* Respond with an empty chunk to signal HTTP response completion */
     //httpd_resp_send_chunk(req, NULL, 0);      
 
