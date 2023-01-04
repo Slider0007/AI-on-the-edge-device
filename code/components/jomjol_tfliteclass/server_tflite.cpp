@@ -156,6 +156,8 @@ esp_err_t handler_get_heap(httpd_req_t *req)
         }
     #endif 
 
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+
     if (zw.length() > 0) 
     {
         httpd_resp_send(req, zw.c_str(), zw.length());
@@ -180,16 +182,16 @@ esp_err_t handler_init(httpd_req_t *req)
         ESP_LOGD(TAG, "handler_doinit uri: %s", req->uri);
     #endif
 
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     const char* resp_str = "Init started<br>";
     httpd_resp_send(req, resp_str, strlen(resp_str));     
 
     doInit();
 
     resp_str = "Init done<br>";
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_send(req, resp_str, strlen(resp_str));     
     /* Respond with an empty chunk to signal HTTP response completion */
-    httpd_resp_send_chunk(req, NULL, 0);    
+    //httpd_resp_send_chunk(req, NULL, 0);    
 
     #ifdef DEBUG_DETAIL_ON      
         LogFile.WriteHeapInfo("handler_init - Done");       
@@ -207,6 +209,8 @@ esp_err_t handler_flow_start(httpd_req_t *req) {
 
     ESP_LOGD(TAG, "handler_flow_start uri: %s", req->uri);
 
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+
     if (auto_isrunning) {
         xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state. If task is already running, no action
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Flow start triggered by REST API /flow_start");
@@ -219,10 +223,8 @@ esp_err_t handler_flow_start(httpd_req_t *req) {
         httpd_resp_send(req, resp_str, strlen(resp_str));  
     }
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
     /* Respond with an empty chunk to signal HTTP response completion */
-    httpd_resp_send_chunk(req, NULL, 0);    
+    //httpd_resp_send_chunk(req, NULL, 0);    
 
     #ifdef DEBUG_DETAIL_ON   
         LogFile.WriteHeapInfo("handler_flow_start - Done");       
@@ -369,14 +371,14 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
             zw = tfliteflow.getReadoutAll(_intype);
             ESP_LOGD(TAG, "ZW: %s", zw.c_str());
             if (zw.length() > 0)
-                httpd_resp_sendstr_chunk(req, zw.c_str()); 
-            httpd_resp_sendstr_chunk(req, NULL);   
+                httpd_resp_send(req, zw.c_str(), zw.length()); 
+            //httpd_resp_sendstr_chunk(req, NULL);   
             return ESP_OK;
         }
 
         zw = tfliteflow.getReadout(_rawValue, _noerror);
         if (zw.length() > 0)
-            httpd_resp_sendstr_chunk(req, zw.c_str()); 
+            httpd_resp_send(req, zw.c_str(), zw.length()); 
 
         string query = std::string(_query);
     //    ESP_LOGD(TAG, "Query: %s, query.c_str());
@@ -430,12 +432,11 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
                 httpd_resp_sendstr_chunk(req, txt.c_str()); 
                 delete htmlinfoana[i];
             }
-            htmlinfoana.clear();   
+            htmlinfoana.clear();
 
+            /* Respond with an empty chunk to signal HTTP response completion */
+            httpd_resp_sendstr_chunk(req, NULL);   
         }   
-
-        /* Respond with an empty chunk to signal HTTP response completion */
-        httpd_resp_sendstr_chunk(req, NULL);   
     }
     else 
     {
@@ -514,7 +515,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
         CopyFile(in, out);
         zw = "Copy Done";
-        httpd_resp_sendstr_chunk(req, zw.c_str()); 
+        httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
 
 
@@ -583,7 +584,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         delete cim;        
 
         zw = "CutImage Done";
-        httpd_resp_sendstr_chunk(req, zw.c_str()); 
+        httpd_resp_send(req, zw.c_str(), zw.length()); 
         
     }
 
@@ -675,7 +676,7 @@ esp_err_t handler_statusflow(httpd_req_t *req)
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send(req, resp_str, strlen(resp_str));   
         /* Respond with an empty chunk to signal HTTP response completion */
-        httpd_resp_send_chunk(req, NULL, 0); 
+        //httpd_resp_send_chunk(req, NULL, 0); 
     }
     else 
     {
@@ -707,7 +708,7 @@ esp_err_t handler_cputemp(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_send(req, resp_str, strlen(resp_str));   
     /* Respond with an empty chunk to signal HTTP response completion */
-    httpd_resp_send_chunk(req, NULL, 0);  
+    //httpd_resp_send_chunk(req, NULL, 0);  
 
     #ifdef DEBUG_DETAIL_ON       
         LogFile.WriteHeapInfo("handler_cputemp - End");       
@@ -735,7 +736,7 @@ esp_err_t handler_rssi(httpd_req_t *req)
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send(req, resp_str, strlen(resp_str));   
         /* Respond with an empty chunk to signal HTTP response completion */
-        httpd_resp_send_chunk(req, NULL, 0);
+        //httpd_resp_send_chunk(req, NULL, 0);
     }
     else 
     {
@@ -763,7 +764,7 @@ esp_err_t handler_uptime(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_send(req, formatedUptime.c_str(), strlen(formatedUptime.c_str()));   
     /* Respond with an empty chunk to signal HTTP response completion */
-    httpd_resp_send_chunk(req, NULL, 0);      
+    //httpd_resp_send_chunk(req, NULL, 0);      
 
     #ifdef DEBUG_DETAIL_ON       
         LogFile.WriteHeapInfo("handler_uptime - End");       
@@ -822,7 +823,7 @@ esp_err_t handler_prevalue(httpd_req_t *req)
 
     httpd_resp_send(req, resp_str, strlen(resp_str));   
     /* Respond with an empty chunk to signal HTTP response completion */
-    httpd_resp_send_chunk(req, NULL, 0);      
+    //httpd_resp_send_chunk(req, NULL, 0);      
 
     #ifdef DEBUG_DETAIL_ON       
         LogFile.WriteHeapInfo("handler_prevalue - End");       
