@@ -390,7 +390,7 @@ esp_err_t sysinfo_handler(httpd_req_t *req)
     resp_str = zw.c_str();
 
     httpd_resp_set_type(req, "application/json");
-    httpd_resp_send(req, resp_str, strlen(resp_str));   
+    httpd_resp_sendstr(req, resp_str);   
     /* Respond with an empty chunk to signal HTTP response completion */
     //httpd_resp_send_chunk(req, NULL, 0);  
 
