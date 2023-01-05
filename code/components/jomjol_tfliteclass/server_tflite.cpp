@@ -287,7 +287,7 @@ esp_err_t handler_json(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "JSON API not yet initialized. Please retry later...");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /json not yet available!");
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -355,6 +355,12 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
+        zw = tfliteflow.getReadout(_rawValue, _noerror);
+        if (zw.length() > 0)
+            httpd_resp_send(req, zw.c_str(), zw.length()); 
+               
+        return ESP_OK;
+
         if (_all)
         {
             httpd_resp_set_type(req, "text/plain");
@@ -376,15 +382,14 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
             return ESP_OK;
         }
 
-        zw = tfliteflow.getReadout(_rawValue, _noerror);
-        if (zw.length() > 0)
-            httpd_resp_send(req, zw.c_str(), zw.length()); 
-
         string query = std::string(_query);
     //    ESP_LOGD(TAG, "Query: %s, query.c_str());
         if (query.find("full") != std::string::npos)
         {
             string txt, zw;
+
+            txt = "Raw value: " + tfliteflow.getReadout(_rawValue, _noerror);
+            httpd_resp_send_chunk(req, txt.c_str(), txt.length()); 
             
             txt = "<p>Aligned Image: <p><img src=\"/img_tmp/alg_roi.jpg\"> <p>\n";
             txt = txt + "Digital Counter: <p> ";
@@ -436,11 +441,11 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
 
             /* Respond with an empty chunk to signal HTTP response completion */
             httpd_resp_sendstr_chunk(req, NULL);   
-        }   
+        }
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Value API not yet initialized. Please retry later...");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /value not available!");
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -679,7 +684,7 @@ esp_err_t handler_statusflow(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flowstatus API not yet initialized. Please retry later...");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /flowstatus not available!");
         return ESP_ERR_NOT_FOUND;
     }  
 
@@ -739,7 +744,7 @@ esp_err_t handler_rssi(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "RSSI API not yet initialized. Please retry later...");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "WIFI not (yet) connected: REST API /rssi not available!");
         return ESP_ERR_NOT_FOUND;
     }      
 
@@ -792,9 +797,9 @@ esp_err_t handler_prevalue(httpd_req_t *req)
 
     if (httpd_req_get_url_query_str(req, _query, 100) == ESP_OK)
     {
-    #ifdef DEBUG_DETAIL_ON       
+        #ifdef DEBUG_DETAIL_ON       
             ESP_LOGD(TAG, "Query: %s", _query);
-    #endif
+        #endif
 
         if (httpd_query_key_value(_query, "value", _size, 10) == ESP_OK)
         {
