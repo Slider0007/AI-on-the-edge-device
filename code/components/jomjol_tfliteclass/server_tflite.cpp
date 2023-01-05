@@ -355,10 +355,6 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
-        zw = tfliteflow.getReadout(_rawValue, _noerror);
-        if (zw.length() > 0)
-            httpd_resp_send(req, zw.c_str(), zw.length()); 
-
         if (_all)
         {
             httpd_resp_set_type(req, "text/plain");
@@ -386,8 +382,8 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
         {
             string txt, zw;
 
-            txt = "Raw value: " + tfliteflow.getReadout(_rawValue, _noerror);
-            httpd_resp_send_chunk(req, txt.c_str(), txt.length()); 
+            txt = tfliteflow.getReadout(_rawValue, _noerror);
+            httpd_resp_sendstr_chunk(req, txt.c_str()); 
             
             txt = "<p>Aligned Image: <p><img src=\"/img_tmp/alg_roi.jpg\"> <p>\n";
             txt = txt + "Digital Counter: <p> ";
@@ -439,7 +435,13 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
 
             /* Respond with an empty chunk to signal HTTP response completion */
             httpd_resp_sendstr_chunk(req, NULL);   
+
+            return ESP_OK;
         }
+
+        zw = tfliteflow.getReadout(_rawValue, _noerror);
+        if (zw.length() > 0)
+            httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
     else 
     {

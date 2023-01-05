@@ -188,6 +188,8 @@ esp_err_t info_get_handler(httpd_req_t *req)
 
 esp_err_t starttime_get_handler(httpd_req_t *req)
 {
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    
     httpd_resp_send(req, starttime.c_str(), starttime.length()); 
     /* Respond with an empty chunk to signal HTTP response completion */
     //httpd_resp_send_chunk(req, NULL, 0);  
