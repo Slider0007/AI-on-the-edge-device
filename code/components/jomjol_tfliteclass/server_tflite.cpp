@@ -358,8 +358,6 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
         zw = tfliteflow.getReadout(_rawValue, _noerror);
         if (zw.length() > 0)
             httpd_resp_send(req, zw.c_str(), zw.length()); 
-               
-        return ESP_OK;
 
         if (_all)
         {
