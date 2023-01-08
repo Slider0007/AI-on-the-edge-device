@@ -266,7 +266,7 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
 	  }
     else 
     {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CTfLiteClass::ReadFileToModel: Can't allocate memory:" + std::to_string(size));
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CTfLiteClass::ReadFileToModel: Can't allocate enough memory: " + std::to_string(size));
         LogFile.WriteHeapInfo("CTfLiteClass::ReadFileToModel");
 
         return false;
