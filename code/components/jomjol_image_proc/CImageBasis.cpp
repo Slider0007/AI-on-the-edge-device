@@ -359,7 +359,7 @@ void CImageBasis::CreateEmptyImage(int _width, int _height, int _channels)
 
     if (!rgb_image)
     {
-        ESP_LOGE(TAG, "CImageBasis::CreateEmptyImage - No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
+        ESP_LOGE(TAG, "CImageBasis::CreateEmptyImage: No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CreateEmptyImage: Can't allocate memory!");
         LogFile.WriteHeapInfo("CImageBasis::CreateEmptyImage");
         RGBImageRelease();
@@ -424,7 +424,7 @@ CImageBasis::CImageBasis(CImageBasis *_copyfrom)
 
     if (!rgb_image)
     {
-        ESP_LOGE(TAG, "CImageBasis::CImageBasis-Copyfrom - No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
+        ESP_LOGE(TAG, "CImageBasis::CImageBasis-Copyfrom: No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-Copyfrom: Can't allocate memory!");
         LogFile.WriteHeapInfo("CImageBasis::CImageBasis-Copyfrom");
         RGBImageRelease();
@@ -496,7 +496,7 @@ CImageBasis::CImageBasis(std::string _image)
     rgb_image = stbi_load(_image.c_str(), &width, &height, &bpp, channels);
 
     if (!rgb_image) {
-        ESP_LOGE(TAG, "CImageBasis::CImageBasis_image - failed to load %s!", _image.c_str());
+        ESP_LOGE(TAG, "CImageBasis::CImageBasis_image: failed to load %s!", _image.c_str());
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-image: Failed to load " + _image + "! Is it corrupted?");
         LogFile.WriteHeapInfo("CImageBasis::CImageBasis-image");
         RGBImageRelease();
