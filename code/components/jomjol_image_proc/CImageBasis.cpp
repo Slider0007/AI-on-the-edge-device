@@ -140,7 +140,7 @@ bool CImageBasis::CopyFromMemory(uint8_t* _source, int _size)
     int gr = height * width * channels;
     if (gr != _size)            // Size does not fit
     {
-        ESP_LOGD(TAG, "Cannot copy image from memory - sizes do not match: should be %d, but is %d", _size, gr);
+        ESP_LOGE(TAG, "Cannot copy image from memory - sizes do not match: should be %d, but is %d", _size, gr);
         return false;
     }
 
@@ -359,8 +359,8 @@ void CImageBasis::CreateEmptyImage(int _width, int _height, int _channels)
 
     if (!rgb_image)
     {
-        ESP_LOGE(TAG, "CImageBasis::CreateEmptyImage: No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CreateEmptyImage: Can't allocate memory!");
+        //ESP_LOGE(TAG, "CImageBasis::CreateEmptyImage: No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CreateEmptyImage: Can't allocate enough memory: " + memsize);
         LogFile.WriteHeapInfo("CImageBasis::CreateEmptyImage");
         RGBImageRelease();
         return;
@@ -395,7 +395,6 @@ void CImageBasis::LoadFromMemory(stbi_uc *_buffer, int len)
     {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image with size 0 loaded --> reboot to be done! "
                 "Check that your camera module is working and connected properly.");
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::LoadFromMemory: Can't allocate memory!");
         LogFile.WriteHeapInfo("CImageBasis::LoadFromMemory");
 
         doReboot();
@@ -424,8 +423,8 @@ CImageBasis::CImageBasis(CImageBasis *_copyfrom)
 
     if (!rgb_image)
     {
-        ESP_LOGE(TAG, "CImageBasis::CImageBasis-Copyfrom: No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-Copyfrom: Can't allocate memory!");
+        //ESP_LOGE(TAG, "CImageBasis::CImageBasis-Copyfrom: No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-Copyfrom: Can't allocate enough memory: " + memsize);
         LogFile.WriteHeapInfo("CImageBasis::CImageBasis-Copyfrom");
         RGBImageRelease();
         return;
@@ -460,8 +459,8 @@ CImageBasis::CImageBasis(int _width, int _height, int _channels)
 
     if (!rgb_image)
     {
-        ESP_LOGE(TAG, "CImageBasis::CImageBasis_width,height,ch - No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-width,height,ch: Can't allocate memory!");
+        //ESP_LOGE(TAG, "CImageBasis::CImageBasis_width,height,ch - No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-width,height,ch: Can't allocate enough memory: " + memsize);
         LogFile.WriteHeapInfo("CImageBasis::CImageBasis-width,height,ch");
         RGBImageRelease();
         return;
@@ -496,7 +495,7 @@ CImageBasis::CImageBasis(std::string _image)
     rgb_image = stbi_load(_image.c_str(), &width, &height, &bpp, channels);
 
     if (!rgb_image) {
-        ESP_LOGE(TAG, "CImageBasis::CImageBasis_image: failed to load %s!", _image.c_str());
+        //ESP_LOGE(TAG, "CImageBasis::CImageBasis_image: failed to load %s!", _image.c_str());
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-image: Failed to load " + _image + "! Is it corrupted?");
         LogFile.WriteHeapInfo("CImageBasis::CImageBasis-image");
         RGBImageRelease();
@@ -610,7 +609,7 @@ void CImageBasis::Resize(int _new_dx, int _new_dy, CImageBasis *_target)
 {
     if ((_target->height != _new_dy) || (_target->width != _new_dx) || (_target->channels != channels))
     {
-        ESP_LOGD(TAG, "CImageBasis::Resize - Target image size does not fit!");
+        ESP_LOGE(TAG, "CImageBasis::Resize - Target image size does not fit!");
         return;
     }
 

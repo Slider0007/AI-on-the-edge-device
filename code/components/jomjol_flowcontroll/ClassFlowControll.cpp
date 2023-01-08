@@ -651,7 +651,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
 
     if (flowalignment == NULL)
     {
-        ESP_LOGW(TAG, "ClassFlowControll::GetJPGStream: Can't continue, flowalignment is NULL");
+        ESP_LOGW(TAG, "ClassFlowControll::GetJPGStream: Flowalignment is not (yet) initialized. Interrupt serving!");
         return ESP_FAIL;
     }
 
@@ -663,7 +663,8 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         }
         else 
         {
-            ESP_LOGE(TAG, "ImageBasis not available -> alg.jpg cannot be sent");
+            ESP_LOGE(TAG, "ClassFlowControll::SendRawJPG: ImageBasis not available -> alg.jpg cannot be served");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::SendRawJPG: ImageBasis not available -> alg.jpg cannot be served");
             return ESP_FAIL;
         }
     }
@@ -680,13 +681,15 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         else 
         {
             ESP_LOGW(TAG, "Not enough memory to allocate / create alg_roi.jpg, alg.jpg is going to be served!");
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "ClassFlowControll::SendRawJPG: Not enough memory to create alg_roi.jpg, alg.jpg is going to be served!");
             if (flowalignment && flowalignment->ImageBasis->ImageOkay()) 
             {
                 _send = flowalignment->ImageBasis;  
             }
             else 
             {
-                ESP_LOGE(TAG, "ImageBasis not available -> alg.jpg cannot be served!");
+                ESP_LOGE(TAG, "ClassFlowControll::SendRawJPG: ImageBasis not available -> alg.jpg cannot be served");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::SendRawJPG: ImageBasis not available -> alg.jpg cannot be served");         
                 return ESP_FAIL;
             }
         }
