@@ -10,11 +10,9 @@
 #include "esp_log.h"
 #include "../../include/defines.h"
 
+static const char* TAG = "CNN";
 
 //#define DEBUG_DETAIL_ON
-
-
-static const char* TAG = "CNN";
 
 
 ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, t_CNNType _cnntype) : ClassFlowImage(NULL, TAG)
@@ -555,12 +553,14 @@ bool ClassFlowCNNGeneral::getNetworkParameter()
     ESP_LOGD(TAG, "%s", zwcnn.c_str());
     if (!tflite->LoadModel(zwcnn)) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't load tflite model " + cnnmodelfile + " -> Init aborted!");
+        LogFile.WriteHeapInfo("getNetworkParameter-LoadModel");
         delete tflite;
         return false;
     } 
 
     if (!tflite->MakeAllocate()) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate tflite model -> Init aborted!");
+        LogFile.WriteHeapInfo("getNetworkParameter-MakeAllocate");
         delete tflite;
         return false;
     }
@@ -629,13 +629,14 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
 
     if (!tflite->LoadModel(zwcnn)) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't load tflite model " + cnnmodelfile + " -> Flow aborted this round!");
-
+        LogFile.WriteHeapInfo("doNeuralNetwork-LoadModel");
         delete tflite;
         return false;
     }
 
     if (!tflite->MakeAllocate()) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate tfilte model -> Flow this round aborted this round!");
+        LogFile.WriteHeapInfo("doNeuralNetwork-MakeAllocate");
         delete tflite;
         return false;
     } 

@@ -359,10 +359,9 @@ void CImageBasis::CreateEmptyImage(int _width, int _height, int _channels)
 
     if (!rgb_image)
     {
-        #ifdef DEBUG_DETAIL_ON 
-            LogFile.WriteHeapInfo("CImageBasis::CreateEmptyImage - no more free memory");
-        #endif
         ESP_LOGE(TAG, "CImageBasis::CreateEmptyImage - No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CreateEmptyImage: Can't allocate memory!");
+        LogFile.WriteHeapInfo("CImageBasis::CreateEmptyImage");
         RGBImageRelease();
         return;
     }
@@ -396,6 +395,8 @@ void CImageBasis::LoadFromMemory(stbi_uc *_buffer, int len)
     {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image with size 0 loaded --> reboot to be done! "
                 "Check that your camera module is working and connected properly.");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::LoadFromMemory: Can't allocate memory!");
+        LogFile.WriteHeapInfo("CImageBasis::LoadFromMemory");
 
         doReboot();
     }
@@ -423,10 +424,9 @@ CImageBasis::CImageBasis(CImageBasis *_copyfrom)
 
     if (!rgb_image)
     {
-        #ifdef DEBUG_DETAIL_ON 
-            LogFile.WriteHeapInfo("CImageBasis::CImageBasis_copyfrom - no more free memory");
-        #endif
-        ESP_LOGE(TAG, "CImageBasis::CImageBasis_copyfrom - No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
+        ESP_LOGE(TAG, "CImageBasis::CImageBasis-Copyfrom - No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-Copyfrom: Can't allocate memory!");
+        LogFile.WriteHeapInfo("CImageBasis::CImageBasis-Copyfrom");
         RGBImageRelease();
         return;
     }
@@ -460,10 +460,9 @@ CImageBasis::CImageBasis(int _width, int _height, int _channels)
 
     if (!rgb_image)
     {
-        #ifdef DEBUG_DETAIL_ON 
-            LogFile.WriteHeapInfo("CImageBasis::CImageBasis_width,height,ch - no more free memory");
-        #endif
         ESP_LOGE(TAG, "CImageBasis::CImageBasis_width,height,ch - No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-width,height,ch: Can't allocate memory!");
+        LogFile.WriteHeapInfo("CImageBasis::CImageBasis-width,height,ch");
         RGBImageRelease();
         return;
     }
@@ -497,11 +496,9 @@ CImageBasis::CImageBasis(std::string _image)
     rgb_image = stbi_load(_image.c_str(), &width, &height, &bpp, channels);
 
     if (!rgb_image) {
-        #ifdef DEBUG_DETAIL_ON 
-            LogFile.WriteHeapInfo("CImageBasis::CImageBasis_image - failed to load");
-        #endif
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to load " + _image + "! Is it corrupted?");
-        ESP_LOGE(TAG, "CImageBasis::CImageBasis_width,height,ch - failed to load %s!", _image.c_str());
+        ESP_LOGE(TAG, "CImageBasis::CImageBasis_image - failed to load %s!", _image.c_str());
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-image: Failed to load " + _image + "! Is it corrupted?");
+        LogFile.WriteHeapInfo("CImageBasis::CImageBasis-image");
         RGBImageRelease();
         return;
     }

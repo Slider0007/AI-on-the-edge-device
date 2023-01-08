@@ -280,11 +280,12 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
     }
 
     _size = fb->len;
-    zwischenspeicher = (uint8_t*) malloc(_size);
+    zwischenspeicher = (uint8_t*)GET_MEMORY(_size); //(uint8_t*) malloc(_size);
     if (!zwischenspeicher)
     {
         ESP_LOGE(TAG, "Insufficient memory space for image in function CaptureToBasisImage()");
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Insufficient memory space for image in function CaptureToBasisImage()");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CCamera::CaptureToBasisImage-zwischenspeicher: Can't allocate memory!");
+        LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage");
     }
     for (int i = 0; i < _size; ++i)
         *(zwischenspeicher + i) = *(fb->buf + i);
@@ -302,7 +303,7 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
 //    TickType_t xDelay = 1000 / portTICK_PERIOD_MS;     
 //    vTaskDelay( xDelay );  // wait for power to recover
     
-    uint8_t * buf = NULL;
+    //uint8_t * buf = NULL;
 
     CImageBasis _zwImage;
     _zwImage.LoadFromMemory(zwischenspeicher, _size);
@@ -338,7 +339,7 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
     LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After Copy To Target");
 #endif
 
-    free(buf);
+    //free(buf);
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - Done");
@@ -604,7 +605,7 @@ void CCamera::GetCameraParameter(httpd_req_t *req, int &qual, framesize_t &resol
             if (qual < 0)
                 qual = 0;
         }
-    };
+    }
 }
 
 
