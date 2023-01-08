@@ -19,6 +19,9 @@ extern "C" {
 
 static const char* TAG = "IMG";
 
+//#define DEBUG_DETAIL_ON
+
+
 ClassFlowImage::ClassFlowImage(const char* logTag)
 {
 	this->logTag = logTag;

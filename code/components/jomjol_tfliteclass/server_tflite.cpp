@@ -38,6 +38,8 @@ bool isPlannedReboot = false;
 
 static const char *TAG = "TFLITE SERVER";
 
+//#define DEBUG_DETAIL_ON
+
 
 void CheckIsPlannedReboot()
 {

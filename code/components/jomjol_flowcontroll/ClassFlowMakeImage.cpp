@@ -11,11 +11,12 @@
 
 #include <time.h>
 
-// #define DEBUG_DETAIL_ON 
-
 // #define WIFITURNOFF
 
 static const char* TAG = "flow_make_image";
+
+// #define DEBUG_DETAIL_ON 
+
 
 esp_err_t ClassFlowMakeImage::camera_capture(){
     string nm =  namerawimage;
@@ -52,7 +53,7 @@ void ClassFlowMakeImage::SetInitialParameter(void)
     SaveAllFiles = false;
     disabled = false;
     FixedExposure = false;
-    namerawimage =  "/sdcard/img_tmp/raw.jpg";
+    namerawimage = "/sdcard/img_tmp/raw.jpg";
 }     
 
 

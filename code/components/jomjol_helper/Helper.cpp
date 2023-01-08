@@ -39,6 +39,9 @@ unsigned int systemStatus = 0;
 sdmmc_cid_t SDCardCid;
 sdmmc_csd_t SDCardCsd;
 
+
+// #define DEBUG_DETAIL_ON 
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 string getESPHeapInfo(){
 	string espInfoResultStr = "";

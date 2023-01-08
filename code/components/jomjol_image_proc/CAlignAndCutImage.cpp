@@ -9,6 +9,9 @@
 
 static const char* TAG = "c_align_and_cut_image";
 
+//#define DEBUG_DETAIL_ON
+
+
 CAlignAndCutImage::CAlignAndCutImage(CImageBasis *_org, CImageBasis *_temp)
 {
     rgb_image = _org->rgb_image;

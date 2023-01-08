@@ -27,11 +27,9 @@ extern "C" {
 #include "server_help.h"
 #include "../../include/defines.h"
 
+static const char* TAG = "CTRL";
 
 //#define DEBUG_DETAIL_ON
-
-
-static const char* TAG = "CTRL";
 
 
 std::string ClassFlowControll::doSingleStep(std::string _stepname, std::string _host){
@@ -114,6 +112,7 @@ std::vector<HTMLInfo*> ClassFlowControll::GetAllDigital()
     return empty;
 }
 
+
 std::vector<HTMLInfo*> ClassFlowControll::GetAllAnalog()
 {
     if (flowanalog)
@@ -123,6 +122,7 @@ std::vector<HTMLInfo*> ClassFlowControll::GetAllAnalog()
     return empty;
 }
 
+
 t_CNNType ClassFlowControll::GetTypeDigital()
 {
     if (flowdigit)
@@ -131,6 +131,7 @@ t_CNNType ClassFlowControll::GetTypeDigital()
     return t_CNNType::None;
 }
 
+
 t_CNNType ClassFlowControll::GetTypeAnalog()
 {
     if (flowanalog)
@@ -138,7 +139,6 @@ t_CNNType ClassFlowControll::GetTypeAnalog()
 
     return t_CNNType::None;
 }
-
 
 
 #ifdef ENABLE_MQTT
@@ -162,6 +162,7 @@ bool ClassFlowControll::StartMQTTService() {
 }
 #endif //ENABLE_MQTT
 
+
 void ClassFlowControll::SetInitialParameter(void)
 {
     AutoStart = false;
@@ -175,11 +176,13 @@ void ClassFlowControll::SetInitialParameter(void)
     aktstatus = "Booting ...";
 }
 
+
 bool ClassFlowControll::isAutoStart(long &_intervall)
 {
     _intervall = AutoIntervall * 60 * 1000; // AutoInterval: minutes -> ms
     return AutoStart;
 }
+
 
 ClassFlow* ClassFlowControll::CreateClassFlow(std::string _type)
 {
@@ -207,14 +210,14 @@ ClassFlow* ClassFlowControll::CreateClassFlow(std::string _type)
         cfc = new ClassFlowCNNGeneral(flowalignment);
         flowdigit = (ClassFlowCNNGeneral*) cfc;
     }
-#ifdef ENABLE_MQTT
-    if (toUpper(_type).compare("[MQTT]") == 0)
-        cfc = new ClassFlowMQTT(&FlowControll);
-#endif //ENABLE_MQTT
-#ifdef ENABLE_INFLUXDB
-    if (toUpper(_type).compare("[INFLUXDB]") == 0)
-        cfc = new ClassFlowInfluxDB(&FlowControll);
-#endif //ENABLE_INFLUXDB        
+    #ifdef ENABLE_MQTT
+        if (toUpper(_type).compare("[MQTT]") == 0)
+            cfc = new ClassFlowMQTT(&FlowControll);
+    #endif //ENABLE_MQTT
+    #ifdef ENABLE_INFLUXDB
+        if (toUpper(_type).compare("[INFLUXDB]") == 0)
+            cfc = new ClassFlowInfluxDB(&FlowControll);
+    #endif //ENABLE_INFLUXDB        
     if (toUpper(_type).compare("[WRITELIST]") == 0)
         cfc = new ClassFlowWriteList(&FlowControll);
 
@@ -241,6 +244,7 @@ ClassFlow* ClassFlowControll::CreateClassFlow(std::string _type)
 
     return cfc;
 }
+
 
 void ClassFlowControll::InitFlow(std::string config)
 {
@@ -286,9 +290,11 @@ void ClassFlowControll::InitFlow(std::string config)
 
 }
 
+
 std::string* ClassFlowControll::getActStatus(){
     return &aktstatus;
 }
+
 
 void ClassFlowControll::doFlowMakeImageOnly(string time){
     std::string zw_time;
@@ -299,14 +305,15 @@ void ClassFlowControll::doFlowMakeImageOnly(string time){
             zw_time = getCurrentTimeString("%H:%M:%S");
             std::string flowStatus = TranslateAktstatus(FlowControll[i]->name());
             aktstatus = flowStatus + " (" + zw_time + ")";
-#ifdef ENABLE_MQTT
-            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowStatus, false);
-#endif //ENABLE_MQTT
+            #ifdef ENABLE_MQTT
+                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowStatus, false);
+            #endif //ENABLE_MQTT
 
             FlowControll[i]->doFlow(time);
         }
     }
 }
+
 
 bool ClassFlowControll::doFlow(string time)
 {
@@ -314,9 +321,9 @@ bool ClassFlowControll::doFlow(string time)
     std::string zw_time;
     int repeat = 0;
 
-#ifdef DEBUG_DETAIL_ON 
-    LogFile.WriteHeapInfo("ClassFlowControll::doFlow - Start");
-#endif
+    #ifdef DEBUG_DETAIL_ON 
+        LogFile.WriteHeapInfo("ClassFlowControll::doFlow - Start");
+    #endif
 
     /* Check if we have a valid date/time and if not restart the NTP client */
    /* if (! getTimeIsSet()) {
@@ -332,9 +339,9 @@ bool ClassFlowControll::doFlow(string time)
         std::string flowStatus = TranslateAktstatus(FlowControll[i]->name());
         aktstatus = flowStatus + " (" + zw_time + ")";
         //LogFile.WriteToFile(ESP_LOG_INFO, TAG, aktstatus);
-#ifdef ENABLE_MQTT
-        MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowStatus, false);
-#endif //ENABLE_MQTT
+        #ifdef ENABLE_MQTT
+            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowStatus, false);
+        #endif //ENABLE_MQTT
 
         string zw = "FlowControll.doFlow - " + FlowControll[i]->name();
         #ifdef DEBUG_DETAIL_ON 
@@ -357,18 +364,19 @@ bool ClassFlowControll::doFlow(string time)
             result = true;
         }
         
-#ifdef DEBUG_DETAIL_ON  
-        LogFile.WriteHeapInfo("ClassFlowControll::doFlow");
-#endif
-
+        #ifdef DEBUG_DETAIL_ON  
+            LogFile.WriteHeapInfo("ClassFlowControll::doFlow");
+        #endif
     }
+
     zw_time = getCurrentTimeString("%H:%M:%S");
     std::string flowStatus = "Flow finished";
     aktstatus = flowStatus + " (" + zw_time + ")";
     //LogFile.WriteToFile(ESP_LOG_INFO, TAG, aktstatus);
-#ifdef ENABLE_MQTT
-    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowStatus, false);
-#endif //ENABLE_MQTT
+    #ifdef ENABLE_MQTT
+        MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowStatus, false);
+    #endif //ENABLE_MQTT
+
     return result;
 }
 
@@ -438,6 +446,7 @@ string ClassFlowControll::getReadout(bool _rawvalue = false, bool _noerror = fal
     return result;
 }
 
+
 string ClassFlowControll::GetPrevalue(std::string _number)	
 {
     if (flowpostprocessing)
@@ -447,6 +456,7 @@ string ClassFlowControll::GetPrevalue(std::string _number)
 
     return std::string("");    
 }
+
 
 std::string ClassFlowControll::UpdatePrevalue(std::string _newvalue, std::string _numbers, bool _extern)
 {
@@ -476,6 +486,7 @@ std::string ClassFlowControll::UpdatePrevalue(std::string _newvalue, std::string
 
     return std::string();
 }
+
 
 bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
 {

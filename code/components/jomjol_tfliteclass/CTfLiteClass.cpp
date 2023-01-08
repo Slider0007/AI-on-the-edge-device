@@ -6,10 +6,10 @@
 
 #include <sys/stat.h>
 
+static const char *TAG = "TFLITE";
+
 //#define DEBUG_DETAIL_ON
 
-
-static const char *TAG = "TFLITE";
 
 float CTfLiteClass::GetOutputValue(int nr)
 {

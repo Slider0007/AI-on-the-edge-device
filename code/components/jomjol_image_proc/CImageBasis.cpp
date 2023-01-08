@@ -13,22 +13,20 @@
 #include <math.h>
 #include <algorithm>
 
-
-#define DEBUG_DETAIL_ON
-
-
 using namespace std;
 
 static const char *TAG = "C IMG BASIS";
+
+//#define DEBUG_DETAIL_ON
 
 
 uint8_t * CImageBasis::RGBImageLock(int _waitmaxsec)
 {
     if (islocked)
     {
-#ifdef DEBUG_DETAIL_ON   
-        ESP_LOGD(TAG, "Image is locked: sleep for: %ds", _waitmaxsec);
-#endif
+        #ifdef DEBUG_DETAIL_ON   
+                ESP_LOGD(TAG, "Image is locked: sleep for: %ds", _waitmaxsec);
+        #endif
         TickType_t xDelay;
         xDelay = 1000 / portTICK_PERIOD_MS;
         for (int i = 0; i <= _waitmaxsec; ++i)
