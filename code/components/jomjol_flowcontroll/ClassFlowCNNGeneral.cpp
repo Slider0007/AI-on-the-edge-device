@@ -628,14 +628,14 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
     ESP_LOGD(TAG, "%s", zwcnn.c_str());
 
     if (!tflite->LoadModel(zwcnn)) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't load tflite model " + cnnmodelfile + " -> Flow aborted this round!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't load tflite model " + cnnmodelfile + " -> Exec aborted this round!");
         LogFile.WriteHeapInfo("doNeuralNetwork-LoadModel");
         delete tflite;
         return false;
     }
 
     if (!tflite->MakeAllocate()) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate tfilte model -> Flow this round aborted this round!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate tfilte model -> Exec aborted this round!");
         LogFile.WriteHeapInfo("doNeuralNetwork-MakeAllocate");
         delete tflite;
         return false;
