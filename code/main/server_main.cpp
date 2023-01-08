@@ -365,7 +365,7 @@ esp_err_t sysinfo_handler(httpd_req_t *req)
     std::string gitrevision = libfive_git_revision();
     std::string htmlversion = getHTMLversion();
     char freeheapmem[11];
-    sprintf(freeheapmem, "%zu", esp_get_free_heap_size());
+    sprintf(freeheapmem, "%u", esp_get_free_heap_size());
     
     tcpip_adapter_ip_info_t ip_info;
     ESP_ERROR_CHECK(tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip_info));
