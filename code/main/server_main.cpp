@@ -46,7 +46,7 @@ esp_err_t info_get_handler(httpd_req_t *req)
             ESP_LOGD(TAG, "type is found: %s", _valuechar);
             _task = std::string(_valuechar);
         }
-    };
+    }
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
@@ -186,6 +186,7 @@ esp_err_t info_get_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+
 esp_err_t starttime_get_handler(httpd_req_t *req)
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -196,6 +197,7 @@ esp_err_t starttime_get_handler(httpd_req_t *req)
 
     return ESP_OK;
 }
+
 
 esp_err_t hello_main_handler(httpd_req_t *req)
 {
@@ -288,6 +290,7 @@ esp_err_t hello_main_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+
 esp_err_t img_tmp_handler(httpd_req_t *req)
 {
     char filepath[50];
@@ -312,11 +315,12 @@ esp_err_t img_tmp_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+
 esp_err_t img_tmp_virtual_handler(httpd_req_t *req)
 {
-#ifdef DEBUG_DETAIL_ON      
-    LogFile.WriteHeapInfo("img_tmp_virtual_handler - Start");  
-#endif
+    #ifdef DEBUG_DETAIL_ON      
+        LogFile.WriteHeapInfo("img_tmp_virtual_handler - Start");  
+    #endif
 
     char filepath[50];
 
@@ -332,27 +336,21 @@ esp_err_t img_tmp_virtual_handler(httpd_req_t *req)
     filetosend = std::string(filename);
     ESP_LOGD(TAG, "File to upload: %s", filetosend.c_str());
 
+    // Serve raw.jpg
     if (filetosend == "raw.jpg")
-    {
         return GetRawJPG(req); 
-    } 
 
-    esp_err_t zw = GetJPG(filetosend, req);
-
-    if (zw == ESP_OK)
+    // Serve alg.jpg, alg_roi.jpg or digital and analog ROIs
+    if (ESP_OK == GetJPG(filetosend, req))
         return ESP_OK;
 
-    // File wird nicht intern bereit gestellt --> klassischer weg:
-#ifdef DEBUG_DETAIL_ON      
-    LogFile.WriteHeapInfo("img_tmp_virtual_handler - Done");   
-#endif
+    #ifdef DEBUG_DETAIL_ON      
+        LogFile.WriteHeapInfo("img_tmp_virtual_handler - Done");   
+    #endif
 
+    // File was not served already --> serve with img_tmp_handler
     return img_tmp_handler(req);
 }
-
-
-
-
 
 
 esp_err_t sysinfo_handler(httpd_req_t *req)
@@ -399,6 +397,7 @@ esp_err_t sysinfo_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+
 void register_server_main_uri(httpd_handle_t server, const char *base_path)
 {
     httpd_uri_t info_get_handle = {
@@ -425,8 +424,6 @@ void register_server_main_uri(httpd_handle_t server, const char *base_path)
     };
     httpd_register_uri_handler(server, &starttime_tmp_handle);
 
-
-
     httpd_uri_t img_tmp_handle = {
         .uri       = "/img_tmp/*",  // Match all URIs of type /path/to/file
         .method    = HTTP_GET,
@@ -434,7 +431,6 @@ void register_server_main_uri(httpd_handle_t server, const char *base_path)
         .user_ctx  = (void*) base_path    // Pass server data as context
     };
     httpd_register_uri_handler(server, &img_tmp_handle);
-
 
     httpd_uri_t main_rest_handle = {
         .uri       = "/*",  // Match all URIs of type /path/to/file
@@ -445,7 +441,6 @@ void register_server_main_uri(httpd_handle_t server, const char *base_path)
     httpd_register_uri_handler(server, &main_rest_handle);
 
 }
-
 
 
 httpd_handle_t start_webserver(void)
@@ -488,6 +483,7 @@ httpd_handle_t start_webserver(void)
     return NULL;
 }
 
+
 void stop_webserver(httpd_handle_t server)
 {
     httpd_stop(server);
@@ -504,6 +500,7 @@ void disconnect_handler(void* arg, esp_event_base_t event_base,
         *server = NULL;
     }
 }
+
 
 void connect_handler(void* arg, esp_event_base_t event_base, 
                             int32_t event_id, void* event_data)

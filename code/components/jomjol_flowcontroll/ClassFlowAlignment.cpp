@@ -10,11 +10,12 @@
 #include "../../include/defines.h"
 
 
+// #define DEBUG_DETAIL_ON  
+
+
 static const char *TAG = "ALIGN";
 
 bool AlignmentExtendedDebugging = true;
-
-// #define DEBUG_DETAIL_ON  
 
 
 void ClassFlowAlignment::SetInitialParameter(void)
@@ -329,7 +330,10 @@ bool ClassFlowAlignment::LoadReferenceAlignmentValues(void)
 
 void ClassFlowAlignment::DrawRef(CImageBasis *_zw)
 {
-    _zw->drawRect(References[0].target_x, References[0].target_y, References[0].width, References[0].height, 255, 0, 0, 2);
-    _zw->drawRect(References[1].target_x, References[1].target_y, References[1].width, References[1].height, 255, 0, 0, 2);
+    if (_zw->ImageOkay()) 
+    {
+        _zw->drawRect(References[0].target_x, References[0].target_y, References[0].width, References[0].height, 255, 0, 0, 2);
+        _zw->drawRect(References[1].target_x, References[1].target_y, References[1].width, References[1].height, 255, 0, 0, 2);
+    }
 }
 

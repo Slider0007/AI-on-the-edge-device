@@ -376,14 +376,15 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
             return ESP_OK;
         }
 
+        zw = tfliteflow.getReadout(_rawValue, _noerror);
+        if (zw.length() > 0)
+            httpd_resp_sendstr_chunk(req, zw.c_str()); 
+
         string query = std::string(_query);
     //    ESP_LOGD(TAG, "Query: %s, query.c_str());
         if (query.find("full") != std::string::npos)
         {
             string txt, zw;
-
-            txt = tfliteflow.getReadout(_rawValue, _noerror);
-            httpd_resp_sendstr_chunk(req, txt.c_str()); 
             
             txt = "<p>Aligned Image: <p><img src=\"/img_tmp/alg_roi.jpg\"> <p>\n";
             txt = txt + "Digital Counter: <p> ";
@@ -431,17 +432,12 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
                 httpd_resp_sendstr_chunk(req, txt.c_str()); 
                 delete htmlinfoana[i];
             }
-            htmlinfoana.clear();
+            htmlinfoana.clear();   
 
-            /* Respond with an empty chunk to signal HTTP response completion */
-            httpd_resp_sendstr_chunk(req, NULL);   
+        }   
 
-            return ESP_OK;
-        }
-
-        zw = tfliteflow.getReadout(_rawValue, _noerror);
-        if (zw.length() > 0)
-            httpd_resp_send(req, zw.c_str(), zw.length()); 
+        /* Respond with an empty chunk to signal HTTP response completion */
+        httpd_resp_sendstr_chunk(req, NULL);   
     }
     else 
     {
