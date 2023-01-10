@@ -683,7 +683,9 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
     {
         if (flowalignment && flowalignment->ImageBasis->ImageOkay()) 
         {
-            _send = flowalignment->ImageBasis;
+            //_send = flowalignment->ImageBasis;
+            httpd_resp_set_type(req, "image/jpeg");
+            return httpd_resp_send(req, (const char *)flowalignment->ImageBasis->RGBImageGet(), flowalignment->ImageBasis->GetSize());
         }
         else 
         {
@@ -711,7 +713,9 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
             {
                 if (flowalignment && flowalignment->ImageBasis->ImageOkay()) 
                 {
-                    _send = flowalignment->ImageBasis;
+                    //_send = flowalignment->ImageBasis;
+                    httpd_resp_set_type(req, "image/jpeg");
+                    return httpd_resp_send(req, (const char *)flowalignment->ImageBasis->RGBImageGet(), flowalignment->ImageBasis->GetSize());
                 }
                 else 
                 {
@@ -747,7 +751,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
     else
     {
         std::vector<HTMLInfo*> htmlinfo;
-
+        
         htmlinfo = GetAllDigital();
         ESP_LOGD(TAG, "After getClassFlowControll::GetAllDigital");
 
@@ -759,7 +763,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 {
                     //_send = htmlinfo[i]->image;
                     httpd_resp_set_type(req, "image/jpeg");  
-                    return httpd_resp_send(req, (const char *)htmlinfo[i]->image->RGBImageGet(), htmlinfo[i]->image->GetSize());
+                    result = httpd_resp_send(req, (const char *)htmlinfo[i]->image->RGBImageGet(), sizeof(htmlinfo[i]->image->RGBImageGet()));
                 }
             }
 
@@ -769,7 +773,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 {
                     //_send = htmlinfo[i]->image_org;   
                     httpd_resp_set_type(req, "image/jpeg");   
-                    return httpd_resp_send(req, (const char *)htmlinfo[i]->image_org->RGBImageGet(), htmlinfo[i]->image_org->GetSize());
+                    result = httpd_resp_send(req, (const char *)htmlinfo[i]->image_org->RGBImageGet(), sizeof(htmlinfo[i]->image_org->RGBImageGet()));
                 }
             }
             delete htmlinfo[i];
@@ -788,7 +792,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 {
                     //_send = htmlinfo[i]->image;
                     httpd_resp_set_type(req, "image/jpeg");    
-                    return httpd_resp_send(req, (const char *)htmlinfo[i]->image->RGBImageGet(), htmlinfo[i]->image_org->GetSize());
+                    result = httpd_resp_send(req, (const char *)htmlinfo[i]->image->RGBImageGet(), sizeof(htmlinfo[i]->image->RGBImageGet()));
                 }
             }
 
@@ -798,30 +802,32 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 {
                     //_send = htmlinfo[i]->image_org;
                     httpd_resp_set_type(req, "image/jpeg");    
-                    return httpd_resp_send(req, (const char *)htmlinfo[i]->image_org->RGBImageGet(), htmlinfo[i]->image_org->GetSize());
+                    result = httpd_resp_send(req, (const char *)htmlinfo[i]->image_org->RGBImageGet(), sizeof(htmlinfo[i]->image_org->RGBImageGet()));
                 }       
             }
             delete htmlinfo[i];
         }
         htmlinfo.clear();
+
     }
 
     #ifdef DEBUG_DETAIL_ON 
         LogFile.WriteHeapInfo("ClassFlowControll::GetJPGStream - before send");
     #endif
 
+/*
     if (_send)
     {
         ESP_LOGD(TAG, "Sending file: %s ...", _fn.c_str());
         httpd_resp_set_type(req, "image/jpeg");  
         result = _send->SendJPGtoHTTP(req); 
-        /* Respond with an empty chunk to signal HTTP response completion */
+        // Respond with an empty chunk to signal HTTP response completion
         httpd_resp_send_chunk(req, NULL, 0);
         ESP_LOGD(TAG, "File sending complete");   
 
         if (_sendDelete) delete _send;
     }
-
+*/
     #ifdef DEBUG_DETAIL_ON 
         LogFile.WriteHeapInfo("ClassFlowControll::GetJPGStream - done");
     #endif
