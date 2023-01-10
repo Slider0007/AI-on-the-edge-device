@@ -45,7 +45,7 @@ std::string ClassLogFile::getESPHeapInfo(){
 	size_t aMinFreeHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT);
 	size_t aHeapLargestFreeBlockSize = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
 	sprintf(aMsgBuf,"Free Heap Size: \t%ld", (long) aFreeHeapSize);
-	//size_t aFreeSPIHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_SPIRAM);
+	size_t aFreeSPIHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_SPIRAM);
  	size_t aFreeInternalHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_INTERNAL);
 	size_t aMinFreeInternalHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_INTERNAL);
 
@@ -55,10 +55,10 @@ std::string ClassLogFile::getESPHeapInfo(){
 	espInfoResultStr += string(aMsgBuf);
 	sprintf(aMsgBuf,"\tlarg. Block: \t%ld", (long) aHeapLargestFreeBlockSize);
 	espInfoResultStr += string(aMsgBuf);
-	//sprintf(aMsgBuf,"\tSPI Heap:\t%ld", (long) aFreeSPIHeapSize);
-	//espInfoResultStr += string(aMsgBuf);
+	sprintf(aMsgBuf,"\tSPI Heap:\t%ld", (long) aFreeSPIHeapSize);
+	espInfoResultStr += string(aMsgBuf);
 	sprintf(aMsgBuf,"\tMin Free Heap Size:\t%ld", (long) aMinFreeHeadSize);
-	//sprintf(aMsgBuf,"\tNOT_SPI Heap:\t%ld", (long) (aFreeHeapSize - aFreeSPIHeapSize));
+	sprintf(aMsgBuf,"\tNOT_SPI Heap:\t%ld", (long) (aFreeHeapSize - aFreeSPIHeapSize));
 	espInfoResultStr += string(aMsgBuf);
 	sprintf(aMsgBuf,"\tlargest Block Size: \t%ld", (long) aHeapLargestFreeBlockSize);
 	sprintf(aMsgBuf,"\tInternal Heap:\t%ld", (long) (aFreeInternalHeapSize));

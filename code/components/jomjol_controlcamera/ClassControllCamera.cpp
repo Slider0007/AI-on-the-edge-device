@@ -236,10 +236,10 @@ void CCamera::EnableAutoExposure(int flash_duration)
 
 esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
 {
-    string ftype;
-    int _size;
+    //string ftype;
+    //int _size;
 
-    uint8_t *zwischenspeicher = NULL;
+    //uint8_t *zwischenspeicher = NULL;
 
 
     LEDOnOff(true);
@@ -263,10 +263,10 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
     esp_camera_fb_return(fb);        
     fb = esp_camera_fb_get();
     if (!fb) {
-        ESP_LOGE(TAG, "CaptureToBasisImage: Capture Failed");
         LEDOnOff(false);
         LightOnOff(false);
 
+        ESP_LOGE(TAG, "CaptureToBasisImage: Capture Failed");
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "is not working anymore (CCamera::CaptureToBasisImage) - most probably caused by a hardware problem (instablility, ...). "
                 "System will reboot.");
         doReboot();
@@ -279,16 +279,8 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
         loadNextDemoImage(fb);
     }
 
-    _size = fb->len;
-    zwischenspeicher = (uint8_t*)GET_MEMORY(_size); //(uint8_t*) malloc(_size);
-    if (!zwischenspeicher)
-    {
-        ESP_LOGE(TAG, "Insufficient memory space for image in function CaptureToBasisImage()");
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CCamera::CaptureToBasisImage-zwischenspeicher: Can't allocate memory!");
-        LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage");
-    }
-    for (int i = 0; i < _size; ++i)
-        *(zwischenspeicher + i) = *(fb->buf + i);
+    CImageBasis* _zwImage = new CImageBasis();
+    _zwImage->LoadFromMemory(fb->buf, fb->len);
     esp_camera_fb_return(fb);        
 
 #ifdef DEBUG_DETAIL_ON
@@ -303,11 +295,6 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
 //    TickType_t xDelay = 1000 / portTICK_PERIOD_MS;     
 //    vTaskDelay( xDelay );  // wait for power to recover
     
-    //uint8_t * buf = NULL;
-
-    CImageBasis _zwImage;
-    _zwImage.LoadFromMemory(zwischenspeicher, _size);
-    free(zwischenspeicher);
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After LoadFromMemory");
@@ -329,17 +316,22 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
         for (int y = 0; y < height; ++y)
         {
             p_target = _Image->rgb_image + (channels * (y * width + x));
-            p_source = _zwImage.rgb_image + (channels * (y * width + x));
+            p_source = _zwImage->rgb_image + (channels * (y * width + x));
             p_target[0] = p_source[0];
             p_target[1] = p_source[1];
             p_target[2] = p_source[2];
         }
+
+    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG 
+        tfliteflow.SetNewAlgROI(false);
+    #endif
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After Copy To Target");
 #endif
 
     //free(buf);
+    delete _zwImage;
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - Done");
@@ -461,7 +453,8 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int delay)
     fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);
     fb = esp_camera_fb_get();
-    if (!fb) {
+    if (!fb)
+    {
         ESP_LOGE(TAG, "Camera capture failed");
         LEDOnOff(false);
         LightOnOff(false);
@@ -474,11 +467,13 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int delay)
     LEDOnOff(false); 
     
     res = httpd_resp_set_type(req, "image/jpeg");
-    if(res == ESP_OK){
+    if (res == ESP_OK)
+    {
         res = httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=raw.jpg");
     }
 
-    if(res == ESP_OK){
+    if (res == ESP_OK)
+    {
         if (demoMode) { // Use images stored on SD-Card instead of camera image
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Using Demo image!");
             /* Replace Framebuffer with image from SD-Card */
@@ -486,11 +481,15 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int delay)
 
             res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
         }
-        else {
-            if(fb->format == PIXFORMAT_JPEG){
+        else 
+        {
+            if (fb->format == PIXFORMAT_JPEG)
+            {
                 fb_len = fb->len;
                 res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
-            } else {
+            } 
+            else 
+            {
                 jpg_chunking_t jchunk = {req, 0};
                 res = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk)?ESP_OK:ESP_FAIL;
                 httpd_resp_send_chunk(req, NULL, 0);
@@ -674,6 +673,7 @@ bool CCamera::getCameraInitSuccessful()
 {
     return CameraInitSuccessful;
 }
+
 
 std::vector<std::string> demoFiles;
 

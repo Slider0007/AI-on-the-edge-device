@@ -18,7 +18,8 @@ static const char* TAG = "flow_make_image";
 // #define DEBUG_DETAIL_ON 
 
 
-esp_err_t ClassFlowMakeImage::camera_capture(){
+esp_err_t ClassFlowMakeImage::camera_capture()
+{
     string nm =  namerawimage;
     Camera.CaptureToFile(nm);
     time(&TimeImageTaken);
@@ -63,6 +64,7 @@ ClassFlowMakeImage::ClassFlowMakeImage(std::vector<ClassFlow*>* lfc) : ClassFlow
     logfileRetentionInDays = 5;
     SetInitialParameter();
 }
+
 
 bool ClassFlowMakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
 {
@@ -172,6 +174,7 @@ bool ClassFlowMakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
     return true;
 }
 
+
 string ClassFlowMakeImage::getHTMLSingleStep(string host)
 {
     string result;
@@ -179,42 +182,44 @@ string ClassFlowMakeImage::getHTMLSingleStep(string host)
     return result;
 }
 
+
 bool ClassFlowMakeImage::doFlow(string zwtime)
 {
     string logPath = CreateLogFolder(zwtime);
 
     int flash_duration = (int) (waitbeforepicture * 1000);
  
- #ifdef DEBUG_DETAIL_ON  
-    LogFile.WriteHeapInfo("ClassFlowMakeImage::doFlow - Before takePictureWithFlash");
-#endif
+    #ifdef DEBUG_DETAIL_ON  
+        LogFile.WriteHeapInfo("ClassFlowMakeImage::doFlow - Before takePictureWithFlash");
+    #endif
 
 
-#ifdef WIFITURNOFF
-    esp_wifi_stop();        // to save power usage and 
-#endif
+    #ifdef WIFITURNOFF
+        esp_wifi_stop();        // to save power usage and 
+    #endif
 
     takePictureWithFlash(flash_duration);
 
-#ifdef WIFITURNOFF
-     esp_wifi_start();
-#endif
+    #ifdef WIFITURNOFF
+        esp_wifi_start();
+    #endif
 
 
-#ifdef DEBUG_DETAIL_ON  
-    LogFile.WriteHeapInfo("ClassFlowMakeImage::doFlow - After takePictureWithFlash");
-#endif
+    #ifdef DEBUG_DETAIL_ON  
+        LogFile.WriteHeapInfo("ClassFlowMakeImage::doFlow - After takePictureWithFlash");
+    #endif
 
     LogImage(logPath, "raw", NULL, NULL, zwtime, rawImage);
 
     RemoveOldLogs();
 
-#ifdef DEBUG_DETAIL_ON  
-    LogFile.WriteHeapInfo("ClassFlowMakeImage::doFlow - After RemoveOldLogs");
-#endif
+    #ifdef DEBUG_DETAIL_ON  
+        LogFile.WriteHeapInfo("ClassFlowMakeImage::doFlow - After RemoveOldLogs");
+    #endif
 
     return true;
 }
+
 
 esp_err_t ClassFlowMakeImage::SendRawJPG(httpd_req_t *req)
 {

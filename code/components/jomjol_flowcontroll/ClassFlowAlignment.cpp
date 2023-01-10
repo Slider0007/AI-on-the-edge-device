@@ -1,6 +1,7 @@
 #include "ClassFlowAlignment.h"
 #include "ClassFlowMakeImage.h"
 #include "ClassFlow.h"
+#include "server_tflite.h"
 
 #include "CRotateImage.h"
 #include "esp_log.h"
@@ -28,6 +29,9 @@ void ClassFlowAlignment::SetInitialParameter(void)
     AlignAndCutImage = NULL;
     ImageBasis = NULL;
     ImageTMP = NULL;
+    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG 
+    AlgROI = (ImageData*)heap_caps_malloc(sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    #endif
     previousElement = NULL;
     disabled = false;
     SAD_criteria = 0.05;
@@ -146,6 +150,7 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
 
 }
 
+
 string ClassFlowAlignment::getHTMLSingleStep(string host)
 {
     string result;
@@ -159,10 +164,31 @@ string ClassFlowAlignment::getHTMLSingleStep(string host)
 
 bool ClassFlowAlignment::doFlow(string time) 
 {
-    if (!ImageTMP) {
+    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
+        if (!AlgROI)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
+        {
+            AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
+            if (!AlgROI) 
+            {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlgROI -> Alg.jpg will be served instead");
+                LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
+                tfliteflow.SetNewAlgROI(false);
+            }
+        }
+
+        if (AlgROI) 
+        {
+            ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
+            tfliteflow.SetNewAlgROI(true);
+        }
+    #endif
+
+    if (!ImageTMP) 
+    {
         ImageTMP = new CImageBasis(ImageBasis);
-        if (!ImageTMP) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate ImageTMP -> Flow this round aborted!");
+        if (!ImageTMP) 
+        {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate ImageTMP -> Exec this round aborted!");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
             return false;
         }
@@ -170,8 +196,9 @@ bool ClassFlowAlignment::doFlow(string time)
 
     delete AlignAndCutImage;
     AlignAndCutImage = new CAlignAndCutImage(ImageBasis, ImageTMP);
-    if (!AlignAndCutImage) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlignAndCutImage -> Flow this round aborted!");
+    if (!AlignAndCutImage) 
+    {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlignAndCutImage -> Exec this round aborted!");
         LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
         return false;
     }
@@ -188,7 +215,9 @@ bool ClassFlowAlignment::doFlow(string time)
     {
         ESP_LOGD(TAG, "do mirror");
         rt.Mirror();
-        if (SaveAllFiles) AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/mirror.jpg"));
+        
+        if (SaveAllFiles)
+            AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/mirror.jpg"));
     }
  
     if ((initalrotate != 0) || initialflip)
@@ -197,7 +226,9 @@ bool ClassFlowAlignment::doFlow(string time)
             rt.RotateAntiAliasing(initalrotate);
         else
             rt.Rotate(initalrotate);
-        if (SaveAllFiles) AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/rot.jpg"));
+        
+        if (SaveAllFiles)
+            AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/rot.jpg"));
     }
 
     if (!AlignAndCutImage->Align(&References[0], &References[1])) 
@@ -205,8 +236,15 @@ bool ClassFlowAlignment::doFlow(string time)
         SaveReferenceAlignmentValues();
     }
 
-    if (SaveAllFiles) AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/alg.jpg"));
-
+    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
+        if (AlgROI) {
+            DrawRef(ImageTMP);
+            tfliteflow.DigitalDrawROI(ImageTMP);
+            tfliteflow.AnalogDrawROI(ImageTMP);
+            ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
+        }
+    #endif
+    
     if (SaveAllFiles)
     {
         if (initialflip)
@@ -215,14 +253,14 @@ bool ClassFlowAlignment::doFlow(string time)
             ImageTMP->width = ImageTMP->height;
             ImageTMP->height = _zw;
         }
-        DrawRef(ImageTMP);
+
+        AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/alg.jpg"));
         ImageTMP->SaveToFile(FormatFileName("/sdcard/img_tmp/alg_roi.jpg"));
     }
 
-    // must be deleted to have memory space for loading tflite
     delete ImageTMP;
     ImageTMP = NULL;
-    
+
     LoadReferenceAlignmentValues();
 
     return true;

@@ -639,7 +639,7 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
         LogFile.WriteHeapInfo("doNeuralNetwork-MakeAllocate");
         delete tflite;
         return false;
-    } 
+    }
 
     for (int n = 0; n < GENERAL.size(); ++n) // For each NUMBER
     {

@@ -83,6 +83,19 @@ ImageData* CImageBasis::writeToMemoryAsJPG(const int quality)
 }
 
 
+void CImageBasis::writeToMemoryAsJPG(ImageData* i, const int quality)
+{
+    ImageData* ii = new ImageData;
+    
+    RGBImageLock();
+    stbi_write_jpg_to_func(writejpghelp, ii, width, height, channels, rgb_image, quality);
+    RGBImageRelease();
+
+    memCopy((uint8_t*) ii, (uint8_t*) i, sizeof(ImageData));
+    delete ii;
+}
+
+
 struct SendJPGHTTP
 {
     httpd_req_t *req;
@@ -619,4 +632,10 @@ void CImageBasis::Resize(int _new_dx, int _new_dy, CImageBasis *_target)
     stbir_resize_uint8(rgb_image, width, height, 0, odata, _new_dx, _new_dy, 0, channels);
 
     RGBImageRelease();
+}
+
+
+size_t CImageBasis::GetSize(void) 
+{
+    return width * height * channels;
 }

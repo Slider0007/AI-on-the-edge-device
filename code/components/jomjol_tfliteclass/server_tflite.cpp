@@ -399,20 +399,29 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
             {
                 if (tfliteflow.GetTypeDigital() == Digital)
                 {
-                    if (htmlinfodig[i]->val == 10)
-                        zw = "NaN";
-                    else
-                        zw = to_string((int) htmlinfodig[i]->val);
+                    if (htmlinfodig[i]->val != -1.0) {
+                        if (htmlinfodig[i]->val == 10.0)
+                            zw = "0.0";
+                        else
+                            zw = to_string((int) htmlinfodig[i]->val);
 
-                    txt = "<img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"> " + zw;
+                        txt = "<img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"> " + zw + " ";
+                    }
+                    else {
+                        txt = "--- | ";
+                    }
                 }
                 else
                 {
-                    std::stringstream stream;
-                    stream << std::fixed << std::setprecision(1) << htmlinfodig[i]->val;
-                    zw = stream.str();
-
-                    txt = "<img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"> " + zw;
+                    if (htmlinfodig[i]->val != -1.0) {
+                        std::stringstream stream;
+                        stream << std::fixed << std::setprecision(1) << htmlinfodig[i]->val;
+                        zw = stream.str();      
+                        txt = "<img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"> " + zw + " ";
+                    }
+                    else {
+                        txt = "--- | ";
+                    }
                 }
                 httpd_resp_sendstr_chunk(req, txt.c_str()); 
                 delete htmlinfodig[i];
@@ -426,11 +435,15 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
             htmlinfoana = tfliteflow.GetAllAnalog();
             for (int i = 0; i < htmlinfoana.size(); ++i)
             {
-                std::stringstream stream;
-                stream << std::fixed << std::setprecision(1) << htmlinfoana[i]->val;
-                zw = stream.str();
-
-                txt = "<img src=\"/img_tmp/" +  htmlinfoana[i]->filename + "\"> " + zw;
+                if (htmlinfoana[i]->val != -1.0) {
+                    std::stringstream stream;
+                    stream << std::fixed << std::setprecision(1) << htmlinfoana[i]->val;
+                    zw = stream.str();
+                    txt = "<img src=\"/img_tmp/" +  htmlinfoana[i]->filename + "\"> " + zw + " ";
+                }
+                else {
+                    txt = " --- | ";
+                }
                 httpd_resp_sendstr_chunk(req, txt.c_str()); 
                 delete htmlinfoana[i];
             }

@@ -46,34 +46,36 @@ sdmmc_csd_t SDCardCsd;
 string getESPHeapInfo(){
 	string espInfoResultStr = "";
 	char aMsgBuf[80];
-    
-	multi_heap_info_t aMultiHead_info ;
-	heap_caps_get_info (&aMultiHead_info,MALLOC_CAP_8BIT);
-	size_t aFreeHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT);
-	size_t aMinFreeHeadSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT);
-	size_t aMinFreeHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT);
-	size_t aHeapLargestFreeBlockSize = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
-	sprintf(aMsgBuf," Free Heap Size: %ld", (long) aFreeHeapSize);
-	size_t aFreeSPIHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_SPIRAM);
- 	size_t aFreeInternalHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_INTERNAL);
-	 size_t aMinFreeInternalHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_INTERNAL);
 
-	sprintf(aMsgBuf," Heap: %ld", (long) aFreeHeapSize);
+	size_t aFreeHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+
+	size_t aFreeSPIHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+	size_t aFreeInternalHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+
+	size_t aHeapLargestFreeBlockSize = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+	size_t aHeapIntLargestFreeBlockSize = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+
+	size_t aMinFreeHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+	size_t aMinFreeInternalHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+
+
+	sprintf(aMsgBuf,"Heap Total: %ld", (long) aFreeHeapSize);
 	espInfoResultStr += string(aMsgBuf);
-	sprintf(aMsgBuf," Min Free: %ld", (long) aMinFreeHeapSize);
+
+	sprintf(aMsgBuf," | SPI Free: %ld", (long) aFreeSPIHeapSize);
 	espInfoResultStr += string(aMsgBuf);
-	sprintf(aMsgBuf," larg. Block:  %ld", (long) aHeapLargestFreeBlockSize);
+	sprintf(aMsgBuf," | SPI Larg Block:  %ld", (long) aHeapLargestFreeBlockSize);
 	espInfoResultStr += string(aMsgBuf);
-	sprintf(aMsgBuf," SPI Heap: %ld", (long) aFreeSPIHeapSize);
+	sprintf(aMsgBuf," | SPI Min Free: %ld", (long) aMinFreeHeapSize);
 	espInfoResultStr += string(aMsgBuf);
-	sprintf(aMsgBuf," Min Free Heap Size: %ld", (long) aMinFreeHeadSize);
-	sprintf(aMsgBuf," NOT_SPI Heap: %ld", (long) (aFreeHeapSize - aFreeSPIHeapSize));
+
+	sprintf(aMsgBuf," | Int Free: %ld", (long) (aFreeInternalHeapSize));
 	espInfoResultStr += string(aMsgBuf);
-	sprintf(aMsgBuf," largest Block Size:  %ld", (long) aHeapLargestFreeBlockSize);
-	sprintf(aMsgBuf," Internal Heap: %ld", (long) (aFreeInternalHeapSize));
+	sprintf(aMsgBuf," | Int Larg Block:  %ld", (long) aHeapIntLargestFreeBlockSize);
 	espInfoResultStr += string(aMsgBuf);
-	sprintf(aMsgBuf," Internal Min Heap free: %ld", (long) (aMinFreeInternalHeapSize));
+	sprintf(aMsgBuf," | Int Min Free: %ld", (long) (aMinFreeInternalHeapSize));
 	espInfoResultStr += string(aMsgBuf);
+	
 	return 	espInfoResultStr;
 }
 
