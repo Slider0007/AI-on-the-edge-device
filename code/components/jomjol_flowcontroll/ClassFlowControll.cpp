@@ -50,16 +50,17 @@ std::string ClassFlowControll::doSingleStep(std::string _stepname, std::string _
     if ((_stepname.compare("[Analog]") == 0) || (_stepname.compare(";[Analog]") == 0)){
         _classname = "ClassFlowCNNGeneral";
     }
+
     #ifdef ENABLE_MQTT
-        if ((_stepname.compare("[MQTT]") == 0) || (_stepname.compare(";[MQTT]") == 0)){
-            _classname = "ClassFlowMQTT";
-        }
+    if ((_stepname.compare("[MQTT]") == 0) || (_stepname.compare(";[MQTT]") == 0)){
+        _classname = "ClassFlowMQTT";
+    }
     #endif //ENABLE_MQTT
 
     #ifdef ENABLE_INFLUXDB
-        if ((_stepname.compare("[InfluxDB]") == 0) || (_stepname.compare(";[InfluxDB]") == 0)){
-            _classname = "ClassFlowInfluxDB";
-        }
+    if ((_stepname.compare("[InfluxDB]") == 0) || (_stepname.compare(";[InfluxDB]") == 0)){
+        _classname = "ClassFlowInfluxDB";
+    }
     #endif //ENABLE_INFLUXDB
 
     for (int i = 0; i < FlowControll.size(); ++i)
@@ -83,14 +84,17 @@ std::string ClassFlowControll::TranslateAktstatus(std::string _input)
         return ("Aligning");
     if (_input.compare("ClassFlowCNNGeneral") == 0)
         return ("Digitalization of ROIs");
+
     #ifdef ENABLE_MQTT
         if (_input.compare("ClassFlowMQTT") == 0)
             return ("Sending MQTT");
     #endif //ENABLE_MQTT
+
     #ifdef ENABLE_INFLUXDB
         if (_input.compare("ClassFlowInfluxDB") == 0)
             return ("Sending InfluxDB");
     #endif //ENABLE_INFLUXDB
+
     if (_input.compare("ClassFlowPostProcessing") == 0)
         return ("Post-Processing");
     if (_input.compare("ClassFlowWriteList") == 0)
@@ -233,13 +237,15 @@ ClassFlow* ClassFlowControll::CreateClassFlow(std::string _type)
         flowdigit = (ClassFlowCNNGeneral*) cfc;
     }
     #ifdef ENABLE_MQTT
-        if (toUpper(_type).compare("[MQTT]") == 0)
-            cfc = new ClassFlowMQTT(&FlowControll);
+    if (toUpper(_type).compare("[MQTT]") == 0)
+        cfc = new ClassFlowMQTT(&FlowControll);
     #endif //ENABLE_MQTT
+
     #ifdef ENABLE_INFLUXDB
-        if (toUpper(_type).compare("[INFLUXDB]") == 0)
-            cfc = new ClassFlowInfluxDB(&FlowControll);
-    #endif //ENABLE_INFLUXDB        
+    if (toUpper(_type).compare("[INFLUXDB]") == 0)
+        cfc = new ClassFlowInfluxDB(&FlowControll);
+    #endif //ENABLE_INFLUXDB  
+
     if (toUpper(_type).compare("[WRITELIST]") == 0)
         cfc = new ClassFlowWriteList(&FlowControll);
 
@@ -324,8 +330,7 @@ void ClassFlowControll::doFlowMakeImageOnly(string time)
 
     for (int i = 0; i < FlowControll.size(); ++i)
     {
-        if (FlowControll[i]->name() == "ClassFlowMakeImage") 
-        {
+        if (FlowControll[i]->name() == "ClassFlowMakeImage") {
             zw_time = getCurrentTimeString("%H:%M:%S");
             std::string flowStatus = TranslateAktstatus(FlowControll[i]->name());
             aktstatus = flowStatus + " (" + zw_time + ")";
@@ -669,11 +674,12 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         LogFile.WriteHeapInfo("ClassFlowControll::GetJPGStream - Start");
     #endif
 
-    CImageBasis * _send = NULL;
+    CImageBasis *_send = NULL;
     esp_err_t result = ESP_FAIL;
     bool _sendDelete = false;
 
-    if (flowalignment == NULL) {
+    if (flowalignment == NULL) 
+    {
         ESP_LOGD(TAG, "ClassFloDControll::GetJPGStream: FloDalignment is not (yet) initialized. Interrupt serving!");
         return ESP_OK;
     }
@@ -694,8 +700,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                     httpd_resp_set_type(req, "image/jpeg");
                     result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
                 }
-                else 
-                {
+                else {
                     LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served");
                     return ESP_FAIL;
                 }
@@ -724,48 +729,27 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                     _send = flowalignment->ImageBasis;
                 }
                 else {
-                    result = httpd_resp_send(req, NULL, 0);
+                    httpd_resp_send(req, NULL, 0);
+                    return ESP_OK;
                 }
             }
         #endif
     }
-    else 
-    {
+    else {
         std::vector<HTMLInfo*> htmlinfo;
-        
+    
         htmlinfo = GetAllDigital();
         ESP_LOGD(TAG, "After getClassFlowControll::GetAllDigital");
 
-        for (int i = 0; i < htmlinfo.size(); ++i) 
+        for (int i = 0; i < htmlinfo.size(); ++i)
         {
-            if (_fn == htmlinfo[i]->filename) 
-            {
-                if (htmlinfo[i]->image
-                    _send = htmlinfo[i]->image;
-            }
-
-            if (_fn == htmlinfo[i]->filename_org) 
-            {
-                if (htmlinfo[i]->image_org)
-                    _send = htmlinfo[i]->image_org;
-            }
-            delete htmlinfo[i];
-        }
-        htmlinfo.clear();
-
-
-        htmlinfo = GetAllAnalog();
-        ESP_LOGD(TAG, "After getClassFlowControll::GetAllDigital");
-        
-        for (int i = 0; i < htmlinfo.size(); ++i) 
-        {
-            if (_fn == htmlinfo[i]->filename) 
+            if (_fn == htmlinfo[i]->filename)
             {
                 if (htmlinfo[i]->image)
                     _send = htmlinfo[i]->image;
             }
 
-            if (_fn == htmlinfo[i]->filename_org) 
+            if (_fn == htmlinfo[i]->filename_org)
             {
                 if (htmlinfo[i]->image_org)
                     _send = htmlinfo[i]->image_org;
@@ -773,22 +757,47 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
             delete htmlinfo[i];
         }
         htmlinfo.clear();
+
+        if (!_send)
+        {
+	        htmlinfo = GetAllAnalog();
+	        ESP_LOGD(TAG, "After getClassFlowControll::GetAllAnalog");
+	        
+	        for (int i = 0; i < htmlinfo.size(); ++i)
+	        {
+	            if (_fn == htmlinfo[i]->filename)
+	            {
+	                if (htmlinfo[i]->image)
+	                    _send = htmlinfo[i]->image;
+	            }
+
+	            if (_fn == htmlinfo[i]->filename_org)
+	            {
+	                if (htmlinfo[i]->image_org)
+	                    _send = htmlinfo[i]->image_org;
+	            }
+	            delete htmlinfo[i];
+	        }
+	        htmlinfo.clear();
+    	}
     }
 
     #ifdef DEBUG_DETAIL_ON 
         LogFile.WriteHeapInfo("ClassFlowControll::GetJPGStream - before send");
     #endif
 
-    if (_send) {
+    if (_send)
+    {
         ESP_LOGD(TAG, "Sending file: %s ...", _fn.c_str());
         httpd_resp_set_type(req, "image/jpeg");
-        result = _send->SendJPGtoHTTP(req); 
-        // Respond with an empty chunk to signal HTTP response completion
+        result = _send->SendJPGtoHTTP(req);
+        /* Respond with an empty chunk to signal HTTP response completion */
         httpd_resp_send_chunk(req, NULL, 0);
         ESP_LOGD(TAG, "File sending complete");
 
         if (_sendDelete)
             delete _send;
+            
         _send = NULL;  
     }
 

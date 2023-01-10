@@ -259,6 +259,7 @@ bool ClassFlowAlignment::doFlow(string time)
         ImageTMP->SaveToFile(FormatFileName("/sdcard/img_tmp/alg_roi.jpg"));
     }
 
+    // must be deleted to have memory space for loading tflite
     delete ImageTMP;
     ImageTMP = NULL;
 

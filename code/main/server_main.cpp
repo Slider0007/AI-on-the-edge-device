@@ -53,37 +53,31 @@ esp_err_t info_get_handler(httpd_req_t *req)
     if (_task.compare("GitBranch") == 0)
     {
         httpd_resp_sendstr(req, libfive_git_branch());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("GitTag") == 0)
     {
         httpd_resp_sendstr(req, libfive_git_version());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("GitRevision") == 0)
     {
         httpd_resp_sendstr(req, libfive_git_revision());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("BuildTime") == 0)
     {
         httpd_resp_sendstr(req, build_time());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("FirmwareVersion") == 0)
     {
         httpd_resp_sendstr(req, getFwVersion().c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("HTMLVersion") == 0)
     {
         httpd_resp_sendstr(req, getHTMLversion().c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("Hostname") == 0)
@@ -91,7 +85,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string zw;
         zw = std::string(hostname);
         httpd_resp_sendstr(req, zw.c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("IP") == 0)
@@ -99,7 +92,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string *zw;
         zw = getIPAddress();
         httpd_resp_sendstr(req, zw->c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("SSID") == 0)
@@ -107,7 +99,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string *zw;
         zw = getSSID();
         httpd_resp_sendstr(req, zw->c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("FlowStatus") == 0)
@@ -115,7 +106,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string zw;
         zw = std::string("FlowStatus");
         httpd_resp_sendstr(req, zw.c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("Round") == 0)
@@ -123,7 +113,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         char formated[10] = "";    
         snprintf(formated, sizeof(formated), "%d", getCountFlowRounds());
         httpd_resp_sendstr(req, formated);
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("SDCardPartitionSize") == 0)
@@ -131,7 +120,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string zw;
         zw = getSDCardPartitionSize();
         httpd_resp_sendstr(req, zw.c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("SDCardFreePartitionSpace") == 0)
@@ -139,7 +127,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string zw;
         zw = getSDCardFreePartitionSpace();
         httpd_resp_sendstr(req, zw.c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("SDCardPartitionAllocationSize") == 0)
@@ -147,7 +134,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string zw;
         zw = getSDCardPartitionAllocationSize();
         httpd_resp_sendstr(req, zw.c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("SDCardManufacturer") == 0)
@@ -155,7 +141,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string zw;
         zw = getSDCardManufacturer(); 
         httpd_resp_sendstr(req, zw.c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("SDCardName") == 0)
@@ -163,7 +148,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string zw;
         zw = getSDCardName(); 
         httpd_resp_sendstr(req, zw.c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("SDCardCapacity") == 0)
@@ -171,7 +155,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string zw;
         zw = getSDCardCapacity();
         httpd_resp_sendstr(req, zw.c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
     else if (_task.compare("SDCardSectorSize") == 0)
@@ -179,7 +162,6 @@ esp_err_t info_get_handler(httpd_req_t *req)
         std::string zw;
         zw = getSDCardSectorSize();
         httpd_resp_sendstr(req, zw.c_str());
-        //httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
     }
 
@@ -192,8 +174,6 @@ esp_err_t starttime_get_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     
     httpd_resp_send(req, starttime.c_str(), starttime.length()); 
-    /* Respond with an empty chunk to signal HTTP response completion */
-    //httpd_resp_send_chunk(req, NULL, 0);  
 
     return ESP_OK;
 }
@@ -390,9 +370,7 @@ esp_err_t sysinfo_handler(httpd_req_t *req)
     resp_str = zw.c_str();
 
     httpd_resp_set_type(req, "application/json");
-    httpd_resp_sendstr(req, resp_str);   
-    /* Respond with an empty chunk to signal HTTP response completion */
-    //httpd_resp_send_chunk(req, NULL, 0);  
+    httpd_resp_sendstr(req, resp_str);
 
     return ESP_OK;
 }

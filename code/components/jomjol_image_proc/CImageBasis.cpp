@@ -110,7 +110,6 @@ inline void writejpgtohttphelp(void *context, void *data, int size)
     SendJPGHTTP* _send = (SendJPGHTTP*) context;
     if ((_send->size + size) >= HTTP_BUFFER_SENT)     // data no longer fits in buffer
     {
-        //httpd_req_t *_req = _send->req;
         if (httpd_resp_send_chunk(_send->req, _send->buf, _send->size) != ESP_OK) 
         {
                     ESP_LOGE(TAG, "File sending failed!");
@@ -370,7 +369,7 @@ void CImageBasis::CreateEmptyImage(int _width, int _height, int _channels)
     int memsize = width * height * channels;
     rgb_image = (unsigned char*)GET_MEMORY(memsize);
 
-    if (!rgb_image)
+    if (rgb_image == NULL)
     {
         //ESP_LOGE(TAG, "CImageBasis::CreateEmptyImage: No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CreateEmptyImage: Can't allocate enough memory: " + std::to_string(memsize));
@@ -434,9 +433,8 @@ CImageBasis::CImageBasis(CImageBasis *_copyfrom)
     int memsize = width * height * channels;
     rgb_image = (unsigned char*)GET_MEMORY(memsize);
 
-    if (!rgb_image)
+    if (rgb_image == NULL)
     {
-        //ESP_LOGE(TAG, "CImageBasis::CImageBasis-Copyfrom: No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-Copyfrom: Can't allocate enough memory: " + std::to_string(memsize));
         LogFile.WriteHeapInfo("CImageBasis::CImageBasis-Copyfrom");
         RGBImageRelease();
@@ -470,9 +468,8 @@ CImageBasis::CImageBasis(int _width, int _height, int _channels)
     int memsize = width * height * channels;
     rgb_image = (unsigned char*)GET_MEMORY(memsize);
 
-    if (!rgb_image)
+    if (rgb_image == NULL)
     {
-        //ESP_LOGE(TAG, "CImageBasis::CImageBasis_width,height,ch - No more free memory!! Needed: %d %d %d %d", width, height, channels, memsize);
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-width,height,ch: Can't allocate enough memory: " + std::to_string(memsize));
         LogFile.WriteHeapInfo("CImageBasis::CImageBasis-width,height,ch");
         RGBImageRelease();
@@ -507,8 +504,7 @@ CImageBasis::CImageBasis(std::string _image)
 
     rgb_image = stbi_load(_image.c_str(), &width, &height, &bpp, channels);
 
-    if (!rgb_image) {
-        //ESP_LOGE(TAG, "CImageBasis::CImageBasis_image: failed to load %s!", _image.c_str());
+    if (rgb_image == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis::CImageBasis-image: Failed to load " + _image + "! Is it corrupted?");
         LogFile.WriteHeapInfo("CImageBasis::CImageBasis-image");
         RGBImageRelease();

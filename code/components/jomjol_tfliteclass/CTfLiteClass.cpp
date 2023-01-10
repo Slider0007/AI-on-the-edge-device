@@ -305,7 +305,7 @@ CTfLiteClass::CTfLiteClass()
     this->input = nullptr;
     this->output = nullptr;  
     this->kTensorArenaSize = 800 * 1024;   /// according to testfile: 108000 - so far 600;; 2021-09-11: 200 * 1024
-    this->tensor_arena = (uint8_t*)GET_MEMORY(kTensorArenaSize); //new uint8_t[kTensorArenaSize]; 
+    this->tensor_arena = (uint8_t*)GET_MEMORY(kTensorArenaSize);
 }
 
 
