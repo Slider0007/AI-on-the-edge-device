@@ -758,7 +758,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 if (htmlinfo[i]->image)
                 {
                     //_send = htmlinfo[i]->image;
-                    httpd_resp_set_type(req, "image/bmp");  
+                    httpd_resp_set_type(req, "image/jpeg");  
                     return httpd_resp_send(req, (const char *)htmlinfo[i]->image->RGBImageGet(), htmlinfo[i]->image->GetSize());
                 }
             }
@@ -768,7 +768,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 if (htmlinfo[i]->image_org) 
                 {
                     //_send = htmlinfo[i]->image_org;   
-                    httpd_resp_set_type(req, "image/bmp");   
+                    httpd_resp_set_type(req, "image/jpeg");   
                     return httpd_resp_send(req, (const char *)htmlinfo[i]->image_org->RGBImageGet(), htmlinfo[i]->image_org->GetSize());
                 }
             }
@@ -787,7 +787,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 if (htmlinfo[i]->image) 
                 {
                     //_send = htmlinfo[i]->image;
-                    httpd_resp_set_type(req, "image/bmp");    
+                    httpd_resp_set_type(req, "image/jpeg");    
                     return httpd_resp_send(req, (const char *)htmlinfo[i]->image->RGBImageGet(), htmlinfo[i]->image_org->GetSize());
                 }
             }
@@ -797,7 +797,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 if (htmlinfo[i]->image_org) 
                 {
                     //_send = htmlinfo[i]->image_org;
-                    httpd_resp_set_type(req, "image/bmp");    
+                    httpd_resp_set_type(req, "image/jpeg");    
                     return httpd_resp_send(req, (const char *)htmlinfo[i]->image_org->RGBImageGet(), htmlinfo[i]->image_org->GetSize());
                 }       
             }
