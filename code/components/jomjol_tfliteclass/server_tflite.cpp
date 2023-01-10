@@ -405,7 +405,7 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
                         else
                             zw = to_string((int) htmlinfodig[i]->val);
 
-                        txt = "<img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"> " + zw + " ";
+                        txt = "<img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"> " + zw + "   ";
                     }
                     else {
                         txt = "--- | ";
@@ -417,7 +417,7 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
                         std::stringstream stream;
                         stream << std::fixed << std::setprecision(1) << htmlinfodig[i]->val;
                         zw = stream.str();      
-                        txt = "<img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"> " + zw + " ";
+                        txt = "<img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"> " + zw + "   ";
                     }
                     else {
                         txt = "--- | ";
@@ -439,7 +439,7 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
                     std::stringstream stream;
                     stream << std::fixed << std::setprecision(1) << htmlinfoana[i]->val;
                     zw = stream.str();
-                    txt = "<img src=\"/img_tmp/" +  htmlinfoana[i]->filename + "\"> " + zw + " ";
+                    txt = "<img src=\"/img_tmp/" +  htmlinfoana[i]->filename + "\"> " + zw + "   ";
                 }
                 else {
                     txt = " --- | ";
