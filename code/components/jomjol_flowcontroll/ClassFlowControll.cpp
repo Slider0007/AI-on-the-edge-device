@@ -673,29 +673,23 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
     esp_err_t result = ESP_FAIL;
     bool _sendDelete = false;
 
-    if (flowalignment == NULL)
-    {
+    if (flowalignment == NULL) {
         ESP_LOGD(TAG, "ClassFloDControll::GetJPGStream: FloDalignment is not (yet) initialized. Interrupt serving!");
         return ESP_OK;
     }
 
-    if (_fn == "alg.jpg")
-    {
-        if (flowalignment && flowalignment->ImageBasis->ImageOkay()) 
-        {
+    if (_fn == "alg.jpg") {
+        if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
             _send = flowalignment->ImageBasis;
         }
-        else 
-        {
+        else {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg.jpg cannot be served");
             return ESP_FAIL;
         }
     }
-    else if (_fn == "alg_roi.jpg")
-    {
+    else if (_fn == "alg_roi.jpg") {
         #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG      // no CImageBasis needed to create alg_roi.jpg (ca. 790kB less RAM)
-            if (bNewAlgROI)
-            {
+            if (bNewAlgROI) {
                 if (flowalignment && flowalignment->AlgROI) {
                     httpd_resp_set_type(req, "image/jpeg");
                     result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
@@ -706,37 +700,30 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                     return ESP_FAIL;
                 }
             }
-            else 
-            {
-                if (flowalignment && flowalignment->ImageBasis->ImageOkay()) 
-                {
+            else {
+                if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
                     _send = flowalignment->ImageBasis;
                 }
-                else 
-                {
+                else {
                     httpd_resp_send(req, NULL, 0);
                     return ESP_OK;
                 }
             }
         #else
             _send = new CImageBasis(flowalignment->ImageBasis);
-            if (_send->ImageOkay()) 
-            {
+            if (_send->ImageOkay()) {
                 if (flowalignment) flowalignment->DrawRef(_send);
                 if (flowdigit) flowdigit->DrawROI(_send);
                 if (flowanalog) flowanalog->DrawROI(_send);
                 _sendDelete = true; // delete temporary _send element after sending
             }
-            else 
-            {
+            else {
                 LogFile.WriteToFile(ESP_LOG_WARN, TAG, "ClassFlowControll::GetJPGStream: Not enough memory to create alg_roi.jpg -> alg.jpg is going to be served!");
                 
-                if (flowalignment && flowalignment->ImageBasis->ImageOkay()) 
-                {
+                if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
                     _send = flowalignment->ImageBasis;
                 }
-                else 
-                {
+                else {
                     result = httpd_resp_send(req, NULL, 0);
                 }
             }
@@ -749,8 +736,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         htmlinfo = GetAllDigital();
         ESP_LOGD(TAG, "After getClassFlowControll::GetAllDigital");
 
-        for (int i = 0; i < htmlinfo.size(); ++i)
-        {
+        for (int i = 0; i < htmlinfo.size(); ++i) {
             if (_fn == htmlinfo[i]->filename) {
                 if (htmlinfo[i]->image) {
                     _send = htmlinfo[i]->image;
@@ -770,8 +756,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         htmlinfo = GetAllAnalog();
         ESP_LOGD(TAG, "After getClassFlowControll::GetAllDigital");
         
-        for (int i = 0; i < htmlinfo.size(); ++i)
-        {
+        for (int i = 0; i < htmlinfo.size(); ++i) {
             if (_fn == htmlinfo[i]->filename) {
                 if (htmlinfo[i]->image) {
                     _send = htmlinfo[i]->image;
@@ -792,17 +777,17 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         LogFile.WriteHeapInfo("ClassFlowControll::GetJPGStream - before send");
     #endif
 
-    if (_send) 
-    {
+    if (_send) {
         ESP_LOGD(TAG, "Sending file: %s ...", _fn.c_str());
         httpd_resp_set_type(req, "image/jpeg");
         result = _send->SendJPGtoHTTP(req); 
         // Respond with an empty chunk to signal HTTP response completion
         httpd_resp_send_chunk(req, NULL, 0);
-        ESP_LOGD(TAG, "File sending complete");   
+        ESP_LOGD(TAG, "File sending complete");
 
         if (_sendDelete)
             delete _send;
+        _send = NULL;  
     }
 
     #ifdef DEBUG_DETAIL_ON 
