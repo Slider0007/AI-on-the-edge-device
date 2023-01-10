@@ -211,18 +211,18 @@ bool CTfLiteClass::MakeAllocate()
     #ifdef DEBUG_DETAIL_ON 
         LogFile.WriteHeapInfo("CTLiteClass::Alloc done");
     #endif
-//    ESP_LOGD(TAG, "Allocate Done");
+
     return true;
 }
 
 
 void CTfLiteClass::GetInputTensorSize()
 {
-    #ifdef DEBUG_DETAIL_ON    
-        float *zw = this->input;
-        int test = sizeof(zw);
-        ESP_LOGD(TAG, "Input Tensor Dimension: %d", test);
-    #endif
+#ifdef DEBUG_DETAIL_ON    
+    float *zw = this->input;
+    int test = sizeof(zw);
+    ESP_LOGD(TAG, "Input Tensor Dimension: %d", test);
+#endif
 }
 
 
