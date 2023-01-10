@@ -15,7 +15,9 @@
     */
     // server_tflite.cpp
     //#define TASK_ANALYSIS_ON
-    
+
+    // ######## debug options : 
+    //#define DISABLE_BROWNOUT_DETECTOR
 
     /* Uncomment this to keep the logfile open for appending.
     * If commented out, the logfile gets opened/closed for each log measage (old behaviour) */
@@ -24,6 +26,8 @@
 
     //compiler optimization for tflite-micro-esp-examples
     #define XTENSA
+    //#define CONFIG_IDF_TARGET_ARCH_XTENSA //not needed with platformio/espressif32 @ 5.2.0
+
 
     //ClassControllCamera + ClassFlowMakeImage + connect_wlan + main
     #define FLASH_GPIO GPIO_NUM_4
@@ -109,7 +113,7 @@
     //#define STB_IMAGE_IMPLEMENTATION
     //#define STB_IMAGE_WRITE_IMPLEMENTATION
     //#define STB_IMAGE_RESIZE_IMPLEMENTATION
-    //#define STBI_ONLY_JPEG // (save 2% of Flash, but breaks the alignment mark generation, see https://github.com/jomjol/AI-on-the-edge-device/issues/1721)
+    #define STBI_ONLY_JPEG // (save 2% of Flash, but breaks the alignment mark generation, see https://github.com/jomjol/AI-on-the-edge-device/issues/1721)
 
     //interface_influxdb
     #define MAX_HTTP_OUTPUT_BUFFER 2048

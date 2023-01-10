@@ -87,11 +87,12 @@ void task_do_Update_ZIP(void *pvParameter)
             ota_update_task(retfirmware);
         }
 
-        if (initial_setup)
-        {
-
-        }
-
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger reboot due to firmware update.");
+        doRebootOTA();
+    } else if (filetype == "BIN")
+    {
+       	LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Do firmware update - file: " + _file_name_update);
+        ota_update_task(_file_name_update);
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger reboot due to firmware update.");
         doRebootOTA();
     }
@@ -128,9 +129,7 @@ void CheckUpdate()
 	LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Update during boot triggered - Update File: " + _file_name_update);
 
 
-    BaseType_t xReturned;
-    int _i = configMINIMAL_STACK_SIZE;
-    xReturned = xTaskCreate(&task_do_Update_ZIP, "task_do_Update_ZIP", configMINIMAL_STACK_SIZE * 35, NULL, tskIDLE_PRIORITY+1, NULL);
+    xTaskCreate(&task_do_Update_ZIP, "task_do_Update_ZIP", configMINIMAL_STACK_SIZE * 35, NULL, tskIDLE_PRIORITY+1, NULL);
     while(1) { // wait until reboot within task_do_Update_ZIP
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
@@ -443,7 +442,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
         }
 
 
-        if (filetype == "ZIP")
+        if ((filetype == "ZIP") || (filetype == "BIN"))
         {
            	FILE *pfile;
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Update for reboot.");
@@ -457,32 +456,9 @@ esp_err_t handler_ota_update(httpd_req_t *req)
             ESP_LOGD(TAG, "Send reboot");
             return ESP_OK;                
 
-
-
-/*
-            std::string in, out, outbin, zw, retfirmware;
-
-            out = "/sdcard/html";
-            outbin = "/sdcard/firmware";
-
-            retfirmware = unzip_new(fn, out+"/", outbin+"/");
-
-            if (retfirmware.length() > 0)
-            {
-                filetype = "BIN";
-                fn = retfirmware;
-            }
-            else
-            {
-                zw = "Web Interface Update Successfull!\nNo reboot necessary.\n";
-                httpd_resp_sendstr_chunk(req, zw.c_str());
-                httpd_resp_sendstr_chunk(req, NULL);  
-                return ESP_OK;        
-            }
-*/
         }
 
-
+/*
         if (filetype == "BIN")
         {
             const char* resp_str; 
@@ -507,7 +483,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
 
             return ESP_OK;
         }
-
+*/
 
         std::string zw = "Update failed - no valid file specified (zip, bin, tfl, tlite)!";
         httpd_resp_sendstr_chunk(req, zw.c_str());
@@ -667,40 +643,17 @@ esp_err_t handler_reboot(httpd_req_t *req)
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handler_reboot");
     ESP_LOGI(TAG, "!!! System will restart within 5 sec!!!");
 
-    char _query[200];
-    char _valuechar[30];    
-    std::string _task;
     std::string response = 
         "<html><head><script>"
             "function m(h) {"
                 "document.getElementById('t').innerHTML=h;"
                 "setInterval(function (){h +='.'; document.getElementById('t').innerHTML=h;"
                 "fetch('reboot_page.html',{mode: 'no-cors'}).then(r=>{parent.location.href=('index.html');})}, 1000);"
-            "}</script></head></html><body style='font-family: arial'><h3 id=t></h3>";
-
-    if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK)
-    {
-        ESP_LOGD(TAG, "Query: %s", _query);
-        
-        if (httpd_query_key_value(_query, "task", _valuechar, 30) == ESP_OK)
-        {
-            ESP_LOGD(TAG, "task is found: %s", _valuechar);
-            _task = std::string(_valuechar);
-        }
-    }
+            "}</script></head></html><body style='font-family: arial'><h3 id=t></h3>"
+            "<script>m('Rebooting!<br>The page will automatically reload in around 25..60s.<br><br>');</script>"
+            "</body></html>";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
-    if (_task.compare("OTA") == 0) { // Reboot after OTA upload
-        response.append("<script>m('The upload completed successfully.<br>Rebooting and installing it now...<br><br>"
-                "The page will automatically reload after the update completed.<br>"
-                "This can take several minutes!<br><br>');</script>");
-    }
-    else { // Normal reboot
-        response.append("<script>m('Rebooting!<br>The page will automatically reload in around 25..60s.<br><br>');</script>");
-    }    
-
-    response.append("</body></html>");
     httpd_resp_send(req, response.c_str(), strlen(response.c_str()));
     
     doReboot();
