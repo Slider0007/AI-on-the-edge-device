@@ -15,9 +15,6 @@
 
 static const char* TAG = "class_flow_influxDb";
 
-//#define DEBUG_DETAIL_ON
-
-
 void ClassFlowInfluxDB::SetInitialParameter(void)
 {
     uri = "";

@@ -1,7 +1,5 @@
 #include "CRotateImage.h"
 
-//#define DEBUG_DETAIL_ON
-
 
 CRotateImage::CRotateImage(CImageBasis *_org, CImageBasis *_temp, bool _flip)
 {

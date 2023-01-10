@@ -236,17 +236,11 @@ void CCamera::EnableAutoExposure(int flash_duration)
 
 esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
 {
-    //string ftype;
-    //int _size;
-
-    //uint8_t *zwischenspeicher = NULL;
-
-
     LEDOnOff(true);
 
-#ifdef DEBUG_DETAIL_ON
-    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - Start");
-#endif
+	#ifdef DEBUG_DETAIL_ON
+	    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - Start");
+	#endif
 
     if (delay > 0) 
     {
@@ -255,9 +249,9 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
         vTaskDelay( xDelay );
     }
 
-#ifdef DEBUG_DETAIL_ON
-    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After LightOn");
-#endif
+	#ifdef DEBUG_DETAIL_ON
+	    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After LightOn");
+	#endif
 
     camera_fb_t * fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);        
@@ -453,8 +447,7 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int delay)
     fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);
     fb = esp_camera_fb_get();
-    if (!fb)
-    {
+    if (!fb) {
         ESP_LOGE(TAG, "Camera capture failed");
         LEDOnOff(false);
         LightOnOff(false);
@@ -467,13 +460,11 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int delay)
     LEDOnOff(false); 
     
     res = httpd_resp_set_type(req, "image/jpeg");
-    if (res == ESP_OK)
-    {
+    if(res == ESP_OK){
         res = httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=raw.jpg");
     }
 
-    if (res == ESP_OK)
-    {
+    if(res == ESP_OK){
         if (demoMode) { // Use images stored on SD-Card instead of camera image
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Using Demo image!");
             /* Replace Framebuffer with image from SD-Card */
@@ -481,15 +472,11 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int delay)
 
             res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
         }
-        else 
-        {
-            if (fb->format == PIXFORMAT_JPEG)
-            {
+        else {
+            if(fb->format == PIXFORMAT_JPEG){
                 fb_len = fb->len;
                 res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
-            } 
-            else 
-            {
+            } else {
                 jpg_chunking_t jchunk = {req, 0};
                 res = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk)?ESP_OK:ESP_FAIL;
                 httpd_resp_send_chunk(req, NULL, 0);

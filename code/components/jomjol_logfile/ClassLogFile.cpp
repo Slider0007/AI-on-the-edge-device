@@ -19,9 +19,6 @@ extern "C" {
 
 static const char *TAG = "LOGFILE";
 
-//#define DEBUG_DETAIL_ON
-
-
 ClassLogFile LogFile("/sdcard/log/message", "log_%Y-%m-%d.txt", "/sdcard/log/data", "data_%Y-%m-%d.csv");
 
 void ClassLogFile::WriteHeapInfo(std::string _id)

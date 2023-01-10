@@ -12,9 +12,9 @@
 #include "time_sntp.h"
 #include "../../include/defines.h"
 
-static const char *TAG = "MQTT SERVER";
 
-//#define DEBUG_DETAIL_ON
+
+static const char *TAG = "MQTT SERVER";
 
 
 extern const char* libfive_git_version(void);

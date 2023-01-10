@@ -736,17 +736,18 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         htmlinfo = GetAllDigital();
         ESP_LOGD(TAG, "After getClassFlowControll::GetAllDigital");
 
-        for (int i = 0; i < htmlinfo.size(); ++i) {
-            if (_fn == htmlinfo[i]->filename) {
-                if (htmlinfo[i]->image) {
+        for (int i = 0; i < htmlinfo.size(); ++i) 
+        {
+            if (_fn == htmlinfo[i]->filename) 
+            {
+                if (htmlinfo[i]->image
                     _send = htmlinfo[i]->image;
-                }
             }
 
-            if (_fn == htmlinfo[i]->filename_org) {
-                if (htmlinfo[i]->image_org) {
+            if (_fn == htmlinfo[i]->filename_org) 
+            {
+                if (htmlinfo[i]->image_org)
                     _send = htmlinfo[i]->image_org;
-                }
             }
             delete htmlinfo[i];
         }
@@ -756,17 +757,18 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         htmlinfo = GetAllAnalog();
         ESP_LOGD(TAG, "After getClassFlowControll::GetAllDigital");
         
-        for (int i = 0; i < htmlinfo.size(); ++i) {
-            if (_fn == htmlinfo[i]->filename) {
-                if (htmlinfo[i]->image) {
+        for (int i = 0; i < htmlinfo.size(); ++i) 
+        {
+            if (_fn == htmlinfo[i]->filename) 
+            {
+                if (htmlinfo[i]->image)
                     _send = htmlinfo[i]->image;
-                }
             }
 
-            if (_fn == htmlinfo[i]->filename_org) {
-                if (htmlinfo[i]->image_org) {
+            if (_fn == htmlinfo[i]->filename_org) 
+            {
+                if (htmlinfo[i]->image_org)
                     _send = htmlinfo[i]->image_org;
-                }
             }
             delete htmlinfo[i];
         }
@@ -798,7 +800,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
 }
 
 
-string ClassFlowControll::getNumbersName() 
+string ClassFlowControll::getNumbersName()
 {
     return flowpostprocessing->getNumbersName();
 }

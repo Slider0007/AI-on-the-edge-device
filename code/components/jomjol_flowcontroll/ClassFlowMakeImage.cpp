@@ -11,15 +11,13 @@
 
 #include <time.h>
 
+// #define DEBUG_DETAIL_ON 
+
 // #define WIFITURNOFF
 
 static const char* TAG = "flow_make_image";
 
-// #define DEBUG_DETAIL_ON 
-
-
-esp_err_t ClassFlowMakeImage::camera_capture()
-{
+esp_err_t ClassFlowMakeImage::camera_capture(){
     string nm =  namerawimage;
     Camera.CaptureToFile(nm);
     time(&TimeImageTaken);

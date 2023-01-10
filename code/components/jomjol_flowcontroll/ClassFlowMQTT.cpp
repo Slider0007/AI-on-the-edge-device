@@ -19,9 +19,6 @@
 
 static const char *TAG = "MQTT";
 
-// #define DEBUG_DETAIL_ON 
-
-
 extern const char* libfive_git_version(void);
 extern const char* libfive_git_revision(void);
 extern const char* libfive_git_branch(void);

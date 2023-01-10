@@ -15,9 +15,6 @@
 
 static const char* TAG = "POSTPROC";
 
-// #define DEBUG_DETAIL_ON 
-
-
 std::string ClassFlowPostProcessing::getNumbersName()
 {
     std::string ret="";
