@@ -414,6 +414,11 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
                 else
                 {
                     if (htmlinfodig[i]->val != -1.0) {
+                        if (htmlinfodig[i]->val == 10.0)
+                            zw = "0.0";
+                        else
+                            zw = to_string((int) htmlinfodig[i]->val);
+
                         std::stringstream stream;
                         stream << std::fixed << std::setprecision(1) << htmlinfodig[i]->val;
                         zw = stream.str();      
@@ -436,6 +441,11 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
             for (int i = 0; i < htmlinfoana.size(); ++i)
             {
                 if (htmlinfoana[i]->val != -1.0) {
+                    if (htmlinfoana[i]->val == 10.0)
+                        zw = "0.0";
+                    else
+                        zw = to_string((int) htmlinfoana[i]->val);
+
                     std::stringstream stream;
                     stream << std::fixed << std::setprecision(1) << htmlinfoana[i]->val;
                     zw = stream.str();
