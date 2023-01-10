@@ -663,16 +663,15 @@ esp_err_t ClassFlowControll::SendRawJPG(httpd_req_t *req)
 
 esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
 {
+    ESP_LOGD(TAG, "ClassFlowControll::GetJPGStream %s", _fn.c_str());
+
     #ifdef DEBUG_DETAIL_ON 
         LogFile.WriteHeapInfo("ClassFlowControll::GetJPGStream - Start");
     #endif
 
-    ESP_LOGD(TAG, "ClassFlowControll::GetJPGStream %s", _fn.c_str());
-
     CImageBasis * _send = NULL;
     esp_err_t result = ESP_FAIL;
     bool _sendDelete = false;
-    bool _sendStoredAsJPG = false;
 
     if (flowalignment == NULL)
     {
