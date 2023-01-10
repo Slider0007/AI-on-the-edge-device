@@ -685,7 +685,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         {
             //_send = flowalignment->ImageBasis;
             httpd_resp_set_type(req, "image/jpeg");
-            return httpd_resp_send(req, (const char *)flowalignment->ImageBasis->RGBImageGet(), flowalignment->ImageBasis->GetSize());
+            return httpd_resp_send(req, (const char *)flowalignment->ImageBasis->RGBImageGet(), sizeof(flowalignment->ImageBasis->RGBImageGet()));
         }
         else 
         {
@@ -715,7 +715,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 {
                     //_send = flowalignment->ImageBasis;
                     httpd_resp_set_type(req, "image/jpeg");
-                    return httpd_resp_send(req, (const char *)flowalignment->ImageBasis->RGBImageGet(), flowalignment->ImageBasis->GetSize());
+                    return httpd_resp_send(req, (const char *)flowalignment->ImageBasis->RGBImageGet(), sizeof(flowalignment->ImageBasis->RGBImageGet()));
                 }
                 else 
                 {
