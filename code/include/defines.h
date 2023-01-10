@@ -88,7 +88,7 @@
     #define READOUT_TYPE_ERROR 3
 
     //ClassFlowControll: Serve alg_roi.jpg from memory as JPG
-    //#define ALGROI_LOAD_FROM_MEM_AS_JPG
+    #define ALGROI_LOAD_FROM_MEM_AS_JPG
 
     //ClassFlowMQTT
     #define LWT_TOPIC        "connection"
