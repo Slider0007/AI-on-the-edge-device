@@ -392,6 +392,28 @@ void CImageBasis::CreateEmptyImage(int _width, int _height, int _channels)
 }
 
 
+void CImageBasis::EmptyImage()
+{
+    #ifdef DEBUG_DETAIL_ON 
+        LogFile.WriteHeapInfo("CImageBasis::EmptyImage");
+    #endif
+
+    stbi_uc* p_source;
+
+    RGBImageLock();
+
+    for (int x = 0; x < width; ++x)
+        for (int y = 0; y < height; ++y)
+        {
+            p_source = rgb_image + (channels * (y * width + x));
+            for (int _channels = 0; _channels < channels; ++_channels)
+                p_source[_channels] = (uint8_t) 0;
+        }
+
+    RGBImageRelease();
+}
+
+
 void CImageBasis::LoadFromMemory(stbi_uc *_buffer, int len)
 {
     RGBImageLock();

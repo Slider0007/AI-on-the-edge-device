@@ -173,7 +173,7 @@ bool ClassFlowAlignment::doFlow(string time)
             {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlgROI");
                 LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
-                tfliteflow.SetNewAlgROI(false);
+                tfliteflow.SetNewAlgROI(false); // continue flow only with alg.jpg (no ROIs available)
             }
         }
 
