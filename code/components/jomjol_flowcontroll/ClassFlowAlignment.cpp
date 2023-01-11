@@ -179,7 +179,7 @@ bool ClassFlowAlignment::doFlow(string time)
 
         if (AlgROI)
         {
-            ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
+            ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 95);
             tfliteflow.SetNewAlgROI(true);
         }
     #endif
@@ -242,7 +242,7 @@ bool ClassFlowAlignment::doFlow(string time)
             DrawRef(ImageTMP);
             tfliteflow.DigitalDrawROI(ImageTMP);
             tfliteflow.AnalogDrawROI(ImageTMP);
-            ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
+            ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 95);
         }
     #endif
     

@@ -160,9 +160,9 @@ void ClassFlowControll::AnalogDrawROI(CImageBasis *_zw)
 }
 
 
-void ClassFlowControll::SetNewAlgROI(bool value)
+void ClassFlowControll::SetNewAlgROI(bool _value)
 {
-    bNewAlgROI = value;
+    bNewAlgROI = _value;
 }
 #endif
 

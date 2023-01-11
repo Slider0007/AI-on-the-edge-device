@@ -240,8 +240,8 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
 	    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - Start");
 	#endif
 
-    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
-        _Image->EmptyImage();
+    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG__SHOW_TAKE_IMAGE_PROCESS
+        _Image->EmptyImage(); //Delete previous stored raw image -> black image
         tfliteflow.SetNewAlgROI(false);
     #endif
     
