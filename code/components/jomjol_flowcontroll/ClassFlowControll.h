@@ -55,7 +55,7 @@ public:
 	string getJSON();
 	string getNumbersName();
 	#ifdef ALGROI_LOAD_FROM_MEM_AS_JPG 
-	void SetNewAlgROI(bool _value)
+	void SetNewAlgROI(bool _value);
 	#endif
 
 	string TranslateAktstatus(std::string _input);
