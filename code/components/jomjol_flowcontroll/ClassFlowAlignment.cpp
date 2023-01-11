@@ -171,13 +171,13 @@ bool ClassFlowAlignment::doFlow(string time)
             AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
             if (!AlgROI) 
             {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlgROI -> Alg.jpg will be served instead");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlgROI");
                 LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
                 tfliteflow.SetNewAlgROI(false);
             }
         }
 
-        if (AlgROI) 
+        if (AlgROI)
         {
             ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
             tfliteflow.SetNewAlgROI(true);

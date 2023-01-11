@@ -236,11 +236,11 @@ void CCamera::EnableAutoExposure(int flash_duration)
 
 esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
 {
-    LEDOnOff(true);
-
 	#ifdef DEBUG_DETAIL_ON
 	    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - Start");
 	#endif
+
+    LEDOnOff(true);
 
     if (delay > 0) 
     {
@@ -277,9 +277,9 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
     _zwImage->LoadFromMemory(fb->buf, fb->len);
     esp_camera_fb_return(fb);        
 
-#ifdef DEBUG_DETAIL_ON
-    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After fb_get");
-#endif
+    #ifdef DEBUG_DETAIL_ON
+        LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After fb_get");
+    #endif
 
     LEDOnOff(false);  
 
@@ -289,10 +289,13 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
 //    TickType_t xDelay = 1000 / portTICK_PERIOD_MS;     
 //    vTaskDelay( xDelay );  // wait for power to recover
     
+    #ifdef DEBUG_DETAIL_ON
+        LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After LoadFromMemory");
+    #endif
 
-#ifdef DEBUG_DETAIL_ON
-    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After LoadFromMemory");
-#endif
+    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
+        tfliteflow.SetNewAlgROI(false);
+    #endif
 
     stbi_uc* p_target;
     stbi_uc* p_source;    
@@ -300,11 +303,11 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
     int width = image_width;
     int height = image_height;
 
-#ifdef DEBUG_DETAIL_ON
-    std::string _zw = "Targetimage: " + std::to_string((int) _Image->rgb_image) + " Size: " + std::to_string(_Image->width) + ", " + std::to_string(_Image->height);
-    _zw = _zw + " _zwImage: " + std::to_string((int) _zwImage.rgb_image)  + " Size: " + std::to_string(_zwImage.width) + ", " + std::to_string(_zwImage.height);
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, _zw);
-#endif
+    #ifdef DEBUG_DETAIL_ON
+        std::string _zw = "Targetimage: " + std::to_string((int) _Image->rgb_image) + " Size: " + std::to_string(_Image->width) + ", " + std::to_string(_Image->height);
+        _zw = _zw + " _zwImage: " + std::to_string((int) _zwImage.rgb_image)  + " Size: " + std::to_string(_zwImage.width) + ", " + std::to_string(_zwImage.height);
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, _zw);
+    #endif
 
     for (int x = 0; x < width; ++x)
         for (int y = 0; y < height; ++y)
@@ -316,20 +319,16 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
             p_target[2] = p_source[2];
         }
 
-    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG 
-        tfliteflow.SetNewAlgROI(false);
+    #ifdef DEBUG_DETAIL_ON
+        LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After Copy To Target");
     #endif
-
-#ifdef DEBUG_DETAIL_ON
-    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After Copy To Target");
-#endif
 
     //free(buf);
     delete _zwImage;
 
-#ifdef DEBUG_DETAIL_ON
-    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - Done");
-#endif
+    #ifdef DEBUG_DETAIL_ON
+        LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - Done");
+    #endif
 
     return ESP_OK;    
 }
@@ -363,21 +362,21 @@ esp_err_t CCamera::CaptureToFile(std::string nm, int delay)
     }
     LEDOnOff(false);    
 
-#ifdef DEBUG_DETAIL_ON    
-    ESP_LOGD(TAG, "w %d, h %d, size %d", fb->width, fb->height, fb->len);
-#endif
+    #ifdef DEBUG_DETAIL_ON    
+        ESP_LOGD(TAG, "w %d, h %d, size %d", fb->width, fb->height, fb->len);
+    #endif
 
     nm = FormatFileName(nm);
 
-#ifdef DEBUG_DETAIL_ON
-    ESP_LOGD(TAG, "Save Camera to: %s", nm.c_str());
-#endif
+    #ifdef DEBUG_DETAIL_ON
+        ESP_LOGD(TAG, "Save Camera to: %s", nm.c_str());
+    #endif
 
     ftype = toUpper(getFileType(nm));
 
-#ifdef DEBUG_DETAIL_ON
-    ESP_LOGD(TAG, "Filetype: %s", ftype.c_str());
-#endif
+    #ifdef DEBUG_DETAIL_ON
+        ESP_LOGD(TAG, "Filetype: %s", ftype.c_str());
+    #endif
 
     uint8_t * buf = NULL;
     size_t buf_len = 0;   
