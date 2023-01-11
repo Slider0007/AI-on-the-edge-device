@@ -240,6 +240,11 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
 	    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - Start");
 	#endif
 
+    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
+        _Image->EmptyImage();
+        tfliteflow.SetNewAlgROI(false);
+    #endif
+    
     LEDOnOff(true);
 
     if (delay > 0) 
@@ -252,11 +257,6 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int delay)
 	#ifdef DEBUG_DETAIL_ON
 	    LogFile.WriteHeapInfo("CCamera::CaptureToBasisImage - After LightOn");
 	#endif
-
-    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
-        _Image->EmptyImage();
-        tfliteflow.SetNewAlgROI(false);
-    #endif
 
     camera_fb_t * fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);        
