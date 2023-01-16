@@ -179,7 +179,7 @@ bool ClassFlowAlignment::doFlow(string time)
 
         if (AlgROI)
         {
-            ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 95);
+            ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
             tfliteflow.SetNewAlgROI(true);
         }
     #endif
@@ -242,7 +242,9 @@ bool ClassFlowAlignment::doFlow(string time)
             DrawRef(ImageTMP);
             tfliteflow.DigitalDrawROI(ImageTMP);
             tfliteflow.AnalogDrawROI(ImageTMP);
-            ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 95);
+            std::string text = "2023-01-16 12:12";
+            ImageTMP->drawText(0, 0, (char*)text.c_str());
+            ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
         }
     #endif
     

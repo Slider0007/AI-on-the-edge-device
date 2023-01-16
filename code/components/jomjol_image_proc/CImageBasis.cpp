@@ -13,6 +13,9 @@
 #include <math.h>
 #include <algorithm>
 
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype.h"
+
 using namespace std;
 
 static const char *TAG = "C IMG BASIS";
@@ -208,6 +211,97 @@ void CImageBasis::setPixelColor(int x, int y, int r, int g, int b)
         p_source[2] = b;
     }
     RGBImageRelease();
+}
+
+
+void CImageBasis::drawText(int _x, int _y, char *_text)
+{
+    int x = _x;
+    int y = _y;
+    char *text =_text;
+
+    unsigned char* fontBuffer = NULL;
+    int width_int = width*channels;
+    
+    FILE* fontFile = fopen("/sdcard/config/cmunrm.ttf", "rb");
+    if (fontFile) {
+        fseek(fontFile, 0, SEEK_END);
+        long size = ftell(fontFile); /* how long is the file ? */
+        fseek(fontFile, 0, SEEK_SET); /* reset */ 
+
+        fontBuffer = (unsigned char*) malloc(size);  
+
+        fread(fontBuffer, size, 1, fontFile);
+        fclose(fontFile);
+    }
+    else {
+        ESP_LOGE(TAG, "Cannot open font file");
+        return;
+    }
+
+    /* prepare font */
+    stbtt_fontinfo info;
+    if (!stbtt_InitFont(&info, fontBuffer, 0))
+    {
+        ESP_LOGE(TAG, "Cannot init font");
+        return;
+    }
+    
+    /* calculate font scaling */
+    int ascent, baseline;
+    float scale = stbtt_ScaleForMappingEmToPixels(&info, 48);
+    int x0, y0, x1, y1;
+    stbtt_GetFontBoundingBox(&info, &x0, &y0, &x1, &y1);
+    //ESP_LOGI(TAG, "scale: %f", (float)scale);
+    stbtt_GetFontVMetrics(&info, &ascent,0,0);
+    baseline = (int) (ascent*scale) + _y;
+    //ESP_LOGI(TAG, "baseline: %d", (int)baseline);
+    for (int i = 0; i < strlen(text); ++i)
+    {
+        /* how wide is this character */
+        int ax;
+	    int lsb;
+        stbtt_GetCodepointHMetrics(&info, text[i], &ax, &lsb);
+        //ESP_LOGI(TAG, "ax: %d, lsb: %d", ax, lsb);
+        /* (Note that each Codepoint call has an alternative Glyph version which caches the work required to lookup the character text[i].) */
+
+        /* get bounding box for character (may be offset to account for chars that dip above or below the line) */
+        int c_x1, c_y1, c_x2, c_y2;
+        stbtt_GetCodepointBitmapBox(&info, text[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
+        ESP_LOGI(TAG, "c_x1: %d, c_y1: %d, c_x2: %d, c_y2: %d", c_x1, c_y1, c_x2, c_y2);
+        
+        /* compute y (different characters have different heights) */
+        y = baseline + c_y1;
+        
+        /* render character (stride and offset is important here) */
+        int byteOffset = x + roundf(lsb * scale) + (y * width_int);
+        ESP_LOGI(TAG, "byteOffset: %d", (int)byteOffset);
+        ESP_LOGI(TAG, "Offset scale: %d, y*scale:%d", (int)roundf(lsb * scale), (y * width_int));
+        //stbtt_MakeCodepointBitmap(&info, (unsigned char*)rgb_image + byteOffset, c_x2 - c_x1, c_y2 - c_y1, width_int, scale, scale, text[i]);
+        stbtt_MakeCodepointBitmap(&info, (unsigned char*)rgb_image + byteOffset, c_x2-c_x1, c_y2-c_y1+5, width_int, scale, scale, text[i]);
+
+        /* advance x */
+        x += roundf(ax * scale);
+        //ESP_LOGI(TAG, "before kern x: %d", x);
+        
+        /* add kerning */
+        int kern;
+        kern = stbtt_GetCodepointKernAdvance(&info, text[i], text[i + 1]);
+        x += roundf(kern * scale);
+        //ESP_LOGI(TAG, "kern: %d, x: %d", kern, x);
+    }
+    
+    /* save out a 1 channel image */
+    //stbi_write_jpg("/sdcard/out.jpg", width, height, 1, rgb_image, 90);
+	
+    /*
+     Note that this example writes each character directly into the target image buffer.
+     The "right thing" to do for fonts that have overlapping characters is
+     MakeCodepointBitmap to a temporary buffer and then alpha blend that onto the target image.
+     See the stb_truetype.h header for more info.
+    */
+    
+    free(fontBuffer);
 }
 
 

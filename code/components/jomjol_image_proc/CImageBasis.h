@@ -47,7 +47,9 @@ class CImageBasis
 
         int getWidth(){return this->width;};   
         int getHeight(){return this->height;};   
-        int getChannels(){return this->channels;};   
+        int getChannels(){return this->channels;};
+
+        void drawText(int _x, int _y, char *_text);
         void drawRect(int x, int y, int dx, int dy, int r = 255, int g = 255, int b = 255, int thickness = 1);
         void drawLine(int x1, int y1, int x2, int y2, int r, int g, int b, int thickness = 1);
         void drawCircle(int x1, int y1, int rad, int r, int g, int b, int thickness = 1);
