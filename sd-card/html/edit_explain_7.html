@@ -37,7 +37,7 @@ p {font-size: 1em;}
        If configuration is error free, the device will automatically start with first processing. It will take some time until you get the first reading.
     </p>
     <p>
-        <button class="button" onclick="reboot()">Complete Setup + Reboot</button>
+        <button class="button" onclick="reboot()">Complete Setup</button>
     </p>
 
     <script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
@@ -61,10 +61,19 @@ p {font-size: 1em;}
             WriteConfigININew();
             SaveConfigToServer(domainname);  
 
-            firework.launch('Complete setup and switch to regular web interface...', 'success', 5000);
+            firework.launch('Setup completed', 'success', 5000);
             setTimeout(function() {
                 reload_config();
             }, 1000);
+
+            firework.launch('Start page gets loaded in a few seconds...', 'success', 5000);
+            setTimeout(function() {
+                var stringota = getDomainname();
+                parent.location = stringota;
+		        parent.location.href = stringota;
+		        parent.location.assign(stringota);
+                parent.location.replace(stringota);
+            }, 5000);    
         }
     }
 

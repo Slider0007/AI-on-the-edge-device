@@ -195,7 +195,7 @@
 		</p>
 		<p>
 			Don't forget to save the changes with the button <b>"Save And Apply"</b> at the bottom of this page.<br>
-			The new configuration gets automatically appllied. No reboot is necessary.
+			The new configuration gets automatically applied. No reboot is necessary.
 		</p>
     </details>
     <hr />
@@ -1640,15 +1640,6 @@
 
 
 	function LoadConfigNeu() {
-		var isInitialSetup = getParameterByName('InitialSetup');
-		if (isInitialSetup === 'true')
-		{
-			document.getElementById("reboot").style.display = "none";
-			document.getElementById("reboot_text").style.display = "none";
-			console.log("initial:" + isInitialSetup);
-		}
-
-
 		domainname = getDomainname(); 
 		if (!loadConfig(domainname)) {
 			firework.launch('Configuration could not be loaded! Please reload the page!', 'danger', 30000);
@@ -2348,7 +2339,7 @@
 			WriteConfigININew();
 			SaveConfigToServer(domainname);
 			
-			firework.launch('Apply configuration...', 'success', 5000);
+			firework.launch('Save and apply configuration...', 'success', 5000);
 			setTimeout(function() {
 				reload_config();
 			}, 1000);    
