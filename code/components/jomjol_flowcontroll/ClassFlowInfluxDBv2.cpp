@@ -19,6 +19,7 @@ static const char* TAG = "INFLUXDBV2";
 
 void ClassFlowInfluxDBv2::SetInitialParameter(void)
 {
+    PresetFlowStateHandler(true);
     uri = "";
     database = "";
     dborg = "";  
@@ -115,9 +116,10 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, string& aktparamgraph)
         }
     }
 
-    printf("uri:         %s\n", uri.c_str());
+    /*printf("uri:         %s\n", uri.c_str());
     printf("org:         %s\n", dborg.c_str());
     printf("token:       %s\n", dbtoken.c_str());
+    */
 
     if ((uri.length() > 0) && (database.length() > 0) && (dbtoken.length() > 0) && (dborg.length() > 0)) 
     { 
@@ -126,19 +128,15 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, string& aktparamgraph)
         InfluxDB_V2_Init(uri, database, dborg, dbtoken); 
 //        printf("nach V2 Init\n");
         InfluxDBenable = true;
-    } else {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv2 (Verion2 !!!) init skipped as we are missing some parameters");
+    }
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init skipped - missing parameters");
+        //return false; // TODO: Init should fail or continue flow?
     }
    
     return true;
 }
 
-/*
-string ClassFlowInfluxDBv2::GetInfluxDBMeasurement()
-{
-    return measurement;
-}
-*/
 
 void ClassFlowInfluxDBv2::handleFieldname(string _decsep, string _value)
 {
@@ -190,6 +188,7 @@ bool ClassFlowInfluxDBv2::doFlow(string zwtime)
     if (!InfluxDBenable)
         return true;
 
+    PresetFlowStateHandler();
     std::string measurement;
     std::string result;
     std::string resulterror = "";
@@ -198,7 +197,6 @@ bool ClassFlowInfluxDBv2::doFlow(string zwtime)
     std::string resulttimestamp = "";
     string zw = "";
     string namenumber = "";
-
 
     if (flowpostprocessing)
     {
@@ -237,6 +235,12 @@ bool ClassFlowInfluxDBv2::doFlow(string zwtime)
     OldValue = result;
     
     return true;
+}
+
+
+ClassFlowInfluxDBv2::~ClassFlowInfluxDBv2()
+{
+    // nothing to do
 }
 
 #endif //ENABLE_INFLUXDB

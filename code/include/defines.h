@@ -51,6 +51,10 @@
     // ClassLogFile
     //#define KEEP_LOGFILE_OPEN_FOR_APPENDING
 
+
+    /* General DEBUG FLAG */
+    //#define DEBUG_DETAIL_ON 
+
   //****************************************
 
     //compiler optimization for tflite-micro-esp-examples
@@ -71,7 +75,7 @@
     //ClassControllCamera + ClassFlowTakeImage
     #define CAMERA_MODEL_AI_THINKER
     #define BOARD_ESP32CAM_AITHINKER
-
+    #define DEMO_IMAGE_SIZE 30000 // Max size of demo image in bytes
 
     //server_GPIO
     #define __LEDGLOBAL
@@ -129,11 +133,6 @@
     #define READOUT_TYPE_PREVALUE 1
     #define READOUT_TYPE_RAWVALUE 2
     #define READOUT_TYPE_ERROR 3
-
-
-    //ClassFlowControll: Serve alg_roi.jpg from memory as JPG
-    #define ALGROI_LOAD_FROM_MEM_AS_JPG // Load ALG_ROI.JPG as rendered JPG from RAM
-
 
     //ClassFlowMQTT
     #define LWT_TOPIC        "connection"
@@ -203,9 +202,40 @@
     #define Digital_Transition_Area_Forward 9.7 // Pre-run zero crossing only happens from approx. 9.7 onwards
 
 
+    /* MAIN FLOW CONTROL */
+    /*********************/
+    // Flow task states
+    #define FLOW_TASK_STATE_INIT_DELAYED        0
+    #define FLOW_TASK_STATE_INIT                1
+    #define FLOW_TASK_STATE_SETUPMODE           2
+    #define FLOW_TASK_STATE_IDLE_NO_AUTOSTART   3
+    #define FLOW_TASK_STATE_IMG_PROCESSING      4
+    #define FLOW_TASK_STATE_PUBLISH_DATA        5
+    #define FLOW_TASK_STATE_ADDITIONAL_TASKS    6
+    #define FLOW_TASK_STATE_IDLE_AUTOSTART      7
 
+    // Process state names
+    #define FLOW_NO_TASK                "No Flow Task"
+    #define FLOW_START_FLOW_TASK        "Start Flow Task"
+    #define FLOW_FLOW_TASK_FAILED       "Flow Creation Failed"
+    #define FLOW_INIT_DELAYED           "Initialization - Delayed"
+    #define FLOW_INIT                   "Initialization"
+    #define FLOW_INIT_FAILED            "Initialization Failed"
+    #define FLOW_SETUP_MODE             "Setup Mode"
+    #define FLOW_IDLE_NO_AUTOSTART      "Idle - No Autostart"
+    #define FLOW_IDLE_AUTOSTART         "Idle - Waiting for Autostart"
 
-    //#define DEBUG_DETAIL_ON 
+    #define FLOW_TAKE_IMAGE             "Take Image"
+    #define FLOW_ALIGNMENT              "Image Alignment"
+    #define FLOW_PROCESS_ROI            "Digitalization of ROIs"
+    #define FLOW_POSTPROCESSING         "Post-Processing"
+    #define FLOW_PUBLISH_MQTT           "Publish to MQTT"
+    #define FLOW_PUBLISH_INFLUXDB       "Publish to InfluxDBv1"
+    #define FLOW_PUBLISH_INFLUXDB2      "Publish to InfluxDBv2"
+
+    #define FLOW_ADDITIONAL_TASKS       "Additional Tasks"
+    #define FLOW_AUTO_ERROR_HANDLING    "Automatic Error Handling"
+    #define FLOW_INVALID_STATE          "Invalid State"
 
 
 /////////////////////////////////////////////
@@ -329,6 +359,7 @@
     #define LEDC_OUTPUT_IO          FLASH_GPIO // Define the output GPIO
     #define LEDC_CHANNEL            LEDC_CHANNEL_1
     #define LEDC_DUTY_RES           LEDC_TIMER_13_BIT // Set duty resolution to 13 bits
+    #define LEDC_RESOLUTION         (1 << LEDC_TIMER_13_BIT) -1 // 13bit resolution --> 8192: 0 .. 8191
     //#define LEDC_DUTY               (195) // Set duty to 50%. ((2 ** 13) - 1) * 50% = 4095
     #define LEDC_FREQUENCY          (5000) // Frequency in Hertz. Set frequency at 5 kHz
 

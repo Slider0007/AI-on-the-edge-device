@@ -17,23 +17,24 @@ static const char *TAG = "ALIGN";
 // #define DEBUG_DETAIL_ON  
 
 
+bool ImageBasisToDelete = false;
+
 void ClassFlowAlignment::SetInitialParameter(void)
 {
+    PresetFlowStateHandler(true);
     initalrotate = 0;
     anz_ref = 0;
     initialmirror = false;
     use_antialiasing = false;
     initialflip = false;
     SaveAllFiles = false;
-    namerawimage =  "/sdcard/img_tmp/raw.jpg";
+    namerawimage =  "/sdcard/img_tmp/raw.jpg"; // will be set from ClassFLowTakeImage
     FileStoreRefAlignment = "/sdcard/config/align.txt";
     ListFlowControll = NULL;
     AlignAndCutImage = NULL;
     ImageBasis = NULL;
     ImageTMP = NULL;
-    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG 
-    AlgROI = (ImageData*)malloc_psram_heap(std::string(TAG) + "->AlgROI", sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    #endif
+    AlgROI = (ImageData*)heap_caps_malloc(sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     previousElement = NULL;
     disabled = false;
     SAD_criteria = 0.05;
@@ -50,13 +51,15 @@ ClassFlowAlignment::ClassFlowAlignment(std::vector<ClassFlow*>* lfc)
         if (((*ListFlowControll)[i])->name().compare("ClassFlowTakeImage") == 0)
         {
             ImageBasis = ((ClassFlowTakeImage*) (*ListFlowControll)[i])->rawImage;
+            //namerawimage = ((ClassFlowTakeImage*) (*ListFlowControll)[i])->getFileNameRawImage();
         }
     }
 
-    if (!ImageBasis)            // the function take pictures does not exist --> must be created first ONLY FOR TEST PURPOSES
+    if (ImageBasis == NULL)            // the function take pictures does not exist --> must be created first ONLY FOR TEST PURPOSES
     {
         ESP_LOGD(TAG, "CImageBasis had to be created");
-        ImageBasis = new CImageBasis("ImageBasis", namerawimage);
+        ImageBasis = new CImageBasis(namerawimage);
+        ImageBasisToDelete = true;
     }
 }
 
@@ -85,11 +88,15 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
         {
             if (toUpper(splitted[1]) == "TRUE")
                 initialflip = true;
+            else
+                initialflip = false;
         }
         if ((toUpper(splitted[0]) == "INITIALMIRROR") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
                 initialmirror = true;
+            else
+                initialmirror = false;
         }
         if (((toUpper(splitted[0]) == "INITALROTATE") || (toUpper(splitted[0]) == "INITIALROTATE")) && (splitted.size() > 1))
         {
@@ -107,6 +114,8 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
         {
             if (toUpper(splitted[1]) == "TRUE")
                 use_antialiasing = true;
+            else
+                use_antialiasing = false;
         }   
         if ((splitted.size() == 3) && (anz_ref < 2))
         {
@@ -120,6 +129,8 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
         {
             if (toUpper(splitted[1]) == "TRUE")
                 SaveAllFiles = true;
+            else
+                SaveAllFiles = false;
         }
         if ((toUpper(splitted[0]) == "ALIGNMENTALGO") && (splitted.size() > 1))
         {
@@ -129,10 +140,12 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
             #endif
             if (toUpper(splitted[1]) == "HIGHACCURACY")
                 alg_algo = 1;
-            if (toUpper(splitted[1]) == "FAST")
+            else if (toUpper(splitted[1]) == "FAST")
                 alg_algo = 2;
-            if (toUpper(splitted[1]) == "OFF") //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
+            else if (toUpper(splitted[1]) == "OFF") //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
                 alg_algo = 3;
+            else
+                alg_algo = 0;   // Default
         }
     }
 
@@ -171,29 +184,28 @@ string ClassFlowAlignment::getHTMLSingleStep(string host)
 
 bool ClassFlowAlignment::doFlow(string time) 
 {
-    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
-        if (!AlgROI)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
+    PresetFlowStateHandler();
+    if (!AlgROI)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
+    {
+        AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
+        if (!AlgROI) 
         {
-            AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
-            if (!AlgROI) 
-            {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlgROI");
-                LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
-            }
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlgROI");
+            LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
         }
+    }
 
-        if (AlgROI)
-        {
-            ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
-        }
-    #endif
+    if (AlgROI)
+    {
+        ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
+    }
 
     if (!ImageTMP) 
     {
         ImageTMP = new CImageBasis("ImageTMP", ImageBasis);
         if (!ImageTMP) 
         {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate ImageTMP -> Exec this round aborted!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate ImageTMP");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
             return false;
         }
@@ -203,7 +215,7 @@ bool ClassFlowAlignment::doFlow(string time)
     AlignAndCutImage = new CAlignAndCutImage("AlignAndCutImage", ImageBasis, ImageTMP);
     if (!AlignAndCutImage) 
     {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlignAndCutImage -> Exec this round aborted!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlignAndCutImage");
         LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
         return false;
     }
@@ -241,26 +253,24 @@ bool ClassFlowAlignment::doFlow(string time)
     }
 
 
-        //no align algo if set to 3 = off //add disable aligment algo |01.2023
-        if(References[0].alignment_algo != 3){
-            if (!AlignAndCutImage->Align(&References[0], &References[1])) 
-            {
-                SaveReferenceAlignmentValues();
-            }
-        }// no align
-
-
-    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
-        if (AlgROI) {
-            //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
-            if(References[0].alignment_algo != 3){
-                DrawRef(ImageTMP);
-            }
-            flowctrl.DigitalDrawROI(ImageTMP);
-            flowctrl.AnalogDrawROI(ImageTMP);
-            ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
+    //no align algo if set to 3 = off //add disable aligment algo |01.2023
+    if(References[0].alignment_algo != 3){
+        if (!AlignAndCutImage->Align(&References[0], &References[1])) 
+        {
+            SaveReferenceAlignmentValues();
         }
-    #endif
+    }// no align
+
+
+    if (AlgROI) {
+        //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
+        if(References[0].alignment_algo != 3){
+            DrawRef(ImageTMP);
+        }
+        flowctrl.DigitalDrawROI(ImageTMP);
+        flowctrl.AnalogDrawROI(ImageTMP);
+        ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
+    }
     
     if (SaveAllFiles)
     {
@@ -390,4 +400,14 @@ void ClassFlowAlignment::DrawRef(CImageBasis *_zw)
         _zw->drawRect(References[0].target_x, References[0].target_y, References[0].width, References[0].height, 255, 0, 0, 2);
         _zw->drawRect(References[1].target_x, References[1].target_y, References[1].width, References[1].height, 255, 0, 0, 2);
     }
+}
+
+
+ClassFlowAlignment::~ClassFlowAlignment()
+{
+    heap_caps_free(AlgROI);
+    if (ImageBasisToDelete)
+        delete ImageBasis;
+    delete ImageTMP;
+    delete AlignAndCutImage;
 }

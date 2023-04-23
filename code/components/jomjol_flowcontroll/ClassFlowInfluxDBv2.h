@@ -11,8 +11,7 @@
 
 #include <string>
 
-class ClassFlowInfluxDBv2 :
-    public ClassFlow
+class ClassFlowInfluxDBv2 : public ClassFlow
 {
 protected:
     std::string uri, database;
@@ -31,8 +30,7 @@ public:
     ClassFlowInfluxDBv2();
     ClassFlowInfluxDBv2(std::vector<ClassFlow*>* lfc);
     ClassFlowInfluxDBv2(std::vector<ClassFlow*>* lfc, ClassFlow *_prev);
-
-//    string GetInfluxDBMeasurement();
+    virtual ~ClassFlowInfluxDBv2();
 
     bool ReadParameter(FILE* pfile, string& aktparamgraph);
     bool doFlow(string time);

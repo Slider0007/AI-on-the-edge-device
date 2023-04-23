@@ -30,13 +30,13 @@ p {font-size: 1em;}
     <h4>Initial setup aborted!</h4>
 
     <p>You have <b>aborted</b> the initial setup!</p>
-    <p>Once you push the button below, the setup mode will be ended and the device will be automatically restart to regular web interface. 
+    <p>Once you push the button below, the setup mode will be ended and the device will be automatically switch to regular web interface. 
        Please be aware: The configuration of the device is not or only parly adapted to your needs!<br>
        Configuration can still be adapted / completed using regular web interface.
     </p>
 
     <p>
-        <button class="button" onclick="reboot()">Abort Setup + Reboot</button>
+        <button class="button" onclick="reboot()">Abort Setup</button>
     </p>
 
     <script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
@@ -60,11 +60,10 @@ p {font-size: 1em;}
             WriteConfigININew();
             SaveConfigToServer(domainname);    
 
-            var stringota = getDomainname() + "/reboot";
-            window.location = stringota;
-            window.location.href = stringota;
-            window.location.assign(stringota);
-            window.location.replace(stringota);
+            firework.launch('Abort setup and switch to regular web interface...', 'success', 5000);
+            setTimeout(function() {
+                reload_config();
+            }, 1000);
         }
     }
 

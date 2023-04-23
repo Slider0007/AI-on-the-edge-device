@@ -66,9 +66,8 @@
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/Reference-Image/ target=_blank>Reference Image</a>
         </p>
         <p>
-            After setting up your reference image don't forget to save with the <b>"Save New Reference"</b> button!<br>
-            <b>NOTE:</b> There is no need to perform a reboot after every saving or step. It's sufficient to reboot after all configuration steps 
-            (reference image, alignment, ROI configuration) are completed to activate new configuration.
+            After setting up your reference image don't forget to save with the <b>"Save And Apply"</b> button!<br>
+            The new configuration get automatically applied. No reboot is neccessary.
         </p>
     </details>
     <hr />
@@ -150,7 +149,7 @@
         <tr>
             <td colspan="2" style="vertical-align: bottom;"><b>Reference Image:</b></td>
             <td>
-                <input style="font-weight:bold;" class="button" type="button" id="updatereferenceimage" value="Save New Reference" onclick="SaveReference()">
+                <input style="font-weight:bold;" class="button" type="button" id="updatereferenceimage" value="Save And Apply" onclick="SaveReference()">
             </td>
         </tr>
         <tr>
@@ -350,8 +349,10 @@
                 showReference(param);
                 UpdatePage();
 
-                firework.launch('Reference image saved. It will get applied after next reboot', 'success', 5000);  
-            }
+                firework.launch('Save and apply configuration...', 'success', 5000);
+                setTimeout(function() {
+                    reload_config();
+                }, 1000);
         }
 
 

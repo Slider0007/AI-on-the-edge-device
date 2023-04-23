@@ -12,20 +12,19 @@
 
 using namespace std;
 
-class ClassFlowAlignment :
-    public ClassFlow
+class ClassFlowAlignment : public ClassFlow
 {
 protected:
     float initalrotate;
     bool initialmirror;
     bool initialflip;
     bool use_antialiasing;
-    RefInfo References[2];
-    int anz_ref;
-    string namerawimage;
     bool SaveAllFiles;
-    CAlignAndCutImage *AlignAndCutImage;
+    int anz_ref;
+    RefInfo References[2];
+    std::string namerawimage;
     std::string FileStoreRefAlignment;
+    CAlignAndCutImage *AlignAndCutImage;
     float SAD_criteria;
 
     void SetInitialParameter(void);
@@ -34,20 +33,19 @@ protected:
 
 public:
     CImageBasis *ImageBasis, *ImageTMP;
-    #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG 
     ImageData *AlgROI;
-    #endif
     
     ClassFlowAlignment(std::vector<ClassFlow*>* lfc);
+    virtual ~ClassFlowAlignment();
 
-    CAlignAndCutImage* GetAlignAndCutImage(){return AlignAndCutImage;};
+    CAlignAndCutImage* GetAlignAndCutImage() {return AlignAndCutImage;};
 
     void DrawRef(CImageBasis *_zw);
 
     bool ReadParameter(FILE* pfile, string& aktparamgraph);
     bool doFlow(string time);
     string getHTMLSingleStep(string host);
-    string name(){return "ClassFlowAlignment";};
+    string name() {return "ClassFlowAlignment";};
 };
 
 

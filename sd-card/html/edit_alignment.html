@@ -80,9 +80,8 @@
             and repeat the procedure.
         </p>
         <p>
-            After definition of both alignment marker is completed don't forget to save with the <b>"Save New Marker"</b> button!<br>
-            <b>NOTE:</b> There is no need to perform a reboot after every saving or step. It's sufficient to reboot after all configuration steps 
-            (reference image, alignment, ROI configuration) are completed to activate new configuration.
+            After definition of both alignment marker is completed don't forget to save with the <b>"Save And Apply"</b> button!<br>
+            The new configuration get automatically applied. No reboot is neccessary.
         </p>
     </details>
     <hr />
@@ -123,7 +122,7 @@
         <tr>
             <td style="vertical-align:bottom;"><b>Reference Image:</b></td>
             <td></td>
-            <td><input style="font-weight:bold;" class="button" type="submit" name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save New Marker">
+            <td><input style="font-weight:bold;" class="button" type="submit" name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
             </td>
         </tr> 
         <tr>
@@ -170,7 +169,11 @@ function SaveToConfig(){
     SaveConfigToServer(domainname);
     document.getElementById("savemarker").disabled = true;
     document.getElementById("enhancecontrast").disabled = true;
-    firework.launch('Alignment marker saved. They will get applied after next reboot', 'success', 5000);
+			
+    firework.launch('Save and apply configuration...', 'success', 5000);
+    setTimeout(function() {
+        reload_config();
+    }, 1000);
 }
 
 function EnhanceContrast(){

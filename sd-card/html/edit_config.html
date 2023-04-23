@@ -37,10 +37,7 @@
 
 	<table>
 		<td>
-			<button class="button" onclick="saveTextAsFile()">Save</button>
-		</td>
-		<td>
-			<button class="button" id="reboot" type="button" onclick="doReboot()">Reboot to apply changes</button>
+			<button class="button" onclick="saveTextAsFile()">Save And Apply</button>
 		</td>
 	</table>
 
@@ -64,7 +61,11 @@
 			FileDeleteOnServer("/config/config.ini", domainname);
 			var textToSave = document.getElementById("inputTextToSave").value;
 			FileSendContent(textToSave, "/config/config.ini", domainname);
-			firework.launch('Configuration saved. It will get applied after next reboot', 'success', 5000);
+
+			firework.launch('Save and apply configuration...', 'success', 5000);
+			setTimeout(function() {
+				reload_config();
+			}, 1000);
 		}
 	}
 

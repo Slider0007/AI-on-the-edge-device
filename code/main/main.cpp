@@ -459,7 +459,7 @@ extern "C" void app_main(void)
     esp_chip_info(&chipInfo);
     
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device info: CPU cores: " + std::to_string(chipInfo.cores) + 
-                                           ", Chip revision: " + std::to_string(chipInfo.revision));
+                                           ", Chip revision: " + std::to_string(chipInfo.revision/100));
     
     // Print SD-Card info
     // ********************************************

@@ -21,6 +21,7 @@ bool getIsPlannedReboot();
 void StartMainFlowTask();
 void DeleteMainFlowTask();
 bool isSetupModusActive();
+void setTaskAutoFlowState(uint8_t _value);
 
 int getCountFlowRounds();
 

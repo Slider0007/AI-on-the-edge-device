@@ -59,13 +59,12 @@ p {font-size: 1em;}
             param["System"]["SetupMode"]["value1"] = "false";
 
             WriteConfigININew();
-            SaveConfigToServer(domainname);    
+            SaveConfigToServer(domainname);  
 
-            var stringota = getDomainname() + "/reboot";
-            window.location = stringota;
-            window.location.href = stringota;
-            window.location.assign(stringota);
-            window.location.replace(stringota);
+            firework.launch('Complete setup and switch to regular web interface...', 'success', 5000);
+            setTimeout(function() {
+                reload_config();
+            }, 1000);
         }
     }
 

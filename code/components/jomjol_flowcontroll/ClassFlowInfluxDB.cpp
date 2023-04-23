@@ -19,6 +19,7 @@ static const char* TAG = "INFLUXDB";
 
 void ClassFlowInfluxDB::SetInitialParameter(void)
 {
+    PresetFlowStateHandler(true);
     uri = "";
     database = "";
 
@@ -119,20 +120,23 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, string& aktparamgraph)
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init InfluxDB with uri: " + uri + ", user: " + user + ", password: " + password);
         InfluxDBInit(uri, database, user, password); 
         InfluxDBenable = true;
-    } else {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDB init skipped as we are missing some parameters");
+    } 
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init skipped - missing parameters");
+        //return false; // TODO: Init should fail or continue flow?
     }
    
     return true;
 }
+
 
 bool ClassFlowInfluxDB::doFlow(string zwtime)
 {
     if (!InfluxDBenable)
         return true;
 
+    PresetFlowStateHandler();
     std::string result;
-    std::string measurement;
     std::string resulterror = "";
     std::string resultraw = "";
     std::string resultrate = "";
@@ -175,6 +179,7 @@ bool ClassFlowInfluxDB::doFlow(string zwtime)
     
     return true;
 }
+
 
 void ClassFlowInfluxDB::handleMeasurement(string _decsep, string _value)
 {
@@ -221,5 +226,10 @@ void ClassFlowInfluxDB::handleFieldname(string _decsep, string _value)
     }
 }
 
+
+ClassFlowInfluxDB::~ClassFlowInfluxDB()
+{
+    // nothing to do
+}
 
 #endif //ENABLE_INFLUXDB

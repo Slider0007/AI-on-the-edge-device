@@ -19,31 +19,44 @@
 #endif //ENABLE_INFLUXDB
 #include "ClassFlowCNNGeneral.h"
 
-class ClassFlowControll :
-    public ClassFlow
+
+class ClassFlowControll : public ClassFlow
 {
 protected:
 	std::vector<ClassFlow*> FlowControll;
-	ClassFlowPostProcessing* flowpostprocessing;
+	std::vector<ClassFlow*> FlowControlPublish;
+	std::vector<strFlowState*> FlowStateErrorsEvaluation;
+	std::vector<strFlowState*> FlowStateErrorsPublish;
+
+	ClassFlowTakeImage* flowtakeimage;
 	ClassFlowAlignment* flowalignment;	
 	ClassFlowCNNGeneral* flowanalog;
 	ClassFlowCNNGeneral* flowdigit;
-//	ClassFlowDigit* flowdigit;
-	ClassFlowTakeImage* flowtakeimage;
+	ClassFlowPostProcessing* flowpostprocessing;
+	ClassFlowMQTT* flowMQTT;
+	ClassFlowInfluxDB* flowInfluxDB;
+	ClassFlowInfluxDBv2* flowInfluxDBv2;
+	
 	ClassFlow* CreateClassFlow(std::string _type);
-
-	bool AutoStart;
-	float AutoInterval;
-	bool SetupModeActive;
 	void SetInitialParameter(void);	
-	std::string aktstatusWithTime;
+
+	float AutoInterval;
+	bool AutoStart;
+	bool SetupModeActive;
+	bool readParameterDone;
+	
+	bool aktflowerror;
 	std::string aktstatus;
-	int aktRunNr;
+	std::string aktstatusWithTime;
 
 public:
-	void InitFlow(std::string config);
-	bool doFlow(string time);
-	void doFlowTakeImageOnly(string time);
+	ClassFlowControll();
+	virtual ~ClassFlowControll();
+	bool InitFlow(std::string config);
+	void DeinitFlow(void);
+	bool doFlowImageEvaluation(string time);
+	bool doFlowPublishData(string time);
+	bool doFlowTakeImageOnly(string time);
 	bool getStatusSetupModus(){return SetupModeActive;};
 	string getReadout(bool _rawvalue, bool _noerror, int _number);
 	string getReadoutAll(int _type);	
@@ -55,38 +68,41 @@ public:
 
 	string TranslateAktstatus(std::string _input);
 
-	#ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
+	#ifdef ENABLE_MQTT
+	bool StartMQTTService();
+	#endif //ENABLE_MQTT
+
 	void DigitalDrawROI(CImageBasis *_zw);
 	void AnalogDrawROI(CImageBasis *_zw);
-	#endif
 
 	esp_err_t GetJPGStream(std::string _fn, httpd_req_t *req);
 	esp_err_t SendRawJPG(httpd_req_t *req);
 
 	std::string doSingleStep(std::string _stepname, std::string _host);
 
+	bool isAutoStart();
 	bool isAutoStart(long &_interval);
 
-	std::string* getActStatusWithTime();
-	std::string* getActStatus();
+	std::string getActStatusWithTime();
+	std::string getActStatus();
 	void setActStatus(std::string _aktstatus);
+	void setActFlowError(bool _aktflowerror);
+	bool getActFlowError();
+	bool FlowStateErrorsOccured();
+	void AutomaticFlowErrorHandler();
 
 	std::vector<HTMLInfo*> GetAllDigital();
 	std::vector<HTMLInfo*> GetAllAnalog();	
 
 	t_CNNType GetTypeDigital();
 	t_CNNType GetTypeAnalog();
-	
-	#ifdef ENABLE_MQTT
-	bool StartMQTTService();
-	#endif //ENABLE_MQTT
 
 	int CleanTempFolder();
 
 	string name(){return "ClassFlowControll";};
 };
 
-#endif
+#endif //CLASSFLOWCONTROLL_H
 
 
 

@@ -18,6 +18,7 @@ extern "C" {
 #include "ClassLogFile.h"
 #include "time_sntp.h"
 #include "Helper.h"
+#include "statusled.h"
 #include "server_ota.h"
 #ifdef ENABLE_MQTT
     #include "interface_mqtt.h"
@@ -26,11 +27,160 @@ extern "C" {
 
 #include "server_help.h"
 #include "MainFlowControl.h"
+#include "server_GPIO.h"
 #include "../../include/defines.h"
 
 static const char* TAG = "FLOWCTRL";
 
 //#define DEBUG_DETAIL_ON
+
+
+void ClassFlowControll::SetInitialParameter(void)
+{
+    FlowControll.clear();
+    FlowControlPublish.clear();
+    flowtakeimage = NULL;
+    flowalignment = NULL;
+    flowdigit = NULL;
+    flowanalog = NULL;
+    flowpostprocessing = NULL;
+    flowMQTT = NULL;
+	flowInfluxDB = NULL;
+	flowInfluxDBv2 = NULL;
+    AutoStart = false;
+    AutoInterval = 5; // in Minutes
+    SetupModeActive = false;
+    disabled = false;
+    readParameterDone = false;
+    setActStatus(std::string(FLOW_NO_TASK));
+    setActFlowError(false);
+}
+
+
+ClassFlowControll::ClassFlowControll()
+{
+    SetInitialParameter();
+}
+
+
+ClassFlowControll::~ClassFlowControll()
+{
+    DeinitFlow();
+}
+
+
+bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
+{
+    std::vector<string> splitted;
+
+    aktparamgraph = trim(aktparamgraph);
+
+    if (aktparamgraph.size() == 0)
+        if (!this->GetNextParagraph(pfile, aktparamgraph))
+            return false;
+
+
+    if ((toUpper(aktparamgraph).compare("[AUTOTIMER]") != 0) && (toUpper(aktparamgraph).compare("[DEBUG]") != 0) &&
+        (toUpper(aktparamgraph).compare("[SYSTEM]") != 0 && (toUpper(aktparamgraph).compare("[DATALOGGING]") != 0)))      // Paragraph passt nicht
+        return false;
+
+    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
+    {
+        splitted = ZerlegeZeile(aktparamgraph, " =");
+        if ((toUpper(splitted[0]) == "AUTOSTART") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                AutoStart = true;
+            else
+                AutoStart = false;
+        }
+
+        if ((toUpper(splitted[0]) == "INTERVAL") && (splitted.size() > 1))
+        {
+            AutoInterval = std::stof(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "DATALOGACTIVE") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                LogFile.SetDataLogToSD(true);
+            else
+                LogFile.SetDataLogToSD(false);
+        }
+
+        if ((toUpper(splitted[0]) == "DATAFILESRETENTION") && (splitted.size() > 1))
+        {
+            LogFile.SetDataLogRetention(std::stoi(splitted[1]));
+        }
+
+        if ((toUpper(splitted[0]) == "LOGLEVEL") && (splitted.size() > 1))
+        {
+            /* matches esp_log_level_t */
+            if ((toUpper(splitted[1]) == "TRUE") || (toUpper(splitted[1]) == "2"))
+            {
+                LogFile.setLogLevel(ESP_LOG_WARN);
+            }
+            else if ((toUpper(splitted[1]) == "FALSE") || (toUpper(splitted[1]) == "0") || (toUpper(splitted[1]) == "1"))
+            {
+                LogFile.setLogLevel(ESP_LOG_ERROR);
+            }
+            else if (toUpper(splitted[1]) == "3")
+            {
+                LogFile.setLogLevel(ESP_LOG_INFO);
+            }
+            else if (toUpper(splitted[1]) == "4")
+            {
+                LogFile.setLogLevel(ESP_LOG_DEBUG);
+            }
+            else 
+            {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Invalid log level set. Use default log level ERROR");
+                LogFile.setLogLevel(ESP_LOG_ERROR);
+            }
+
+            /* If system reboot was not triggered by user and reboot was caused by execption -> keep log level to DEBUG */
+            if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC))
+                LogFile.setLogLevel(ESP_LOG_DEBUG);
+        }
+        if ((toUpper(splitted[0]) == "LOGFILESRETENTION") && (splitted.size() > 1))
+        {
+            LogFile.SetLogFileRetention(std::stoi(splitted[1]));
+        }
+
+        /* TimeServer and TimeZone got already read from the config, see setupTime () */
+        
+        #if (defined WLAN_USE_ROAMING_BY_SCANNING || (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES))
+        if ((toUpper(splitted[0]) == "RSSITHRESHOLD") && (splitted.size() > 1))
+        {
+            int RSSIThresholdTMP = atoi(splitted[1].c_str());
+            RSSIThresholdTMP = min(0, max(-100, RSSIThresholdTMP)); // Verify input limits (-100 - 0)
+            ChangeRSSIThreshold(WLAN_CONFIG_FILE, RSSIThresholdTMP);
+        }
+        #endif
+
+        if ((toUpper(splitted[0]) == "HOSTNAME") && (splitted.size() > 1))
+        {
+            if (ChangeHostName(WLAN_CONFIG_FILE, splitted[1]))
+            {
+                // reboot necessary so that the new wlan.ini is also used !!!
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Please reboot to activate new hostname");
+            }
+        }
+
+        if ((toUpper(splitted[0]) == "SETUPMODE") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "FALSE") {
+                SetupModeActive = false;
+            }
+            else if (toUpper(splitted[1]) == "TRUE") {
+                SetupModeActive = true;
+            }
+        }
+    }
+
+    readParameterDone = true;
+    return true;
+}
 
 
 std::string ClassFlowControll::doSingleStep(std::string _stepname, std::string _host){
@@ -73,6 +223,12 @@ std::string ClassFlowControll::doSingleStep(std::string _stepname, std::string _
             result = FlowControll[i]->getHTMLSingleStep(_host);
         }
 
+    for (int i = 0; i < FlowControlPublish.size(); ++i)
+        if (FlowControlPublish[i]->name().compare(_classname) == 0){
+            FlowControlPublish[i]->doFlow("");
+            result = FlowControlPublish[i]->getHTMLSingleStep(_host);
+        }
+
     ESP_LOGD(TAG, "Step %s end", _stepname.c_str());
 
     return result;
@@ -82,25 +238,404 @@ std::string ClassFlowControll::doSingleStep(std::string _stepname, std::string _
 std::string ClassFlowControll::TranslateAktstatus(std::string _input)
 {
     if (_input.compare("ClassFlowTakeImage") == 0)
-        return ("Take Image");
-    if (_input.compare("ClassFlowAlignment") == 0)
-        return ("Aligning");
-    if (_input.compare("ClassFlowCNNGeneral") == 0)
-        return ("Digitalization of ROIs");
-    #ifdef ENABLE_MQTT
-        if (_input.compare("ClassFlowMQTT") == 0)
-            return ("Sending MQTT");
-    #endif //ENABLE_MQTT
-    #ifdef ENABLE_INFLUXDB
-        if (_input.compare("ClassFlowInfluxDB") == 0)
-            return ("Sending InfluxDB");
-        if (_input.compare("ClassFlowInfluxDBv2") == 0)
-            return ("Sending InfluxDBv2");
-    #endif //ENABLE_INFLUXDB
-    if (_input.compare("ClassFlowPostProcessing") == 0)
-        return ("Post-Processing");
+        return std::string(FLOW_TAKE_IMAGE);
 
-    return "Unkown Status";
+    else if (_input.compare("ClassFlowAlignment") == 0)
+        return std::string(FLOW_ALIGNMENT);
+
+    else if (_input.compare("ClassFlowCNNGeneral") == 0)
+        return std::string(FLOW_PROCESS_ROI);
+
+    else if (_input.compare("ClassFlowPostProcessing") == 0)
+        return std::string(FLOW_POSTPROCESSING);
+
+    #ifdef ENABLE_MQTT
+    else if (_input.compare("ClassFlowMQTT") == 0)
+        return std::string(FLOW_PUBLISH_MQTT);
+    #endif //ENABLE_MQTT
+
+    #ifdef ENABLE_INFLUXDB
+    else if (_input.compare("ClassFlowInfluxDB") == 0)
+        return std::string(FLOW_PUBLISH_INFLUXDB);
+
+    else if (_input.compare("ClassFlowInfluxDBv2") == 0)
+        return std::string(FLOW_PUBLISH_INFLUXDB2);
+    #endif //ENABLE_INFLUXDB
+
+    return "Unkown State";
+}
+
+
+ClassFlow* ClassFlowControll::CreateClassFlow(std::string _type)
+{
+    ClassFlow* cfc = NULL;
+
+    _type = trim(_type);
+
+    if (toUpper(_type).compare("[TAKEIMAGE]") == 0)
+    {
+        cfc = new ClassFlowTakeImage(&FlowControll);
+        if (cfc) {
+            flowtakeimage = (ClassFlowTakeImage*) cfc;
+            FlowControll.push_back(cfc);
+        }
+    }
+    else if (toUpper(_type).compare("[ALIGNMENT]") == 0)
+    {
+        cfc = new ClassFlowAlignment(&FlowControll);
+        if (cfc) {
+            flowalignment = (ClassFlowAlignment*) cfc;
+            FlowControll.push_back(cfc);
+        }
+    }
+    else if (toUpper(_type).compare("[ANALOG]") == 0)
+    {
+        cfc = new ClassFlowCNNGeneral(flowalignment);
+        if (cfc) {
+            flowanalog = (ClassFlowCNNGeneral*) cfc;
+            FlowControll.push_back(cfc);
+        }
+    }
+    else if (toUpper(_type).compare(0, 7, "[DIGITS") == 0)
+    {
+        cfc = new ClassFlowCNNGeneral(flowalignment);
+        if (cfc) {
+            flowdigit = (ClassFlowCNNGeneral*) cfc;
+            FlowControll.push_back(cfc);
+        }
+    }
+    else if (toUpper(_type).compare("[POSTPROCESSING]") == 0)
+    {
+        cfc = new ClassFlowPostProcessing(&FlowControll, flowanalog, flowdigit);
+        if (cfc) {
+            flowpostprocessing = (ClassFlowPostProcessing*) cfc;
+            FlowControll.push_back(cfc);
+        }
+    }
+
+    #ifdef ENABLE_MQTT
+    else if (toUpper(_type).compare("[MQTT]") == 0) 
+    {
+        cfc = new ClassFlowMQTT(&FlowControll);
+        if(cfc) {
+            flowMQTT = (ClassFlowMQTT*) cfc;
+            FlowControlPublish.push_back(cfc);
+        }
+    }
+    #endif //ENABLE_MQTT
+
+    #ifdef ENABLE_INFLUXDB
+    else if (toUpper(_type).compare("[INFLUXDB]") == 0) 
+    {
+        cfc = new ClassFlowInfluxDB(&FlowControll);
+        if(cfc) {
+            flowInfluxDB = (ClassFlowInfluxDB*) cfc;
+            FlowControlPublish.push_back(cfc);
+        }
+    }
+    else if (toUpper(_type).compare("[INFLUXDBV2]") == 0) 
+    {
+        cfc = new ClassFlowInfluxDBv2(&FlowControll);
+        if (cfc) {
+            flowInfluxDBv2 = (ClassFlowInfluxDBv2*) cfc;
+            FlowControlPublish.push_back(cfc);
+        }
+    }
+    #endif //ENABLE_INFLUXDB
+
+    else if (toUpper(_type).compare("[AUTOTIMER]") == 0) {
+        cfc = this;
+    }
+
+    else if (toUpper(_type).compare("[DATALOGGING]") == 0) {
+        cfc = this;
+    }
+
+    else if (toUpper(_type).compare("[DEBUG]") == 0) {
+        cfc = this;
+    }
+
+    else if (toUpper(_type).compare("[SYSTEM]") == 0) {
+        cfc = this;      
+    }
+
+    return cfc;
+}
+
+
+bool ClassFlowControll::InitFlow(std::string config)
+{
+    DeinitFlow();
+    
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init flow...");
+    LogFile.WriteHeapInfo("InitFlow start");
+
+    bool bRetVal = true;
+    std::string line = "";
+    std::string section = "";
+
+    ClassFlow* cfc;
+    FILE* pFile;
+    config = FormatFileName(config);
+    pFile = fopen(config.c_str(), "r");
+
+    if (pFile == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InitFlow: Unable to open config file"); 
+        return false;
+    }
+
+    char zw[256];
+    if (fgets(zw, sizeof(zw), pFile) == NULL) {
+        line = "";
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InitFlow: Config file opened, but empty or content not readable");
+        fclose(pFile);
+        return false;
+    }
+    else {
+        line = std::string(zw);
+    }
+
+    while ((line.size() > 0) && !(feof(pFile)))
+    {
+        cfc = CreateClassFlow(line);
+        if (cfc)
+        {
+            //ESP_LOGD(TAG, "Start ReadParameter (%s)", line.c_str());
+            section = line;
+            if (!cfc->ReadParameter(pFile, line)) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InitFlow: Error loading parameter of section " +
+                                                         section + " -> \"" + cfc->name() + "\"");
+                bRetVal = false;
+            }
+        }
+        else
+        {
+            line = "";
+            if (fgets(zw, sizeof(zw), pFile) && !feof(pFile))
+                {
+                    //ESP_LOGD(TAG, "Read: %s", zw);
+                    line = std::string(zw);
+                }
+        }
+    }
+    fclose(pFile);
+
+    if (flowtakeimage == NULL || flowalignment == NULL || flowpostprocessing == NULL || !this->readParameterDone) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InitFlow: One mandatory parameter section [TAKEIMAGE], [ALIGNMENT], [POSTPROCESSING], "
+                                                "[AUTOTIMER], [DATALOGGING], [DEBUG] or [SYSTEM] is missing. Check config file");
+        bRetVal = false;
+    }
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init flow completed");
+    LogFile.WriteHeapInfo("InitFlow done");
+
+    return bRetVal;
+}
+
+
+void ClassFlowControll::DeinitFlow(void)
+{
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow...");
+    LogFile.WriteHeapInfo("DeinitFlow start");
+
+    Camera.LightOnOff(false);
+    StatusLEDOff();
+    
+    gpio_handler_destroy();
+
+	delete flowMQTT;
+    flowMQTT = NULL;
+    
+    delete flowInfluxDB;
+    flowInfluxDB = NULL;
+
+    delete flowInfluxDBv2;
+    flowInfluxDBv2 = NULL;
+
+    delete flowpostprocessing;
+    flowpostprocessing = NULL;
+
+    delete flowanalog;
+    flowanalog = NULL;
+
+    delete flowdigit;
+    flowdigit = NULL;
+
+    delete flowalignment;
+    flowalignment = NULL;
+
+    delete flowtakeimage;
+    flowtakeimage = NULL;
+    
+    FlowControll.clear();               // Clear vector to release allocated memory
+    FlowControlPublish.clear();         // Clear vector to release allocated memory
+    FlowStateErrorsEvaluation.clear();  // Clear vector to release allocated memory
+    FlowStateErrorsPublish.clear();     // Clear vector to release allocated memory
+    
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow completed"); 
+    LogFile.WriteHeapInfo("DeinitFlow completed");
+}
+
+
+bool ClassFlowControll::doFlowImageEvaluation(string time)
+{
+    bool result = true;
+    FlowStateErrorsEvaluation.clear();
+
+    for (int i = 0; i < FlowControll.size(); ++i)
+    {
+        #ifdef DEBUG_DETAIL_ON  
+            LogFile.WriteHeapInfo("ClassFlowControll::doFlow: " + FlowControll[i]->name());
+        #endif
+        
+        setActStatus(TranslateAktstatus(FlowControll[i]->name()));
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + getActStatus());
+        #ifdef ENABLE_MQTT
+            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), false);
+        #endif //ENABLE_MQTT
+
+        if (!FlowControll[i]->doFlow(time)) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error during processing of state \"" + getActStatus() + "\"");
+            FlowStateErrorsEvaluation.push_back(FlowControll[i]->getFlowState());
+            result = false;
+            break;
+        }
+    }
+
+    return result;
+}
+
+
+bool ClassFlowControll::doFlowPublishData(string time)
+{
+    bool result = true;
+    FlowStateErrorsPublish.clear();
+
+    for (int i = 0; i < FlowControlPublish.size(); ++i)
+    {
+        #ifdef DEBUG_DETAIL_ON  
+            LogFile.WriteHeapInfo("ClassFlowControll::doFlow: " + FlowControlPublish[i]->name());
+        #endif
+        
+        setActStatus(TranslateAktstatus(FlowControlPublish[i]->name()));
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + getActStatus());
+        #ifdef ENABLE_MQTT
+            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), false);
+        #endif //ENABLE_MQTT
+
+        if (!FlowControlPublish[i]->doFlow(time)) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error during processing of state \"" + getActStatus() + "\"");
+            FlowStateErrorsPublish.push_back(FlowControll[i]->getFlowState());
+            result = false;
+        }
+    }
+
+    return result;
+}
+
+
+bool ClassFlowControll::doFlowTakeImageOnly(string time)
+{
+    bool result = true;
+    FlowStateErrorsEvaluation.clear();
+    
+    for (int i = 0; i < FlowControll.size(); ++i)
+    {
+        if (FlowControll[i]->name() == "ClassFlowTakeImage") {
+            setActStatus(TranslateAktstatus(FlowControll[i]->name()));
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + getActStatus());
+            #ifdef ENABLE_MQTT
+                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), false);
+            #endif //ENABLE_MQTT
+
+            if (!FlowControlPublish[i]->doFlow(time)) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error during processing of state \"" + getActStatus() + "\"");
+                FlowStateErrorsEvaluation.push_back(FlowControll[i]->getFlowState());
+                result = false;
+            }
+        }
+    }
+
+    return result;
+}
+
+
+bool ClassFlowControll::FlowStateErrorsOccured()
+{
+    if (FlowStateErrorsEvaluation.size() != 0 || FlowStateErrorsPublish.size() != 0)
+        return true;
+    else
+        return false;
+}
+
+
+void ClassFlowControll::AutomaticFlowErrorHandler()
+{
+    for (int i = 0; i < FlowStateErrorsEvaluation.size(); ++i) {
+        for (int j = 0; j < FlowControll.size(); ++j) {
+            if (FlowStateErrorsEvaluation[i]->ClassName.compare(FlowControll[j]->name()) == 0) {
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateErrorsEvaluation[i]->ClassName + ": Call doAutoErrorHandling"); 
+                FlowControll[j]->doAutoErrorHandling();
+            }
+        }
+    }
+    // Reset of errors will be peformed before next flow starts --> functions doFlowImageEvaluation, doFlowTakeImageOnly
+    // FlowStateErrorsEvaluation.clear();
+
+    for (int i = 0; i < FlowStateErrorsPublish.size(); ++i) {
+        for (int j = 0; j < FlowControlPublish.size(); ++j) {
+            if (FlowStateErrorsPublish[i]->ClassName.compare(FlowControlPublish[j]->name()) == 0) {
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateErrorsEvaluation[i]->ClassName + ": Call doAutoErrorHandling"); 
+                FlowControlPublish[j]->doAutoErrorHandling();
+            }
+        }
+    }
+    // Reset of errors will be peformed before next flow starts --> function doFlowPublishData
+    // FlowStateErrorsPublish.clear();
+}
+
+
+bool ClassFlowControll::isAutoStart()
+{
+    return AutoStart;
+}
+
+
+bool ClassFlowControll::isAutoStart(long &_interval)
+{
+    _interval = AutoInterval * 60 * 1000; // AutoInterval: minutes -> ms
+    return AutoStart;
+}
+
+
+std::string ClassFlowControll::getActStatusWithTime()
+{
+    return aktstatusWithTime;
+}
+
+
+std::string ClassFlowControll::getActStatus()
+{
+    return aktstatus;
+}
+
+
+void ClassFlowControll::setActFlowError(bool _aktflowerror)
+{
+    aktflowerror = _aktflowerror;
+}
+
+
+bool ClassFlowControll::getActFlowError()
+{
+    return aktflowerror;
+}
+
+
+void ClassFlowControll::setActStatus(std::string _aktstatus)
+{
+    aktstatus = _aktstatus;
+    aktstatusWithTime = "[" + getCurrentTimeString("%H:%M:%S") + "] " + _aktstatus;
 }
 
 
@@ -145,7 +680,6 @@ t_CNNType ClassFlowControll::GetTypeAnalog()
 }
 
 
-#ifdef ALGROI_LOAD_FROM_MEM_AS_JPG
 void ClassFlowControll::DigitalDrawROI(CImageBasis *_zw)
 {
     if (flowdigit)
@@ -158,16 +692,15 @@ void ClassFlowControll::AnalogDrawROI(CImageBasis *_zw)
     if (flowanalog)
         flowanalog->DrawROI(_zw);
 }
-#endif
 
 
 #ifdef ENABLE_MQTT
 bool ClassFlowControll::StartMQTTService() 
 {
     /* Start the MQTT service */
-        for (int i = 0; i < FlowControll.size(); ++i) {
-            if (FlowControll[i]->name().compare("ClassFlowMQTT") == 0) {
-                return ((ClassFlowMQTT*) (FlowControll[i]))->Start(AutoInterval);
+        for (int i = 0; i < FlowControlPublish.size(); ++i) {
+            if (FlowControlPublish[i]->name().compare("ClassFlowMQTT") == 0) {
+                return ((ClassFlowMQTT*) (FlowControlPublish[i]))->Start(AutoInterval);
             }  
         } 
     return false;
@@ -175,244 +708,15 @@ bool ClassFlowControll::StartMQTTService()
 #endif //ENABLE_MQTT
 
 
-void ClassFlowControll::SetInitialParameter(void)
+string ClassFlowControll::getNumbersName()
 {
-    AutoStart = false;
-    SetupModeActive = false;
-    AutoInterval = 10; // Minutes
-    flowdigit = NULL;
-    flowanalog = NULL;
-    flowpostprocessing = NULL;
-    disabled = false;
-    aktRunNr = 0;
-    aktstatus = "Flow task not yet created";
-    aktstatusWithTime = aktstatus;
+    return flowpostprocessing->getNumbersName();
 }
 
 
-bool ClassFlowControll::isAutoStart(long &_interval)
+string ClassFlowControll::getJSON()
 {
-    _interval = AutoInterval * 60 * 1000; // AutoInterval: minutes -> ms
-    return AutoStart;
-}
-
-
-ClassFlow* ClassFlowControll::CreateClassFlow(std::string _type)
-{
-    ClassFlow* cfc = NULL;
-
-    _type = trim(_type);
-
-    if (toUpper(_type).compare("[TAKEIMAGE]") == 0)
-    {
-        cfc = new ClassFlowTakeImage(&FlowControll);
-        flowtakeimage = (ClassFlowTakeImage*) cfc;
-    }
-    if (toUpper(_type).compare("[ALIGNMENT]") == 0)
-    {
-        cfc = new ClassFlowAlignment(&FlowControll);
-        flowalignment = (ClassFlowAlignment*) cfc;
-    }
-    if (toUpper(_type).compare("[ANALOG]") == 0)
-    {
-        cfc = new ClassFlowCNNGeneral(flowalignment);
-        flowanalog = (ClassFlowCNNGeneral*) cfc;
-    }
-    if (toUpper(_type).compare(0, 7, "[DIGITS") == 0)
-    {
-        cfc = new ClassFlowCNNGeneral(flowalignment);
-        flowdigit = (ClassFlowCNNGeneral*) cfc;
-    }
-    #ifdef ENABLE_MQTT
-    if (toUpper(_type).compare("[MQTT]") == 0)
-        cfc = new ClassFlowMQTT(&FlowControll);
-    #endif //ENABLE_MQTT
-    #ifdef ENABLE_INFLUXDB
-    if (toUpper(_type).compare("[INFLUXDB]") == 0)
-        cfc = new ClassFlowInfluxDB(&FlowControll);
-    if (toUpper(_type).compare("[INFLUXDBV2]") == 0)
-        cfc = new ClassFlowInfluxDBv2(&FlowControll);
-    #endif //ENABLE_INFLUXDB  
-
-    if (toUpper(_type).compare("[POSTPROCESSING]") == 0)
-    {
-        cfc = new ClassFlowPostProcessing(&FlowControll, flowanalog, flowdigit); 
-        flowpostprocessing = (ClassFlowPostProcessing*) cfc;
-    }
-
-    if (cfc)                            // Attached only if it is not [AutoTimer], because this is for FlowControll
-        FlowControll.push_back(cfc);
-
-    if (toUpper(_type).compare("[AUTOTIMER]") == 0)
-        cfc = this;    
-
-    if (toUpper(_type).compare("[DATALOGGING]") == 0)
-        cfc = this;  
-
-    if (toUpper(_type).compare("[DEBUG]") == 0)
-        cfc = this;  
-
-    if (toUpper(_type).compare("[SYSTEM]") == 0)
-        cfc = this;          
-
-    return cfc;
-}
-
-
-void ClassFlowControll::InitFlow(std::string config)
-{
-    aktstatus = "Initialization";
-    aktstatusWithTime = aktstatus;
-
-    //#ifdef ENABLE_MQTT
-        //MQTTPublish(mqttServer_getMainTopic() + "/" + "status", "Initialization", 1, false); // Right now, not possible -> MQTT Service is going to be started later
-    //#endif //ENABLE_MQTT
-    
-    string line;
-    flowpostprocessing = NULL;
-
-    ClassFlow* cfc;
-    FILE* pFile;
-    config = FormatFileName(config);
-    pFile = fopen(config.c_str(), "r");
-
-    line = "";
-
-    char zw[1024];
-    if (pFile != NULL)
-    {
-        fgets(zw, 1024, pFile);
-        ESP_LOGD(TAG, "%s", zw);
-        line = std::string(zw);
-    }
-
-    while ((line.size() > 0) && !(feof(pFile)))
-    {
-        cfc = CreateClassFlow(line);
-//        printf("Name: %s\n", cfc->name().c_str());
-        if (cfc)
-        {
-            ESP_LOGD(TAG, "Start ReadParameter (%s)", line.c_str());
-            cfc->ReadParameter(pFile, line);
-        }
-        else
-        {
-            line = "";
-            if (fgets(zw, 1024, pFile) && !feof(pFile))
-                {
-                    ESP_LOGD(TAG, "Read: %s", zw);
-                    line = std::string(zw);
-                }
-        }
-    }
-
-    fclose(pFile);
-}
-
-
-std::string* ClassFlowControll::getActStatusWithTime()
-{
-    return &aktstatusWithTime;
-}
-
-
-std::string* ClassFlowControll::getActStatus()
-{
-    return &aktstatus;
-}
-
-
-void ClassFlowControll::setActStatus(std::string _aktstatus)
-{
-    aktstatus = _aktstatus;
-    aktstatusWithTime = aktstatus;
-}
-
-
-void ClassFlowControll::doFlowTakeImageOnly(string time)
-{
-    std::string zw_time;
-
-    for (int i = 0; i < FlowControll.size(); ++i)
-    {
-        if (FlowControll[i]->name() == "ClassFlowTakeImage") {
-            zw_time = getCurrentTimeString("%H:%M:%S");
-            aktstatus = TranslateAktstatus(FlowControll[i]->name());
-            aktstatusWithTime = aktstatus + " (" + zw_time + ")";
-            #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", aktstatus, 1, false);
-            #endif //ENABLE_MQTT
-
-            FlowControll[i]->doFlow(time);
-        }
-    }
-}
-
-
-bool ClassFlowControll::doFlow(string time)
-{
-    bool result = true;
-    std::string zw_time;
-    int repeat = 0;
-    int qos = 1;
-
-    #ifdef DEBUG_DETAIL_ON 
-        LogFile.WriteHeapInfo("ClassFlowControll::doFlow - Start");
-    #endif
-
-    /* Check if we have a valid date/time and if not restart the NTP client */
-   /* if (! getTimeIsSet()) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time not set, restarting NTP Client!");
-        restartNtpClient();
-    }*/
-
-    //checkNtpStatus(0);
-
-    for (int i = 0; i < FlowControll.size(); ++i)
-    {
-        zw_time = getCurrentTimeString("%H:%M:%S");
-        aktstatus = TranslateAktstatus(FlowControll[i]->name());
-        aktstatusWithTime = aktstatus + " (" + zw_time + ")";
-        //LogFile.WriteToFile(ESP_LOG_INFO, TAG, aktstatusWithTime);
-        #ifdef ENABLE_MQTT
-            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", aktstatus, qos, false);
-        #endif //ENABLE_MQTT
-
-        #ifdef DEBUG_DETAIL_ON
-            string zw = "FlowControll.doFlow - " + FlowControll[i]->name();
-            LogFile.WriteHeapInfo(zw);
-        #endif
-
-        if (!FlowControll[i]->doFlow(time)){
-            repeat++;
-            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Fehler im vorheriger Schritt - wird zum " + to_string(repeat) + ". Mal wiederholt");
-            if (i) i -= 1;    // vPrevious step must be repeated (probably take pictures)
-            result = false;
-            if (repeat > 5) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Wiederholung 5x nicht erfolgreich --> reboot");
-                doReboot();
-                //Step was repeated 5x --> reboot
-            }
-        }
-        else
-        {
-            result = true;
-        }
-        
-        #ifdef DEBUG_DETAIL_ON  
-            LogFile.WriteHeapInfo("ClassFlowControll::doFlow");
-        #endif
-    }
-
-    zw_time = getCurrentTimeString("%H:%M:%S");
-    aktstatus = "Flow finished";
-    aktstatusWithTime = aktstatus + " (" + zw_time + ")";
-    //LogFile.WriteToFile(ESP_LOG_INFO, TAG, aktstatusWithTime);
-    #ifdef ENABLE_MQTT
-        MQTTPublish(mqttServer_getMainTopic() + "/" + "status", aktstatus, qos, false);
-    #endif //ENABLE_MQTT
-
-    return result;
+    return flowpostprocessing->GetJSON();
 }
 
 
@@ -489,7 +793,6 @@ string ClassFlowControll::GetPrevalue(std::string _number)
         return flowpostprocessing->GetPreValue(_number);   
     }
 
-
     return std::string("");    
 }
 
@@ -526,123 +829,6 @@ bool ClassFlowControll::UpdatePrevalue(std::string _newvalue, std::string _numbe
 }
 
 
-bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
-{
-    std::vector<string> splitted;
-
-    aktparamgraph = trim(aktparamgraph);
-
-    if (aktparamgraph.size() == 0)
-        if (!this->GetNextParagraph(pfile, aktparamgraph))
-            return false;
-
-
-    if ((toUpper(aktparamgraph).compare("[AUTOTIMER]") != 0) && (toUpper(aktparamgraph).compare("[DEBUG]") != 0) &&
-        (toUpper(aktparamgraph).compare("[SYSTEM]") != 0 && (toUpper(aktparamgraph).compare("[DATALOGGING]") != 0)))      // Paragraph passt nicht zu Debug oder DataLogging
-        return false;
-
-    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
-    {
-        splitted = ZerlegeZeile(aktparamgraph, " =");
-        if ((toUpper(splitted[0]) == "AUTOSTART") && (splitted.size() > 1))
-        {
-            if (toUpper(splitted[1]) == "TRUE")
-            {
-                AutoStart = true;
-            }
-        }
-
-        if ((toUpper(splitted[0]) == "INTERVAL") && (splitted.size() > 1))
-        {
-            AutoInterval = std::stof(splitted[1]);
-        }
-
-        if ((toUpper(splitted[0]) == "DATALOGACTIVE") && (splitted.size() > 1))
-        {
-            if (toUpper(splitted[1]) == "TRUE")
-            {
-                LogFile.SetDataLogToSD(true);
-            }
-            else {
-                LogFile.SetDataLogToSD(false);
-            }
-        }
-
-        if ((toUpper(splitted[0]) == "DATAFILESRETENTION") && (splitted.size() > 1))
-        {
-            LogFile.SetDataLogRetention(std::stoi(splitted[1]));
-        }
-
-        if ((toUpper(splitted[0]) == "LOGLEVEL") && (splitted.size() > 1))
-        {
-            /* matches esp_log_level_t */
-            if ((toUpper(splitted[1]) == "TRUE") || (toUpper(splitted[1]) == "2"))
-            {
-                LogFile.setLogLevel(ESP_LOG_WARN);
-            }
-            else if ((toUpper(splitted[1]) == "FALSE") || (toUpper(splitted[1]) == "0") || (toUpper(splitted[1]) == "1"))
-            {
-                LogFile.setLogLevel(ESP_LOG_ERROR);
-            }
-            else if (toUpper(splitted[1]) == "3")
-            {
-                LogFile.setLogLevel(ESP_LOG_INFO);
-            }
-            else if (toUpper(splitted[1]) == "4")
-            {
-                LogFile.setLogLevel(ESP_LOG_DEBUG);
-            }
-
-            /* If system reboot was not triggered by user and reboot was caused by execption -> keep log level to DEBUG */
-            if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC))
-                LogFile.setLogLevel(ESP_LOG_DEBUG);
-        }
-        if ((toUpper(splitted[0]) == "LOGFILESRETENTION") && (splitted.size() > 1))
-        {
-            LogFile.SetLogFileRetention(std::stoi(splitted[1]));
-        }
-
-        /* TimeServer and TimeZone got already read from the config, see setupTime () */
-        
-        #if (defined WLAN_USE_ROAMING_BY_SCANNING || (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES))
-        if ((toUpper(splitted[0]) == "RSSITHRESHOLD") && (splitted.size() > 1))
-        {
-            int RSSIThresholdTMP = atoi(splitted[1].c_str());
-            RSSIThresholdTMP = min(0, max(-100, RSSIThresholdTMP)); // Verify input limits (-100 - 0)
-            
-            if (ChangeRSSIThreshold(WLAN_CONFIG_FILE, RSSIThresholdTMP))
-            {
-                // reboot necessary so that the new wlan.ini is also used !!!
-                fclose(pfile);
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Rebooting to activate new RSSITHRESHOLD ...");
-                doReboot();
-            }
-        }
-        #endif
-
-        if ((toUpper(splitted[0]) == "HOSTNAME") && (splitted.size() > 1))
-        {
-            if (ChangeHostName(WLAN_CONFIG_FILE, splitted[1]))
-            {
-                // reboot necessary so that the new wlan.ini is also used !!!
-                fclose(pfile);
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Rebooting to activate new HOSTNAME...");             
-                doReboot();
-            }
-        }
-
-        if ((toUpper(splitted[0]) == "SETUPMODE") && (splitted.size() > 1))
-        {
-            if (toUpper(splitted[1]) == "TRUE")
-            {
-                SetupModeActive = true;
-            }        
-        }
-    }
-    return true;
-}
-
-
 int ClassFlowControll::CleanTempFolder() {
     const char* folderPath = "/sdcard/img_tmp";
     
@@ -676,7 +862,13 @@ int ClassFlowControll::CleanTempFolder() {
 
 esp_err_t ClassFlowControll::SendRawJPG(httpd_req_t *req)
 {
-    return flowtakeimage != NULL ? flowtakeimage->SendRawJPG(req) : ESP_FAIL;
+    if (flowtakeimage) {
+        return flowtakeimage->SendRawJPG(req);
+    }
+    else {
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "flowtakeimage not available: Raw image cannot be served!");
+        return ESP_ERR_NOT_FOUND;
+    }
 }
 
 
@@ -702,132 +894,144 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
         }
     }
     else if (_fn == "alg_roi.jpg") {
-        #ifdef ALGROI_LOAD_FROM_MEM_AS_JPG      // no CImageBasis needed to create alg_roi.jpg (ca. 790kB less RAM)
-            if (aktstatus.find("Initialization (delayed)") != -1) {
-                FILE* file = fopen("/sdcard/html/Flowstate_initialization_delayed.jpg", "rb"); 
+        if (getActStatus().compare(std::string(FLOW_INIT_DELAYED)) == 0) {
+            FILE* file = fopen("/sdcard/html/Flowstate_initialization_delayed.jpg", "rb"); 
 
-                if (!file) {
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_initialization_delayed.jpg not found");
-                    return ESP_FAIL;
-                }
-
-                fseek(file, 0, SEEK_END);
-                long fileSize = ftell(file); /* how long is the file ? */
-                fseek(file, 0, SEEK_SET); /* reset */
-
-                unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
-
-                if (!fileBuffer) {
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
-                    fclose(file);  
-                    return ESP_FAIL;
-                }
-
-                fread(fileBuffer, fileSize, 1, file);
-                fclose(file);
-
-                httpd_resp_set_type(req, "image/jpeg");
-                result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
-                free(fileBuffer);
-            }
-            else if (aktstatus.find("Initialization") != -1) {
-                FILE* file = fopen("/sdcard/html/Flowstate_initialization.jpg", "rb"); 
-
-                if (!file) {
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_initialization.jpg not found");
-                    return ESP_FAIL;
-                }
-
-                fseek(file, 0, SEEK_END);
-                long fileSize = ftell(file); /* how long is the file ? */
-                fseek(file, 0, SEEK_SET); /* reset */
-
-                unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
-
-                if (!fileBuffer) {
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
-                    fclose(file);  
-                    return ESP_FAIL;
-                }
-
-                fread(fileBuffer, fileSize, 1, file);
-                fclose(file);
-
-                httpd_resp_set_type(req, "image/jpeg");
-                result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
-                free(fileBuffer);
-            }
-            else if (aktstatus.find("Take Image") != -1) {
-                if (flowalignment && flowalignment->AlgROI) {
-                    FILE* file = fopen("/sdcard/html/Flowstate_take_image.jpg", "rb");    
-
-                    if (!file) {
-                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_take_image.jpg not found");
-                        return ESP_FAIL;
-                    }
-
-                    fseek(file, 0, SEEK_END);
-                    flowalignment->AlgROI->size = ftell(file); /* how long is the file ? */
-                    fseek(file, 0, SEEK_SET); /* reset */
-                    
-                    if (flowalignment->AlgROI->size > MAX_JPG_SIZE) {
-                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_take_image.jpg (" + std::to_string(flowalignment->AlgROI->size) +
-                                                                ") > allocated buffer (" + std::to_string(MAX_JPG_SIZE) + ")");
-                        fclose(file);
-                        return ESP_FAIL;
-                    }
-
-                    fread(flowalignment->AlgROI->data, flowalignment->AlgROI->size, 1, file);
-                    fclose(file);
-
-                    httpd_resp_set_type(req, "image/jpeg");
-                    result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
-                }
-                else {
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served!");
-                    if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
-                        _send = flowalignment->ImageBasis;
-                    }
-                    else {
-                        httpd_resp_send(req, NULL, 0);
-                        return ESP_OK;
-                    }
-                }
-            }
-            else {
-                if (flowalignment && flowalignment->AlgROI) {
-                    httpd_resp_set_type(req, "image/jpeg");
-                    result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
-                }
-                else {
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served!");
-                    if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
-                        _send = flowalignment->ImageBasis;
-                    }
-                    else {
-                        httpd_resp_send(req, NULL, 0);
-                        return ESP_OK;
-                    }
-                }
-            }
-        #else
-            if (!flowalignment) {
-                ESP_LOGD(TAG, "ClassFloDControll::GetJPGStream: FlowAlignment is not (yet) initialized. Interrupt serving!");
-                httpd_resp_send(req, NULL, 0);
+            if (!file) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_initialization_delayed.jpg not found");
                 return ESP_FAIL;
             }
 
-            _send = new CImageBasis("alg_roi", flowalignment->ImageBasis);
-			
-            if (_send->ImageOkay()) {
-                if (flowalignment) flowalignment->DrawRef(_send);
-                if (flowdigit) flowdigit->DrawROI(_send);
-                if (flowanalog) flowanalog->DrawROI(_send);
-                _sendDelete = true; // delete temporary _send element after sending
+            fseek(file, 0, SEEK_END);
+            long fileSize = ftell(file); /* how long is the file ? */
+            fseek(file, 0, SEEK_SET); /* reset */
+
+            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+
+            if (!fileBuffer) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                fclose(file);  
+                return ESP_FAIL;
+            }
+
+            fread(fileBuffer, fileSize, 1, file);
+            fclose(file);
+
+            httpd_resp_set_type(req, "image/jpeg");
+            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
+            free(fileBuffer);
+        }
+        else if (getActStatus().compare(std::string(FLOW_INIT)) == 0 ||
+                    getActStatus().compare(std::string(FLOW_INIT_FAILED)) == 0) {
+            FILE* file = fopen("/sdcard/html/Flowstate_initialization.jpg", "rb"); 
+
+            if (!file) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_initialization.jpg not found");
+                return ESP_FAIL;
+            }
+
+            fseek(file, 0, SEEK_END);
+            long fileSize = ftell(file); /* how long is the file ? */
+            fseek(file, 0, SEEK_SET); /* reset */
+
+            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+
+            if (!fileBuffer) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                fclose(file);  
+                return ESP_FAIL;
+            }
+
+            fread(fileBuffer, fileSize, 1, file);
+            fclose(file);
+
+            httpd_resp_set_type(req, "image/jpeg");
+            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
+            free(fileBuffer);
+        }
+        else if (getActStatus().compare(std::string(FLOW_SETUP_MODE)) == 0) {
+            FILE* file = fopen("/sdcard/html/Flowstate_setup_mode.jpg", "rb"); 
+
+            if (!file) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_setup_mode.jpg not found");
+                return ESP_FAIL;
+            }
+
+            fseek(file, 0, SEEK_END);
+            long fileSize = ftell(file); /* how long is the file ? */
+            fseek(file, 0, SEEK_SET); /* reset */
+
+            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+
+            if (!fileBuffer) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                fclose(file);  
+                return ESP_FAIL;
+            }
+
+            fread(fileBuffer, fileSize, 1, file);
+            fclose(file);
+
+            httpd_resp_set_type(req, "image/jpeg");
+            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
+            free(fileBuffer);
+        }
+        else if ((!flowtakeimage->getFlowState()->getCalled && getActStatus().compare(std::string(FLOW_IDLE_NO_AUTOSTART)) == 0) ||
+                    (!isAutoStart() && FlowStateErrorsOccured() && getActStatus().compare(std::string(FLOW_TAKE_IMAGE)) == 0)) {   // Show only before first round started or error occured, otherwise result will be shown till next start
+            FILE* file = fopen("/sdcard/html/Flowstate_idle_no_autostart.jpg", "rb"); 
+
+            if (!file) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_idle_no_autostart.jpg not found");
+                return ESP_FAIL;
+            }
+
+            fseek(file, 0, SEEK_END);
+            long fileSize = ftell(file); /* how long is the file ? */
+            fseek(file, 0, SEEK_SET); /* reset */
+
+            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+
+            if (!fileBuffer) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                fclose(file);  
+                return ESP_FAIL;
+            }
+
+            fread(fileBuffer, fileSize, 1, file);
+            fclose(file);
+
+            httpd_resp_set_type(req, "image/jpeg");
+            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
+            free(fileBuffer);
+        }
+        else if (getActStatus().compare(std::string(FLOW_TAKE_IMAGE)) == 0) {
+            if (flowalignment && flowalignment->AlgROI) {
+                FILE* file = fopen("/sdcard/html/Flowstate_take_image.jpg", "rb");    
+
+                if (!file) {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_take_image.jpg not found");
+                    return ESP_FAIL;
+                }
+
+                fseek(file, 0, SEEK_END);
+                flowalignment->AlgROI->size = ftell(file); /* how long is the file ? */
+                fseek(file, 0, SEEK_SET); /* reset */
+                
+                if (flowalignment->AlgROI->size > MAX_JPG_SIZE) {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_take_image.jpg (" + std::to_string(flowalignment->AlgROI->size) +
+                                                            ") > allocated buffer (" + std::to_string(MAX_JPG_SIZE) + ")");
+                    fclose(file);
+                    return ESP_FAIL;
+                }
+
+                fread(flowalignment->AlgROI->data, flowalignment->AlgROI->size, 1, file);
+                fclose(file);
+
+                httpd_resp_set_type(req, "image/jpeg");
+                result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
             }
             else {
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "ClassFlowControll::GetJPGStream: Not enough memory to create alg_roi.jpg -> alg.jpg is going to be served!");
-                
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served!");
                 if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
                     _send = flowalignment->ImageBasis;
                 }
@@ -836,7 +1040,50 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                     return ESP_OK;
                 }
             }
-        #endif
+        }
+        else if (isAutoStart() && FlowStateErrorsOccured() && (getActStatus().compare(std::string(FLOW_TAKE_IMAGE)) == 0)) {
+            FILE* file = fopen("/sdcard/html/Flowstate_idle_autostart.jpg", "rb"); 
+
+            if (!file) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_idle_autostart.jpg not found");
+                return ESP_FAIL;
+            }
+
+            fseek(file, 0, SEEK_END);
+            long fileSize = ftell(file); /* how long is the file ? */
+            fseek(file, 0, SEEK_SET); /* reset */
+
+            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+
+            if (!fileBuffer) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                fclose(file);  
+                return ESP_FAIL;
+            }
+
+            fread(fileBuffer, fileSize, 1, file);
+            fclose(file);
+
+            httpd_resp_set_type(req, "image/jpeg");
+            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
+            free(fileBuffer);
+        }
+        else {
+            if (flowalignment && flowalignment->AlgROI) {
+                httpd_resp_set_type(req, "image/jpeg");
+                result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
+            }
+            else {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served!");
+                if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
+                    _send = flowalignment->ImageBasis;
+                }
+                else {
+                    httpd_resp_send(req, NULL, 0);
+                    return ESP_OK;
+                }
+            }
+        }
     }
     else {
         std::vector<HTMLInfo*> htmlinfo;
@@ -911,14 +1158,3 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
     return result;
 }
 
-
-string ClassFlowControll::getNumbersName()
-{
-    return flowpostprocessing->getNumbersName();
-}
-
-
-string ClassFlowControll::getJSON()
-{
-    return flowpostprocessing->GetJSON();
-}

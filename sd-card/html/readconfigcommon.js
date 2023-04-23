@@ -16,6 +16,28 @@ function SaveConfigToServer(_domainname){
      FileSendContent(config_gesamt, "/config/config.ini", _domainname);          
 }
 
+
+function reload_config() {
+     var url = getDomainname() + '/reload_config';     
+     var xhttp = new XMLHttpRequest();
+     xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+               if (xhttp.responseText.substring(0,3) == "001" || xhttp.responseText.substring(0,3) == "002" || xhttp.responseText.substring(0,3) == "003") {
+                    firework.launch('Configuration updated and applied', 'success', 5000);
+               }
+               else if (xhttp.responseText.substring(0,3) == "004") {
+                    firework.launch('Configuration updated and get applied after round is completed', 'success', 5000);
+               }
+               else if (xhttp.responseText.substring(0,3) == "099") {
+                    firework.launch('Configuration updated, but cannot get applied (no flow task running)', 'danger', 5000);
+               }
+          }
+     }
+     xhttp.open("GET", url, true);
+     xhttp.send();
+}
+
+
 function UpdateConfig(zw, _index, _enhance, _domainname){
      var namezw = zw["name"];
      FileCopyOnServer("/img_tmp/ref_zw.jpg", namezw, _domainname);
@@ -41,88 +63,88 @@ function createReader(file) {
 
 
 function ZerlegeZeile(input, delimiter = " =\t\r")
-     {
-          var Output = Array(0);
+{
+     var Output = Array(0);
 //          delimiter = " =,\t";
-     
 
-          /* The input can have multiple formats: 
-           *  - key = value
-           *  - key = value1 value2 value3 ...
-           *  - key value1 value2 value3 ...
-           *  
-           * Examples:
-           *  - ImageSize = VGA
-           *  - IO0 = input disabled 10 false false 
-           *  - main.dig1 28 144 55 100 false
-           * 
-           * This causes issues eg. if a password key has a whitespace or equal sign in its value.
-           * As a workaround and to not break any legacy usage, we enforce to only use the
-           * equal sign, if the key is "password"
-           */
-          if (input.includes("password") || input.includes("Token")) { // Line contains a password, use the equal sign as the only delimiter and only split on first occurrence
-               var pos = input.indexOf("=");
-               delimiter = " \t\r"
-               Output.push(trim(input.substr(0, pos), delimiter));
-               Output.push(trim(input.substr(pos +1, input.length), delimiter));
-          }
-          else { // Legacy Mode
+
+     /* The input can have multiple formats: 
+          *  - key = value
+          *  - key = value1 value2 value3 ...
+          *  - key value1 value2 value3 ...
+          *  
+          * Examples:
+          *  - ImageSize = VGA
+          *  - IO0 = input disabled 10 false false 
+          *  - main.dig1 28 144 55 100 false
+          * 
+          * This causes issues eg. if a password key has a whitespace or equal sign in its value.
+          * As a workaround and to not break any legacy usage, we enforce to only use the
+          * equal sign, if the key is "password"
+          */
+     if (input.includes("password") || input.includes("Token")) { // Line contains a password, use the equal sign as the only delimiter and only split on first occurrence
+          var pos = input.indexOf("=");
+          delimiter = " \t\r"
+          Output.push(trim(input.substr(0, pos), delimiter));
+          Output.push(trim(input.substr(pos +1, input.length), delimiter));
+     }
+     else { // Legacy Mode
+          input = trim(input, delimiter);
+          var pos = findDelimiterPos(input, delimiter);
+          var token;
+          while (pos > -1) {
+               token = input.substr(0, pos);
+               token = trim(token, delimiter);
+               Output.push(token);
+               input = input.substr(pos+1, input.length);
                input = trim(input, delimiter);
-               var pos = findDelimiterPos(input, delimiter);
-               var token;
-               while (pos > -1) {
-                    token = input.substr(0, pos);
-                    token = trim(token, delimiter);
-                    Output.push(token);
-                    input = input.substr(pos+1, input.length);
-                    input = trim(input, delimiter);
-                    pos = findDelimiterPos(input, delimiter);
-               }
-               Output.push(input);
+               pos = findDelimiterPos(input, delimiter);
           }
-     
-          return Output;
-     
-     }    
+          Output.push(input);
+     }
+
+     return Output;
+}    
+
 
 function findDelimiterPos(input, delimiter)
+{
+     var pos = -1;
+     var zw;
+     var akt_del;
+
+     for (var anz = 0; anz < delimiter.length; ++anz)
      {
-          var pos = -1;
-          var zw;
-          var akt_del;
-     
-          for (var anz = 0; anz < delimiter.length; ++anz)
+          akt_del = delimiter[anz];
+          zw = input.indexOf(akt_del);
+          if (zw > -1)
           {
-               akt_del = delimiter[anz];
-               zw = input.indexOf(akt_del);
-               if (zw > -1)
+               if (pos > -1)
                {
-                    if (pos > -1)
-                    {
-                         if (zw < pos)
-                              pos = zw;
-                    }
-                    else
+                    if (zw < pos)
                          pos = zw;
                }
+               else
+                    pos = zw;
           }
-          return pos;
      }
+     return pos;
+}
      
      
 
 function trim(istring, adddelimiter)
-     {
-          while ((istring.length > 0) && (adddelimiter.indexOf(istring[0]) >= 0)){
-               istring = istring.substr(1, istring.length-1);
-          }
-          
-          while ((istring.length > 0) && (adddelimiter.indexOf(istring[istring.length-1]) >= 0)){
-               istring = istring.substr(0, istring.length-1);
-          }
-
-          return istring;
+{
+     while ((istring.length > 0) && (adddelimiter.indexOf(istring[0]) >= 0)){
+          istring = istring.substr(1, istring.length-1);
      }
+     
+     while ((istring.length > 0) && (adddelimiter.indexOf(istring[istring.length-1]) >= 0)){
+          istring = istring.substr(0, istring.length-1);
+     }
+
+     return istring;
+}
      
 
 function getConfig()
@@ -131,7 +153,8 @@ function getConfig()
 }
 
      
-function loadConfig(_domainname) {
+function loadConfig(_domainname)
+{
      var xhttp = new XMLHttpRequest();
      try {
           url = _domainname + '/fileserver/config/config.ini';     
@@ -148,17 +171,17 @@ function loadConfig(_domainname) {
 }
 
      
-
-
-function dataURLtoBlob(dataurl) {
+function dataURLtoBlob(dataurl)
+{
      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
           bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
      while(n--){
           u8arr[n] = bstr.charCodeAt(n);
      }
      return new Blob([u8arr], {type:mime});
-     }	
-     
+}	
+ 
+
 function FileCopyOnServer(_source, _target, _domainname = ""){
      url = _domainname + "/editflow?task=copy&in=" + _source + "&out=" + _target;
      var xhttp = new XMLHttpRequest();  
@@ -170,6 +193,7 @@ function FileCopyOnServer(_source, _target, _domainname = ""){
 //	    firework.launch('Deleting Config.ini failed!', 'danger', 30000);
      }
 }
+
 
 function FileDeleteOnServer(_filename, _domainname = ""){
      var xhttp = new XMLHttpRequest();
@@ -200,6 +224,7 @@ function FileDeleteOnServer(_filename, _domainname = ""){
 
      return okay;
 }
+
 
 function FileSendContent(_content, _filename, _domainname = ""){
      var xhttp = new XMLHttpRequest();  
@@ -242,6 +267,7 @@ function SaveCanvasToImage(_canvas, _filename, _delete = true, _domainname = "")
      FileSendContent(rtn, _filename, _domainname);
 }
 
+
 function MakeContrastImageZW(zw, _enhance, _domainname){
      _filename = zw["name"].replace("/config/", "/img_tmp/");
      url = _domainname + "/editflow?task=cutref&in=/config/reference.jpg&out=" + _filename + "&x=" + zw["x"] + "&y="  + zw["y"] + "&dx=" + zw["dx"] + "&dy=" + zw["dy"];
@@ -258,7 +284,6 @@ function MakeContrastImageZW(zw, _enhance, _domainname){
 //	    firework.launch('Deleting Config.ini failed!', 'danger', 30000);
      }
 }
-
 
 
 function MakeRefZW(zw, _domainname){
