@@ -313,7 +313,7 @@
         
         
         function SaveReference(){
-            if (confirm("Are you sure you want to save this image as new reference image?")) {
+            if (confirm("Are you sure you want to save and apply the new reference image configuration?")) {
                 param["Alignment"]["InitialRotate"].value1 = document.getElementById("prerotateangle").value;
 
                 if ((param["Alignment"]["InitialMirror"].found == true) && (document.getElementById("mirror").checked))
@@ -345,14 +345,17 @@
                 SaveConfigToServer(getDomainname());    
                 document.getElementById("updatereferenceimage").disabled = true;
 
+                SaveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
+
                 firework.launch('Save and apply configuration...', 'success', 5000);
                 setTimeout(function() {
                     reload_config();
                 }, 1000);
 
-                SaveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
-                showReference(param);
-                UpdatePage();
+                setTimeout(function() {
+                    showReference(param);
+                    UpdatePage();
+                }, 5000);
             }
         }
 

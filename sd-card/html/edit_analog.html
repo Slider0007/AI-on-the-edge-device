@@ -372,16 +372,18 @@ function ChangeSelection(){
 }
 
 function SaveToConfig(){
-//    _zwcat = getConfigCategory();
-    cofcat["Analog"]["enabled"] = document.getElementById("Category_Analog_enabled").checked;
-    WriteConfigININew();
-    SaveConfigToServer(domainname);
-    UpdateROIs();
+    if (confirm("Are you sure you want to save and apply the new analog ROI configuration?")) {
+        //_zwcat = getConfigCategory();
+        cofcat["Analog"]["enabled"] = document.getElementById("Category_Analog_enabled").checked;
+        WriteConfigININew();
+        SaveConfigToServer(domainname);
+        UpdateROIs();
 
-    firework.launch('Save and apply configuration...', 'success', 5000);
-    setTimeout(function() {
-        reload_config();
-    }, 1000);
+        firework.launch('Save and apply configuration...', 'success', 5000);
+        setTimeout(function() {
+            reload_config();
+        }, 1000);
+    }
 }
 
 
