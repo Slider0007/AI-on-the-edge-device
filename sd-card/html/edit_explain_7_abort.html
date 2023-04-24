@@ -46,7 +46,7 @@ p {font-size: 1em;}
     <script type="text/javascript">
    
     function reboot() {
-        if (confirm("Do you want to abort the setup mode and restart to regular web interface?")) {
+        if (confirm("Do you want to abort the setup mode and switch to regular web interface?")) {
             domainname = getDomainname(); 
             if (!loadConfig(domainname)) {
                 firework.launch('Setup mode could not be deactivated! Please try again!', 'danger', 30000);

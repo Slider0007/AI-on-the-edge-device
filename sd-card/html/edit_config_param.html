@@ -612,8 +612,9 @@
 				<label for=PostProcessing_DecimalShift_enabled><class id="PostProcessing_DecimalShift_text" style="color:black;">Decimal Shift</class></label>
 			</td>
 			<td>
-				<input required type="number" id="PostProcessing_DecimalShift_value1" value="0" step="1"
-					oninput="(!validity.stepMismatch||(value=parseInt(this.value)));">
+				<input required type="number" id="PostProcessing_DecimalShift_value1" value="0" step="1" min="-9" max="9"
+					oninput="(!validity.rangeUnderflow||(value=-9)) && (!validity.rangeOverflow||(value=9)) && 
+						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.DecimalShift</td>
 		</tr>

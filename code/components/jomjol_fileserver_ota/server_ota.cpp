@@ -598,15 +598,17 @@ void task_reboot(void *DeleteMainFlow)
         DeleteMainFlowTask();  // Kill autoflow task if executed in extra task, if not don't kill parent task
     }
 
-    Camera.LightOnOff(false);
-    StatusLEDOff();
-
     /* Stop service tasks */
     #ifdef ENABLE_MQTT
         MQTTdestroy_client(true);
     #endif //ENABLE_MQTT
+
     gpio_handler_destroy();
+
+    Camera.LightOnOff(false);
+    StatusLEDOff();
     esp_camera_deinit();
+
     WIFIDestroy();
 
     vTaskDelay(3000 / portTICK_PERIOD_MS);
@@ -631,7 +633,7 @@ void doReboot()
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "task_reboot not created -> force reboot without killing flow");
         task_reboot((void*) false);
     }
-    vTaskDelay(10000 / portTICK_PERIOD_MS); // Prevent serving web client fetch response until system is shuting down
+    vTaskDelay(15000 / portTICK_PERIOD_MS); // Prevent serving web client fetch response until system is shuting down
 }
 
 

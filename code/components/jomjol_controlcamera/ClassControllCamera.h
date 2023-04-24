@@ -55,7 +55,8 @@ class CCamera {
         bool testCamera(void);
         bool EnableAutoExposure(int flash_duration);
         bool getCameraInitSuccessful();
-        void useDemoMode(void);
+        void EnableDemoMode(void);
+        void DisableDemoMode(void);
         void ledc_init(void);
        
 

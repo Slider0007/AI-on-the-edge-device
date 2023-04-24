@@ -128,7 +128,9 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
         if ((toUpper(splitted[0]) == "DEMO") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
-                Camera.useDemoMode();
+                Camera.EnableDemoMode();
+            else
+                Camera.DisableDemoMode();
         }
     }
 

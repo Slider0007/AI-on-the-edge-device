@@ -754,7 +754,7 @@ bool CCamera::getCameraInitSuccessful()
 
 std::vector<std::string> demoFiles;
 
-void CCamera::useDemoMode()
+void CCamera::EnableDemoMode()
 {
     demoFiles.clear();
     free(demoImage);
@@ -789,6 +789,14 @@ void CCamera::useDemoMode()
     }
 
     demoMode = true;
+}
+
+
+void CCamera::DisableDemoMode()
+{
+    demoMode = false;
+    demoFiles.clear();
+    free(demoImage);
 }
 
 
