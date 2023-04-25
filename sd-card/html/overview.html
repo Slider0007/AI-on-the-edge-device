@@ -7,7 +7,7 @@
 
 <style>
 .tg  {border-collapse:collapse;border-spacing:0;width:100%;min-width:600px;height:100%;color:darkslategray;}
-.tg th{min-width:290px;width:290px;height:20px;font-size:18px;text-align:left;font-weight:bold;padding:5px 10px 5px 10px;;overflow:hidden;word-break:normal;background-color:lightgrey;}
+.tg th{min-width:325px;width:325px;height:20px;font-size:18px;text-align:left;font-weight:bold;padding:5px 10px 5px 10px;;overflow:hidden;word-break:normal;background-color:lightgrey;}
 .tg td{font-size:15px;padding:5px 10px 5px 10px;overflow:hidden;word-break:normal;}
 .tg .tg-1{font-size:15px;vertical-align: top;font-family:Arial, Helvetica, sans-serif !important;}
 .tg .tg-2{height:52px;font-size:15px;padding:3px 0px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
@@ -83,7 +83,8 @@
 
 	<script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
 	<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
-	<script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script> 
+	<script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+	<script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>
 	<script type="text/javascript">
 
 	function addZero(i) {
@@ -280,8 +281,28 @@
 	}
 
 
+	function setImageMaxWidth()
+	{
+		loadConfig(domainname); 
+		ParseConfig();
+		if(param["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
+			if (param["Alignment"]["FlipImageSize"]["value1"] == "false")
+				document.getElementById("img").style.maxWidth = "320px";
+			else
+				document.getElementById("img").style.maxWidth = "240px";
+		}
+		else {
+			if (param["Alignment"]["FlipImageSize"]["value1"] == "false")
+				document.getElementById("img").style.maxWidth = "640px";
+			else
+				document.getElementById("img").style.maxWidth = "480px";
+		}
+	}
+
+
 	function init(){
 		domainname = getDomainname();
+		setImageMaxWidth();
 		Refresh();
 	}
 
