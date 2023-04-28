@@ -62,10 +62,7 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
         endsWith(filename, ".ico") ||
         endsWith(filename, ".png")) {
 
-        if (filename == "/sdcard/html/index.html") {
-            httpd_resp_set_hdr(req, "Cache-Control", "max-age=120");
-        }
-        else if (filename == "/sdcard/html/setup.html") {    
+    	if (filename == "/sdcard/html/setup.html") {    
             httpd_resp_set_hdr(req, "Clear-Site-Data", "\"*\"");
         }
         else {
