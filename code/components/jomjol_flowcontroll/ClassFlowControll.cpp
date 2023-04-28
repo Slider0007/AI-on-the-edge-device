@@ -511,7 +511,7 @@ bool ClassFlowControll::doFlowImageEvaluation(string time)
         setActStatus(TranslateAktstatus(FlowControll[i]->name()));
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + getActStatus());
         #ifdef ENABLE_MQTT
-            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), false);
+            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), 1, false);
         #endif //ENABLE_MQTT
 
         if (!FlowControll[i]->doFlow(time)) {
@@ -540,7 +540,7 @@ bool ClassFlowControll::doFlowPublishData(string time)
         setActStatus(TranslateAktstatus(FlowControlPublish[i]->name()));
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + getActStatus());
         #ifdef ENABLE_MQTT
-            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), false);
+            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), 1, false);
         #endif //ENABLE_MQTT
 
         if (!FlowControlPublish[i]->doFlow(time)) {
@@ -565,7 +565,7 @@ bool ClassFlowControll::doFlowTakeImageOnly(string time)
             setActStatus(TranslateAktstatus(FlowControll[i]->name()));
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + getActStatus());
             #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), false);
+                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), 1, false);
             #endif //ENABLE_MQTT
 
             if (!FlowControlPublish[i]->doFlow(time)) {

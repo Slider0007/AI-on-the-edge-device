@@ -126,8 +126,8 @@ bool doInit(void)
 {
     bool bRetVal = true;
 
-    heap_caps_dump(MALLOC_CAP_INTERNAL);
-    heap_caps_dump(MALLOC_CAP_SPIRAM);
+    //heap_caps_dump(MALLOC_CAP_INTERNAL);
+    //heap_caps_dump(MALLOC_CAP_SPIRAM);
 
     if (!flowctrl.InitFlow(CONFIG_FILE))
         bRetVal = false;
@@ -139,8 +139,8 @@ bool doInit(void)
         flowctrl.StartMQTTService();
     #endif //ENABLE_MQTT
 
-    heap_caps_dump(MALLOC_CAP_INTERNAL);
-    heap_caps_dump(MALLOC_CAP_SPIRAM);
+    //heap_caps_dump(MALLOC_CAP_INTERNAL);
+    //heap_caps_dump(MALLOC_CAP_SPIRAM);
 
     return bRetVal;
 }
@@ -1018,7 +1018,7 @@ void task_autodoFlow(void *pvParameter)
                 flowctrl.setActFlowError(true);
                 #ifdef ENABLE_MQTT
                 if (getMQTTisConnected())
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
                 #endif //ENABLE_MQTT
 
                 while (true) {                                      // Waiting for a REQUEST
@@ -1046,7 +1046,7 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_SETUP_MODE));
                 flowctrl.setActStatus(std::string(FLOW_SETUP_MODE));
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
                 #endif //ENABLE_MQTT
 
                 //std::string zw_time = getCurrentTimeString(LOGFILE_TIME_FORMAT);
@@ -1075,7 +1075,7 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_NO_AUTOSTART));
                 flowctrl.setActStatus(std::string(FLOW_IDLE_NO_AUTOSTART));
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
                 #endif //ENABLE_MQTT
 
                 while (true) {                              // Waiting for a REQUEST
@@ -1140,7 +1140,7 @@ void task_autodoFlow(void *pvParameter)
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_ADDITIONAL_TASKS));
             flowctrl.setActStatus(std::string(FLOW_ADDITIONAL_TASKS));
             #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), false);
+                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
             #endif //ENABLE_MQTT
 
             // Cleanup outdated log and data files (retention policy)  
@@ -1166,7 +1166,7 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_AUTO_ERROR_HANDLING));
                 flowctrl.setActStatus(std::string(FLOW_AUTO_ERROR_HANDLING));
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
                 #endif //ENABLE_MQTT
             
                 flowctrl.AutomaticFlowErrorHandler();
@@ -1207,7 +1207,7 @@ void task_autodoFlow(void *pvParameter)
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_AUTOSTART));
             flowctrl.setActStatus(std::string(FLOW_IDLE_AUTOSTART));
             #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), false);
+                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
             #endif //ENABLE_MQTT
 
             int64_t fr_delta_ms = (esp_timer_get_time() - fr_start) / 1000;
