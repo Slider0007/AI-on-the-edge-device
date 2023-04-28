@@ -144,8 +144,10 @@ void StatusLED(StatusLedSource _eSource, int _iCode, bool _bInfinite)
 
 void StatusLEDOff(void)
 {
-	if (xHandle_task_StatusLED)
+	if (xHandle_task_StatusLED) {
 		vTaskDelete(xHandle_task_StatusLED); // Delete task for StatusLED to force stop of blinking
+		xHandle_task_StatusLED = NULL;
+	}
 	
 	gpio_pad_select_gpio(BLINK_GPIO); // Init the GPIO
 	gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output

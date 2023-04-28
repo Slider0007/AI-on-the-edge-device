@@ -14,10 +14,10 @@
 class ClassFlowInfluxDBv2 : public ClassFlow
 {
 protected:
+	ClassFlowPostProcessing* flowpostprocessing;
     std::string uri, database;
     std::string dborg, dbtoken, dbfield;
     std::string OldValue;
-	ClassFlowPostProcessing* flowpostprocessing;  
     bool InfluxDBenable;
 
     void SetInitialParameter(void);     

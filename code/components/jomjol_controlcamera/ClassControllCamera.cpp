@@ -342,8 +342,7 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int _flashduration)
     }
 
     if (!fb) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "is not working anymore (CaptureToBasisImage) - most probably caused "
-                                                "by a hardware problem (instablility, ...). System will reboot.");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToBasisImage: Framebuffer not available");
         return ESP_FAIL;
     }
 

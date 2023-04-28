@@ -146,7 +146,7 @@ bool ClassFlowPostProcessing::LoadPreValue(void)
 {
     std::vector<string> splitted;
     FILE* pFile;
-    char zw[1024];
+    char zw[256];
     string zwtime, zwvalue, name;
     bool _done = false;
 
@@ -157,7 +157,7 @@ bool ClassFlowPostProcessing::LoadPreValue(void)
     if (pFile == NULL)
         return false;
 
-    fgets(zw, 1024, pFile);
+    fgets(zw, sizeof(zw), pFile);
     ESP_LOGD(TAG, "Read line Prevalue.ini: %s", zw);
     zwtime = trim(std::string(zw));
     if (zwtime.length() == 0)
@@ -205,7 +205,7 @@ bool ClassFlowPostProcessing::LoadPreValue(void)
                 }
             }
 
-            if (!fgets(zw, 1024, pFile))
+            if (!fgets(zw, sizeof(zw), pFile))
                 _done = true;
             else
             {
@@ -223,7 +223,7 @@ bool ClassFlowPostProcessing::LoadPreValue(void)
     }   
     else        // Old Format
     {
-        fgets(zw, 1024, pFile);
+        fgets(zw, sizeof(zw), pFile);
         fclose(pFile);
         ESP_LOGD(TAG, "%s", zw);
         zwvalue = trim(std::string(zw));

@@ -126,6 +126,9 @@ bool doInit(void)
 {
     bool bRetVal = true;
 
+    heap_caps_dump(MALLOC_CAP_INTERNAL);
+    heap_caps_dump(MALLOC_CAP_SPIRAM);
+
     if (!flowctrl.InitFlow(CONFIG_FILE))
         bRetVal = false;
     
@@ -135,6 +138,9 @@ bool doInit(void)
     #ifdef ENABLE_MQTT
         flowctrl.StartMQTTService();
     #endif //ENABLE_MQTT
+
+    heap_caps_dump(MALLOC_CAP_INTERNAL);
+    heap_caps_dump(MALLOC_CAP_SPIRAM);
 
     return bRetVal;
 }
@@ -1181,11 +1187,13 @@ void task_autodoFlow(void *pvParameter)
             }
             else if (manualFlowStart) {
                 manualFlowStart = false;
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Start process (manual trigger)");
-                taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING;         // Continue with next "FLOW PROCESSING" round"
-            }
-            else if (!flowctrl.isAutoStart()) {
-                taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART;      // Return to state "Idle (NO AUTOSTART)"
+                if (flowctrl.isAutoStart()) {
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Start process (manual trigger)");
+                    taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING;         // Continue with next "FLOW PROCESSING" round"
+                }
+                else {
+                    taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART;      // Return to state "Idle (NO AUTOSTART)"
+                }
             }
             else {
                 taskAutoFlowState = FLOW_TASK_STATE_IDLE_AUTOSTART;         // Continue to state "Idle (AUTOSTART / WAITING STATE)"
@@ -1252,7 +1260,7 @@ void StartMainFlowTask()
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_START_FLOW_TASK));
     flowctrl.setActStatus(std::string(FLOW_START_FLOW_TASK));
 
-    BaseType_t xReturned = xTaskCreatePinnedToCore(&task_autodoFlow, "task_autodoFlow", 16 * 1024, NULL, tskIDLE_PRIORITY+2, &xHandletask_autodoFlow, 0);
+    BaseType_t xReturned = xTaskCreatePinnedToCore(&task_autodoFlow, "task_autodoFlow", 12 * 1024, NULL, tskIDLE_PRIORITY+2, &xHandletask_autodoFlow, 0);
     if( xReturned != pdPASS ) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create task_autodoFlow");
         LogFile.WriteHeapInfo("CreateFlowTask: Failed to create task");

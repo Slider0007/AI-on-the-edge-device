@@ -718,7 +718,8 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     /* Close file upon upload completion */
     fclose(fd);
-    ESP_LOGI(TAG, "File reception complete");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "File saved: " + string(filename));
+    ESP_LOGI(TAG, "File reception completed");
 
     std::string directory = std::string(filepath);
 	size_t zw = directory.find("/");
@@ -737,14 +738,37 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 //    ESP_LOGD(TAG, "Directory danach 2: %s", directory.c_str());
 
     /* Redirect onto root to see the updated file list */
-    httpd_resp_set_status(req, "303 See Other");
-    httpd_resp_set_hdr(req, "Location", directory.c_str());
+    if (strcmp(filename, "/config/config.ini") == 0 ||
+        strcmp(filename, "/config/ref0.jpg") == 0 ||
+        strcmp(filename, "/config/ref0_org.jpg") == 0 ||
+        strcmp(filename, "/config/ref1.jpg") == 0 ||
+        strcmp(filename, "/config/ref1_org.jpg") == 0 ||
+        strcmp(filename, "/config/reference.jpg") == 0 ||
+        strcmp(filename, "/img_tmp/ref0.jpg") == 0 ||
+        strcmp(filename, "/img_tmp/ref0_org.jpg") == 0 ||
+        strcmp(filename, "/img_tmp/ref1.jpg") == 0 ||
+        strcmp(filename, "/img_tmp/ref1_org.jpg") == 0 ||
+        strcmp(filename, "/img_tmp/reference.jpg") == 0 ) 
+    { 
+        httpd_resp_set_status(req, HTTPD_200); // Avoid reloading of folder content
+    }
+    else {
+        httpd_resp_set_status(req, "303 See Other"); // Reload folder content after upload
+    }
 
-    /* Redirect onto root to see the updated file list */
-    httpd_resp_set_status(req, "303 See Other");
     httpd_resp_set_hdr(req, "Location", directory.c_str());
     httpd_resp_sendstr(req, "File uploaded successfully");
 
+/*
+    // Redirect onto root to see the updated file list
+    httpd_resp_set_status(req, "303 See Other");
+    httpd_resp_set_hdr(req, "Location", directory.c_str());
+
+    // Redirect onto root to see the updated file list
+    httpd_resp_set_status(req, "303 See Other");
+    httpd_resp_set_hdr(req, "Location", directory.c_str());
+    httpd_resp_sendstr(req, "File uploaded successfully");
+*/
 /*
     if (strcmp(filepath, CONFIG_FILE) == 0) {
         ESP_LOGD(TAG, "New config found. Reload handler.");
@@ -845,9 +869,10 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
             return ESP_FAIL;
         }
 
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Deleting file: " + string(filename));
         /* Delete file */
         unlink(filepath);
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "File deleted: " + string(filename));
+        ESP_LOGI(TAG, "File deletion completed");
 
         directory = std::string(filepath);
         size_t zw = directory.find("/");
@@ -864,16 +889,34 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         directory = directory.substr(start_fn, found - start_fn + 1);
         directory = "/fileserver" + directory;
         ESP_LOGD(TAG, "Directory danach 4: %s", directory.c_str());
-    }
     
+        //////////////////////////////////////////////////////////////
+
+        /* Redirect onto root to see the updated file list */
+        if (strcmp(filename, "/config/config.ini") == 0 ||
+            strcmp(filename, "/config/ref0.jpg") == 0 ||
+            strcmp(filename, "/config/ref0_org.jpg") == 0 ||
+            strcmp(filename, "/config/ref1.jpg") == 0 ||
+            strcmp(filename, "/config/ref1_org.jpg") == 0 ||
+            strcmp(filename, "/config/reference.jpg") == 0 ||
+            strcmp(filename, "/img_tmp/ref0.jpg") == 0 ||
+            strcmp(filename, "/img_tmp/ref0_org.jpg") == 0 ||
+            strcmp(filename, "/img_tmp/ref1.jpg") == 0 ||
+            strcmp(filename, "/img_tmp/ref1_org.jpg") == 0 ||
+            strcmp(filename, "/img_tmp/reference.jpg") == 0 ) 
+        { 
+            httpd_resp_set_status(req, HTTPD_200); // Avoid reloading of folder content
+        }
+        else {
+            httpd_resp_set_status(req, "303 See Other"); // Reload folder content after upload
+        }
+    }
 
 
+    /*httpd_resp_set_hdr(req, "Location", directory.c_str());
+    // Redirect onto root to see the updated file list
+    httpd_resp_set_status(req, "303 See Other");*/
 
-
-//////////////////////////////////////////////////////////////
-
-    /* Redirect onto root to see the updated file list */
-    httpd_resp_set_status(req, "303 See Other");
     httpd_resp_set_hdr(req, "Location", directory.c_str());
     httpd_resp_sendstr(req, "File successfully deleted");
     return ESP_OK;

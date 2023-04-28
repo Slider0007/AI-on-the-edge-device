@@ -261,7 +261,7 @@ int MQTT_Init() {
     mqtt_cfg.session.last_will.msg = lwt_disconnected.c_str();
     mqtt_cfg.session.last_will.msg_len = (int)(lwt_disconnected.length());
     mqtt_cfg.session.keepalive = keepalive;
-    mqtt_cfg.buffer.size = 1536;                         // size of MQTT send/receive buffer (Default: 1024)
+    mqtt_cfg.buffer.size = 2048;                         // size of MQTT send/receive buffer (Default: 1024)
 
     if (user.length() && password.length()){
         mqtt_cfg.credentials.username = user.c_str();

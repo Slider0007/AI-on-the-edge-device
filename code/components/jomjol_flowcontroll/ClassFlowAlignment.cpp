@@ -333,7 +333,7 @@ void ClassFlowAlignment::SaveReferenceAlignmentValues()
 bool ClassFlowAlignment::LoadReferenceAlignmentValues(void)
 {
     FILE* pFile;
-    char zw[1024];
+    char zw[256];
     string zwvalue;
     std::vector<string> splitted;  
 
@@ -342,10 +342,10 @@ bool ClassFlowAlignment::LoadReferenceAlignmentValues(void)
     if (pFile == NULL)
         return false;
 
-    fgets(zw, 1024, pFile);
+    fgets(zw, sizeof(zw), pFile);
     ESP_LOGD(TAG, "%s", zw);
 
-    fgets(zw, 1024, pFile);
+    fgets(zw, sizeof(zw), pFile);
     splitted = ZerlegeZeile(std::string(zw), " \t");
     if (splitted.size() < 6)
     {
@@ -360,7 +360,7 @@ bool ClassFlowAlignment::LoadReferenceAlignmentValues(void)
     References[0].fastalg_max = stoi(splitted[4]);
     References[0].fastalg_avg = stof(splitted[5]);
 
-    fgets(zw, 1024, pFile);
+    fgets(zw, sizeof(zw), pFile);
     splitted = ZerlegeZeile(std::string(zw));
     if (splitted.size() < 6)
     {

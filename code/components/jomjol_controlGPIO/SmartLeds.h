@@ -169,8 +169,8 @@ public:
         initChannel( _channel );
 
         RMT.tx_lim_ch[ _channel ].limit = detail::MAX_PULSES;
-        RMT.int_ena.val |= 1 << ( 24 + _channel );
-        RMT.int_ena.val |= 1 << ( 3 * _channel );
+        RMT.int_ena.val = RMT.int_ena.val | 1 << ( 24 + _channel );
+        RMT.int_ena.val = RMT.int_ena.val | 1 << ( 3 * _channel );
 
         _bitToRmt[ 0 ].level0 = 1;
         _bitToRmt[ 0 ].level1 = 0;

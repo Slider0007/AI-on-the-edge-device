@@ -14,15 +14,15 @@
 class ClassFlowMQTT : public ClassFlow
 {
 protected:
+	ClassFlowPostProcessing* flowpostprocessing; 
     std::string uri, topic, topicError, clientname, topicRate, topicTimeStamp, topicUptime, topicFreeMem;
     std::string OldValue;
-	ClassFlowPostProcessing* flowpostprocessing;  
-    std::string user, password; 
-    bool SetRetainFlag;
-    int keepAlive; // Seconds
-    float roundInterval; // Minutes
-
+    std::string user, password;
     std::string maintopic; 
+    float roundInterval; // Minutes
+    int keepAlive; // Seconds
+    bool SetRetainFlag;
+
 	void SetInitialParameter(void);        
 
 public:

@@ -122,13 +122,13 @@ std::string ClassFlow::GetParameterName(std::string _input)
 
 bool ClassFlow::getNextLine(FILE* pfile, string *rt)
 {
-	char zw[1024];
+	char zw[256];
 	if (pfile == NULL)
 	{
 		*rt = "";
 		return false;
 	}
-	if (!fgets(zw, 1024, pfile))
+	if (!fgets(zw, sizeof(zw), pfile))
 	{
 		*rt = "";
 		ESP_LOGD(TAG, "END OF FILE");
@@ -140,7 +140,7 @@ bool ClassFlow::getNextLine(FILE* pfile, string *rt)
 	while ((zw[0] == ';' || zw[0] == '#' || (rt->size() == 0)) && !(zw[1] == '['))
 	{
 		*rt = "";
-		if (!fgets(zw, 1024, pfile))
+		if (!fgets(zw, sizeof(zw), pfile))
 			return false;
 		ESP_LOGD(TAG, "%s", zw);
 		*rt = zw;

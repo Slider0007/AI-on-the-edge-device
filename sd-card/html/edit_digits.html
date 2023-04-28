@@ -385,6 +385,7 @@ function SaveToConfig(){
         WriteConfigININew();
         SaveConfigToServer(domainname);
         UpdateROIs();
+        document.getElementById("saveroi").disabled = true;
 
         firework.launch('Save and apply configuration...', 'success', 5000);
         setTimeout(function() {

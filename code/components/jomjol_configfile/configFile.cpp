@@ -42,14 +42,14 @@ bool ConfigFile::GetNextParagraph(std::string& aktparamgraph, bool &disabled, bo
 bool ConfigFile::getNextLine(std::string *rt, bool &disabled, bool &eof)
 {
     eof = false;
-	char zw[1024] = "";
+	char zw[256] = "";
 	if (pFile == NULL)
 	{
 		*rt = "";
 		return false;
 	}
 
-	if (fgets(zw, 1024, pFile))
+	if (fgets(zw, sizeof(zw), pFile))
 	{
 		ESP_LOGD(TAG, "%s", zw);
 		if ((strlen(zw) == 0) && feof(pFile))
@@ -69,7 +69,7 @@ bool ConfigFile::getNextLine(std::string *rt, bool &disabled, bool &eof)
 	*rt = trim(*rt);
 	while ((zw[0] == ';' || zw[0] == '#' || (rt->size() == 0)) && !(zw[1] == '['))
 	{
-		fgets(zw, 1024, pFile);
+		fgets(zw, sizeof(zw), pFile);
 		ESP_LOGD(TAG, "%s", zw);
 		if (feof(pFile))
 		{

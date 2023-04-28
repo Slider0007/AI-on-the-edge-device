@@ -14,18 +14,16 @@
 class ClassFlowInfluxDB : public ClassFlow
 {
 protected:
+    ClassFlowPostProcessing* flowpostprocessing;
     std::string uri, database, measurement;
     std::string OldValue;
-	ClassFlowPostProcessing* flowpostprocessing;  
-    std::string user, password; 
+    std::string user, password;
     bool InfluxDBenable;
 
     void SetInitialParameter(void);    
     
     void handleFieldname(string _decsep, string _value);   
-    void handleMeasurement(string _decsep, string _value);
-
-    
+    void handleMeasurement(string _decsep, string _value);   
 
 public:
     ClassFlowInfluxDB();

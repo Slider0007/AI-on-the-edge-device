@@ -117,10 +117,10 @@ void CheckUpdate()
         return;
 	}
 
-	char zw[1024] = "";
-	fgets(zw, 1024, pfile);
+	char zw[256] = "";
+	fgets(zw, sizeof(zw), pfile);
     _file_name_update = std::string(zw);
-    if (fgets(zw, 1024, pfile))
+    if (fgets(zw, sizeof(zw), pfile))
 	{
 		std::string _szw = std::string(zw);
         if (_szw == "init")

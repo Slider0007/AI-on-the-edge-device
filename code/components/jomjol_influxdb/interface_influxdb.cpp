@@ -1,8 +1,10 @@
+#define ENABLE_INFLUXDB
 #ifdef ENABLE_INFLUXDB
 #include "interface_influxdb.h"
 
 #include "esp_log.h"
 #include <time.h>
+#include "psram.h"
 #include "ClassLogFile.h"
 #include "esp_http_client.h"
 #include "../../include/defines.h"
@@ -32,7 +34,8 @@ void InfluxDB_V2_Init(std::string _uri, std::string _database, std::string _org,
 
 void InfluxDB_V2_Publish(std::string _measurement, std::string _key, std::string _content, std::string _timestamp) 
 {
-    char response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
+    //char response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
+    char* response_buffer = (char*) calloc_psram_heap(std::string(TAG) + "->response_buffer", 1, sizeof(char) * MAX_HTTP_OUTPUT_BUFFER, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     esp_http_client_config_t http_config = {
        .user_agent = "ESP32 Meter reader",
        .method = HTTP_METHOD_POST,
@@ -104,6 +107,7 @@ void InfluxDB_V2_Publish(std::string _measurement, std::string _key, std::string
       LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP request failed");
     }
     esp_http_client_cleanup(http_client);
+    free_psram_heap(std::string(TAG) + "->response_buffer", response_buffer);
 }
 
 
@@ -141,8 +145,10 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-void InfluxDBPublish(std::string _measurement, std::string _key, std::string _content, std::string _timestamp) {
-    char response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
+void InfluxDBPublish(std::string _measurement, std::string _key, std::string _content, std::string _timestamp)
+{
+    //char response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
+    char* response_buffer = (char*) calloc_psram_heap(std::string(TAG) + "->response_buffer", 1, sizeof(char) * MAX_HTTP_OUTPUT_BUFFER, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     esp_http_client_config_t http_config = {
        .user_agent = "ESP32 Meter reader",
        .method = HTTP_METHOD_POST,
@@ -219,6 +225,7 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
       LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP request failed");
     }
     esp_http_client_cleanup(http_client);
+    free_psram_heap(std::string(TAG) + "->response_buffer", response_buffer);
 }
 
 

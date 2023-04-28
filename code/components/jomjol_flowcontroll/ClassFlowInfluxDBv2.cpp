@@ -224,7 +224,7 @@ bool ClassFlowInfluxDBv2::doFlow(string zwtime)
                     namenumber = namenumber + "/value";
             }
             
-            printf("vor sende Influx_DB_V2 - namenumber. %s, result: %s, timestampt: %s", namenumber.c_str(), result.c_str(), resulttimestamp.c_str());
+            //printf("vor sende Influx_DB_V2 - namenumber. %s, result: %s, timestampt: %s", namenumber.c_str(), result.c_str(), resulttimestamp.c_str());
 
             if (result.length() > 0)   
                 InfluxDB_V2_Publish(measurement, namenumber, result, resulttimestamp);
