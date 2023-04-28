@@ -973,7 +973,7 @@ std::string unzip_new(std::string _in_zip_file, std::string _target_zip, std::st
 
     // Get and print information about each file in the archive.
     int numberoffiles = (int)mz_zip_reader_get_num_files(&zip_archive);
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Numbers of files to be extracted: " + to_string(numberoffiles));
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Files to be extracted: " + to_string(numberoffiles));
 
     sort_iter = 0;
     {
@@ -1037,7 +1037,7 @@ std::string unzip_new(std::string _in_zip_file, std::string _target_zip, std::st
             
                 string filename_zw = zw + SUFFIX_ZW;
 
-                ESP_LOGI(TAG, "Filename to extract: %s, Zwischenfilename: %s", zw.c_str(), filename_zw.c_str());
+                ESP_LOGI(TAG, "File to extract: %s, Temp. Filename: %s", zw.c_str(), filename_zw.c_str());
 
                 std::string folder = filename_zw.substr(0, filename_zw.find_last_of('/'));
                 MakeDir(folder);
@@ -1141,7 +1141,7 @@ void unzip(std::string _in_zip_file, std::string _target_directory){
             // Save to File.
             zw = std::string(archive_filename);
             zw = _target_directory + zw;
-            ESP_LOGD(TAG, "Filename to extract: %s", zw.c_str());
+            ESP_LOGD(TAG, "File to extract: %s", zw.c_str());
             FILE* fpTargetFile = fopen(zw.c_str(), "wb");
             fwrite(p, 1, (uint)uncomp_size, fpTargetFile);
             fclose(fpTargetFile);

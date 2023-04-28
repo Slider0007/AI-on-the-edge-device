@@ -8,7 +8,7 @@
 #include "psram.h"
 #include "../../include/defines.h"
 
-static const char* TAG = "c_align_and_cut_image";
+static const char* TAG = "IMG_ALIGNCUT";
 
 CAlignAndCutImage::CAlignAndCutImage(std::string _name, CImageBasis *_org, CImageBasis *_temp) : CImageBasis(_name)
 {

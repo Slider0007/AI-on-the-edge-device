@@ -2,7 +2,7 @@
 #include "CRotateImage.h"
 #include "psram.h"
 
-static const char *TAG = "C ROTATE IMG";
+static const char *TAG = "IMG_ROTATE";
 
 CRotateImage::CRotateImage(std::string _name, CImageBasis *_org, CImageBasis *_temp, bool _flip) : CImageBasis(_name)
 {

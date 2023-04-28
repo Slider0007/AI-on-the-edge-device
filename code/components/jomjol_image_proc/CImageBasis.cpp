@@ -17,7 +17,7 @@
 
 using namespace std;
 
-static const char *TAG = "C IMG BASIS";
+static const char *TAG = "IMG_BASIS";
 
 bool jpgFileTooLarge = false;   // JPG creation verfication
 
