@@ -289,21 +289,17 @@
 		if(param["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
 			if (param["Alignment"]["FlipImageSize"]["value1"] == "false") {
 				document.getElementById("img").style.maxWidth = "320px";
-				document.getElementById("img").style.height = "auto";
 			}
 			else {
 				document.getElementById("img").style.maxWidth = "240px";
-				document.getElementById("img").style.height = "320px";
 			}
 		}
 		else {
 			if (param["Alignment"]["FlipImageSize"]["value1"] == "false") { 
 				document.getElementById("img").style.maxWidth = "640px";
-				document.getElementById("img").style.height = "auto";
 			}
 			else {
 				document.getElementById("img").style.maxWidth = "480px";
-				document.getElementById("img").style.height = "640px";
 			}
 		}
 	}
