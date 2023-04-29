@@ -35,8 +35,8 @@ table {
 <body style="font-family: arial; padding: 0px 10px;">
 	<table>
 		<colgroup>
-			<col span="1" style="width: 30%;">
-			<col span="1" style="width: 70%;">
+			<col span="1" style="width: 35%;">
+			<col span="1" style="width: 65%;">
 		</colgroup>
 		<tr>
 			<h3>Runtime Information</h3>
@@ -53,8 +53,8 @@ table {
 
 	<table>
 		<colgroup>
-			<col span="1" style="width: 30%;">
-			<col span="1" style="width: 70%;">
+			<col span="1" style="width: 35%;">
+			<col span="1" style="width: 65%;">
 		</colgroup>
 		<tr>
 			<h3>Build Info</h3>
@@ -83,8 +83,8 @@ table {
 
 	<table>
 		<colgroup>
-			<col span="1" style="width: 30%;">
-			<col span="1" style="width: 70%;">
+			<col span="1" style="width: 35%;">
+			<col span="1" style="width: 65%;">
 		</colgroup>
 		<tr>			
 			<h3>Host Info</h3>
@@ -111,12 +111,13 @@ table {
 
 	<table>
 		<colgroup>
-			<col span="1" style="width: 30%;">
-			<col span="1" style="width: 70%;">
+			<col span="1" style="width: 35%;">
+			<col span="1" style="width: 65%;">
 		</colgroup>
 		<tr>			
 			<h3>SD Card Info</h3>
 		</tr>
+		<tr>
 			<td>SD card manufacturer:</td>
 			<td>
 				<output id="SDCardManufacturer"></output>
@@ -159,6 +160,59 @@ table {
 			</td>
 		</tr>
 	</table>
+
+	<table>
+		<colgroup>
+			<col span="1" style="width: 35%;">
+			<col span="1" style="width: 65%;">
+		</colgroup>
+		<tr>			
+			<h3>Memory Info</h3>
+		</tr>
+		<tr>
+			<td>Total Free (Int + Ext):</td>	
+			<td>
+				<output id="RAMTotalFree"></output>
+			</td>
+		</tr>
+		<tr>
+			<td>Ext. RAM - Free:</td>	
+			<td>
+				<output id="ExtRAMFree"></output>
+			</td>
+		</tr>
+		<tr>
+			<td>Ext. RAM - Largest Free Block:</td>	
+			<td>
+				<output id="ExtRAMLargestFree"></output>
+			</td>
+		</tr>
+		<tr>
+			<td>Ext. RAM - Min Free:</td>	
+			<td>
+				<output id="ExtRAMMinFree"></output>
+			</td>
+		</tr>
+		<tr>
+			<td>Int. RAM - Free:</td>	
+			<td>
+				<output id="IntRAMFree"></output>
+			</td>
+		</tr>
+		<tr>
+			<td>Int. RAM - Largest Free Block:</td>	
+			<td>
+				<output id="IntRAMLargestFree"></output>
+			</td>
+		</tr>
+		<tr>
+			<td>Int. RAM - Min Free:</td>	
+			<td>
+				<output id="IntRAMMinFree"></output>
+			</td>
+		</tr>
+	</table>
+
 
 <h3>Copyright</h3>
 Copyright &copy; 2020 - 2023 by <a href="https://github.com/jomjol/AI-on-the-edge-device" target=_blank>Jomjol</a> and others.
@@ -402,8 +456,29 @@ Copyright &copy; 2020 - 2023 by <a href="https://github.com/jomjol/AI-on-the-edg
 		xhttp.send();
 	}
 
+	function loadMemoryInfo() 
+	{
+		url = getDomainname() + '/heap';     
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				data = xhttp.response.split("|");
+ 				document.getElementById("RAMTotalFree").value = data[0].split("l: ")[1] + " byte";
+				document.getElementById("IntRAMFree").value = data[4].split(":")[1] + " byte";
+				document.getElementById("IntRAMLargestFree").value = data[5].split(":")[1] + " byte";
+				document.getElementById("IntRAMMinFree").value = data[6].split(":")[1] + " byte";
+				document.getElementById("ExtRAMFree").value = data[1].split(":")[1] + " byte";
+				document.getElementById("ExtRAMLargestFree").value = data[2].split(":")[1] + " byte";
+				document.getElementById("ExtRAMMinFree").value = data[3].split(":")[1] + " byte";
+			}
+		}
+		xhttp.open("GET", url, true);
+		xhttp.send();
+	}
+
 	function init()
 	{
+		loadMemoryInfo();
 		loadLastRestart();
 		loadUptime();
 		loadFWVersion();

@@ -123,7 +123,7 @@
     <li><a>Manual Control <i class="arrow down"></i></a>
         <ul class="submenu">
             <li><a href="#" onclick="flow_start()">Start Round</a></li>
-            <li><a href="#" onclick="HA_send_discovery()">Resend HA Discovery</a></li>
+            <li id="HASendDiscovery" style="display:none;"><a href="#" onclick="HA_send_discovery()">Resend HA Discovery</a></li>
         </ul>
     </li>
   </ul>
@@ -137,6 +137,7 @@
     LoadHostname();
     LoadFwVersion();
     LoadWebUiVersion();
+    HA_send_discovery_visiblilty();
 
     if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH") {
     document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/";
@@ -144,6 +145,7 @@
     console.log("Loading page: " + getCookie("page"));
     document.getElementById('maincontent').src = getCookie("page");
 
+    
     function flow_start() {
     var url = getDomainname() + '/flow_start'; 
 		var xhttp = new XMLHttpRequest();
@@ -165,6 +167,16 @@
 		xhttp.send();
     }
 
+
+    function HA_send_discovery_visiblilty()	{
+		loadConfig(domainname); 
+		ParseConfig();
+		category = getConfigCategory();
+		if (category["MQTT"]["enabled"])
+            document.getElementById("HASendDiscovery").style.display="";
+	}
+
+
     function HA_send_discovery() {
     var url = getDomainname() + '/mqtt_publish_discovery'; 
 		var xhttp = new XMLHttpRequest();
@@ -177,8 +189,8 @@
 		xhttp.send();
     }
 
-    function start_livestream(streamFlashlight)
-    {
+
+    function start_livestream(streamFlashlight) {
         if (streamPopup) 
             streamPopup.close();
 
