@@ -9,7 +9,7 @@
 .tg  {border-collapse:collapse;border-spacing:0;width:100%;min-width:600px;height:100%;color:darkslategray;}
 .tg th{min-width:325px;width:325px;height:20px;font-size:18px;text-align:left;font-weight:bold;padding:5px 10px 5px 10px;;overflow:hidden;word-break:normal;background-color:lightgrey;}
 .tg td{font-size:15px;padding:5px 10px 5px 10px;overflow:hidden;word-break:normal;}
-.tg .tg-1{font-size:15px;vertical-align: top;font-family:Arial, Helvetica, sans-serif !important;}
+.tg .tg-1{font-size:15px;vertical-align: top; font-family:Arial, Helvetica, sans-serif !important;}
 .tg .tg-2{height:52px;font-size:15px;padding:3px 0px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
 .tg .tg-3{height:45px;font-size:15px;padding:3px 10px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
 .tg .tg-4{height:fit-content;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
@@ -285,17 +285,26 @@
 	{
 		loadConfig(domainname); 
 		ParseConfig();
+		param = getConfigParameters();
 		if(param["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
-			if (param["Alignment"]["FlipImageSize"]["value1"] == "false")
+			if (param["Alignment"]["FlipImageSize"]["value1"] == "false") {
 				document.getElementById("img").style.maxWidth = "320px";
-			else
+				document.getElementById("img").style.height = "auto";
+			}
+			else {
 				document.getElementById("img").style.maxWidth = "240px";
+				document.getElementById("img").style.height = "320px";
+			}
 		}
 		else {
-			if (param["Alignment"]["FlipImageSize"]["value1"] == "false")
+			if (param["Alignment"]["FlipImageSize"]["value1"] == "false") { 
 				document.getElementById("img").style.maxWidth = "640px";
-			else
+				document.getElementById("img").style.height = "auto";
+			}
+			else {
 				document.getElementById("img").style.maxWidth = "480px";
+				document.getElementById("img").style.height = "640px";
+			}
 		}
 	}
 
