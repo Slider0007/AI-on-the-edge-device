@@ -160,6 +160,7 @@
                             document.open();
                             document.write(xhttp.responseText);
                             document.close();
+                            firework.launch('File upload completed', 'success', 5000);
                         } else if (xhttp.status == 0) {
                             firework.launch('Server closed the connection abruptly!', 'danger', 30000);
                             UpdatePage(false);

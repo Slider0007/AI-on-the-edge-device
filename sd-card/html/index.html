@@ -172,7 +172,8 @@
 		loadConfig(domainname); 
 		ParseConfig();
 		category = getConfigCategory();
-		if (category["MQTT"]["enabled"])
+        param = getConfigParameters();
+		if (category["MQTT"]["enabled"] && param["MQTT"]["HomeassistantDiscovery"]["value1"] == "true")
             document.getElementById("HASendDiscovery").style.display="";
 	}
 

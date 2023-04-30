@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
-    <link rel="icon" href="favicon.ico?v=$COMMIT_HASH" type="image/x-icon">
     <title>Reference Image</title>
     <meta charset="utf-8"/>
         
@@ -21,9 +20,14 @@
             vertical-align: middle;
         }
 
-        input:out-of-range {
-        background-color: rgba(255, 0, 0, 0.25);
-        border: 1px solid red;
+		input:out-of-range {
+			background-color: rgba(255, 0, 0, 0.25);
+			border: 1px solid red;
+        }
+
+		input:invalid {
+			background-color: rgba(255, 0, 0, 0.25);
+			border: 1px solid red;
         }
 
         .button {
@@ -60,9 +64,12 @@
             Firstly the actual saved reference image is shown. If you start with the setup from scratch a default image is shown as placeholder.
             Use the button <b>"Create New Reference"</b> to start creation of your own reference image. After selecting the button all configured parameter
             will be applied to the shown image. With the button <b>"Update Image"</b> you can update the image (still all parameter
-            get applied to the new image).<br>
-            To have reliable image processing a properly aligned image is mandatory. With the pre-rotate angle and the fine alignment parameter the image
-            rotation can be adjusted. Further information can be found in documenation:
+            get applied to the new image).
+        </p>        
+        <p>
+            To have reliable evaluation processing a properly horizontal aligned evaluation area is mandatory. Using the parameters "Rotation angle" and
+            "Rotation angle (Fine-tune)" the image can be rotated in both directions. The resulting rotation anlge is used to prerotate the image before
+            the alignment algorithm is processed to compensate only small misalignments. Further information can be found in documenation:
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/Reference-Image/ target=_blank>Reference Image</a>
         </p>
         <p>
@@ -86,8 +93,8 @@
     </table>
     <table>
         <colgroup>
-            <col span="1" style="width: 22%;">
-            <col span="1" style="width: 38%;">
+            <col span="1" style="width: 32%;">
+            <col span="1" style="width: 28%;">
             <col span="1" style="width: 18%;">
             <col span="1" style="width: 22%;">
         </colgroup>
@@ -98,7 +105,7 @@
                 <class id="TakeImage_LEDIntensity_text" style="color:black;">LED intensity:</class>
             </td>
             <td>
-                <input style="clear: both" type="number" id="TakeImage_LEDIntensity_value1" size="13" value="0"  min="0" max="100" 
+                <input required style="clear: both" type="number" id="TakeImage_LEDIntensity_value1" size="13" value="0"  min="0" max="100" 
                     oninput="(!validity.rangeOverflow||(value=100)) && (!validity.rangeUnderflow||(value=0)) && 
                         (!validity.stepMismatch||(value=parseInt(this.value)));">
             </td>
@@ -115,8 +122,12 @@
             </td>
         </tr>
         <tr>
-            <td><label for="prerotateangle">Pre-rotate angle:</label></td>	  
-            <td><input type="number" id="prerotateangle" name="prerotateangle" value="0" min="-360" max="360" onchange="drawRotated()">degree</td>
+            <td><label for="prerotateangle">Rotation angle:</label></td>	  
+            <td>
+                <input required type="number" id="prerotateangle" name="prerotateangle" value="0" min="-360" max="360" onchange="drawRotated()"
+                        oninput="(!validity.rangeOverflow||(value=360)) && (!validity.rangeUnderflow||(value=-360)) && 
+                            (!validity.stepMismatch||(value=parseInt(this.value)));">degree
+                </td>
             <td>
                 <class id="TakeImage_Contrast_text" style="color:black;">Contrast:</class>
             </td>
@@ -126,10 +137,11 @@
             </td>
         </tr>
         <tr>
-            <td><label for="finerotate">Fine alignment:</label></td>	
-            <td><input type="number" id="finerotate" name="finerotate" value=0.0 min="-1" max="1" step="0.2" onchange="drawRotated()"
-                       oninput="(!validity.rangeOverflow||(value=1)) && (!validity.rangeUnderflow||(value=-1)) && 
-                       (!validity.stepMismatch||(value=parseInt(this.value)));">degree
+            <td><label for="finerotate">Rotation angle (Fine-tune):</label></td>	
+            <td>
+                <input required type="number" id="finerotate" name="finerotate" value=0.0 min="-1" max="1" step="0.1" onchange="drawRotated()"
+                        oninput="(!validity.rangeOverflow||(value=1)) && (!validity.rangeUnderflow||(value=-1)) && 
+                            (!validity.stepMismatch||(value=parseInt(this.value)));">degree
             </td>
             <td>
                 <class id="TakeImage_Saturation_text" style="color:black;">Saturation:</class>
@@ -147,7 +159,8 @@
             <col span="1" style="width: 33.3%;">
         </colgroup>
         <tr>
-            <td colspan="2" style="vertical-align: bottom;"><b>Reference Image:</b></td>
+            <td style="vertical-align: bottom;"><b>Reference Image:</b></td>
+            <td></td>
             <td>
                 <input style="font-weight:bold;" class="button" type="button" id="updatereferenceimage" value="Save And Apply" onclick="SaveReference()">
             </td>
@@ -266,8 +279,16 @@
 
         function showReference(_param){
             url = getDomainname() + "/fileserver/config/reference.jpg" + "?session=" + Math.floor((Math.random() * 1000000) + 1);
-            document.getElementById("finerotate").value = 0;
-            document.getElementById("prerotateangle").value = _param["Alignment"]["InitialRotate"].value1;
+
+            if (_param["Alignment"]["InitialRotate"].value1 < 0) {
+                document.getElementById("prerotateangle").value = Math.ceil(_param["Alignment"]["InitialRotate"].value1);
+            }
+            else {
+                document.getElementById("prerotateangle").value = Math.floor(_param["Alignment"]["InitialRotate"].value1);
+            }
+
+            document.getElementById("finerotate").value = (Number(_param["Alignment"]["InitialRotate"].value1) - 
+                                                            Number(document.getElementById("prerotateangle").value)).toFixed(1);
 
             if (_param["Alignment"]["InitialMirror"].found && (_param["Alignment"]["InitialMirror"].value1 == "true"))
                 document.getElementById("mirror").checked = true;
@@ -314,7 +335,8 @@
         
         function SaveReference(){
             if (confirm("Are you sure you want to save and apply the new reference image configuration?")) {
-                param["Alignment"]["InitialRotate"].value1 = document.getElementById("prerotateangle").value;
+                param["Alignment"]["InitialRotate"].value1 = (Number(document.getElementById("prerotateangle").value) + 
+                                                                Number(document.getElementById("finerotate").value)).toFixed(1);
 
                 if ((param["Alignment"]["InitialMirror"].found == true) && (document.getElementById("mirror").checked))
                 {

@@ -307,18 +307,18 @@ void CheckOTAUpdate(void)
     partition.size      = ESP_PARTITION_TABLE_MAX_LEN;
     partition.type      = ESP_PARTITION_TYPE_DATA;
     esp_partition_get_sha256(&partition, sha_256);
-    print_sha256(sha_256, "SHA-256 for the partition table: ");
+    print_sha256(sha_256, "SHA-256 for the partition table");
 
     // get sha256 digest for bootloader
     partition.address   = ESP_BOOTLOADER_OFFSET;
     partition.size      = ESP_PARTITION_TABLE_OFFSET;
     partition.type      = ESP_PARTITION_TYPE_APP;
     esp_partition_get_sha256(&partition, sha_256);
-    print_sha256(sha_256, "SHA-256 for bootloader: ");
+    print_sha256(sha_256, "SHA-256 for bootloader");
 
     // get sha256 digest for running partition
     esp_partition_get_sha256(esp_ota_get_running_partition(), sha_256);
-    print_sha256(sha_256, "SHA-256 for current firmware: ");
+    print_sha256(sha_256, "SHA-256 for current firmware");
 
     const esp_partition_t *running = esp_ota_get_running_partition();
     esp_ota_img_states_t ota_state;

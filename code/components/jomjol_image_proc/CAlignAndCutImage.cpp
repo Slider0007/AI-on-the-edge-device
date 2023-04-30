@@ -33,7 +33,7 @@ void CAlignAndCutImage::GetRefSize(int *ref_dx, int *ref_dy)
     ref_dy[1] = t1_dy;
 }
 
-bool CAlignAndCutImage::Align(RefInfo *_temp1, RefInfo *_temp2)
+bool CAlignAndCutImage::Align(RefInfo *_temp1, RefInfo *_temp2, float *angle)
 {
     int dx, dy;
     int r0_x, r0_y, r1_x, r1_y;
@@ -88,6 +88,7 @@ bool CAlignAndCutImage::Align(RefInfo *_temp1, RefInfo *_temp2)
     rt.Rotate(d_winkel, _temp1->target_x, _temp1->target_y);
     ESP_LOGD(TAG, "Alignment: dx %d - dy %d - rot %f", dx, dy, d_winkel);
 
+    *angle = d_winkel;
     return (isSimilar1 && isSimilar2);
 }
 

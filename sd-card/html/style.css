@@ -11,7 +11,7 @@ body, html {
 @media screen and (max-width:687px) {
   body, html {
     max-width: 687px;
-    height: 140vh;
+    height: 150vh;
     min-height: 100vh;
     margin: 0px 0px 0px 2px; 
     padding: 0; 

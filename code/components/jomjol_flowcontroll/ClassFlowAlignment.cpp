@@ -67,8 +67,8 @@ ClassFlowAlignment::ClassFlowAlignment(std::vector<ClassFlow*>* lfc)
 bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
 {
     std::vector<string> splitted;
-    int suchex = 40;
-    int suchey = 40;
+    int suchex = 20;
+    int suchey = 20;
     int alg_algo = 0; //default=0; 1 =HIGHACCURACY; 2= FAST; 3= OFF //add disable aligment algo |01.2023
 
 
@@ -100,15 +100,15 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
         }
         if (((toUpper(splitted[0]) == "INITALROTATE") || (toUpper(splitted[0]) == "INITIALROTATE")) && (splitted.size() > 1))
         {
-            this->initalrotate = std::stod(splitted[1]);
+            this->initalrotate = std::stof(splitted[1]);
         }
         if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1))
         {
-            suchex = std::stod(splitted[1]);
+            suchex = std::stoi(splitted[1]);
         }   
         if ((toUpper(splitted[0]) == "SEARCHFIELDY") && (splitted.size() > 1))
         {
-            suchey = std::stod(splitted[1]);
+            suchey = std::stoi(splitted[1]);
         }   
         if ((toUpper(splitted[0]) == "ANTIALIASING") && (splitted.size() > 1))
         {
@@ -252,15 +252,17 @@ bool ClassFlowAlignment::doFlow(string time)
             AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/rot.jpg"));
     }
 
-
+    float alignAlgoRotation;
     //no align algo if set to 3 = off //add disable aligment algo |01.2023
     if(References[0].alignment_algo != 3){
-        if (!AlignAndCutImage->Align(&References[0], &References[1])) 
+        if (!AlignAndCutImage->Align(&References[0], &References[1], &alignAlgoRotation)) 
         {
             SaveReferenceAlignmentValues();
         }
     }// no align
 
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial rotation: " + std::to_string(initalrotate) + 
+                                            ", Align algo rotation: " + std::to_string(alignAlgoRotation));
 
     if (AlgROI) {
         //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023

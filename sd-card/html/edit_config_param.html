@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en">
 <head>
-	<link rel="icon" href="favicon.ico?v=$COMMIT_HASH" type="image/x-icon">
 	<title>Configuration</title>
 	<meta charset="UTF-8" />
 
@@ -766,8 +765,9 @@
 		<tr class="MQTTItem">
 			<td class="indent1" style="padding-top:25px" colspan="2">
 				<b>Homeassistant Discovery (using MQTT)</b><br>
-					If activated, the discovery topics gets automatically scheduled to sent after device startup during "Send MQTT" state.
-					To schedule a retransmission, call the following REST API: <a href=mqtt_publish_discovery target="_blank">http://&lt;IP&gt;/mqtt_publish_discovery</a>
+					If activated, the discovery topics gets automatically scheduled to sent once after device startup during state "Publish to MQTT".
+					To schedule a retransmission: Use "Manual Control > Resend HA Discovery" or call REST API: 
+					<a href=mqtt_publish_discovery target="_blank">http://&lt;IP&gt;/mqtt_publish_discovery</a>
 			</td>
 		</tr>
 
