@@ -726,7 +726,7 @@ function RenameNUMBER(_alt, _neu){
      }
 
      if (found)
-          return "Number sequence name is already existing - please use another name";
+          return "Number sequence name is already existing, please choose another name";
 
      NUMBERS[index]["name"] = _neu;
      
@@ -759,7 +759,7 @@ function CreateNUMBER(_numbernew){
      }
 
      if (found)
-          return "Number sequence name is already existing, please choose another one!";
+          return "Number sequence name is already existing, please choose another name";
 
      _ret = new Object();
      _ret["name"] = _numbernew;
@@ -835,7 +835,7 @@ function RenameROI(_number, _type, _alt, _neu){
      }
 
      if (found)
-          return "ROI name is already existing, please choose another one!";
+          return "ROI name is already existing, please choose another name";
 
      NUMBERS[_indexnumber][_type][index]["name"] = _neu;
      
@@ -845,7 +845,7 @@ function RenameROI(_number, _type, _alt, _neu){
 
 function DeleteNUMBER(_delte){
      if (NUMBERS.length == 1)
-          return "The last number cannot be deleted."
+          return "The last number cannot be deleted"
      
      index = -1;
      for (i = 0; i < NUMBERS.length; ++i) {
@@ -877,7 +877,7 @@ function CreateROI(_number, _type, _pos, _roinew, _x, _y, _dx, _dy, _CCW){
      }
 
      if (found)
-          return "ROI name is already existing, please choose another one!";
+          return "ROI name is already existing, please choose another name";
 
      _ret = new Object();
      _ret["name"] = _roinew;

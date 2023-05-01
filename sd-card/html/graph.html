@@ -74,39 +74,19 @@
 
                             /* Catch empty fields */
                             if (value == "" || isNaN(value)) {
-                                if (traceValue.y.length > 0) {
-                                    value = traceValue.y[traceValue.y.length-1];
-                                }
-                                else {
-                                    value = 0;
-                                }
+                                value = NaN;
                             }
 
                             if (preValue == "" || isNaN(preValue)) {
-                                if (tracePreValue.y.length > 0) {
-                                    preValue = tracePreValue.y[tracePreValue.y.length-1];
-                                }
-                                else {
-                                    preValue = 0;
-                                }
+                                preValue = NaN;
                             }
 
                             if (changeRate == "" || isNaN(changeRate)) {
-                                if (traceChangeRate.y.length > 0) {
-                                    changeRate = traceChangeRate.y[traceChangeRate.y.length-1];
-                                }
-                                else {
-                                    changeRate = 0;
-                                }
+                                changeRate = NaN;
                             }
 
                             if (changeAbsolute == "" || isNaN(changeAbsolute)) {
-                                if (traceChangeAbsolute.y.length > 0) {
-                                    changeAbsolute = traceChangeAbsolute.y[traceChangeAbsolute.y.length-1];
-                                }
-                                else {
-                                    changeAbsolute = 0;
-                                }
+                                changeAbsolute = NaN;
                             }
 
                             traceValue.y.push(value);
@@ -116,7 +96,27 @@
                         }
                     }
                 }
-                //console.log(trace);
+
+                /* If the value trace starts with NaN, replace all those Nans with the first valid value */
+                var firstNonNaNIndex = 0;
+                for(var i = 0; i < traceValue.y.length; i++) {
+                    firstNonNaNIndex = i;
+                    if (! isNaN(traceValue.y[i])) {
+                        break;
+                    }
+                }
+
+                if (firstNonNaNIndex == (traceValue.y.length - 1)) {
+                    console.log("No data available for 'value'!");
+                }
+                else if (firstNonNaNIndex > 0) { // Replace all leading NaN with the first valid value 
+                    console.log("The first leading values have all just NaN, replacing them with the value of",
+                            traceValue.y[firstNonNaNIndex], "at", traceValue.x[firstNonNaNIndex], "(Index:", firstNonNaNIndex, ")");
+                    for(var i = 0; i < firstNonNaNIndex; i++) {
+                        traceValue.y[i] = traceValue.y[firstNonNaNIndex];
+                    }
+                }
+
 
                 // Copy time to all traces
                 tracePreValue.x = traceValue.x;
@@ -128,6 +128,8 @@
                 var offsetValue = traceValue.y[0];
                 var offsetPreValue = tracePreValue.y[0];
 
+                traceValue.connectgaps = true;
+
                 if (showRrelativeValues) {
                     traceValue.y.forEach(function(part, index, arr) {
                         arr[index] = arr[index] - offsetValue;
@@ -138,7 +140,7 @@
                     });
                 }
 
-            //  console.log(traceValue.x)
+              //  console.log(traceValue.x)
 
                 var data = [traceValue, tracePreValue, traceChangeRate, traceChangeAbsolute];
 
@@ -194,57 +196,57 @@
     <button class="button" onClick="window.location.href = 'data.html?v=$COMMIT_HASH'">Show Data Viewer</button>
     <button class="button" onClick="window.location.href = getDomainname() + '/fileserver/log/data/'">Show Data Files</button>
 
-    <script>
-        function WriteModelFiles()
+<script>
+    function WriteModelFiles()
+    {
+        list_data = getDATAList();
+
+        var _indexDig = document.getElementById("datafiles");
+        while (_indexDig.length)
+            _indexDig.remove(0);
+
+        for (var i = list_data.length - 1; i >= 0; --i)
         {
-            list_data = getDATAList();
-
-            var _indexDig = document.getElementById("datafiles");
-            while (_indexDig.length)
-                _indexDig.remove(0);
-
-            for (var i = list_data.length - 1; i >= 0; --i)
-            {
-                var optionDig = document.createElement("option");
-                
-                var text = list_data[i];
-                optionDig.text = text;
-                optionDig.value = list_data[i];
-                _indexDig.add(optionDig);
-            }
+            var optionDig = document.createElement("option");
+            
+            var text = list_data[i];
+            optionDig.text = text;
+            optionDig.value = list_data[i];
+            _indexDig.add(optionDig);
         }
+    }
 
-        function WriteNumbers()
+    function WriteNumbers()
+    {
+        list_data = getNUMBERSList();
+
+        var _indexDig = document.getElementById("numbers");
+        while (_indexDig.length)
+            _indexDig.remove(0);
+
+        for (var i = 0; i < list_data.length; ++i)
         {
-            list_data = getNUMBERSList();
-
-            var _indexDig = document.getElementById("numbers");
-            while (_indexDig.length)
-                _indexDig.remove(0);
-
-            for (var i = 0; i < list_data.length; ++i)
-            {
-                var optionDig = document.createElement("option");
-                
-                var text = list_data[i];
-                optionDig.text = text;
-                optionDig.value = list_data[i];
-                _indexDig.add(optionDig);
-            }
+            var optionDig = document.createElement("option");
+            
+            var text = list_data[i];
+            optionDig.text = text;
+            optionDig.value = list_data[i];
+            _indexDig.add(optionDig);
         }
+    }
 
-        WriteModelFiles();
-        WriteNumbers();
+    WriteModelFiles();
+    WriteNumbers();
 
-        function Refresh() {
-		    setTimeout (function() {
-                run();
-			    Refresh();
-		    }, 300000);
-	    }
+    function Refresh() {
+        setTimeout (function() {
+            run();
+            Refresh();
+        }, 300000);
+    }
 
-        run();
-        Refresh();
-    </script>
+    run();
+    Refresh();
+</script>
 </body>
 </html>

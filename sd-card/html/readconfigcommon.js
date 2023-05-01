@@ -63,88 +63,89 @@ function createReader(file) {
 
 
 function ZerlegeZeile(input, delimiter = " =\t\r")
-{
-     var Output = Array(0);
+     {
+          var Output = Array(0);
 //          delimiter = " =,\t";
+     
 
-
-     /* The input can have multiple formats: 
-          *  - key = value
-          *  - key = value1 value2 value3 ...
-          *  - key value1 value2 value3 ...
-          *  
-          * Examples:
-          *  - ImageSize = VGA
-          *  - IO0 = input disabled 10 false false 
-          *  - main.dig1 28 144 55 100 false
-          * 
-          * This causes issues eg. if a password key has a whitespace or equal sign in its value.
-          * As a workaround and to not break any legacy usage, we enforce to only use the
-          * equal sign, if the key is "password"
-          */
-     if (input.includes("password") || input.includes("Token")) { // Line contains a password, use the equal sign as the only delimiter and only split on first occurrence
-          var pos = input.indexOf("=");
-          delimiter = " \t\r"
-          Output.push(trim(input.substr(0, pos), delimiter));
-          Output.push(trim(input.substr(pos +1, input.length), delimiter));
-     }
-     else { // Legacy Mode
-          input = trim(input, delimiter);
-          var pos = findDelimiterPos(input, delimiter);
-          var token;
-          while (pos > -1) {
-               token = input.substr(0, pos);
-               token = trim(token, delimiter);
-               Output.push(token);
-               input = input.substr(pos+1, input.length);
-               input = trim(input, delimiter);
-               pos = findDelimiterPos(input, delimiter);
+          /* The input can have multiple formats: 
+           *  - key = value
+           *  - key = value1 value2 value3 ...
+           *  - key value1 value2 value3 ...
+           *  
+           * Examples:
+           *  - ImageSize = VGA
+           *  - IO0 = input disabled 10 false false 
+           *  - main.dig1 28 144 55 100 false
+           * 
+           * This causes issues eg. if a password key has a whitespace or equal sign in its value.
+           * As a workaround and to not break any legacy usage, we enforce to only use the
+           * equal sign, if the key is "password"
+           */
+          if (input.includes("password") || input.includes("Token")) { // Line contains a password, use the equal sign as the only delimiter and only split on first occurrence
+               var pos = input.indexOf("=");
+               delimiter = " \t\r"
+               Output.push(trim(input.substr(0, pos), delimiter));
+               Output.push(trim(input.substr(pos +1, input.length), delimiter));
           }
-          Output.push(input);
-     }
-
-     return Output;
-}    
+          else { // Legacy Mode
+               input = trim(input, delimiter);
+               var pos = findDelimiterPos(input, delimiter);
+               var token;
+               while (pos > -1) {
+                    token = input.substr(0, pos);
+                    token = trim(token, delimiter);
+                    Output.push(token);
+                    input = input.substr(pos+1, input.length);
+                    input = trim(input, delimiter);
+                    pos = findDelimiterPos(input, delimiter);
+               }
+               Output.push(input);
+          }
+     
+          return Output;
+     
+     }    
 
 
 function findDelimiterPos(input, delimiter)
-{
-     var pos = -1;
-     var zw;
-     var akt_del;
-
-     for (var anz = 0; anz < delimiter.length; ++anz)
      {
-          akt_del = delimiter[anz];
-          zw = input.indexOf(akt_del);
-          if (zw > -1)
+          var pos = -1;
+          var zw;
+          var akt_del;
+     
+          for (var anz = 0; anz < delimiter.length; ++anz)
           {
-               if (pos > -1)
+               akt_del = delimiter[anz];
+               zw = input.indexOf(akt_del);
+               if (zw > -1)
                {
-                    if (zw < pos)
+                    if (pos > -1)
+                    {
+                         if (zw < pos)
+                              pos = zw;
+                    }
+                    else
                          pos = zw;
                }
-               else
-                    pos = zw;
           }
+          return pos;
      }
-     return pos;
-}
      
      
 
 function trim(istring, adddelimiter)
-{
-     while ((istring.length > 0) && (adddelimiter.indexOf(istring[0]) >= 0)){
-          istring = istring.substr(1, istring.length-1);
-     }
-     
-     while ((istring.length > 0) && (adddelimiter.indexOf(istring[istring.length-1]) >= 0)){
-          istring = istring.substr(0, istring.length-1);
-     }
+     {
+          while ((istring.length > 0) && (adddelimiter.indexOf(istring[0]) >= 0)){
+               istring = istring.substr(1, istring.length-1);
+          }
+          
+          while ((istring.length > 0) && (adddelimiter.indexOf(istring[istring.length-1]) >= 0)){
+               istring = istring.substr(0, istring.length-1);
+          }
 
-     return istring;
-}
+          return istring;
+     }
      
 
 function getConfig()
@@ -278,7 +279,8 @@ function MakeContrastImageZW(zw, _enhance, _domainname){
      var xhttp = new XMLHttpRequest();  
      try {
           xhttp.open("GET", url, false);
-          xhttp.send();     }
+          xhttp.send();
+     }
      catch (error)
      {
 //	    firework.launch('Deleting Config.ini failed!', 'danger', 30000);
@@ -293,7 +295,8 @@ function MakeRefZW(zw, _domainname){
      var xhttp = new XMLHttpRequest();  
      try {
           xhttp.open("GET", url, false);
-          xhttp.send();     }
+          xhttp.send();
+     }
      catch (error)
      {
 //	    firework.launch('Deleting Config.ini failed!', 'danger', 30000);

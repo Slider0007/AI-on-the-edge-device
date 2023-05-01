@@ -169,7 +169,7 @@ function SaveToConfig(){
         SaveConfigToServer(domainname);
         document.getElementById("savemarker").disabled = true;
         document.getElementById("enhancecontrast").disabled = true;
-                
+        
         firework.launch('Save and apply configuration...', 'success', 5000);
         setTimeout(function() {
             reload_config();

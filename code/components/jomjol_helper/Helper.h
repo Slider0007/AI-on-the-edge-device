@@ -3,7 +3,7 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-#include <string.h>
+#include <string>
 #include <fstream>
 #include <vector>
 #include "sdmmc_cmd.h"
