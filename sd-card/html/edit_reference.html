@@ -368,16 +368,13 @@
                 document.getElementById("updatereferenceimage").disabled = true;
 
                 SaveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
+                showReference(param);
+                //UpdatePage();
 
                 firework.launch('Save and apply configuration...', 'success', 5000);
                 setTimeout(function() {
                     reload_config();
                 }, 1000);
-
-                setTimeout(function() {
-                    showReference(param);
-                    UpdatePage();
-                }, 5000);
             }
         }
 
