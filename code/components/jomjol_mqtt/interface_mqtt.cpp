@@ -313,7 +313,7 @@ void MQTTdestroy_client(bool _disable = false) {
     if (client) {
         if (mqtt_connected) {
             MQTTdestroySubscribeFunction();      
-            //esp_mqtt_client_disconnect(client);
+            esp_mqtt_client_disconnect(client);
             mqtt_connected = false;
         }
         esp_mqtt_client_stop(client);

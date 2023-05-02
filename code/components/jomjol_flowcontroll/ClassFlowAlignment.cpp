@@ -28,7 +28,7 @@ void ClassFlowAlignment::SetInitialParameter(void)
     use_antialiasing = false;
     initialflip = false;
     SaveAllFiles = false;
-    namerawimage =  "/sdcard/img_tmp/raw.jpg"; // will be set from ClassFLowTakeImage
+    namerawimage =  "/sdcard/img_tmp/raw.jpg";
     FileStoreRefAlignment = "/sdcard/config/align.txt";
     ListFlowControll = NULL;
     AlignAndCutImage = NULL;

@@ -759,24 +759,6 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Location", directory.c_str());
     httpd_resp_sendstr(req, "File uploaded successfully");
 
-/*
-    // Redirect onto root to see the updated file list
-    httpd_resp_set_status(req, "303 See Other");
-    httpd_resp_set_hdr(req, "Location", directory.c_str());
-
-    // Redirect onto root to see the updated file list
-    httpd_resp_set_status(req, "303 See Other");
-    httpd_resp_set_hdr(req, "Location", directory.c_str());
-    httpd_resp_sendstr(req, "File uploaded successfully");
-*/
-/*
-    if (strcmp(filepath, CONFIG_FILE) == 0) {
-        ESP_LOGD(TAG, "New config found. Reload handler.");
-        gpio_handler_deinit();
-        MQTTdestroy();
-    }
-*/
-
     return ESP_OK;
 }
 
@@ -911,11 +893,6 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
             httpd_resp_set_status(req, "303 See Other"); // Reload folder content after upload
         }
     }
-
-
-    /*httpd_resp_set_hdr(req, "Location", directory.c_str());
-    // Redirect onto root to see the updated file list
-    httpd_resp_set_status(req, "303 See Other");*/
 
     httpd_resp_set_hdr(req, "Location", directory.c_str());
     httpd_resp_sendstr(req, "File successfully deleted");
