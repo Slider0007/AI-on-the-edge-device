@@ -215,7 +215,7 @@ bool CTfLiteClass::MakeAllocate()
         LogFile.WriteHeapInfo("CTLiteClass::Alloc start");
     #endif
 
-    this->interpreter = new tflite::MicroInterpreter(this->model, resolver, this->tensor_arena, this->kTensorArenaSize, this->error_reporter);
+    this->interpreter = new tflite::MicroInterpreter(this->model, resolver, this->tensor_arena, this->kTensorArenaSize, nullptr, nullptr);
 
     if (this->interpreter == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "new tflite::MicroInterpreter failed");
