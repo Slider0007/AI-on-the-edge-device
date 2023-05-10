@@ -29,7 +29,7 @@ int iRgbSqrt( int num ) {
     return res;
 }
 
-Rgb::Rgb( Hsv y ) {
+Rgb::Rgb(const Hsv& y ) {
     // https://stackoverflow.com/questions/24152553/hsv-to-rgb-and-back-without-floating-point-math-in-python
     // greyscale
     if( y.s == 0 ) {
@@ -57,19 +57,19 @@ Rgb::Rgb( Hsv y ) {
     a = y.a;
 }
 
-Rgb& Rgb::operator=( Hsv hsv ) {
+Rgb& Rgb::operator=( const Hsv& hsv ) {
     Rgb r{ hsv };
     swap( r );
     return *this;
 }
 
-Rgb Rgb::operator+( Rgb in ) const {
+Rgb Rgb::operator+( const Rgb& in ) const {
     auto copy = *this;
     copy += in;
     return copy;
 }
 
-Rgb& Rgb::operator+=( Rgb in ) {
+Rgb& Rgb::operator+=( const Rgb& in ) {
     unsigned int red = r + in.r;
     r = ( red < 255 ) ? red : 255;
     unsigned int green = g + in.g;
@@ -79,7 +79,20 @@ Rgb& Rgb::operator+=( Rgb in ) {
     return *this;
 }
 
-Rgb& Rgb::blend( Rgb in ) {
+Rgb Rgb::operator-( const Rgb& in ) const {
+    auto copy = *this;
+    copy -= in;
+    return copy;
+}
+
+Rgb& Rgb::operator-=( const Rgb& in ) {
+    r = ( in.r > r ) ? 0 : r - in.r;
+    g = ( in.g > g ) ? 0 : g - in.g;
+    b = ( in.b > b ) ? 0 : b - in.b;
+    return *this;
+}
+
+Rgb& Rgb::blend( const Rgb& in ) {
     unsigned int inAlpha = in.a * ( 255 - a );
     unsigned int alpha = a + inAlpha;
     r = iRgbSqrt( ( ( r * r * a ) + ( in.r * in.r * inAlpha ) ) / alpha );
@@ -89,7 +102,7 @@ Rgb& Rgb::blend( Rgb in ) {
     return *this;
 }
 
-uint8_t IRAM_ATTR Rgb::getGrb( int idx ) {
+uint8_t Rgb::getGrb( int idx ) const {
     switch ( idx ) {
         case 0: return g;
         case 1: return r;
@@ -98,7 +111,7 @@ uint8_t IRAM_ATTR Rgb::getGrb( int idx ) {
     __builtin_unreachable();
 }
 
-Hsv::Hsv( Rgb r ) {
+Hsv::Hsv( const Rgb& r ) {
     int min = std::min( r.r, std::min( r.g, r.b ) );
     int max = std::max( r.r, std::max( r.g, r.b ) );
     int chroma = max - min;
@@ -125,7 +138,7 @@ Hsv::Hsv( Rgb r ) {
     a = r.a;
 }
 
-Hsv& Hsv::operator=( Rgb rgb ) {
+Hsv& Hsv::operator=( const Rgb& rgb ) {
     Hsv h{ rgb };
     swap( h );
     return *this;
