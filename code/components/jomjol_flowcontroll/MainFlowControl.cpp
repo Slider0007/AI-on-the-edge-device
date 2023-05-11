@@ -126,9 +126,6 @@ bool doInit(void)
 {
     bool bRetVal = true;
 
-    //heap_caps_dump(MALLOC_CAP_INTERNAL);
-    //heap_caps_dump(MALLOC_CAP_SPIRAM);
-
     if (!flowctrl.InitFlow(CONFIG_FILE))
         bRetVal = false;
     
@@ -153,7 +150,7 @@ esp_err_t handler_get_heap(httpd_req_t *req)
         ESP_LOGD(TAG, "handler_get_heap uri: %s", req->uri);
     #endif
 
-    heap_caps_dump(MALLOC_CAP_SPIRAM);
+    //heap_caps_dump(MALLOC_CAP_SPIRAM);
 
     std::string zw = "Heap info:<br>" + getESPHeapInfo();
 
