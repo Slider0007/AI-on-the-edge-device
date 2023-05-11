@@ -219,7 +219,7 @@ bool CTfLiteClass::MakeAllocate()
         return false;
     }
 
-    this->interpreter = new tflite::MicroInterpreter(this->model, resolver, this->tensor_arena, this->kTensorArenaSize, this->error_reporter);
+    this->interpreter = new tflite::MicroInterpreter(this->model, resolver, this->tensor_arena, this->kTensorArenaSize);
 
     if (this->interpreter == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "new tflite::MicroInterpreter failed");
@@ -229,7 +229,6 @@ bool CTfLiteClass::MakeAllocate()
 
     TfLiteStatus allocate_status = this->interpreter->AllocateTensors();
     if (allocate_status != kTfLiteOk) {
-        //TF_LITE_REPORT_ERROR(error_reporter, "AllocateTensors failed");
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Allocate tensors failed");
         return false;
     }
@@ -300,12 +299,6 @@ bool CTfLiteClass::LoadModel(std::string _fn)
 {
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Loading TFLITE model");
     
-    #ifdef SUPRESS_TFLITE_ERRORS
-        this->error_reporter = new tflite::OwnMicroErrorReporter;
-    #else
-        this->error_reporter = new tflite::MicroErrorReporter;
-    #endif
-
     if (!ReadFileToModel(_fn)) {
       LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadModel: TFLITE model file reading failed!");
       return false;
@@ -367,14 +360,4 @@ CTfLiteClass::~CTfLiteClass()
     }
     
     free_psram_heap(std::string(TAG) + "->modelfile", modelfile);
-    delete this->error_reporter;
 }        
-
-
-namespace tflite 
-{
-  int OwnMicroErrorReporter::Report(const char* format, va_list args) 
-  {
-    return 0;
-  }
-}  
