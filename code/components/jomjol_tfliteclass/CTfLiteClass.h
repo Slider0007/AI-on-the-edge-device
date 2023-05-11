@@ -13,24 +13,10 @@
 
 #include "CImageBasis.h"
 
-#ifdef SUPRESS_TFLITE_ERRORS
-#include "tensorflow/lite/core/api/error_reporter.h"
-#include "tensorflow/lite/kernels/internal/compatibility.h"
-#include "tensorflow/lite/micro/debug_log.h"
-///// OwnErrorReporter to prevent printing of Errors (especially unavoidable in CalculateActivationRangeQuantized@kerne_util.cc)
-namespace tflite {
-    class OwnMicroErrorReporter : public ErrorReporter {
-        public:
-           int Report(const char* format, va_list args) override;
-    };
-}  // namespace tflite
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#endif
 
 class CTfLiteClass
 {
     protected:
-        tflite::ErrorReporter *error_reporter;
         const tflite::Model* model;
         tflite::MicroInterpreter* interpreter;
         TfLiteTensor* output = nullptr;     
@@ -38,9 +24,7 @@ class CTfLiteClass
 
         int kTensorArenaSize;
         uint8_t *tensor_arena;
-
         unsigned char *modelfile = NULL;
-
 
         float* input;
         int input_i;
