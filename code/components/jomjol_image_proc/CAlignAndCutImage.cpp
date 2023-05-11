@@ -93,9 +93,6 @@ bool CAlignAndCutImage::Align(RefInfo *_temp1, RefInfo *_temp2, float *angle)
 }
 
 
-
-
-
 void CAlignAndCutImage::CutAndSave(std::string _template1, int x1, int y1, int dx, int dy)
 {
 
@@ -135,8 +132,10 @@ void CAlignAndCutImage::CutAndSave(std::string _template1, int x1, int y1, int d
 
     RGBImageRelease();
 
-    stbi_image_free(odata);
+    //stbi_image_free(odata);
+    free_psram_heap(std::string(TAG) + "->CutAndSave: (odata, " + std::to_string(memsize) + ")", odata);
 }
+
 
 void CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy, CImageBasis *_target)
 {
@@ -209,4 +208,10 @@ CImageBasis* CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy)
     RGBImageRelease();
     rs->SetIndepended();
     return rs;
+}
+
+
+CAlignAndCutImage::~CAlignAndCutImage()
+{
+    //Nothing to do
 }

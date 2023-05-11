@@ -143,7 +143,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
     image_height = Camera.image_height;
     rawImage = new CImageBasis("rawImage");
     if (rawImage) {
-        if(!rawImage->CreateEmptyImage(image_width, image_height, 3)) {
+        if(!rawImage->CreateEmptyImage(image_width, image_height, 3, 1)) {
             return false;
         }
     }

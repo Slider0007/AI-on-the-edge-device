@@ -51,7 +51,8 @@ class CTfLiteClass
 
     public:
         CTfLiteClass();
-        ~CTfLiteClass();        
+        ~CTfLiteClass();
+        void CTfLiteClassDeleteInterpreter();   
         bool LoadModel(std::string _fn);
         bool MakeAllocate();
         void GetInputTensorSize();

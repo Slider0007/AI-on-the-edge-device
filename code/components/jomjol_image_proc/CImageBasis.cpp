@@ -15,8 +15,6 @@
 #include <algorithm>
 
 
-using namespace std;
-
 static const char *TAG = "IMG_BASIS";
 
 bool jpgFileTooLarge = false;   // JPG creation verfication
@@ -361,7 +359,7 @@ void CImageBasis::drawCircle(int x1, int y1, int rad, int r, int g, int b, int t
 }
 
 
-CImageBasis::CImageBasis(string _name)
+CImageBasis::CImageBasis(std::string _name)
 {
     name = _name;
     externalImage = false;
@@ -387,6 +385,47 @@ bool CImageBasis::CreateEmptyImage(int _width, int _height, int _channels)
     #endif
 
     memsize = width * height * channels;
+
+    rgb_image = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ")", memsize, MALLOC_CAP_SPIRAM);
+
+    if (rgb_image == NULL)
+    {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CreateEmptyImage: Can't allocate enough memory: " + std::to_string(memsize));
+        LogFile.WriteHeapInfo("CreateEmptyImage");
+        RGBImageRelease();
+        return false;
+    }
+
+    stbi_uc* p_source;    
+
+    for (int x = 0; x < width; ++x)
+        for (int y = 0; y < height; ++y)
+        {
+            p_source = rgb_image + (channels * (y * width + x));
+            for (int _channels = 0; _channels < channels; ++_channels)
+                p_source[_channels] = (uint8_t) 0;
+        }
+
+    RGBImageRelease();
+
+    return true;
+}
+
+
+bool CImageBasis::CreateEmptyImage(int _width, int _height, int _channels, int add)
+{
+    bpp = _channels;
+    width = _width;
+    height = _height;
+    channels = _channels;
+
+    RGBImageLock();
+
+    #ifdef DEBUG_DETAIL_ON 
+        LogFile.WriteHeapInfo("CreateEmptyImage");
+    #endif
+
+    memsize = (width * height * channels) + add;
 
     rgb_image = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ")", memsize, MALLOC_CAP_SPIRAM);
 
@@ -440,28 +479,47 @@ void CImageBasis::LoadFromMemory(stbi_uc *_buffer, int len)
 {
     RGBImageLock();
 
-    if (rgb_image != NULL) {
-        stbi_image_free(rgb_image);
-        //free_psram_heap(std::string(TAG) + "->rgb_image (LoadFromMemory)", rgb_image);
+    if (rgb_image != NULL ) {
+        //stbi_image_free(rgb_image);
+        free_psram_heap(std::string(TAG) + "->rgb_image (LoadFromMemory)", rgb_image);
     }
 
     rgb_image = stbi_load_from_memory(_buffer, len, &width, &height, &channels, 3);
     bpp = channels;
     ESP_LOGD(TAG, "Image loaded from memory: %d, %d, %d", width, height, channels);
     
-    if ((width * height * channels) == 0)
+    if (rgb_image == NULL)
     {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image with size 0 loaded --> reboot to be done! "
-                "Check that your camera module is working and connected properly.");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFromMemory: Image loading failed");
         LogFile.WriteHeapInfo("LoadFromMemory");
-
-        doReboot();
     }
     RGBImageRelease();
 }
 
 
-CImageBasis::CImageBasis(string _name, CImageBasis *_copyfrom) 
+void CImageBasis::LoadFromMemoryPreallocated(stbi_uc *_buffer, int len)
+{
+    RGBImageLock();
+
+    if (rgb_image == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "No preallocation found");
+    }
+
+    rgb_image = stbi_load_from_memory(_buffer, len, &width, &height, &channels, 3);
+    bpp = channels;
+    ESP_LOGD(TAG, "Image loaded from memory: %d, %d, %d", width, height, channels);
+    
+    if (rgb_image == NULL)
+    {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFromMemoryPreallocated: Image loading failed");
+        LogFile.WriteHeapInfo("LoadFromMemoryPreallocated");
+    }
+
+    RGBImageRelease();
+}
+
+
+CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom) 
 {
     name = _name;
     islocked = false;
@@ -498,7 +556,44 @@ CImageBasis::CImageBasis(string _name, CImageBasis *_copyfrom)
 }
 
 
-CImageBasis::CImageBasis(string _name, int _width, int _height, int _channels)
+CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom, int add) 
+{
+    name = _name;
+    islocked = false;
+    externalImage = false;
+    channels = _copyfrom->channels;
+    width = _copyfrom->width;
+    height = _copyfrom->height;
+    bpp = _copyfrom->bpp;
+
+    RGBImageLock();
+
+    #ifdef DEBUG_DETAIL_ON 
+        LogFile.WriteHeapInfo("CImageBasis_copyfrom - Start");
+    #endif
+
+    memsize = (width * height * channels) + add;
+
+    rgb_image = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ")", memsize, MALLOC_CAP_SPIRAM);
+
+    if (rgb_image == NULL)
+    {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis-Copyfrom: Can't allocate enough memory: " + std::to_string(memsize));
+        LogFile.WriteHeapInfo("CImageBasis-Copyfrom");
+        RGBImageRelease();
+        return;
+    }
+
+    memCopy(_copyfrom->rgb_image, rgb_image, memsize);
+    RGBImageRelease();
+
+    #ifdef DEBUG_DETAIL_ON 
+        LogFile.WriteHeapInfo("CImageBasis_copyfrom - done");
+    #endif
+}
+
+
+CImageBasis::CImageBasis(std::string _name, int _width, int _height, int _channels)
 {
     name = _name;
     islocked = false;
@@ -534,7 +629,7 @@ CImageBasis::CImageBasis(string _name, int _width, int _height, int _channels)
 }
 
 
-CImageBasis::CImageBasis(string _name, std::string _image)
+CImageBasis::CImageBasis(std::string _name, std::string _image)
 {
     name = _name;
     islocked = false;
@@ -556,7 +651,49 @@ CImageBasis::CImageBasis(string _name, std::string _image)
     rgb_image = stbi_load(_image.c_str(), &width, &height, &bpp, channels);
 
     if (rgb_image == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis-image: Failed to load " + _image + "! Is it corrupted?");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis-image: Failed to load " + _image);
+        LogFile.WriteHeapInfo("CImageBasis-image");
+        RGBImageRelease();
+        return;
+    }
+    
+    RGBImageRelease();
+
+    #ifdef DEBUG_DETAIL_ON 
+        std::string zw = "CImageBasis after load " + _image;
+        ESP_LOGD(TAG, "%s", zw.c_str());
+        ESP_LOGD(TAG, "w %d, h %d, b %d, c %d", width, height, bpp, channels);
+    #endif
+
+    #ifdef DEBUG_DETAIL_ON 
+        LogFile.WriteHeapInfo("CImageBasis_image - done");
+    #endif
+}
+
+
+CImageBasis::CImageBasis(std::string _name, std::string _image, bool _externalImage)
+{
+    name = _name;
+    islocked = false;
+    channels = 3;
+    externalImage = _externalImage;
+    filename = _image;
+
+    if (file_size(_image.c_str()) == 0) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _image + " is empty!");
+        return;
+    }
+
+    RGBImageLock();
+
+    #ifdef DEBUG_DETAIL_ON 
+        LogFile.WriteHeapInfo("CImageBasis_image - Start");
+    #endif
+
+    rgb_image = stbi_load(_image.c_str(), &width, &height, &bpp, channels);
+
+    if (rgb_image == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis-image: Failed to load " + _image);
         LogFile.WriteHeapInfo("CImageBasis-image");
         RGBImageRelease();
         return;
@@ -581,7 +718,7 @@ bool CImageBasis::ImageOkay(){
 }
 
 
-CImageBasis::CImageBasis(string _name, uint8_t* _rgb_image, int _channels, int _width, int _height, int _bpp)
+CImageBasis::CImageBasis(std::string _name, uint8_t* _rgb_image, int _channels, int _width, int _height, int _bpp)
 {
     name = _name;
     islocked = false;
@@ -622,7 +759,7 @@ CImageBasis::~CImageBasis()
 
     if (!externalImage) {
         //stbi_image_free(rgb_image);
-        free_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ", " + to_string(memsize) + ")", rgb_image);
+        free_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ", " + std::to_string(memsize) + ")", rgb_image);
     }
 
     RGBImageRelease();
@@ -631,7 +768,7 @@ CImageBasis::~CImageBasis()
 
 void CImageBasis::SaveToFile(std::string _imageout)
 {
-    string typ = getFileType(_imageout);
+    std::string typ = getFileType(_imageout);
 
     RGBImageLock();
 
@@ -685,4 +822,3 @@ void CImageBasis::Resize(int _new_dx, int _new_dy, CImageBasis *_target)
 
     RGBImageRelease();
 }
-

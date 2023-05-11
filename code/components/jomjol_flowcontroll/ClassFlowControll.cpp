@@ -440,52 +440,42 @@ void ClassFlowControll::DeinitFlow(void)
 
     Camera.LightOnOff(false);
     StatusLEDOff();
-    
-    LogFile.WriteHeapInfo("After camera");
+    //LogFile.WriteHeapInfo("After camera");
 
     gpio_handler_destroy();
-
-    LogFile.WriteHeapInfo("After GPIO");
+    //LogFile.WriteHeapInfo("After GPIO");
 
 	delete flowMQTT;
     flowMQTT = NULL;
-
-    LogFile.WriteHeapInfo("After MQTT");
+    //LogFile.WriteHeapInfo("After MQTT");
     
     delete flowInfluxDB;
     flowInfluxDB = NULL;
-
-    LogFile.WriteHeapInfo("After INFLUX");
+    //LogFile.WriteHeapInfo("After INFLUX");
 
     delete flowInfluxDBv2;
     flowInfluxDBv2 = NULL;
-
-    LogFile.WriteHeapInfo("After INFLUXv2");
+    //LogFile.WriteHeapInfo("After INFLUXv2");
 
     delete flowpostprocessing;
     flowpostprocessing = NULL;
-
-    LogFile.WriteHeapInfo("After POSTPROC");
+    //LogFile.WriteHeapInfo("After POSTPROC");
 
     delete flowanalog;
     flowanalog = NULL;
-
-    LogFile.WriteHeapInfo("After ANALOG");
+    //LogFile.WriteHeapInfo("After ANALOG");
 
     delete flowdigit;
     flowdigit = NULL;
-
-    LogFile.WriteHeapInfo("After DIGIT");
+    //LogFile.WriteHeapInfo("After DIGIT");
 
     delete flowalignment;
     flowalignment = NULL;
-
-    LogFile.WriteHeapInfo("After ALIGN");
+    //LogFile.WriteHeapInfo("After ALIGN");
 
     delete flowtakeimage;
     flowtakeimage = NULL;
-
-    LogFile.WriteHeapInfo("After TAKEIMG");
+    //LogFile.WriteHeapInfo("After TAKEIMG");
     
     FlowControll.clear();               // Clear vector to release allocated memory
     FlowControlPublish.clear();         // Clear vector to release allocated memory

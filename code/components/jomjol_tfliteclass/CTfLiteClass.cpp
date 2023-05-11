@@ -211,9 +211,13 @@ bool CTfLiteClass::MakeAllocate()
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Allocating tensors");
     static tflite::AllOpsResolver resolver;
 
-    #ifdef DEBUG_DETAIL_ON 
-        LogFile.WriteHeapInfo("CTLiteClass::Alloc start");
-    #endif
+    this->tensor_arena = (uint8_t*)malloc_psram_heap(std::string(TAG) + "->tensor_arena", kTensorArenaSize, MALLOC_CAP_SPIRAM);
+
+    if (this->tensor_arena == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Tensor arena: malloc failed");
+        LogFile.WriteHeapInfo("MakeAllocate-Tensor arena: malloc failed");
+        return false;
+    }
 
     this->interpreter = new tflite::MicroInterpreter(this->model, resolver, this->tensor_arena, this->kTensorArenaSize, this->error_reporter);
 
@@ -227,14 +231,8 @@ bool CTfLiteClass::MakeAllocate()
     if (allocate_status != kTfLiteOk) {
         //TF_LITE_REPORT_ERROR(error_reporter, "AllocateTensors failed");
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Allocate tensors failed");
-
-        //this->GetInputDimension();   // TODO: Why read again when already failed state?
         return false;
     }
-
-    #ifdef DEBUG_DETAIL_ON 
-        LogFile.WriteHeapInfo("CTLiteClass::Alloc done");
-    #endif
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Tensors successfully allocated");
     return true;
@@ -284,7 +282,7 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
     FILE* f = fopen(_fn.c_str(), "rb");     // previously only "r
     if (fread(modelfile, 1, size, f) != size) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ReadFileToModel: Reading error: Size differs!");
-        free(modelfile);
+        free_psram_heap(std::string(TAG) + "->modelfile", modelfile);
         fclose(f);
         return false;
     }
@@ -294,7 +292,7 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
         LogFile.WriteHeapInfo("ReadFileToModel: done");
     #endif
 
-    return true;   
+    return true;
 }
 
 
@@ -331,6 +329,7 @@ bool CTfLiteClass::LoadModel(std::string _fn)
 }
 
 
+
 CTfLiteClass::CTfLiteClass()
 {
     this->model = nullptr;
@@ -339,17 +338,36 @@ CTfLiteClass::CTfLiteClass()
     this->input = nullptr;
     this->output = nullptr;  
     this->kTensorArenaSize = 800 * 1024;   /// according to testfile: 108000 - so far 600;; 2021-09-11: 200 * 1024
-    this->tensor_arena = (uint8_t*)malloc_psram_heap(std::string(TAG) + "->tensor_arena", kTensorArenaSize, MALLOC_CAP_SPIRAM);
+}
+
+
+void CTfLiteClass::CTfLiteClassDeleteInterpreter()
+{
+    if (this->tensor_arena != nullptr) {  
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TFLITE arena - Used bytes: " + std::to_string(this->interpreter->arena_used_bytes())); 
+        free_psram_heap(std::string(TAG) + "->tensor_arena", this->tensor_arena);
+        this->tensor_arena = nullptr;
+    }
+
+    if (this->interpreter != nullptr) {
+        delete this->interpreter;
+        this->interpreter = nullptr;
+    }
 }
 
 
 CTfLiteClass::~CTfLiteClass()
 {
-  delete this->interpreter;
-  delete this->error_reporter;
+    if (this->tensor_arena != nullptr) {  
+        free_psram_heap(std::string(TAG) + "->tensor_arena", this->tensor_arena);
+    }
 
-  free_psram_heap(std::string(TAG) + "->modelfile", modelfile);
-  free_psram_heap(std::string(TAG) + "->tensor_arena", this->tensor_arena);
+    if (this->interpreter != nullptr) {
+        delete this->interpreter;
+    }
+    
+    free_psram_heap(std::string(TAG) + "->modelfile", modelfile);
+    delete this->error_reporter;
 }        
 
 

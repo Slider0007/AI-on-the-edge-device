@@ -1,42 +1,95 @@
+#include "psram.h"
 #include "ClassLogFile.h"
 #include "esp_heap_caps.h"
 
 static const char* TAG = "PSRAM";
 
-using namespace std;
+struct strSTBI STBIObjectPSRAM = {};
 
-
-void *malloc_psram_heap(std::string name, size_t size, uint32_t caps) {
+void *malloc_psram_heap(std::string name, size_t size, uint32_t caps)
+{
 	void *ptr;
 
 	ptr = heap_caps_malloc(size, caps);
     if (ptr != NULL) {
-	    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, to_string(size) + " bytes allocated: " + name);
+	    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, name + ": Allocated: " + std::to_string(size));
 	}
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to allocate " + to_string(size) + " bytes: " + name);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, name + ": Failed to allocate " + std::to_string(size));
     }
 
 	return ptr;
 }
 
 
-void *calloc_psram_heap(std::string name, size_t n, size_t size, uint32_t caps) {
+void *remalloc_psram_heap(std::string name, void* p, size_t size, uint32_t caps)
+{
+	void *ptr;
+
+	ptr = heap_caps_realloc(p, size, caps);
+    if (ptr != NULL) {
+	    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, name + ": Allocated: " + std::to_string(size));
+	}
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, name + ": Failed to allocate " + std::to_string(size));
+    }
+
+	return ptr;
+}
+
+
+void *malloc_psram_heap_STBI(std::string name, size_t size, uint32_t caps)
+{
+	void *ptr;
+
+	if ((STBIObjectPSRAM.name.compare("rawImage") == 0) && STBIObjectPSRAM.usePreallocated && 
+            STBIObjectPSRAM.PreallocatedMemory != NULL && size >= 900000)
+    {
+        if (STBIObjectPSRAM.PreallocatedMemorySize >= size) {
+            ptr = STBIObjectPSRAM.PreallocatedMemory;
+            name += ": Use preallocated memory (" + STBIObjectPSRAM.name + ")";
+            STBIObjectPSRAM.usePreallocated = false;
+        }
+        else {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, name + ": Preallocation size " + std::to_string(STBIObjectPSRAM.PreallocatedMemorySize) +
+                                                           " too small for needed size of " + std::to_string(size));
+            ptr = heap_caps_malloc(size, caps);
+        }
+    }
+    else {
+        ptr = heap_caps_malloc(size, caps);
+    }
+    
+          
+    if (ptr != NULL) {
+	    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, name + ": Allocated: " + std::to_string(size));
+	}
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, name + ": Failed to allocate " + std::to_string(size));
+    }
+
+	return ptr;
+}
+
+
+void *calloc_psram_heap(std::string name, size_t n, size_t size, uint32_t caps)
+{
 	void *ptr;
 
 	ptr = heap_caps_calloc(n, size, caps);
     if (ptr != NULL) {
-	    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, to_string(size) + " bytes allocated: " + name);
+	    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, name + ": Allocated: " + std::to_string(size));
 	}
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to allocate " + to_string(size) + " bytes: " + name);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, name + ": Failed to allocate " + std::to_string(size));
     }
 
 	return ptr;
 }
 
 
-void free_psram_heap(std::string name, void *ptr) {
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Free memory: " + name);
+void free_psram_heap(std::string name, void *ptr)
+{
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, name + ": Free memory");
     heap_caps_free(ptr);
 }

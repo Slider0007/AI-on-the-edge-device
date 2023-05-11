@@ -13,8 +13,10 @@ class CAlignAndCutImage : public CImageBasis
         int t0_dx, t0_dy, t1_dx, t1_dy;
         CImageBasis *ImageTMP;
         CAlignAndCutImage(std::string name, std::string _image) : CImageBasis(name, _image) {ImageTMP = NULL;};
+        CAlignAndCutImage(std::string name, std::string _image, bool _externalImage) : CImageBasis(name, _image, _externalImage) {ImageTMP = NULL;};
         CAlignAndCutImage(std::string name, uint8_t* _rgb_image, int _channels, int _width, int _height, int _bpp) : CImageBasis(name, _rgb_image, _channels, _width, _height, _bpp) {ImageTMP = NULL;};
         CAlignAndCutImage(std::string name, CImageBasis *_org, CImageBasis *_temp);
+        ~CAlignAndCutImage();
 
         bool Align(RefInfo *_temp1, RefInfo *_temp2, float *angle);
 //        void Align(std::string _template1, int x1, int y1, std::string _template2, int x2, int y2, int deltax = 40, int deltay = 40, std::string imageROI = "");

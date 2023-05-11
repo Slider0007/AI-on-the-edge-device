@@ -28,7 +28,6 @@ void ClassFlowAlignment::SetInitialParameter(void)
     use_antialiasing = false;
     initialflip = false;
     SaveAllFiles = false;
-    namerawimage =  "/sdcard/img_tmp/raw.jpg";
     FileStoreRefAlignment = "/sdcard/config/align.txt";
     ListFlowControll = NULL;
     AlignAndCutImage = NULL;
@@ -49,17 +48,7 @@ ClassFlowAlignment::ClassFlowAlignment(std::vector<ClassFlow*>* lfc)
     for (int i = 0; i < ListFlowControll->size(); ++i)
     {
         if (((*ListFlowControll)[i])->name().compare("ClassFlowTakeImage") == 0)
-        {
             ImageBasis = ((ClassFlowTakeImage*) (*ListFlowControll)[i])->rawImage;
-            //namerawimage = ((ClassFlowTakeImage*) (*ListFlowControll)[i])->getFileNameRawImage();
-        }
-    }
-
-    if (ImageBasis == NULL)            // the function take pictures does not exist --> must be created first ONLY FOR TEST PURPOSES
-    {
-        ESP_LOGD(TAG, "CImageBasis had to be created");
-        ImageBasis = new CImageBasis(namerawimage);
-        ImageBasisToDelete = true;
     }
 }
 
@@ -185,10 +174,10 @@ string ClassFlowAlignment::getHTMLSingleStep(string host)
 bool ClassFlowAlignment::doFlow(string time) 
 {
     PresetFlowStateHandler();
-    if (!AlgROI)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
+    if (AlgROI == NULL)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
     {
         AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
-        if (!AlgROI) 
+        if (AlgROI == NULL) 
         {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlgROI");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
@@ -200,10 +189,10 @@ bool ClassFlowAlignment::doFlow(string time)
         ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
     }
 
-    if (!ImageTMP) 
+    if (ImageTMP == NULL) 
     {
-        ImageTMP = new CImageBasis("ImageTMP", ImageBasis);
-        if (!ImageTMP) 
+        ImageTMP = new CImageBasis("ImageTMP", ImageBasis, 1);
+        if (ImageTMP == NULL) 
         {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate ImageTMP");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
@@ -213,14 +202,14 @@ bool ClassFlowAlignment::doFlow(string time)
 
     delete AlignAndCutImage;
     AlignAndCutImage = new CAlignAndCutImage("AlignAndCutImage", ImageBasis, ImageTMP);
-    if (!AlignAndCutImage) 
+    if (AlignAndCutImage == NULL) 
     {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlignAndCutImage");
         LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
         return false;
     }
 
-    CRotateImage rt("rawImage", AlignAndCutImage, ImageTMP, initialflip);
+    CRotateImage rt("rawImageRT", AlignAndCutImage, ImageTMP, initialflip);
     if (initialflip)
     {
         int _zw = ImageBasis->height;
@@ -257,9 +246,11 @@ bool ClassFlowAlignment::doFlow(string time)
     if(References[0].alignment_algo != 3){
         if (!AlignAndCutImage->Align(&References[0], &References[1], &alignAlgoRotation)) 
         {
-            SaveReferenceAlignmentValues();
+            //Save alignment values only if Fast Alignment is active
+            if(References[0].alignment_algo == 2)
+                SaveReferenceAlignmentValues();
         }
-    }// no align
+    }
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial rotation: " + std::to_string(initalrotate) + 
                                             ", Align algo rotation: " + std::to_string(alignAlgoRotation));
@@ -284,8 +275,8 @@ bool ClassFlowAlignment::doFlow(string time)
     delete ImageTMP;
     ImageTMP = NULL;
 
-    //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
-    if(References[0].alignment_algo != 3){
+    //Load alignment values only if Fast Alignment is active
+    if(References[0].alignment_algo == 2){
         LoadReferenceAlignmentValues();
     }
 

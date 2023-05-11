@@ -22,7 +22,6 @@ protected:
     bool SaveAllFiles;
     int anz_ref;
     RefInfo References[2];
-    std::string namerawimage;
     std::string FileStoreRefAlignment;
     CAlignAndCutImage *AlignAndCutImage;
     float SAD_criteria;

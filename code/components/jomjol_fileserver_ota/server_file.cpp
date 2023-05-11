@@ -48,7 +48,7 @@ extern "C" {
 #include "miniz.h"
 
 
-static const char *TAG = "OTA FILE";
+static const char *TAG = "SERVER_FILE";
 
 struct file_server_data {
     /* Base path of file storage */
