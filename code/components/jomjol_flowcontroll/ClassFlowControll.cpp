@@ -195,11 +195,11 @@ std::string ClassFlowControll::doSingleStep(std::string _stepname, std::string _
     if ((_stepname.compare("[Alignment]") == 0) || (_stepname.compare(";[Alignment]") == 0)){
         _classname = "ClassFlowAlignment";
     }
-    if ((_stepname.compare(0, 7, "[Digits") == 0) || (_stepname.compare(0, 8, ";[Digits") == 0)) {
-        _classname = "ClassFlowCNNGeneral";
+    if ((_stepname.compare("[Digits") == 0) || (_stepname.compare(";[Digits]") == 0)) {
+        _classname = "ClassFlowCNNGeneral - Digit";
     }
     if ((_stepname.compare("[Analog]") == 0) || (_stepname.compare(";[Analog]") == 0)){
-        _classname = "ClassFlowCNNGeneral";
+        _classname = "ClassFlowCNNGeneral - Analog";
     }
     #ifdef ENABLE_MQTT
     if ((_stepname.compare("[MQTT]") == 0) || (_stepname.compare(";[MQTT]") == 0)){
@@ -243,8 +243,11 @@ std::string ClassFlowControll::TranslateAktstatus(std::string _input)
     else if (_input.compare("ClassFlowAlignment") == 0)
         return std::string(FLOW_ALIGNMENT);
 
-    else if (_input.compare("ClassFlowCNNGeneral") == 0)
-        return std::string(FLOW_PROCESS_ROI);
+    else if (_input.compare("ClassFlowCNNGeneral - Digit") == 0)
+        return std::string(FLOW_PROCESS_DIGIT_ROI);
+
+    else if (_input.compare("ClassFlowCNNGeneral - Analog") == 0)
+        return std::string(FLOW_PROCESS_ANALOG_ROI);
 
     else if (_input.compare("ClassFlowPostProcessing") == 0)
         return std::string(FLOW_POSTPROCESSING);
@@ -262,7 +265,8 @@ std::string ClassFlowControll::TranslateAktstatus(std::string _input)
         return std::string(FLOW_PUBLISH_INFLUXDB2);
     #endif //ENABLE_INFLUXDB
 
-    return "Unkown State";
+    else
+        return "Unkown State (" + _input + ")";
 }
 
 
@@ -288,19 +292,19 @@ ClassFlow* ClassFlowControll::CreateClassFlow(std::string _type)
             FlowControll.push_back(cfc);
         }
     }
-    else if (toUpper(_type).compare("[ANALOG]") == 0)
+    else if (toUpper(_type).compare("[DIGITS]") == 0)
     {
-        cfc = new ClassFlowCNNGeneral(flowalignment);
+        cfc = new ClassFlowCNNGeneral(flowalignment, std::string("Digit"));
         if (cfc) {
-            flowanalog = (ClassFlowCNNGeneral*) cfc;
+            flowdigit = (ClassFlowCNNGeneral*) cfc;
             FlowControll.push_back(cfc);
         }
     }
-    else if (toUpper(_type).compare(0, 7, "[DIGITS") == 0)
+    else if (toUpper(_type).compare("[ANALOG]") == 0)
     {
-        cfc = new ClassFlowCNNGeneral(flowalignment);
+        cfc = new ClassFlowCNNGeneral(flowalignment, std::string("Analog"));
         if (cfc) {
-            flowdigit = (ClassFlowCNNGeneral*) cfc;
+            flowanalog = (ClassFlowCNNGeneral*) cfc;
             FlowControll.push_back(cfc);
         }
     }
@@ -368,7 +372,6 @@ bool ClassFlowControll::InitFlow(std::string config)
     DeinitFlow();
     
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init flow...");
-    LogFile.WriteHeapInfo("InitFlow start");
 
     bool bRetVal = true;
     std::string line = "";

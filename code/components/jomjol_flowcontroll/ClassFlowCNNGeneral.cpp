@@ -19,11 +19,13 @@ static const char* TAG = "CNN";
 #endif
 
 
-ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, t_CNNType _cnntype) : ClassFlowImage(NULL, TAG)
+ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, std::string _cnnname, t_CNNType _cnntype) : ClassFlowImage(NULL, TAG)
 {
     PresetFlowStateHandler(true);
     tflite = new CTfLiteClass;
-    string cnnmodelfile = "";
+    cnnname = _cnnname;
+    CNNType = _cnntype;
+    cnnmodelfile = "";
     modelxsize = 32;
     modelysize = 32;
     modelchannel = 3;
@@ -33,7 +35,6 @@ ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, t_CNNTy
     SaveAllFiles = false; 
     disabled = false;
     isLogImageSelect = false;
-    CNNType = _cnntype;
     flowpostalignment = _flowalign;
     imagesRetention = 5;
 }

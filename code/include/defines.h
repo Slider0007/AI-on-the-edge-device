@@ -218,7 +218,8 @@
 
     #define FLOW_TAKE_IMAGE             "Take Image"
     #define FLOW_ALIGNMENT              "Image Alignment"
-    #define FLOW_PROCESS_ROI            "Digitalization of ROIs"
+    #define FLOW_PROCESS_DIGIT_ROI      "ROI Digitalization - Digit"
+    #define FLOW_PROCESS_ANALOG_ROI     "ROI Digitalization - Analog"
     #define FLOW_POSTPROCESSING         "Post-Processing"
     #define FLOW_PUBLISH_MQTT           "Publish to MQTT"
     #define FLOW_PUBLISH_INFLUXDB       "Publish to InfluxDBv1"
