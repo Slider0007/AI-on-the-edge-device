@@ -671,22 +671,11 @@ esp_err_t handler_editflow(httpd_req_t *req)
         in = "/sdcard" + in;    // --> img_tmp/reference.jpg
         out = "/sdcard" + out;  // --> img_tmp/refX.jpg
 
-        std::string out_org = out.substr(0, out.length() - 4) + "_org.jpg";             // --> img_tmp/refX_org.jpg
-        std::string out_contrast = out.substr(0, out.length() - 4) + "_contrast.jpg";   // --> img_tmp/refX_contrast.jpg
-
         STBIObjectPSRAM.name="rawImage";
         STBIObjectPSRAM.usePreallocated = true; // Reuse of allocated memory od CImageBasis element "rawImage" (ClassTakeImage.cpp) 
         CAlignAndCutImage* caic = new CAlignAndCutImage("cutref1", in, true);  // CImageBasis of reference.jpg will be created first (921kB RAM needed)
-        caic->CutAndSave(out_org, x, y, dx, dy);
+        caic->CutAndSave(out, x, y, dx, dy);
         delete caic;
-
-        CopyFile(out_org, out); // Copy refX_org.jpg -> refX.jpg
-
-        /* Additionally save with enhanced contrast and switch image on WebUI if needed */
-        CImageBasis* cim = new CImageBasis("cutref2", out_org);
-        cim->Contrast(90);
-        cim->SaveToFile(out_contrast);
-        delete cim;  
 
         zw = "CutImage Done";
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");

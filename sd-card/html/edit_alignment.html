@@ -91,37 +91,30 @@
         <col span="1" style="width: 33.3%;">
         <col span="1" style="width: 33.3%;">
     </colgroup>
-	  <tr>
-		<td>Marker: 
-			<select id="index" name="reference" onchange="ChangeSelection()">
-			  <option value="0" selected>Marker 1</option>
-			  <option value="1" >Marker 2</option>
-			</select>
-		</td>
-		<td colspan="2" style="padding-left: 22px; color: grey;">Filename: <output type="text" name="name" id="name" onchange="namechanged()"></td>
-	  </tr>
-	  <tr>
-		<td style="padding-top: 10px">x: <input type="number" name="refx" id="refx" step=1 onchange="valuemanualchanged()"></td>
-		<td style="padding-top: 10px">dx: <input type="number" name="refdx" id="refdx" step=1 onchange="valuemanualchanged()"></td>
-		<td rowspan="2" style="padding-top: 10px;"><input disabled class="button" type="button" id="updatemarker" value="Update Marker" onclick="CutOutReference()"></td>	
-	  </tr>
-	  <tr>
-		<td>y: <input type="number" name="refy" id="refy" step=1 onchange="valuemanualchanged()"></td>
-		<td>dy: <input type="number" name="refdy" id="refdy" step=1 onchange="valuemanualchanged()"></td>
-	  </tr>
-	  <tr>
-		<td style="vertical-align: bottom;">Selected Image Area:</td>
-		<td style="vertical-align: bottom;">Resulting Marker:</td>
-        <td><input disabled class="button" type="button" id="enhancecontrast" value="Enhance Image Contrast" onclick="EnhanceContrast()"></td>	
-	  </tr> 
-	  <tr>
-		<td style="height:70px; vertical-align: top;"><img id="img_ref_org" src = ""></td>    <!--/img_tmp/ref_zw_org.jpg-->
-		<td style="height:70px; vertical-align: top;"><img id="img_ref" src = ""></td>        <!--/img_tmp/ref_zw.jpg-->
-	  </tr> 
+	    <tr>
+            <td style="height:25px;">Marker: 
+                <select id="index" name="reference" onchange="ChangeSelection()">
+                <option value="0" selected>Marker 1</option>
+                <option value="1" >Marker 2</option>
+                </select>
+            </td>
+            <td style="padding-left: 22px; color: grey;">File: <output type="text" name="name" id="name"></td>
+            <td rowspan="3" style="vertical-align:top; height:140px"><img id="img_ref" src = ""></td>
+        </tr>
+        <tr>
+            <td style="height:20px;padding-top: 10px; vertical-align: top;">x: <input type="number" name="refx" id="refx" step=1 onchange="valuemanualchanged()"></td>
+            <td style="padding-top: 10px; vertical-align: top;">dx: <input type="number" name="refdx" id="refdx" step=1 onchange="valuemanualchanged()"></td>
+
+        </tr>
+        <tr>
+            <td style="vertical-align: top;">y: <input type="number" name="refy" id="refy" step=1 onchange="valuemanualchanged()"></td>
+            <td style="vertical-align: top;">dy: <input type="number" name="refdy" id="refdy" step=1 onchange="valuemanualchanged()"></td>
+            
+        </tr>
         <tr>
             <td style="vertical-align:bottom;"><b>Reference Image:</b></td>
-            <td></td>
-            <td><input disabled style="font-weight:bold;" class="button" type="submit" name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
+            <td><input disabled class="button" type="button" id="updatemarker" value="Update Marker" onclick="CutOutReference()"></td>	
+            <td ><input disabled style="font-weight:bold;" class="button" type="submit" name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
             </td>
         </tr> 
         <tr>
@@ -169,7 +162,6 @@ function SaveToConfig(){
         UpdateConfigReference(domainname)
         SaveConfigToServer(domainname);
         document.getElementById("savemarker").disabled = true;
-        document.getElementById("enhancecontrast").disabled = true;
         
         firework.launch('Save and apply configuration...', 'success', 5000);
         setTimeout(function() {
@@ -178,24 +170,12 @@ function SaveToConfig(){
     }
 }
 
-function EnhanceContrast(){
-    _filesource = refInfo[aktindex]["name"].replace("/config/", "/img_tmp/");
-    _filetarget = _filesource;
-    _filesource = _filesource.replace(".jpg", "_contrast.jpg");
-    FileCopyOnServer(_filesource, _filetarget, domainname);
-    UpdateReference();
-    document.getElementById("enhancecontrast").disabled = true;
-}
 
 function UpdateReference(){
     var filenameurl = refInfo[aktindex]["name"].replace("/config/", "/img_tmp/");
 
     var url = domainname + "/fileserver" + filenameurl + "?"  + Date.now();
     document.getElementById("img_ref").src = url;
-
-    filenameurl = filenameurl.replace(".jpg", "_org.jpg");
-    url = domainname + "/fileserver" + filenameurl +  "?" + Date.now();
-    document.getElementById("img_ref_org").src = url;
 
     document.getElementById("name").value = refInfo[aktindex]["name"];
 
@@ -204,7 +184,7 @@ function UpdateReference(){
     rect.startX = document.getElementById("refx").value;
     rect.startY = document.getElementById("refy").value;
 
-    document.getElementById("img_ref_org").onload = function () {
+    document.getElementById("img_ref").onload = function () {
         document.getElementById("refdx").value = this.width;
         document.getElementById("refdy").value = this.height;   
         refInfo[aktindex]["dx"] = this.width;
@@ -271,7 +251,6 @@ function dataURLtoBlob(dataurl) {
             ParseConfig();
             param = getConfigParameters();
 
-            document.getElementById("enhancecontrast").disabled = true;
             document.getElementById("savemarker").disabled = true;
 
             CopyReferenceToImgTmp(domainname);
@@ -302,7 +281,6 @@ function dataURLtoBlob(dataurl) {
 
         function MakeRefZW(zw, _domainname){
             _filetarget = zw["name"].replace("/config/", "/img_tmp/");
-            //_filetarget = _filetarget.replace(".jpg", "_org.jpg"); // not needed here -> replacement _org.jpg will be done in firmware
             url = _domainname + "/editflow?task=cutref&in=/config/reference.jpg&out="+_filetarget+"&x=" + zw["x"] + "&y="  + zw["y"] + "&dx=" + zw["dx"] + "&dy=" + zw["dy"];
             var xhttp = new XMLHttpRequest();  
             try {
@@ -331,14 +309,13 @@ function dataURLtoBlob(dataurl) {
                         refInfo[aktindex]["dy"] = document.getElementById("refdy").value;   
                         MakeRefZW(refInfo[aktindex], domainname);
                         UpdateReference();
-                        document.getElementById("enhancecontrast").disabled = false;
                         document.getElementById("savemarker").disabled = false;
                         firework.launch("Marker updated", 'success', 3000);
                     }
                     else {
                         var str = "Update marker only possible in any IDLE / SETUP state (Actual State: " + xhttp.responseText.split("] ")[1] + 
                                 "). Wait a few moments until device is in IDLE state and redo action";
-                        firework.launch(str, 'warning', 5000);
+                        firework.launch(str, 'warning', 10000);
                     }
                 }
             }
@@ -455,11 +432,6 @@ function dataURLtoBlob(dataurl) {
         }
     }
 
-    function namechanged()
-    {
-        _name = document.getElementById("name").value;
-        refInfo[aktindex]["name"] = _name;
-    }
 
     function valuemanualchanged(){
         if (!drag) {

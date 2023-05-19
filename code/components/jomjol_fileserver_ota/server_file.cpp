@@ -742,14 +742,10 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     /* Redirect onto root to see the updated file list */
     if (strcmp(filename, "/config/config.ini") == 0 ||
         strcmp(filename, "/config/ref0.jpg") == 0 ||
-        strcmp(filename, "/config/ref0_org.jpg") == 0 ||
         strcmp(filename, "/config/ref1.jpg") == 0 ||
-        strcmp(filename, "/config/ref1_org.jpg") == 0 ||
         strcmp(filename, "/config/reference.jpg") == 0 ||
         strcmp(filename, "/img_tmp/ref0.jpg") == 0 ||
-        strcmp(filename, "/img_tmp/ref0_org.jpg") == 0 ||
         strcmp(filename, "/img_tmp/ref1.jpg") == 0 ||
-        strcmp(filename, "/img_tmp/ref1_org.jpg") == 0 ||
         strcmp(filename, "/img_tmp/reference.jpg") == 0 ) 
     { 
         httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
@@ -860,14 +856,10 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         /* Avoid redirect to root folder after deletion for system processed files */
         if (strcmp(filename, "/config/config.ini") == 0 ||
             strcmp(filename, "/config/ref0.jpg") == 0 ||
-            strcmp(filename, "/config/ref0_org.jpg") == 0 ||
             strcmp(filename, "/config/ref1.jpg") == 0 ||
-            strcmp(filename, "/config/ref1_org.jpg") == 0 ||
             strcmp(filename, "/config/reference.jpg") == 0 ||
             strcmp(filename, "/img_tmp/ref0.jpg") == 0 ||
-            strcmp(filename, "/img_tmp/ref0_org.jpg") == 0 ||
             strcmp(filename, "/img_tmp/ref1.jpg") == 0 ||
-            strcmp(filename, "/img_tmp/ref1_org.jpg") == 0 ||
             strcmp(filename, "/img_tmp/reference.jpg") == 0 ) 
         { 
             httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
