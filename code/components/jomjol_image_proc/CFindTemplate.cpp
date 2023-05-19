@@ -78,7 +78,7 @@ bool IRAM_ATTR CFindTemplate::FindTemplate(strRefInfo *_ref, bool _noFast)
     int SADmin = tpl_width * tpl_height * 255;
     int _anzchannels;
 
-    if (_ref->alignment_algo == 0) { // 0 = "Default" (nur R-Kanal)
+    if (_ref->alignment_algo == 0 || _ref->alignment_algo == 2) { // 0 = "Default" (only R-channel) OR 2 = FAST ALGO (only if already processed but no match)
         //ESP_LOGD(TAG, "FindTemplate - DEFAULT - only R channel");
         _anzchannels = 1;
     }
