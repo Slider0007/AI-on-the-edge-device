@@ -21,15 +21,15 @@ protected:
     bool use_antialiasing;
     bool SaveAllFiles;
     int anz_ref;
-    RefInfo References[2];
+    strRefInfo References[2];
     std::string namerawimage;
     std::string FileStoreRefAlignment;
     CAlignAndCutImage *AlignAndCutImage;
-    float SAD_criteria;
+    int AlignFAST_SADThreshold;
 
     void SetInitialParameter(void);
     bool LoadReferenceAlignmentValues(void);
-    void SaveReferenceAlignmentValues();
+    bool SaveReferenceAlignmentValues(void);
 
 public:
     CImageBasis *ImageBasis, *ImageTMP;

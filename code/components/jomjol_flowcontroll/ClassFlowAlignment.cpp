@@ -6,6 +6,8 @@
 #include "CRotateImage.h"
 #include "esp_log.h"
 
+#include "nvs_flash.h"
+#include "nvs.h"
 
 #include "ClassLogFile.h"
 #include "psram.h"
@@ -22,8 +24,9 @@ bool ImageBasisToDelete = false;
 void ClassFlowAlignment::SetInitialParameter(void)
 {
     PresetFlowStateHandler(true);
-    initalrotate = 0;
+    initalrotate = 0.0;
     anz_ref = 0;
+    AlignFAST_SADThreshold = 10;  // FAST ALIGN ALGO: SADNorm -> if smaller than threshold use same alignment values as last round
     initialmirror = false;
     use_antialiasing = false;
     initialflip = false;
@@ -37,7 +40,6 @@ void ClassFlowAlignment::SetInitialParameter(void)
     AlgROI = (ImageData*)heap_caps_malloc(sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     previousElement = NULL;
     disabled = false;
-    SAD_criteria = 0.05;
 }
 
 
@@ -67,10 +69,9 @@ ClassFlowAlignment::ClassFlowAlignment(std::vector<ClassFlow*>* lfc)
 bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
 {
     std::vector<string> splitted;
-    int suchex = 20;
-    int suchey = 20;
-    int alg_algo = 0; //default=0; 1 =HIGHACCURACY; 2= FAST; 3= OFF //add disable aligment algo |01.2023
-
+    int search_x = 20;  // target_x +/- search_x
+    int search_y = 20;  // target_y +/- search_y
+    int alg_algo = 0;   // 0= DEFAULT; 1 =HIGHACCURACY; 2= FAST; 3= OFF //add disable aligment algo |01.2023
 
     aktparamgraph = trim(aktparamgraph);
 
@@ -104,11 +105,11 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
         }
         if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1))
         {
-            suchex = std::stoi(splitted[1]);
+            search_x = std::stoi(splitted[1]);
         }   
         if ((toUpper(splitted[0]) == "SEARCHFIELDY") && (splitted.size() > 1))
         {
-            suchey = std::stoi(splitted[1]);
+            search_y = std::stoi(splitted[1]);
         }   
         if ((toUpper(splitted[0]) == "ANTIALIASING") && (splitted.size() > 1))
         {
@@ -120,11 +121,15 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
         if ((splitted.size() == 3) && (anz_ref < 2))
         {
             References[anz_ref].image_file = FormatFileName("/sdcard" + splitted[0]);
-            References[anz_ref].target_x = std::stod(splitted[1]);
-            References[anz_ref].target_y = std::stod(splitted[2]);
+            References[anz_ref].target_x = std::stoi(splitted[1]);
+            References[anz_ref].target_y = std::stoi(splitted[2]);
+
+            References[anz_ref].search_x = search_x;
+            References[anz_ref].search_y = search_y;
+            References[anz_ref].fastalg_SADThreshold = AlignFAST_SADThreshold;
+            References[anz_ref].alignment_algo = alg_algo;
             anz_ref++;
         }
-
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
@@ -134,40 +139,26 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
         }
         if ((toUpper(splitted[0]) == "ALIGNMENTALGO") && (splitted.size() > 1))
         {
-            #ifdef DEBUG_DETAIL_ON
-                std::string zw2 = "Alignment mode selected: " + splitted[1];
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, zw2);
-            #endif
             if (toUpper(splitted[1]) == "HIGHACCURACY")
                 alg_algo = 1;
             else if (toUpper(splitted[1]) == "FAST")
                 alg_algo = 2;
-            else if (toUpper(splitted[1]) == "OFF") //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
+            else if (toUpper(splitted[1]) == "OFF") // no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
                 alg_algo = 3;
             else
                 alg_algo = 0;   // Default
+
+            #ifdef DEBUG_DETAIL_ON
+                std::string zw2 = "Alignment mode selected: " + std::to_string(alg_algo);
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, zw2);
+            #endif
         }
     }
 
-    for (int i = 0; i < anz_ref; ++i)
-    {
-        References[i].search_x = suchex;
-        References[i].search_y = suchey;
-        References[i].fastalg_SAD_criteria = SAD_criteria;
-        References[i].alignment_algo = alg_algo;
-        #ifdef DEBUG_DETAIL_ON
-            std::string zw2 = "Alignment mode written: " + std::to_string(alg_algo);
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, zw2);
-        #endif
-    }
-
-    //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
-    if(References[0].alignment_algo != 3){
+    if (References[0].alignment_algo == 2)
         LoadReferenceAlignmentValues();
-    }
-    
-    return true;
 
+    return true;
 }
 
 
@@ -252,21 +243,23 @@ bool ClassFlowAlignment::doFlow(string time)
             AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/rot.jpg"));
     }
 
-    float alignAlgoRotation;
-    //no align algo if set to 3 = off //add disable aligment algo |01.2023
-    if(References[0].alignment_algo != 3){
-        if (!AlignAndCutImage->Align(&References[0], &References[1], &alignAlgoRotation)) 
-        {
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial rotation: " + std::to_string(initalrotate));
+
+    if(References[0].alignment_algo != 3) {  // if align_algo = off -> no align
+        int AlignRetval = AlignAndCutImage->Align(&References[0], &References[1]);
+
+        if (AlignRetval >= 0) {
             SaveReferenceAlignmentValues();
         }
-    }// no align
-
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial rotation: " + std::to_string(initalrotate) + 
-                                            ", Align algo rotation: " + std::to_string(alignAlgoRotation));
+        else if (AlignRetval == -1) {   // alignment failed         
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Misalignment too large. Check initial rotation, alignment marker or "
+                                                    "increase alignment expert parameter: Search Field X, Y");
+            FlowStateHandlerSetError(-1);  
+        }
+    }
 
     if (AlgROI) {
-        //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
-        if(References[0].alignment_algo != 3){
+        if(References[0].alignment_algo != 3){ // if align_algo = off -> draw no alignment marker
             DrawRef(ImageTMP);
         }
         flowctrl.DigitalDrawROI(ImageTMP);
@@ -284,113 +277,68 @@ bool ClassFlowAlignment::doFlow(string time)
     delete ImageTMP;
     ImageTMP = NULL;
 
-    //no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
-    if(References[0].alignment_algo != 3){
-        LoadReferenceAlignmentValues();
+    if (!getFlowState()->isSuccessful)
+        return false;
+
+    return true;
+}
+
+
+bool ClassFlowAlignment::SaveReferenceAlignmentValues()
+{ 
+    esp_err_t err = ESP_OK;
+    
+    nvs_handle_t align_nvshandle;
+    err = nvs_open("align", NVS_READWRITE, &align_nvshandle);
+
+    if (err == ESP_OK) {
+        err = nvs_set_i32(align_nvshandle, "Ref0fastalg_x", References[0].fastalg_x);
+        err = nvs_set_i32(align_nvshandle, "Ref0fastalg_y", References[0].fastalg_y);
+        //err = nvs_set_i32(align_nvshandle, "Ref0fastalg_SAD", References[0].fastalg_SAD);
+
+        err = nvs_set_i32(align_nvshandle, "Ref1fastalg_x", References[1].fastalg_x);
+        err = nvs_set_i32(align_nvshandle, "Ref1fastalg_y", References[1].fastalg_y);
+        //err = nvs_set_i32(align_nvshandle, "Ref1fastalg_SAD", References[1].fastalg_SAD);
+
+        err = nvs_commit(align_nvshandle);
+        nvs_close(align_nvshandle);
+    }
+
+    if (err != ESP_OK) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to save alignment data to NVS: " + err);
+        return false;
     }
 
     return true;
 }
 
 
-void ClassFlowAlignment::SaveReferenceAlignmentValues()
-{
-    FILE* pFile;
-    std::string zwtime, zwvalue;
-
-    pFile = fopen(FileStoreRefAlignment.c_str(), "w");
-
-    if (strlen(zwtime.c_str()) == 0)
-    {
-        time_t rawtime;
-        struct tm* timeinfo;
-        char buffer[80];
-
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-
-        strftime(buffer, 80, "%Y-%m-%dT%H:%M:%S", timeinfo);
-        zwtime = std::string(buffer);
-    }
-
-    fputs(zwtime.c_str(), pFile);
-    fputs("\n", pFile);
-
-    zwvalue = std::to_string(References[0].fastalg_x) + "\t" + std::to_string(References[0].fastalg_y);
-    zwvalue = zwvalue + "\t" +std::to_string(References[0].fastalg_SAD)+ "\t" +std::to_string(References[0].fastalg_min); 
-    zwvalue = zwvalue + "\t" +std::to_string(References[0].fastalg_max)+ "\t" +std::to_string(References[0].fastalg_avg); 
-    fputs(zwvalue.c_str(), pFile);
-    fputs("\n", pFile);
-
-    zwvalue = std::to_string(References[1].fastalg_x) + "\t" + std::to_string(References[1].fastalg_y);
-    zwvalue = zwvalue + "\t" +std::to_string(References[1].fastalg_SAD)+ "\t" +std::to_string(References[1].fastalg_min); 
-    zwvalue = zwvalue + "\t" +std::to_string(References[1].fastalg_max)+ "\t" +std::to_string(References[1].fastalg_avg); 
-    fputs(zwvalue.c_str(), pFile);
-    fputs("\n", pFile);
-
-    fclose(pFile);
-}
-
-
 bool ClassFlowAlignment::LoadReferenceAlignmentValues(void)
 {
-    FILE* pFile;
-    char zw[256];
-    string zwvalue;
-    std::vector<string> splitted;  
+    esp_err_t err = ESP_OK;
 
+    nvs_handle_t align_nvshandle;
+    err = nvs_open("align", NVS_READONLY, &align_nvshandle);
 
-    pFile = fopen(FileStoreRefAlignment.c_str(), "r");
-    if (pFile == NULL)
-        return false;
-
-    fgets(zw, sizeof(zw), pFile);
-    ESP_LOGD(TAG, "%s", zw);
-
-    fgets(zw, sizeof(zw), pFile);
-    splitted = ZerlegeZeile(std::string(zw), " \t");
-    if (splitted.size() < 6)
-    {
-        fclose(pFile);
+    if (err != ESP_OK) {
         return false;
     }
 
-    References[0].fastalg_x = stoi(splitted[0]);
-    References[0].fastalg_y = stoi(splitted[1]);
-    References[0].fastalg_SAD = stof(splitted[2]);
-    References[0].fastalg_min = stoi(splitted[3]);
-    References[0].fastalg_max = stoi(splitted[4]);
-    References[0].fastalg_avg = stof(splitted[5]);
+    err = nvs_get_i32(align_nvshandle, "Ref0fastalg_x", (int32_t*)&References[0].fastalg_x);
+    err = nvs_get_i32(align_nvshandle, "Ref0fastalg_y", (int32_t*)&References[0].fastalg_y);
+    //err = nvs_get_i32(align_nvshandle, "Ref0fastalg_SAD", (int32_t*)&References[0].fastalg_SAD);
 
-    fgets(zw, sizeof(zw), pFile);
-    splitted = ZerlegeZeile(std::string(zw));
-    if (splitted.size() < 6)
-    {
-        fclose(pFile);
+    err = nvs_get_i32(align_nvshandle, "Ref1fastalg_x", (int32_t*)&References[1].fastalg_x);
+    err = nvs_get_i32(align_nvshandle, "Ref1fastalg_y", (int32_t*)&References[1].fastalg_y);
+    //err = nvs_get_i32(align_nvshandle, "Ref1fastalg_SAD", (int32_t*)&References[1].fastalg_SAD);
+
+    nvs_close(align_nvshandle);
+
+    if (err != ESP_OK) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to load alignment data from NVS: " + err);
         return false;
     }
-
-    References[1].fastalg_x = stoi(splitted[0]);
-    References[1].fastalg_y = stoi(splitted[1]);
-    References[1].fastalg_SAD = stof(splitted[2]);
-    References[1].fastalg_min = stoi(splitted[3]);
-    References[1].fastalg_max = stoi(splitted[4]);
-    References[1].fastalg_avg = stof(splitted[5]);
-
-    fclose(pFile);
-
-
-    /*#ifdef DEBUG_DETAIL_ON
-        std::string _zw = "\tLoadReferences[0]\tx,y:\t" + std::to_string(References[0].fastalg_x) + "\t" + std::to_string(References[0].fastalg_x);
-        _zw = _zw + "\tSAD, min, max, avg:\t" + std::to_string(References[0].fastalg_SAD) + "\t" + std::to_string(References[0].fastalg_min);
-        _zw = _zw + "\t" + std::to_string(References[0].fastalg_max) + "\t" + std::to_string(References[0].fastalg_avg);
-        LogFile.WriteToDedicatedFile("/sdcard/alignment.txt", _zw);
-        _zw = "\tLoadReferences[1]\tx,y:\t" + std::to_string(References[1].fastalg_x) + "\t" + std::to_string(References[1].fastalg_x);
-        _zw = _zw + "\tSAD, min, max, avg:\t" + std::to_string(References[1].fastalg_SAD) + "\t" + std::to_string(References[1].fastalg_min);
-        _zw = _zw + "\t" + std::to_string(References[1].fastalg_max) + "\t" + std::to_string(References[1].fastalg_avg);
-        LogFile.WriteToDedicatedFile("/sdcard/alignment.txt", _zw);
-    #endif*/
-
+    
     return true;
 }
 
