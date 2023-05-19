@@ -38,7 +38,7 @@ void CAlignAndCutImage::GetRefSize(int *ref_dx, int *ref_dy)
 }
 
 
-int CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
+int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
 {
     int dx1, dy1, dx2, dy2;
     int r0_x, r0_y, r1_x, r1_y;
@@ -127,7 +127,7 @@ int CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
 }
 
 
-void CAlignAndCutImage::CutAndSave(std::string _template1, int x1, int y1, int dx, int dy)
+void IRAM_ATTR CAlignAndCutImage::CutAndSave(std::string _template1, int x1, int y1, int dx, int dy)
 {
 
     int x2, y2;
@@ -170,7 +170,7 @@ void CAlignAndCutImage::CutAndSave(std::string _template1, int x1, int y1, int d
 }
 
 
-void CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy, CImageBasis *_target)
+void IRAM_ATTR CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy, CImageBasis *_target)
 {
     int x2, y2;
 
@@ -208,7 +208,7 @@ void CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy, CImageBasis *
 }
 
 
-CImageBasis* CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy)
+CImageBasis* IRAM_ATTR CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy)
 {
     int x2, y2;
 

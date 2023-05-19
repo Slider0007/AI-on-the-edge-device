@@ -162,7 +162,7 @@ void IRAM_ATTR CRotateImage::Rotate(float _angle, int _centerx, int _centery)
 
 
 
-void CRotateImage::RotateAntiAliasing(float _angle, int _centerx, int _centery)
+void IRAM_ATTR CRotateImage::RotateAntiAliasing(float _angle, int _centerx, int _centery)
 {
     int org_width, org_height;
     float m[2][3];
