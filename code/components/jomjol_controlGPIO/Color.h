@@ -1,34 +1,34 @@
 #pragma once
 
-#ifndef COLOR_H
-#define COLOR_H
-
 #include <cstdint>
 #include "esp_attr.h"
 union Hsv;
 
 union Rgb {
     struct __attribute__ ((packed)) {
-        uint8_t r, g, b, a;
+        uint8_t g, r, b, a;
     };
     uint32_t value;
 
-    Rgb( uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255 ) : r( r ), g( g ), b( b ), a( a ) {}
-    Rgb( Hsv c );
-    Rgb& operator=( Rgb rgb ) { swap( rgb ); return *this; }
-    Rgb& operator=( Hsv hsv );
-    Rgb operator+( Rgb in ) const;
-    Rgb& operator+=( Rgb in );
-    bool operator==( Rgb in ) const { return in.value == value; }
-    Rgb& blend( Rgb in );
-    void swap( Rgb& o ) {  value = o.value; }
+    Rgb( uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255 ) : g( g ), r( r ), b( b ), a( a ) {}
+    Rgb( const Hsv& c );
+    Rgb(const Rgb&) = default;
+    Rgb& operator=( const Rgb& rgb ) { swap( rgb ); return *this; }
+    Rgb& operator=( const Hsv& hsv );
+    Rgb operator+( const Rgb& in ) const;
+    Rgb& operator+=( const Rgb& in );
+    Rgb operator-(const Rgb& in) const;
+    Rgb &operator-=(const Rgb& in);
+    bool operator==(const Rgb& in ) const { return in.value == value; }
+    Rgb& blend( const Rgb& in );
+    void swap( const Rgb& o ) {  value = o.value; }
     void linearize() {
         r = channelGamma(r);
         g = channelGamma(g);
         b = channelGamma(b);
     }
 
-    uint8_t IRAM_ATTR getGrb( int idx );
+    uint8_t getGrb( int idx ) const;
 
     void stretchChannels( uint8_t maxR, uint8_t maxG, uint8_t maxB ) {
         r = stretch( r, maxR );
@@ -64,11 +64,9 @@ union Hsv {
     uint32_t value;
 
     Hsv( uint8_t h, uint8_t s = 0, uint8_t v = 0, uint8_t a = 255 ) : h( h ), s( s ), v( v ), a( a ) {}
-    Hsv( Rgb r );
-    Hsv& operator=( Hsv h ) { swap( h ); return *this; }
-    Hsv& operator=( Rgb rgb );
-    bool operator==( Hsv in ) const { return in.value == value; }
-    void swap( Hsv& o ) { value = o.value; }
+    Hsv( const Rgb& r );
+    Hsv& operator=( const Hsv& h ) { swap( h ); return *this; }
+    Hsv& operator=( const Rgb& rgb );
+    bool operator==( const Hsv& in ) const { return in.value == value; }
+    void swap( const Hsv& o ) { value = o.value; }
 };
-
-#endif //COLOR_H

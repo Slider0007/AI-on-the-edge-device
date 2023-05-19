@@ -5,6 +5,7 @@
 #include "driver/gpio.h"
 #include "esp_timer.h"
 #include "esp_log.h"
+#include "psram.h"
 
 #include "Helper.h"
 #include "statusled.h"
@@ -351,43 +352,19 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int _flashduration)
         loadNextDemoImage(fb);
     }
 
-    CImageBasis* _zwImage = new CImageBasis("zwImage");
-    if (_zwImage) {
-        _zwImage->LoadFromMemory(fb->buf, fb->len);
+    if (_Image != NULL) {
+        STBIObjectPSRAM.name="rawImage";
+        STBIObjectPSRAM.usePreallocated = true;
+        STBIObjectPSRAM.PreallocatedMemory = _Image->RGBImageGet();
+        STBIObjectPSRAM.PreallocatedMemorySize = _Image->getMemsize();
+
+        _Image->LoadFromMemoryPreallocated(fb->buf, fb->len);
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToBasisImage: Can't allocate _zwImage");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToBasisImage: rawImage not allocated");
     }
     esp_camera_fb_return(fb);        
-  
-    #ifdef DEBUG_DETAIL_ON
-        LogFile.WriteHeapInfo("CaptureToBasisImage - After LoadFromMemory");
-    #endif
-
-    stbi_uc* p_target;
-    stbi_uc* p_source;    
-    int channels = 3;
-    int width = image_width;
-    int height = image_height;
-
-    #ifdef DEBUG_DETAIL_ON
-        std::string _zw = "Targetimage: " + std::to_string((int) _Image->rgb_image) + " Size: " + std::to_string(_Image->width) + ", " + std::to_string(_Image->height);
-        _zw = _zw + " _zwImage: " + std::to_string((int) _zwImage->rgb_image)  + " Size: " + std::to_string(_zwImage->width) + ", " + std::to_string(_zwImage->height);
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, _zw);
-    #endif
-
-    for (int x = 0; x < width; ++x)
-        for (int y = 0; y < height; ++y)
-        {
-            p_target = _Image->rgb_image + (channels * (y * width + x));
-            p_source = _zwImage->rgb_image + (channels * (y * width + x));
-            p_target[0] = p_source[0];
-            p_target[1] = p_source[1];
-            p_target[2] = p_source[2];
-        }
-
-    delete _zwImage;
-
+     
     #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CaptureToBasisImage - Done");
     #endif

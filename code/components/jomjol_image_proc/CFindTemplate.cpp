@@ -15,7 +15,7 @@ static const char* TAG = "IMG_FINDTEMPL";
 bool IRAM_ATTR CFindTemplate::FindTemplate(strRefInfo *_ref, bool _noFast)
 {
     if (file_size(_ref->image_file.c_str()) == 0) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _ref->image_file + " is empty!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "FindTemplate: " + _ref->image_file + " is empty!");
         return false;
     }
    

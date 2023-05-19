@@ -103,7 +103,7 @@
 	  <tr>
 		<td style="padding-top: 10px">x: <input type="number" name="refx" id="refx" step=1 onchange="valuemanualchanged()"></td>
 		<td style="padding-top: 10px">dx: <input type="number" name="refdx" id="refdx" step=1 onchange="valuemanualchanged()"></td>
-		<td rowspan="2" style="padding-top: 10px;"><input class="button" type="button" value="Update Marker" onclick="CutOutReference()"></td>	
+		<td rowspan="2" style="padding-top: 10px;"><input disabled class="button" type="button" id="updatemarker" value="Update Marker" onclick="CutOutReference()"></td>	
 	  </tr>
 	  <tr>
 		<td>y: <input type="number" name="refy" id="refy" step=1 onchange="valuemanualchanged()"></td>
@@ -112,7 +112,7 @@
 	  <tr>
 		<td style="vertical-align: bottom;">Selected Image Area:</td>
 		<td style="vertical-align: bottom;">Resulting Marker:</td>
-        <td><input class="button" type="button" id="enhancecontrast" value="Enhance Image Contrast" onclick="EnhanceContrast()"></td>	
+        <td><input disabled class="button" type="button" id="enhancecontrast" value="Enhance Image Contrast" onclick="EnhanceContrast()"></td>	
 	  </tr> 
 	  <tr>
 		<td style="height:70px; vertical-align: top;"><img id="img_ref_org" src = ""></td>    <!--/img_tmp/ref_zw_org.jpg-->
@@ -121,7 +121,7 @@
         <tr>
             <td style="vertical-align:bottom;"><b>Reference Image:</b></td>
             <td></td>
-            <td><input style="font-weight:bold;" class="button" type="submit" name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
+            <td><input disabled style="font-weight:bold;" class="button" type="submit" name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
             </td>
         </tr> 
         <tr>
@@ -156,6 +156,7 @@ function doReboot() {
             window.location.replace(stringota);
     }
 }
+
     
 function ChangeSelection(){
     aktindex = parseInt(document.getElementById("index").value);
@@ -178,20 +179,32 @@ function SaveToConfig(){
 }
 
 function EnhanceContrast(){
-    refInfo[aktindex]["name"] = document.getElementById("name").value;
-    refInfo[aktindex]["x"] = document.getElementById("refx").value;
-    refInfo[aktindex]["y"] = document.getElementById("refy").value; 
-    refInfo[aktindex]["dx"] = document.getElementById("refdx").value;
-    refInfo[aktindex]["dy"] = document.getElementById("refdy").value;       
-
-    enhanceCon = true;
-    MakeContrastImageZW(refInfo[aktindex], enhanceCon, domainname);
+    _filesource = refInfo[aktindex]["name"].replace("/config/", "/img_tmp/");
+    _filetarget = _filesource;
+    _filesource = _filesource.replace(".jpg", "_contrast.jpg");
+    FileCopyOnServer(_filesource, _filetarget, domainname);
     UpdateReference();
     document.getElementById("enhancecontrast").disabled = true;
 }
 
 function UpdateReference(){
-    document.getElementById("img_ref").onload = function () {
+    var filenameurl = refInfo[aktindex]["name"].replace("/config/", "/img_tmp/");
+
+    var url = domainname + "/fileserver" + filenameurl + "?"  + Date.now();
+    document.getElementById("img_ref").src = url;
+
+    filenameurl = filenameurl.replace(".jpg", "_org.jpg");
+    url = domainname + "/fileserver" + filenameurl +  "?" + Date.now();
+    document.getElementById("img_ref_org").src = url;
+
+    document.getElementById("name").value = refInfo[aktindex]["name"];
+
+    document.getElementById("refx").value = refInfo[aktindex]["x"];
+    document.getElementById("refy").value = refInfo[aktindex]["y"]; 
+    rect.startX = document.getElementById("refx").value;
+    rect.startY = document.getElementById("refy").value;
+
+    document.getElementById("img_ref_org").onload = function () {
         document.getElementById("refdx").value = this.width;
         document.getElementById("refdy").value = this.height;   
         refInfo[aktindex]["dx"] = this.width;
@@ -200,24 +213,9 @@ function UpdateReference(){
         rect.h = document.getElementById("refdy").value;
         draw();
     }
-
-    _filenameurl = refInfo[aktindex]["name"].replace("/config/", "/img_tmp/");
-
-    var url = domainname + "/fileserver" + _filenameurl + "?"  + Date.now();
-    document.getElementById("img_ref").src = url;
-
-    _filenameurl = _filenameurl.replace(".jpg", "_org.jpg");
-    var url = domainname + "/fileserver" + _filenameurl +  "?" + Date.now();
-    document.getElementById("img_ref_org").src = url;
-
-    document.getElementById("name").value = refInfo[aktindex]["name"];
-    document.getElementById("refx").value = refInfo[aktindex]["x"];
-    document.getElementById("refy").value = refInfo[aktindex]["y"];  
-    rect.startX = document.getElementById("refx").value;
-    rect.startY = document.getElementById("refy").value; 
     draw();      
 }
-			
+
 function dataURLtoBlob(dataurl) {
     var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
         bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
@@ -273,20 +271,21 @@ function dataURLtoBlob(dataurl) {
             ParseConfig();
             param = getConfigParameters();
 
-            document.getElementById("savemarker").disabled = true;
             document.getElementById("enhancecontrast").disabled = true;
+            document.getElementById("savemarker").disabled = true;
+
+            CopyReferenceToImgTmp(domainname);
+
+            refInfo = GetReferencesInfo();
+            UpdateReference();
 
             canvas.addEventListener('mousedown', mouseDown, false);
             canvas.addEventListener('mouseup', mouseUp, false);
             canvas.addEventListener('mousemove', mouseMove, false);
             loadCanvas(domainname + "/fileserver/config/reference.jpg");
 
-            CopyReferenceToImgTmp(domainname);
-            refInfo = GetReferencesInfo();
-
-            UpdateReference();
-
             drawImage();
+            document.getElementById("updatemarker").disabled = false;
         }
 
 
@@ -298,18 +297,53 @@ function dataURLtoBlob(dataurl) {
             context.save();
             context.drawImage(imageObj, 0, 0);
 //            context.restore();
-        }  
+        }
+        
+
+        function MakeRefZW(zw, _domainname){
+            _filetarget = zw["name"].replace("/config/", "/img_tmp/");
+            //_filetarget = _filetarget.replace(".jpg", "_org.jpg"); // not needed here -> replacement _org.jpg will be done in firmware
+            url = _domainname + "/editflow?task=cutref&in=/config/reference.jpg&out="+_filetarget+"&x=" + zw["x"] + "&y="  + zw["y"] + "&dx=" + zw["dx"] + "&dy=" + zw["dy"];
+            var xhttp = new XMLHttpRequest();  
+            try {
+                xhttp.open("GET", url, false);
+                xhttp.send();
+            }
+            catch (error)
+            {
+                firework.launch('Update Maker failed. Please repeat or check logs', 'danger', 30000);
+            }
+        }
 
 
         function CutOutReference(){
-            refInfo[aktindex]["x"] = document.getElementById("refx").value;
-            refInfo[aktindex]["y"] = document.getElementById("refy").value; 
-            refInfo[aktindex]["dx"] = document.getElementById("refdx").value;
-            refInfo[aktindex]["dy"] = document.getElementById("refdy").value;   
-            MakeRefZW(refInfo[aktindex], domainname); 
-            UpdateReference();
-            document.getElementById("enhancecontrast").disabled = false;
-            document.getElementById("savemarker").disabled = false;
+            url = domainname + '/statusflow';     
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    if (xhttp.responseText.split("] ")[1] == "Setup Mode" ||
+                        xhttp.responseText.split("] ")[1] == "Idle - No Autostart" ||
+                        xhttp.responseText.split("] ")[1] == "Idle - Waiting for Autostart")
+                    {
+                        refInfo[aktindex]["x"] = document.getElementById("refx").value;
+                        refInfo[aktindex]["y"] = document.getElementById("refy").value; 
+                        refInfo[aktindex]["dx"] = document.getElementById("refdx").value;
+                        refInfo[aktindex]["dy"] = document.getElementById("refdy").value;   
+                        MakeRefZW(refInfo[aktindex], domainname);
+                        UpdateReference();
+                        document.getElementById("enhancecontrast").disabled = false;
+                        document.getElementById("savemarker").disabled = false;
+                        firework.launch("Marker updated", 'success', 3000);
+                    }
+                    else {
+                        var str = "Update marker only possible in any IDLE / SETUP state (Actual State: " + xhttp.responseText.split("] ")[1] + 
+                                "). Wait a few moments until device is in IDLE state and redo action";
+                        firework.launch(str, 'warning', 5000);
+                    }
+                }
+            }
+            xhttp.open("GET", url, false);
+            xhttp.send();
         }
 
         function drawGrid(){
@@ -320,28 +354,27 @@ function dataURLtoBlob(dataurl) {
             ctx.save();
             ctx.strokeStyle = '#00FF00';
 
-            for (i = h/2; i < h; i += 100) 
-                {
+            for (i = h/2; i < h; i += 100) {
                 ctx.moveTo(0, i);
                 ctx.lineTo(w, i);
                 ctx.stroke();
                 ctx.moveTo(0, h-i);
                 ctx.lineTo(w, h-i);
                 ctx.stroke();
-                }
-            for (i = w/2; i < w; i += 100) 
-                {
+            }
+            for (i = w/2; i < w; i += 100) {
                 ctx.moveTo(i, 0);
                 ctx.lineTo(i, h);
                 ctx.stroke();
                 ctx.moveTo(w-i, 0);
                 ctx.lineTo(w-i, h);
-                ctx.stroke();                }
+                ctx.stroke();
+            }
 //            ctx.restore();
         }
 
 
-        function draw() {
+    function draw() {
         var canvas = document.getElementById('canvas');
         var context = canvas.getContext('2d');
         context.drawImage(imageObj, 0, 0);

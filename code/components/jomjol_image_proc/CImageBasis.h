@@ -47,9 +47,10 @@ class CImageBasis
         void RGBImageRelease();
         uint8_t * RGBImageGet();
 
-        int getWidth(){return this->width;};   
-        int getHeight(){return this->height;};   
-        int getChannels(){return this->channels;};   
+        int getWidth() {return this->width;};   
+        int getHeight() {return this->height;};   
+        int getChannels() {return this->channels;};   
+        int getMemsize() {return this->memsize;};
         void drawRect(int x, int y, int dx, int dy, int r = 255, int g = 255, int b = 255, int thickness = 1);
         void drawLine(int x1, int y1, int x2, int y2, int r, int g, int b, int thickness = 1);
         void drawCircle(int x1, int y1, int rad, int r, int g, int b, int thickness = 1);
@@ -63,19 +64,23 @@ class CImageBasis
         void SetIndepended(){externalImage = false;};
 
         bool CreateEmptyImage(int _width, int _height, int _channels);
+        bool CreateEmptyImage(int _width, int _height, int _channels, int add);
         void EmptyImage();
 
 
         CImageBasis(std::string name);
         CImageBasis(std::string name, std::string _image);
+        CImageBasis(std::string name, std::string _image, bool _externalImage);
         CImageBasis(std::string name, uint8_t* _rgb_image, int _channels, int _width, int _height, int _bpp);
         CImageBasis(std::string name, int _width, int _height, int _channels);
         CImageBasis(std::string name, CImageBasis *_copyfrom);
+        CImageBasis(std::string _name, CImageBasis *_copyfrom, int add);
 
         void Resize(int _new_dx, int _new_dy);        
         void Resize(int _new_dx, int _new_dy, CImageBasis *_target);        
 
         void LoadFromMemory(stbi_uc *_buffer, int len);
+        void LoadFromMemoryPreallocated(stbi_uc *_buffer, int len);
 
         ImageData* writeToMemoryAsJPG(const int quality = 90);
         void writeToMemoryAsJPG(ImageData* ii, const int quality = 90);
@@ -84,7 +89,7 @@ class CImageBasis
 
         uint8_t GetPixelColor(int x, int y, int ch);
 
-        ~CImageBasis();
+        virtual ~CImageBasis();
 
         void SaveToFile(std::string _imageout);
 };

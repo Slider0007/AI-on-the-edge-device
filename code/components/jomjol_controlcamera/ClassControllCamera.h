@@ -4,10 +4,8 @@
 #define CLASSCONTROLLCAMERA_H
 
 #include <string>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "freertos/event_groups.h"
+//#include "freertos/FreeRTOS.h"
+//#include "freertos/task.h"
 
 #include "esp_camera.h"
 #include <esp_http_server.h>

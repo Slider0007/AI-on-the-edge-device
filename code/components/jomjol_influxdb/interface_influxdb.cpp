@@ -1,4 +1,3 @@
-#define ENABLE_INFLUXDB
 #ifdef ENABLE_INFLUXDB
 #include "interface_influxdb.h"
 

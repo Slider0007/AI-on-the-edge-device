@@ -126,9 +126,6 @@ bool doInit(void)
 {
     bool bRetVal = true;
 
-    //heap_caps_dump(MALLOC_CAP_INTERNAL);
-    //heap_caps_dump(MALLOC_CAP_SPIRAM);
-
     if (!flowctrl.InitFlow(CONFIG_FILE))
         bRetVal = false;
     
@@ -152,6 +149,8 @@ esp_err_t handler_get_heap(httpd_req_t *req)
         LogFile.WriteHeapInfo("handler_get_heap - Start");       
         ESP_LOGD(TAG, "handler_get_heap uri: %s", req->uri);
     #endif
+
+    //heap_caps_dump(MALLOC_CAP_SPIRAM);
 
     std::string zw = "Heap info:<br>" + getESPHeapInfo();
 
@@ -204,7 +203,7 @@ esp_err_t handler_stream(httpd_req_t *req)
         if (httpd_query_key_value(_query, "flashlight", _value, 10) == ESP_OK)
         {
             #ifdef DEBUG_DETAIL_ON       
-                ESP_LOGD(TAG, "flashlight is found%s", _size);
+                ESP_LOGD(TAG, "flashlight is found: %s", _value);
             #endif
             if (strlen(_value) > 0)
                 flashlightOn = true;
@@ -261,7 +260,6 @@ esp_err_t handler_reload_config(httpd_req_t *req)
         const std::string zw = "099: Reload config not possible. No flow task. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
     }
-
     return ESP_OK;
 }
 
@@ -611,7 +609,6 @@ esp_err_t handler_editflow(httpd_req_t *req)
         return get_tflite_file_handler(req);
     }
 
-
     if (_task.compare("copy") == 0)
     {
         string in, out, zw;
@@ -635,33 +632,31 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
 
-
     if (_task.compare("cutref") == 0)
     {
-        string in, out, zw;
+        std::string in, out, zw;
         int x, y, dx, dy;
-        bool enhance = false;
 
         httpd_query_key_value(_query, "in", _valuechar, 30);
-        in = string(_valuechar);
+        in = std::string(_valuechar);
 
         httpd_query_key_value(_query, "out", _valuechar, 30);         
-        out = string(_valuechar);  
+        out = std::string(_valuechar);  
 
         httpd_query_key_value(_query, "x", _valuechar, 30);
-        zw = string(_valuechar);  
+        zw = std::string(_valuechar);  
         x = stoi(zw);              
 
         httpd_query_key_value(_query, "y", _valuechar, 30);
-        zw = string(_valuechar);  
+        zw = std::string(_valuechar);  
         y = stoi(zw);              
 
         httpd_query_key_value(_query, "dx", _valuechar, 30);
-        zw = string(_valuechar);  
+        zw = std::string(_valuechar);  
         dx = stoi(zw);  
 
         httpd_query_key_value(_query, "dy", _valuechar, 30);
-        zw = string(_valuechar);  
+        zw = std::string(_valuechar);  
         dy = stoi(zw);          
 
         #ifdef DEBUG_DETAIL_ON       
@@ -673,37 +668,29 @@ esp_err_t handler_editflow(httpd_req_t *req)
             ESP_LOGD(TAG, "dy: %s", zw.c_str());
         #endif
 
-        if (httpd_query_key_value(_query, "enhance", _valuechar, 10) == ESP_OK)
-        {
-            zw = string(_valuechar);
-            if (zw.compare("true") == 0)
-            {
-                enhance = true;
-            }
-        }
+        in = "/sdcard" + in;    // --> img_tmp/reference.jpg
+        out = "/sdcard" + out;  // --> img_tmp/refX.jpg
 
-        in = "/sdcard" + in;
-        out = "/sdcard" + out;
+        std::string out_org = out.substr(0, out.length() - 4) + "_org.jpg";             // --> img_tmp/refX_org.jpg
+        std::string out_contrast = out.substr(0, out.length() - 4) + "_contrast.jpg";   // --> img_tmp/refX_contrast.jpg
 
-        string out2 = out.substr(0, out.length() - 4) + "_org.jpg";
+        STBIObjectPSRAM.name="rawImage";
+        STBIObjectPSRAM.usePreallocated = true; // Reuse of allocated memory od CImageBasis element "rawImage" (ClassTakeImage.cpp) 
+        CAlignAndCutImage* caic = new CAlignAndCutImage("cutref1", in, true);  // CImageBasis of reference.jpg will be created first (921kB RAM needed)
+        caic->CutAndSave(out_org, x, y, dx, dy);
+        delete caic;
 
-        CAlignAndCutImage *caic = new CAlignAndCutImage("cutref", in);
-        caic->CutAndSave(out2, x, y, dx, dy);
-        delete caic;    
+        CopyFile(out_org, out); // Copy refX_org.jpg -> refX.jpg
 
-        CImageBasis *cim = new CImageBasis("cutref", out2);
-        if (enhance)
-        {
-            cim->Contrast(90);
-        }
-
-        cim->SaveToFile(out);
-        delete cim;        
+        /* Additionally save with enhanced contrast and switch image on WebUI if needed */
+        CImageBasis* cim = new CImageBasis("cutref2", out_org);
+        cim->Contrast(90);
+        cim->SaveToFile(out_contrast);
+        delete cim;  
 
         zw = "CutImage Done";
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send(req, zw.c_str(), zw.length()); 
-        
     }
 
     if (_task.compare("test_take") == 0)
@@ -934,7 +921,7 @@ esp_err_t handler_prevalue(httpd_req_t *req)
 
         if (httpd_query_key_value(_query, "value", _value, 20) == ESP_OK) {
             #ifdef DEBUG_DETAIL_ON       
-                ESP_LOGD(TAG, "Value: %s", _size);
+                ESP_LOGD(TAG, "Value: %s", _value);
             #endif
         }
     }

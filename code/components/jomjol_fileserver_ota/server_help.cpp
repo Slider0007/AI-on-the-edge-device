@@ -24,7 +24,7 @@ extern "C" {
 #include "../../include/defines.h"
 
 
-static const char *TAG = "SERVER HELP";
+static const char *TAG = "SERVER_HELP";
 
 char scratch[SERVER_HELPER_SCRATCH_BUFSIZE];
 

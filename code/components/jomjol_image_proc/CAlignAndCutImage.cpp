@@ -242,3 +242,9 @@ CImageBasis* CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy)
     rs->SetIndepended();
     return rs;
 }
+
+
+CAlignAndCutImage::~CAlignAndCutImage()
+{
+    //Nothing to do
+}

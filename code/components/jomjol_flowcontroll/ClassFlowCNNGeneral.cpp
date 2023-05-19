@@ -5,7 +5,6 @@
 #include <sys/types.h>
 #include <sstream>      // std::stringstream
 
-#include "CTfLiteClass.h"
 #include "ClassLogFile.h"
 #include "esp_log.h"
 #include "../../include/defines.h"
@@ -20,10 +19,13 @@ static const char* TAG = "CNN";
 #endif
 
 
-ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, t_CNNType _cnntype) : ClassFlowImage(NULL, TAG)
+ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, std::string _cnnname, t_CNNType _cnntype) : ClassFlowImage(NULL, TAG)
 {
     PresetFlowStateHandler(true);
-    string cnnmodelfile = "";
+    tflite = new CTfLiteClass;
+    cnnname = _cnnname;
+    CNNType = _cnntype;
+    cnnmodelfile = "";
     modelxsize = 32;
     modelysize = 32;
     modelchannel = 3;
@@ -33,7 +35,6 @@ ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, t_CNNTy
     SaveAllFiles = false; 
     disabled = false;
     isLogImageSelect = false;
-    CNNType = _cnntype;
     flowpostalignment = _flowalign;
     imagesRetention = 5;
 }
@@ -586,7 +587,6 @@ bool ClassFlowCNNGeneral::getNetworkParameter()
     if (disabled)
         return true;
 
-    CTfLiteClass *tflite = new CTfLiteClass;  
     string zwcnn = "/sdcard" + cnnmodelfile;
     zwcnn = FormatFileName(zwcnn);
     ESP_LOGD(TAG, "%s", zwcnn.c_str());
@@ -600,7 +600,6 @@ bool ClassFlowCNNGeneral::getNetworkParameter()
     if (!tflite->MakeAllocate()) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Allocation of tensors failed!");
         LogFile.WriteHeapInfo("getNetworkParameter-MakeAllocate");
-        delete tflite;
         return false;
     }
 
@@ -659,7 +658,8 @@ bool ClassFlowCNNGeneral::getNetworkParameter()
 
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Network parameter loaded: " + cnnmodelfile);
 
-    delete tflite;
+    tflite->CTfLiteClassDeleteInterpreter();
+    
     return true;
 }
 
@@ -671,22 +671,10 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
 
     string logPath = CreateLogFolder(time);
 
-    CTfLiteClass *tflite = new CTfLiteClass;  
-    string zwcnn = "/sdcard" + cnnmodelfile;
-    zwcnn = FormatFileName(zwcnn);
-    ESP_LOGD(TAG, "%s", zwcnn.c_str());
-
-    if (!tflite->LoadModel(zwcnn)) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to load TFLITE model " + cnnmodelfile + "!");
-        LogFile.WriteHeapInfo("doNeuralNetwork-LoadModel");
-        delete tflite;
-        return false;
-    }
 
     if (!tflite->MakeAllocate()) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Allocation of TFLITE tensors failed!");
         LogFile.WriteHeapInfo("doNeuralNetwork-MakeAllocate");
-        delete tflite;
         return false;
     }
 
@@ -889,7 +877,8 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
         }
     }
 
-    delete tflite;
+    tflite->CTfLiteClassDeleteInterpreter();
+    
     return true;
 }
 
@@ -1018,6 +1007,9 @@ string ClassFlowCNNGeneral::getReadoutRawString(int _analog)
 
 ClassFlowCNNGeneral::~ClassFlowCNNGeneral()
 {
+    delete tflite;
+    tflite = NULL;
+    
     for (int _ana = 0; _ana < GENERAL.size(); ++_ana)
         for (int i = 0; i < GENERAL[_ana]->ROI.size(); ++i)
         {

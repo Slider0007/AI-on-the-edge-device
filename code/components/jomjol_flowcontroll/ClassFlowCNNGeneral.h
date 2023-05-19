@@ -5,6 +5,7 @@
 
 #include"ClassFlowDefineTypes.h"
 #include "ClassFlowAlignment.h"
+#include "CTfLiteClass.h"
 
 
 enum t_CNNType {
@@ -34,19 +35,18 @@ protected:
     //float Digital_Transition_Area_Predecessor = 0.7; // 9.3 - 0.7
     //float Digital_Transition_Area_Forward = 9.7; // Pre-run zero crossing only happens from approx. 9.7 onwards
 
-    string cnnmodelfile;
-    int modelxsize, modelysize, modelchannel;
-    bool isLogImageSelect;
-    string LogImageSelect;
+    CTfLiteClass *tflite;
     ClassFlowAlignment* flowpostalignment;
-
+    std::string cnnname;
+    std::string cnnmodelfile;
+    int modelxsize, modelysize, modelchannel;
+    string LogImageSelect;
+    bool isLogImageSelect;
     bool SaveAllFiles;   
 
     int PointerEvalAnalogNew(float zahl, int numeral_preceder);
     int PointerEvalAnalogToDigitNew(float zahl, float numeral_preceder,  int eval_predecessors, float analogDigitalTransitionStart);
     int PointerEvalHybridNew(float zahl, float number_of_predecessors, int eval_predecessors, bool Analog_Predecessors = false, float analogDigitalTransitionStart=9.2);
-
-
 
     bool doNeuralNetwork(string time); 
     bool doAlignAndCut(string time);
@@ -54,7 +54,7 @@ protected:
     bool getNetworkParameter();
 
 public:
-    ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, t_CNNType _cnntype = AutoDetect);
+    ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, std::string _cnnname, t_CNNType _cnntype = AutoDetect);
     virtual ~ClassFlowCNNGeneral();
 
     bool ReadParameter(FILE* pfile, string& aktparamgraph);
@@ -81,7 +81,7 @@ public:
 
     t_CNNType getCNNType(){return CNNType;};
 
-    string name(){return "ClassFlowCNNGeneral";}; 
+    string name(){return "ClassFlowCNNGeneral - " +  cnnname;}; 
 };
 
 #endif

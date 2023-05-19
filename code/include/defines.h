@@ -166,15 +166,6 @@
     #define LWT_DISCONNECTED "connection lost"
 
 
-    //CTfLiteClass
-    #define TFLITE_MINIMAL_CHECK(x)                              \
-        if (!(x)) {                                                \
-            fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); \
-            exit(1);                                                 \
-        }
-    #define SUPRESS_TFLITE_ERRORS // use, to avoid error messages from TFLITE
-
-
     // connect_wlan.cpp
     //******************************
     /* WIFI roaming functionalities 802.11k+v (uses ca. 6kB - 8kB internal RAM; if SCAN CACHE activated: + 1kB / beacon)
@@ -227,7 +218,8 @@
 
     #define FLOW_TAKE_IMAGE             "Take Image"
     #define FLOW_ALIGNMENT              "Image Alignment"
-    #define FLOW_PROCESS_ROI            "Digitalization of ROIs"
+    #define FLOW_PROCESS_DIGIT_ROI      "ROI Digitalization - Digit"
+    #define FLOW_PROCESS_ANALOG_ROI     "ROI Digitalization - Analog"
     #define FLOW_POSTPROCESSING         "Post-Processing"
     #define FLOW_PUBLISH_MQTT           "Publish to MQTT"
     #define FLOW_PUBLISH_INFLUXDB       "Publish to InfluxDBv1"

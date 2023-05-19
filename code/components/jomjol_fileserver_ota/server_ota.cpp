@@ -47,7 +47,7 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/rel
 /*an ota data write buffer ready to write to the flash*/
 static char ota_write_data[SERVER_OTA_SCRATCH_BUFSIZE + 1] = { 0 };
 
-static const char *TAG = "OTA";
+static const char *TAG = "SERVER_OTA";
 
 esp_err_t handler_reboot(httpd_req_t *req);
 static bool ota_update_task(std::string fn);
