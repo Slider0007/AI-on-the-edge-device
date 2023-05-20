@@ -324,8 +324,6 @@ ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, C
     PreValueUse = false;
     PreValueAgeStartup = 30;
     ErrorMessage = false;
-    //ListFlowControll = NULL;
-    //FilePreValue = FormatFileName("/sdcard/config/prevalue.ini");
     ListFlowControll = lfc;
     flowTakeImage = NULL;
     UpdatePreValueINI = false;
