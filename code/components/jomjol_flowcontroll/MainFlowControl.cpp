@@ -1129,12 +1129,6 @@ void task_autodoFlow(void *pvParameter)
             // WIFI Signal Strength (RSSI) -> Logfile
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "WIFI Signal (RSSI): " + std::to_string(get_WIFI_RSSI()) + "dBm");
 
-            // Check if time is synchronized (if NTP is configured)
-            if (getUseNtp() && !getTimeIsSet()) {
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time server is configured, but time is not yet set");
-                StatusLED(TIME_CHECK, 1, false);
-            }
-
             // Automatic error handling (if neccessary)
             // ********************************************
             if (flowctrl.FlowStateErrorsOccured()) {
@@ -1150,8 +1144,26 @@ void task_autodoFlow(void *pvParameter)
 
             // Round finished -> Logfile
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Round #" + std::to_string(countRounds) + 
-                    " completed (" + std::to_string(getUpTime() - roundStartTime) + "s)");   
+                    " completed (" + std::to_string(getUpTime() - roundStartTime) + "s)");
+           
+            // Check if time is synchronized (if NTP is configured)
+            if (getUseNtp() && !getTimeIsSet()) {
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time server is configured, but time is not yet set");
+                StatusLED(TIME_CHECK, 1, false);
+            }
 
+            // WIFI roaming handling (if activated)
+            // ********************************************
+            // Trigger client triggered roaming query
+            #if (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES)
+                wifiRoamingQuery();
+            #endif
+        
+            // Scan channels and check if an AP with better RSSI is available, then disconnect and try to reconnect to AP with better RSSI
+            // NOTE: Keep this at the end of this state, because scan is done in blocking mode and this takes ca. 1,5 - 2s.
+            #ifdef WLAN_USE_ROAMING_BY_SCANNING
+                wifiRoamByScanning();
+            #endif
 
             // Check if triggerd reload config or manually triggered single round
             // ********************************************    
