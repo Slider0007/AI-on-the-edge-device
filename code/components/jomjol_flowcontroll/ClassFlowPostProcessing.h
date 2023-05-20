@@ -25,7 +25,7 @@ protected:
     ClassFlowCNNGeneral* flowDigit;    
 
 
-    string FilePreValue;
+    //string FilePreValue;
 
     ClassFlowTakeImage *flowTakeImage;
 
@@ -64,7 +64,7 @@ public:
     string getReadoutError(int _number = 0);
     string getReadoutRate(int _number = 0);
     string getReadoutTimeStamp(int _number = 0);
-    void SavePreValue();
+    bool SavePreValue(void);
     string getJsonFromNumber(int i, std::string _lineend);
     string GetPreValue(std::string _number = "");
     bool SetPreValue(double zw, string _numbers, bool _extern = false);

@@ -7,8 +7,10 @@
 #include <sstream>
 
 #include <time.h>
-
 #include "time_sntp.h"
+
+#include "nvs_flash.h"
+#include "nvs.h"
 
 #include "esp_log.h"
 #include "../../include/defines.h"
@@ -144,158 +146,175 @@ bool ClassFlowPostProcessing::SetPreValue(double _newvalue, string _numbers, boo
 
 bool ClassFlowPostProcessing::LoadPreValue(void)
 {
-    std::vector<string> splitted;
-    FILE* pFile;
-    char zw[256];
-    string zwtime, zwvalue, name;
-    bool _done = false;
+    esp_err_t err = ESP_OK;
 
-    UpdatePreValueINI = false;       // Conversion to the new format
+    nvs_handle_t prevalue_nvshandle;
 
-
-    pFile = fopen(FilePreValue.c_str(), "r");
-    if (pFile == NULL)
+    err = nvs_open("prevalue", NVS_READONLY, &prevalue_nvshandle);
+    if (err != ESP_OK) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: No valid NVS handle - error code: " + std::to_string(err));
         return false;
+    }
 
-    fgets(zw, sizeof(zw), pFile);
-    ESP_LOGD(TAG, "Read line Prevalue.ini: %s", zw);
-    zwtime = trim(std::string(zw));
-    if (zwtime.length() == 0)
+    int16_t numbers_size = 0;
+    err = nvs_get_i16(prevalue_nvshandle, "numbers_size", &numbers_size);   // Use numbers size to ensure that only already saved data will be loaded
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_i16 numbers_size - error code: " + std::to_string(err));
         return false;
+    }
 
-    splitted = HelperZerlegeZeile(zwtime, "\t");
-    if (splitted.size() > 1)     //  Conversion to the new format
-    {
-        while ((splitted.size() > 1) && !_done)
-        {
-            name = trim(splitted[0]);
-            zwtime = trim(splitted[1]);
-            zwvalue = trim(splitted[2]);
-
-            for (int j = 0; j < NUMBERS.size(); ++j)
-            {
-                if (NUMBERS[j]->name == name)
-                {
-                    NUMBERS[j]->PreValue = stod(zwvalue.c_str());
-                    NUMBERS[j]->ReturnPreValue = RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma + 1);      // To be on the safe side, 1 digit more, as Exgtended Resolution may be on (will only be set during the first run).
-
-                    time_t tStart;
-                    int yy, month, dd, hh, mm, ss;
-                    struct tm whenStart;
-
-                    sscanf(zwtime.c_str(), PREVALUE_TIME_FORMAT_INPUT, &yy, &month, &dd, &hh, &mm, &ss);
-                    whenStart.tm_year = yy - 1900;
-                    whenStart.tm_mon = month - 1;
-                    whenStart.tm_mday = dd;
-                    whenStart.tm_hour = hh;
-                    whenStart.tm_min = mm;
-                    whenStart.tm_sec = ss;
-                    whenStart.tm_isdst = -1;
-
-                    NUMBERS[j]->lastvalue = mktime(&whenStart);
-
-                    time(&tStart);
-                    localtime(&tStart);
-                    double difference = difftime(tStart, NUMBERS[j]->lastvalue);
-                    difference /= 60;
-                    if (difference > PreValueAgeStartup)
-                        NUMBERS[j]->PreValueOkay = false;
-                    else
-                        NUMBERS[j]->PreValueOkay = true;
-                }
-            }
-
-            if (!fgets(zw, sizeof(zw), pFile))
-                _done = true;
-            else
-            {
-                ESP_LOGD(TAG, "Read line Prevalue.ini: %s", zw);
-                splitted = HelperZerlegeZeile(trim(std::string(zw)), "\t");
-                if (splitted.size() > 1)
-                {
-                    name = trim(splitted[0]);
-                    zwtime = trim(splitted[1]);
-                    zwvalue = trim(splitted[2]);
-                }
-            }
-        }
-        fclose(pFile);
-    }   
-    else        // Old Format
-    {
-        fgets(zw, sizeof(zw), pFile);
-        fclose(pFile);
-        ESP_LOGD(TAG, "%s", zw);
-        zwvalue = trim(std::string(zw));
-        NUMBERS[0]->PreValue = stod(zwvalue.c_str());
-
-        time_t tStart;
-        int yy, month, dd, hh, mm, ss;
-        struct tm whenStart;
-
-        sscanf(zwtime.c_str(), PREVALUE_TIME_FORMAT_INPUT, &yy, &month, &dd, &hh, &mm, &ss);
-        whenStart.tm_year = yy - 1900;
-        whenStart.tm_mon = month - 1;
-        whenStart.tm_mday = dd;
-        whenStart.tm_hour = hh;
-        whenStart.tm_min = mm;
-        whenStart.tm_sec = ss;
-        whenStart.tm_isdst = -1;
-
-        ESP_LOGD(TAG, "TIME: %d, %d, %d, %d, %d, %d", whenStart.tm_year, whenStart.tm_mon, whenStart.tm_wday, whenStart.tm_hour, whenStart.tm_min, whenStart.tm_sec);
-
-        NUMBERS[0]->lastvalue = mktime(&whenStart);
-
-        time(&tStart);
-        localtime(&tStart);
-        double difference = difftime(tStart, NUMBERS[0]->lastvalue);
-        difference /= 60;
-        if (difference > PreValueAgeStartup)
+    for (int i = 0; i < numbers_size; ++i) {
+        // Name: Read from NVS
+        size_t required_size = 0;
+        err = nvs_get_str(prevalue_nvshandle, ("name" + std::to_string(i)).c_str(), NULL, &required_size);
+        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str name size - error code: " + std::to_string(err));
             return false;
-
-        NUMBERS[0]->Value = NUMBERS[0]->PreValue;
-        NUMBERS[0]->ReturnValue = to_string(NUMBERS[0]->Value);
-
-        if (NUMBERS[0]->digit_roi || NUMBERS[0]->analog_roi)
-        {
-            NUMBERS[0]->ReturnValue = RundeOutput(NUMBERS[0]->Value, NUMBERS[0]->Nachkomma);
         }
 
-        UpdatePreValueINI = true;       // Conversion to the new format
-        SavePreValue();
-    } 
+        char cName[required_size+1];
+        if (required_size > 0) {
+            err = nvs_get_str(prevalue_nvshandle, ("name" + std::to_string(i)).c_str(), cName, &required_size);
+            if (err != ESP_OK) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str name - error code: " + std::to_string(err));
+                return false;
+            }
+        }
 
+        // Timestamp: Read from NVS
+        required_size = 0;
+        err = nvs_get_str(prevalue_nvshandle, ("time" + std::to_string(i)).c_str(), NULL, &required_size);
+        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str timestamp size - error code: " + std::to_string(err));
+            return false;
+        }
+
+        char cTime[required_size+1];
+        if (required_size > 0) {
+            err = nvs_get_str(prevalue_nvshandle, ("time" + std::to_string(i)).c_str(), cTime, &required_size);
+            if (err != ESP_OK) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str timestamp - error code: " + std::to_string(err));
+                return false;
+            }
+        }
+
+        // Value: Read from NVS
+        required_size = 0;
+        err = nvs_get_str(prevalue_nvshandle, ("value" + std::to_string(i)).c_str(), NULL, &required_size);
+        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str prevalue size - error code: " + std::to_string(err));
+            return false;
+        }
+
+        char cValue[required_size+1];
+        if (required_size > 0) {
+            err = nvs_get_str(prevalue_nvshandle, ("value" + std::to_string(i)).c_str(), cValue, &required_size);
+            if (err != ESP_OK) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str prevalue - error code: " + std::to_string(err));
+                return false;
+            }
+        }
+
+        //ESP_LOGI(TAG, "name: %s, time: %s, value: %s", cName, cTime, cValue);
+
+        for (int j = 0; j < NUMBERS.size(); ++j)
+        {           
+            if ((NUMBERS[j]->name).compare(std::string(cName)) == 0)
+            {
+
+                NUMBERS[j]->PreValue = stod(std::string(cValue));
+                NUMBERS[j]->ReturnPreValue = RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma + 1);      // To be on the safe side, 1 digit more, as Exgtended Resolution may be on (will only be set during the first run).
+
+                time_t tStart;
+                int yy, month, dd, hh, mm, ss;
+                struct tm whenStart;
+
+                sscanf(cTime, PREVALUE_TIME_FORMAT_INPUT, &yy, &month, &dd, &hh, &mm, &ss);
+                whenStart.tm_year = yy - 1900;
+                whenStart.tm_mon = month - 1;
+                whenStart.tm_mday = dd;
+                whenStart.tm_hour = hh;
+                whenStart.tm_min = mm;
+                whenStart.tm_sec = ss;
+                whenStart.tm_isdst = -1;
+
+                NUMBERS[j]->lastvalue = mktime(&whenStart);
+
+                time(&tStart);
+                localtime(&tStart);
+                double difference = difftime(tStart, NUMBERS[j]->lastvalue);
+                difference /= 60;
+                if (difference > PreValueAgeStartup)
+                    NUMBERS[j]->PreValueOkay = false;
+                else
+                    NUMBERS[j]->PreValueOkay = true;
+            }
+        }
+    }
+    nvs_close(prevalue_nvshandle);
+    
     return true;
 }
 
-void ClassFlowPostProcessing::SavePreValue()
-{
-    FILE* pFile;
-    string _zw;
 
-    if (!UpdatePreValueINI)         // PreValues unchanged --> File does not have to be rewritten
-        return;
+bool ClassFlowPostProcessing::SavePreValue()
+{ 
+    if (!UpdatePreValueINI)         // PreValue unchanged
+        return false;
+    
+    esp_err_t err = ESP_OK;
+    char buffer[80];
+    
+    nvs_handle_t prevalue_nvshandle;
 
-    pFile = fopen(FilePreValue.c_str(), "w");
+    err = nvs_open("prevalue", NVS_READWRITE, &prevalue_nvshandle);
+    if (err != ESP_OK) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: No valid NVS handle - error code : " + std::to_string(err));
+        return false;
+    }
+
+    err = nvs_set_i16(prevalue_nvshandle, "numbers_size", (int16_t)NUMBERS.size());    // Save numbers size to ensure that only already saved data will be loaded
+    if (err != ESP_OK) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_set_i16 numbers_size - error code: " + std::to_string(err));
+        return false;
+    }
 
     for (int j = 0; j < NUMBERS.size(); ++j)
-    {
-        char buffer[80];
+    {           
         struct tm* timeinfo = localtime(&NUMBERS[j]->lastvalue);
         strftime(buffer, 80, PREVALUE_TIME_FORMAT_OUTPUT, timeinfo);
         NUMBERS[j]->timeStamp = std::string(buffer);
-//        ESP_LOGD(TAG, "SaverPreValue %d, Value: %f, Nachkomma %d", j, NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma);
 
-        _zw = NUMBERS[j]->name + "\t" + NUMBERS[j]->timeStamp + "\t" + RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma) + "\n";
-        ESP_LOGD(TAG, "Write PreValue line: %s", _zw.c_str());
-        if (pFile) {
-            fputs(_zw.c_str(), pFile);
+        ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->timeStamp).c_str(), 
+                                                        (RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
+        
+        err = nvs_set_str(prevalue_nvshandle, ("name" + std::to_string(j)).c_str(), (NUMBERS[j]->name).c_str());
+        if (err != ESP_OK) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_set_str name - error code: " + std::to_string(err));
+            return false;
+        }
+        err = nvs_set_str(prevalue_nvshandle, ("time" + std::to_string(j)).c_str(), (NUMBERS[j]->timeStamp).c_str());
+        if (err != ESP_OK) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_set_str timestamp - error code: " + std::to_string(err));
+            return false;
+        }
+        err = nvs_set_str(prevalue_nvshandle, ("value" + std::to_string(j)).c_str(), 
+                            (RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
+        if (err != ESP_OK) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_set_str prevalue - error code: " + std::to_string(err));
+            return false;
         }
     }
 
-    UpdatePreValueINI = false;
+    err = nvs_commit(prevalue_nvshandle);
+    nvs_close(prevalue_nvshandle);
 
-    fclose(pFile);
+    if (err != ESP_OK) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_commit - error code: " + std::to_string(err));
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -305,8 +324,8 @@ ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, C
     PreValueUse = false;
     PreValueAgeStartup = 30;
     ErrorMessage = false;
-    ListFlowControll = NULL;
-    FilePreValue = FormatFileName("/sdcard/config/prevalue.ini");
+    //ListFlowControll = NULL;
+    //FilePreValue = FormatFileName("/sdcard/config/prevalue.ini");
     ListFlowControll = lfc;
     flowTakeImage = NULL;
     UpdatePreValueINI = false;
