@@ -281,12 +281,12 @@ bool ClassFlowPostProcessing::SavePreValue()
 
     for (int j = 0; j < NUMBERS.size(); ++j)
     {           
+        //ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->timeStamp).c_str(), 
+        //                                        (RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
+
         struct tm* timeinfo = localtime(&NUMBERS[j]->lastvalue);
         strftime(buffer, 80, PREVALUE_TIME_FORMAT_OUTPUT, timeinfo);
         NUMBERS[j]->timeStamp = std::string(buffer);
-
-        ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->timeStamp).c_str(), 
-                                                        (RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
         
         err = nvs_set_str(prevalue_nvshandle, ("name" + std::to_string(j)).c_str(), (NUMBERS[j]->name).c_str());
         if (err != ESP_OK) {
