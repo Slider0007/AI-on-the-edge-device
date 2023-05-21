@@ -331,19 +331,13 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, string& aktparamgraph)
             this->imagesLocation = "/sdcard" + splitted[1];
             this->isLogImage = true;
         }
-        else 
-        {
-            this->isLogImage = false;
-        }
+
         if ((toUpper(splitted[0]) == "LOGIMAGESELECT") && (splitted.size() > 1))
         {
             LogImageSelect = splitted[1];
             isLogImageSelect = true;            
         }
-        else
-        {
-            isLogImageSelect = false; 
-        }
+
         if ((toUpper(splitted[0]) == "ROIIMAGESRETENTION") && (splitted.size() > 1))
         {
             this->imagesRetention = std::stoi(splitted[1]);
