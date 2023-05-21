@@ -74,7 +74,6 @@ void time_sync_notification_cb(struct timeval *tv)
 bool time_manual_reset_sync(void)
 {
     sntp_restart();
-//    sntp_init();
     int retry = 0;
     const int retry_count = 10;
     while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry < retry_count) {
@@ -84,7 +83,6 @@ bool time_manual_reset_sync(void)
     if (retry >= retry_count)
         return false;
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Waiting for system time successfull with " + std::to_string(retry) + "/" + std::to_string(retry_count));
     return true;
 }
 
@@ -98,7 +96,8 @@ void setTimeZone(std::string _tzstring)
 }
 
 
-std::string getNtpStatusText(sntp_sync_status_t status) {
+std::string getNtpStatusText(sntp_sync_status_t status)
+{
     if (status == SNTP_SYNC_STATUS_COMPLETED) {
         return "Synchronized";
     }
@@ -111,7 +110,8 @@ std::string getNtpStatusText(sntp_sync_status_t status) {
 }
 
 
-bool getTimeIsSet(void) {
+bool getTimeIsSet(void)
+{
     time_t now;
     struct tm timeinfo;
     time(&now);
@@ -126,13 +126,9 @@ bool getTimeIsSet(void) {
     }
 }
 
-/*void restartNtpClient(void) {
-//    sntp_restart();
- //   obtain_time();
-}*/
 
-
-bool getUseNtp(void) {
+bool getUseNtp(void)
+{
     return useNtp;
 }
 
@@ -142,7 +138,8 @@ bool getTimeWasNotSetAtBoot(void)
 }
 
 
-std::string getServerName(void) {
+std::string getServerName(void)
+{
     char buf[100];
 
     if (sntp_getservername(0)){
@@ -162,7 +159,8 @@ std::string getServerName(void) {
 /**
  * Load the TimeZone and TimeServer from the config file and initialize the NTP client
  */
-bool setupTime() {
+bool setupTime()
+{
     time_t now;
     struct tm timeinfo;
     char strftime_buf[64];
@@ -232,7 +230,6 @@ bool setupTime() {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeZone not set, using default: " + timeZone);
     }
 
-
     if (useNtp) {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Configuring NTP Client...");        
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
@@ -241,14 +238,7 @@ bool setupTime() {
         setTimeZone(timeZone);
 
         sntp_init();
-/*        
-        if (!wait_for_timesync())
-        {
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Timesync at startup failed.");        
-        }
-*/
     }
-
 
     /* The RTC keeps the time after a restart (Except on Power On or Pin Reset) 
      * There should only be a minor correction through NTP */
@@ -263,14 +253,78 @@ bool setupTime() {
     }
     else {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "The local time is unknown, starting with " + std::string(strftime_buf));
-        if (useNtp) {
+        timeWasNotSetAtBoot = true;
+        timeWasNotSetAtBoot_PrintStartBlock = true;
+        
+        if (useNtp)
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Once the NTP server provides a time, we will switch to that one");
-            timeWasNotSetAtBoot = true;
-            timeWasNotSetAtBoot_PrintStartBlock = true;
-        }
     }
 
     return true;
 }
 
 
+/**
+ * Update TimeZone
+ */
+void setupTimeZone(std::string _timeZone)
+{
+    if (timeZone.compare(_timeZone) == 0)
+        return;
+
+    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeZone gets adjusted...");
+    timeZone = _timeZone;
+
+    if (_timeZone == "") {
+        _timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeZone not set, using default: " + _timeZone);
+    }
+
+    setTimeZone(_timeZone);
+}
+
+
+/**
+ * TimeServer and init or restart NTP client
+ */
+void setupTimeServer(std::string _timeServer)
+{
+    if (timeServer.compare(_timeServer) == 0 || (_timeServer == "undefined" && timeServer == "pool.ntp.org"))
+        return;
+
+    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeServer gets adjusted...");
+
+    if (_timeServer == "undefined") {
+        _timeServer = "pool.ntp.org";
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer not defined, using default: " + _timeServer);
+        useNtp = true;
+    }
+    else if (_timeServer == "") {
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer config empty, disabling NTP");
+        useNtp = false;
+        sntp_stop();
+    }
+    else {
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer: " + _timeServer);
+        useNtp = true;
+    }
+
+    timeServer = _timeServer;
+
+    if (useNtp) {    
+        sntp_setoperatingmode(SNTP_OPMODE_POLL);
+        sntp_setservername(0, timeServer.c_str());
+        sntp_set_time_sync_notification_cb(time_sync_notification_cb);
+
+        if (!sntp_enabled()) {
+            setTimeZone(timeZone);
+            sntp_init();
+        }
+        else {
+            sntp_restart();
+        }
+
+        if (!time_manual_reset_sync())
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time sync failed. Continue anyway");
+    }
+}

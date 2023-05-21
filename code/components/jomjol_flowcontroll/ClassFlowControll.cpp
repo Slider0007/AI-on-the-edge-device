@@ -147,8 +147,32 @@ bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
             LogFile.SetLogFileRetention(std::stoi(splitted[1]));
         }
 
-        /* TimeServer and TimeZone got already read from the config, see setupTime () */
-        
+        // Initial timezone setup was already done during boot: see main.cpp -> setupTime()
+        // Check timezone here anyway due to parameter reloading without reboot
+        if (toUpper(splitted[0]) == "TIMEZONE") {
+            std::string timeZone;
+            if (splitted.size() <= 1) { // parameter part is empty
+                timeZone = "";
+            }
+            else {
+                timeZone = splitted[1];
+            }
+            setupTimeZone(timeZone);
+        }
+
+        // Initial timeserver setup was already done during boot: see main.cpp -> setupTime()
+        // Check timeserver here anyway due to parameter reloading without reboot
+        if (toUpper(splitted[0]) == "TIMESERVER") {
+            std::string timeServer;
+            if (splitted.size() <= 1) { // Key has no value => we use this to show it as disabled
+                timeServer = "";
+            }
+            else {
+                timeServer = splitted[1];
+            }
+            setupTimeServer(timeServer);
+        }
+   
         #if (defined WLAN_USE_ROAMING_BY_SCANNING || (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES))
         if ((toUpper(splitted[0]) == "RSSITHRESHOLD") && (splitted.size() > 1))
         {
@@ -439,7 +463,7 @@ bool ClassFlowControll::InitFlow(std::string config)
 void ClassFlowControll::DeinitFlow(void)
 {
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow...");
-    LogFile.WriteHeapInfo("DeinitFlow start");
+    //LogFile.WriteHeapInfo("DeinitFlow start");
 
     Camera.LightOnOff(false);
     StatusLEDOff();

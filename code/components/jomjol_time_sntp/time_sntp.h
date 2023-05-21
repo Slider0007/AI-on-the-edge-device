@@ -25,6 +25,8 @@ bool getTimeWasNotSetAtBoot(void);
 
 bool getUseNtp(void);
 bool setupTime();
+void setupTimeZone(std::string _timeZone);
+void setupTimeServer(std::string _timeServer);
 
 bool time_manual_reset_sync(void);
 

@@ -244,11 +244,9 @@ extern "C" void app_main(void)
     // ********************************************
     setupTime();    // NTP time service: Status of time synchronization will be checked after every round (server_tflite.cpp)
 
-
     // Set CPU Frequency
     // ********************************************
     setCpuFrequency();
-
 
     // SD card: Create further mandatory directories (if not already existing)
     // Correct creation of these folders will be checked with function "SDCardCheckFolderFilePresence"
@@ -341,15 +339,12 @@ extern "C" void app_main(void)
     ESP_LOGD(TAG, "main: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
     vTaskDelay( xDelay );
 
-
     // manual reset the time
     // ********************************************
     if (!time_manual_reset_sync())
     {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Manual Time Sync failed during startup" );
     }
-
-
 
     // Set log level for wifi component to WARN level (default: INFO; only relevant for serial console)
     // ********************************************
