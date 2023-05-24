@@ -229,6 +229,9 @@
     #define FLOW_AUTO_ERROR_HANDLING    "Automatic Error Handling"
     #define FLOW_INVALID_STATE          "Invalid State"
 
+    // Process state misc
+    #define FLOWSTATE_ERRORS_IN_ROW_LIMIT 3
+
 
 /////////////////////////////////////////////
 ////      Conditionnal definitions       ////

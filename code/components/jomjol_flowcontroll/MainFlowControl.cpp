@@ -48,6 +48,7 @@ static bool reloadConfig = false;
 static bool manualFlowStart = false;
 static long auto_interval = 0;
 static int countRounds = 0;
+static int FlowStateErrorsInRow = 0;
 
 static const char *TAG = "MAINCTRL";
 
@@ -793,13 +794,16 @@ esp_err_t handler_flowerror(httpd_req_t *req)
         #endif
 
         if (flowctrl.getActFlowError())
-            httpd_resp_send(req, "TRUE", HTTPD_RESP_USE_STRLEN);
+            if (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT)
+                httpd_resp_send(req, "001: Flowerror: Single error occured", HTTPD_RESP_USE_STRLEN);
+            else
+                httpd_resp_send(req, "002: Flowerror: Multiple errors in row", HTTPD_RESP_USE_STRLEN);
         else
-            httpd_resp_send(req, "FALSE", HTTPD_RESP_USE_STRLEN);
+            httpd_resp_send(req, "000: Flowerror: Flow process OK - No error", HTTPD_RESP_USE_STRLEN);
     }
     else 
     {
-        httpd_resp_send(req, "Flow task not yet created", HTTPD_RESP_USE_STRLEN);  
+        httpd_resp_send(req, "E90: Flowerror: Request not possible. No flow task running. Check logs.", HTTPD_RESP_USE_STRLEN);  
     }
 
     #ifdef DEBUG_DETAIL_ON       
@@ -1137,9 +1141,23 @@ void task_autodoFlow(void *pvParameter)
                 flowctrl.setActStatus(std::string(FLOW_AUTO_ERROR_HANDLING));
                 #ifdef ENABLE_MQTT
                     MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
+                #endif
+
+                #ifdef ENABLE_MQTT
+                    // Provide flow error indicator to MQTT interface (error occured 3 times in a row)
+                    FlowStateErrorsInRow++;
+                    if (FlowStateErrorsInRow >= FLOWSTATE_ERRORS_IN_ROW_LIMIT) {
+                        MQTTPublish(mqttServer_getMainTopic() + "/" + "flowerror", "true", 1, false);
+                    }
                 #endif //ENABLE_MQTT
             
-                flowctrl.AutomaticFlowErrorHandler();
+                flowctrl.AutomaticFlowErrorHandler(); 
+            }
+            else {
+                #ifdef ENABLE_MQTT
+                    FlowStateErrorsInRow = 0;
+                    MQTTPublish(mqttServer_getMainTopic() + "/" + "flowerror", "false", 1, false);
+                #endif //ENABLE_MQTT
             }
 
             // Round finished -> Logfile
