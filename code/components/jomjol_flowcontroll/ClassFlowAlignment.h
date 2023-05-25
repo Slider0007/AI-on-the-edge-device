@@ -15,16 +15,15 @@ using namespace std;
 class ClassFlowAlignment : public ClassFlow
 {
 protected:
+    CImageBasis *ImageTMP;
+    CAlignAndCutImage *AlignAndCutImage;
+    strRefInfo References[2];
+    int anz_ref;
     float initalrotate;
     bool initialmirror;
     bool initialflip;
     bool use_antialiasing;
     bool SaveAllFiles;
-    int anz_ref;
-    strRefInfo References[2];
-    std::string namerawimage;
-    std::string FileStoreRefAlignment;
-    CAlignAndCutImage *AlignAndCutImage;
     int AlignFAST_SADThreshold;
 
     void SetInitialParameter(void);
@@ -32,16 +31,14 @@ protected:
     bool SaveReferenceAlignmentValues(void);
 
 public:
-    CImageBasis *ImageBasis, *ImageTMP;
+    CImageBasis *ImageBasis;
     ImageData *AlgROI;
     
     ClassFlowAlignment(std::vector<ClassFlow*>* lfc);
     virtual ~ClassFlowAlignment();
 
     CAlignAndCutImage* GetAlignAndCutImage() {return AlignAndCutImage;};
-
     void DrawRef(CImageBasis *_zw);
-
     bool ReadParameter(FILE* pfile, string& aktparamgraph);
     bool doFlow(string time);
     string getHTMLSingleStep(string host);

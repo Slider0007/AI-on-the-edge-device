@@ -42,19 +42,12 @@ void *malloc_psram_heap_STBI(std::string name, size_t size, uint32_t caps)
 {
 	void *ptr;
 
-	if ((STBIObjectPSRAM.name.compare("rawImage") == 0) && STBIObjectPSRAM.usePreallocated && 
-            STBIObjectPSRAM.PreallocatedMemory != NULL && size >= 900000)
+	if (STBIObjectPSRAM.usePreallocated && STBIObjectPSRAM.PreallocatedMemorySize == size &&
+        STBIObjectPSRAM.PreallocatedMemory != NULL)
     {
-        if (STBIObjectPSRAM.PreallocatedMemorySize >= size) {
-            ptr = STBIObjectPSRAM.PreallocatedMemory;
-            name += ": Use preallocated memory (" + STBIObjectPSRAM.name + ")";
-            STBIObjectPSRAM.usePreallocated = false;
-        }
-        else {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, name + ": Preallocation size " + std::to_string(STBIObjectPSRAM.PreallocatedMemorySize) +
-                                                           " too small for needed size of " + std::to_string(size));
-            ptr = heap_caps_malloc(size, caps);
-        }
+        ptr = STBIObjectPSRAM.PreallocatedMemory;
+        name += ": Use preallocated memory (" + STBIObjectPSRAM.name + ")";
+        STBIObjectPSRAM.usePreallocated = false;
     }
     else {
         ptr = heap_caps_malloc(size, caps);

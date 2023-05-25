@@ -81,6 +81,7 @@ class CImageBasis
 
         void LoadFromMemory(stbi_uc *_buffer, int len);
         void LoadFromMemoryPreallocated(stbi_uc *_buffer, int len);
+        void LoadFromFilePreallocated(std::string _name, std::string _image);
 
         ImageData* writeToMemoryAsJPG(const int quality = 90);
         void writeToMemoryAsJPG(ImageData* ii, const int quality = 90);

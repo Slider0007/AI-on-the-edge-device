@@ -19,8 +19,6 @@ static const char *TAG = "ALIGN";
 // #define DEBUG_DETAIL_ON  
 
 
-bool ImageBasisToDelete = false;
-
 void ClassFlowAlignment::SetInitialParameter(void)
 {
     PresetFlowStateHandler(true);
@@ -31,7 +29,6 @@ void ClassFlowAlignment::SetInitialParameter(void)
     use_antialiasing = false;
     initialflip = false;
     SaveAllFiles = false;
-    FileStoreRefAlignment = "/sdcard/config/align.txt";
     ListFlowControll = NULL;
     AlignAndCutImage = NULL;
     ImageBasis = NULL;
@@ -109,7 +106,23 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
         }   
         if ((splitted.size() == 3) && (anz_ref < 2))
         {
+            int x=0,y=0,n=0;
             References[anz_ref].image_file = FormatFileName("/sdcard" + splitted[0]);
+            stbi_info(References[anz_ref].image_file.c_str(), &x, &y, &n);
+
+            References[anz_ref].refImage = new CImageBasis("refImage" + std::to_string(anz_ref));
+            if (References[anz_ref].refImage) {
+                if(!References[anz_ref].refImage->CreateEmptyImage(x, y, n, 1)) {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create alignment marker image");
+                    return false;
+                }
+            }
+            STBIObjectPSRAM.name = "refImage" + std::to_string(anz_ref);
+            STBIObjectPSRAM.usePreallocated = true;
+            STBIObjectPSRAM.PreallocatedMemory = References[anz_ref].refImage->RGBImageGet();
+            STBIObjectPSRAM.PreallocatedMemorySize = References[anz_ref].refImage->getMemsize();
+            References[anz_ref].refImage->LoadFromFilePreallocated("refImage" + std::to_string(anz_ref), References[anz_ref].image_file.c_str());
+
             References[anz_ref].target_x = std::stoi(splitted[1]);
             References[anz_ref].target_y = std::stoi(splitted[2]);
 
@@ -170,7 +183,7 @@ bool ClassFlowAlignment::doFlow(string time)
         AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
         if (AlgROI == NULL) 
         {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlgROI");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to allocate AlgROI");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
         }
     }
@@ -185,7 +198,7 @@ bool ClassFlowAlignment::doFlow(string time)
         ImageTMP = new CImageBasis("ImageTMP", ImageBasis, 1);
         if (ImageTMP == NULL) 
         {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate ImageTMP");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Faioled to allocate ImageTMP");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
             return false;
         }
@@ -195,7 +208,7 @@ bool ClassFlowAlignment::doFlow(string time)
     AlignAndCutImage = new CAlignAndCutImage("AlignAndCutImage", ImageBasis, ImageTMP);
     if (AlignAndCutImage == NULL) 
     {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can't allocate AlignAndCutImage");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to allocate AlignAndCutImage");
         LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
         return false;
     }
@@ -369,9 +382,9 @@ void ClassFlowAlignment::DrawRef(CImageBasis *_zw)
 
 ClassFlowAlignment::~ClassFlowAlignment()
 {
-    heap_caps_free(AlgROI);
-    if (ImageBasisToDelete)
-        delete ImageBasis;
+    free_psram_heap("AlgROI", AlgROI);
+    delete References[0].refImage;
+    delete References[1].refImage;  
     delete ImageTMP;
     delete AlignAndCutImage;
 }

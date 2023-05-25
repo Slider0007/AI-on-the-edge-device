@@ -144,6 +144,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
     rawImage = new CImageBasis("rawImage");
     if (rawImage) {
         if(!rawImage->CreateEmptyImage(image_width, image_height, 3, 1)) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create rawimage");
             return false;
         }
     }

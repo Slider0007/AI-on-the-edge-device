@@ -6,6 +6,7 @@
 #include "CImageBasis.h"
 
 struct strRefInfo {
+    CImageBasis* refImage = NULL;
     std::string image_file; 
     int alignment_algo = 0;             // 0 = "Default" (nur R-Kanal), 1 = "HighAccuracy" (RGB-Kanal), 2 = "Fast" (1.x RGB, dann isSimilar)
     int target_x = 0;
@@ -24,12 +25,16 @@ struct strRefInfo {
 
 class CFindTemplate : public CImageBasis
 {
-    public:
-        int tpl_width, tpl_height, tpl_bpp;    
-        CFindTemplate(std::string name, uint8_t* _rgb_image, int _channels, int _width, int _height, int _bpp) : CImageBasis(name, _rgb_image, _channels, _width, _height, _bpp) {};
+    private:
+        uint8_t* rgb_template;
 
+        bool CalculateSimularities(strRefInfo *_ref);  
+    
+    public:
+        int tpl_width, tpl_height, tpl_bpp;
+
+        CFindTemplate(std::string name, uint8_t* _rgb_image, int _channels, int _width, int _height, int _bpp) : CImageBasis(name, _rgb_image, _channels, _width, _height, _bpp) {rgb_template = NULL;};
         bool FindTemplate(strRefInfo *_ref, bool _noFAST);
-        bool CalculateSimularities(uint8_t* _rgb_tmpl, strRefInfo *_ref);
 };
 
 #endif //CFINDTEMPLATE_H

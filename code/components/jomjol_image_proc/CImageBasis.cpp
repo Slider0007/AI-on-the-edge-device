@@ -519,6 +519,52 @@ void CImageBasis::LoadFromMemoryPreallocated(stbi_uc *_buffer, int len)
 }
 
 
+void CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image)
+{
+    name = _name;
+    islocked = false;
+    channels = 3;
+    externalImage = false;
+    filename = _image;
+
+    if (file_size(_image.c_str()) == 0) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, filename + " is empty!");
+        return;
+    }
+
+    RGBImageLock();
+
+    if (rgb_image == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "No preallocation found");
+    }
+
+    #ifdef DEBUG_DETAIL_ON 
+        LogFile.WriteHeapInfo("CImageBasis-LoadFromFilePreallocated - Start");
+    #endif
+
+    rgb_image = stbi_load(filename.c_str(), &width, &height, &bpp, channels);
+
+    if (rgb_image == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis-LoadFromFilePreallocated: Failed to load " + filename);
+        LogFile.WriteHeapInfo("CImageBasis-LoadFromFilePreallocated");
+        RGBImageRelease();
+        return;
+    }
+    
+    RGBImageRelease();
+
+    #ifdef DEBUG_DETAIL_ON 
+        std::string zw = "CImageBasis LoadFromFilePreallocated after load " + _image;
+        ESP_LOGI(TAG, "%s", zw.c_str());
+        ESP_LOGI(TAG, "w %d, h %d, b %d, c %d", width, height, bpp, channels);
+    #endif
+
+    #ifdef DEBUG_DETAIL_ON 
+        LogFile.WriteHeapInfo("CImageBasis-LoadFromFilePreallocated - done");
+    #endif
+}
+
+
 CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom) 
 {
     name = _name;

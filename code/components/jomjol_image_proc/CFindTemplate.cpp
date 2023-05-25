@@ -14,12 +14,11 @@ static const char* TAG = "IMG_FINDTEMPL";
 
 bool IRAM_ATTR CFindTemplate::FindTemplate(strRefInfo *_ref, bool _noFast)
 {
-    if (file_size(_ref->image_file.c_str()) == 0) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "FindTemplate: " + _ref->image_file + " is empty!");
-        return false;
-    }
-   
-    uint8_t* rgb_template = stbi_load(_ref->image_file.c_str(), &tpl_width, &tpl_height, &tpl_bpp, channels);
+    // Load image of alignment marker which need to be compared with reference image
+    rgb_template = _ref->refImage->rgb_image;
+    tpl_width = _ref->refImage->width;
+    tpl_height = _ref->refImage->height;
+    tpl_bpp = _ref->refImage->bpp;
 
     if (rgb_template == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "stbi_load: Failed to load " + _ref->image_file);
@@ -57,7 +56,7 @@ bool IRAM_ATTR CFindTemplate::FindTemplate(strRefInfo *_ref, bool _noFast)
 
     if (_ref->alignment_algo == 2 && _ref->fastalg_x > 0 && _ref->fastalg_y > 0 && !_noFast) {
         //ESP_LOGD(TAG, "FindTemplate - use FASTALGO");
-        bool isSimilar = CalculateSimularities(rgb_template, _ref);
+        bool isSimilar = CalculateSimularities(_ref);
         #ifdef DEBUG_DETAIL_ON
             std::string zw = "\t" + _ref->image_file + "\t x_y: \t" + std::to_string(_ref->fastalg_x) + "\t" + std::to_string(_ref->fastalg_y);
             //LogFile.WriteToDedicatedFile("/sdcard/alignment.txt", zw);
@@ -69,7 +68,7 @@ bool IRAM_ATTR CFindTemplate::FindTemplate(strRefInfo *_ref, bool _noFast)
             _ref->found_x = _ref->fastalg_x;
             _ref->found_y = _ref->fastalg_y;
 
-            free_psram_heap(std::string(TAG) + _ref->image_file, rgb_template);      
+            //free_psram_heap(std::string(TAG) + _ref->image_file, rgb_template);  // Keep alignment image refImage in RAM   
             return true;
         }
     }
@@ -122,13 +121,13 @@ bool IRAM_ATTR CFindTemplate::FindTemplate(strRefInfo *_ref, bool _noFast)
     std::string zw = "SADsum:" + std::to_string(SADsum) + ", X:"+ std::to_string(_ref->found_x) + ", Y:" + std::to_string(_ref->found_y);
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "STANDARD Algo results: " + zw);
     
-    free_psram_heap(std::string(TAG) + _ref->image_file, rgb_template);
+    //free_psram_heap(std::string(TAG) + _ref->image_file, rgb_template);   // Keep alignment image refImage in RAM  
     return false;
 }
 
 
 
-bool IRAM_ATTR CFindTemplate::CalculateSimularities(uint8_t* _rgb_tmpl, strRefInfo* _ref)
+bool IRAM_ATTR CFindTemplate::CalculateSimularities(strRefInfo* _ref)
 {
     int anz = 0;
     long SADsum = 0;
@@ -139,7 +138,7 @@ bool IRAM_ATTR CFindTemplate::CalculateSimularities(uint8_t* _rgb_tmpl, strRefIn
         for (int youter = 0; youter <= tpl_height; ++youter)
         {
             stbi_uc* p_org = rgb_image + (channels * ((youter + _ref->fastalg_y) * width + (xouter + _ref->fastalg_x)));
-            stbi_uc* p_tpl = _rgb_tmpl + (channels * (youter * tpl_width + xouter));
+            stbi_uc* p_tpl = rgb_template + (channels * (youter * tpl_width + xouter));
             for (int _ch = 0; _ch < channels; ++_ch)
             {
                 SADsum += labs(p_tpl[_ch] - p_org[_ch]);              
