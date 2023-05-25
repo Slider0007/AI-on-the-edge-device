@@ -894,12 +894,15 @@ std::vector<HTMLInfo*> ClassFlowCNNGeneral::GetHTMLInfo()
         for (int i = 0; i < GENERAL[_ana]->ROI.size(); ++i)
         {
             ESP_LOGD(TAG, "Image: %d", (int) GENERAL[_ana]->ROI[i]->image);
-            if (GENERAL[_ana]->ROI[i]->image)
+            if (SaveAllFiles)
             {
-                if (GENERAL[_ana]->name == "default")
-                    GENERAL[_ana]->ROI[i]->image->SaveToFile(FormatFileName("/sdcard/img_tmp/" + GENERAL[_ana]->ROI[i]->name + ".jpg"));
-                else
-                    GENERAL[_ana]->ROI[i]->image->SaveToFile(FormatFileName("/sdcard/img_tmp/" + GENERAL[_ana]->name + "_" + GENERAL[_ana]->ROI[i]->name + ".jpg"));
+                if (GENERAL[_ana]->ROI[i]->image)
+                {
+                    if (GENERAL[_ana]->name == "default")
+                        GENERAL[_ana]->ROI[i]->image->SaveToFile(FormatFileName("/sdcard/img_tmp/" + GENERAL[_ana]->ROI[i]->name + ".jpg"));
+                    else
+                        GENERAL[_ana]->ROI[i]->image->SaveToFile(FormatFileName("/sdcard/img_tmp/" + GENERAL[_ana]->name + "_" + GENERAL[_ana]->ROI[i]->name + ".jpg"));
+                }
             }
 
             HTMLInfo *zw = new HTMLInfo;
