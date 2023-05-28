@@ -326,10 +326,25 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, string& aktparamgraph)
     while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
     {
         splitted = ZerlegeZeile(aktparamgraph);
+        if ((toUpper(splitted[0]) == "MODEL") && (splitted.size() > 1))
+        {
+            this->cnnmodelfile = splitted[1];
+        }
+
+        if ((toUpper(splitted[0]) == "CNNGOODTHRESHOLD") && (splitted.size() > 1))
+        {
+            CNNGoodThreshold = std::stof(splitted[1]);
+        }
+        
         if ((toUpper(splitted[0]) == "ROIIMAGESLOCATION") && (splitted.size() > 1))
         {
             this->imagesLocation = "/sdcard" + splitted[1];
             this->isLogImage = true;
+        }
+
+        if ((toUpper(splitted[0]) == "ROIIMAGESRETENTION") && (splitted.size() > 1))
+        {
+            this->imagesRetention = std::stoi(splitted[1]);
         }
 
         if ((toUpper(splitted[0]) == "LOGIMAGESELECT") && (splitted.size() > 1))
@@ -338,21 +353,14 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, string& aktparamgraph)
             isLogImageSelect = true;            
         }
 
-        if ((toUpper(splitted[0]) == "ROIIMAGESRETENTION") && (splitted.size() > 1))
+        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
         {
-            this->imagesRetention = std::stoi(splitted[1]);
-        }
-
-        if ((toUpper(splitted[0]) == "MODEL") && (splitted.size() > 1))
-        {
-            this->cnnmodelfile = splitted[1];
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveAllFiles = true;
+            else
+                SaveAllFiles = false;
         }
         
-        if ((toUpper(splitted[0]) == "CNNGOODTHRESHOLD") && (splitted.size() > 1))
-        {
-            CNNGoodThreshold = std::stof(splitted[1]);
-        }
-
         if (splitted.size() >= 5)
         {
             general* _analog = GetGENERAL(splitted[0], true);
@@ -369,14 +377,6 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, string& aktparamgraph)
             neuroi->result_float = -1;
             neuroi->image = NULL;
             neuroi->image_org = NULL;
-        }
-
-        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
-        {
-            if (toUpper(splitted[1]) == "TRUE")
-                SaveAllFiles = true;
-            else
-                SaveAllFiles = false;
         }
     }
 
