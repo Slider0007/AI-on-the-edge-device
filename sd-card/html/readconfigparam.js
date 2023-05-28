@@ -131,8 +131,11 @@ function ParseConfig() {
      ParamAddValue(param, catname, "SearchFieldX");
      ParamAddValue(param, catname, "SearchFieldY");     
      ParamAddValue(param, catname, "FlipImageSize");
-     ParamAddValue(param, catname, "InitialMirror");
+     ParamAddValue(param, catname, "InitialMirror");   
+     // InitialRotate not visible on config page, create parameter with default value if not available (special care)
      ParamAddValue(param, catname, "InitialRotate");
+     param[catname]["InitialRotate"]["enabled"] = true;
+     param[catname]["InitialRotate"]["value1"] = 0.0;
 
      var catname = "Digits";
      category[catname] = new Object(); 
@@ -140,7 +143,7 @@ function ParseConfig() {
      category[catname]["found"] = false;
      param[catname] = new Object();
      ParamAddValue(param, catname, "Model");
-     ParamAddValue(param, catname, "CNNGoodThreshold", 1); 
+     ParamAddValue(param, catname, "CNNGoodThreshold"); 
      ParamAddValue(param, catname, "ROIImagesLocation");
      ParamAddValue(param, catname, "ROIImagesRetention");
 
@@ -207,7 +210,7 @@ function ParseConfig() {
      ParamAddValue(param, catname, "Org");
      ParamAddValue(param, catname, "Token");
      ParamAddValue(param, catname, "Measurement", 1, true, "undefined");
-     ParamAddValue(param, catname, "Field", 1, true, "undefined", null, true);
+     ParamAddValue(param, catname, "Field", 1, true, "undefined");
 
      var catname = "GPIO";
      category[catname] = new Object(); 
@@ -265,7 +268,10 @@ function ParseConfig() {
      ParamAddValue(param, catname, "Hostname");   
      ParamAddValue(param, catname, "RSSIThreshold");   
      ParamAddValue(param, catname, "CPUFrequency");
+     // SetupMode not visible on config page, create parameter with default value if not available (special care)
      ParamAddValue(param, catname, "SetupMode"); 
+     param[catname]["SetupMode"]["enabled"] = true;
+     param[catname]["SetupMode"]["value1"] = true;
      
      
      while (aktline < config_split.length){
@@ -334,7 +340,7 @@ function ParamAddValue(param, _cat, _param, _anzParam = 1, _isNUMBER = false, _d
      param[_cat][_param]["enabled"] = false;
      param[_cat][_param]["line"] = -1; 
      param[_cat][_param]["anzParam"] = _anzParam;
-     param[_cat][_param]["defaultValue"] = _defaultValue;
+     param[_cat][_param]["defaultValue"] = _defaultValue;   // Parameter only used for numbers sequences
      param[_cat][_param]["Numbers"] = _isNUMBER;
      param[_cat][_param].checkRegExList = _checkRegExList;
 };

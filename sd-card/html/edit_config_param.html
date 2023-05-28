@@ -1690,6 +1690,7 @@ function getParameterByName(name, url = window.location.href) {
 }	
 
 
+// Read parameter out of the variables and display in WebUI config page
 function WriteParameter(_param, _category, _cat, _name, _optional, _number = -1){
     let anzpara;
     try {
@@ -1908,7 +1909,9 @@ function EnDisableItem(_status, _param, _category, _cat, _name, _optional, _numb
 }
 
 
-function ReadParameter(_param, _cat, _name, _optional, _number = -1){
+// Read parameter from WebUI config page and store in variables
+function ReadParameter(_param, _cat, _name, _optional, _number = -1)
+{
     if (_number > -1) {
         if (_cat == "Digits")
             _cat = "digit";
@@ -1918,10 +1921,12 @@ function ReadParameter(_param, _cat, _name, _optional, _number = -1){
         if ((NUMBERS[_number] == undefined) || (NUMBERS[_number][_cat] == undefined) ||  (NUMBERS[_number][_cat][_name] == undefined))
             return;
 
-
-        if (_optional) {
+        if (_optional) {	// If checkbox is avaiable -> set by selection
             NUMBERS[_number][_cat][_name]["enabled"] = document.getElementById(_cat+"_"+_name+"_enabled").checked;			
         }
+		else {				// If no checkbox is available -> always enabled
+			NUMBERS[_number][_cat][_name]["enabled"] = true;
+		}
 
         for (var j = 1; j <= _param[_cat][_name]["anzParam"]; ++j) {
             let element = document.getElementById(_cat+"_"+_name+"_value"+j);
@@ -1944,10 +1949,13 @@ function ReadParameter(_param, _cat, _name, _optional, _number = -1){
         }
     }
     else
-    {
-        if (_optional) {
+    {	
+		if (_optional) {	// If checkbox is avaiable -> set by selection
             _param[_cat][_name]["enabled"] = document.getElementById(_cat+"_"+_name+"_enabled").checked;			
         }
+		else {				// If no checkbox is available -> always enabled
+			_param[_cat][_name]["enabled"] = true;
+		}
 
         for (var j = 1; j <= _param[_cat][_name]["anzParam"]; ++j) {
             let element = document.getElementById(_cat+"_"+_name+"_value"+j);
@@ -2092,9 +2100,9 @@ function UpdateInput() {
     WriteParameter(param, category, "Debug", "LogLevel", false);
     WriteParameter(param, category, "Debug", "LogfilesRetention", false);
 
-    WriteParameter(param, category, "System", "TimeZone", false);
+	WriteParameter(param, category, "System", "TimeServer", true);
+	WriteParameter(param, category, "System", "TimeZone", false);
     WriteParameter(param, category, "System", "Hostname", false);
-    WriteParameter(param, category, "System", "TimeServer", true);
     WriteParameter(param, category, "System", "RSSIThreshold", true);
     WriteParameter(param, category, "System", "CPUFrequency", false);
 
@@ -2231,9 +2239,9 @@ function ReadParameterAll()
     ReadParameter(param, "Debug", "LogLevel", false);
     ReadParameter(param, "Debug", "LogfilesRetention", false);
 
-    ReadParameter(param, "System", "TimeZone", false);
+	ReadParameter(param, "System", "TimeServer", true);
+	ReadParameter(param, "System", "TimeZone", false);
     ReadParameter(param, "System", "Hostname", false);
-    ReadParameter(param, "System", "TimeServer", true);
     ReadParameter(param, "System", "RSSIThreshold", true);
     ReadParameter(param, "System", "CPUFrequency", false);
 
