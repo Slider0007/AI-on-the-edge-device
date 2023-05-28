@@ -570,7 +570,7 @@ void migrateConfiguration(void) {
         }
 
         if (section == "[Digits]") {
-            if (isInString(configLines[i], "CNNGoodThreshold") && isInString(configLines[i], ";")) { // It is the parameter "AllowNegativeRates" and it is commented out
+            if (isInString(configLines[i], "CNNGoodThreshold")) { // It is the parameter "CNNGoodThreshold"
                 migrated = migrated | replaceString(configLines[i], "0.5", "0.0");
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
@@ -715,7 +715,9 @@ void migrateConfiguration(void) {
         }
 
         if (section == "[System]") {
-            if (isInString(configLines[i], "TimeServer = undefined") && isInString(configLines[i], ";")) { // It is the parameter "TimeServer" and is it disabled
+            if (isInString(configLines[i], "TimeServer = undefined") || isInString(configLines[i], "TimeServer = pool.ntp.org") 
+                    && isInString(configLines[i], ";")) 
+            { // It is the parameter "TimeServer" and is it disabled
                 migrated = migrated | replaceString(configLines[i], "undefined", "pool.ntp.org");
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
@@ -726,9 +728,8 @@ void migrateConfiguration(void) {
                 migrated = migrated | replaceString(configLines[i], "undefined", "watermeter");
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
-            
-            migrated = migrated | replaceString(configLines[i], "RSSIThreashold", ";RSSIThreshold");
-            migrated = migrated | replaceString(configLines[i], "RSSIThreashold", ";RSSIThreshold");
+                                 
+            migrated = migrated | replaceString(configLines[i], "RSSIThreashold", "RSSIThreshold");
 
             if (isInString(configLines[i], "CPUFrequency") && isInString(configLines[i], ";")) { // It is the parameter "CPUFrequency" and is it disabled
                 migrated = migrated | replaceString(configLines[i], "240", "160");
