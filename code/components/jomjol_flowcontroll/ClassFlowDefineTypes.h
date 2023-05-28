@@ -20,6 +20,7 @@ struct general {
 };
 
 enum t_RateType {
+    RateCheckOff,
     AbsoluteChange,
     RateChange
  };

@@ -340,11 +340,15 @@ ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, C
     }
 }
 
-void ClassFlowPostProcessing::handleDecimalExtendedResolution(string _decsep, string _value)
+
+void ClassFlowPostProcessing::handleDecimalExtendedResolution(std::string _decsep, std::string _value)
 {
-    string _digit, _decpos;
+    std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
+    bool value;
+
 //    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
+
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
     else
@@ -352,29 +356,25 @@ void ClassFlowPostProcessing::handleDecimalExtendedResolution(string _decsep, st
 
     for (int j = 0; j < NUMBERS.size(); ++j)
     {
-        bool _zwdc = false;
-
         if (toUpper(_value) == "TRUE")
-            _zwdc = true;
+            value = true;
+        else
+            value = false;
      
-        if (_digit == "default")                        // Set to default first (if nothing else is set)
-        {
-            NUMBERS[j]->isExtendedResolution = _zwdc;
-        }
+        if (_digit == "default" || NUMBERS[j]->name == _digit)
+            NUMBERS[j]->isExtendedResolution = value;
 
-        if (NUMBERS[j]->name == _digit)
-        {
-            NUMBERS[j]->isExtendedResolution = _zwdc;
-        }
+        //ESP_LOGI(TAG, "handleDecimalExtendedResolution: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, value);
     }
 }
 
 
-void ClassFlowPostProcessing::handleDecimalSeparator(string _decsep, string _value)
+void ClassFlowPostProcessing::handleDecimalSeparator(std::string _decsep, std::string _value)
 {
-    string _digit, _decpos;
+    std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
+    int value;
+
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
     else
@@ -382,62 +382,47 @@ void ClassFlowPostProcessing::handleDecimalSeparator(string _decsep, string _val
 
     for (int j = 0; j < NUMBERS.size(); ++j)
     {
-        int _zwdc = 0;
+        value = stoi(_value);
 
-//        try
+        if (_digit == "default" || NUMBERS[j]->name == _digit)
         {
-            _zwdc = stoi(_value);
-        }
-/*        catch(const std::exception& e)
-        {
-            ESP_LOGD(TAG, "ERROR - Decimalshift is not a number: %s", _value.c_str());
-        }
-*/        
-        if (_digit == "default")                        //  Set to default first (if nothing else is set)
-        {
-            NUMBERS[j]->DecimalShift = _zwdc;
-            NUMBERS[j]->DecimalShiftInitial = _zwdc;
-        }
-
-        if (NUMBERS[j]->name == _digit)
-        {
-            NUMBERS[j]->DecimalShift = _zwdc;
-            NUMBERS[j]->DecimalShiftInitial = _zwdc;
+            NUMBERS[j]->DecimalShift = value;
+            NUMBERS[j]->DecimalShiftInitial = value;
         }
 
         NUMBERS[j]->Nachkomma = NUMBERS[j]->AnzahlAnalog - NUMBERS[j]->DecimalShift;
+
+        //ESP_LOGI(TAG, "handleDecimalSeparator: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, value);
     }
 }
 
-void ClassFlowPostProcessing::handleAnalogDigitalTransitionStart(string _decsep, string _value)
+
+void ClassFlowPostProcessing::handleAnalogDigitalTransitionStart(std::string _decsep, std::string _value)
 {
-    string _digit, _decpos;
+    std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
+
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
     else
         _digit = "default";
 
     for (int j = 0; j < NUMBERS.size(); ++j)
-    {
-        float _zwdc = 9.2;
-        {
-            _zwdc = stof(_value);
-        }
+    {    
         if (_digit == "default" || NUMBERS[j]->name == _digit)  // Set to default first (if nothing else is set)
-        {
-            NUMBERS[j]->AnalogDigitalTransitionStart = _zwdc;
+            NUMBERS[j]->AnalogDigitalTransitionStart = stof(_value);
 
-        }
+        //ESP_LOGI(TAG, "handleAnalogDigitalTransitionStart: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->AnalogDigitalTransitionStart);
     }
 }
 
-void ClassFlowPostProcessing::handleAllowNegativeRate(string _decsep, string _value)
+
+void ClassFlowPostProcessing::handleAllowNegativeRate(std::string _decsep, std::string _value)
 {
-    string _digit, _decpos;
+    std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
+    bool value;
+
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
     else
@@ -445,30 +430,25 @@ void ClassFlowPostProcessing::handleAllowNegativeRate(string _decsep, string _va
 
     for (int j = 0; j < NUMBERS.size(); ++j)
     {
-        bool _rt = false;
-
         if (toUpper(_value) == "TRUE")
-            _rt = true;
+            value = true;
+        else
+            value = false;
 
-        if (_digit == "default")                        // Set to default first (if nothing else is set)
-        {
-            NUMBERS[j]->AllowNegativeRates = _rt;
-        }
+        if (_digit == "default" || NUMBERS[j]->name == _digit)
+            NUMBERS[j]->AllowNegativeRates = value;
 
-        if (NUMBERS[j]->name == _digit)
-        {
-            NUMBERS[j]->AllowNegativeRates = _rt;
-        }
+        //ESP_LOGI(TAG, "handleAllowNegativeRate: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, value);
     }
 }
 
 
-
-void ClassFlowPostProcessing::handleMaxRateType(string _decsep, string _value)
+void ClassFlowPostProcessing::handleMaxRateType(std::string _decsep, std::string _value)
 {
-    string _digit, _decpos;
+    std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
+    t_RateType _rt;
+
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
     else
@@ -476,57 +456,43 @@ void ClassFlowPostProcessing::handleMaxRateType(string _decsep, string _value)
 
     for (int j = 0; j < NUMBERS.size(); ++j)
     {
-        t_RateType _rt = AbsoluteChange;
-
-        if (toUpper(_value) == "RATECHANGE")
+        if (toUpper(_value) == "RATECHANGE") {
+            NUMBERS[j]->useMaxRateValue = true;
             _rt = RateChange;
-
-        if (_digit == "default")                        // Set to default first (if nothing else is set)
-        {
-            NUMBERS[j]->RateType = _rt;
+        }
+        else if (toUpper(_value) == "OFF") {
+            NUMBERS[j]->useMaxRateValue = false;
+            _rt = RateCheckOff;
+        }
+        else {
+            NUMBERS[j]->useMaxRateValue = true;
+            _rt = AbsoluteChange;
         }
 
-        if (NUMBERS[j]->name == _digit)
-        {
+        if (_digit == "default" || NUMBERS[j]->name == _digit)
             NUMBERS[j]->RateType = _rt;
-        }
+
+        //ESP_LOGI(TAG, "handleMaxRateType: Name: %s, Pospunkt: %d, ratetype: %d", _digit.c_str(), _pospunkt, _rt);
     }
 }
 
 
-
-
-void ClassFlowPostProcessing::handleMaxRateValue(string _decsep, string _value)
+void ClassFlowPostProcessing::handleMaxRateValue(std::string _decsep, std::string _value)
 {
-    string _digit, _decpos;
+    std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
+
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
     else
         _digit = "default";
+    
     for (int j = 0; j < NUMBERS.size(); ++j)
     {
-        float _zwdc = 1;
-//        try
-        {
-            _zwdc = stof(_value);
-        }
-/*        catch(const std::exception& e)
-        {
-            ESP_LOGD(TAG, "ERROR - MaxRateValue is not a number: %s", _value.c_str());
-        }
-*/
-        if (_digit == "default")                        //  Set to default first (if nothing else is set)
-        {
-            NUMBERS[j]->useMaxRateValue = true;
-            NUMBERS[j]->MaxRateValue = _zwdc;
-        }
-        if (NUMBERS[j]->name == _digit)
-        {
-            NUMBERS[j]->useMaxRateValue = true;
-            NUMBERS[j]->MaxRateValue = _zwdc;
-        }
+        if (_digit == "default" || NUMBERS[j]->name == _digit)
+            NUMBERS[j]->MaxRateValue = stof(_value);
+
+        //ESP_LOGI(TAG, "handleMaxRateValue: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->MaxRateValue);
     }
 }
 
@@ -554,28 +520,6 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
         splitted = ZerlegeZeile(aktparamgraph);
         std::string _param = GetParameterName(splitted[0]);
 
-        if ((toUpper(_param) == "EXTENDEDRESOLUTION") && (splitted.size() > 1))
-        {
-            handleDecimalExtendedResolution(splitted[0], splitted[1]);
-        }
-
-        if ((toUpper(_param) == "DECIMALSHIFT") && (splitted.size() > 1))
-        {
-            handleDecimalSeparator(splitted[0], splitted[1]);
-        }
-        if ((toUpper(_param) == "ANALOGDIGITALTRANSITIONSTART") && (splitted.size() > 1))
-        {
-            handleAnalogDigitalTransitionStart(splitted[0], splitted[1]);
-        }
-        if ((toUpper(_param) == "MAXRATEVALUE") && (splitted.size() > 1))
-        {
-            handleMaxRateValue(splitted[0], splitted[1]);
-        }
-        if ((toUpper(_param) == "MAXRATETYPE") && (splitted.size() > 1))
-        {
-            handleMaxRateType(splitted[0], splitted[1]);
-        }
-
         if ((toUpper(_param) == "PREVALUEUSE") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
@@ -583,6 +527,20 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
             else
                 PreValueUse = false;
         }
+
+        if ((toUpper(_param) == "PREVALUEAGESTARTUP") && (splitted.size() > 1))
+        {
+            PreValueAgeStartup = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(_param) == "ERRORMESSAGE") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                ErrorMessage = true;
+            else
+                ErrorMessage = false;
+        }
+
         if ((toUpper(_param) == "CHECKDIGITINCREASECONSISTENCY") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE") {
@@ -593,7 +551,8 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
                 for (_n = 0; _n < NUMBERS.size(); ++_n)
                     NUMBERS[_n]->checkDigitIncreaseConsistency = false; 
             }
-        }        
+        } 
+        
         if ((toUpper(_param) == "ALLOWNEGATIVERATES") && (splitted.size() > 1))
         {
             handleAllowNegativeRate(splitted[0], splitted[1]);
@@ -603,25 +562,38 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
                     NUMBERS[_n]->AllowNegativeRates = true;
 */
         }
-        if ((toUpper(_param) == "ERRORMESSAGE") && (splitted.size() > 1))
+
+        if ((toUpper(_param) == "DECIMALSHIFT") && (splitted.size() > 1))
         {
-            if (toUpper(splitted[1]) == "TRUE")
-                ErrorMessage = true;
-            else
-                ErrorMessage = false;
+            handleDecimalSeparator(splitted[0], splitted[1]);
         }
+
+        if ((toUpper(_param) == "ANALOGDIGITALTRANSITIONSTART") && (splitted.size() > 1))
+        {
+            handleAnalogDigitalTransitionStart(splitted[0], splitted[1]);
+        }
+
+        if ((toUpper(_param) == "MAXRATETYPE") && (splitted.size() > 1))
+        {
+            handleMaxRateType(splitted[0], splitted[1]);
+        }
+
+        if ((toUpper(_param) == "MAXRATEVALUE") && (splitted.size() > 1))
+        {
+            handleMaxRateValue(splitted[0], splitted[1]);
+        }
+
+        if ((toUpper(_param) == "EXTENDEDRESOLUTION") && (splitted.size() > 1))
+        {
+            handleDecimalExtendedResolution(splitted[0], splitted[1]);
+        }
+
         if ((toUpper(_param) == "IGNORELEADINGNAN") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
                 IgnoreLeadingNaN = true;
             else
                 IgnoreLeadingNaN = false;
-        }
-
-        
-        if ((toUpper(_param) == "PREVALUEAGESTARTUP") && (splitted.size() > 1))
-        {
-            PreValueAgeStartup = std::stoi(splitted[1]);
         }
     }
 

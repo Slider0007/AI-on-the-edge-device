@@ -30,12 +30,12 @@ protected:
     float checkDigitConsistency(double input, int _decilamshift, bool _isanalog, double _preValue);
 
     void InitNUMBERS();
-    void handleDecimalSeparator(string _decsep, string _value);
-    void handleMaxRateValue(string _decsep, string _value);
-    void handleDecimalExtendedResolution(string _decsep, string _value); 
-    void handleMaxRateType(string _decsep, string _value);
-    void handleAnalogDigitalTransitionStart(string _decsep, string _value);
-    void handleAllowNegativeRate(string _decsep, string _value);
+    void handleDecimalSeparator(std::string _decsep, std::string _value);
+    void handleMaxRateValue(std::string _decsep, std::string _value);
+    void handleDecimalExtendedResolution(std::string _decsep, std::string _value); 
+    void handleMaxRateType(std::string _decsep, std::string _value);
+    void handleAnalogDigitalTransitionStart(std::string _decsep, std::string _value);
+    void handleAllowNegativeRate(std::string _decsep, std::string _value);
     
     std::string GetStringReadouts(general);
 
