@@ -64,6 +64,18 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
             imagesLocation = "/sdcard" + splitted[1];
             isLogImage = true;
         }
+
+        if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION") && (splitted.size() > 1))
+        {
+            this->imagesRetention = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "WAITBEFORETAKINGPICTURE") && (splitted.size() > 1))
+        {
+            waitbeforepicture = stof(splitted[1]);
+            flash_duration = (int)(waitbeforepicture * 1000);
+        }
+
         if ((toUpper(splitted[0]) == "IMAGEQUALITY") && (splitted.size() > 1))
             ImageQuality = std::stod(splitted[1]);
 
@@ -73,23 +85,14 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
             isImageSize = true;
         }
 
-        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
+        if ((toUpper(splitted[0]) == "LEDINTENSITY") && (splitted.size() > 1))
         {
-            if (toUpper(splitted[1]) == "TRUE")
-                SaveAllFiles = true;
-            else
-                SaveAllFiles = false;
-        }
-        
-        if ((toUpper(splitted[0]) == "WAITBEFORETAKINGPICTURE") && (splitted.size() > 1))
-        {
-            waitbeforepicture = stof(splitted[1]);
-            flash_duration = (int)(waitbeforepicture * 1000);
-        }
-
-        if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION") && (splitted.size() > 1))
-        {
-            this->imagesRetention = std::stoi(splitted[1]);
+            ledintensity = stoi(splitted[1]);
+            //checkMinMax(&ledintensity, 0, 100);
+            //ESP_LOGI(TAG, "ledintensity: %d", ledintensity);
+            ledintensity = min(100, ledintensity);
+            ledintensity = max(0, ledintensity);
+            //Camera.SetLEDIntensity(ledintensity);
         }
 
         if ((toUpper(splitted[0]) == "BRIGHTNESS") && (splitted.size() > 1))
@@ -115,16 +118,6 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
                 FixedExposure = false;
         }
 
-        if ((toUpper(splitted[0]) == "LEDINTENSITY") && (splitted.size() > 1))
-        {
-            ledintensity = stoi(splitted[1]);
-            //checkMinMax(&ledintensity, 0, 100);
-            //ESP_LOGI(TAG, "ledintensity: %d", ledintensity);
-            ledintensity = min(100, ledintensity);
-            ledintensity = max(0, ledintensity);
-            //Camera.SetLEDIntensity(ledintensity);
-        }
-
         if ((toUpper(splitted[0]) == "DEMO") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
@@ -132,6 +125,14 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
             else
                 Camera.DisableDemoMode();
         }
+
+        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveAllFiles = true;
+            else
+                SaveAllFiles = false;
+        }  
     }
 
     Camera.ledc_init(); // PWM init needs to be repeated after online config update

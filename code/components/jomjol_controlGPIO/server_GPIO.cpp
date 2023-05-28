@@ -347,10 +347,8 @@ bool GpioHandler::readConfig()
         // {
         //     std::string gpioStr = pieces_match[1];
         ESP_LOGD(TAG, "conf param %s", toUpper(splitted[0]).c_str());
-        if (toUpper(splitted[0]) == "MAINTOPICMQTT") {
-//            ESP_LOGD(TAG, "MAINTOPICMQTT found");
-//            mainTopicMQTT = splitted[1];
-        } else if ((splitted[0].rfind("IO", 0) == 0) && (splitted.size() >= 6))
+        
+        if ((splitted[0].rfind("IO", 0) == 0) && (splitted.size() >= 6)) 
         {
             ESP_LOGI(TAG,"Enable GP%s in %s mode", splitted[0].c_str(), splitted[1].c_str());
             std::string gpioStr = splitted[0].substr(2, 2);
@@ -386,19 +384,7 @@ bool GpioHandler::readConfig()
                 registerISR = true;
             }
         }
-        if (toUpper(splitted[0]) == "LEDNUMBERS")
-        {
-            LEDNumbers = stoi(splitted[1]);
-        }
-        if (toUpper(splitted[0]) == "LEDCOLOR")
-        {
-            uint8_t _r, _g, _b;
-            _r = stoi(splitted[1]);
-            _g = stoi(splitted[2]);
-            _b = stoi(splitted[3]);
 
-            LEDColor = Rgb{_r, _g, _b};
-        }
         if (toUpper(splitted[0]) == "LEDTYPE")
         {
             if (splitted[1] == "WS2812")
@@ -410,6 +396,22 @@ bool GpioHandler::readConfig()
             if (splitted[1] == "WS2813")
                 LEDType = LED_WS2813;
         }
+
+        if (toUpper(splitted[0]) == "LEDNUMBERS")
+        {
+            LEDNumbers = stoi(splitted[1]);
+        }
+
+        if (toUpper(splitted[0]) == "LEDCOLOR")
+        {
+            uint8_t _r, _g, _b;
+            _r = stoi(splitted[1]);
+            _g = stoi(splitted[2]);
+            _b = stoi(splitted[3]);
+
+            LEDColor = Rgb{_r, _g, _b};
+        }
+
     }
 
     if (registerISR) {

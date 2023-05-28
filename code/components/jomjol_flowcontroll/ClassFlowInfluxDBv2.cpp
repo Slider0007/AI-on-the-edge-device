@@ -90,29 +90,34 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, string& aktparamgraph)
         splitted = ZerlegeZeile(aktparamgraph);
         std::string _param = GetParameterName(splitted[0]);
 
-        if ((toUpper(_param) == "ORG") && (splitted.size() > 1))
-        {
-            this->dborg = splitted[1];
-        }  
-        if ((toUpper(_param) == "TOKEN") && (splitted.size() > 1))
-        {
-            this->dbtoken = splitted[1];
-        }               
         if ((toUpper(_param) == "URI") && (splitted.size() > 1))
         {
             this->uri = splitted[1];
         }
-        if (((toUpper(_param) == "FIELD")) && (splitted.size() > 1))
-        {
-            handleFieldname(splitted[0], splitted[1]);
-        }
-        if (((toUpper(_param) == "MEASUREMENT")) && (splitted.size() > 1))
-        {
-            handleMeasurement(splitted[0], splitted[1]);
-        }
+
         if (((toUpper(splitted[0]) == "DATABASE")) && (splitted.size() > 1))
         {
             this->database = splitted[1];
+        }
+
+        if ((toUpper(_param) == "ORG") && (splitted.size() > 1))
+        {
+            this->dborg = splitted[1];
+        }
+
+        if ((toUpper(_param) == "TOKEN") && (splitted.size() > 1))
+        {
+            this->dbtoken = splitted[1];
+        }
+
+        if (((toUpper(_param) == "MEASUREMENT")) && (splitted.size() > 1))
+        {
+            handleMeasurement(splitted[0], splitted[1]);
+        }              
+
+        if (((toUpper(_param) == "FIELD")) && (splitted.size() > 1))
+        {
+            handleFieldname(splitted[0], splitted[1]);
         }
     }
 

@@ -103,18 +103,31 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, string& aktparamgraph)
     while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
     {
         splitted = ZerlegeZeile(aktparamgraph);
-        if ((toUpper(splitted[0]) == "USER") && (splitted.size() > 1))
-        {
-            this->user = splitted[1];
-        }  
-        if ((toUpper(splitted[0]) == "PASSWORD") && (splitted.size() > 1))
-        {
-            this->password = splitted[1];
-        }               
         if ((toUpper(splitted[0]) == "URI") && (splitted.size() > 1))
         {
             this->uri = splitted[1];
         }
+
+        if (((toUpper(splitted[0]) == "TOPIC") || (toUpper(splitted[0]) == "MAINTOPIC")) && (splitted.size() > 1))
+        {
+            maintopic = splitted[1];
+        }
+
+        if ((toUpper(splitted[0]) == "CLIENTID") && (splitted.size() > 1))
+        {
+            this->clientname = splitted[1];
+        }
+
+        if ((toUpper(splitted[0]) == "USER") && (splitted.size() > 1))
+        {
+            this->user = splitted[1];
+        }
+
+        if ((toUpper(splitted[0]) == "PASSWORD") && (splitted.size() > 1))
+        {
+            this->password = splitted[1];
+        }               
+
         if ((toUpper(splitted[0]) == "RETAINMESSAGES") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
@@ -124,6 +137,7 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, string& aktparamgraph)
 
             setMqtt_Server_Retain(SetRetainFlag);
         }
+
         if ((toUpper(splitted[0]) == "HOMEASSISTANTDISCOVERY") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
@@ -131,6 +145,7 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, string& aktparamgraph)
             else
                 SetHomeassistantDiscoveryEnabled(false);
         }
+        
         if ((toUpper(splitted[0]) == "METERTYPE") && (splitted.size() > 1)) {
         /* Use meter type for the device class 
            Make sure it is a listed one on https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes */
@@ -164,16 +179,6 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, string& aktparamgraph)
             else if (toUpper(splitted[1]) == "ENERGY_GJ") {
                 mqttServer_setMeterType("energy", "GJ", "h", "GJ/h");
             }
-        }
-
-        if ((toUpper(splitted[0]) == "CLIENTID") && (splitted.size() > 1))
-        {
-            this->clientname = splitted[1];
-        }
-
-        if (((toUpper(splitted[0]) == "TOPIC") || (toUpper(splitted[0]) == "MAINTOPIC")) && (splitted.size() > 1))
-        {
-            maintopic = splitted[1];
         }
     }
 
