@@ -530,7 +530,7 @@ void migrateConfiguration(void) {
         }
 
         /* Migrate parameters as needed
-         * For the boolean parameters, we make them enabled all the time now:
+         * For all boolean and further more parameter, we make them enabled all the time now:
          *  1. If they where disabled, set them to their default value
          *  2. Enable them
          * Notes:
@@ -547,22 +547,33 @@ void migrateConfiguration(void) {
             migrated = migrated | replaceString(configLines[i], "LogImageLocation", "RawImagesLocation");
             migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "RawImagesRetention");
 
-            migrated = migrated | replaceString(configLines[i], ";Demo = true", ";Demo = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";Demo", "Demo"); // Enable it
-
             migrated = migrated | replaceString(configLines[i], ";FixedExposure = true", ";FixedExposure = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";FixedExposure", "FixedExposure"); // Enable it
+
+            migrated = migrated | replaceString(configLines[i], ";Demo = true", ";Demo = false"); // Set it to its default value
+            migrated = migrated | replaceString(configLines[i], ";Demo", "Demo"); // Enable it
         }
 
         if (section == "[Alignment]") {
-            migrated = migrated | replaceString(configLines[i], ";InitialMirror = true", ";InitialMirror = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";InitialMirror", "InitialMirror"); // Enable it
+            if (isInString(configLines[i], "AlignmentAlgo") && isInString(configLines[i], ";")) { // It is the parameter "AlignmentAlgo" and it is commented out
+                migrated = migrated | replaceString(configLines[i], "highAccuracy", "default"); // Set it to its default value and enable it
+                migrated = migrated | replaceString(configLines[i], "fast", "default"); // Set it to its default value and enable it
+                migrated = migrated | replaceString(configLines[i], "off", "default"); // Set it to its default value and enable it
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
 
             migrated = migrated | replaceString(configLines[i], ";FlipImageSize = true", ";FlipImageSize = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";FlipImageSize", "FlipImageSize"); // Enable it
+
+            migrated = migrated | replaceString(configLines[i], ";InitialMirror = true", ";InitialMirror = false"); // Set it to its default value
+            migrated = migrated | replaceString(configLines[i], ";InitialMirror", "InitialMirror"); // Enable it
         }
 
         if (section == "[Digits]") {
+            if (isInString(configLines[i], "CNNGoodThreshold") && isInString(configLines[i], ";")) { // It is the parameter "AllowNegativeRates" and it is commented out
+                migrated = migrated | replaceString(configLines[i], "0.5", "0.0");
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
             migrated = migrated | replaceString(configLines[i], "LogImageLocation", "ROIImagesLocation");
             migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "ROIImagesRetention");
         }
@@ -570,6 +581,7 @@ void migrateConfiguration(void) {
         if (section == "[Analog]") {
             migrated = migrated | replaceString(configLines[i], "LogImageLocation", "ROIImagesLocation");
             migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "ROIImagesRetention");
+            migrated = migrated | replaceString(configLines[i], "CNNGoodThreshold", ";UNUSED_PARAMETER"); // This parameter is no longer used          
             migrated = migrated | replaceString(configLines[i], "ExtendedResolution", ";UNUSED_PARAMETER"); // This parameter is no longer used
         }
 
@@ -577,15 +589,24 @@ void migrateConfiguration(void) {
             migrated = migrated | replaceString(configLines[i], ";PreValueUse = true", ";PreValueUse = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";PreValueUse", "PreValueUse"); // Enable it
 
+            migrated = migrated | replaceString(configLines[i], ";PreValueAgeStartup", "PreValueAgeStartup"); // Enable it
+
+            migrated = migrated | replaceString(configLines[i], ";ErrorMessage = true", ";ErrorMessage = false"); // Set it to its default value
+            migrated = migrated | replaceString(configLines[i], ";ErrorMessage", "ErrorMessage"); // Enable it
+
+            migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency = true", ";CheckDigitIncreaseConsistency = false"); // Set it to its default value
+            migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency", "CheckDigitIncreaseConsistency"); // Enable it
+
             /* AllowNegativeRates has a <NUMBER> as prefix! */
             if (isInString(configLines[i], "AllowNegativeRates") && isInString(configLines[i], ";")) { // It is the parameter "AllowNegativeRates" and it is commented out
                 migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
 
-            /* IgnoreLeadingNaN has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "IgnoreLeadingNaN") && isInString(configLines[i], ";")) { // It is the parameter "IgnoreLeadingNaN" and it is commented out
-                migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
+            /* MaxRateType has a <NUMBER> as prefix! */
+            if (isInString(configLines[i], "MaxRateType") && isInString(configLines[i], ";")) { // It is the parameter "MaxRateType" and it is commented out
+                migrated = migrated | replaceString(configLines[i], "Off", "AbsoluteChange"); // Set it to its default value and enable it
+                migrated = migrated | replaceString(configLines[i], "RateChange", "AbsoluteChange"); // Set it to its default value and enable it
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
 
@@ -594,21 +615,27 @@ void migrateConfiguration(void) {
                 migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
-
-            migrated = migrated | replaceString(configLines[i], ";ErrorMessage = true", ";ErrorMessage = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";ErrorMessage", "ErrorMessage"); // Enable it
-
-            migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency = true", ";CheckDigitIncreaseConsistency = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency", "CheckDigitIncreaseConsistency"); // Enable it
+        
+            /* IgnoreLeadingNaN has a <NUMBER> as prefix! */
+            if (isInString(configLines[i], "IgnoreLeadingNaN") && isInString(configLines[i], ";")) { // It is the parameter "IgnoreLeadingNaN" and it is commented out
+                migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
         }
 
         if (section == "[MQTT]") {
+            migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
+            migrated = migrated | replaceString(configLines[i], ";MainTopic", "MainTopic"); // Enable it
+            migrated = migrated | replaceString(configLines[i], ";ClientID", "ClientID"); // Enable it
+
             migrated = migrated | replaceString(configLines[i], "SetRetainFlag", "RetainMessages"); // First rename it, enable it with its default value
             migrated = migrated | replaceString(configLines[i], ";RetainMessages = true", ";RetainMessages = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";RetainMessages", "RetainMessages"); // Enable it
 
             migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery = true", ";HomeassistantDiscovery = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery", "HomeassistantDiscovery"); // Enable it
+
+            migrated = migrated | replaceString(configLines[i], ";MeterType", "MeterType"); // Enable it
 
             if (configLines[i].rfind("Topic", 0) != std::string::npos)  // only if string starts with "Topic" (Was the naming in very old version)
             {
@@ -617,17 +644,43 @@ void migrateConfiguration(void) {
         }
 
         if (section == "[InfluxDB]") {
+            migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
+            migrated = migrated | replaceString(configLines[i], ";Database", "Database"); // Enable it
+
+            /* Measurement has a <NUMBER> as prefix! */
+            if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
             /* Fieldname has a <NUMBER> as prefix! */
             if (isInString(configLines[i], "Fieldname")) { // It is the parameter "Fieldname"
                 migrated = migrated | replaceString(configLines[i], "Fieldname", "Field"); // Rename it to Field
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
+
+            /* Field has a <NUMBER> as prefix! */
+            if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it disabled
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
         }
 
         if (section == "[InfluxDBv2]") {
+            migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
+            migrated = migrated | replaceString(configLines[i], ";Database", "Database"); // Enable it
+
+            /* Measurement has a <NUMBER> as prefix! */
+            if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
             /* Fieldname has a <NUMBER> as prefix! */
             if (isInString(configLines[i], "Fieldname")) { // It is the parameter "Fieldname"
                 migrated = migrated | replaceString(configLines[i], "Fieldname", "Field"); // Rename it to Field
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            /* Field has a <NUMBER> as prefix! */
+            if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it disabled
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
         }
@@ -637,17 +690,18 @@ void migrateConfiguration(void) {
         }
 
         if (section == "[DataLogging]") {
-            migrated = migrated | replaceString(configLines[i], "DataLogRetentionInDays", "DataFilesRetention");
             /* DataLogActive is true by default! */
             migrated = migrated | replaceString(configLines[i], ";DataLogActive = false", ";DataLogActive = true"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";DataLogActive", "DataLogActive"); // Enable it
+
+            migrated = migrated | replaceString(configLines[i], "DataLogRetentionInDays", "DataFilesRetention");
         }
 
         if (section == "[AutoTimer]") {
-            migrated = migrated | replaceString(configLines[i], "Intervall", "Interval");
             migrated = migrated | replaceString(configLines[i], ";AutoStart = true", ";AutoStart = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";AutoStart", "AutoStart"); // Enable it
 
+            migrated = migrated | replaceString(configLines[i], "Intervall", "Interval");
         }
 
         if (section == "[Debug]") {
@@ -656,11 +710,31 @@ void migrateConfiguration(void) {
              * For both cases (true/false), we set it to level 2 (WARNING) */
             migrated = migrated | replaceString(configLines[i], "LogLevel = true", "LogLevel = 2");
             migrated = migrated | replaceString(configLines[i], "LogLevel = false", "LogLevel = 2");
+            
             migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "LogfilesRetention");
         }
 
         if (section == "[System]") {
-            migrated = migrated | replaceString(configLines[i], "RSSIThreashold", "RSSIThreshold");
+            if (isInString(configLines[i], "TimeServer = undefined") && isInString(configLines[i], ";")) { // It is the parameter "TimeServer" and is it disabled
+                migrated = migrated | replaceString(configLines[i], "undefined", "pool.ntp.org");
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            migrated = migrated | replaceString(configLines[i], ";TimeZone", "TimeZone");
+
+            if (isInString(configLines[i], "Hostname") && isInString(configLines[i], ";")) { // It is the parameter "Hostname" and is it disabled
+                migrated = migrated | replaceString(configLines[i], "undefined", "watermeter");
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+            
+            migrated = migrated | replaceString(configLines[i], "RSSIThreashold", ";RSSIThreshold");
+            migrated = migrated | replaceString(configLines[i], "RSSIThreashold", ";RSSIThreshold");
+
+            if (isInString(configLines[i], "CPUFrequency") && isInString(configLines[i], ";")) { // It is the parameter "CPUFrequency" and is it disabled
+                migrated = migrated | replaceString(configLines[i], "240", "160");
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+            
             migrated = migrated | replaceString(configLines[i], "AutoAdjustSummertime", ";UNUSED_PARAMETER"); // This parameter is no longer used
 
             migrated = migrated | replaceString(configLines[i], ";SetupMode = true", ";SetupMode = false"); // Set it to its default value
@@ -670,7 +744,7 @@ void migrateConfiguration(void) {
 
     if (migrated) { // At least one replacement happened
         if (! RenameFile(CONFIG_FILE, CONFIG_FILE_BACKUP)) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create backup of Config file!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create backup of config file");
             return;
         }
 
@@ -733,7 +807,7 @@ bool setCpuFrequency(void) {
     esp_pm_config_esp32_t  pm_config; 
 
     if (!configFile.ConfigFileExists()){
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No ConfigFile defined - exit setCpuFrequency()!");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file - exit setCpuFrequency()");
         return false;
     }
 
@@ -765,7 +839,7 @@ bool setCpuFrequency(void) {
     }
 
     if (esp_pm_get_configuration(&pm_config) != ESP_OK) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read CPU Frequency!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read CPU Frequency");
         return false;
     }
 
@@ -776,13 +850,13 @@ bool setCpuFrequency(void) {
         pm_config.max_freq_mhz = 240;
         pm_config.min_freq_mhz = pm_config.max_freq_mhz;
         if (esp_pm_configure(&pm_config) != ESP_OK) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to set new CPU frequency!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to set new CPU frequency");
             return false;
         }
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Unknown CPU frequency: " + cpuFrequency + "! "
-                "It must be 160 or 240!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Unknown CPU frequency: " + cpuFrequency + 
+                "It must be 160 or 240");
         return false;
     }
 

@@ -111,28 +111,28 @@ function ParseConfig() {
      category[catname]["found"] = false;
      param[catname] = new Object();
      ParamAddValue(param, catname, "RawImagesLocation");
-     ParamAddValue(param, catname, "WaitBeforeTakingPicture");
      ParamAddValue(param, catname, "RawImagesRetention");
-     ParamAddValue(param, catname, "Demo");
+     ParamAddValue(param, catname, "WaitBeforeTakingPicture");
+     ParamAddValue(param, catname, "ImageQuality");
+     ParamAddValue(param, catname, "ImageSize");
+     ParamAddValue(param, catname, "LEDIntensity");
      ParamAddValue(param, catname, "Brightness");
      ParamAddValue(param, catname, "Contrast");
      ParamAddValue(param, catname, "Saturation");
-     ParamAddValue(param, catname, "LEDIntensity");
-     ParamAddValue(param, catname, "ImageQuality");
-     ParamAddValue(param, catname, "ImageSize");     
-     ParamAddValue(param, catname, "FixedExposure");     
+     ParamAddValue(param, catname, "FixedExposure");
+     ParamAddValue(param, catname, "Demo");    
 
      var catname = "Alignment";
      category[catname] = new Object(); 
      category[catname]["enabled"] = false;
      category[catname]["found"] = false;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "InitialRotate");
-     ParamAddValue(param, catname, "InitialMirror");
+     ParamAddValue(param, catname, "AlignmentAlgo");
      ParamAddValue(param, catname, "SearchFieldX");
      ParamAddValue(param, catname, "SearchFieldY");     
-     ParamAddValue(param, catname, "AlignmentAlgo");
      ParamAddValue(param, catname, "FlipImageSize");
+     ParamAddValue(param, catname, "InitialMirror");
+     ParamAddValue(param, catname, "InitialRotate");
 
      var catname = "Digits";
      category[catname] = new Object(); 
@@ -158,17 +158,18 @@ function ParseConfig() {
      category[catname]["enabled"] = false;
      category[catname]["found"] = false;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "DecimalShift", 1, true);
-     ParamAddValue(param, catname, "AnalogDigitalTransitionStart", 1, true);
      ParamAddValue(param, catname, "PreValueUse");
      ParamAddValue(param, catname, "PreValueAgeStartup");
+     ParamAddValue(param, catname, "ErrorMessage");
+     ParamAddValue(param, catname, "CheckDigitIncreaseConsistency");
      ParamAddValue(param, catname, "AllowNegativeRates", 1, true, "true");
-     ParamAddValue(param, catname, "MaxRateValue", 1, true);
-     ParamAddValue(param, catname, "MaxRateType", 1, true);
+     ParamAddValue(param, catname, "DecimalShift", 1, true, "0");
+     ParamAddValue(param, catname, "AnalogDigitalTransitionStart", 1, true, "9.2");
+     ParamAddValue(param, catname, "MaxRateType", 1, true, "AbsoluteChange");
+     ParamAddValue(param, catname, "MaxRateValue", 1, true, "0.05");
      ParamAddValue(param, catname, "ExtendedResolution", 1, true, "false");
      ParamAddValue(param, catname, "IgnoreLeadingNaN", 1, true, "false");
-     ParamAddValue(param, catname, "ErrorMessage");
-     ParamAddValue(param, catname, "CheckDigitIncreaseConsistency");     
+
 
      var catname = "MQTT";
      category[catname] = new Object(); 
@@ -176,7 +177,7 @@ function ParseConfig() {
      category[catname]["found"] = false;
      param[catname] = new Object();
      ParamAddValue(param, catname, "Uri");
-     ParamAddValue(param, catname, "MainTopic", 1, false);
+     ParamAddValue(param, catname, "MainTopic");
      ParamAddValue(param, catname, "ClientID");
      ParamAddValue(param, catname, "user");
      ParamAddValue(param, catname, "password");
@@ -191,11 +192,10 @@ function ParseConfig() {
      param[catname] = new Object();
      ParamAddValue(param, catname, "Uri");
      ParamAddValue(param, catname, "Database");
-//     ParamAddValue(param, catname, "Measurement");
      ParamAddValue(param, catname, "user");
      ParamAddValue(param, catname, "password");
-     ParamAddValue(param, catname, "Measurement", 1, true);
-     ParamAddValue(param, catname, "Field", 1, true);
+     ParamAddValue(param, catname, "Measurement", 1, true, "undefined");
+     ParamAddValue(param, catname, "Field", 1, true, "undefined");
 
      var catname = "InfluxDBv2";
      category[catname] = new Object(); 
@@ -204,11 +204,10 @@ function ParseConfig() {
      param[catname] = new Object();
      ParamAddValue(param, catname, "Uri");
      ParamAddValue(param, catname, "Database");
-//     ParamAddValue(param, catname, "Measurement");
      ParamAddValue(param, catname, "Org");
      ParamAddValue(param, catname, "Token");
-     ParamAddValue(param, catname, "Measurement", 1, true);
-     ParamAddValue(param, catname, "Field", 1, true);
+     ParamAddValue(param, catname, "Measurement", 1, true, "undefined");
+     ParamAddValue(param, catname, "Field", 1, true, "undefined", null, true);
 
      var catname = "GPIO";
      category[catname] = new Object(); 
@@ -261,8 +260,8 @@ function ParseConfig() {
      category[catname]["enabled"] = false;
      category[catname]["found"] = false;
      param[catname] = new Object();
+     ParamAddValue(param, catname, "TimeServer");   
      ParamAddValue(param, catname, "TimeZone");
-     ParamAddValue(param, catname, "TimeServer");         
      ParamAddValue(param, catname, "Hostname");   
      ParamAddValue(param, catname, "RSSIThreshold");   
      ParamAddValue(param, catname, "CPUFrequency");
