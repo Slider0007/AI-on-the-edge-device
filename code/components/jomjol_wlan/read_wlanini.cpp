@@ -363,6 +363,12 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
     fclose(pFile);
 
     wlan_config.rssi_threshold = _newrssithreshold;     // Can be set directly, no reboot necessary (TODO: Think about removing this parameter from WLAN.INI!?)
+
+    if (_newrssithreshold != 0)
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "ChangeRSSIThreshold: RSSIThreshold set to " + wlan_config.rssi_threshold);
+    else
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "WLAN roaming/channel scan (RSSIThreshold = 0) -> function disabled");
+    
     return true;
 }
 #endif
