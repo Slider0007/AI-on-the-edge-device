@@ -597,9 +597,17 @@ void migrateConfiguration(void) {
             migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency = true", ";CheckDigitIncreaseConsistency = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency", "CheckDigitIncreaseConsistency"); // Enable it
 
+            if (isInString(configLines[i], "DecimalShift") && isInString(configLines[i], ";")) { // It is the parameter "DecimalShift" and it is commented out
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
             /* AllowNegativeRates has a <NUMBER> as prefix! */
             if (isInString(configLines[i], "AllowNegativeRates") && isInString(configLines[i], ";")) { // It is the parameter "AllowNegativeRates" and it is commented out
                 migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            if (isInString(configLines[i], "AnalogDigitalTransitionStart") && isInString(configLines[i], ";")) { // It is the parameter "AnalogDigitalTransitionStart" and it is commented out
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
 
@@ -607,6 +615,10 @@ void migrateConfiguration(void) {
             if (isInString(configLines[i], "MaxRateType") && isInString(configLines[i], ";")) { // It is the parameter "MaxRateType" and it is commented out
                 migrated = migrated | replaceString(configLines[i], "Off", "AbsoluteChange"); // Set it to its default value and enable it
                 migrated = migrated | replaceString(configLines[i], "RateChange", "AbsoluteChange"); // Set it to its default value and enable it
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            if (isInString(configLines[i], "MaxRateValue") && isInString(configLines[i], ";")) { // It is the parameter "MaxRateValue" and it is commented out
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
 
@@ -635,7 +647,9 @@ void migrateConfiguration(void) {
             migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery = true", ";HomeassistantDiscovery = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery", "HomeassistantDiscovery"); // Enable it
 
-            migrated = migrated | replaceString(configLines[i], ";MeterType", "MeterType"); // Enable it
+            if (isInString(configLines[i], "MeterType") && isInString(configLines[i], ";")) { // It is the parameter "MeterType" and it is commented out
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
 
             if (configLines[i].rfind("Topic", 0) != std::string::npos)  // only if string starts with "Topic" (Was the naming in very old version)
             {
@@ -644,8 +658,13 @@ void migrateConfiguration(void) {
         }
 
         if (section == "[InfluxDB]") {
-            migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
-            migrated = migrated | replaceString(configLines[i], ";Database", "Database"); // Enable it
+            if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is commented out
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
 
             /* Measurement has a <NUMBER> as prefix! */
             if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
@@ -665,8 +684,13 @@ void migrateConfiguration(void) {
         }
 
         if (section == "[InfluxDBv2]") {
-            migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
-            migrated = migrated | replaceString(configLines[i], ";Database", "Database"); // Enable it
+            if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is commented out
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
 
             /* Measurement has a <NUMBER> as prefix! */
             if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
@@ -721,7 +745,9 @@ void migrateConfiguration(void) {
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
 
-            migrated = migrated | replaceString(configLines[i], ";TimeZone", "TimeZone");
+            if (isInString(configLines[i], "TimeZone") && isInString(configLines[i], ";")) { // It is the parameter "TimeZone" and it is commented out
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
 
             if (isInString(configLines[i], "Hostname") && isInString(configLines[i], ";")) { // It is the parameter "Hostname" and is it disabled
                 migrated = migrated | replaceString(configLines[i], "undefined", "watermeter");
