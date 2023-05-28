@@ -87,6 +87,7 @@ bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
     while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
     {
         splitted = ZerlegeZeile(aktparamgraph, " =");
+
         if ((toUpper(splitted[0]) == "AUTOSTART") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
@@ -147,40 +148,38 @@ bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
             LogFile.SetLogFileRetention(std::stoi(splitted[1]));
         }
 
-        // Initial timezone setup was already done during boot: see main.cpp -> setupTime()
-        // Check timezone here anyway due to parameter reloading without reboot
-        if (toUpper(splitted[0]) == "TIMEZONE") {
-            std::string timeZone;
-            if (splitted.size() <= 1) { // parameter part is empty
-                timeZone = "";
-            }
-            else {
-                timeZone = splitted[1];
-            }
-            setupTimeZone(timeZone);
-        }
-
         // Initial timeserver setup was already done during boot: see main.cpp -> setupTime()
         // Check timeserver here anyway due to parameter reloading without reboot
-        if (toUpper(splitted[0]) == "TIMESERVER") {
-            std::string timeServer;
-            if (splitted.size() <= 1) { // Key has no value => we use this to show it as disabled
-                timeServer = "";
+        if ((toUpper(splitted[0]) == "TIMESERVER") || (toUpper(splitted[0]) == ";TIMESERVER"))
+        {
+            std::string _timeServer = "";
+
+            if (toUpper(splitted[0]) == ";TIMESERVER") { // parameter disabled
+                _timeServer = ""; // Disable NTP
+            }
+            else if (splitted.size() <= 1) { // parameter part is empty
+                _timeServer = "pool.ntp.org"; // Use Default
             }
             else {
-                timeServer = splitted[1];
+                _timeServer = splitted[1];
             }
-            setupTimeServer(timeServer);
+
+            setupTimeServer(_timeServer);
         }
-   
-        #if (defined WLAN_USE_ROAMING_BY_SCANNING || (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES))
-        if ((toUpper(splitted[0]) == "RSSITHRESHOLD") && (splitted.size() > 1))
+
+        // Initial timezone setup was already done during boot: see main.cpp -> setupTime()
+        // Check timezone here anyway due to parameter reloading without reboot
+        if (toUpper(splitted[0]) == "TIMEZONE")
         {
-            int RSSIThresholdTMP = atoi(splitted[1].c_str());
-            RSSIThresholdTMP = min(0, max(-100, RSSIThresholdTMP)); // Verify input limits (-100 - 0)
-            ChangeRSSIThreshold(WLAN_CONFIG_FILE, RSSIThresholdTMP);
+            std::string _timeZone = "";
+            if (splitted.size() <= 1) { // parameter part is empty
+                _timeZone = ""; // Use Default
+            }
+            else {
+                _timeZone = splitted[1];
+            }
+            setupTimeZone(_timeZone);
         }
-        #endif
 
         if ((toUpper(splitted[0]) == "HOSTNAME") && (splitted.size() > 1))
         {
@@ -190,6 +189,21 @@ bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
                 LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Please reboot to activate new hostname");
             }
         }
+   
+        #if (defined WLAN_USE_ROAMING_BY_SCANNING || (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES))
+        if ((toUpper(splitted[0]) == "RSSITHRESHOLD") || (toUpper(splitted[0]) == ";RSSITHRESHOLD"))
+        {
+            int _RSSIThresholdTMP;
+            if ((toUpper(splitted[0]) == ";RSSITHRESHOLD") || (splitted.size() <= 1)) { // parameter disabled or parameter empty
+                _RSSIThresholdTMP = 0;   // Disable function
+            }
+            else {
+                _RSSIThresholdTMP = atoi(splitted[1].c_str());
+                _RSSIThresholdTMP = min(0, max(-100, _RSSIThresholdTMP)); // Verify input limits (-100 - 0)
+            }
+            ChangeRSSIThreshold(WLAN_CONFIG_FILE, _RSSIThresholdTMP);
+        }
+        #endif
 
         if ((toUpper(splitted[0]) == "SETUPMODE") && (splitted.size() > 1))
         {
