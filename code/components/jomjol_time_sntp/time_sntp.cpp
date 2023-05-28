@@ -22,7 +22,7 @@
 static const char *TAG = "SNTP";
 
 static std::string timeZone = "";
-static std::string timeServer = "undefined";
+static std::string timeServer = "";
 static bool useNtp = true;
 static bool timeWasNotSetAtBoot = false;
 static bool timeWasNotSetAtBoot_PrintStartBlock = false;
@@ -66,7 +66,7 @@ void time_sync_notification_cb(struct timeval *tv)
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "== Logs before time sync -> log_1970-01-01.txt ==");
         timeWasNotSetAtBoot_PrintStartBlock = false;
     }
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is synced with NTP Server " +
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is synced with NTP server " +
             getServerName() + ": " + getCurrentTimeString("%Y-%m-%d %H:%M:%S"));
 }
 
@@ -168,7 +168,7 @@ bool setupTime()
     ConfigFile configFile = ConfigFile(CONFIG_FILE); 
 
     if (!configFile.ConfigFileExists()){
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No ConfigFile defined - exit setupTime()!");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file - exit setupTime()");
         return false;
     }
 
@@ -181,57 +181,54 @@ bool setupTime()
     while ((!configFile.GetNextParagraph(line, disabledLine, eof) || 
             (line.compare("[System]") != 0)) && !eof) {}
     if (eof) {
+        timeServer = "pool.ntp.org";
+        timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
         return false;
     }
 
     if (disabledLine) {
+        timeServer = "pool.ntp.org";
+        timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
         return false;
     }
 
     while (configFile.getNextLine(&line, disabledLine, eof) && 
-            !configFile.isNewParagraph(line)) {
+            !configFile.isNewParagraph(line))
+    {
         splitted = ZerlegeZeile(line, "=");
 
         if (toUpper(splitted[0]) == "TIMEZONE") {
-            if (splitted.size() <= 1) { // parameter part is empty
-                timeZone = "";
+            if (splitted.size() <= 1) { // parameter part is empty, use default time zone
+                timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeZone not set, using default: " + timeZone);
             }
             else {
                 timeZone = splitted[1];
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeZone: " + timeZone);
             }
         }
 
         if (toUpper(splitted[0]) == "TIMESERVER") {
-            if (splitted.size() <= 1) { // Key has no value => we use this to show it as disabled
-                timeServer = "";
+            if (splitted.size() <= 1) { // parameter part is empty, use default time server
+                timeServer = "pool.ntp.org";
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeServer not set, use default: " + timeServer);
             }
             else {
                 timeServer = splitted[1];
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer: " + timeServer);
+                useNtp = true;
             }
         }
     }
 
-
-    /* Setup NTP Server and Timezone */
-    if (timeServer == "undefined") {
-        timeServer = "pool.ntp.org";
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer not defined, using default: " + timeServer);
-    }
-    else if (timeServer == "") {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer config empty, disabling NTP");
+    // Timeserver disabled
+    if (timeServer == "") {
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer deactivated, disabling NTP");
         useNtp = false;
     }
-    else {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer: " + timeServer);
-    }
     
-    if (timeZone == "") {
-        timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeZone not set, using default: " + timeZone);
-    }
-
     if (useNtp) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Configuring NTP Client...");        
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Configuring NTP client...");        
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
         sntp_setservername(0, timeServer.c_str());
         sntp_set_time_sync_notification_cb(time_sync_notification_cb);
@@ -273,6 +270,7 @@ void setupTimeZone(std::string _timeZone)
         return;
 
     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeZone gets adjusted...");
+    
     timeZone = _timeZone;
 
     if (_timeZone == "") {
@@ -289,18 +287,13 @@ void setupTimeZone(std::string _timeZone)
  */
 void setupTimeServer(std::string _timeServer)
 {
-    if (timeServer.compare(_timeServer) == 0 || (_timeServer == "undefined" && timeServer == "pool.ntp.org"))
+    if (timeServer.compare(_timeServer) == 0)
         return;
 
     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeServer gets adjusted...");
 
-    if (_timeServer == "undefined") {
-        _timeServer = "pool.ntp.org";
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer not defined, using default: " + _timeServer);
-        useNtp = true;
-    }
-    else if (_timeServer == "") {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer config empty, disabling NTP");
+    if (_timeServer == "") {
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer deactivated, disabling NTP");
         useNtp = false;
         sntp_stop();
     }
