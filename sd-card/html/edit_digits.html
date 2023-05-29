@@ -404,11 +404,13 @@ function ShowMultiplier()
 
     var sel = document.getElementById("Numbers_value1");
     var _number= sel.options[sel.selectedIndex].text;
-    document.getElementById("decimalShift").value = decimalShift;
+    document.getElementById("decimalShift").value = 0;
     for (var i = 0; i < NumberInfo.length; ++i) {
         if (NumberInfo[i]["name"] == _number) {
-            decimalShift = NumberInfo[i]["PostProcessing"]["DecimalShift"]["value1"];
-            document.getElementById("decimalShift").value = decimalShift;   
+            if (NumberInfo[i]["PostProcessing"]["DecimalShift"]["enabled"]) {
+                decimalShift = NumberInfo[i]["PostProcessing"]["DecimalShift"]["value1"];
+                document.getElementById("decimalShift").value = decimalShift; 
+            }
         }
     }
 
