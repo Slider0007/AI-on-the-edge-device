@@ -360,10 +360,9 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 
     fd = fopen(currentfilename.c_str(), "r");
     if (!fd) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to read file: " + currentfilename);
-        /* Respond with 404 Error */
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
-        return ESP_FAIL;
+        //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to read file: " + currentfilename);
+        httpd_resp_send(req, "No recent data entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no data available from today
+        return ESP_OK;
     }
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -446,10 +445,9 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
 
     fd = fopen(currentfilename.c_str(), "r");
     if (!fd) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to read file: " + currentfilename);
-        /* Respond with 404 Error */
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
-        return ESP_FAIL;
+        //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to read file: " + currentfilename);
+        httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
+        return ESP_OK;
     }
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
