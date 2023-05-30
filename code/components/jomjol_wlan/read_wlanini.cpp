@@ -94,11 +94,16 @@ int LoadWlanFromFile(std::string fn)
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 wlan_config.password = tmp;
-                #ifndef __HIDE_PASSWORD
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: " + wlan_config.password);
-                #else
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: XXXXXXXX");
-                #endif
+                if (!wlan_config.password.empty()) {
+                    #ifndef __HIDE_PASSWORD
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: " + wlan_config.password);
+                    #else
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: XXXXXXXX");
+                    #endif
+                }
+                else {
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: No password set");
+                }
             }   
 
             else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "HOSTNAME")){
@@ -173,10 +178,7 @@ int LoadWlanFromFile(std::string fn)
         return -2;
     }
 
-    /* Check if password is empty --> handle password only as optional parameter: see issue #2393 */
-    if (wlan_config.password.empty()) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password empty");
-    }
+    /* No check if password is empty --> handle password only as optional parameter: see issue #2393 */
 
     return 0;
 }
