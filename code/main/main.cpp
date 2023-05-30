@@ -330,9 +330,9 @@ extern "C" void app_main(void)
         StatusLED(WLAN_INIT, 1, true);
         return; // No way to continue without reading the wlan.ini
     }
-    else if (iWLANStatus == -2) { // SSID or password not configured
+    else if (iWLANStatus == -2) { // SSID not configured
         StatusLED(WLAN_INIT, 2, true);
-        return; // No way to continue with empty SSID or password!
+        return; // No way to continue with empty SSID
     }
 
     xDelay = 2000 / portTICK_PERIOD_MS;
