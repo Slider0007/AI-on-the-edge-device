@@ -318,7 +318,7 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, string& aktparamgraph)
     {
         disabled = true;
         while (getNextLine(pfile, &aktparamgraph) && !isNewParagraph(aktparamgraph));
-        ESP_LOGD(TAG, "[Analog/Digit] is disabled!");
+        ESP_LOGD(TAG, "[Analog/Digit] is disabled");
         return true;
     }
 
@@ -592,7 +592,7 @@ bool ClassFlowCNNGeneral::getNetworkParameter()
     } 
 
     if (!tflite->MakeAllocate()) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Allocation of tensors failed!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Allocation of tensors failed");
         LogFile.WriteHeapInfo("getNetworkParameter-MakeAllocate");
         return false;
     }
@@ -605,14 +605,14 @@ bool ClassFlowCNNGeneral::getNetworkParameter()
             modelchannel = tflite->ReadInputDimenstion(2);
         }
         else {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load input dimensions!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load input dimensions");
             return false;
         }
         int _anzoutputdimensions = tflite->GetAnzOutPut();
         switch (_anzoutputdimensions) 
         {
             case -1:
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load output dimensions!");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load output dimensions");
                 return false;
             case 2:
                 CNNType = Analogue;
@@ -667,7 +667,7 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
 
 
     if (!tflite->MakeAllocate()) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Allocation of TFLITE tensors failed!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Allocation of TFLITE tensors failed");
         LogFile.WriteHeapInfo("doNeuralNetwork-MakeAllocate");
         return false;
     }

@@ -233,7 +233,7 @@ bool MakeDir(std::string path)
 {
 	std::string parent;
 
-	LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Creating folder " + path + "...");
+	LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Create new folder " + path);
 
 	bool bSuccess = false;
     int nRC = ::mkdir( path.c_str(), 0775 );
@@ -243,7 +243,7 @@ bool MakeDir(std::string path)
             case ENOENT:
                 //parent didn't exist, try to create it
 				parent = path.substr(0, path.find_last_of('/'));
-        		LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Need to create parent folder first: " + parent);
+        		LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Create parent folder first: " + parent);
                 if(MakeDir(parent)) {
                     //Now, try to create again.
                     bSuccess = 0 == ::mkdir( path.c_str(), 0775 );
@@ -344,7 +344,7 @@ bool RenameFile(string from, string to)
 	FILE* fpSourceFile = fopen(from.c_str(), "rb");
 	if (!fpSourceFile)	// Sourcefile existiert nicht sonst gibt es einen Fehler beim Kopierversuch!
 	{
-		ESP_LOGE(TAG, "DeleteFile: File %s existiert nicht!", from.c_str());
+		ESP_LOGE(TAG, "DeleteFile: File %s not existing", from.c_str());
 		return false;
 	}
 	fclose(fpSourceFile);
@@ -373,7 +373,7 @@ bool DeleteFile(string fn)
 	FILE* fpSourceFile = fopen(fn.c_str(), "rb");
 	if (!fpSourceFile)	// Sourcefile existiert nicht sonst gibt es einen Fehler beim Kopierversuch!
 	{
-		ESP_LOGD(TAG, "DeleteFile: File %s existiert nicht!", fn.c_str());
+		ESP_LOGD(TAG, "DeleteFile: File %s not existing", fn.c_str());
 		return false;
 	}
 	fclose(fpSourceFile);
@@ -390,7 +390,7 @@ bool CopyFile(string input, string output)
 
 	if (toUpper(input).compare(WLAN_CONFIG_FILE) == 0)
 	{
-		ESP_LOGD(TAG, "wlan.ini kann nicht kopiert werden!");
+		ESP_LOGD(TAG, "wlan.ini not allowed to copy");
 		return false;
 	}
 
@@ -398,7 +398,7 @@ bool CopyFile(string input, string output)
 	FILE* fpSourceFile = fopen(input.c_str(), "rb");
 	if (!fpSourceFile)	// Sourcefile existiert nicht sonst gibt es einen Fehler beim Kopierversuch!
 	{
-		ESP_LOGD(TAG, "File %s existiert nicht!", input.c_str());
+		ESP_LOGD(TAG, "File %s not existing", input.c_str());
 		return false;
 	}
 
@@ -568,7 +568,7 @@ int removeFolder(const char* folderPath, const char* logTag) {
 
 	DIR *dir = opendir(folderPath);
     if (!dir) {
-        ESP_LOGE(logTag, "Failed to stat dir: %s", folderPath);
+		LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open directory " + std::string(folderPath));
         return -1;
     }
 
@@ -581,7 +581,7 @@ int removeFolder(const char* folderPath, const char* logTag) {
 			if (unlink(path.c_str()) == 0) {
 				deleted ++;
 			} else {
-				ESP_LOGE(logTag, "can't delete file: %s", path.c_str());
+				LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete file " + path);
 			}
         } else if (entry->d_type == DT_DIR) {
 			deleted += removeFolder(path.c_str(), logTag);
@@ -590,9 +590,9 @@ int removeFolder(const char* folderPath, const char* logTag) {
     
     closedir(dir);
 	if (rmdir(folderPath) != 0) {
-		ESP_LOGE(logTag, "can't delete folder: %s", folderPath);
+		LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete folder " + std::string(folderPath));
 	}
-	ESP_LOGD(logTag, "%d files in folder %s deleted.", deleted, folderPath);
+	//ESP_LOGD(logTag, "%d files in folder %s deleted.", deleted, folderPath);
 
 	return deleted;
 }

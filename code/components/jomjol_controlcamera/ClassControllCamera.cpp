@@ -343,7 +343,7 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int _flashduration)
     }
 
     if (!fb) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToBasisImage: Framebuffer not available");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToBasisImage: Failed to get camera framebuffer");
         return ESP_FAIL;
     }
 
@@ -394,8 +394,7 @@ esp_err_t CCamera::CaptureToFile(std::string nm, int _flashduration)
     }
 
     if (!fb) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToFile: Capture Failed. "
-                                                "Check camera module and/or proper electrical connection");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToFile: Failed to get camera framebuffer");
         return ESP_FAIL;
     }
 
@@ -497,8 +496,7 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int _flashduration)
     }
 
     if (!fb) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToFile: Capture Failed. "
-                                        "Check camera module and/or proper electrical connection");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToFile: Failed to get camera framebuffer");
         httpd_resp_send_500(req);
         return ESP_FAIL;
     }
@@ -510,7 +508,7 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int _flashduration)
 
     if(res == ESP_OK){
         if (demoMode) { // Use images stored on SD-Card instead of camera image
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Using Demo image!");
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Demo mode active");
             /* Replace Framebuffer with image from SD-Card */
             loadNextDemoImage(fb);
 
@@ -563,7 +561,7 @@ esp_err_t CCamera::CaptureToStream(httpd_req_t *req, bool FlashlightOn)
         esp_camera_fb_return(fb);
         fb = esp_camera_fb_get();
         if (!fb) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToStream: Camera framebuffer not available");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToStream: Failed to get camera framebuffer");
             break;
         }
         fb_len = fb->len;
@@ -739,14 +737,14 @@ void CCamera::EnableDemoMode()
 
     FILE *fd = fopen("/sdcard/demo/files.txt", "r");
     if (!fd) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can not start Demo mode, the folder '/sdcard/demo/' does not contain the needed files!");
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "See Details on https://jomjol.github.io/AI-on-the-edge-device-docs/Demo-Mode!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can not start Demo mode, the folder '/sdcard/demo/' does not contain the needed files");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "See details on https://jomjol.github.io/AI-on-the-edge-device-docs/Demo-Mode");
         return;
     }
 
     demoImage = (uint8_t*)malloc(DEMO_IMAGE_SIZE);
     if (demoImage == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Unable to acquire required memory for demo image!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Unable to acquire required memory for demo image");
         return;
     }
 
@@ -757,8 +755,8 @@ void CCamera::EnableDemoMode()
     
     fclose(fd);
 
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Using Demo mode (" + std::to_string(demoFiles.size()) + 
-            " files) instead of real camera image!");
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Using demo images (" + std::to_string(demoFiles.size()) + 
+            " files) instead of real camera image");
 
     for (auto file : demoFiles) {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, file);
@@ -789,14 +787,14 @@ bool CCamera::loadNextDemoImage(camera_fb_t *fb) {
 
     FILE * fp = fopen(filename, "rb");
     if (!fp) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read file: " + std::string(filename) +"!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read file: " + std::string(filename));
         return false;
     }
 
     fileSize = GetFileSize(filename);
     if (fileSize > DEMO_IMAGE_SIZE) {
         char buf[100];
-        snprintf(buf, sizeof(buf), "Demo Image (%d bytes) is larger than provided buffer (%d bytes)!",
+        snprintf(buf, sizeof(buf), "Demo Image (%d bytes) is larger than provided buffer (%d bytes)",
                 (int)fileSize, DEMO_IMAGE_SIZE);
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, std::string(buf));
         return false;

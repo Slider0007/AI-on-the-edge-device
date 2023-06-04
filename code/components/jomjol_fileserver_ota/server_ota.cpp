@@ -61,7 +61,7 @@ static void infinite_loop(void)
     int i = 0;
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "When a new firmware is available on the server, press the reset button to download it");
     while(1) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Waiting for a new firmware... (" + to_string(++i) + ")");
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Waiting for a new firmware (" + to_string(++i) + ")");
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
@@ -103,7 +103,7 @@ void task_do_Update_ZIP(void *pvParameter)
     }
     else
     {
-    	LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Only ZIP-Files support for update during startup!");
+    	LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Only ZIP-Files support for update during startup");
     }
 }
 
@@ -262,16 +262,16 @@ static bool ota_update_task(std::string fn)
         if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image validation failed, image is corrupted");
         }
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_end failed (" + string(esp_err_to_name(err)) + ")!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_end failed (" + string(esp_err_to_name(err)) + ")");
         return false;
     }
 
     err = esp_ota_set_boot_partition(update_partition);
     if (err != ESP_OK) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_set_boot_partition failed (" + string(esp_err_to_name(err)) + ")!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_set_boot_partition failed (" + string(esp_err_to_name(err)) + ")");
 
     }
-//    ESP_LOGI(TAG, "Prepare to restart system!");
+//    ESP_LOGI(TAG, "Prepare to restart system");
 //    esp_restart();
 
     return true ;
@@ -297,7 +297,7 @@ static bool diagnostic(void)
 
 void CheckOTAUpdate(void)
 {
-    ESP_LOGI(TAG, "Start CheckOTAUpdateCheck...");
+    ESP_LOGI(TAG, "Start CheckOTAUpdateCheck");
 
     uint8_t sha_256[HASH_LEN] = { 0 };
     esp_partition_t partition;
@@ -329,13 +329,13 @@ void CheckOTAUpdate(void)
             ESP_LOGD(TAG, "CheckOTAUpdate Partition: ESP_OK");
             if (esp_ota_get_state_partition(running, &ota_state) == ESP_OK) {
                 if (ota_state == ESP_OTA_IMG_PENDING_VERIFY) {
-                    // run diagnostic function ...
+                    // run diagnostic function
                     bool diagnostic_is_ok = diagnostic();
                     if (diagnostic_is_ok) {
-                        ESP_LOGI(TAG, "Diagnostics completed successfully! Continuing execution...");
+                        ESP_LOGI(TAG, "Diagnostics completed successfully! Continuing execution");
                         esp_ota_mark_app_valid_cancel_rollback();
                     } else {
-                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Diagnostics failed! Start rollback to the previous version...");
+                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Diagnostics failed! Start rollback to the previous version");
                         esp_ota_mark_app_invalid_rollback_and_reboot();
                     }
                 }
@@ -353,13 +353,13 @@ void CheckOTAUpdate(void)
     }
     if (esp_ota_get_state_partition(running, &ota_state) == ESP_OK) {
         if (ota_state == ESP_OTA_IMG_PENDING_VERIFY) {
-            // run diagnostic function ...
+            // run diagnostic function
             bool diagnostic_is_ok = diagnostic();
             if (diagnostic_is_ok) {
-                ESP_LOGI(TAG, "Diagnostics completed successfully! Continuing execution...");
+                ESP_LOGI(TAG, "Diagnostics completed successfully! Continuing execution");
                 esp_ota_mark_app_valid_cancel_rollback();
             } else {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Diagnostics failed! Start rollback to the previous version...");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Diagnostics failed! Start rollback to the previous version");
                 esp_ota_mark_app_invalid_rollback_and_reboot();
             }
         }
@@ -491,7 +491,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
         }
 */
 
-        std::string zw = "Update failed - no valid file specified (zip, bin, tfl, tlite)!";
+        std::string zw = "Update failed - no valid file specified (zip, bin, tfl, tlite)";
         httpd_resp_sendstr_chunk(req, zw.c_str());
         httpd_resp_sendstr_chunk(req, NULL);  
         return ESP_OK;        
@@ -538,12 +538,12 @@ esp_err_t handler_ota_update(httpd_req_t *req)
         return ESP_OK;
     }
 
-    string zw = "ota without parameter - should not be the case!";
+    string zw = "ota without parameter - should not be the case";
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_send(req, zw.c_str(), strlen(zw.c_str())); 
     httpd_resp_send_chunk(req, NULL, 0);  
 
-    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ota without parameter - should not be the case!");
+    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ota without parameter - should not be the case");
 
 /*  
     const char* resp_str;    
@@ -617,7 +617,7 @@ void task_reboot(void *DeleteMainFlow)
     vTaskDelay(5000 / portTICK_PERIOD_MS);
     hard_restart();     // Reset type: System reset (Triggered by watchdog), if esp_restart stalls (WDT needs to be activated)
 
-    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Reboot failed!");
+    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Reboot failed");
     vTaskDelete(NULL); //Delete this task if it comes to this point
 }
 
@@ -660,7 +660,7 @@ esp_err_t handler_reboot(httpd_req_t *req)
     #endif    
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handler_reboot");
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "!!! System will restart within 5 sec!!!");
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "System will restart within 5 sec");
 
     std::string response = 
         "<html><head><script>"

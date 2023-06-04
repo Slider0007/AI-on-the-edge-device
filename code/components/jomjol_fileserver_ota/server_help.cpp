@@ -47,7 +47,7 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
         return ESP_FAIL;
     }
 
-    ESP_LOGD(TAG, "Sending file: %s ...", filename.c_str());
+    ESP_LOGD(TAG, "Sending file: %s", filename.c_str());
 //    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     /* For all files with the following file extention tell
@@ -82,7 +82,7 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
         /* Send the buffer contents as HTTP response chunk */
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
-            ESP_LOGE(TAG, "File sending failed!");
+            ESP_LOGE(TAG, "File sending failed");
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */

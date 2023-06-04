@@ -77,7 +77,7 @@ bool time_manual_reset_sync(void)
     int retry = 0;
     const int retry_count = 10;
     while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry < retry_count) {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Waiting for system time to be set... " + std::to_string(retry) + "/" + std::to_string(retry_count));
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Waiting for time sync - " + std::to_string(retry) + "/" + std::to_string(retry_count));
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
     if (retry >= retry_count)
@@ -228,7 +228,7 @@ bool setupTime()
     }
     
     if (useNtp) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Configuring NTP client...");        
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Configure NTP client");        
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
         sntp_setservername(0, timeServer.c_str());
         sntp_set_time_sync_notification_cb(time_sync_notification_cb);
@@ -269,7 +269,7 @@ void setupTimeZone(std::string _timeZone)
     if (timeZone.compare(_timeZone) == 0)
         return;
 
-    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeZone gets adjusted...");
+    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeZone gets adjusted");
     
     timeZone = _timeZone;
 
@@ -290,7 +290,7 @@ void setupTimeServer(std::string _timeServer)
     if (timeServer.compare(_timeServer) == 0)
         return;
 
-    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeServer gets adjusted...");
+    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeServer gets adjusted");
 
     if (_timeServer == "") {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer deactivated, disabling NTP");

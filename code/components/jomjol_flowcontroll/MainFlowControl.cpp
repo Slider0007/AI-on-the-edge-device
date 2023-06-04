@@ -359,7 +359,7 @@ esp_err_t handler_json(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /json not yet available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /json not yet available");
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -557,7 +557,7 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /value not available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /value not available");
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -844,7 +844,7 @@ esp_err_t handler_rssi(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "WIFI not (yet) connected: REST API /rssi not available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "WIFI not (yet) connected: REST API /rssi not available");
         return ESP_ERR_NOT_FOUND;
     }      
 
@@ -1188,7 +1188,7 @@ void task_autodoFlow(void *pvParameter)
             if (reloadConfig) {
                 reloadConfig = false;
                 manualFlowStart = false; // Reload config has higher prio
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration...");
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration");
                 taskAutoFlowState = FLOW_TASK_STATE_INIT;                   // Return to state "FLOW INIT"
             }
             else if (manualFlowStart) {
@@ -1245,7 +1245,7 @@ void task_autodoFlow(void *pvParameter)
         // INVALID STATE
         // ********************************************
         else {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "taskAutoFlowState: Invalid state called. Programming error!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "taskAutoFlowState: Invalid state called. Programming error");
             flowctrl.setActStatus(std::string(FLOW_INVALID_STATE));
         }
     }

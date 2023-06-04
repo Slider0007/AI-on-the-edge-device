@@ -204,7 +204,7 @@ extern "C" void app_main(void)
     // ********************************************
     if (!Init_NVS_SDCard())
     {
-        ESP_LOGE(TAG, "Device init aborted!");
+        ESP_LOGE(TAG, "Device init aborted");
         return; // No way to continue without working SD card!
     }
 
@@ -319,9 +319,9 @@ extern "C" void app_main(void)
     // ********************************************
     int iWLANStatus = LoadWlanFromFile(WLAN_CONFIG_FILE);
     if (iWLANStatus == 0) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "WLAN config loaded, init WIFI...");
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "WLAN config loaded, init WIFI");
         if (wifi_init_sta() != ESP_OK) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted");
             StatusLED(WLAN_INIT, 3, true);
             return;
         }
@@ -406,7 +406,7 @@ extern "C" void app_main(void)
                 if (camStatus != ESP_OK) { // Camera init failed, retry to init
                     char camStatusHex[33];
                     sprintf(camStatusHex,"0x%02x", camStatus);
-                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Camera init failed (" + std::string(camStatusHex) + "), retrying...");
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Camera init failed (" + std::string(camStatusHex) + "), retrying");
 
                     PowerResetCamera();
                     camStatus = Camera.InitCam();
@@ -490,16 +490,16 @@ extern "C" void app_main(void)
     // Check main init + start TFlite task
     // ********************************************
     if (getSystemStatus() == 0) { // No error flag is set
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Initialization completed successfully! Starting flow task ...");
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Basic device initialization completed");
         StartMainFlowTask();
     }
-    else if (isSetSystemStatusFlag(SYSTEM_STATUS_CAM_FB_BAD) || // Non critical errors occured, we try to continue...
+    else if (isSetSystemStatusFlag(SYSTEM_STATUS_CAM_FB_BAD) || // Non critical errors occured, we try to continue
              isSetSystemStatusFlag(SYSTEM_STATUS_NTP_BAD)) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Initialization completed with errors! Starting flow task ...");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Basic device initialization completed with errors");
         StartMainFlowTask();
     }
     else { // Any other error is critical and makes running the flow impossible. Init is going to abort.
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Initialization failed. Flow task start aborted. Loading reduced web interface...");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed. Flow task start aborted. Loading reduced web interface");
     }
 }
 
@@ -508,7 +508,7 @@ void migrateConfiguration(void) {
     bool migrated = false;
 
     if (!FileExists(CONFIG_FILE)) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Config file seems to be missing!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Config file seems to be missing");
         return;	
     }
 
@@ -833,7 +833,7 @@ bool setCpuFrequency(void) {
     esp_pm_config_esp32_t  pm_config; 
 
     if (!configFile.ConfigFileExists()){
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file - exit setCpuFrequency()");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file - exit setCpuFrequency");
         return false;
     }
 

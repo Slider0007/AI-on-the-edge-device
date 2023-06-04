@@ -347,8 +347,6 @@ void ClassFlowPostProcessing::handleDecimalExtendedResolution(std::string _decse
     int _pospunkt = _decsep.find_first_of(".");
     bool value;
 
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
-
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
     else
@@ -852,7 +850,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
             else
             {
                 #ifdef SERIAL_DEBUG
-                    ESP_LOGD(TAG, "checkDigitIncreaseConsistency = true - no digital numbers defined!");
+                    ESP_LOGD(TAG, "checkDigitIncreaseConsistency = true - no digital numbers defined");
                 #endif
             }
         }

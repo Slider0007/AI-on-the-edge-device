@@ -352,7 +352,7 @@ esp_err_t config_ini_handler(httpd_req_t *req)
     fflush(configfilehandle);
     fclose(configfilehandle);
 
-    std::string zw = "ota without parameter - should not be the case!";
+    std::string zw = "ota without parameter - should not be the case";
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_send(req, zw.c_str(), zw.length()); 
 
@@ -397,7 +397,7 @@ esp_err_t upload_post_handlerAP(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    ESP_LOGI(TAG, "Receiving file: %s...", filename);
+    ESP_LOGI(TAG, "Receiving file: %s", filename);
 
     char buf[1024];
     int received;
@@ -419,7 +419,7 @@ esp_err_t upload_post_handlerAP(httpd_req_t *req)
             fclose(fd);
             unlink(filepath);
 
-            ESP_LOGE(TAG, "File reception failed!");
+            ESP_LOGE(TAG, "File reception failed");
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to receive file");
             return ESP_FAIL;
         }
@@ -428,7 +428,7 @@ esp_err_t upload_post_handlerAP(httpd_req_t *req)
             fclose(fd);
             unlink(filepath);
 
-            ESP_LOGE(TAG, "File write failed!");
+            ESP_LOGE(TAG, "File write failed");
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to write file to storage");
             return ESP_FAIL;
         }
@@ -508,10 +508,10 @@ void CheckStartAPMode()
     isWlanINI = FileExists(WLAN_CONFIG_FILE);
 
     if (!isConfigINI)
-        ESP_LOGW(TAG, "config.ini not found!");
+        ESP_LOGW(TAG, "config.ini not found");
 
     if (!isWlanINI)
-        ESP_LOGW(TAG, "wlan.ini not found!");
+        ESP_LOGW(TAG, "wlan.ini not found");
 
     if (!isConfigINI || !isWlanINI)
     {

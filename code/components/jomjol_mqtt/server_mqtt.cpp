@@ -140,11 +140,11 @@ bool MQTThomeassistantDiscovery(int qos) {
     bool allSendsSuccessed = false;
 
     if (!getMQTTisConnected()) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to send Homeassistant Discovery Topics, we are not connected to the MQTT broker!");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to send Homeassistant Discovery Topics, device is not connected to MQTT broker");
         return false;
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing Homeassistant Discovery topics (Meter Type: '" + meterType + "', Value Unit: '" + valueUnit + "' , Rate Unit: '" + rateUnit + "') ...");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing Homeassistant Discovery topics (Meter Type: '" + meterType + "', Value Unit: '" + valueUnit + "' , Rate Unit: '" + rateUnit + "')");
 
 	int aFreeInternalHeapSizeBefore = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
@@ -195,13 +195,13 @@ bool publishSystemData(int qos) {
     bool allSendsSuccessed = false;
 
     if (!getMQTTisConnected()) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to send System Topics, we are not connected to the MQTT broker!");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to send System Topics, device is not connected to MQTT broker");
         return false;
     }
 
     char tmp_char[50];
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing System MQTT topics...");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing System MQTT topics");
 
 	int aFreeInternalHeapSizeBefore = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
@@ -236,11 +236,11 @@ bool publishStaticData(int qos) {
     bool allSendsSuccessed = false;
 
     if (!getMQTTisConnected()) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to send Static Topics, we are not connected to the MQTT broker!");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to send Static Topics, device is not connected to MQTT broker");
         return false;
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing static MQTT topics...");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing static MQTT topics");
 
 	int aFreeInternalHeapSizeBefore = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
@@ -292,7 +292,7 @@ esp_err_t sendDiscovery_and_static_Topics(void) {
         return ESP_OK;
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "One or more MQTT topics failed to be published, will try sending them in the next round!");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "One or more MQTT topics failed to be published, retry next round");
         /* Keep sendingOf_DiscoveryAndStaticTopics_scheduled set so we can retry after the next round */
         return ESP_FAIL;
     }

@@ -96,7 +96,7 @@ std::string himem_memory_check()
 	sprintf(aMsgBuf,"%dKiB of which is free", (int)memfree/1024);
 	espInfoResultStr += std::string(aMsgBuf);
 
-	espInfoResultStr += "\n please wait ....\n";
+	espInfoResultStr += "\n please wait \n";
 
 	//running memory checks
 	//assert(test_region(memfree, 0xaaaa));

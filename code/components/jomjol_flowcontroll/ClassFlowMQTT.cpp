@@ -241,7 +241,7 @@ bool ClassFlowMQTT::doFlow(string zwtime)
     {
         std::vector<NumberPost*>* NUMBERS = flowpostprocessing->GetNumbers();
 
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing MQTT topics...");
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing MQTT topics");
 
         for (int i = 0; i < (*NUMBERS).size(); ++i)
         {
@@ -315,7 +315,7 @@ bool ClassFlowMQTT::doFlow(string zwtime)
     OldValue = result;
 
     if (!success) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "One or more MQTT topics failed to be published!");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "One or more MQTT topics failed to be published");
     }
     
     return true;

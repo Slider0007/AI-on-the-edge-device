@@ -57,7 +57,7 @@ bool MQTTPublish(std::string _key, std::string _content, int qos, bool retained_
             ESP_LOGD(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime)/1000);
         #endif
         if (msg_id == -1) {
-            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Failed to publish topic '" + _key + "', re-trying...");   
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Failed to publish topic '" + _key + "', retrying");   
             #ifdef DEBUG_DETAIL_ON 
                 starttime = esp_timer_get_time();
             #endif
@@ -66,7 +66,7 @@ bool MQTTPublish(std::string _key, std::string _content, int qos, bool retained_
                 ESP_LOGD(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime)/1000);
             #endif
             if (msg_id == -1) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to publish topic '" + _key + "', skipping all MQTT publishings in this round!");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to publish topic '" + _key + "', skipping all MQTT publishings in this round");
                 failedOnRound = getCountFlowRounds();
                 return false;
             }
@@ -108,7 +108,7 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event) {
 
             if (MQTTReconnectCnt >= 5) {
                 MQTTReconnectCnt = 0;
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Disconnected, multiple reconnect attempts failed, still retrying...");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Disconnected, multiple reconnect attempts failed, still retrying");
             }
             break;
         
@@ -278,7 +278,7 @@ int MQTT_Init() {
         esp_err_t ret = esp_mqtt_client_register_event(client, esp_mqtt_ID, mqtt_event_handler, client);
         if (ret != ESP_OK)
         {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Could not register event (ret=" + std::to_string(ret) + ")!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Could not register event (ret=" + std::to_string(ret) + ")");
             mqtt_initialized = false;
             return -1;
         }
@@ -289,19 +289,19 @@ int MQTT_Init() {
         ret = esp_mqtt_client_start(client);
         if (ret != ESP_OK)
         {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Client start failed (retval=" + std::to_string(ret) + ")!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Client start failed (retval=" + std::to_string(ret) + ")");
             mqtt_initialized = false;
             return -1;
         }
         else {
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Client started, waiting for established connection...");
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Client started, waiting for established connection");
             mqtt_initialized = true;
             return 1;
         }
     }
     else
     {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, no handle created!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, no handle created");
         mqtt_initialized = false;
         return -1;
     }

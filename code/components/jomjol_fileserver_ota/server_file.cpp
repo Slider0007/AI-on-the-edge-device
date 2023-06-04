@@ -276,14 +276,14 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
             }
             else {
                 if (entry_stat.st_size >= 1024) {
-                    sprintf(entrysize, "%ld KiB", entry_stat.st_size / 1024); // kBytes
+                    sprintf(entrysize, "%ld KB", entry_stat.st_size / 1024); // kBytes
                 }
                 else {
                     sprintf(entrysize, "%ld B", entry_stat.st_size); // Bytes
                 }
             }
 
-            ESP_LOGI(TAG, "Found %s: %s (%s bytes)", entrytype, entry->d_name, entrysize);
+            ESP_LOGD(TAG, "Found %s: %s (%s bytes)", entrytype, entry->d_name, entrysize);
 
             /* Send chunk of HTML file containing table entries with file name and size */
             httpd_resp_sendstr_chunk(req, "<tr><td><a href=\"");
@@ -367,11 +367,11 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
-    //    ESP_LOGI(TAG, "Sending file: %s (%ld bytes)...", &filename, file_stat.st_size);
+    //    ESP_LOGI(TAG, "Sending file: %s (%ld bytes)", &filename, file_stat.st_size);
     set_content_type_from_file(req, currentfilename.c_str());
 
     if (!send_full_file) { // Send only last part of file
-        ESP_LOGD(TAG, "Sending last %d bytes of the actual datafile!", LOGFILE_LAST_PART_BYTES);
+        ESP_LOGD(TAG, "Sending last %d bytes of the actual datafile", LOGFILE_LAST_PART_BYTES);
 
         /* Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/ */
         if (fseek(fd, 0, SEEK_END)) {
@@ -452,7 +452,7 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
-    //    ESP_LOGI(TAG, "Sending file: %s (%ld bytes)...", &filename, file_stat.st_size);
+    //    ESP_LOGI(TAG, "Sending file: %s (%ld bytes)", &filename, file_stat.st_size);
     set_content_type_from_file(req, filename);
 
     if (!send_full_file) { // Send only last part of file
@@ -572,7 +572,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 
     fd = fopen(filepath, "r");
     if (!fd) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "download_get_handler: Failed to read file: " + std::string(filepath) + "!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "download_get_handler: Failed to read file: " + std::string(filepath));
         /* Respond with 404 Error */
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
         return ESP_FAIL;
@@ -580,7 +580,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
-    ESP_LOGD(TAG, "Sending file: %s (%ld bytes)...", filename, file_stat.st_size);
+    ESP_LOGD(TAG, "Sending file: %s (%ld bytes)", filename, file_stat.st_size);
     set_content_type_from_file(req, filename);
 
     /* Retrieve the pointer to scratch buffer for temporary storage */
@@ -593,11 +593,11 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         /* Send the buffer contents as HTTP response chunk */
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "download_get_handler: File sending failed!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "download_get_handler: File sending failed");
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "download_get_handler: Failed to send file!");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "download_get_handler: Failed to send file");
             return ESP_FAIL;
         }
 
@@ -667,7 +667,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    ESP_LOGI(TAG, "Receiving file: %s...", filename);
+    ESP_LOGI(TAG, "Receiving file: %s", filename);
 
     /* Retrieve the pointer to scratch buffer for temporary storage */
     char *buf = ((struct file_server_data *)req->user_ctx)->scratch;
@@ -924,7 +924,7 @@ std::string unzip_new(std::string _in_zip_file, std::string _target_zip, std::st
     status = mz_zip_reader_init_file(&zip_archive, _in_zip_file.c_str(), 0);
     if (!status)
     {
-        ESP_LOGD(TAG, "mz_zip_reader_init_file() failed!");
+        ESP_LOGD(TAG, "mz_zip_reader_init_file() failed");
         return ret;
     }
 
@@ -938,7 +938,7 @@ std::string unzip_new(std::string _in_zip_file, std::string _target_zip, std::st
         status = mz_zip_reader_init_file(&zip_archive, _in_zip_file.c_str(), sort_iter ? MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY : 0);
         if (!status)
         {
-            ESP_LOGD(TAG, "mz_zip_reader_init_file() failed!");
+            ESP_LOGD(TAG, "mz_zip_reader_init_file() failed");
             return ret;
         }
 
@@ -1065,7 +1065,7 @@ void unzip(std::string _in_zip_file, std::string _target_directory){
     status = mz_zip_reader_init_file(&zip_archive, _in_zip_file.c_str(), 0);
     if (!status)
     {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_init_file() failed!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_init_file() failed");
         return;
     }
 
@@ -1077,7 +1077,7 @@ void unzip(std::string _in_zip_file, std::string _target_directory){
         status = mz_zip_reader_init_file(&zip_archive, _in_zip_file.c_str(), sort_iter ? MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY : 0);
         if (!status)
         {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_init_file() failed!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_init_file() failed");
             return;
         }
 
@@ -1091,7 +1091,7 @@ void unzip(std::string _in_zip_file, std::string _target_directory){
             p = mz_zip_reader_extract_file_to_heap(&zip_archive, archive_filename, &uncomp_size, 0);
             if (!p)
             {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_extract_file_to_heap() failed!");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_extract_file_to_heap() failed");
                 mz_zip_reader_end(&zip_archive);
                 return;
             }

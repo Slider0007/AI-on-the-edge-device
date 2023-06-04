@@ -13,7 +13,7 @@ static const char *TAG = "SDCARD";
 
 int SDCardCheckRW(void)
 {
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Basic R/W check started...");
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Basic R/W check started");
     FILE* pFile = NULL;
     int iCRCMessage = 0;
    
@@ -74,7 +74,7 @@ bool SDCardCheckFolderFilePresence()
     struct stat sb;
     bool bRetval = true;
 
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Folder/file presence check started...");
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Folder/file presence check started");
     /* check if folder exists: config */
     if (stat("/sdcard/config", &sb) != 0) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Folder/file check: Folder /config not found");

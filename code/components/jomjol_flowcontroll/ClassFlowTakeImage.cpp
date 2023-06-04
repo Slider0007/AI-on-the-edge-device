@@ -155,7 +155,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
     }
 
     if (FixedExposure && (waitbeforepicture > 0)) {
-//      ESP_LOGD(TAG, "Fixed Exposure enabled!");
+//      ESP_LOGD(TAG, "Fixed Exposure enabled");
         Camera.EnableAutoExposure(flash_duration);
     }
 

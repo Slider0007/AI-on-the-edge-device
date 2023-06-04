@@ -184,7 +184,7 @@ void IRAM_ATTR CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy, CIm
 
     if ((_target->height != dy) || (_target->width != dx) || (_target->channels != channels))
     {
-        ESP_LOGD(TAG, "CAlignAndCutImage::CutAndSave - Image size does not match!");
+        ESP_LOGD(TAG, "CAlignAndCutImage::CutAndSave - Image size does not match");
         return;
     }
 

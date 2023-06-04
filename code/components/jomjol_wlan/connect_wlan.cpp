@@ -413,7 +413,7 @@ void wifiRoamByScanning(void)
 
 		if (APWithBetterRSSI) {
 			APWithBetterRSSI = false;
-			LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Roaming: AP with better RSSI in range, disconnecting to switch AP...");
+			LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Roaming: AP with better RSSI in range, disconnect to switch AP");
 			esp_wifi_disconnect();
 		} 
 		else {
@@ -480,7 +480,7 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 		if (WIFIReconnectCnt >= 10) {
 			WIFIReconnectCnt = 0;
 			LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Disconnected, multiple reconnect attempts failed (" + 
-													 std::to_string(disconn->reason) + "), still retrying...");
+													 std::to_string(disconn->reason) + "), still retrying");
 		}
 	}	
 	else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_CONNECTED) 

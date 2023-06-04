@@ -409,7 +409,7 @@ bool ClassFlowControll::InitFlow(std::string config)
 {
     DeinitFlow();
     
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init flow...");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init flow");
 
     bool bRetVal = true;
     std::string line = "";
@@ -476,7 +476,7 @@ bool ClassFlowControll::InitFlow(std::string config)
 
 void ClassFlowControll::DeinitFlow(void)
 {
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow...");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow");
     //LogFile.WriteHeapInfo("DeinitFlow start");
 
     Camera.LightOnOff(false);
@@ -917,7 +917,7 @@ esp_err_t ClassFlowControll::SendRawJPG(httpd_req_t *req)
         return flowtakeimage->SendRawJPG(req);
     }
     else {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "flowtakeimage not available: Raw image cannot be served!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "flowtakeimage not available: Raw image cannot be served");
         return ESP_ERR_NOT_FOUND;
     }
 }
@@ -1082,7 +1082,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
             }
             else {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served!");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
                 if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
                     _send = flowalignment->ImageBasis;
                 }
@@ -1125,7 +1125,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
             }
             else {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served!");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
                 if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
                     _send = flowalignment->ImageBasis;
                 }
@@ -1189,7 +1189,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
 
     if (_send)
     {
-        ESP_LOGD(TAG, "Sending file: %s ...", _fn.c_str());
+        ESP_LOGD(TAG, "Sending file: %s", _fn.c_str());
         set_content_type_from_file(req, _fn.c_str());
         result = _send->SendJPGtoHTTP(req);
         /* Respond with an empty chunk to signal HTTP response completion */
