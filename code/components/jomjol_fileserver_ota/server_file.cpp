@@ -234,7 +234,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
             }
         } while (chunksize != 0);
         fclose(fd);
-        //    ESP_LOGI(TAG, "File sending complete");
+        //    ESP_LOGD(TAG, "File sending complete");
     }
     ///////////////////////////////
 
@@ -372,6 +372,7 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 
     if (!send_full_file) { // Send only last part of file
         ESP_LOGD(TAG, "Sending last %d bytes of the actual datafile", LOGFILE_LAST_PART_BYTES);
+        long pos = 0;
 
         /* Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/ */
         if (fseek(fd, 0, SEEK_END)) {
@@ -379,17 +380,20 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
             return ESP_FAIL;
         }
         else {
-            long pos = ftell(fd); // Number of bytes in the file
-            ESP_LOGI(TAG, "File contains %ld bytes", pos);
+            pos = ftell(fd); // Number of bytes in the file
+            ESP_LOGD(TAG, "File contains %ld bytes", pos);
 
-            if (fseek(fd, pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos), SEEK_SET)) { // Go LOGFILE_LAST_PART_BYTES bytes back from EOF
+            // Calc start position -> either beginning of LAST PART (EOF - LAST_PART_BYTES) or beginning of file (pos = 0)
+            pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos); 
+
+            if (fseek(fd, pos, SEEK_SET)) { // Go to start position
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to go back " + to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
                 return ESP_FAIL;
             }
         }
 
         /* Find end of line */
-        while (1) {
+        while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART" (skip if start is from beginning of file to ensure first line is included)
             if (fgetc(fd) == '\n') {
                 break;
             }
@@ -419,7 +423,7 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 
     /* Close file after sending complete */
     fclose(fd);
-    ESP_LOGI(TAG, "File sending complete");
+    ESP_LOGD(TAG, "File sending complete");
 
     /* Respond with an empty chunk to signal HTTP response completion */
     httpd_resp_send_chunk(req, NULL, 0);
@@ -456,25 +460,29 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
     set_content_type_from_file(req, filename);
 
     if (!send_full_file) { // Send only last part of file
-        ESP_LOGD(TAG, "Sending last %d bytes of the actual logfile!", LOGFILE_LAST_PART_BYTES);
-
+        ESP_LOGD(TAG, "Sending last %d bytes of the actual logfile", LOGFILE_LAST_PART_BYTES);
+        long pos = 0;
+        
         /* Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/ */
         if (fseek(fd, 0, SEEK_END)) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to get to end of file");
             return ESP_FAIL;
         }
         else {
-            long pos = ftell(fd); // Number of bytes in the file
-            ESP_LOGI(TAG, "File contains %ld bytes", pos);
+            pos = ftell(fd); // Number of bytes in the file
+            ESP_LOGD(TAG, "File contains %ld bytes", pos);
 
-            if (fseek(fd, pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos), SEEK_SET)) { // Go LOGFILE_LAST_PART_BYTES bytes back from EOF
+            // Calc start position -> either beginning of LAST PART (EOF - LAST_PART_BYTES) or beginning of file (pos = 0)
+            pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos); 
+
+            if (fseek(fd, pos, SEEK_SET)) { // Go to start position
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to go back " + to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
                 return ESP_FAIL;
             }
         }
 
         /* Find end of line */
-        while (1) {
+        while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART" (skip if start is from beginning of file to ensure first line is included)
             if (fgetc(fd) == '\n') {
                 break;
             }
@@ -491,7 +499,7 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
         /* Send the buffer contents as HTTP response chunk */
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: File sending failed!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: File sending failed");
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */
