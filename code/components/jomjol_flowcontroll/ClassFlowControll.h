@@ -65,6 +65,8 @@ public:
 	bool ReadParameter(FILE* pfile, string& aktparamgraph);	
 	string getJSON();
 	string getNumbersName();
+	std::string getNumberName(int _number);
+	int getNumbersSize();
 
 	string TranslateAktstatus(std::string _input);
 

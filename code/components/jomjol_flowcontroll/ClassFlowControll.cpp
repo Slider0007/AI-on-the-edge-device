@@ -764,6 +764,17 @@ string ClassFlowControll::getNumbersName()
     return flowpostprocessing->getNumbersName();
 }
 
+std::string ClassFlowControll::getNumberName(int _number)
+{
+    return (*flowpostprocessing->GetNumbers())[_number]->name;
+}
+
+
+int ClassFlowControll::getNumbersSize()
+{
+    return flowpostprocessing->GetNumbers()->size();
+}
+
 
 string ClassFlowControll::getJSON()
 {

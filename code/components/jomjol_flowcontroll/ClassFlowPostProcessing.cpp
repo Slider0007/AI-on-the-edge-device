@@ -1021,8 +1021,10 @@ string ClassFlowPostProcessing::getReadoutParam(bool _rawValue, bool _noerror, i
 {
     if (_rawValue)
         return NUMBERS[_number]->ReturnRawValue;
+    
     if (_noerror)
         return NUMBERS[_number]->ReturnValue;
+    
     return NUMBERS[_number]->ReturnValue;
 }
 

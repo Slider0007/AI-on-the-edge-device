@@ -906,6 +906,10 @@ std::vector<HTMLInfo*> ClassFlowCNNGeneral::GetHTMLInfo()
             }
 
             HTMLInfo *zw = new HTMLInfo;
+            
+            zw->name = GENERAL[_ana]->name;
+            zw->position = i;
+
             if (GENERAL[_ana]->name == "default")
             {
                 zw->filename = GENERAL[_ana]->ROI[i]->name + ".jpg";
@@ -921,6 +925,7 @@ std::vector<HTMLInfo*> ClassFlowCNNGeneral::GetHTMLInfo()
                 zw->val = GENERAL[_ana]->ROI[i]->result_klasse;
             else
                 zw->val = GENERAL[_ana]->ROI[i]->result_float;
+            
             zw->image = GENERAL[_ana]->ROI[i]->image;
             zw->image_org = GENERAL[_ana]->ROI[i]->image_org;
 

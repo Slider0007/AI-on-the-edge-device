@@ -18,7 +18,9 @@ struct HTMLInfo
 	CImageBasis *image = NULL;
 	CImageBasis *image_org = NULL;
 	std::string filename;
-	std::string filename_org;	
+	std::string filename_org;
+	std::string name;
+	int position;
 };
 
 struct strFlowState

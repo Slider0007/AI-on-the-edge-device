@@ -359,7 +359,7 @@ esp_err_t handler_json(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /json not yet available");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow task not (yet) started: REST API /json not yet available");
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -371,198 +371,232 @@ esp_err_t handler_json(httpd_req_t *req)
 }
 
 
-esp_err_t handler_wasserzaehler(httpd_req_t *req)
+esp_err_t handler_value(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler water counter - Start");    
+        LogFile.WriteHeapInfo("handler_value - Start");    
     #endif
 
-    if (bTaskAutoFlowCreated) 
-    {
-        bool _rawValue = false;
-        bool _noerror = false;
-        bool _all = false;
+    if (bTaskAutoFlowCreated) {
+        bool _fullInfo = false;
+        bool _singleInfo = false;
         std::string _type = "value";
-        string zw;
+        std::string zw;
 
-        ESP_LOGD(TAG, "handler water counter uri: %s", req->uri);														   
+        ESP_LOGD(TAG, "handler_value uri: %s", req->uri);														   
+
+        // Default usage message when handler gets called without any parameter
+        const std::string RESTUsageInfo = 
+            "00: Handler usage:<br>"
+            "- Value:          /value?all=true&type=value<br>"
+            "- Raw Value:      /value?all=true&type=raw<br>"
+            "- Previous Value: /value?all=true&type=prevalue<br>"
+            "- Value Status:   /value?all=true&type=error<br><br>"
+            "- Retrieve WebUI recognition page content, use /value?full=true<br>";
 
         char _query[100];
-        char _size[10];
+        char _value[10];
 
-        if (httpd_req_get_url_query_str(req, _query, 100) == ESP_OK)
-        {
-    //        ESP_LOGD(TAG, "Query: %s", _query);
-            if (httpd_query_key_value(_query, "all", _size, 10) == ESP_OK)
-            {
+        if (httpd_req_get_url_query_str(req, _query, 100) == ESP_OK) {
+            //ESP_LOGD(TAG, "Query: %s", _query);
+            if (httpd_query_key_value(_query, "all", _value, 10) == ESP_OK) {
                 #ifdef DEBUG_DETAIL_ON       
-                    ESP_LOGD(TAG, "all is found%s", _size);
+                    ESP_LOGD(TAG, "all is found: %s", _value);
                 #endif
-                _all = true;
+                _singleInfo = true;
+                _fullInfo = false;
             }
 
-            if (httpd_query_key_value(_query, "type", _size, 10) == ESP_OK)
-            {
+            if (httpd_query_key_value(_query, "type", _value, 10) == ESP_OK) {
                 #ifdef DEBUG_DETAIL_ON       
-                    ESP_LOGD(TAG, "all is found: %s", _size);
+                    ESP_LOGD(TAG, "type is found: %s", _value);
                 #endif
-                _type = std::string(_size);
+                _type = std::string(_value);
             }
 
-            if (httpd_query_key_value(_query, "rawvalue", _size, 10) == ESP_OK)
-            {
+            if (httpd_query_key_value(_query, "full", _value, 10) == ESP_OK) {
                 #ifdef DEBUG_DETAIL_ON       
-                    ESP_LOGD(TAG, "rawvalue is found: %s", _size);
+                    ESP_LOGD(TAG, "full is found: %s", _value);
                 #endif
-                _rawValue = true;
-            }
-            if (httpd_query_key_value(_query, "noerror", _size, 10) == ESP_OK)
-            {
-                #ifdef DEBUG_DETAIL_ON       
-                    ESP_LOGD(TAG, "noerror is found: %s", _size);
-                #endif
-                _noerror = true;
-            }        
-        }  
+                _fullInfo = true;
+                _singleInfo = false;
+            }         
+        }
+        else {  // if no parameter is provided, print handler usage
+            httpd_resp_send(req, RESTUsageInfo.c_str(), RESTUsageInfo.length());
+            return ESP_OK; 
+        }    
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
-        if (_all)
-        {
+        if (_singleInfo) {
             httpd_resp_set_type(req, "text/plain");
-            ESP_LOGD(TAG, "TYPE: %s", _type.c_str());
-            int _intype = READOUT_TYPE_VALUE;
-            if (_type == "prevalue")
-                _intype = READOUT_TYPE_PREVALUE;
-            if (_type == "raw")
-                _intype = READOUT_TYPE_RAWVALUE;
-            if (_type == "error")
-                _intype = READOUT_TYPE_ERROR;
 
+            if (_type == "value")
+                zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE);
+            else if (_type == "prevalue")
+                zw = flowctrl.getReadoutAll(READOUT_TYPE_PREVALUE);
+            else if (_type == "raw")
+                zw = flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE);
+            else if (_type == "error")
+                zw = flowctrl.getReadoutAll(READOUT_TYPE_ERROR);
 
-            zw = flowctrl.getReadoutAll(_intype);
-            ESP_LOGD(TAG, "ZW: %s", zw.c_str());
+            ESP_LOGD(TAG, "TYPE: %s, RESULT: %s", _type.c_str(), zw.c_str());
+
             if (zw.length() > 0)
                 httpd_resp_send(req, zw.c_str(), zw.length()); 
             
             return ESP_OK;
         }
 
+        /* WebUI - Recognition page */
+        /*****************************************/
+        if (_fullInfo) {
+            /*++++++++++++++++++++++++++++++++++++++++*/
+            /* Page details */
+            std::string txt = "<body style=\"font-family: arial\">\n<h2>Image Recognition Details</h2>";
+            txt += "<details id=\"desc_details\" style=\"font-size: 16px;\">\n";
+            txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
+            txt += "<p>On this page some recognition details including the underlaying visual image information are visualized. "
+                   "<br><strong>Be aware: The visualized infos are representing the the last fully completed digitalization round!</strong></p>";
+            txt += "<p>\"Raw Value\" represents the raw value which gets extracted and combined from all the single image information but without "
+                   "correction of any of the post-processing checks / alogrithms. The result after post-processing validation is represented with "
+                   "\"Value\". <br>In the next two sections all single \"raw results\" of the respective ROI images (digit styled ROIs and "
+                   "analog styled ROIs) are visualized per number sequence. The complete image which was used for processing (including the overlays "
+                   "to highlight the relevant areas) is visulaized on the bottom of this page.</p>";
+            txt += "<p>Note: If a digitalization round is right now processing but not completed, still the infos from the previous completed round "
+                   "are visualized. The infos gets only updated when the image processing of the actual round is fully completed.</p>";
+            txt += "</details><hr/>";
 
-        std::string status = flowctrl.getActStatus();
-        string query = std::string(_query);
-    //    ESP_LOGD(TAG, "Query: %s, query.c_str());
-        if (query.find("full") != std::string::npos)
-        {
-            string txt;
-            txt = "<body style=\"font-family: arial\">";
-
-            if ((countRounds <= 1) && (taskAutoFlowState <= FLOW_TASK_STATE_IMG_PROCESSING)) { // First round not completed yet
-                txt += "<h3>Please wait for the first round to complete!</h3><h3>Current state: " + status + "</h3>\n";
+            if ((countRounds <= 1) && (taskAutoFlowState <= FLOW_TASK_STATE_IMG_PROCESSING)) { // Display message if first round is not completed yet
+                txt += "<h4>Please wait for the first round to complete! </h4> Current state: " + flowctrl.getActStatus();
+                httpd_resp_sendstr_chunk(req, txt.c_str());
             }
             else {
-                txt += "<h3>Value</h3>";
-            }
+                /*++++++++++++++++++++++++++++++++++++++++*/
+                /* Result */
+                txt += "<h3>Result</h3>\n";
+                txt += "<table style=\"width:500px;border-collapse: collapse;table-layout: fixed;\">";
+                txt += "<tr><td style=\"font-weight: bold;width: 50%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Number sequence</td>"
+                        "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Raw Value</td>"
+                        "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Value</td></tr>";
+                for (int i = 0; i < flowctrl.getNumbersSize(); ++i) {   
+					txt += "<tr><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
+						flowctrl.getNumberName(i) + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" +
+                        flowctrl.getReadout(true, false, i) + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" +
+                        flowctrl.getReadout(false, true, i) + "</td></tr>";
+                }
+                txt += "</table><hr/>";
+                httpd_resp_sendstr_chunk(req, txt.c_str());
 
-            httpd_resp_sendstr_chunk(req, txt.c_str());
-        }
+                /*++++++++++++++++++++++++++++++++++++++++*/
+                /* Digital ROI */
+                txt = "<h3 style=\"margin-block-end: 0.5em;\">Digit ROI</h3>\n";
+                txt += "<table style=\"border-spacing: 5px;\">\n";
 
-        zw = flowctrl.getReadout(_rawValue, _noerror, 0);
-        if (zw.length() > 0)
-            httpd_resp_sendstr_chunk(req, zw.c_str()); 
+                std::vector<HTMLInfo*> htmlinfo;
+                htmlinfo = flowctrl.GetAllDigital(); 
 
+                for (int i = 0; i < htmlinfo.size(); ++i) {
+                    if ((htmlinfo[i]->position == 0)) {     // New line when a new number sequence begins
+                        txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number sequence: " + htmlinfo[i]->name + "</td></tr>\n";
+                        txt += "<tr style=\"text-align: center; vertical-align: top;\">\n";
+                    }
 
-        if (query.find("full") != std::string::npos)
-        {
-            string txt, zw;
-
-            if ((countRounds <= 1) && (taskAutoFlowState <= FLOW_TASK_STATE_IMG_PROCESSING)) { // First round not completed yet
-                // Nothing to do
-            }
-            else {
-                /* Digital ROIs */
-                txt = "<body style=\"font-family: arial\">";
-                txt += "<h3>Recognized Digit ROIs (previous round)</h3>\n";
-                txt += "<table style=\"border-spacing: 5px\"><tr style=\"text-align: center; vertical-align: top;\">\n";
-
-                std::vector<HTMLInfo*> htmlinfodig;
-                htmlinfodig = flowctrl.GetAllDigital(); 
-
-                for (int i = 0; i < htmlinfodig.size(); ++i)
-                {
-                    if (flowctrl.GetTypeDigital() == Digital)
-                    {
-                        if (htmlinfodig[i]->val == 10)
+                    if (flowctrl.GetTypeDigital() == Digital) {
+                        if (htmlinfo[i]->val == 10)
                             zw = "NaN";
                         else
-                            zw = to_string((int) htmlinfodig[i]->val);
-
-                        txt += "<td style=\"width: 100px\"><h4>" + zw + "</h4><p><img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"></p></td>\n";
+                            zw = std::to_string((int) htmlinfo[i]->val);
                     }
+                    else {
+                        if (htmlinfo[i]->val >= 10.0) {
+                            zw = "0.0";
+                        }
+                        else {
+                            std::stringstream stream;
+                            stream << std::fixed << std::setprecision(1) << htmlinfo[i]->val;
+                            zw = stream.str();
+                        }
+                    }
+
+                    if (htmlinfo[i]->val > -1) // Only show image if result is set, otherwise text "No Image"
+                        txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
+                                zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\"><img src=\"/img_tmp/" + 
+                                htmlinfo[i]->filename + "\"></p></td>\n";
                     else
-                    {
-                        std::stringstream stream;
-                        stream << std::fixed << std::setprecision(1) << htmlinfodig[i]->val;
-                        zw = stream.str();
-
-                        txt += "<td style=\"width: 100px\"><h4>" + zw + "</h4><p><img src=\"/img_tmp/" +  htmlinfodig[i]->filename + "\"></p></td>\n";
-                    }
-                    delete htmlinfodig[i];
+                        txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
+                                zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\">No Image</p></td>\n";
+                    
+                    delete htmlinfo[i];
                 }
 
-                htmlinfodig.clear();
-            
-                txt += "</tr></table>\n";
-                httpd_resp_sendstr_chunk(req, txt.c_str()); 
-
-
-                /* Analog ROIs */
-                txt = "<h3>Recognized Analog ROIs (previous round)</h3>\n";
-                txt += "<table style=\"border-spacing: 5px\"><tr style=\"text-align: center; vertical-align: top;\">\n";
+                if (htmlinfo.size() == 0)
+                    txt += "<tr><td>Digit ROI processing deactivated</td>";
                 
-                std::vector<HTMLInfo*> htmlinfoana;
-                htmlinfoana = flowctrl.GetAllAnalog();
-                for (int i = 0; i < htmlinfoana.size(); ++i)
-                {
-                    std::stringstream stream;
-                    stream << std::fixed << std::setprecision(1) << htmlinfoana[i]->val;
-                    zw = stream.str();
-
-                    txt += "<td style=\"width: 150px;\"><h4>" + zw + "</h4><p><img src=\"/img_tmp/" +  htmlinfoana[i]->filename + "\"></p></td>\n";
-                delete htmlinfoana[i];
-                }
-                htmlinfoana.clear();   
-
-                txt += "</tr>\n</table>\n";
+                htmlinfo.clear();
+            
+                txt += "</tr></table><hr/>";
                 httpd_resp_sendstr_chunk(req, txt.c_str()); 
 
+                /*++++++++++++++++++++++++++++++++++++++++*/
+                /* Analog ROI */
+                txt = "<h3 style=\"margin-block-end: 0.5em;\">Analog ROI</h3>\n";
+                txt += "<table style=\"border-spacing: 5px;\">\n";
+                
+                htmlinfo = flowctrl.GetAllAnalog();
+                for (int i = 0; i < htmlinfo.size(); ++i) {
+                    if ((htmlinfo[i]->position == 0) && (i == 0)) {     // New line when a new number sequence begins
+                        txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number sequence: " + htmlinfo[i]->name + "</td></tr>\n";
+                        txt += "<tr style=\"text-align: center; vertical-align: top;\">\n";
+                    }
 
-                /* Full Image 
-                 * Only show it after the image got taken and aligned */
-                txt = "<h3>Aligned Image (current round)</h3>\n";
-                if ((status == std::string("Initialization")) || 
-                    (status == std::string("Initialization (delayed)")) || 
-                    (status == std::string("Take Image"))) {
-                    txt += "<p>Current state: " + status + "</p>\n";
+                    if (htmlinfo[i]->val >= 10.0) {
+                            zw = "0.0";
+                    }
+                    else {
+                        std::stringstream stream;
+                        stream << std::fixed << std::setprecision(1) << htmlinfo[i]->val;
+                        zw = stream.str();
+                    }
+
+                    if (htmlinfo[i]->val > -1) // Only show image if result is set, otherwise text "No Image"
+                        txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
+                                zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\"><img src=\"/img_tmp/" + 
+                                htmlinfo[i]->filename + "\"></p></td>\n";
+                    else
+                        txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
+                                zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\">No Image</p></td>\n";
+                    
+                    delete htmlinfo[i];
                 }
-                else {
-                    txt += "<img src=\"/img_tmp/alg_roi.jpg\">\n";
-                }
+
+                if (htmlinfo.size() == 0)
+                    txt += "<tr><td>Analog ROI processing deactivated</td>";
+
+                htmlinfo.clear();   
+
+                txt += "</tr></table><hr/>";
+                httpd_resp_sendstr_chunk(req, txt.c_str()); 
+
+                /*++++++++++++++++++++++++++++++++++++++++*/
+                /* Show ALG_ROI image*/ 
+                txt = "<h3>Processed Image (incl. Overlays)</h3>\n";
+                txt += "<img src=\"/img_tmp/alg_roi.jpg\">\n";
                 httpd_resp_sendstr_chunk(req, txt.c_str()); 
             }
-        }   
+        }
 
-        /* Respond with an empty chunk to signal HTTP response completion */
+        // Respond with an empty chunk to signal HTTP response completion
         httpd_resp_sendstr_chunk(req, NULL);   
     }
-    else 
-    {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /value not available");
+    else {
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow task not (yet) started: REST API /value not available");
         return ESP_ERR_NOT_FOUND;
     }
 
     #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_wasserzaehler - Done");   
+        LogFile.WriteHeapInfo("handler_value - Done");   
     #endif
 
     return ESP_OK;
@@ -673,7 +707,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         out = "/sdcard" + out;  // --> img_tmp/refX.jpg
 
         STBIObjectPSRAM.name="rawImage";
-        STBIObjectPSRAM.usePreallocated = true; // Reuse of allocated memory od CImageBasis element "rawImage" (ClassTakeImage.cpp) 
+        STBIObjectPSRAM.usePreallocated = true; // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp) 
         CAlignAndCutImage* caic = new CAlignAndCutImage("cutref1", in, true);  // CImageBasis of reference.jpg will be created first (921kB RAM needed)
         caic->CutAndSave(out, x, y, dx, dy);
         delete caic;
@@ -1357,18 +1391,18 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
 
     // Legacy API => New: "/value"
     camuri.uri       = "/value.html";
-    camuri.handler   = handler_wasserzaehler;
+    camuri.handler   = handler_value;
     camuri.user_ctx  = (void*) "Value";
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/value";
-    camuri.handler   = handler_wasserzaehler;
+    camuri.handler   = handler_value;
     camuri.user_ctx  = (void*) "Value"; 
     httpd_register_uri_handler(server, &camuri);
 
     // Legacy API => New: "/value"
     camuri.uri       = "/wasserzaehler.html";
-    camuri.handler   = handler_wasserzaehler;
+    camuri.handler   = handler_value;
     camuri.user_ctx  = (void*) "Wasserzaehler"; 
     httpd_register_uri_handler(server, &camuri);
 
