@@ -547,7 +547,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 htmlinfo = flowctrl.GetAllDigital(); 
 
                 for (int i = 0; i < htmlinfo.size(); ++i) {
-                    if ((htmlinfo[i]->position == 0)) {     // New line when a new number sequence begins
+                    if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
                         txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number sequence: " + htmlinfo[i]->name + "</td></tr>\n";
                         txt += "<tr style=\"text-align: center; vertical-align: top;\">\n";
                     }
@@ -595,7 +595,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 
                 htmlinfo = flowctrl.GetAllAnalog();
                 for (int i = 0; i < htmlinfo.size(); ++i) {
-                    if ((htmlinfo[i]->position == 0) && (i == 0)) {     // New line when a new number sequence begins
+                    if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
                         txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number sequence: " + 
                                 htmlinfo[i]->name + "</td></tr>\n";
                         txt += "<tr style=\"text-align: center; vertical-align: top;\">\n";
