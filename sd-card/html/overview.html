@@ -252,16 +252,36 @@
 			if (_split.length == 1)
 			{
 				var _zer = ZerlegeZeile(_split[0], "\t")
-				if (_zer.length > 1)
-					out = _zer[1]; 
-				else
-					out = ""; 
+				if (_zer.length > 1) {
+					out = _zer[1];
+					if (_type == "error") {
+						if (_zer[1].substring(0,4) == "Neg.")
+							out = "Invalid - Negative rate";
+						else if (_zer[1].substring(0,4) == "Rate")
+							out = "Invalid - Rate too high";
+						else 
+							out = "Valid";
+					}
+				}
+				else {
+					out = "";
+                }
 			}
 			else
 			{
 				for (var j = 0; j < _split.length; ++j)
 				{
-					var _zer = ZerlegeZeile(_split[j], "\t")
+					var _zer = ZerlegeZeile(_split[j], "\t");
+                    
+                    if (_type == "error") {
+						if (_zer[1].substring(0,4) == "Neg.")
+							_zer[1] = "Invaild - Negative rate";
+						else if (_zer[1].substring(0,4) == "Rate")
+							_zer[1] = "Invalid - Rate too high";
+						else 
+							_zer[1] = "Valid";
+					}
+                    
 					if (_zer.length == 1)
 						out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
 							_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\"> </td></tr>"; 
