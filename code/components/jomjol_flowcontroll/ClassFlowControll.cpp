@@ -809,10 +809,8 @@ int ClassFlowControll::getNumbersNamePosition(std::string _name)
     }
     
     for (int i = 0; i < getNumbersSize(); ++i) {
-        if ((*flowpostprocessing->GetNumbers())[i]->name == _name) {
-            ESP_LOGI(TAG, "_name: %s, position: %d", _name.c_str(), i);
+        if ((*flowpostprocessing->GetNumbers())[i]->name == _name)
             return i;
-        }
     }
 
     return -1;
@@ -827,15 +825,10 @@ std::string ClassFlowControll::getNumbersValue(std::string _name, int _type)
         return "";
     }
 
-    ESP_LOGI(TAG, "_name: %s, type: %d", _name.c_str(), _type);
-
     int pos = getNumbersNamePosition(_name); // Search numbers name array position
     if (pos < 0) {
         return "";
     }
-
-    ESP_LOGI(TAG, "_name - found: %s, type: %d, value: %s, rawvalue: %s", _name.c_str(), _type, 
-            (*flowpostprocessing->GetNumbers())[pos]->ReturnValue.c_str(), (*flowpostprocessing->GetNumbers())[pos]->ReturnRawValue.c_str());
 
     switch (_type) {
         case READOUT_TYPE_VALUE:
@@ -866,14 +859,9 @@ std::string ClassFlowControll::getNumbersValue(int _position, int _type)
         return "";
     }
 
-    ESP_LOGI(TAG, "position: %d, type: %d", _position, _type);
-
     if (_position < 0 || _position > getNumbersSize()) {
         return "";
     }
-
-    ESP_LOGI(TAG, "position - valid: %d, type: %d, value: %s, rawvalue: %s", _position, _type, 
-            (*flowpostprocessing->GetNumbers())[_position]->ReturnValue.c_str(), (*flowpostprocessing->GetNumbers())[_position]->ReturnRawValue.c_str());
 
     switch (_type) {
         case READOUT_TYPE_VALUE:
