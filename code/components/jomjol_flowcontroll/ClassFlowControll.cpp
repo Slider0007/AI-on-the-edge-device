@@ -759,30 +759,145 @@ bool ClassFlowControll::StartMQTTService()
 #endif //ENABLE_MQTT
 
 
-string ClassFlowControll::getNumbersName()
-{
-    return flowpostprocessing->getNumbersName();
-}
-
-std::string ClassFlowControll::getNumberName(int _number)
-{
-    return (*flowpostprocessing->GetNumbers())[_number]->name;
-}
-
-
-int ClassFlowControll::getNumbersSize()
-{
-    return flowpostprocessing->GetNumbers()->size();
-}
-
-
 string ClassFlowControll::getJSON()
 {
     return flowpostprocessing->GetJSON();
 }
 
+/* Return all available numbers names (number sequences)*/
+std::string ClassFlowControll::getNumbersName()
+{
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        return "";
+    }
+    
+    return flowpostprocessing->getNumbersName();
+}
 
-string ClassFlowControll::getReadoutAll(int _type)
+
+/* Return numbers name of a given array position number */
+std::string ClassFlowControll::getNumbersName(int _number)
+{
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        return "";
+    }
+    
+    return (*flowpostprocessing->GetNumbers())[_number]->name;
+}
+
+
+/* Return number of number sequences */
+int ClassFlowControll::getNumbersSize()
+{
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        return -1;
+    }
+    
+    return flowpostprocessing->GetNumbers()->size();
+}
+
+
+/* Return array postion of a given numbers name (number sequence) */
+int ClassFlowControll::getNumbersNamePosition(std::string _name)
+{
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        return -1;
+    }
+    
+    for (int i = 0; i < getNumbersSize(); ++i) {
+        if ((*flowpostprocessing->GetNumbers())[i]->name == _name) {
+            ESP_LOGI(TAG, "_name: %s, position: %d", _name.c_str(), i);
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+
+/* Return value for a given numbers name (number sequence) and value type */
+std::string ClassFlowControll::getNumbersValue(std::string _name, int _type)
+{
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        return "";
+    }
+
+    ESP_LOGI(TAG, "_name: %s, type: %d", _name.c_str(), _type);
+
+    int pos = getNumbersNamePosition(_name); // Search numbers name array position
+    if (pos < 0) {
+        return "";
+    }
+
+    ESP_LOGI(TAG, "_name - found: %s, type: %d, value: %s, rawvalue: %s", _name.c_str(), _type, 
+            (*flowpostprocessing->GetNumbers())[pos]->ReturnValue.c_str(), (*flowpostprocessing->GetNumbers())[pos]->ReturnRawValue.c_str());
+
+    switch (_type) {
+        case READOUT_TYPE_VALUE:
+            return (*flowpostprocessing->GetNumbers())[pos]->ReturnValue;
+
+        case READOUT_TYPE_RAWVALUE:
+            return (*flowpostprocessing->GetNumbers())[pos]->ReturnRawValue;
+
+        case READOUT_TYPE_PREVALUE:
+            return (*flowpostprocessing->GetNumbers())[pos]->ReturnPreValue;
+
+        case READOUT_TYPE_ERROR:
+            return (*flowpostprocessing->GetNumbers())[pos]->ErrorMessageText;
+
+        default:
+            return "";
+    }
+
+    return "";
+}
+
+
+/* Return value for a given numbers name array position and value type */
+std::string ClassFlowControll::getNumbersValue(int _position, int _type)
+{
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        return "";
+    }
+
+    ESP_LOGI(TAG, "position: %d, type: %d", _position, _type);
+
+    if (_position < 0 || _position > getNumbersSize()) {
+        return "";
+    }
+
+    ESP_LOGI(TAG, "position - valid: %d, type: %d, value: %s, rawvalue: %s", _position, _type, 
+            (*flowpostprocessing->GetNumbers())[_position]->ReturnValue.c_str(), (*flowpostprocessing->GetNumbers())[_position]->ReturnRawValue.c_str());
+
+    switch (_type) {
+        case READOUT_TYPE_VALUE:
+            return (*flowpostprocessing->GetNumbers())[_position]->ReturnValue;
+
+        case READOUT_TYPE_RAWVALUE:
+            return (*flowpostprocessing->GetNumbers())[_position]->ReturnRawValue;
+
+        case READOUT_TYPE_PREVALUE:
+            return (*flowpostprocessing->GetNumbers())[_position]->ReturnPreValue;
+
+        case READOUT_TYPE_ERROR:
+            return (*flowpostprocessing->GetNumbers())[_position]->ErrorMessageText;
+
+        default:
+            return "";
+    }
+
+    return "";
+}
+
+
+/* Return values for all numbers names (number sequences) and a given value type */
+std::string ClassFlowControll::getReadoutAll(int _type)
 {
     std::string out = "";
     if (flowpostprocessing)
@@ -824,7 +939,8 @@ string ClassFlowControll::getReadoutAll(int _type)
 }	
 
 
-string ClassFlowControll::getReadout(bool _rawvalue = false, bool _noerror = false, int _number = 0)
+/* Return values for numbers names (number sequences) of a given array positon and a given return type */
+std::string ClassFlowControll::getReadout(bool _rawvalue = false, bool _noerror = false, int _number = 0)
 {
     if (flowpostprocessing)
         return flowpostprocessing->getReadoutParam(_rawvalue, _noerror, _number);
