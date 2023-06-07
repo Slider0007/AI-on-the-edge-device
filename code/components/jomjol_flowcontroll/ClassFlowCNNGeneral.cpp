@@ -388,7 +388,7 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, string& aktparamgraph)
         {
             GENERAL[_ana]->ROI[i]->image = new CImageBasis("ROI " + GENERAL[_ana]->ROI[i]->name, 
                     modelxsize, modelysize, modelchannel);
-            GENERAL[_ana]->ROI[i]->image_org = new CImageBasis("ROI " + GENERAL[_ana]->ROI[i]->name + " original",
+            GENERAL[_ana]->ROI[i]->image_org = new CImageBasis("ROI " + GENERAL[_ana]->ROI[i]->name + "_org",
                     GENERAL[_ana]->ROI[i]->deltax, GENERAL[_ana]->ROI[i]->deltay, 3);
         }
 
@@ -528,9 +528,9 @@ bool ClassFlowCNNGeneral::doAlignAndCut(string time)
             if (SaveAllFiles)
             {
                 if (GENERAL[_ana]->name == "default")
-                    GENERAL[_ana]->ROI[i]->image_org->SaveToFile(FormatFileName("/sdcard/img_tmp/" + GENERAL[_ana]->ROI[i]->name + ".jpg"));
+                    GENERAL[_ana]->ROI[i]->image_org->SaveToFile(FormatFileName("/sdcard/img_tmp/" + GENERAL[_ana]->ROI[i]->name + "_org.jpg"));
                 else
-                    GENERAL[_ana]->ROI[i]->image_org->SaveToFile(FormatFileName("/sdcard/img_tmp/" + GENERAL[_ana]->name + "_" + GENERAL[_ana]->ROI[i]->name + ".jpg"));
+                    GENERAL[_ana]->ROI[i]->image_org->SaveToFile(FormatFileName("/sdcard/img_tmp/" + GENERAL[_ana]->name + "_" + GENERAL[_ana]->ROI[i]->name + "_org.jpg"));
             } 
 
             GENERAL[_ana]->ROI[i]->image_org->Resize(modelxsize, modelysize, GENERAL[_ana]->ROI[i]->image);
@@ -913,12 +913,12 @@ std::vector<HTMLInfo*> ClassFlowCNNGeneral::GetHTMLInfo()
             if (GENERAL[_ana]->name == "default")
             {
                 zw->filename = GENERAL[_ana]->ROI[i]->name + ".jpg";
-                zw->filename_org = GENERAL[_ana]->ROI[i]->name + ".jpg";
+                zw->filename_org = GENERAL[_ana]->ROI[i]->name + "_org.jpg";
             }
             else
             {
                 zw->filename = GENERAL[_ana]->name + "_" + GENERAL[_ana]->ROI[i]->name + ".jpg";
-                zw->filename_org = GENERAL[_ana]->name + "_" + GENERAL[_ana]->ROI[i]->name + ".jpg";
+                zw->filename_org = GENERAL[_ana]->name + "_" + GENERAL[_ana]->ROI[i]->name + "_org.jpg";
             }
 
             if (CNNType == Digital)
