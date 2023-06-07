@@ -511,9 +511,7 @@ esp_err_t handler_value(httpd_req_t *req)
                    "correction of any of the post-processing checks / alogrithms. The result after post-processing validation is represented with "
                    "\"Value\". <br>In the next two sections all single \"raw results\" of the respective ROI images (digit styled ROIs and "
                    "analog styled ROIs) are visualized per number sequence. The complete image which was used for processing (including the overlays "
-                   "to highlight the relevant areas) is visulaized on the bottom of this page.</p>";
-            txt += "<p>Note: If a digitalization round is right now processing but not completed, still the infos from the previous completed round "
-                   "are visualized. The infos gets only updated when the image processing of the actual round is fully completed.</p>";
+                   "to highlight the relevant areas) is visualized on the bottom of this page.</p>";
             txt += "</details><hr/>";
 
             if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) { // Display message if first round is not completed yet
@@ -572,7 +570,7 @@ esp_err_t handler_value(httpd_req_t *req)
                     if (htmlinfo[i]->val > -1) // Only show image if result is set, otherwise text "No Image"
                         txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
                                 zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\"><img src=\"/img_tmp/" + 
-                                htmlinfo[i]->filename + "\"></p></td>\n";
+                                htmlinfo[i]->filename_org + "\"></p></td>\n";
                     else
                         txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
                                 zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\">No Image</p></td>\n";
@@ -613,7 +611,7 @@ esp_err_t handler_value(httpd_req_t *req)
                     if (htmlinfo[i]->val > -1) // Only show image if result is set, otherwise text "No Image"
                         txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
                                 zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\"><img src=\"/img_tmp/" + 
-                                htmlinfo[i]->filename + "\"></p></td>\n";
+                                htmlinfo[i]->filename_org + "\"></p></td>\n";
                     else
                         txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
                                 zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\">No Image</p></td>\n";
