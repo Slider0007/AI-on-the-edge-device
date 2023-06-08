@@ -264,16 +264,16 @@
 					}
 				}
 				else {
-					out = ""; 
-				}
+					out = "";
+                }
 			}
 			else
 			{
 				for (var j = 0; j < _split.length; ++j)
 				{
 					var _zer = ZerlegeZeile(_split[j], "\t");
-
-					if (_type == "error") {
+                    
+                    if (_type == "error") {
 						if (_zer[1].substring(0,4) == "Neg.")
 							_zer[1] = "Invaild - Negative rate";
 						else if (_zer[1].substring(0,4) == "Rate")
@@ -281,7 +281,7 @@
 						else 
 							_zer[1] = "Valid";
 					}
-
+                    
 					if (_zer.length == 1)
 						out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
 							_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\"> </td></tr>"; 

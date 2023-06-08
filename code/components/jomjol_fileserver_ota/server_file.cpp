@@ -234,7 +234,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
             }
         } while (chunksize != 0);
         fclose(fd);
-        //    ESP_LOGI(TAG, "File sending complete");
+        //    ESP_LOGD(TAG, "File sending complete");
     }
     ///////////////////////////////
 
@@ -423,7 +423,7 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 
     /* Close file after sending complete */
     fclose(fd);
-    ESP_LOGI(TAG, "File sending complete");
+    ESP_LOGD(TAG, "File sending complete");
 
     /* Respond with an empty chunk to signal HTTP response completion */
     httpd_resp_send_chunk(req, NULL, 0);

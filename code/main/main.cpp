@@ -301,6 +301,7 @@ extern "C" void app_main(void)
                                                "Flow init is delayed by 5 minutes to check the logs or do an OTA update"); 
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Keep device running until crash occurs again and check logs after device is up again");
         LogFile.setLogLevel(ESP_LOG_DEBUG);
+        setTaskAutoFlowState(FLOW_TASK_STATE_INIT_DELAYED);
     }
     else {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Reset reason: " + getResetReason());

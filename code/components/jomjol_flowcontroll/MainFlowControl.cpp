@@ -557,7 +557,7 @@ esp_err_t handler_wasserzaehler(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /value not available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /value not available");
         return ESP_ERR_NOT_FOUND;
     }
 
