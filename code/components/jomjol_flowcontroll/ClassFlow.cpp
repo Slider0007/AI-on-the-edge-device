@@ -71,10 +71,10 @@ void ClassFlow::PresetFlowStateHandler(bool _init, std::string _time)
 }
 
 
-void ClassFlow::FlowStateHandlerSetError(int8_t _errorCode, bool _onlyWaring)
+void ClassFlow::FlowStateHandlerSetError(int8_t _errorCode, bool _onlyWarning)
 {	
 	FlowState.isSuccessful = false;
-	FlowState.onlyWarning = _onlyWaring;
+	FlowState.onlyWarning = _onlyWarning;
 	FlowState.ErrorCode = _errorCode;
 }
 

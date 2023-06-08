@@ -317,7 +317,6 @@ void ClassFlowAlignment::doAutoErrorHandling()
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling (-1): Alignment failed, save debug infos to " + destination);
 
         // Draw alignment marker and save image#
-        ImageBasis->SaveToFile(FormatFileName(destination + "/raw.jpg"));
         DrawRef(AlignAndCutImage);
         AlignAndCutImage->SaveToFile(FormatFileName(destination + "/alg_misalign.jpg"));
     }
