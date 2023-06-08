@@ -14,25 +14,6 @@
 static const char *TAG = "server_cam";
 
 
-void PowerResetCamera(){
-
-        ESP_LOGD(TAG, "Resetting camera by power down line");
-        gpio_config_t conf;
-        conf.intr_type = GPIO_INTR_DISABLE;
-        conf.pin_bit_mask = 1LL << GPIO_NUM_32;
-        conf.mode = GPIO_MODE_OUTPUT;
-        conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-        conf.pull_up_en = GPIO_PULLUP_DISABLE;
-        gpio_config(&conf);
-
-        // carefull, logic is inverted compared to reset pin
-        gpio_set_level(GPIO_NUM_32, 1);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        gpio_set_level(GPIO_NUM_32, 0);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-}
-
-
 esp_err_t handler_lightOn(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON   
@@ -48,7 +29,7 @@ esp_err_t handler_lightOn(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /lighton not available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /lighton not available");
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -75,7 +56,7 @@ esp_err_t handler_lightOff(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /lightoff not available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /lightoff not available");
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -117,7 +98,7 @@ esp_err_t handler_capture(httpd_req_t *req)
     }
         else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /capture not available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /capture not available");
         return ESP_ERR_NOT_FOUND;
     }
 }
@@ -177,7 +158,7 @@ esp_err_t handler_capture_with_light(httpd_req_t *req)
     }
         else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /capture_with_flashlight not available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /capture_with_flashlight not available");
         return ESP_ERR_NOT_FOUND;
     }
 }
@@ -248,7 +229,7 @@ esp_err_t handler_capture_save_to_file(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /save not available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized: REST API /save not available");
         return ESP_ERR_NOT_FOUND;
     }
 }

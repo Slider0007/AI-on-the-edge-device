@@ -49,6 +49,7 @@ void ClassFlowMQTT::SetInitialParameter(void)
     ListFlowControll = NULL; 
     disabled = false;
     keepAlive = 25*60;
+    SaveErrorLog = false;
 }       
 
 ClassFlowMQTT::ClassFlowMQTT()
@@ -180,6 +181,14 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, string& aktparamgraph)
                 mqttServer_setMeterType("energy", "GJ", "h", "GJ/h");
             }
         }
+
+        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveErrorLog = true;
+            else
+                SaveErrorLog = false;
+        }
     }
 
     /* Note:
@@ -218,7 +227,7 @@ bool ClassFlowMQTT::Start(float AutoInterval)
 
 bool ClassFlowMQTT::doFlow(string zwtime)
 {
-    PresetFlowStateHandler();
+    PresetFlowStateHandler(false, zwtime);
     bool success;
     std::string result;
     std::string resulterror = "";
@@ -241,7 +250,7 @@ bool ClassFlowMQTT::doFlow(string zwtime)
     {
         std::vector<NumberPost*>* NUMBERS = flowpostprocessing->GetNumbers();
 
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing MQTT topics...");
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing MQTT topics");
 
         for (int i = 0; i < (*NUMBERS).size(); ++i)
         {
@@ -315,10 +324,20 @@ bool ClassFlowMQTT::doFlow(string zwtime)
     OldValue = result;
 
     if (!success) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "One or more MQTT topics failed to be published!");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "One or more MQTT topics failed to be published");
     }
     
     return true;
+}
+
+
+void ClassFlowMQTT::doAutoErrorHandling()
+{
+    // Error handling can be included here. Function is called after round is completed.
+    
+    /*if (SaveErrorLog) { // If saving error logs enabled
+
+    }*/
 }
 
 

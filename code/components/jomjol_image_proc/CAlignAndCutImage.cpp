@@ -89,7 +89,7 @@ int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
     if (fabs(angle_deviation) > 45 || abs(dx1) >= _temp1->search_x || abs(dy1) >= _temp1->search_y  || 
                                       abs(dx2) >= _temp2->search_x || abs(dy2) >= _temp2->search_y) 
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Align results: Angle dev:" + std::to_string(angle_deviation) + 
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Align failed results: Angle dev:" + std::to_string(angle_deviation) + 
                             ", Ref0dx:" + std::to_string(dx1)+ ", Ref0dy:" + std::to_string(dy1) +
                             ", Ref1dx:" + std::to_string(dx2)+ ", Ref1dy:" + std::to_string(dy2));
         return -1; // ALIGNMENT FAILED
@@ -184,7 +184,7 @@ void IRAM_ATTR CAlignAndCutImage::CutAndSave(int x1, int y1, int dx, int dy, CIm
 
     if ((_target->height != dy) || (_target->width != dx) || (_target->channels != channels))
     {
-        ESP_LOGD(TAG, "CAlignAndCutImage::CutAndSave - Image size does not match!");
+        ESP_LOGD(TAG, "CAlignAndCutImage::CutAndSave - Image size does not match");
         return;
     }
 

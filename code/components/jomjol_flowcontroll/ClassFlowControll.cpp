@@ -143,9 +143,15 @@ bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
             if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC))
                 LogFile.setLogLevel(ESP_LOG_DEBUG);
         }
+        
         if ((toUpper(splitted[0]) == "LOGFILESRETENTION") && (splitted.size() > 1))
         {
             LogFile.SetLogFileRetention(std::stoi(splitted[1]));
+        }
+
+        if ((toUpper(splitted[0]) == "ERRORFILESRETENTION") && (splitted.size() > 1))
+        {
+            LogFile.SetErrorLogRetention(std::stoi(splitted[1]));
         }
 
         // Initial timeserver setup was already done during boot: see main.cpp -> setupTime()
@@ -409,7 +415,7 @@ bool ClassFlowControll::InitFlow(std::string config)
 {
     DeinitFlow();
     
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init flow...");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init flow");
 
     bool bRetVal = true;
     std::string line = "";
@@ -476,7 +482,7 @@ bool ClassFlowControll::InitFlow(std::string config)
 
 void ClassFlowControll::DeinitFlow(void)
 {
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow...");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow");
     //LogFile.WriteHeapInfo("DeinitFlow start");
 
     Camera.LightOnOff(false);
@@ -546,13 +552,17 @@ bool ClassFlowControll::doFlowImageEvaluation(string time)
         #endif //ENABLE_MQTT
 
         if (!FlowControll[i]->doFlow(time)) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error during processing of state \"" + getActStatus() + "\"");
             FlowStateErrorsEvaluation.push_back(FlowControll[i]->getFlowState());
-            result = false;
-            break;
+            if (FlowControll[i]->getFlowState()->onlyWarning) {
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
+            }
+            else {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActStatus() + "\"");
+                result = false;
+                break;
+            }
         }
     }
-
     return result;
 }
 
@@ -575,12 +585,16 @@ bool ClassFlowControll::doFlowPublishData(string time)
         #endif //ENABLE_MQTT
 
         if (!FlowControlPublish[i]->doFlow(time)) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error during processing of state \"" + getActStatus() + "\"");
-            FlowStateErrorsPublish.push_back(FlowControll[i]->getFlowState());
-            result = false;
+            FlowStateErrorsPublish.push_back(FlowControlPublish[i]->getFlowState());
+            if (FlowControll[i]->getFlowState()->onlyWarning) { // Only warning level -> no process state error indication
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
+            }
+            else { // Error level -> show process state error indication
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActStatus() + "\"");
+                result = false;
+            }
         }
     }
-
     return result;
 }
 
@@ -600,13 +614,17 @@ bool ClassFlowControll::doFlowTakeImageOnly(string time)
             #endif //ENABLE_MQTT
 
             if (!FlowControlPublish[i]->doFlow(time)) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error during processing of state \"" + getActStatus() + "\"");
                 FlowStateErrorsEvaluation.push_back(FlowControll[i]->getFlowState());
-                result = false;
+                if (FlowControll[i]->getFlowState()->onlyWarning) {
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
+                    result = false;
+                }
+                else {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActStatus() + "\"");
+                }
             }
         }
     }
-
     return result;
 }
 
@@ -917,7 +935,7 @@ esp_err_t ClassFlowControll::SendRawJPG(httpd_req_t *req)
         return flowtakeimage->SendRawJPG(req);
     }
     else {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "flowtakeimage not available: Raw image cannot be served!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "flowtakeimage not available: Raw image cannot be served");
         return ESP_ERR_NOT_FOUND;
     }
 }
@@ -1027,7 +1045,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
             result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
             free(fileBuffer);
         }
-        else if ((!flowtakeimage->getFlowState()->getCalled && getActStatus().compare(std::string(FLOW_IDLE_NO_AUTOSTART)) == 0) ||
+        else if ((!flowtakeimage->getFlowState()->getExecuted && getActStatus().compare(std::string(FLOW_IDLE_NO_AUTOSTART)) == 0) ||
                     (!isAutoStart() && FlowStateErrorsOccured() && getActStatus().compare(std::string(FLOW_TAKE_IMAGE)) == 0)) {   // Show only before first round started or error occured, otherwise result will be shown till next start
             FILE* file = fopen("/sdcard/html/Flowstate_idle_no_autostart.jpg", "rb"); 
 
@@ -1082,7 +1100,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
             }
             else {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served!");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
                 if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
                     _send = flowalignment->ImageBasis;
                 }
@@ -1125,7 +1143,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
             }
             else {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served!");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ClassFlowControll::GetJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
                 if (flowalignment && flowalignment->ImageBasis->ImageOkay()) {
                     _send = flowalignment->ImageBasis;
                 }
@@ -1189,7 +1207,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
 
     if (_send)
     {
-        ESP_LOGD(TAG, "Sending file: %s ...", _fn.c_str());
+        ESP_LOGD(TAG, "Sending file: %s", _fn.c_str());
         set_content_type_from_file(req, _fn.c_str());
         result = _send->SendJPGtoHTTP(req);
         /* Respond with an empty chunk to signal HTTP response completion */

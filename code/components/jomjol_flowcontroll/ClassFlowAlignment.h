@@ -23,12 +23,14 @@ protected:
     bool initialmirror;
     bool initialflip;
     bool use_antialiasing;
+    bool SaveErrorLog;
     bool SaveAllFiles;
     int AlignFAST_SADThreshold;
 
     void SetInitialParameter(void);
     bool LoadReferenceAlignmentValues(void);
     bool SaveReferenceAlignmentValues(void);
+    void doAutoErrorHandling();
 
 public:
     CImageBasis *ImageBasis;

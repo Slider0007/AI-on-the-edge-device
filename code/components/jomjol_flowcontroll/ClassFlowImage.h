@@ -12,7 +12,7 @@ class ClassFlowImage : public ClassFlow
 protected:
 	string imagesLocation;
     bool isLogImage;
-    unsigned short imagesRetention;
+    int imagesRetention;
 	const char* logTag;
 
 	string CreateLogFolder(string time);

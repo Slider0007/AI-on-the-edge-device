@@ -18,6 +18,7 @@ protected:
     int PreValueAgeStartup; 
     bool ErrorMessage;
     bool IgnoreLeadingNaN;          // SPECIAL CASE for User Gustl ???
+    bool SaveErrorLog;
 
     ClassFlowCNNGeneral* flowAnalog;
     ClassFlowCNNGeneral* flowDigit;    
@@ -49,6 +50,8 @@ public:
     virtual ~ClassFlowPostProcessing();
     bool ReadParameter(FILE* pfile, string& aktparamgraph);
     bool doFlow(string time);
+    void doAutoErrorHandling();
+
     string getReadout(int _number);
     string getReadoutParam(bool _rawValue, bool _noerror, int _number = 0);
     string getReadoutError(int _number = 0);

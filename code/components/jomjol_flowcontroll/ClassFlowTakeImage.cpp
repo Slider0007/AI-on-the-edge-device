@@ -25,6 +25,7 @@ void ClassFlowTakeImage::SetInitialParameter(void)
     ImageSize = FRAMESIZE_VGA;
     TimeImageTaken = 0;
     ImageQuality = 12;
+    SaveErrorLog = false;
     SaveAllFiles = false;
     disabled = false;
     FixedExposure = false;
@@ -126,6 +127,14 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
                 Camera.DisableDemoMode();
         }
 
+        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveErrorLog = true;
+            else
+                SaveErrorLog = false;
+        }
+
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
@@ -155,7 +164,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
     }
 
     if (FixedExposure && (waitbeforepicture > 0)) {
-//      ESP_LOGD(TAG, "Fixed Exposure enabled!");
+//      ESP_LOGD(TAG, "Fixed Exposure enabled");
         Camera.EnableAutoExposure(flash_duration);
     }
 
@@ -165,14 +174,14 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
 
 bool ClassFlowTakeImage::doFlow(string zwtime)
 {
-    PresetFlowStateHandler();
+    PresetFlowStateHandler(false, zwtime);
     std::string logPath = CreateLogFolder(zwtime);
  
     #ifdef DEBUG_DETAIL_ON  
         LogFile.WriteHeapInfo("ClassFlowTakeImage::doFlow - Start");
     #endif
 
-    if (takePictureWithFlash(flash_duration)) {
+    if (!takePictureWithFlash(flash_duration)) {
         FlowStateHandlerSetError(-1);       // Error cluster: -1
         return false;
     }
@@ -196,7 +205,14 @@ bool ClassFlowTakeImage::doFlow(string zwtime)
 void ClassFlowTakeImage::doAutoErrorHandling()
 {
     // Error handling can be included here. Function is called after round is completed.
-    //ESP_LOGI(TAG, "ClassFlowTakeImage::doAutoErrorHandling() - TEST");
+
+    if (getFlowState()->ErrorCode == -1) {  // Camera framebuffer failure
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling (-1): Camera framebuffer failed, reset camera");
+        Camera.PowerResetCamera();
+        Camera.InitCam();
+        Camera.LightOnOff(false);
+    }
+
 }
 
 
@@ -211,7 +227,7 @@ esp_err_t ClassFlowTakeImage::camera_capture()
 {
     std::string nm =  namerawimage;
 
-    if (!Camera.CaptureToFile(nm))
+    if (Camera.CaptureToFile(nm) != ESP_OK)
         return ESP_FAIL;
 
     time(&TimeImageTaken);
@@ -233,7 +249,7 @@ bool ClassFlowTakeImage::takePictureWithFlash(int _flash_duration)
     rawImage->height = image_height;
 
     ESP_LOGD(TAG, "flash_duration: %d", _flash_duration);
-    if (!Camera.CaptureToBasisImage(rawImage, _flash_duration))
+    if (Camera.CaptureToBasisImage(rawImage, _flash_duration) != ESP_OK)
         return false;
 
     time(&TimeImageTaken);
@@ -260,7 +276,7 @@ ImageData* ClassFlowTakeImage::SendRawImage()
     CImageBasis *zw = new CImageBasis("SendRawImage", rawImage);
     ImageData *id;
 
-    if (!Camera.CaptureToBasisImage(rawImage, flash_duration))
+    if (Camera.CaptureToBasisImage(rawImage, flash_duration) != ESP_OK)
         return NULL;
 
     time(&TimeImageTaken);

@@ -16,9 +16,10 @@ class ClassFlowInfluxDB : public ClassFlow
 protected:
     ClassFlowPostProcessing* flowpostprocessing;
     std::string uri, database, measurement;
-    std::string OldValue;
     std::string user, password;
+    std::string OldValue;
     bool InfluxDBenable;
+    bool SaveErrorLog;
 
     void SetInitialParameter(void);    
     
@@ -33,6 +34,7 @@ public:
 
     bool ReadParameter(FILE* pfile, string& aktparamgraph);
     bool doFlow(string time);
+    void doAutoErrorHandling();
     string name(){return "ClassFlowInfluxDB";};
 };
 

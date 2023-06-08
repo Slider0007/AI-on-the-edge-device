@@ -64,7 +64,7 @@ int CTfLiteClass::GetOutClassification(int _von, int _bis)
 
     if (_bis >= numeroutput)
     {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "GetOutClassification: NUMBER OF OUTPUT NEURONS does not match required classification!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "GetOutClassification: NUMBER OF OUTPUT NEURONS does not match required classification");
         return -1;
     }
 
@@ -280,7 +280,7 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
 
     FILE* f = fopen(_fn.c_str(), "rb");     // previously only "r
     if (fread(modelfile, 1, size, f) != size) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ReadFileToModel: Reading error: Size differs!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ReadFileToModel: Reading error: Size differs");
         free_psram_heap(std::string(TAG) + "->modelfile", modelfile);
         fclose(f);
         return false;
@@ -300,14 +300,14 @@ bool CTfLiteClass::LoadModel(std::string _fn)
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Loading TFLITE model");
     
     if (!ReadFileToModel(_fn)) {
-      LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadModel: TFLITE model file reading failed!");
+      LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadModel: TFLITE model file reading failed");
       return false;
     }
 
     model = tflite::GetModel(modelfile);
 
     if(model == nullptr) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadModel: GetModel failed!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadModel: GetModel failed");
         return false;
     }
 

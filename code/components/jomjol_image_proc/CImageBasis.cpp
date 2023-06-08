@@ -129,7 +129,7 @@ inline void writejpgtohttphelp(void *context, void *data, int size)
     {
         if (httpd_resp_send_chunk(_send->req, _send->buf, _send->size) != ESP_OK) 
         {
-                    ESP_LOGE(TAG, "File sending failed!");
+                    ESP_LOGE(TAG, "File sending failed");
                     _send->res = ESP_FAIL;  
         }
         _send->size = 0;      
@@ -153,7 +153,7 @@ esp_err_t CImageBasis::SendJPGtoHTTP(httpd_req_t *_req, const int quality)
     {
         if (httpd_resp_send_chunk(_req, (char*) ii.buf, ii.size) != ESP_OK)             //still send the rest
         {
-            ESP_LOGE(TAG, "File sending failed!");
+            ESP_LOGE(TAG, "File sending failed");
             ii.res = ESP_FAIL;  
         }
     }
@@ -528,7 +528,7 @@ void CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image
     filename = _image;
 
     if (file_size(_image.c_str()) == 0) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, filename + " is empty!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, filename + " is empty");
         return;
     }
 
@@ -684,7 +684,7 @@ CImageBasis::CImageBasis(std::string _name, std::string _image)
     filename = _image;
 
     if (file_size(_image.c_str()) == 0) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _image + " is empty!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _image + " is empty");
         return;
     }
 
@@ -726,7 +726,7 @@ CImageBasis::CImageBasis(std::string _name, std::string _image, bool _externalIm
     filename = _image;
 
     if (file_size(_image.c_str()) == 0) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _image + " is empty!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _image + " is empty");
         return;
     }
 
@@ -857,7 +857,7 @@ void CImageBasis::Resize(int _new_dx, int _new_dy, CImageBasis *_target)
 {
     if ((_target->height != _new_dy) || (_target->width != _new_dx) || (_target->channels != channels))
     {
-        ESP_LOGE(TAG, "Resize - Target image size does not fit!");
+        ESP_LOGE(TAG, "Resize - Target image size does not fit");
         return;
     }
 

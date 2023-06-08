@@ -20,17 +20,21 @@ static const char* TAG = "INFLUXDB";
 void ClassFlowInfluxDB::SetInitialParameter(void)
 {
     PresetFlowStateHandler(true);
+    flowpostprocessing = NULL;  
+    previousElement = NULL;
+    ListFlowControll = NULL;
+
     uri = "";
     database = "";
+    measurement = "";
+    user = "";
+    password = "";
 
     OldValue = "";
-    flowpostprocessing = NULL;  
-    user = "";
-    password = "";   
-    previousElement = NULL;
-    ListFlowControll = NULL; 
+
     disabled = false;
     InfluxDBenable = false;
+    SaveErrorLog = false;
 }       
 
 ClassFlowInfluxDB::ClassFlowInfluxDB()
@@ -72,6 +76,7 @@ ClassFlowInfluxDB::ClassFlowInfluxDB(std::vector<ClassFlow*>* lfc, ClassFlow *_p
 bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, string& aktparamgraph)
 {
     std::vector<string> splitted;
+    std::string _param;
 
     aktparamgraph = trim(aktparamgraph);
 
@@ -86,7 +91,7 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, string& aktparamgraph)
     {
         ESP_LOGD(TAG, "while loop reading line: %s", aktparamgraph.c_str());
         splitted = ZerlegeZeile(aktparamgraph);
-        std::string _param = GetParameterName(splitted[0]);
+        _param = GetParameterName(splitted[0]);
 
         if ((toUpper(_param) == "URI") && (splitted.size() > 1))
         {
@@ -117,18 +122,25 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, string& aktparamgraph)
         {
             handleFieldname(splitted[0], splitted[1]);
         }
+
+        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveErrorLog = true;
+            else
+                SaveErrorLog = false;
+        }
     }
 
-    if ((uri.length() > 0) && (database.length() > 0)) 
-    { 
-//        ESP_LOGD(TAG, "Init InfluxDB with uri: %s, measurement: %s, user: %s, password: %s", uri.c_str(), measurement.c_str(), user.c_str(), password.c_str());
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init InfluxDB with uri: " + uri + ", user: " + user + ", password: " + password);
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init with URI: " + uri + ", Database: " + database + ", User: " + user + ", Password: " + password);
+
+    if ((uri.length() > 0) && (uri != "undefined") && (database.length() > 0) && (database != "undefined")) { 
         InfluxDBInit(uri, database, user, password); 
         InfluxDBenable = true;
     } 
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init skipped - missing parameters");
-        //return false; // TODO: Init should fail or continue flow?
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or wrong parameter");
+        return false;
     }
    
     return true;
@@ -140,7 +152,7 @@ bool ClassFlowInfluxDB::doFlow(string zwtime)
     if (!InfluxDBenable)
         return true;
 
-    PresetFlowStateHandler();
+    PresetFlowStateHandler(false, zwtime);
     std::string result;
     std::string resulterror = "";
     std::string resultraw = "";
@@ -149,8 +161,7 @@ bool ClassFlowInfluxDB::doFlow(string zwtime)
     string zw = "";
     string namenumber = "";
 
-    if (flowpostprocessing)
-    {
+    if (flowpostprocessing != NULL) {
         std::vector<NumberPost*>* NUMBERS = flowpostprocessing->GetNumbers();
 
         for (int i = 0; i < (*NUMBERS).size(); ++i)
@@ -179,6 +190,10 @@ bool ClassFlowInfluxDB::doFlow(string zwtime)
                 InfluxDBPublish(measurement, namenumber, result, resulttimestamp);
         }
     }
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read post-processing data");
+        return false;
+    }
    
     OldValue = result;
     
@@ -186,25 +201,33 @@ bool ClassFlowInfluxDB::doFlow(string zwtime)
 }
 
 
+void ClassFlowInfluxDB::doAutoErrorHandling()
+{
+    // Error handling can be included here. Function is called after round is completed.
+    
+    /*if (SaveErrorLog) { // If saving error logs enabled
+
+    }*/
+
+}
+
+
 void ClassFlowInfluxDB::handleMeasurement(string _decsep, string _value)
 {
     string _digit, _decpos;
     int _pospunkt = _decsep.find_first_of(".");
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
+
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
     else
         _digit = "default";
+    
     for (int j = 0; j < flowpostprocessing->NUMBERS.size(); ++j)
     {
-        if (_digit == "default")                        //  Set to default first (if nothing else is set)
-        {
+        if (_digit == "default" || flowpostprocessing->NUMBERS[j]->name == _digit)
             flowpostprocessing->NUMBERS[j]->MeasurementV1 = _value;
-        }
-        if (flowpostprocessing->NUMBERS[j]->name == _digit)
-        {
-            flowpostprocessing->NUMBERS[j]->MeasurementV1 = _value;
-        }
+
+        //ESP_LOGI(TAG, "handleMeasurement: Name: %s, Pospunkt: %d, value: %s", _digit.c_str(), _pospunkt, _value);
     }
 }
 
@@ -213,21 +236,18 @@ void ClassFlowInfluxDB::handleFieldname(string _decsep, string _value)
 {
     string _digit, _decpos;
     int _pospunkt = _decsep.find_first_of(".");
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
+
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
     else
         _digit = "default";
+    
     for (int j = 0; j < flowpostprocessing->NUMBERS.size(); ++j)
     {
-        if (_digit == "default")                        //  Set to default first (if nothing else is set)
-        {
+        if (_digit == "default" || flowpostprocessing->NUMBERS[j]->name == _digit)
             flowpostprocessing->NUMBERS[j]->FieldV1 = _value;
-        }
-        if (flowpostprocessing->NUMBERS[j]->name == _digit)
-        {
-            flowpostprocessing->NUMBERS[j]->FieldV1 = _value;
-        }
+        
+        //ESP_LOGI(TAG, "handleFieldname: Name: %s, Pospunkt: %d, value: %s", _digit.c_str(), _pospunkt, _value);
     }
 }
 

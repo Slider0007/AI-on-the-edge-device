@@ -136,6 +136,7 @@ function ParseConfig() {
      ParamAddValue(param, catname, "InitialRotate");
      param[catname]["InitialRotate"]["enabled"] = true;
      param[catname]["InitialRotate"]["value1"] = 0.0;
+     ParamAddValue(param, catname, "SaveErrorLog");
 
      var catname = "Digits";
      category[catname] = new Object(); 
@@ -172,7 +173,7 @@ function ParseConfig() {
      ParamAddValue(param, catname, "MaxRateValue", 1, true, "0.05");
      ParamAddValue(param, catname, "ExtendedResolution", 1, true, "false");
      ParamAddValue(param, catname, "IgnoreLeadingNaN", 1, true, "false");
-
+     ParamAddValue(param, catname, "SaveErrorLog");
 
      var catname = "MQTT";
      category[catname] = new Object(); 
@@ -257,6 +258,7 @@ function ParseConfig() {
      param[catname] = new Object();
      ParamAddValue(param, catname, "LogLevel");
      ParamAddValue(param, catname, "LogfilesRetention");
+     ParamAddValue(param, catname, "ErrorFilesRetention");
 
      var catname = "System";
      category[catname] = new Object(); 

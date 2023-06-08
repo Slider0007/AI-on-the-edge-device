@@ -22,6 +22,7 @@ protected:
     float roundInterval; // Minutes
     int keepAlive; // Seconds
     bool SetRetainFlag;
+    bool SaveErrorLog;
 
 	void SetInitialParameter(void);        
 
@@ -34,6 +35,7 @@ public:
 
     bool ReadParameter(FILE* pfile, string& aktparamgraph);
     bool doFlow(string time);
+    void doAutoErrorHandling();
     string name(){return "ClassFlowMQTT";};
 };
 #endif //CLASSFFLOWMQTT_H

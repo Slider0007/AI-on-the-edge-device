@@ -19,6 +19,7 @@ protected:
     std::string dborg, dbtoken, dbfield;
     std::string OldValue;
     bool InfluxDBenable;
+    bool SaveErrorLog;
 
     void SetInitialParameter(void);     
 
@@ -34,6 +35,7 @@ public:
 
     bool ReadParameter(FILE* pfile, string& aktparamgraph);
     bool doFlow(string time);
+    void doAutoErrorHandling();
     string name(){return "ClassFlowInfluxDBv2";};
 };
 

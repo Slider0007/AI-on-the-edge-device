@@ -28,6 +28,7 @@ void ClassFlowAlignment::SetInitialParameter(void)
     initialmirror = false;
     use_antialiasing = false;
     initialflip = false;
+    SaveErrorLog = false;
     SaveAllFiles = false;
     ListFlowControll = NULL;
     AlignAndCutImage = NULL;
@@ -128,6 +129,14 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
                 use_antialiasing = false;
         }
 
+        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveErrorLog = true;
+            else
+                SaveErrorLog = false;
+        }
+
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
@@ -186,7 +195,7 @@ string ClassFlowAlignment::getHTMLSingleStep(string host)
 
 bool ClassFlowAlignment::doFlow(string time) 
 {
-    PresetFlowStateHandler();
+    PresetFlowStateHandler(false, time);
     if (AlgROI == NULL)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
     {
         AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
@@ -207,7 +216,7 @@ bool ClassFlowAlignment::doFlow(string time)
         ImageTMP = new CImageBasis("ImageTMP", ImageBasis, 1);
         if (ImageTMP == NULL) 
         {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Faioled to allocate ImageTMP");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to allocate ImageTMP");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
             return false;
         }
@@ -263,8 +272,8 @@ bool ClassFlowAlignment::doFlow(string time)
             SaveReferenceAlignmentValues();
         }
         else if (AlignRetval == -1) {   // alignment failed         
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Misalignment too large. Check initial rotation, alignment marker or "
-                                                    "increase alignment expert parameter: Search Field X, Y");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Alignment failed. Check initial rotation, alignment marker or "
+                                                    "alignment parameter \"Search Field X, Y\"");
             FlowStateHandlerSetError(-1);  
         }
     }
@@ -273,8 +282,10 @@ bool ClassFlowAlignment::doFlow(string time)
         if(References[0].alignment_algo != 3){ // if align_algo = off -> draw no alignment marker
             DrawRef(ImageTMP);
         }
-        flowctrl.DigitalDrawROI(ImageTMP);
-        flowctrl.AnalogDrawROI(ImageTMP);
+        if (getFlowState()->isSuccessful) {
+            flowctrl.DigitalDrawROI(ImageTMP);
+            flowctrl.AnalogDrawROI(ImageTMP);
+        }
         ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
     }
     
@@ -292,6 +303,24 @@ bool ClassFlowAlignment::doFlow(string time)
         return false;
 
     return true;
+}
+
+
+void ClassFlowAlignment::doAutoErrorHandling()
+{
+    // Error handling can be included here. Function is called after round is completed.
+    
+    if (SaveErrorLog && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and alignment failed
+        std::string destination = "/sdcard/log/error/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
+        MakeDir(destination);
+
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling (-1): Alignment failed, save debug infos to " + destination);
+
+        // Draw alignment marker and save image#
+        ImageBasis->SaveToFile(FormatFileName(destination + "/raw.jpg"));
+        DrawRef(AlignAndCutImage);
+        AlignAndCutImage->SaveToFile(FormatFileName(destination + "/alg_misalign.jpg"));
+    }
 }
 
 

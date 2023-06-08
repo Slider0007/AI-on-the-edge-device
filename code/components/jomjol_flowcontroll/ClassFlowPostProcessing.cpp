@@ -330,6 +330,7 @@ ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, C
     IgnoreLeadingNaN = false;
     flowAnalog = _analog;
     flowDigit = _digit;
+    SaveErrorLog = false;
 
     for (int i = 0; i < ListFlowControll->size(); ++i)
     {
@@ -346,8 +347,6 @@ void ClassFlowPostProcessing::handleDecimalExtendedResolution(std::string _decse
     std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
     bool value;
-
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
 
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
@@ -500,7 +499,7 @@ void ClassFlowPostProcessing::handleMaxRateValue(std::string _decsep, std::strin
 bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
 {
     std::vector<string> splitted;
-    int _n;
+    std::string _param;
 
     aktparamgraph = trim(aktparamgraph);
 
@@ -508,17 +507,15 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
         if (!this->GetNextParagraph(pfile, aktparamgraph))
             return false;
 
-
     if (aktparamgraph.compare("[PostProcessing]") != 0)       // Paragraph does not fit PostProcessing
         return false;
 
     InitNUMBERS();
 
-
     while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
     {
         splitted = ZerlegeZeile(aktparamgraph);
-        std::string _param = GetParameterName(splitted[0]);
+        _param = GetParameterName(splitted[0]);
 
         if ((toUpper(_param) == "PREVALUEUSE") && (splitted.size() > 1))
         {
@@ -544,11 +541,11 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
         if ((toUpper(_param) == "CHECKDIGITINCREASECONSISTENCY") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE") {
-                for (_n = 0; _n < NUMBERS.size(); ++_n)
+                for (int _n = 0; _n < NUMBERS.size(); ++_n)
                     NUMBERS[_n]->checkDigitIncreaseConsistency = true;
             }
             else {
-                for (_n = 0; _n < NUMBERS.size(); ++_n)
+                for (int _n = 0; _n < NUMBERS.size(); ++_n)
                     NUMBERS[_n]->checkDigitIncreaseConsistency = false; 
             }
         } 
@@ -594,6 +591,14 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
                 IgnoreLeadingNaN = true;
             else
                 IgnoreLeadingNaN = false;
+        }
+
+        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveErrorLog = true;
+            else
+                SaveErrorLog = false;
         }
     }
 
@@ -726,7 +731,7 @@ string ClassFlowPostProcessing::ShiftDecimal(string in, int _decShift){
 
 bool ClassFlowPostProcessing::doFlow(string zwtime)
 {
-    PresetFlowStateHandler();
+    PresetFlowStateHandler(false, zwtime);
     string result = "";
     string digit = "";
     string analog = "";
@@ -852,7 +857,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
             else
             {
                 #ifdef SERIAL_DEBUG
-                    ESP_LOGD(TAG, "checkDigitIncreaseConsistency = true - no digital numbers defined!");
+                    ESP_LOGD(TAG, "checkDigitIncreaseConsistency = true - no digital numbers defined");
                 #endif
             }
         }
@@ -871,19 +876,21 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                      NUMBERS[j]->PreValue-(2/pow(10, NUMBERS[j]->Nachkomma))
                       ) ;
                 #endif
-                // Include inaccuracy of 0.2 for isExtendedResolution.
-                if (NUMBERS[j]->Value >= (NUMBERS[j]->PreValue-(2/pow(10, NUMBERS[j]->Nachkomma))) && NUMBERS[j]->isExtendedResolution) {
+                // Include inaccuracy of 0.3 for isExtendedResolution.
+                if (NUMBERS[j]->Value >= (NUMBERS[j]->PreValue-(3/pow(10, NUMBERS[j]->Nachkomma))) && NUMBERS[j]->isExtendedResolution) {
                     NUMBERS[j]->Value = NUMBERS[j]->PreValue;
                     NUMBERS[j]->ReturnValue = to_string(NUMBERS[j]->PreValue);
-                } else {
+                } 
+                else {
                     NUMBERS[j]->ErrorMessageText = NUMBERS[j]->ErrorMessageText + "Neg. Rate - Read: " + zwvalue + " - Raw: " + NUMBERS[j]->ReturnRawValue + " - Pre: " + RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma) + " "; 
                     NUMBERS[j]->Value = NUMBERS[j]->PreValue;
                     NUMBERS[j]->ReturnValue = "";
                     NUMBERS[j]->lastvalue = imagetime;
 
                     string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + ", Status: " + NUMBERS[j]->ErrorMessageText;
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _zw);
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, _zw);
                     WriteDataLog(j);
+                    FlowStateHandlerSetError(-1, true);
                     continue;
                 }
                 
@@ -915,8 +922,9 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                 NUMBERS[j]->lastvalue = imagetime;
 
                 string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + ", Status: " + NUMBERS[j]->ErrorMessageText;
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _zw);
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, _zw);
                 WriteDataLog(j);
+                FlowStateHandlerSetError(-1, true);
                 continue;
             }
         }
@@ -942,8 +950,58 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
     }
 
     SavePreValue();
+    if (!FlowState.isSuccessful)
+        return false;
+
     return true;
 }
+
+
+void ClassFlowPostProcessing::doAutoErrorHandling()
+{
+    // Error handling can be included here. Function is called after round is completed.
+    
+    if (SaveErrorLog && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and "rate negative" or "rate too high"
+        bool saveData = false;
+        std::string destination = "/sdcard/log/error/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
+        std::string resultFileName;
+        MakeDir(destination);
+
+        for (int j = 0; j < NUMBERS.size(); ++j) {       
+            if (NUMBERS[j]->ErrorMessageText.find("Neg. Rate") != std::string::npos) {
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "doAutoErrorHandling (-1): Neg. Rate, save debug infos to " + destination);
+                resultFileName = "/Neg_rate_result.txt";
+                saveData = true;
+            }
+            else if (NUMBERS[j]->ErrorMessageText.find("Rate too high") != std::string::npos) {
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "doAutoErrorHandling (-1): Rate too high, save debug infos to " + destination);
+                resultFileName = "/Rate_too_high_result.txt";
+                saveData = true;
+            }
+
+            if (saveData) {
+                saveData = false;
+
+                // Save result in file
+                std::string sResult = NUMBERS[j]->ErrorMessageText;
+                FILE* fpResult = fopen((destination + resultFileName).c_str(), "w");
+                fwrite(NUMBERS[j]->ErrorMessageText.c_str(), (NUMBERS[j]->ErrorMessageText).length(), 1, fpResult);
+                fclose(fpResult);
+
+                // Save digit ROIs
+                for (int i = 0; i < NUMBERS[j]->digit_roi->ROI.size(); ++i)
+                    NUMBERS[j]->digit_roi->ROI[i]->image->SaveToFile(destination + "/" + NUMBERS[j]->name + "_dig" + std::to_string(i+1) + "_" +
+                                RundeOutput(NUMBERS[j]->digit_roi->ROI[i]->result_float, NUMBERS[j]->Nachkomma) + ".jpg");
+
+                // Save analog ROIs
+                for (int i = 0; i < NUMBERS[j]->analog_roi->ROI.size(); ++i)
+                    NUMBERS[j]->analog_roi->ROI[i]->image->SaveToFile(destination + "/" + NUMBERS[j]->name + "_ana" + std::to_string(i+1) + "_" +
+                                RundeOutput(NUMBERS[j]->analog_roi->ROI[i]->result_float, NUMBERS[j]->Nachkomma) + ".jpg");
+            }
+        }
+    }
+}
+
 
 void ClassFlowPostProcessing::WriteDataLog(int _index)
 {

@@ -42,6 +42,7 @@ protected:
     int modelxsize, modelysize, modelchannel;
     string LogImageSelect;
     bool isLogImageSelect;
+    bool SaveErrorLog;
     bool SaveAllFiles;   
 
     int PointerEvalAnalogNew(float zahl, int numeral_preceder);
@@ -59,6 +60,7 @@ public:
 
     bool ReadParameter(FILE* pfile, string& aktparamgraph);
     bool doFlow(string time);
+    void doAutoErrorHandling();
 
     string getHTMLSingleStep(string host);
     string getReadout(int _analog, bool _extendedResolution = false, int prev = -1, float _before_narrow_Analog = -1, float analogDigitalTransitionStart=9.2); 

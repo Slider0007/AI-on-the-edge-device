@@ -359,7 +359,7 @@ esp_err_t handler_json(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /json not yet available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow not (yet) started: REST API /json not yet available");
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -673,7 +673,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         out = "/sdcard" + out;  // --> img_tmp/refX.jpg
 
         STBIObjectPSRAM.name="rawImage";
-        STBIObjectPSRAM.usePreallocated = true; // Reuse of allocated memory od CImageBasis element "rawImage" (ClassTakeImage.cpp) 
+        STBIObjectPSRAM.usePreallocated = true; // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp) 
         CAlignAndCutImage* caic = new CAlignAndCutImage("cutref1", in, true);  // CImageBasis of reference.jpg will be created first (921kB RAM needed)
         caic->CutAndSave(out, x, y, dx, dy);
         delete caic;
@@ -844,7 +844,7 @@ esp_err_t handler_rssi(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "WIFI not (yet) connected: REST API /rssi not available!");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "WIFI not (yet) connected: REST API /rssi not available");
         return ESP_ERR_NOT_FOUND;
     }      
 
@@ -1095,7 +1095,7 @@ void task_autodoFlow(void *pvParameter)
                 flowctrl.setActFlowError(false);
             }
             else {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image evaluation failed");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image evaluation process error occured");
                 flowctrl.setActFlowError(true);
             }
 
@@ -1107,7 +1107,7 @@ void task_autodoFlow(void *pvParameter)
         else if (taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA) {  
 
             if (!flowctrl.doFlowPublishData(getCurrentTimeString(LOGFILE_TIME_FORMAT))) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Publish data failed"); 
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Publish data process error occured"); 
                 flowctrl.setActFlowError(true);
             }
             taskAutoFlowState = FLOW_TASK_STATE_ADDITIONAL_TASKS;           // Continue with TASKS after FLOW FINISHED
@@ -1151,7 +1151,8 @@ void task_autodoFlow(void *pvParameter)
                     }
                 #endif //ENABLE_MQTT
             
-                flowctrl.AutomaticFlowErrorHandler(); 
+                flowctrl.AutomaticFlowErrorHandler();
+                LogFile.RemoveOldErrorLog();
             }
             else {
                 #ifdef ENABLE_MQTT
@@ -1188,7 +1189,7 @@ void task_autodoFlow(void *pvParameter)
             if (reloadConfig) {
                 reloadConfig = false;
                 manualFlowStart = false; // Reload config has higher prio
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration...");
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration");
                 taskAutoFlowState = FLOW_TASK_STATE_INIT;                   // Return to state "FLOW INIT"
             }
             else if (manualFlowStart) {
@@ -1245,7 +1246,7 @@ void task_autodoFlow(void *pvParameter)
         // INVALID STATE
         // ********************************************
         else {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "taskAutoFlowState: Invalid state called. Programming error!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "taskAutoFlowState: Invalid state called. Programming error");
             flowctrl.setActStatus(std::string(FLOW_INVALID_STATE));
         }
     }

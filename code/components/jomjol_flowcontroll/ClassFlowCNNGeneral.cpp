@@ -32,7 +32,8 @@ ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, std::st
     CNNGoodThreshold = 0.0;
     ListFlowControll = NULL;
     previousElement = NULL;   
-    SaveAllFiles = false; 
+    SaveAllFiles = false;
+    SaveErrorLog = false;
     disabled = false;
     isLogImageSelect = false;
     flowpostalignment = _flowalign;
@@ -46,19 +47,22 @@ string ClassFlowCNNGeneral::getReadout(int _analog = 0, bool _extendedResolution
 
     if (GENERAL[_analog]->ROI.size() == 0)
         return result;
+    
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getReadout _analog=" + std::to_string(_analog) + ", _extendedResolution=" + std::to_string(_extendedResolution) + ", prev=" + std::to_string(prev));
  
     if (CNNType == Analogue || CNNType == Analogue100)
-    {
-        float number = GENERAL[_analog]->ROI[GENERAL[_analog]->ROI.size() - 1]->result_float;
-        int result_after_decimal_point = ((int) floor(number * 10) + 10) % 10;
-        
+    {       
         prev = PointerEvalAnalogNew(GENERAL[_analog]->ROI[GENERAL[_analog]->ROI.size() - 1]->result_float, prev);
-//        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getReadout(analog) number=" + std::to_string(number) + ", result_after_decimal_point=" + std::to_string(result_after_decimal_point) + ", prev=" + std::to_string(prev));
         result = std::to_string(prev);
 
-        if (_extendedResolution && (CNNType != Digital))
+        if (_extendedResolution && (CNNType != Digital)) {
+            float number = GENERAL[_analog]->ROI[GENERAL[_analog]->ROI.size() - 1]->result_float;
+            int result_after_decimal_point = ((int) round(number * 10) + 10) % 10;
             result = result + std::to_string(result_after_decimal_point);
+        }
+
+        //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getReadout(analog) number=" + std::to_string(number) + 
+        //                    ", result_after_decimal_point=" + std::to_string(result_after_decimal_point) + ", prev=" + std::to_string(prev));
 
         for (int i = GENERAL[_analog]->ROI.size() - 2; i >= 0; --i)
         {
@@ -88,7 +92,7 @@ string ClassFlowCNNGeneral::getReadout(int _analog = 0, bool _extendedResolution
         {
             if (_extendedResolution)            // is only set if it is the first digit (no analogue before!)
             {
-                int result_after_decimal_point = ((int) floor(number * 10)) % 10;
+                int result_after_decimal_point = ((int) round(number * 10) + 10) % 10;
                 int result_before_decimal_point = ((int) floor(number)) % 10;
 
                 result = std::to_string(result_before_decimal_point) + std::to_string(result_after_decimal_point);
@@ -318,7 +322,7 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, string& aktparamgraph)
     {
         disabled = true;
         while (getNextLine(pfile, &aktparamgraph) && !isNewParagraph(aktparamgraph));
-        ESP_LOGD(TAG, "[Analog/Digit] is disabled!");
+        ESP_LOGD(TAG, "[Analog/Digit] is disabled");
         return true;
     }
 
@@ -351,6 +355,14 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, string& aktparamgraph)
         {
             LogImageSelect = splitted[1];
             isLogImageSelect = true;            
+        }
+
+        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveErrorLog = true;
+            else
+                SaveErrorLog = false;
         }
 
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
@@ -481,7 +493,7 @@ bool ClassFlowCNNGeneral::doFlow(string time)
         ESP_ERROR_CHECK( heap_trace_start(HEAP_TRACE_LEAKS) );
     #endif
 
-    PresetFlowStateHandler();
+    PresetFlowStateHandler(false, time);
 
     if (disabled)
         return true;
@@ -504,6 +516,17 @@ bool ClassFlowCNNGeneral::doFlow(string time)
     #endif   
 
     return true;
+}
+
+
+void ClassFlowCNNGeneral::doAutoErrorHandling()
+{
+    // Error handling can be included here. Function is called after round is completed.
+    
+    /*if (SaveErrorLog) { // If saving error logs enabled
+
+    }*/
+
 }
 
 
@@ -592,7 +615,7 @@ bool ClassFlowCNNGeneral::getNetworkParameter()
     } 
 
     if (!tflite->MakeAllocate()) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Allocation of tensors failed!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Allocation of tensors failed");
         LogFile.WriteHeapInfo("getNetworkParameter-MakeAllocate");
         return false;
     }
@@ -605,14 +628,14 @@ bool ClassFlowCNNGeneral::getNetworkParameter()
             modelchannel = tflite->ReadInputDimenstion(2);
         }
         else {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load input dimensions!");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load input dimensions");
             return false;
         }
         int _anzoutputdimensions = tflite->GetAnzOutPut();
         switch (_anzoutputdimensions) 
         {
             case -1:
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load output dimensions!");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load output dimensions");
                 return false;
             case 2:
                 CNNType = Analogue;
@@ -667,7 +690,7 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
 
 
     if (!tflite->MakeAllocate()) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Allocation of TFLITE tensors failed!");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Allocation of TFLITE tensors failed");
         LogFile.WriteHeapInfo("doNeuralNetwork-MakeAllocate");
         return false;
     }

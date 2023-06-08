@@ -40,6 +40,7 @@ class CCamera {
         
         CCamera();
         ~CCamera();
+        void PowerResetCamera();
         esp_err_t InitCam();
 
         void LightOnOff(bool status);

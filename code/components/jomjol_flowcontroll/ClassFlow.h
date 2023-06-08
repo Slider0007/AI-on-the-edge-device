@@ -24,8 +24,10 @@ struct HTMLInfo
 struct strFlowState
 {
 	std::string ClassName = "";
-	bool getCalled = false;
+	std::string ExecutionTime = "";
+	bool getExecuted = false;
 	bool isSuccessful = true;
+	bool onlyWarning = false;
 	int8_t ErrorCode = 0;
 };
 
@@ -45,7 +47,6 @@ protected:
 	std::string GetParameterName(std::string _input);
 
 	bool disabled;
-
 	strFlowState FlowState;
 
 public:
@@ -53,8 +54,8 @@ public:
 	ClassFlow(std::vector<ClassFlow*> * lfc);
 	ClassFlow(std::vector<ClassFlow*> * lfc, ClassFlow *_prev);
 	
-    void PresetFlowStateHandler(bool _init = false);
-	void FlowStateHandlerSetError(int8_t _error);
+    void PresetFlowStateHandler(bool _init = false, std::string _time = "");
+	void FlowStateHandlerSetError(int8_t _errorCode = 0, bool _onlyWarning = false);
 	struct strFlowState* getFlowState();
 	virtual void doAutoErrorHandling();
 	
