@@ -502,7 +502,7 @@ esp_err_t handler_value(httpd_req_t *req)
         else if (_fullInfo) {
             /*++++++++++++++++++++++++++++++++++++++++*/
             /* Page details */
-            std::string txt = "<body style=\"font-family: arial; padding: 0px 10px;\">\n<h2 style=\"margin-block-end: 0.2em;\">Image Recognition Details</h2>";
+            std::string txt = "<body style=\"font-family: arial; padding: 0px 10px;\">\n<h2 style=\"margin-block-end: 0.2em;\">Recognition Details</h2>";
             txt += "<details id=\"desc_details\" style=\"font-size: 16px;\">\n";
             txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
             txt += "<p>On this page some recognition details including the underlaying visual image information are visualized. "
@@ -514,7 +514,7 @@ esp_err_t handler_value(httpd_req_t *req)
                    "to highlight the relevant areas) is visualized on the bottom of this page.</p>";
             txt += "</details><hr/>";
 
-            if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) { // Display message if first round is not completed yet
+            if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) { // Display message if flow is not initialized or image processing active
                 txt += "<h4>Image recognition details are only accessable if initialization is completed and no image evaluation is ongoing. <br>"
                        "Wait a few moments and refresh this page.</h4> Current state: " + flowctrl.getActStatus();
                 httpd_resp_sendstr_chunk(req, txt.c_str());
