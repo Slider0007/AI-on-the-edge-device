@@ -54,19 +54,28 @@ public:
 	virtual ~ClassFlowControll();
 	bool InitFlow(std::string config);
 	void DeinitFlow(void);
+
+	bool ReadParameter(FILE* pfile, string& aktparamgraph);	
 	bool doFlowImageEvaluation(string time);
 	bool doFlowPublishData(string time);
 	bool doFlowTakeImageOnly(string time);
+	
+	string TranslateAktstatus(std::string _input);
 	bool getStatusSetupModus(){return SetupModeActive;};
-	string getReadout(bool _rawvalue, bool _noerror, int _number);
-	string getReadoutAll(int _type);	
+
+	std::string getNumbersName();
+	std::string getNumbersName(int _number);
+	int getNumbersSize();
+	int getNumbersNamePosition(std::string _name);
+	std::string getNumbersValue(std::string _name, int _type);
+	std::string getNumbersValue(int _position, int _type);
+	std::string getReadoutAll(int _type);
+	std::string getReadout(bool _rawvalue, bool _noerror, int _number);
+
 	bool UpdatePrevalue(std::string _newvalue, std::string _numbers, bool _extern);
 	string GetPrevalue(std::string _number = "");	
-	bool ReadParameter(FILE* pfile, string& aktparamgraph);	
-	string getJSON();
-	string getNumbersName();
 
-	string TranslateAktstatus(std::string _input);
+	string getJSON();
 
 	#ifdef ENABLE_MQTT
 	bool StartMQTTService();
