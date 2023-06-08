@@ -524,7 +524,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 /* Result */
                 txt += "<h3>Result</h3>\n";
                 txt += "<table style=\"width:500px;border-collapse: collapse;table-layout: fixed;\">";
-                txt += "<tr><td style=\"font-weight: bold;width: 50%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Number sequence</td>"
+                txt += "<tr><td style=\"font-weight: bold;width: 50%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Number Sequence</td>"
                         "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Raw Value</td>"
                         "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Value</td></tr>";
                 for (int i = 0; i < flowctrl.getNumbersSize(); ++i) {   
@@ -546,7 +546,7 @@ esp_err_t handler_value(httpd_req_t *req)
 
                 for (int i = 0; i < htmlinfo.size(); ++i) {
                     if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
-                        txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number sequence: " + htmlinfo[i]->name + "</td></tr>\n";
+                        txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number Sequence: " + htmlinfo[i]->name + "</td></tr>\n";
                         txt += "<tr style=\"text-align: center; vertical-align: top;\">\n";
                     }
 
@@ -594,7 +594,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 htmlinfo = flowctrl.GetAllAnalog();
                 for (int i = 0; i < htmlinfo.size(); ++i) {
                     if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
-                        txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number sequence: " + 
+                        txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number Sequence: " + 
                                 htmlinfo[i]->name + "</td></tr>\n";
                         txt += "<tr style=\"text-align: center; vertical-align: top;\">\n";
                     }
