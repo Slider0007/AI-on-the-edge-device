@@ -20,6 +20,10 @@ static const char* TAG = "INFLUXDBV2";
 void ClassFlowInfluxDBv2::SetInitialParameter(void)
 {
     PresetFlowStateHandler(true);
+    flowpostprocessing = NULL;  
+    previousElement = NULL;
+    ListFlowControll = NULL;
+
     uri = "";
     database = "";
     dborg = "";  
@@ -27,17 +31,17 @@ void ClassFlowInfluxDBv2::SetInitialParameter(void)
 //    dbfield = "";
 
     OldValue = "";
-    flowpostprocessing = NULL;  
-    previousElement = NULL;
-    ListFlowControll = NULL; 
+
     disabled = false;
     InfluxDBenable = false;
 }       
+
 
 ClassFlowInfluxDBv2::ClassFlowInfluxDBv2()
 {
     SetInitialParameter();
 }
+
 
 ClassFlowInfluxDBv2::ClassFlowInfluxDBv2(std::vector<ClassFlow*>* lfc)
 {
@@ -52,6 +56,7 @@ ClassFlowInfluxDBv2::ClassFlowInfluxDBv2(std::vector<ClassFlow*>* lfc)
         }
     }
 }
+
 
 ClassFlowInfluxDBv2::ClassFlowInfluxDBv2(std::vector<ClassFlow*>* lfc, ClassFlow *_prev)
 {
@@ -73,6 +78,7 @@ ClassFlowInfluxDBv2::ClassFlowInfluxDBv2(std::vector<ClassFlow*>* lfc, ClassFlow
 bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, string& aktparamgraph)
 {
     std::vector<string> splitted;
+    std::string _param;
 
     aktparamgraph = trim(aktparamgraph);
     printf("akt param: %s\n", aktparamgraph.c_str());
@@ -88,7 +94,7 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, string& aktparamgraph)
     {
 //        ESP_LOGD(TAG, "while loop reading line: %s", aktparamgraph.c_str());
         splitted = ZerlegeZeile(aktparamgraph);
-        std::string _param = GetParameterName(splitted[0]);
+        _param = GetParameterName(splitted[0]);
 
         if ((toUpper(_param) == "URI") && (splitted.size() > 1))
         {
@@ -121,70 +127,20 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, string& aktparamgraph)
         }
     }
 
-    /*printf("uri:         %s\n", uri.c_str());
-    printf("org:         %s\n", dborg.c_str());
-    printf("token:       %s\n", dbtoken.c_str());
-    */
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init with URI: " + uri + ", Database: " + database + ", Org: " + dborg + ", Token: *****");
 
-    if ((uri.length() > 0) && (database.length() > 0) && (dbtoken.length() > 0) && (dborg.length() > 0)) 
+    if ((uri.length() > 0 && (uri != "undefined")) && (database.length() > 0) && (database != "undefined") && 
+        (dborg.length() > 0) && (dborg != "undefined") && (dbtoken.length() > 0) && (dbtoken != "undefined")) 
     { 
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init InfluxDB with uri: " + uri + ", org: " + dborg + ", token: *****");
-//        printf("vor V2 Init\n");
         InfluxDB_V2_Init(uri, database, dborg, dbtoken); 
-//        printf("nach V2 Init\n");
         InfluxDBenable = true;
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init skipped - missing parameters");
-        //return false; // TODO: Init should fail or continue flow?
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or wrong parameter");
+        return false;
     }
    
     return true;
-}
-
-
-void ClassFlowInfluxDBv2::handleFieldname(string _decsep, string _value)
-{
-    string _digit, _decpos;
-    int _pospunkt = _decsep.find_first_of(".");
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
-    if (_pospunkt > -1)
-        _digit = _decsep.substr(0, _pospunkt);
-    else
-        _digit = "default";
-    for (int j = 0; j < flowpostprocessing->NUMBERS.size(); ++j)
-    {
-        if (_digit == "default")                        //  Set to default first (if nothing else is set)
-        {
-            flowpostprocessing->NUMBERS[j]->FieldV2 = _value;
-        }
-        if (flowpostprocessing->NUMBERS[j]->name == _digit)
-        {
-            flowpostprocessing->NUMBERS[j]->FieldV2 = _value;
-        }
-    }
-}
-
-void ClassFlowInfluxDBv2::handleMeasurement(string _decsep, string _value)
-{
-    string _digit, _decpos;
-    int _pospunkt = _decsep.find_first_of(".");
-//    ESP_LOGD(TAG, "Name: %s, Pospunkt: %d", _decsep.c_str(), _pospunkt);
-    if (_pospunkt > -1)
-        _digit = _decsep.substr(0, _pospunkt);
-    else
-        _digit = "default";
-    for (int j = 0; j < flowpostprocessing->NUMBERS.size(); ++j)
-    {
-        if (_digit == "default")                        //  Set to default first (if nothing else is set)
-        {
-            flowpostprocessing->NUMBERS[j]->MeasurementV2 = _value;
-        }
-        if (flowpostprocessing->NUMBERS[j]->name == _digit)
-        {
-            flowpostprocessing->NUMBERS[j]->MeasurementV2 = _value;
-        }
-    }
 }
 
 
@@ -203,7 +159,7 @@ bool ClassFlowInfluxDBv2::doFlow(string zwtime)
     string zw = "";
     string namenumber = "";
 
-    if (flowpostprocessing)
+    if (flowpostprocessing != NULL)
     {
         std::vector<NumberPost*>* NUMBERS = flowpostprocessing->GetNumbers();
 
@@ -236,10 +192,54 @@ bool ClassFlowInfluxDBv2::doFlow(string zwtime)
 //                InfluxDB_V2_Publish(namenumber, result, resulttimestamp);
         }
     }
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read post-processing data");
+        return false;
+    }
    
     OldValue = result;
     
     return true;
+}
+
+
+void ClassFlowInfluxDBv2::handleMeasurement(string _decsep, string _value)
+{
+    string _digit, _decpos;
+    int _pospunkt = _decsep.find_first_of(".");
+
+    if (_pospunkt > -1)
+        _digit = _decsep.substr(0, _pospunkt);
+    else
+        _digit = "default";
+    
+    for (int j = 0; j < flowpostprocessing->NUMBERS.size(); ++j)
+    {
+        if (_digit == "default" || flowpostprocessing->NUMBERS[j]->name == _digit)
+            flowpostprocessing->NUMBERS[j]->MeasurementV2 = _value;
+
+        //ESP_LOGI(TAG, "handleMeasurement: Name: %s, Pospunkt: %d, value: %s", _digit.c_str(), _pospunkt, _value);
+    }
+}
+
+
+void ClassFlowInfluxDBv2::handleFieldname(string _decsep, string _value)
+{
+    string _digit, _decpos;
+    int _pospunkt = _decsep.find_first_of(".");
+
+    if (_pospunkt > -1)
+        _digit = _decsep.substr(0, _pospunkt);
+    else
+        _digit = "default";
+    
+    for (int j = 0; j < flowpostprocessing->NUMBERS.size(); ++j)
+    {
+        if (_digit == "default" || flowpostprocessing->NUMBERS[j]->name == _digit)
+            flowpostprocessing->NUMBERS[j]->FieldV2 = _value;
+
+        //ESP_LOGI(TAG, "handleFieldname: Name: %s, Pospunkt: %d, value: %s", _digit.c_str(), _pospunkt, _value);
+    }
 }
 
 
