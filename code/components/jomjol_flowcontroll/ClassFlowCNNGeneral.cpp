@@ -47,22 +47,19 @@ string ClassFlowCNNGeneral::getReadout(int _analog = 0, bool _extendedResolution
 
     if (GENERAL[_analog]->ROI.size() == 0)
         return result;
-    
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getReadout _analog=" + std::to_string(_analog) + ", _extendedResolution=" + std::to_string(_extendedResolution) + ", prev=" + std::to_string(prev));
  
     if (CNNType == Analogue || CNNType == Analogue100)
-    {       
+    {
+        float number = GENERAL[_analog]->ROI[GENERAL[_analog]->ROI.size() - 1]->result_float;
+        int result_after_decimal_point = ((int) floor(number * 10) + 10) % 10;
+        
         prev = PointerEvalAnalogNew(GENERAL[_analog]->ROI[GENERAL[_analog]->ROI.size() - 1]->result_float, prev);
+//        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getReadout(analog) number=" + std::to_string(number) + ", result_after_decimal_point=" + std::to_string(result_after_decimal_point) + ", prev=" + std::to_string(prev));
         result = std::to_string(prev);
 
-        if (_extendedResolution && (CNNType != Digital)) {
-            float number = GENERAL[_analog]->ROI[GENERAL[_analog]->ROI.size() - 1]->result_float;
-            int result_after_decimal_point = ((int) round(number * 10)) % 10;
+        if (_extendedResolution && (CNNType != Digital))
             result = result + std::to_string(result_after_decimal_point);
-        }
-
-        //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getReadout(analog) number=" + std::to_string(number) + 
-        //                    ", result_after_decimal_point=" + std::to_string(result_after_decimal_point) + ", prev=" + std::to_string(prev));
 
         for (int i = GENERAL[_analog]->ROI.size() - 2; i >= 0; --i)
         {
@@ -92,7 +89,7 @@ string ClassFlowCNNGeneral::getReadout(int _analog = 0, bool _extendedResolution
         {
             if (_extendedResolution)            // is only set if it is the first digit (no analogue before!)
             {
-                int result_after_decimal_point = ((int) round(number * 10)) % 10;
+                int result_after_decimal_point = ((int) floor(number * 10)) % 10;
                 int result_before_decimal_point = ((int) floor(number)) % 10;
 
                 result = std::to_string(result_before_decimal_point) + std::to_string(result_after_decimal_point);
