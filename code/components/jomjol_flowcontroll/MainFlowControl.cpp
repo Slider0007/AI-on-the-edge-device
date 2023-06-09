@@ -505,13 +505,13 @@ esp_err_t handler_value(httpd_req_t *req)
             std::string txt = "<body style=\"font-family: arial; padding: 0px 10px;\">\n<h2 style=\"margin-block-end: 0.2em;\">Recognition Details</h2>";
             txt += "<details id=\"desc_details\" style=\"font-size: 16px;\">\n";
             txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
-            txt += "<p>On this page some recognition details including the underlaying visual image information are visualized. "
+            txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
                    "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitalization round.</strong></p>";
-            txt += "<p>\"Raw Value\" represents the raw value which gets extracted and combined from all the single image information but without "
+            txt += "<p>\"Raw Value\" represents the value which gets extracted and combined from all the single image results but without "
                    "correction of any of the post-processing checks / alogrithms. The result after post-processing validation is represented with "
-                   "\"Value\". <br>In the next two sections all single \"raw results\" of the respective ROI images (digit styled ROIs and "
-                   "analog styled ROIs) are visualized per number sequence. The complete image which was used for processing (including the overlays "
-                   "to highlight the relevant areas) is visualized on the bottom of this page.</p>";
+                   "\"Value\". In the sections \"Digit ROI\" and \"Analog ROI\" all single \"raw results\" of the respective ROI images (digit styled ROI and "
+                   "analog styled ROI) are visualized separated per number sequence. The taken image which was used for processing (including the overlays "
+                   "to highlight the relevant areas) is visualized at the bottom of this page.</p>";
             txt += "</details><hr/>";
 
             if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) { // Display message if flow is not initialized or image processing active
@@ -558,11 +558,11 @@ esp_err_t handler_value(httpd_req_t *req)
                     }
                     else {
                         if (htmlinfo[i]->val >= 10.0) {
-                            zw = "0.0";
+                            zw = "0.00";
                         }
                         else {
                             std::stringstream stream;
-                            stream << std::fixed << std::setprecision(1) << htmlinfo[i]->val;
+                            stream << std::fixed << std::setprecision(2) << htmlinfo[i]->val;
                             zw = stream.str();
                         }
                     }
@@ -600,11 +600,11 @@ esp_err_t handler_value(httpd_req_t *req)
                     }
 
                     if (htmlinfo[i]->val >= 10.0) {
-                            zw = "0.0";
+                            zw = "0.00";
                     }
                     else {
                         std::stringstream stream;
-                        stream << std::fixed << std::setprecision(1) << htmlinfo[i]->val;
+                        stream << std::fixed << std::setprecision(2) << htmlinfo[i]->val;
                         zw = stream.str();
                     }
 
