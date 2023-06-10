@@ -969,12 +969,12 @@ void ClassFlowPostProcessing::doAutoErrorHandling()
 
         for (int j = 0; j < NUMBERS.size(); ++j) {       
             if (NUMBERS[j]->ErrorMessageText.find("Neg. Rate") != std::string::npos) {
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "doAutoErrorHandling (-1): Neg. Rate, save debug infos to " + destination);
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "doAutoErrorHandling: Neg. Rate, save debug infos to " + destination);
                 resultFileName = "/Neg_rate_result.txt";
                 saveData = true;
             }
             else if (NUMBERS[j]->ErrorMessageText.find("Rate too high") != std::string::npos) {
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "doAutoErrorHandling (-1): Rate too high, save debug infos to " + destination);
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "doAutoErrorHandling: Rate too high, save debug infos to " + destination);
                 resultFileName = "/Rate_too_high_result.txt";
                 saveData = true;
             }
@@ -990,13 +990,13 @@ void ClassFlowPostProcessing::doAutoErrorHandling()
 
                 // Save digit ROIs
                 for (int i = 0; i < NUMBERS[j]->digit_roi->ROI.size(); ++i)
-                    NUMBERS[j]->digit_roi->ROI[i]->image->SaveToFile(destination + "/" + NUMBERS[j]->name + "_dig" + std::to_string(i+1) + "_" +
-                                RundeOutput(NUMBERS[j]->digit_roi->ROI[i]->result_float, NUMBERS[j]->Nachkomma) + ".jpg");
+                    NUMBERS[j]->digit_roi->ROI[i]->image_org->SaveToFile(destination + "/" + NUMBERS[j]->name + "_dig" + std::to_string(i+1) + "_" +
+                                RundeOutput(NUMBERS[j]->digit_roi->ROI[i]->result_float, NUMBERS[j]->Nachkomma) + "_org.jpg");
 
                 // Save analog ROIs
                 for (int i = 0; i < NUMBERS[j]->analog_roi->ROI.size(); ++i)
-                    NUMBERS[j]->analog_roi->ROI[i]->image->SaveToFile(destination + "/" + NUMBERS[j]->name + "_ana" + std::to_string(i+1) + "_" +
-                                RundeOutput(NUMBERS[j]->analog_roi->ROI[i]->result_float, NUMBERS[j]->Nachkomma) + ".jpg");
+                    NUMBERS[j]->analog_roi->ROI[i]->image_org->SaveToFile(destination + "/" + NUMBERS[j]->name + "_ana" + std::to_string(i+1) + "_" +
+                                RundeOutput(NUMBERS[j]->analog_roi->ROI[i]->result_float, NUMBERS[j]->Nachkomma) + "_org.jpg");
             }
         }
     }
