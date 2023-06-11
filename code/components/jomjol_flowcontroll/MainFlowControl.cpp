@@ -1240,7 +1240,7 @@ void task_autodoFlow(void *pvParameter)
                 #endif //ENABLE_MQTT
             
                 flowctrl.AutomaticFlowErrorHandler();
-                LogFile.RemoveOldErrorLog();
+                LogFile.RemoveOldDebugFiles();
             }
             else {
                 #ifdef ENABLE_MQTT
