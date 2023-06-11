@@ -310,7 +310,7 @@ void ClassFlowAlignment::doAutoErrorHandling()
 {
     // Error handling can be included here. Function is called after round is completed.
     
-    if (SaveDebugFiles && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and alignment failed
+    if (SaveDebugInfo && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and alignment failed
         std::string destination = "/sdcard/log/error/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
         MakeDir(destination);
 
