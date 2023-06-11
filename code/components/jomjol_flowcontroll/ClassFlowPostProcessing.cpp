@@ -330,7 +330,7 @@ ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, C
     IgnoreLeadingNaN = false;
     flowAnalog = _analog;
     flowDigit = _digit;
-    SaveErrorLog = false;
+    SaveDebugInfo = false;
 
     for (int i = 0; i < ListFlowControll->size(); ++i)
     {
@@ -593,12 +593,12 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
                 IgnoreLeadingNaN = false;
         }
 
-        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
-                SaveErrorLog = true;
+                SaveDebugInfo = true;
             else
-                SaveErrorLog = false;
+                SaveDebugInfo = false;
         }
     }
 
@@ -961,7 +961,7 @@ void ClassFlowPostProcessing::doAutoErrorHandling()
 {
     // Error handling can be included here. Function is called after round is completed.
     
-    if (SaveErrorLog && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and "rate negative" or "rate too high"
+    if (SaveDebugInfo && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and "rate negative" or "rate too high"
         bool saveData = false;
         std::string destination = "/sdcard/log/error/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
         std::string resultFileName;

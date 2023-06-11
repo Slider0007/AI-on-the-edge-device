@@ -20,7 +20,7 @@ protected:
     time_t TimeImageTaken;
     std::string namerawimage;
     int image_height, image_width;
-    bool SaveErrorLog;
+    bool SaveDebugInfo;
     bool SaveAllFiles;
     bool FixedExposure;
 

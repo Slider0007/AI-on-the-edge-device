@@ -22,7 +22,7 @@ protected:
     float roundInterval; // Minutes
     int keepAlive; // Seconds
     bool SetRetainFlag;
-    bool SaveErrorLog;
+    bool SaveDebugInfo;
 
 	void SetInitialParameter(void);        
 

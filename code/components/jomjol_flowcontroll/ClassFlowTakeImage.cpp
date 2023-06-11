@@ -25,7 +25,7 @@ void ClassFlowTakeImage::SetInitialParameter(void)
     ImageSize = FRAMESIZE_VGA;
     TimeImageTaken = 0;
     ImageQuality = 12;
-    SaveErrorLog = false;
+    SaveDebugInfo = false;
     SaveAllFiles = false;
     disabled = false;
     FixedExposure = false;
@@ -127,12 +127,12 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
                 Camera.DisableDemoMode();
         }
 
-        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
-                SaveErrorLog = true;
+                SaveDebugInfo = true;
             else
-                SaveErrorLog = false;
+                SaveDebugInfo = false;
         }
 
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))

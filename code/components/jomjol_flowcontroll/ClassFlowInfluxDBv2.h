@@ -19,7 +19,7 @@ protected:
     std::string dborg, dbtoken, dbfield;
     std::string OldValue;
     bool InfluxDBenable;
-    bool SaveErrorLog;
+    bool SaveDebugInfo;
 
     void SetInitialParameter(void);     
 

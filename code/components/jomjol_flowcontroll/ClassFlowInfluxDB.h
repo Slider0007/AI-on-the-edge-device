@@ -19,7 +19,7 @@ protected:
     std::string user, password;
     std::string OldValue;
     bool InfluxDBenable;
-    bool SaveErrorLog;
+    bool SaveDebugInfo;
 
     void SetInitialParameter(void);    
     

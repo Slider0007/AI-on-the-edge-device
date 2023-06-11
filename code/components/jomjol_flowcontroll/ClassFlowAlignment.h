@@ -23,7 +23,7 @@ protected:
     bool initialmirror;
     bool initialflip;
     bool use_antialiasing;
-    bool SaveErrorLog;
+    bool SaveDebugInfo;
     bool SaveAllFiles;
     int AlignFAST_SADThreshold;
 

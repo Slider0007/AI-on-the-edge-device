@@ -11,26 +11,28 @@
 class ClassLogFile
 {
 private:
-    std::string logroot;
+    std::string logFileRootFolder;
     std::string logfile;
-    std::string dataroot;
+    std::string dataFileRootFolder;
     std::string datafile;
-    std::string errorroot;
-    std::string errorfolder;
+    std::string debugFileRootFolder;
+    std::string debugfolder;
     int logFileRetentionInDays;
     int dataLogRetentionInDays;
-    int errorLogRetentionInDays;
+    int debugFilesRetentionInDays;
     bool doDataLogToSD;
     esp_log_level_t loglevel;
+
+
 public:
-    ClassLogFile(std::string _logroot, std::string _logfile, std::string _logdatapath,std::string _datafile, std::string _errorroot, std::string errorfolder);
+    ClassLogFile(std::string _logFileRootFolder, std::string _logfile, std::string _dataFileRootFolder, std::string _datafile, std::string _debugFileRootFolder, std::string debugfolder);
 
     void WriteHeapInfo(std::string _id);
 
     void setLogLevel(esp_log_level_t _logLevel);
     void SetLogFileRetention(int _LogFileRetentionInDays);
     void SetDataLogRetention(int _DataLogRetentionInDays);
-    void SetErrorLogRetention(int _ErrorLogRetentionInDays);
+    void SetDebugFilesRetention(int _DebugFilesRetentionInDays);
     void SetDataLogToSD(bool _doDataLogToSD);
     bool GetDataLogToSD();
 
@@ -42,7 +44,7 @@ public:
     bool CreateLogDirectories();
     void RemoveOldLogFile();
     void RemoveOldDataLog();
-    void RemoveOldErrorLog();
+    void RemoveOldDebugFiles();
 
 //    void WriteToData(std::string _ReturnRawValue, std::string _ReturnValue, std::string _ReturnPreValue, std::string _ErrorMessageText, std::string _digital, std::string _analog);
     void WriteToData(std::string _timestamp, std::string _name, std::string  _ReturnRawValue, std::string  _ReturnValue, std::string  _ReturnPreValue, std::string  _ReturnRateValue, std::string  _ReturnChangeAbsolute, std::string  _ErrorMessageText, std::string  _digital, std::string  _analog);

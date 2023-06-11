@@ -42,7 +42,7 @@ protected:
     int modelxsize, modelysize, modelchannel;
     string LogImageSelect;
     bool isLogImageSelect;
-    bool SaveErrorLog;
+    bool SaveDebugInfo;
     bool SaveAllFiles;   
 
     int PointerEvalAnalogNew(float zahl, int numeral_preceder);

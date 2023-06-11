@@ -49,7 +49,7 @@ void ClassFlowMQTT::SetInitialParameter(void)
     ListFlowControll = NULL; 
     disabled = false;
     keepAlive = 25*60;
-    SaveErrorLog = false;
+    SaveDebugInfo = false;
 }       
 
 ClassFlowMQTT::ClassFlowMQTT()
@@ -182,12 +182,12 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, string& aktparamgraph)
             }
         }
 
-        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
-                SaveErrorLog = true;
+                SaveDebugInfo = true;
             else
-                SaveErrorLog = false;
+                SaveDebugInfo = false;
         }
     }
 
@@ -335,7 +335,7 @@ void ClassFlowMQTT::doAutoErrorHandling()
 {
     // Error handling can be included here. Function is called after round is completed.
     
-    /*if (SaveErrorLog) { // If saving error logs enabled
+    /*if (SaveDebugInfo) { // If saving error logs enabled
 
     }*/
 }

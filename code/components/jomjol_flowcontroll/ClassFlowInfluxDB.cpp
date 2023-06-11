@@ -34,7 +34,7 @@ void ClassFlowInfluxDB::SetInitialParameter(void)
 
     disabled = false;
     InfluxDBenable = false;
-    SaveErrorLog = false;
+    SaveDebugInfo = false;
 }       
 
 ClassFlowInfluxDB::ClassFlowInfluxDB()
@@ -123,12 +123,12 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, string& aktparamgraph)
             handleFieldname(splitted[0], splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
-                SaveErrorLog = true;
+                SaveDebugInfo = true;
             else
-                SaveErrorLog = false;
+                SaveDebugInfo = false;
         }
     }
 
@@ -205,7 +205,7 @@ void ClassFlowInfluxDB::doAutoErrorHandling()
 {
     // Error handling can be included here. Function is called after round is completed.
     
-    /*if (SaveErrorLog) { // If saving error logs enabled
+    /*if (SaveDebugInfo) { // If saving error logs enabled
 
     }*/
 

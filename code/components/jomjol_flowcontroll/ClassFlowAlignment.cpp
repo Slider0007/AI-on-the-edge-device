@@ -28,7 +28,7 @@ void ClassFlowAlignment::SetInitialParameter(void)
     initialmirror = false;
     use_antialiasing = false;
     initialflip = false;
-    SaveErrorLog = false;
+    SaveDebugInfo = false;
     SaveAllFiles = false;
     ListFlowControll = NULL;
     AlignAndCutImage = NULL;
@@ -129,12 +129,12 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
                 use_antialiasing = false;
         }
 
-        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
-                SaveErrorLog = true;
+                SaveDebugInfo = true;
             else
-                SaveErrorLog = false;
+                SaveDebugInfo = false;
         }
 
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
@@ -310,7 +310,7 @@ void ClassFlowAlignment::doAutoErrorHandling()
 {
     // Error handling can be included here. Function is called after round is completed.
     
-    if (SaveErrorLog && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and alignment failed
+    if (SaveDebugFiles && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and alignment failed
         std::string destination = "/sdcard/log/error/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
         MakeDir(destination);
 

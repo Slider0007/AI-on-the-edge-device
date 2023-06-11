@@ -33,7 +33,7 @@ ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, std::st
     ListFlowControll = NULL;
     previousElement = NULL;   
     SaveAllFiles = false;
-    SaveErrorLog = false;
+    SaveDebugInfo = false;
     disabled = false;
     isLogImageSelect = false;
     flowpostalignment = _flowalign;
@@ -354,12 +354,12 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, string& aktparamgraph)
             isLogImageSelect = true;            
         }
 
-        if ((toUpper(splitted[0]) == "SAVEERRORLOG") && (splitted.size() > 1))
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
-                SaveErrorLog = true;
+                SaveDebugInfo = true;
             else
-                SaveErrorLog = false;
+                SaveDebugInfo = false;
         }
 
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
@@ -520,7 +520,7 @@ void ClassFlowCNNGeneral::doAutoErrorHandling()
 {
     // Error handling can be included here. Function is called after round is completed.
     
-    /*if (SaveErrorLog) { // If saving error logs enabled
+    /*if (SaveDebugInfo) { // If saving error logs enabled
 
     }*/
 

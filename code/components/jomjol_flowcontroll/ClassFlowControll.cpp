@@ -149,9 +149,9 @@ bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
             LogFile.SetLogFileRetention(std::stoi(splitted[1]));
         }
 
-        if ((toUpper(splitted[0]) == "ERRORFILESRETENTION") && (splitted.size() > 1))
+        if ((toUpper(splitted[0]) == "DEBUGFILESRETENTION") && (splitted.size() > 1))
         {
-            LogFile.SetErrorLogRetention(std::stoi(splitted[1]));
+            LogFile.SetDebugFilesRetention(std::stoi(splitted[1]));
         }
 
         // Initial timeserver setup was already done during boot: see main.cpp -> setupTime()

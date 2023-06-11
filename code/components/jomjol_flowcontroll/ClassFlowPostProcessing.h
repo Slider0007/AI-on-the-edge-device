@@ -18,7 +18,7 @@ protected:
     int PreValueAgeStartup; 
     bool ErrorMessage;
     bool IgnoreLeadingNaN;          // SPECIAL CASE for User Gustl ???
-    bool SaveErrorLog;
+    bool SaveDebugInfo;
 
     ClassFlowCNNGeneral* flowAnalog;
     ClassFlowCNNGeneral* flowDigit;    
