@@ -258,7 +258,7 @@ function ParseConfig() {
      param[catname] = new Object();
      ParamAddValue(param, catname, "LogLevel");
      ParamAddValue(param, catname, "LogfilesRetention");
-     ParamAddValue(param, catname, "ErrorFilesRetention");
+     ParamAddValue(param, catname, "DebugFilesRetention");
 
      var catname = "System";
      category[catname] = new Object(); 

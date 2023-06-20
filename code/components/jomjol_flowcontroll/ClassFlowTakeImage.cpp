@@ -207,7 +207,7 @@ void ClassFlowTakeImage::doAutoErrorHandling()
     // Error handling can be included here. Function is called after round is completed.
 
     if (getFlowState()->ErrorCode == -1) {  // Camera framebuffer failure
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling (-1): Camera framebuffer failed, reset camera");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Camera framebuffer failed, reset camera");
         Camera.PowerResetCamera();
         Camera.InitCam();
         Camera.LightOnOff(false);

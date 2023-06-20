@@ -963,7 +963,7 @@ void ClassFlowPostProcessing::doAutoErrorHandling()
     
     if (SaveDebugInfo && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and "rate negative" or "rate too high"
         bool saveData = false;
-        std::string destination = "/sdcard/log/error/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
+        std::string destination = "/sdcard/log/debug/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
         std::string resultFileName;
         MakeDir(destination);
 

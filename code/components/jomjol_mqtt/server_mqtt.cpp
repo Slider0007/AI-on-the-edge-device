@@ -15,7 +15,7 @@
 
 
 
-static const char *TAG = "MQTT_SERVER";
+static const char *TAG = "MQTT SERVER";
 
 
 extern const char* libfive_git_version(void);
