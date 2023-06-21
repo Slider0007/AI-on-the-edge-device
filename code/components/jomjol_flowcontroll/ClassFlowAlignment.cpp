@@ -79,8 +79,10 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
                 alg_algo = 1;
             else if (toUpper(splitted[1]) == "FAST")
                 alg_algo = 2;
-            else if (toUpper(splitted[1]) == "OFF") // no align algo if set to 3 = off => no draw ref //add disable aligment algo |01.2023
+            else if (toUpper(splitted[1]) == "ROTATION")
                 alg_algo = 3;
+            else if (toUpper(splitted[1]) == "OFF")
+                alg_algo = 4;
             else
                 alg_algo = 0;   // Default
 
@@ -108,17 +110,17 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
                 initialflip = false;
         }
 
+        if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1))
+        {
+            this->initalrotate = std::stof(splitted[1]);
+        }
+
         if ((toUpper(splitted[0]) == "INITIALMIRROR") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
                 initialmirror = true;
             else
                 initialmirror = false;
-        }
-
-        if (((toUpper(splitted[0]) == "INITALROTATE") || (toUpper(splitted[0]) == "INITIALROTATE")) && (splitted.size() > 1))
-        {
-            this->initalrotate = std::stof(splitted[1]);
         }
  
         if ((toUpper(splitted[0]) == "ANTIALIASING") && (splitted.size() > 1))
@@ -175,7 +177,7 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
         }
     }
 
-    if (References[0].alignment_algo == 2)
+    if (References[0].alignment_algo == 2) // Load references if "fast" algo is used
         LoadReferenceAlignmentValues();
 
     return true;
@@ -254,6 +256,9 @@ bool ClassFlowAlignment::doFlow(string time)
  
     if ((initalrotate != 0) || initialflip)
     {
+        if (References[0].alignment_algo == 4)  // alignment off: no initial rotation and no additional alignment algo
+            initalrotate = 0;
+        
         if (use_antialiasing)
             rt.RotateAntiAliasing(initalrotate);
         else
@@ -265,7 +270,7 @@ bool ClassFlowAlignment::doFlow(string time)
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial rotation: " + std::to_string(initalrotate));
 
-    if(References[0].alignment_algo != 3) {  // if align_algo = off -> no align
+    if(References[0].alignment_algo <= 2) { // Only if any additional alignment algo is used: "default", "highaccuracy" or "fast"
         int AlignRetval = AlignAndCutImage->Align(&References[0], &References[1]);
 
         if (AlignRetval >= 0) {
@@ -279,7 +284,7 @@ bool ClassFlowAlignment::doFlow(string time)
     }
 
     if (AlgROI) {
-        if(References[0].alignment_algo != 3){ // if align_algo = off -> draw no alignment marker
+        if(References[0].alignment_algo <= 2) { // Only if any additional alignment algo is used: "default", "highaccuracy" or "fast"
             DrawRef(ImageTMP);
         }
         if (getFlowState()->isSuccessful) {

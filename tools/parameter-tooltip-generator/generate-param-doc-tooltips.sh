@@ -9,7 +9,7 @@ if [ -d "AI-on-the-edge-device-docs" ] ; then
     cd ..
 else
     # Repos folde ris missing, clone it
-    git clone https://github.com/jomjol/AI-on-the-edge-device-docs.git
+    git clone https://github.com/Slider0007/AI-on-the-edge-device-docs.git
 fi
 
 python generate-param-doc-tooltips.py
