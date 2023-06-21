@@ -275,7 +275,7 @@ bool ClassFlowAlignment::doFlow(string time)
     }
 
     if (AlgROI) {
-        if(References[0].alignment_algo <= 2) // Only if any additional alignment algo is used: "default", "highaccuracy" or "fast"
+        if(References[0].alignment_algo <= 2) { // Only if any additional alignment algo is used: "default", "highaccuracy" or "fast"
             DrawRef(ImageTMP);
         }
         flowctrl.DigitalDrawROI(ImageTMP);
