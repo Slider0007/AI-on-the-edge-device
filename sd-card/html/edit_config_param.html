@@ -363,20 +363,21 @@
 
 
 		<!------------- Alignment ------------------>
-		<tr class="expert"  style="border-bottom: 2px solid lightgray;" id="ex4">
+		<tr style="border-bottom: 2px solid lightgray;">
 			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Alignment</h4></td>
 		</tr>
 
-		<tr class="expert"  id="AlignmentAlgo_ex8">
+		<tr>
 			<td class="indent1">
 				<class id="Alignment_AlignmentAlgo_text" style="color:black;">Alignment Algorithm</class>
 			</td>
 			<td>
 				<select id="Alignment_AlignmentAlgo_value1">
-					<option value="default" selected>Default</option>
-					<option value="highAccuracy" >HighAccuracy</option>
-					<option value="fast" >Fast</option>
-					<option value="off" >Off</option><!-- add disable aligment algo |01.2023 -->
+					<option value="default" selected>Rotation + Default Algo</option>
+					<option value="highAccuracy" >Rotation + High Accuracy Algo</option>
+					<option value="fast" >Rotation + Fast Algo</option>
+					<option value="rotation" >Only Rotation</option>
+					<option value="off" >Off</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_Alignment_AlignmentAlgo</td>
