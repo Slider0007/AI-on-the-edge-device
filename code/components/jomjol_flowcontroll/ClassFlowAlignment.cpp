@@ -109,17 +109,17 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
                 initialflip = false;
         }
 
+        if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1))
+        {
+            this->initalrotate = std::stof(splitted[1]);
+        }
+
         if ((toUpper(splitted[0]) == "INITIALMIRROR") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
                 initialmirror = true;
             else
                 initialmirror = false;
-        }
-
-        if (((toUpper(splitted[0]) == "INITALROTATE") || (toUpper(splitted[0]) == "INITIALROTATE")) && (splitted.size() > 1))
-        {
-            this->initalrotate = std::stof(splitted[1]);
         }
  
         if ((toUpper(splitted[0]) == "ANTIALIASING") && (splitted.size() > 1))
