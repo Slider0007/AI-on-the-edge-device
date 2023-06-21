@@ -131,11 +131,8 @@ function ParseConfig() {
      ParamAddValue(param, catname, "SearchFieldX");
      ParamAddValue(param, catname, "SearchFieldY");     
      ParamAddValue(param, catname, "FlipImageSize");
-     ParamAddValue(param, catname, "InitialMirror");   
-     // InitialRotate not visible on config page, create parameter with default value if not available (special care)
      ParamAddValue(param, catname, "InitialRotate");
-     param[catname]["InitialRotate"]["enabled"] = true;
-     param[catname]["InitialRotate"]["value1"] = 0.0;
+     ParamAddValue(param, catname, "InitialMirror");   
 
      var catname = "Digits";
      category[catname] = new Object(); 
