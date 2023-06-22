@@ -29,7 +29,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
     with open(markdownFile, 'r') as markdownFileHandle:
         markdownFileContent = markdownFileHandle.read()
 
-    markdownFileContent = markdownFileContent.replace("# ", "### ") # Move all headings 2 level down
+    # markdownFileContent = markdownFileContent.replace("# ", "### ") # Move all headings 2 level down
 
     htmlTooltip = markdown.markdown(markdownFileContent, extensions=['admonition', 'tables'])
 
