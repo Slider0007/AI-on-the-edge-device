@@ -31,7 +31,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
 
     markdownFileContent = markdownFileContent.replace("# ", "### ") # Move all headings 2 level down
 
-    htmlTooltip = markdown.markdown(markdownFileContent, extensions=['admonition', 'table'])
+    htmlTooltip = markdown.markdown(markdownFileContent, extensions=['admonition', 'tables'])
 
     # Make all links to be opened in a new page
     htmlTooltip = htmlTooltip.replace("a href", "a target=_blank href")
