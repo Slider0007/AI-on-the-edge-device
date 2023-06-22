@@ -12,6 +12,7 @@ configPage = "edit_config_param.html"
 
 htmlTooltipPrefix = """
     <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
+    <style> table{ border-collapse: collapse; } table, th, td{ border: 1px solid black; } </style>
 """
 
 
