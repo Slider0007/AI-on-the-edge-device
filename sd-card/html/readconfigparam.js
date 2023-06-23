@@ -107,62 +107,62 @@ function ParseConfig() {
 
      var catname = "TakeImage";
      category[catname] = new Object(); 
-     category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "RawImagesLocation");
-     ParamAddValue(param, catname, "RawImagesRetention");
-     ParamAddValue(param, catname, "WaitBeforeTakingPicture");
-     ParamAddValue(param, catname, "ImageQuality");
-     ParamAddValue(param, catname, "ImageSize");
-     ParamAddValue(param, catname, "LEDIntensity");
-     ParamAddValue(param, catname, "Brightness");
-     ParamAddValue(param, catname, "Contrast");
-     ParamAddValue(param, catname, "Saturation");
-     ParamAddValue(param, catname, "FixedExposure");
-     ParamAddValue(param, catname, "Demo");    
+     ParamAddSingleValueWithPreset(param, catname, "RawImagesLocation", false, "/log/source");
+     ParamAddSingleValueWithPreset(param, catname, "RawImagesRetention", false, "5");
+     ParamAddSingleValueWithPreset(param, catname, "WaitBeforeTakingPicture", true, "2");
+     ParamAddSingleValueWithPreset(param, catname, "ImageQuality", true, "12");
+     ParamAddSingleValueWithPreset(param, catname, "ImageSize", true, "VGA");
+     ParamAddSingleValueWithPreset(param, catname, "LEDIntensity", true, "50");
+     ParamAddSingleValueWithPreset(param, catname, "Brightness", true, "0");
+     ParamAddSingleValueWithPreset(param, catname, "Contrast", true, "0");
+     ParamAddSingleValueWithPreset(param, catname, "Saturation", true, "0");
+     ParamAddSingleValueWithPreset(param, catname, "FixedExposure", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "Demo", true, "false");    
 
      var catname = "Alignment";
      category[catname] = new Object(); 
-     category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "AlignmentAlgo");
-     ParamAddValue(param, catname, "SearchFieldX");
-     ParamAddValue(param, catname, "SearchFieldY");     
-     ParamAddValue(param, catname, "FlipImageSize");
-     ParamAddValue(param, catname, "InitialRotate");
-     ParamAddValue(param, catname, "InitialMirror");
-     ParamAddValue(param, catname, "SaveDebugInfo");
+     ParamAddSingleValueWithPreset(param, catname, "AlignmentAlgo", true, "Default");
+     ParamAddSingleValueWithPreset(param, catname, "SearchFieldX", true, "20");
+     ParamAddSingleValueWithPreset(param, catname, "SearchFieldY", true, "20");     
+     ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "InitialRotate", true, "0.0");
+     ParamAddSingleValueWithPreset(param, catname, "InitialMirror", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "SaveDebugInfo", true, "false");
 
      var catname = "Digits";
      category[catname] = new Object(); 
      category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "Model");
-     ParamAddValue(param, catname, "CNNGoodThreshold"); 
-     ParamAddValue(param, catname, "ROIImagesLocation");
-     ParamAddValue(param, catname, "ROIImagesRetention");
+     ParamAddSingleValueWithPreset(param, catname, "Model", true, "/config/dig-class100-0165_s2_q.tflite");
+     ParamAddSingleValueWithPreset(param, catname, "CNNGoodThreshold", true, "0.0"); 
+     ParamAddSingleValueWithPreset(param, catname, "ROIImagesLocation", false, "/log/digit");
+     ParamAddSingleValueWithPreset(param, catname, "ROIImagesRetention", false, "5");
 
      var catname = "Analog";
      category[catname] = new Object(); 
      category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "Model");
-     ParamAddValue(param, catname, "ROIImagesLocation");
-     ParamAddValue(param, catname, "ROIImagesRetention");
+     ParamAddSingleValueWithPreset(param, catname, "Model", true, "/config/ana-class100_0169_s1_q.tflite");
+     ParamAddSingleValueWithPreset(param, catname, "ROIImagesLocation", false, "/log/analog");
+     ParamAddSingleValueWithPreset(param, catname, "ROIImagesRetention", false, "5");
 
      var catname = "PostProcessing";
      category[catname] = new Object(); 
-     category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "PreValueUse");
-     ParamAddValue(param, catname, "PreValueAgeStartup");
-     ParamAddValue(param, catname, "ErrorMessage");
-     ParamAddValue(param, catname, "CheckDigitIncreaseConsistency");
+     ParamAddSingleValueWithPreset(param, catname, "PreValueUse", true, "true");
+     ParamAddSingleValueWithPreset(param, catname, "PreValueAgeStartup", true, "720");
+     ParamAddSingleValueWithPreset(param, catname, "ErrorMessage", true, "true");
+     ParamAddSingleValueWithPreset(param, catname, "CheckDigitIncreaseConsistency", true, "false");
      ParamAddValue(param, catname, "AllowNegativeRates", 1, true, "true");
      ParamAddValue(param, catname, "DecimalShift", 1, true, "0");
      ParamAddValue(param, catname, "AnalogDigitalTransitionStart", 1, true, "9.2");
@@ -170,50 +170,50 @@ function ParseConfig() {
      ParamAddValue(param, catname, "MaxRateValue", 1, true, "0.05");
      ParamAddValue(param, catname, "ExtendedResolution", 1, true, "false");
      ParamAddValue(param, catname, "IgnoreLeadingNaN", 1, true, "false");
-     ParamAddValue(param, catname, "SaveDebugInfo");
+     ParamAddSingleValueWithPreset(param, catname, "SaveDebugInfo", true, "false");
 
      var catname = "MQTT";
      category[catname] = new Object(); 
      category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "Uri");
-     ParamAddValue(param, catname, "MainTopic");
-     ParamAddValue(param, catname, "ClientID");
-     ParamAddValue(param, catname, "user");
-     ParamAddValue(param, catname, "password");
-     ParamAddValue(param, catname, "RetainMessages");
-     ParamAddValue(param, catname, "HomeassistantDiscovery");
-     ParamAddValue(param, catname, "MeterType");
+     ParamAddSingleValueWithPreset(param, catname, "Uri", true, "mqtt://IP-ADDRESS:1883");
+     ParamAddSingleValueWithPreset(param, catname, "MainTopic", true, "watermeter");
+     ParamAddSingleValueWithPreset(param, catname, "ClientID", true, "watermeter");
+     ParamAddSingleValueWithPreset(param, catname, "user", false, "undefined");
+     ParamAddSingleValueWithPreset(param, catname, "password", false, "undefined");
+     ParamAddSingleValueWithPreset(param, catname, "RetainMessages", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "HomeassistantDiscovery", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "MeterType", true, "other");
 
      var catname = "InfluxDB";
      category[catname] = new Object(); 
      category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "Uri");
-     ParamAddValue(param, catname, "Database");
-     ParamAddValue(param, catname, "user");
-     ParamAddValue(param, catname, "password");
+     ParamAddSingleValueWithPreset(param, catname, "Uri", true, "http://IP-ADDRESS:PORT");
+     ParamAddSingleValueWithPreset(param, catname, "Database", true, "undefined");
+     ParamAddSingleValueWithPreset(param, catname, "user", false, "undefined");
+     ParamAddSingleValueWithPreset(param, catname, "password", false, "undefined");
      ParamAddValue(param, catname, "Measurement", 1, true, "undefined");
      ParamAddValue(param, catname, "Field", 1, true, "undefined");
 
      var catname = "InfluxDBv2";
      category[catname] = new Object(); 
      category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "Uri");
-     ParamAddValue(param, catname, "Database");
-     ParamAddValue(param, catname, "Org");
-     ParamAddValue(param, catname, "Token");
+     ParamAddSingleValueWithPreset(param, catname, "Uri", true, "http://IP-ADDRESS:PORT");
+     ParamAddSingleValueWithPreset(param, catname, "Database", true, "undefined");
+     ParamAddSingleValueWithPreset(param, catname, "Org", false, "undefined");
+     ParamAddSingleValueWithPreset(param, catname, "Token", false, "undefined");
      ParamAddValue(param, catname, "Measurement", 1, true, "undefined");
      ParamAddValue(param, catname, "Field", 1, true, "undefined");
 
      var catname = "GPIO";
      category[catname] = new Object(); 
      category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddValue(param, catname, "IO0", 6, false, "", [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
      ParamAddValue(param, catname, "IO1", 6, false, "",  [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
@@ -221,56 +221,49 @@ function ParseConfig() {
      ParamAddValue(param, catname, "IO4", 6, false, "",  [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
      ParamAddValue(param, catname, "IO12", 6, false, "",  [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
      ParamAddValue(param, catname, "IO13", 6, false, "",  [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
-     ParamAddValue(param, catname, "LEDType");
-     ParamAddValue(param, catname, "LEDNumbers");
+     ParamAddSingleValueWithPreset(param, catname, "LEDType", true, "WS2812");
+     ParamAddSingleValueWithPreset(param, catname, "LEDNumbers", true, "2");
      ParamAddValue(param, catname, "LEDColor", 3);
-     // Default Values, um abwärtskompatiblität zu gewährleisten
-     param[catname]["LEDType"]["value1"] = "WS2812";
-     param[catname]["LEDNumbers"]["value1"] = "2";
      param[catname]["LEDColor"]["value1"] = "50";
      param[catname]["LEDColor"]["value2"] = "50";
      param[catname]["LEDColor"]["value3"] = "50";
 
-
      var catname = "AutoTimer";
      category[catname] = new Object(); 
-     category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "AutoStart");
-     ParamAddValue(param, catname, "Interval");     
+     ParamAddSingleValueWithPreset(param, catname, "AutoStart", true, "true");
+     ParamAddSingleValueWithPreset(param, catname, "Interval", true, "5.0");     
 
      var catname = "DataLogging";
      category[catname] = new Object(); 
-     category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "DataLogActive");
-     ParamAddValue(param, catname, "DataFilesRetention");     
+     ParamAddSingleValueWithPreset(param, catname, "DataLogActive", true, "true");
+     ParamAddSingleValueWithPreset(param, catname, "DataFilesRetention", true, "5");     
 
      var catname = "Debug";
      category[catname] = new Object(); 
-     category[catname]["enabled"] = false;
-     category[catname]["found"] = false;
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "LogLevel");
-     ParamAddValue(param, catname, "LogfilesRetention");
-     ParamAddValue(param, catname, "DebugFilesRetention");
+     ParamAddSingleValueWithPreset(param, catname, "LogLevel", true, "2");
+     ParamAddSingleValueWithPreset(param, catname, "LogfilesRetention", true, "5");
+     ParamAddSingleValueWithPreset(param, catname, "DebugFilesRetention", true, "5");
 
      var catname = "System";
      category[catname] = new Object(); 
-     category[catname]["enabled"] = false;
+     category[catname]["enabled"] = true;
      category[catname]["found"] = false;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "TimeServer");   
-     ParamAddValue(param, catname, "TimeZone");
-     ParamAddValue(param, catname, "Hostname");   
-     ParamAddValue(param, catname, "RSSIThreshold");   
-     ParamAddValue(param, catname, "CPUFrequency");
-     // SetupMode not visible on config page, create parameter with default value if not available (special care)
-     ParamAddValue(param, catname, "SetupMode"); 
-     param[catname]["SetupMode"]["enabled"] = true;
-     param[catname]["SetupMode"]["value1"] = true;
+     ParamAddSingleValueWithPreset(param, catname, "TimeServer", true, "pool.ntp.org");   
+     ParamAddSingleValueWithPreset(param, catname, "TimeZone", true, "CET-1CEST,M3.5.0,M10.5.0/3");
+     ParamAddSingleValueWithPreset(param, catname, "Hostname", true, "watermeter");   
+     ParamAddSingleValueWithPreset(param, catname, "RSSIThreshold", false, "-75");   
+     ParamAddSingleValueWithPreset(param, catname, "CPUFrequency", true, "160");
+     ParamAddSingleValueWithPreset(param, catname, "SetupMode", true, "true"); 
      
      
      while (aktline < config_split.length){
@@ -292,20 +285,6 @@ function ParseConfig() {
      }
 
      // Make the downward compatiblity with DataLogging
-     if (category["DataLogging"]["found"] == false)
-     {
-          category["DataLogging"]["found"] = true;
-          category["DataLogging"]["enabled"] = true;
-
-          param["DataLogging"]["DataLogActive"]["found"] = true;
-          param["DataLogging"]["DataLogActive"]["enabled"] = true;
-          param["DataLogging"]["DataLogActive"]["value1"] = "true";
-          
-          param["DataLogging"]["DataFilesRetention"]["found"] = true;
-          param["DataLogging"]["DataFilesRetention"]["enabled"] = true;
-          param["DataLogging"]["DataFilesRetention"]["value1"] = "3";
-     }
-
      if (category["DataLogging"]["enabled"] == false)
           category["DataLogging"]["enabled"] = true
 
@@ -322,14 +301,6 @@ function ParseConfig() {
           param["DataLogging"]["DataFilesRetention"]["enabled"] = true;
           param["DataLogging"]["DataFilesRetention"]["value1"] = "3";
      }
-
-     // Downward compatibility: Create RSSIThreshold if not available
-     if (param["System"]["RSSIThreshold"]["found"] == false)
-     {
-          param["System"]["RSSIThreshold"]["found"] = true;
-          param["System"]["RSSIThreshold"]["enabled"] = false;
-          param["System"]["RSSIThreshold"]["value1"] = "0";
-     }
 }
 
 
@@ -343,6 +314,23 @@ function ParamAddValue(param, _cat, _param, _anzParam = 1, _isNUMBER = false, _d
      param[_cat][_param]["Numbers"] = _isNUMBER;
      param[_cat][_param].checkRegExList = _checkRegExList;
 };
+
+
+/* Add a standalone single parameter (no parameter which is used in a number sequence) and set to default value */
+function ParamAddSingleValueWithPreset(param, _cat, _param, _enabled, _value) {
+     if (param[_cat][_param] == null) {
+          param[_cat][_param] = new Object();
+          param[_cat][_param]["found"] = true;
+          param[_cat][_param]["enabled"] = _enabled;
+          param[_cat][_param]["value1"] = _value;
+          param[_cat][_param]["line"] = -1; 
+          param[_cat][_param]["anzParam"] = 1;
+          param[_cat][_param]["defaultValue"] = "";   // Parameter only used for numbers sequences
+          param[_cat][_param]["Numbers"] = false;
+          param[_cat][_param].checkRegExList = null;
+     }
+};
+
 
 function ParseConfigParamAll(_aktline, _catname){
      ++_aktline;
