@@ -135,13 +135,17 @@
 
     .tooltip .tooltiptext {
         visibility: hidden;
-        width: 600px;
-        background-color: #fcfcfc;
+        min-width: 600px;
+		max-width: 600px;
+		width: 600px;
+        background-color: #dfdfdf;
 
-        padding: 5px;
-        padding-bottom: 0;
+        padding-top: 5px;
+        padding-bottom: 10px;
+		padding-left: 10px;
+		padding-right: 10px;
 
-        border: solid black 2px; 
+        border: solid black 1px; 
 
         /* Position the tooltip */
         position: absolute;
@@ -155,7 +159,45 @@
         visibility: visible;
     }
 
-    .tooltip-content {
+	.tooltip .tooltiptext table {
+    	border-collapse: collapse;
+	}
+
+	.tooltip .tooltiptext table th, .tooltip .tooltiptext table td {
+   		border: 1px solid darkgray;
+		padding: 5px;
+	}
+
+	.tooltip .tooltiptext h1 { /* Tooltip headline, e.g. parameter name */
+		font-size: 1.5em;
+		margin-top: 0.2em !important; 
+		margin-bottom: 0.3em !important;
+	}
+
+	.tooltip .tooltiptext h2 { /* Tooltip sub-headline, e.g. description*/
+		font-size: 1.2em;
+		margin-top: 1em !important; 
+		margin-bottom: 0.3em !important;
+	}
+
+	.tooltip .tooltiptext h3 { 
+		font-size: 1.05em;
+		margin-top: 1em !important; 
+		margin-bottom: 0.3em !important;
+	}
+
+	.tooltip .tooltiptext h4 { 
+		font-size: 0.83em;
+		margin-top: 1em !important; 
+		margin-bottom: 0.3em !important;
+	}
+
+	.tooltip .tooltiptext p {
+		margin-top: 0.3em !important; 
+		margin-bottom: 0.3em !important;
+	}
+
+	.tooltip-content {
         width: calc(100% - 2px);
         height: calc(100% - 2px);
         padding: 1px;
@@ -165,6 +207,7 @@
 <link rel="stylesheet" href="mkdocs_theme.css?v=$COMMIT_HASH" />
 <link rel="stylesheet" href="mkdocs_theme_extra.css?v=$COMMIT_HASH" />
 <link rel="stylesheet" href="github.min.css?v=$COMMIT_HASH" />
+<link rel="stylesheet" href="font-awesome.min.css?v=$COMMIT_HASH">
 
 <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
 <script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  

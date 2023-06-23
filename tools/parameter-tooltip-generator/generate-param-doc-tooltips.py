@@ -29,18 +29,14 @@ def generateHtmlTooltip(section, parameter, markdownFile):
     with open(markdownFile, 'r') as markdownFileHandle:
         markdownFileContent = markdownFileHandle.read()
 
-    markdownFileContent = markdownFileContent.replace("# ", "### ") # Move all headings 2 level down
-
-    htmlTooltip = markdown.markdown(markdownFileContent, extensions=['admonition'])
+    # Convert markdown files to HTML file
+    htmlTooltip = markdown.markdown(markdownFileContent, extensions=['admonition', 'tables'])
 
     # Make all links to be opened in a new page
     htmlTooltip = htmlTooltip.replace("a href", "a target=_blank href")
 
     # Replace relative documentation links with absolute ones pointing to the external documentation
     htmlTooltip = htmlTooltip.replace("href=\"../", "href=\"https://jomjol.github.io/AI-on-the-edge-device-docs/")
-
-    # Add custom styles
-    htmlTooltip = htmlTooltip.replace("<h3>", "<h3 style=\"margin: 0\">")
 
     # Update image paths and copy images to right folder
     if "../img/" in htmlTooltip:
