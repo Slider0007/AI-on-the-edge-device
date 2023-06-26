@@ -270,7 +270,7 @@
 			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Take Image</h4></td>
 		</tr> 
 
-		<tr>
+		<tr class="expert">
 			<td class="indent1">
 				<input type="checkbox" id="TakeImage_RawImagesLocation_enabled" value="1" onclick='InvertEnableItem("TakeImage", "RawImagesLocation")' unchecked >
 				<label for=TakeImage_RawImagesLocation_enabled><class id="TakeImage_RawImagesLocation_text" style="color:black;">Raw Images Location</class></label>
@@ -281,7 +281,7 @@
 			<td>$TOOLTIP_TakeImage_RawImagesLocation</td>
 		</tr>
 
-		<tr>
+		<tr class="expert">
 			<td class="indent1">
 				<input type="checkbox" id="TakeImage_RawImagesRetention_enabled" value="1" onclick='InvertEnableItem("TakeImage", "RawImagesRetention")' unchecked >
 				<label for=TakeImage_RawImagesRetention_enabled><class id="TakeImage_RawImagesRetention_text" style="color:black;">Raw Images Retention</class></label>
@@ -293,10 +293,9 @@
 			<td>$TOOLTIP_TakeImage_RawImagesRetention</td>
 		</tr>
 
-		<tr class="expert" id="ex1">
-			
+		<tr class="expert">		
 			<td class="indent1">
-				<class id="TakeImage_WaitBeforeTakingPicture_text" style="color:black;">Wait Before Taking Picture</class>
+				<class id="TakeImage_WaitBeforeTakingPicture_text" style="color:black;">Flash Duration</class>
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_WaitBeforeTakingPicture_value1" size="13" min="0" step="any"
@@ -305,7 +304,7 @@
 			<td>$TOOLTIP_TakeImage_WaitBeforeTakingPicture</td>
 		</tr>
 
-		<tr class="expert" id="ex2">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="TakeImage_ImageQuality_text" style="color:black;">Image Quality</class>
 			</td>
@@ -317,7 +316,7 @@
 			<td>$TOOLTIP_TakeImage_ImageQuality</td>
 		</tr>
 
-		<tr class="expert"  id="ex3">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="TakeImage_ImageSize_text" style="color:black;">Image Size</class>
 			</td>
@@ -330,7 +329,7 @@
 			<td>$TOOLTIP_TakeImage_ImageSize</td>
 		</tr>
 
-		<tr class="expert"  id="LEDIntensity_ex3">
+		<tr>
 			<td class="indent1">
 				<class id="TakeImage_LEDIntensity_text" style="color:black;">LED Intensity</class>
 			</td>
@@ -342,7 +341,7 @@
 			<td>$TOOLTIP_TakeImage_LEDIntensity</td>
 		</tr>
 
-		<tr class="expert"  id="Brightness_ex3">
+		<tr>
 			<td class="indent1">
 				<class id="TakeImage_Brightness_text" style="color:black;">Brightness</class>
 			</td>
@@ -354,7 +353,7 @@
 			<td>$TOOLTIP_TakeImage_Brightness</td>
 		</tr>
 
-		<tr class="expert"  id="Contrast_ex3">
+		<tr>
 			<td class="indent1">
 				<class id="TakeImage_Contrast_text" style="color:black;">Contrast</class>
 			</td>
@@ -366,7 +365,7 @@
 			<td>$TOOLTIP_TakeImage_Contrast</td>
 		</tr>
 
-		<tr class="expert"  id="Saturation_ex3">
+		<tr>
 			<td class="indent1">
 				<class id="TakeImage_Saturation_text" style="color:black;">Saturation</class>
 			</td>
@@ -378,7 +377,7 @@
 			<td>$TOOLTIP_TakeImage_Saturation</td>
 		</tr>
 		
-		<tr class="expert"  id="TakeImage_FixedExposure_ex10">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="TakeImage_FixedExposure_text" style="color:black;">Fixed Exposure</class>
 			</td>
@@ -391,7 +390,7 @@
 			<td>$TOOLTIP_TakeImage_FixedExposure</td>
 		</tr>
 
-		<tr class="expert" id="ex1">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="TakeImage_Demo_text" style="color:black;">Demo Mode</class>
 			</td>
@@ -426,7 +425,7 @@
 			<td>$TOOLTIP_Alignment_AlignmentAlgo</td>
 		</tr>
 		
-		<tr class="expert"  id="ex6">
+		<tr class="expert">
 			<td class="indent1">
 			    <class id="Alignment_SearchFieldX_text" style="color:black;">Search Field X</class>
 			</td>
@@ -437,7 +436,7 @@
 			<td>$TOOLTIP_Alignment_SearchFieldX</td>
 		</tr>
 
-		<tr class="expert"  id="ex8">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="Alignment_SearchFieldY_text" style="color:black;">Search Field Y</class>
 			</td>
@@ -448,7 +447,7 @@
 			<td>$TOOLTIP_Alignment_SearchFieldY</td>
 		</tr>
 
-		<tr class="expert"  id="ex13">
+		<tr class="expert">
 			<td class="indent1">
 			    <class id="Alignment_FlipImageSize_text" style="color:black;">Flip Image Size</class>
 			</td>
@@ -506,7 +505,7 @@
 			<td>$TOOLTIP_Digits_Model</td>
 		</tr>
 		
-		<tr class="DigitItem expert"  id="ex91">
+		<tr class="DigitItem expert">
 			<td class="indent1">
 				<class id="Digits_CNNGoodThreshold_text" style="color:black;">CNN Good Threshold</class>
 			</td>
@@ -518,7 +517,7 @@
 			<td>$TOOLTIP_Digits_CNNGoodThreshold</td>
 		</tr>
 
-		<tr class="DigitItem">
+		<tr class="DigitItem expert">
 			<td class="indent1">
 				<input type="checkbox" id="Digits_ROIImagesLocation_enabled" value="1"  onclick = 'InvertEnableItem("Digits", "ROIImagesLocation")' unchecked >
 				<label for=Digits_ROIImagesLocation_enabled><class id="Digits_ROIImagesLocation_text" style="color:black;">ROI Images Location</class></label>
@@ -529,7 +528,7 @@
 			<td>$TOOLTIP_Digits_ROIImagesLocation</td>
 		</tr>
 
-		<tr class="DigitItem">
+		<tr class="DigitItem expert">
 			<td class="indent1">
 				<input type="checkbox" id="Digits_ROIImagesRetention_enabled" value="1"  onclick = 'InvertEnableItem("Digits", "ROIImagesRetention")' unchecked >
 				<label for=Digits_ROIImagesRetention_enabled><class id="Digits_ROIImagesRetention_text" style="color:black;">ROI Images Retention</class></label>
@@ -561,7 +560,7 @@
 			<td>$TOOLTIP_Analog_Model</td>
 		</tr>
 
-		<tr class="AnalogItem">
+		<tr class="AnalogItem expert">
 			<td class="indent1">
 				<input type="checkbox" id="Analog_ROIImagesLocation_enabled" value="1"  onclick = 'InvertEnableItem("Analog", "ROIImagesLocation")' unchecked >
 				<label for=Analog_ROIImagesLocation_enabled><class id="Analog_ROIImagesLocation_text" style="color:black;">ROI Images Location</class>
@@ -571,7 +570,7 @@
 			<td>$TOOLTIP_Analog_ROIImagesLocation</td>
 		</tr>
 
-		<tr class="AnalogItem">
+		<tr class="AnalogItem expert">
 			<td class="indent1">
 				<input type="checkbox" id="Analog_ROIImagesRetention_enabled" value="1"  onclick = 'InvertEnableItem("Analog", "ROIImagesRetention")' unchecked >
 				<label for=Analog_ROIImagesRetention_enabled><class id="Analog_ROIImagesRetention_text" style="color:black;">ROI Images Retention</class></label></td>
@@ -601,7 +600,7 @@
 			<td>$TOOLTIP_PostProcessing_PreValueUse</td>
 		</tr>
 
-		<tr class="expert"  id="ex11">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="PostProcessing_PreValueAgeStartup_text" style="color:black;">Max. Age of Previous Value</class>
 			</td>
@@ -612,7 +611,7 @@
 			<td>$TOOLTIP_PostProcessing_PreValueAgeStartup</td>
 		</tr>
 
-		<tr class="expert"  id="ex12">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="PostProcessing_ErrorMessage_text" style="color:black;">Skip Messages on Error</class>
 			</td>
@@ -625,7 +624,7 @@
 			<td>$TOOLTIP_PostProcessing_ErrorMessage</td>
 		</tr>
 
-		<tr class="expert" id="ex1dddd">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="PostProcessing_CheckDigitIncreaseConsistency_text" style="color:black;">Check Digit Increase Consistency</class>
 			</td>
@@ -723,7 +722,7 @@
 		</tr>
 
 		<tr class="expert">
-			<td id="ex121" class="indent2">
+			<td class="indent2">
 				<class id="PostProcessing_IgnoreLeadingNaN_text" style="color:black;">Ignore Leading NaNs</class>
 			</td>
 			<td>
@@ -1254,6 +1253,7 @@
 			</td>
 			<td>$TOOLTIP_GPIO_IO4</td>
 		</tr>
+
 		<tr class="GPIO_item" style="border-top: 0px;">
 			<td colspan="2" style="padding-left:28px">
 				<b>IMPORTANT NOTE:</b><br>
@@ -1262,6 +1262,7 @@
 				intensity control (PWM) of the LED flash light is not functional anymore (only 100%).
 			</td>
 		</tr>
+
 		<tr class="GPIO_IO4 GPIO_item expert">
 			<td class="indent2">
 				<span class="GPIO_IO4 GPIO_item">GPIO4 Use Interrupt</span>
@@ -1385,7 +1386,7 @@
 			<td></td>
 		</tr>
 
-		<tr class="GPIO_item" id="wstypeex3">
+		<tr class="GPIO_item">
 			<td class="indent1">
 				<span class="GPIO_IO12 GPIO_item" id="GPIO_LEDType_text">LED Type (NeoPixel)</span>
 			</td>
@@ -1394,13 +1395,13 @@
 					<option value="WS2812" selected>WS2812</option>
 					<option value="WS2812B">WS2812B</option>
 					<option value="SK6812">SK6812</option>
-					<option value="WS2813">WS2813 (not tested)</option>
+					<option value="WS2813">WS2813</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_GPIO_LEDType</td>
 		</tr>
 
-		<tr class="GPIO_item" id="LEDANZex8" >
+		<tr class="GPIO_item">
 			<td class="indent1">
 				<span class="GPIO_item" id="GPIO_LEDNumbers_text">Numbers of LEDs</span>
 			</td>
@@ -1411,7 +1412,7 @@
 			<td>$TOOLTIP_GPIO_LEDNumbers</td>
 		</tr>
 
-		<tr class="GPIO_item" id="LEDRGBex9">
+		<tr class="GPIO_item">
 			<td class="indent1">
 				<span class="GPIO_item" id="GPIO_LEDColor_text">LED Color</span>
 			</td>
@@ -1505,9 +1506,9 @@
 			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Auto Timer</h4></td>
 		</tr>
 
-		<tr class="expert"  id="ex13">
+		<tr class="expert">
 			<td class="indent1">
-			    <class id="AutoTimer_AutoStart_text" style="color:black;">Automatic Round Start</class>
+			    <class id="AutoTimer_AutoStart_text" style="color:black;">Automatic Process Start</class>
 			</td>
 			<td>
 				<select id="AutoTimer_AutoStart_value1">
@@ -1520,7 +1521,7 @@
 
 		<tr>
 			<td class="indent1">
-			    <class id="AutoTimer_Interval_text" style="color:black;">Round Interval</class>
+			    <class id="AutoTimer_Interval_text" style="color:black;">Process Interval</class>
 			</td>
 			<td>
 				<input required type="number" id="AutoTimer_Interval_value1" size="13" min="1" step="any"
@@ -1567,7 +1568,7 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="Debug_LogLevel_text" style="color:black;">Logfile Log Level</class>
+				<class id="Debug_LogLevel_text" style="color:black;">Log File Log Level</class>
 			</td>
 			<td>
 				<select id="Debug_LogLevel_value1">
@@ -1582,7 +1583,7 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="Debug_LogfilesRetention_text" style="color:black;">Logfiles Retention</class>
+				<class id="Debug_LogfilesRetention_text" style="color:black;">Log Files Retention</class>
 			</td>
 			<td>
 				<input required type="number" id="Debug_LogfilesRetention_value1" size="13" min="0" step="1"
@@ -1598,7 +1599,7 @@
 
 		<tr>
 			<td class="indent1">
-				<input type="checkbox" id="System_TimeServer_enabled" value="1"  onclick = 'InvertEnableItem("System", "TimeServer")' unchecked >
+				<input type="checkbox" id="System_TimeServer_enabled" value="1"  onclick = 'InvertEnableItem("System", "TimeServer")' checked >
 				<label for=System_TimeServer_enabled><class id="System_TimeServer_text" style="color:black;">Time Server (NTP)</class></label>
 			</td>
 			<td>
@@ -1619,7 +1620,7 @@
 			<td>$TOOLTIP_System_TimeZone</td>
 		</tr>
 
-		<tr class="expert"  id="System_Hostname">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="System_Hostname_text" style="color:black;">Hostname</class>
 			</td>
@@ -1629,10 +1630,10 @@
 			<td>$TOOLTIP_System_Hostname</td>
 		</tr>
 
-		<tr class="expert"  id="System_RSSIThreshold">
+		<tr class="expert">
 			<td class="indent1">
 				<input type="checkbox" id="System_RSSIThreshold_enabled" value="1"  onclick = 'InvertEnableItem("System", "RSSIThreshold")' unchecked >
-				<label for=System_RSSIThreshold_enabled><class id="System_RSSIThreshold_text" style="color:black;">RSSI Threshold</class></label>
+				<label for=System_RSSIThreshold_enabled><class id="System_RSSIThreshold_text" style="color:black;">WIFI AP Roaming RSSI Threshold</class></label>
 			</td>
 			<td>
 				<input required type="number" name="name" id="System_RSSIThreshold_value1" min="-100" max="0" step="1"
@@ -1642,7 +1643,7 @@
 			<td>$TOOLTIP_System_RSSIThreshold</td>
 		</tr>
 
-		<tr class="expert"  id="System_CPUFrequency">
+		<tr class="expert">
 			<td class="indent1">
 				<class id="System_CPUFrequency_text" style="color:black;">CPU Frequency</class>
 			</td>
