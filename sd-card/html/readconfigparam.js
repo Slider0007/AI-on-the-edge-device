@@ -91,8 +91,8 @@ function getTFLITEList() {
 //               alert("Loading Hostname failed");
      }
 
-     tflitelist = tflitelist.split("\t");
-     tflitelist.sort();
+     tflitelist = tflitelist.split("\t").filter(element => element); // Split at tab position and remove empty elements
+     tflitelist.sort();  // Sort elements by name
 
      return tflitelist;
 }
@@ -140,7 +140,7 @@ function ParseConfig() {
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddSingleValueWithPreset(param, catname, "Model", true, "/config/dig-class100-0165_s2_q.tflite");
+     ParamAddModelWithPreset(param, catname, "Model", true);
      ParamAddSingleValueWithPreset(param, catname, "CNNGoodThreshold", true, "0.0"); 
      ParamAddSingleValueWithPreset(param, catname, "ROIImagesLocation", false, "/log/digit");
      ParamAddSingleValueWithPreset(param, catname, "ROIImagesRetention", false, "5");
@@ -150,7 +150,7 @@ function ParseConfig() {
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddSingleValueWithPreset(param, catname, "Model", true, "/config/ana-class100_0169_s1_q.tflite");
+     ParamAddModelWithPreset(param, catname, "Model", true);
      ParamAddSingleValueWithPreset(param, catname, "ROIImagesLocation", false, "/log/analog");
      ParamAddSingleValueWithPreset(param, catname, "ROIImagesRetention", false, "5");
 
@@ -167,7 +167,7 @@ function ParseConfig() {
      ParamAddValue(param, catname, "DecimalShift", 1, true, "0");
      ParamAddValue(param, catname, "AnalogDigitalTransitionStart", 1, true, "9.2");
      ParamAddValue(param, catname, "MaxRateType", 1, true, "AbsoluteChange");
-     ParamAddValue(param, catname, "MaxRateValue", 1, true, "0.05");
+     ParamAddValue(param, catname, "MaxRateValue", 1, true, "0.1");
      ParamAddValue(param, catname, "ExtendedResolution", 1, true, "false");
      ParamAddValue(param, catname, "IgnoreLeadingNaN", 1, true, "false");
      ParamAddSingleValueWithPreset(param, catname, "SaveDebugInfo", true, "false");
@@ -284,6 +284,7 @@ function ParseConfig() {
           aktline++;
      }
 
+
      // Make the downward compatiblity with DataLogging
      if (category["DataLogging"]["enabled"] == false)
           category["DataLogging"]["enabled"] = true
@@ -304,7 +305,8 @@ function ParseConfig() {
 }
 
 
-function ParamAddValue(param, _cat, _param, _anzParam = 1, _isNUMBER = false, _defaultValue = "", _checkRegExList = null){
+function ParamAddValue(param, _cat, _param, _anzParam = 1, _isNUMBER = false, _defaultValue = "", _checkRegExList = null)
+{
      param[_cat][_param] = new Object(); 
      param[_cat][_param]["found"] = false;
      param[_cat][_param]["enabled"] = false;
@@ -313,11 +315,12 @@ function ParamAddValue(param, _cat, _param, _anzParam = 1, _isNUMBER = false, _d
      param[_cat][_param]["defaultValue"] = _defaultValue;   // Parameter only used for numbers sequences
      param[_cat][_param]["Numbers"] = _isNUMBER;
      param[_cat][_param].checkRegExList = _checkRegExList;
-};
+}
 
 
 /* Add a standalone single parameter (no parameter which is used in a number sequence) and set to default value */
-function ParamAddSingleValueWithPreset(param, _cat, _param, _enabled, _value) {
+function ParamAddSingleValueWithPreset(param, _cat, _param, _enabled, _value)
+{
      if (param[_cat][_param] == null) {
           param[_cat][_param] = new Object();
           param[_cat][_param]["found"] = true;
@@ -329,7 +332,51 @@ function ParamAddSingleValueWithPreset(param, _cat, _param, _enabled, _value) {
           param[_cat][_param]["Numbers"] = false;
           param[_cat][_param].checkRegExList = null;
      }
-};
+
+}
+
+
+/* Add a model parameter (no parameter which is used in a number sequence) and set to default value */
+function ParamAddModelWithPreset(param, _cat, _param, _enabled)
+{
+     if (param[_cat][_param] == null) {
+    
+          param[_cat][_param] = new Object();
+          param[_cat][_param]["found"] = true;
+          param[_cat][_param]["enabled"] = _enabled;
+          param[_cat][_param]["line"] = -1; 
+          param[_cat][_param]["anzParam"] = 1;
+          param[_cat][_param]["defaultValue"] = "";   // Parameter only used for numbers sequences
+          param[_cat][_param]["Numbers"] = false;
+          param[_cat][_param].checkRegExList = null;
+
+          if (_cat == "Digits")
+               filter = "/dig";
+          else if (_cat == "Analog")
+               filter = "/ana";
+          
+          list_tflite = getTFLITEList();
+          for (var i = 0; i < list_tflite.length; ++i) {
+               if (list_tflite[i].includes(filter)) {
+                    param[_cat][_param]["value1"] = list_tflite[i]; // Set first occurence as default value to ensure at least one is set
+                    break;
+               }   
+          }
+     }
+     else if (param[_cat][_param]["value1"] == "") { // If value empty, ensure at least one model is selected to avoid crashes
+          if (_cat == "Digits")
+               filter = "/dig";
+          else if (_cat == "Analog")
+               filter = "/ana";
+          list_tflite = getTFLITEList();
+          for (var i = 0; i < list_tflite.length; ++i) {
+               if (list_tflite[i].includes(filter)) {
+                    param[_cat][_param]["value1"] = list_tflite[i]; // Set first occurence as default value to ensure at least one is set
+                    break;
+               }   
+          }
+     }
+}
 
 
 function ParseConfigParamAll(_aktline, _catname){

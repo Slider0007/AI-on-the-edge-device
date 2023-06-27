@@ -1826,9 +1826,8 @@ function WriteParameter(_param, _category, _cat, _name, _optional, _number = -1)
                 }
                 if (!_isFound)
                 {
-                    _zw_txt = "In the selected field the value '" + textToFind + "' in the parameter '";
-                    _zw_txt = _zw_txt + _cat + "' in the field '" + _name + "' is invalid. PLEASE CHECK BEFORE SAVING!";
-                    firework.launch(_zw_txt, 'warning', 10000);
+                    _zw_txt = "Section '" + _cat + "' / Parameter '" + _name + "': Invalid value: '" + textToFind + "'. Please correct before saving!";
+                    firework.launch(_zw_txt, 'danger', 30000);
                 }
             }
             else if ((element.getAttribute("type") != null) && (element.getAttribute("type").toLowerCase() == "checkbox")) {
@@ -1867,9 +1866,8 @@ function WriteParameter(_param, _category, _cat, _name, _optional, _number = -1)
                 }
                 if (!_isFound)
                 {
-                    _zw_txt = "In the selected field the value '" + textToFind + "' in the section '";
-                    _zw_txt = _zw_txt + _cat + "' in the field '" + _name + "' is invalid. PLEASE CHECK BEFORE SAVING!";
-                    firework.launch(_zw_txt, 'warning', 10000);
+                    _zw_txt = "Section '" + _cat + "' / Parameter '" + _name + "': Invalid value: '" + textToFind + "'. Please correct before saving!";
+                    firework.launch(_zw_txt, 'danger', 30000);
                 }
 
             }
@@ -2219,30 +2217,30 @@ function WriteModelFiles()
     while (_indexAna.length)
         _indexAna.remove(0);
 
-    for (var i = 0; i < list_tflite.length; ++i){
+    for (var i = 0; i < list_tflite.length; ++i) {
         var optionDig = document.createElement("option");
         var optionAna = document.createElement("option");
         
         var text = list_tflite[i].replace("/config/", "");
         
         if (list_tflite[i].includes("/dig")) { // Its a digital file, only show in the digital list box
-        optionDig.text = text;
-        optionDig.value = list_tflite[i];
-        _indexDig.add(optionDig);
+			optionDig.text = text;
+			optionDig.value = list_tflite[i];
+			_indexDig.add(optionDig);
         }
         else if (list_tflite[i].includes("/ana")) { // Its a digital file, only show in the analog list box
-        optionAna.text = text;
-        optionAna.value = list_tflite[i];
-        _indexAna.add(optionAna);
+			optionAna.text = text;
+			optionAna.value = list_tflite[i];
+			_indexAna.add(optionAna);
         }
         else { // all other files, show in both list boxes
-        optionDig.text = text;
-        optionDig.value = list_tflite[i];
-        _indexDig.add(optionDig);
-        
-        optionAna.text = text;
-        optionAna.value = list_tflite[i];
-        _indexAna.add(optionAna);
+			optionDig.text = text;
+			optionDig.value = list_tflite[i];
+			_indexDig.add(optionDig);
+			
+			optionAna.text = text;
+			optionAna.value = list_tflite[i];
+			_indexAna.add(optionAna);
         }
     }
 
@@ -2349,11 +2347,6 @@ function ReadParameterAll()
 
     var sel = document.getElementById("Numbers_value1");
     UpdateInputIndividual(sel);
-    
-    
-//	FormatDecimalValue(param, "PostProcessing", "MaxRateValue");
-
-//	FormatDecimalValue(param, "PostProcessing", "MaxRateValue");
 }
 
 
@@ -2433,7 +2426,7 @@ function saveTextAsFile()
         firework.launch('Save and apply configuration...', 'success', 5000);
         setTimeout(function() {
             reload_config();
-        }, 1000);    
+        }, 500);    
     }
 }
 
