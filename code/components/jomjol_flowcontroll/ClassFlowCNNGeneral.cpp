@@ -586,7 +586,6 @@ bool ClassFlowCNNGeneral::getNetworkParameter()
     if (!tflite->LoadModel(zwcnn)) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load model: " + cnnmodelfile);
         LogFile.WriteHeapInfo("getNetworkParameter-LoadModel");
-        delete tflite;
         return false;
     } 
 
@@ -692,7 +691,6 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
                         }
                         else {
                             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Invoke aborted");
-                            delete tflite;
                             return false;
                         }
 
@@ -746,7 +744,6 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
                         }
                         else {
                             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Invoke aborted");
-                            delete tflite;
                             return false;
                         }
 
@@ -830,7 +827,6 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(string time)
                         }
                         else {
                             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Invoke aborted");
-                            delete tflite;
                             return false;
                         }
     
