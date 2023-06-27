@@ -282,9 +282,6 @@ function ParseConfig() {
           aktline++;
      }
 
-     // Force loading first available model if model parameter is empty in config.ini
-     ParamAddModelWithPreset(param, "Analog", "Model", true);
-     ParamAddModelWithPreset(param, "Digits", "Model", true);
 
      // Make the downward compatiblity with DataLogging
      if (category["DataLogging"]["enabled"] == false)
