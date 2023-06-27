@@ -91,8 +91,8 @@ function getTFLITEList() {
 //               alert("Loading Hostname failed");
      }
 
-     tflitelist = tflitelist.split("\t");
-     tflitelist.sort();
+     tflitelist = tflitelist.split("\t").filter(element => element); // Split at tab position and remove empty elements
+     tflitelist.sort();  // Sort elements by name
 
      return tflitelist;
 }
