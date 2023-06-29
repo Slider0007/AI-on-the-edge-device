@@ -1,13 +1,8 @@
  
 /* The UI can also be run locally, but you have to set the IP of your devide accordingly.
  * And you also might have to disable CORS in your webbrowser! */
-var domainname_for_testing = "192.168.2.92";
+var domainname_for_testing = "192.168.2.68";
 
-
-
-function gethost_Version(){
-    return "1.0.0 - 20200910";
-}
 
 
 /* Returns the domainname with prepended protocol.
