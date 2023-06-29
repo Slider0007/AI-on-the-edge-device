@@ -852,7 +852,7 @@ textarea {
 .rst-content .admonition-title:before,
 .wy-inline-validate.wy-inline-validate-info .wy-input-context:before,
 .wy-inline-validate.wy-inline-validate-warning .wy-input-context:before {
-    content: ""
+    content: ""
 }
 
 .fa-gift:before {
