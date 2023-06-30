@@ -24,7 +24,7 @@ jobs:
       run: |
         echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-    - name: Cache PIP / PlatformIO Files
+    - name: Cache PIP & PlatformIO Files
       uses: actions/cache@v3.3.1
       with:
         path: |
