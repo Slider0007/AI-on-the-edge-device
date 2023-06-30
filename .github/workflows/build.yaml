@@ -11,11 +11,11 @@ jobs:
 
     steps:
     - id: skip_check
-      uses: fkirc/skip-duplicate-actions@v5
+      uses: fkirc/skip-duplicate-actions@v5.3.0
       with:
         concurrent_skipping: same_content_newer
     
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v3.5.3
       with:
         submodules: recursive
 
@@ -24,44 +24,42 @@ jobs:
       run: |
         echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-    - name: Update PIP cache on every commit
-      uses: actions/cache@v3.2.3
+    - name: Cache PIP & PlatformIO Files
+      uses: actions/cache@v3.3.1
       with:
-        path: ~/.cache/pip
-        key: pip-${{ github.run_id }}
-        restore-keys: pip # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
-
-    - name: Update PlatformIO cache on every commit
-      uses: actions/cache@v3.2.3
-      with:
-        path: ~/.platformio
+        path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
         key: platformio-${{ github.run_id }}
         restore-keys: platformio # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
           
-    - name: Update Build cache on every commit
-      uses: actions/cache@v3.2.3
+    - name: Cache PIO Build Files
+      uses: actions/cache@v3.3.1
       with:
         path: ./code/.pio/
         key: build-${{ github.run_id }}
         restore-keys: build # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
           
-    - name: Update generated-files cache on every commit
-      uses: actions/cache@v3.2.3
+    - name: Cache Generated Files
+      uses: actions/cache@v3.3.1
       with:
-        path: |
+        path: | 
+          ./code/sdkconfig.defaults
+          ./code/sdkconfig.esp32cam
           ./code/.pio/build/esp32cam/firmware.bin
+          ./code/.pio/build/esp32cam/firmware.elf
           ./code/.pio/build/esp32cam/partitions.bin
           ./code/.pio/build/esp32cam/bootloader.bin
           ./html/*
         key: generated-files-${{ github.run_id }}
         restore-keys: generated-files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache          
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Setup Python Environment
+      uses: actions/setup-python@v4.6.1
       with:
         python-version: '3.10'
 
-    - name: Install PlatformIO
+    - name: Install PlatformIO Environment
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
@@ -70,7 +68,7 @@ jobs:
       #run: echo "Testing... ${{ github.ref_name }}, ${{ steps.vars.outputs.sha_short }}" > ./sd-card/html/version.txt; mkdir -p ./code/.pio/build/esp32cam/; cd ./code/.pio/build/esp32cam/; echo "${{ steps.vars.outputs.sha_short }}" > firmware.bin; cp firmware.bin partitions.bin; cp firmware.bin bootloader.bin # Testing
       run: cd code; platformio run --environment esp32cam
 
-    - name: Prepare Web UI (copy data from repo, generate tooltip pages and update hashes in all files)
+    - name: Prepare WebUI (Generate Parameter Tooltips + Update Hashes)
       run: |
         rm -rf ./html
         mkdir html
@@ -88,39 +86,45 @@ jobs:
         cd html; find . -type f -exec sed -i 's/$COMMIT_HASH/${{ steps.vars.outputs.sha_short }}/g' {} \;
         
 
+
 #########################################################################################
-## Pack for Update
+## Pack for OTA-Update
+# Package to be used with OTA updater on WebUI
+#
+# Package content:
+#  - /firmware.bin
+#  - (optional) /html/* (inkl. subfolders)
+#  - (optional) /config/*.tflite
 #########################################################################################
-  pack-for-update:
-    # New OTA concept
-    # update__version.zip file with following content:
-    #  - /firmware.bin
-    #  - (optional) /html/* (inkl. subfolders)
-    #  - (optional) /config/*.tfl
+  pack-for-OTA-update:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v3.5.3
 
-    - name: Update generated-files cache on every commit
-      uses: actions/cache@v3.2.3
+    - name: Load generated-files cache
+      uses: actions/cache@v3.3.1
       with:
-        path: |
+        path: | 
+          ./code/sdkconfig.defaults
+          ./code/sdkconfig.esp32cam
           ./code/.pio/build/esp32cam/firmware.bin
+          ./code/.pio/build/esp32cam/firmware.elf
           ./code/.pio/build/esp32cam/partitions.bin
           ./code/.pio/build/esp32cam/bootloader.bin
           ./html/*
         key: generated-files-${{ github.run_id }}
         restore-keys: generated-files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
 
-    - name: Update update cache on every commit
-      uses: actions/cache@v3.2.3
+    - if: startsWith(github.ref, 'refs/tags/')
+      name: Cache OTA-update Files For Release Creation
+      uses: actions/cache@v3.3.1
       with:
         path: update
-        key: update-${{ github.run_id }}
-        restore-keys: update # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
-    
+        key: update_files-${{ github.run_id }}
+        restore-keys: update_files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
+
     - name: Set Variables
       id: vars
       run: |
@@ -133,52 +137,126 @@ jobs:
         mkdir -p ./update
         cp "./code/.pio/build/esp32cam/firmware.bin" "update/firmware.bin"
 
-    - name: Add Web UI to update
+    - name: Add Web UI to update__*.zip artifact
       run: cp -r ./html ./update/
 
-    - name: Add CNN to update
+    - name: Add CNN to update__*.zip artifact
       run: |
         rm -rf ./update/config/
         mkdir -p ./update/config/
         cp ./sd-card/config/*.tfl ./update/config/ 2>/dev/null || true
         cp ./sd-card/config/*.tflite ./update/config/ 2>/dev/null || true
 
-    - name: Upload update as update.zip artifact (Firmware + Web UI + CNN)
-      uses: actions/upload-artifact@v3
+    - name: Upload as update.zip artifact (Firmware + Web UI + CNN)
+      uses: actions/upload-artifact@v3.1.2
       with:
         name: "AI-on-the-edge-device__update__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        path: ./update/*
+        path: ./update
 
 
 
 #########################################################################################
-## Pack for Remote Setup 
+## Pack for Full Setup -> Complete fresh install
+# Create a full setup with all binaries and sd-card files to do an full setup by USB
+#
+# Package content:
+#  - /firmware.bin
+#  - /partitions.bin
+#  - /bootloader.bin   
+#  - sd-card.zip (Content for sd-card -> extract to root folder)
+#  - /config/*.*
 #########################################################################################
-  pack-for-remote_setup:
-    # New Remote Setup concept
-    # remote_setup__version.zip file with following content:
-    #  - /firmware.bin
-    #  - /html/* (inkl. subfolders)
-    #  - /config/*
+  pack-for-manual_setup:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v3.5.3
 
-    - name: Update generated-files cache on every commit
-      uses: actions/cache@v3.2.3
+    - name: Load generated-files cache
+      uses: actions/cache@v3.3.1
       with:
-        path: |
+        path: | 
+          ./code/sdkconfig.defaults
+          ./code/sdkconfig.esp32cam
           ./code/.pio/build/esp32cam/firmware.bin
+          ./code/.pio/build/esp32cam/firmware.elf
+          ./code/.pio/build/esp32cam/partitions.bin
+          ./code/.pio/build/esp32cam/bootloader.bin
+          ./html/*
+        key: generated-files-${{ github.run_id }}
+        restore-keys: generated-files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
+
+    - if: startsWith(github.ref, 'refs/tags/')
+      name: Cache manual_setup Files For Release Creation
+      uses: actions/cache@v3.3.1
+      with:
+        path: manual_setup
+        key: manual_setup-${{ github.run_id }}
+        restore-keys: manual_setup # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
+
+    - name: Set Variables
+      id: vars
+      run: |
+        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "branch=$(echo ${{ github.ref_name }} | tr / __)" >> $GITHUB_OUTPUT
+
+    - name: Prepare manual_setup__*.zip artifact
+      run: |
+        rm -rf manual_setup
+        mkdir -p manual_setup
+        rm -rf manual_setup/*.zip
+        rm -rf manual_setup/debug/
+        mkdir -p manual_setup/debug/
+        # copy builds to manual_setup folder
+        cp -f "./code/.pio/build/esp32cam/firmware.bin" "manual_setup/firmware.bin"
+        cp -f "./code/.pio/build/esp32cam/bootloader.bin" "manual_setup/bootloader.bin"
+        cp -f "./code/.pio/build/esp32cam/partitions.bin" "manual_setup/partitions.bin"
+        rm -rf ./sd-card/html
+        cp -r ./html ./sd-card/ # Overwrite the Web UI with the preprocessed files
+        cd sd-card; zip -r ../manual_setup/sd-card.zip *; cd ..
+  
+    - name: Upload manual_setup.zip artifact (Firmware + Bootloader + Partitions + Web UI)
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: "AI-on-the-edge-device__manual-setup__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        path: ./manual_setup
+
+
+
+#########################################################################################
+## Pack for initial 2-step setup (remote_setup)
+# 1. WebUpdater: Install firmware binary
+# 2. ESP Access Point: Install SD-Card content
+#
+# Package content:
+#  - /html/* (inkl. subfolders)
+#  - /config/*
+#########################################################################################
+  pack-for-remote_setup:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v3.5.3
+
+    - name: Load generated-files cache
+      uses: actions/cache@v3.3.1
+      with:
+        path: | 
+          ./code/sdkconfig.defaults
+          ./code/sdkconfig.esp32cam
+          ./code/.pio/build/esp32cam/firmware.bin
+          ./code/.pio/build/esp32cam/firmware.elf
           ./code/.pio/build/esp32cam/partitions.bin
           ./code/.pio/build/esp32cam/bootloader.bin
           ./html/*
         key: generated-files-${{ github.run_id }}
         restore-keys: generated-files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
           
-    - name: Update remote_setup cache on every commit
-      uses: actions/cache@v3.2.3
+    - if: startsWith(github.ref, 'refs/tags/')
+      name: Cache remote_setup Files For Release Creation
+      uses: actions/cache@v3.3.1
       with:
         path: remote_setup
         key: remote_setup-${{ github.run_id }}
@@ -205,68 +283,71 @@ jobs:
         cp ./sd-card/config/* ./remote_setup/config/ 2>/dev/null || true
 
     - name: Upload remote_setup as remote_setup.zip artifact (Firmware + Web UI + Config)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v3.1.2
       with:
         name: "AI-on-the-edge-device__remote-setup__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        path: ./remote_setup/*
+        path: ./remote_setup
+
 
 
 #########################################################################################
-## Pack for a fresh install (USB flashing) (manual_setup)
+## Pack additional files for debugging purpose
+#
+# Package content:
+# - firmware.elf
+# - sdkconfig.defaults
+# - sdkconfig.esp32cam
 #########################################################################################
-  pack-for-manual_setup:
-    # creates old style binaries for fresh installation (backward compatible to wiki)
+  pack-for-debugging:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v3.5.3
 
-    - name: Update generated-files cache on every commit
-      uses: actions/cache@v3.2.3
+    - name: Load generated-files cache
+      uses: actions/cache@v3.3.1
       with:
-        path: |
+        path: | 
+          ./code/sdkconfig.defaults
+          ./code/sdkconfig.esp32cam
           ./code/.pio/build/esp32cam/firmware.bin
+          ./code/.pio/build/esp32cam/firmware.elf
           ./code/.pio/build/esp32cam/partitions.bin
           ./code/.pio/build/esp32cam/bootloader.bin
           ./html/*
         key: generated-files-${{ github.run_id }}
         restore-keys: generated-files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
-
-    - name: Update manual_setup cache on every commit
-      uses: actions/cache@v3.2.3
+  
+    - if: startsWith(github.ref, 'refs/tags/')
+      name: Cache debug-files for release creation
+      uses: actions/cache@v3.3.1
       with:
-        path: manual_setup
-        key: manual_setup-${{ github.run_id }}
-        restore-keys: manual_setup # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
-
+        path: debug
+        key: debug_files-${{ github.run_id }}
+        restore-keys: debug_files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
+  
     - name: Set Variables
       id: vars
       run: |
         echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
         echo "branch=$(echo ${{ github.ref_name }} | tr / __)" >> $GITHUB_OUTPUT
 
-    - name: Prepare manual_setup__*.zip artifact
+    - name: Prepare debug-files__*.zip artifact
       run: |
-        rm -rf manual_setup
-        mkdir -p manual_setup
-        rm -rf manual_setup/*.zip
-        rm -rf release
-        mkdir -p release
-        # copy builds to manual_setup folder
-        cp -f "./code/.pio/build/esp32cam/firmware.bin" "manual_setup/firmware.bin"
-        cp -f "./code/.pio/build/esp32cam/bootloader.bin" "manual_setup/bootloader.bin"
-        cp -f "./code/.pio/build/esp32cam/partitions.bin" "manual_setup/partitions.bin"
-        rm -rf ./sd-card/html
-        cp -r ./html ./sd-card/ # Overwrite the Web UI with the preprocessed files
-        cd sd-card; zip -r ../manual_setup/sd-card.zip *; cd ..
-        cd ./manual_setup
-  
-    - name: Upload manual_setup.zip artifact (Firmware + Bootloader + Partitions + Web UI)
-      uses: actions/upload-artifact@v3
+        rm -rf ./debug
+        mkdir -p ./debug
+        # copy builds to debug folder
+        cp -f "./code/sdkconfig.defaults" "debug/sdkconfig.defaults"
+        cp -f "./code/sdkconfig.esp32cam" "debug/sdkconfig.esp32cam"
+        cp -f "./code/.pio/build/esp32cam/firmware.elf" "debug/firmware.elf"
+
+    - name: Upload debug_files.zip artifact
+      uses: actions/upload-artifact@v3.1.2
       with:
-        name: "AI-on-the-edge-device__manual-setup__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        path: ./manual_setup
+        name: "AI-on-the-edge-device__debug-files__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        path: ./debug
+
 
 
 #########################################################################################
@@ -274,7 +355,7 @@ jobs:
 #########################################################################################
   release: 
     runs-on: ubuntu-latest
-    needs: [pack-for-update, pack-for-manual_setup, pack-for-remote_setup]
+    needs: [pack-for-OTA-update, pack-for-manual_setup, pack-for-remote_setup, pack-for-debugging]
     if: startsWith(github.ref, 'refs/tags/') 
 
     # Sets permissions of the GITHUB_TOKEN to allow updating the branches
@@ -284,28 +365,35 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Update update cache on every commit
-      uses: actions/cache@v3.2.3
+    - uses: actions/checkout@v3.53
+
+    - name: Load OTA-update Files
+      uses: actions/cache@v3.3.1
       with:
         path: update
-        key: update-${{ github.run_id }}
-        restore-keys: update # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
+        key: update_files-${{ github.run_id }}
+        restore-keys: update_files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
     
-    - name: Update remote_setup cache on every commit
+    - name: Load manual_setup Files
+      uses: actions/cache@v3.2.3
+      with:
+        path: manual_setup
+        key: manual_setup-${{ github.run_id }}
+        restore-keys: manual_setup # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
+
+    - name: Load remote_setup Files
       uses: actions/cache@v3.2.3
       with:
         path: remote_setup
         key: remote_setup-${{ github.run_id }}
         restore-keys: remote_setup # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
     
-    - name: Update manual_setup cache on every commit
-      uses: actions/cache@v3.2.3
+    - name: Load debug_files Files
+      uses: actions/cache@v3.3.1
       with:
-        path: manual_setup
-        key: manual_setup-${{ github.run_id }}
-        restore-keys: manual_setup # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
+        path: debug
+        key: debug_files-${{ github.run_id }}
+        restore-keys: debug_files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
 
     - name: Set Variables
       id: vars
@@ -318,17 +406,24 @@ jobs:
         rm -rf release
         mkdir -p release
 
-        # create AI-on-the-edge-device__update__*.zip like "AI-on-the-edge-device__update__v13.0.5.zip"
+        # AI-on-the-edge-device__OTA-update__*.zip (e.g. "AI-on-the-edge-device__OTA-update__v16.0.0.zip")
         cd ./update
-        zip -r ../release/AI-on-the-edge-device__update__${{ steps.vars.outputs.branch }}.zip .
+        zip -r ../release/AI-on-the-edge-device__OTA-update__${{ steps.vars.outputs.branch }}.zip .
+        
 
-        # create AI-on-the-edge-device__manual-setup__*.zip like "AI-on-the-edge-device__manual-setup__v13.0.5.zip"
+        # AI-on-the-edge-device__manual-setup__*.zip (e.g. "AI-on-the-edge-device__manual-setup__v16.0.0.zip")
         cd ../manual_setup
         zip -r ../release/AI-on-the-edge-device__manual-setup__${{ steps.vars.outputs.branch }}.zip .
 
-        # create AI-on-the-edge-device__remote-setup__*.zip like "AI-on-the-edge-device__remote-setup__v13.0.5.zip"
+
+        # AI-on-the-edge-device__remote-setup__*.zip (e.g. "AI-on-the-edge-device__remote-setup__v16.0.0.zip")
         cd ../remote_setup
         zip -r ../release/AI-on-the-edge-device__remote-setup__${{ steps.vars.outputs.branch }}.zip .
+        
+        
+        # AI-on-the-edge-device__debug-files__*.zip (e.g. "AI-on-the-edge-device__debug-files__v16.0.0.zip)"
+        cd ../debug
+        zip -r ../release/AI-on-the-edge-device__debug-files__${{ steps.vars.outputs.branch }}.zip .
 
     # extract the version used in next step
     - id: get_version
