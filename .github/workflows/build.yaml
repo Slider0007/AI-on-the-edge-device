@@ -1,4 +1,4 @@
-name: Build Firmware
+name: Build and Pack
 
 on: [push, pull_request]
 
