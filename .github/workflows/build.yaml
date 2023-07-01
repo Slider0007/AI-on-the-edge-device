@@ -54,7 +54,7 @@ jobs:
       #run: echo "Testing... ${{ github.ref_name }}, ${{ steps.vars.outputs.sha_short }}" > ./sd-card/html/version.txt; mkdir -p ./code/.pio/build/esp32cam/; cd ./code/.pio/build/esp32cam/; echo "${{ steps.vars.outputs.sha_short }}" > firmware.bin; cp firmware.bin partitions.bin; cp firmware.bin bootloader.bin # Testing
       run: cd code; platformio run --environment esp32cam
 
-    - name: Prepare WebUI (Generate Parameter Tooltips + Update Hashes)
+    - name: Prepare WebUI (Generate parameter tooltips + Update hash)
       run: |
         rm -rf ./html
         mkdir html
@@ -85,7 +85,6 @@ jobs:
         key: generated-files-${{ github.run_id }}
 
          
-
 
 #########################################################################################
 ## Pack for OTA-Update
@@ -139,7 +138,7 @@ jobs:
         cp ./sd-card/config/*.tfl ./update/config/ 2>/dev/null || true
         cp ./sd-card/config/*.tflite ./update/config/ 2>/dev/null || true
 
-    - name: Upload as update.zip artifact (Firmware + Web UI + CNN)
+    - name: Upload update.zip artifact (Firmware + Web UI + CNN)
       uses: actions/upload-artifact@v3.1.2
       with:
         name: "AI-on-the-edge-device__update__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
@@ -274,7 +273,7 @@ jobs:
         mkdir -p ./remote_setup/config/
         cp ./sd-card/config/* ./remote_setup/config/ 2>/dev/null || true
 
-    - name: Upload remote_setup as remote_setup.zip artifact (Firmware + Web UI + Config)
+    - name: Upload remote_setup.zip artifact (Firmware + Web UI + Config)
       uses: actions/upload-artifact@v3.1.2
       with:
         name: "AI-on-the-edge-device__remote-setup__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
@@ -375,14 +374,15 @@ jobs:
         restore-keys: update_files # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
     
     - name: Load manual_setup files
-      uses: actions/cache/restore@v3.2.3
+      uses: actions/cache/restore@v3.3.1
+      
       with:
         path: manual_setup
         key: manual_setup-${{ github.run_id }}
         restore-keys: manual_setup # This matches above key as it is only used as a prefix. it the restores the nearest cache, see https://github.com/restore-keys:/blob/main/tips-and-workarounds.md#update-a-cache
 
     - name: Load remote_setup files
-      uses: actions/cache/restore@v3.2.3
+      uses: actions/cache/restore@v3.3.1
       with:
         path: remote_setup
         key: remote_setup-${{ github.run_id }}
