@@ -24,7 +24,7 @@ jobs:
       run: |
         echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-    - name: Cache pip & platformIO files
+    - name: Cache pip & platformIO cache files
       uses: actions/cache@v3.3.1
       with:
         path: |
@@ -145,8 +145,8 @@ jobs:
         path: ./update
 
     - if: startsWith(github.ref, 'refs/tags/')
-      name: Cache OTA-update Files For Release Creation
-      uses: actions/cache@v3.3.1
+      name: Save OTA-update package for release creation
+      uses: actions/cache/save@v3.3.1
       with:
         path: update
         key: update_files-${{ github.run_id }}
@@ -214,8 +214,8 @@ jobs:
         path: ./manual_setup
         
     - if: startsWith(github.ref, 'refs/tags/')
-      name: Cache manual_setup Files For Release Creation
-      uses: actions/cache@v3.3.1
+      name: Save manual_setup package for release creation
+      uses: actions/cache/save@v3.3.1
       with:
         path: manual_setup
         key: manual_setup-${{ github.run_id }}
@@ -280,7 +280,7 @@ jobs:
         path: ./remote_setup
 
     - if: startsWith(github.ref, 'refs/tags/')
-      name: Save remote_setup files for release creation
+      name: Save remote_setup package for release creation
       uses: actions/cache/save@v3.3.1
       with:
         path: remote_setup
@@ -340,7 +340,7 @@ jobs:
         path: ./debug
 
     - if: startsWith(github.ref, 'refs/tags/')
-      name: Save debug-files for release creation
+      name: Save debug package for release creation
       uses: actions/cache/save@v3.3.1
       with:
         path: debug
