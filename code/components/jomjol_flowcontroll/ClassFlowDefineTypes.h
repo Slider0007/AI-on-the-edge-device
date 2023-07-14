@@ -7,8 +7,8 @@
 
 struct roi {
     int posx, posy, deltax, deltay;
-    float result_float;
-    int result_klasse;
+    float result_float = -1.0;
+    int result_klasse = -1;
     bool isReject, CCW;
     string name;
     CImageBasis *image, *image_org;
@@ -49,7 +49,7 @@ struct NumberPost {
     int AnzahlDigital;
     int DecimalShift;
     int DecimalShiftInitial;
-    float AnalogDigitalTransitionStart; // When is the digit > x.1, i.e. when does it start to tilt?
+    int AnalogDigitalTransitionStart; // When is the digit > x.1, i.e. when does it start to tilt?
     int Nachkomma;
 
     string FieldV1; // Fieldname in InfluxDBv1  

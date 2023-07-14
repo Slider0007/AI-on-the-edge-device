@@ -26,15 +26,6 @@ protected:
     std::vector<general*> GENERAL;
     float CNNGoodThreshold;
 
-	//moved to define.h
-    //float Analog_error = 3.0;
-    //float AnalogToDigtalFehler = 0.8;
-    //float Digital_Uncertainty = 0.2;
-    //int DigitalBand = 3;
-    //float Digital_Transition_Range_Predecessor = 2;
-    //float Digital_Transition_Area_Predecessor = 0.7; // 9.3 - 0.7
-    //float Digital_Transition_Area_Forward = 9.7; // Pre-run zero crossing only happens from approx. 9.7 onwards
-
     CTfLiteClass *tflite;
     ClassFlowAlignment* flowpostalignment;
     std::string cnnname;
@@ -44,9 +35,9 @@ protected:
     bool isLogImageSelect;
     bool SaveAllFiles;   
 
-    int PointerEvalAnalogNew(float zahl, int numeral_preceder);
-    int PointerEvalAnalogToDigitNew(float zahl, float numeral_preceder,  int eval_predecessors, float analogDigitalTransitionStart);
-    int PointerEvalHybridNew(float zahl, float number_of_predecessors, int eval_predecessors, bool Analog_Predecessors = false, float analogDigitalTransitionStart=9.2);
+    int EvalAnalogNumber(int _value, int _resultPreviousNumber);
+    int EvalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool isPreviousAnalog = false, int analogDigitalTransitionStart=92);
+    int EvalAnalogToDigitTransition(int _value, int _valuePreviousNumber,  int _resultPreviousNumber, int analogDigitalTransitionStart);
 
     bool doNeuralNetwork(string time); 
     bool doAlignAndCut(string time);
@@ -61,7 +52,7 @@ public:
     bool doFlow(string time);
 
     string getHTMLSingleStep(string host);
-    string getReadout(int _analog, bool _extendedResolution = false, int prev = -1, float _before_narrow_Analog = -1, float analogDigitalTransitionStart=9.2); 
+    std::string getReadout(int _seqNo = 0, bool _extendedResolution = false, int _valuePreviousNumber = -1, int _resultPreviousNumber = -1, int analogDigitalTransitionStart = 92);
 
     string getReadoutRawString(int _analog);  
 
@@ -85,4 +76,3 @@ public:
 };
 
 #endif
-
