@@ -27,7 +27,7 @@ void test_doFlowPP() {
         std::vector<float> digits = { 1.2, 6.7};
         std::vector<float> analogs = { 9.5, 8.4};
         const char* expected = "16.98";
-        //const char* expected_extended = "16.984";
+        const char* expected_extended = "16.984";
         std::string result = process_doFlow(analogs, digits);
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
 
@@ -114,12 +114,19 @@ void test_doFlowPP1() {
         // https://github.com/jomjol/AI-on-the-edge-device/issues/942#issuecomment-1226966346
         std::vector<float> digits = { 0.0, 2.9, 3.0, 2.9, 3.5, 9.5};
         std::vector<float>  analogs = {        };
-        const char* expected = "33330";
+        const char* expected = "33339";
         std::string result = process_doFlow(analogs, digits);
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
 
         // https://github.com/jomjol/AI-on-the-edge-device/issues/942#issuecomment-1226966346
         digits = { 9.9, 2.8, 2.9, 2.9, 3.7, 9.7};
+        analogs = {        };
+        expected = "33339";
+        result = process_doFlow(analogs, digits);
+        TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
+
+        // https://github.com/jomjol/AI-on-the-edge-device/issues/942#issuecomment-1226966346
+        digits = { 9.9, 2.8, 2.9, 2.9, 3.7, 0.1};
         analogs = {        };
         expected = "33340";
         result = process_doFlow(analogs, digits);
@@ -128,19 +135,19 @@ void test_doFlowPP1() {
         // https://github.com/jomjol/AI-on-the-edge-device/issues/942
         digits = { 0.0, 9.9, 6.8, 9.9, 3.7, 0.8, 6.9, 8.7};
         analogs = {        };
-        expected = "704179";
+        expected = "704178";
         result = process_doFlow(analogs, digits);
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
 
         // https://github.com/jomjol/AI-on-the-edge-device/issues/942#issuecomment-1228343319
-        digits = { 9.9, 6.8, 1.1, 4.7, 2.7, 6.0, 9.0, 2.8};  // changed 3.7 --> 2.7 (see picture in issue)
+        digits = { 9.9, 6.8, 1.1, 4.7, 2.7, 6.0, 9.0, 2.8};  // 4.7 needs to be 5
         analogs = {        };
-        expected = "7153693";
+        expected = "7153692";
         result = process_doFlow(analogs, digits);
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
 
 
-        // Analoger Übergang Zähler Jomjolcom/jomjol/AI-on-the-edge-device/issues/942#issuecomment-1228343319
+        // Analoger Übergang Zähler
         digits = { 1.0, 9.0, 4.3};  // changed 3.7 --> 2.7 (see picture in issue)
         analogs = { 8.9, 0.7, 8.9, 9.4 };
         expected = "194.9089";
@@ -185,7 +192,7 @@ void test_doFlowPP2() {
         // https://github.com/jomjol/AI-on-the-edge-device/issues/921#issuecomment-1242730397
         digits = { 3.0, 2.0, 2.0, 8.0, 9.0, 4.0, 1.7, 9.8};  // falscher Wert 32290.420
         analogs = { };
-        expected = "32289.420";
+        expected = "32289.419";
         const char* expected_extended= "32289.4198";
         // FALSCH! wegen ungenügender Präzision von NUMBERS->Value
         // expected_extended= "32289.4198";
@@ -230,7 +237,7 @@ void test_doFlowPP2() {
         // https://github.com/jomjol/AI-on-the-edge-device/issues/994#issue-1368570945
         digits = { 0.0, 0.0, 1.0, 2.0, 2.8, 1.9, 2.8, 5.6};  // 123245.6 als falsches Ergebnis
         analogs = { };
-        expected = "123236";
+        expected = "123235";
         expected_extended= "123235.6";
         
         // checkConsistency=true

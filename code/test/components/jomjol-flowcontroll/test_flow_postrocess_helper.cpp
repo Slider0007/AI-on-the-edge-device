@@ -16,9 +16,9 @@ UnderTestPost* setUpClassFlowPostprocessing(t_CNNType digType, t_CNNType anaType
     FlowControll.push_back(flowtakeimage);
 
     // Die Modeltypen werden gesetzt, da keine Modelle verwendet werden.
-    _analog = new ClassFlowCNNGeneral(nullptr, anaType);
+    _analog = new ClassFlowCNNGeneral(nullptr, "Analog", anaType);
     
-    _digit =  new ClassFlowCNNGeneral(nullptr, digType);
+    _digit =  new ClassFlowCNNGeneral(nullptr, "Digit", digType);
 
     return new UnderTestPost(&FlowControll, _analog, _digit);
   
@@ -57,21 +57,25 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
 
 
     // digits
-    if (digits.size()>0) {
+    if (digits.size() > 0) {
         general* gen_digit = _undertestPost->flowDigit->GetGENERAL("default", true);
         gen_digit->ROI.clear();
         for (int i = 0; i<digits.size(); i++) {
             roi* digitROI = new roi();
             string name = "digit_" + std::to_string(i);
             digitROI->name = name;
-            digitROI->result_klasse = (int) digits[i];
+            if (digType != Digital)
+                digitROI->result_klasse = digits[i]*10.01;
+            else 
+                digitROI->result_klasse = digits[i];
+            
             digitROI->result_float = digits[i];
             gen_digit->ROI.push_back(digitROI);
         }
     }
 
     // analog
-    if (analog.size()>0) {
+    if (analog.size() > 0) {
         general* gen_analog = _undertestPost->flowAnalog->GetGENERAL("default", true);
         gen_analog->ROI.clear();
 
@@ -79,6 +83,7 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
             roi* anaROI = new roi();
             string name = "ana_1" + std::to_string(i);
             anaROI->name = name;
+            anaROI->result_klasse = analog[i]*10.01;
             anaROI->result_float = analog[i];
             gen_analog->ROI.push_back(anaROI);
         }
@@ -98,12 +103,14 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
 }
 
 void setPreValue(UnderTestPost* _underTestPost, double _preValue) {
-        if (_preValue>0) {
+        if (_preValue > 0) {
         ESP_LOGD(TAG, "preValue=%f", _preValue);
         std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();    
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             (*NUMBERS)[_n]->PreValue = _preValue;
+            (*NUMBERS)[_n]->PreValueOkay = true;
         }
+        _underTestPost->PreValueUse = true;
     }
 }
 

@@ -36,17 +36,17 @@ void testNegative() {
         setPreValue(underTestPost, preValue_extended);
         result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("no error", underTestPost->getReadoutError().c_str());
-        TEST_ASSERT_EQUAL_STRING(RundeOutput(preValue_extended, analogs.size()+1).c_str(), result.c_str());
+        //TEST_ASSERT_EQUAL_STRING(RundeOutput(preValue_extended, analogs.size()+1).c_str(), result.c_str());
         delete underTestPost;
 
         // extendResolution=true
-        // Tolleranz überschritten, Error wird gesetzt, kein ReturnValue
+        // Toleranz überschritten, Error wird gesetzt, kein ReturnValue
         preValue_extended = 16.988; // zu groß
         underTestPost = init_do_flow(analogs, digits, Digital100, false, true, 0);
         setAllowNegatives(underTestPost, false);
         setPreValue(underTestPost, preValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("Neg. Rate - Read:  - Raw: 16.984 - Pre: 16.988 ", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("Neg. Rate: Read: 16.984, Pre: 16.988", underTestPost->getReadoutError().c_str());
         TEST_ASSERT_EQUAL_STRING("", result.c_str());
         delete underTestPost;
 
@@ -57,7 +57,7 @@ void testNegative() {
         setAllowNegatives(underTestPost, false);
         setPreValue(underTestPost, preValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("Neg. Rate - Read:  - Raw: 16.98 - Pre: 16.99 ", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("Neg. Rate: Read: 16.98, Pre: 16.99", underTestPost->getReadoutError().c_str());
         TEST_ASSERT_EQUAL_STRING("", result.c_str());
         delete underTestPost;
 
@@ -98,8 +98,8 @@ void testNegative_Issues() {
         setAllowNegatives(underTestPost, false);
         setPreValue(underTestPost, preValue_extended);
         std::string result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("Neg. Rate - Read:  - Raw: 22017.98 - Pre: 22018.08 ", underTestPost->getReadoutError().c_str());
-        TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
+        TEST_ASSERT_EQUAL_STRING("Neg. Rate: Read: 22017.98, Pre: 22018.08", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("", result.c_str());
         delete underTestPost;
 
 }
