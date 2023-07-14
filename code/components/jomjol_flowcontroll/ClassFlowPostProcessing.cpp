@@ -893,15 +893,15 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                         NUMBERS[j]->ReturnValue = "";
                         NUMBERS[j]->lastvalue = imagetime;
 
-                    string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
-                                                    ", Status: " + NUMBERS[j]->ErrorMessageText;
-                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, _zw);
+                        string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
+                                                        ", Status: " + NUMBERS[j]->ErrorMessageText;
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, _zw);
 
-                    WriteDataLog(j);
-                    FlowStateHandlerSetError(-1, true);
-                    continue;
+                        WriteDataLog(j);
+                        FlowStateHandlerSetError(-1, true);
+                        continue;
+                    }
                 }
-                
             }
         }
 
