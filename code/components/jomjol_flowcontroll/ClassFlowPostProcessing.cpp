@@ -979,7 +979,10 @@ void ClassFlowPostProcessing::doAutoErrorHandling()
         bool saveData = false;
         std::string destination = "/sdcard/log/debug/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
         std::string resultFileName;
-        MakeDir(destination);
+        if (!MakeDir(destination)) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Failed to create folder " + destination);
+            return;
+        }
 
         for (int j = 0; j < NUMBERS.size(); ++j) {       
             if (NUMBERS[j]->ErrorMessageText.find("Neg. Rate") != std::string::npos) {

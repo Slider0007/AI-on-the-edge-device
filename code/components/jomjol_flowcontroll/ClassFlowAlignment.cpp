@@ -317,9 +317,12 @@ void ClassFlowAlignment::doAutoErrorHandling()
     
     if (SaveDebugInfo && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and alignment failed
         std::string destination = "/sdcard/log/debug/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
-        MakeDir(destination);
+        if (!MakeDir(destination)) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Failed to create folder " + destination);
+            return;
+        }
 
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling (-1): Alignment failed, save debug infos to " + destination);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Alignment failed, save debug infos to " + destination);
 
         // Draw alignment marker and save image#
         DrawRef(AlignAndCutImage);
