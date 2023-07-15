@@ -767,7 +767,6 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
         if (NUMBERS[j]->analog_roi) {      
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Get analog numbers");
             NUMBERS[j]->ReturnRawValue = flowAnalog->getReadout(j, NUMBERS[j]->isExtendedResolution);
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Get analog numbers - Duration: " + std::to_string((esp_timer_get_time() - fr_start) / 1000));
 
             if (NUMBERS[j]->ReturnRawValue.length() > 0) {
                 char zw = NUMBERS[j]->ReturnRawValue[0];  // Convert highest analog number to integer
