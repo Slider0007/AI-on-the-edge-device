@@ -595,6 +595,7 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
             }
             else {
                 IgnoreLeadingNaN = false;
+            }
         }
 
         if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
@@ -612,6 +613,7 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
 
     return true;
 }
+
 
 void ClassFlowPostProcessing::InitNUMBERS()
 {
