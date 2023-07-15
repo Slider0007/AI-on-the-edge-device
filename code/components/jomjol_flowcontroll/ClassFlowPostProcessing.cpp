@@ -5,7 +5,6 @@
 
 #include <iomanip>
 #include <sstream>
-#include <esp_timer.h>
 
 #include <time.h>
 #include "time_sntp.h"
@@ -428,12 +427,16 @@ void ClassFlowPostProcessing::handleAllowNegativeRate(std::string _decsep, std::
     else
         _digit = "default";
 
-    for (int j = 0; j < NUMBERS.size(); ++j)
-    {
-        if (toUpper(_value) == "TRUE")
+    for (int j = 0; j < NUMBERS.size(); ++j) {
+        if (toUpper(_value) == "TRUE") {
             value = true;
-        else
+        }
+        else {
             value = false;
+            
+            if (!PreValueUse) // Previous Value is mandatory to evaluate negative rates
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Previous Value\' to use negative rate evaluation"); 
+        }
 
         if (_digit == "default" || NUMBERS[j]->name == _digit)
             NUMBERS[j]->AllowNegativeRates = value;
@@ -454,11 +457,13 @@ void ClassFlowPostProcessing::handleMaxRateType(std::string _decsep, std::string
     else
         _digit = "default";
 
-    for (int j = 0; j < NUMBERS.size(); ++j)
-    {
+    for (int j = 0; j < NUMBERS.size(); ++j) {
         if (toUpper(_value) == "RATECHANGE") {
             NUMBERS[j]->useMaxRateValue = true;
             _rt = RateChange;
+
+            if (!PreValueUse) // Previous Value is mandatory to evaluate rate limits
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Previous Value\' to use rate limit evaluation"); 
         }
         else if (toUpper(_value) == "OFF") {
             NUMBERS[j]->useMaxRateValue = false;
@@ -467,6 +472,9 @@ void ClassFlowPostProcessing::handleMaxRateType(std::string _decsep, std::string
         else {
             NUMBERS[j]->useMaxRateValue = true;
             _rt = AbsoluteChange;
+
+            if (!PreValueUse) // Previous Value is mandatory to evaluate rate limits
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Previous Value\' to use rate limit evaluation"); 
         }
 
         if (_digit == "default" || NUMBERS[j]->name == _digit)
@@ -513,81 +521,79 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
 
     InitNUMBERS();
 
-    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
-    {
+    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph)) {
         splitted = ZerlegeZeile(aktparamgraph);
         _param = GetParameterName(splitted[0]);
 
-        if ((toUpper(_param) == "PREVALUEUSE") && (splitted.size() > 1))
-        {
+        if ((toUpper(_param) == "PREVALUEUSE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 PreValueUse = true;
             else
                 PreValueUse = false;
         }
 
-        if ((toUpper(_param) == "PREVALUEAGESTARTUP") && (splitted.size() > 1))
-        {
+        if ((toUpper(_param) == "PREVALUEAGESTARTUP") && (splitted.size() > 1)) {
             PreValueAgeStartup = std::stoi(splitted[1]);
         }
 
-        if ((toUpper(_param) == "ERRORMESSAGE") && (splitted.size() > 1))
-        {
+        if ((toUpper(_param) == "ERRORMESSAGE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 ErrorMessage = true;
             else
                 ErrorMessage = false;
         }
 
-        if ((toUpper(_param) == "CHECKDIGITINCREASECONSISTENCY") && (splitted.size() > 1))
-        {
+        if ((toUpper(_param) == "CHECKDIGITINCREASECONSISTENCY") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE") {
-                for (int _n = 0; _n < NUMBERS.size(); ++_n)
-                    NUMBERS[_n]->checkDigitIncreaseConsistency = true;
+                for (int j = 0; j < NUMBERS.size(); ++j) {
+                    NUMBERS[j]->checkDigitIncreaseConsistency = true;
+
+                    if (flowDigit != NULL && flowDigit->getCNNType() != Digital)
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models"); 
+                }
             }
             else {
-                for (int _n = 0; _n < NUMBERS.size(); ++_n)
-                    NUMBERS[_n]->checkDigitIncreaseConsistency = false; 
+                for (int j = 0; j < NUMBERS.size(); ++j) {
+                    NUMBERS[j]->checkDigitIncreaseConsistency = false;
+                }
             }
         } 
         
         if ((toUpper(_param) == "ALLOWNEGATIVERATES") && (splitted.size() > 1)) {
             handleAllowNegativeRate(splitted[0], splitted[1]);
-
-            if (!PreValueUse) // Previous Value is mandatory to evaluate negative rates
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Parameter \'Previous Value\' needs to be enabled to use negative rate evaluation"); 
         }
 
-        if ((toUpper(_param) == "DECIMALSHIFT") && (splitted.size() > 1))
-        {
+        if ((toUpper(_param) == "DECIMALSHIFT") && (splitted.size() > 1)) {
             handleDecimalSeparator(splitted[0], splitted[1]);
         }
 
-        if ((toUpper(_param) == "ANALOGDIGITALTRANSITIONSTART") && (splitted.size() > 1))
-        {
+        if ((toUpper(_param) == "ANALOGDIGITALTRANSITIONSTART") && (splitted.size() > 1)) {
             handleAnalogDigitalTransitionStart(splitted[0], splitted[1]);
         }
 
-        if ((toUpper(_param) == "MAXRATETYPE") && (splitted.size() > 1))
-        {
+        if ((toUpper(_param) == "MAXRATETYPE") && (splitted.size() > 1)) {
             handleMaxRateType(splitted[0], splitted[1]);
         }
 
-        if ((toUpper(_param) == "MAXRATEVALUE") && (splitted.size() > 1))
-        {
+        if ((toUpper(_param) == "MAXRATEVALUE") && (splitted.size() > 1)) {
             handleMaxRateValue(splitted[0], splitted[1]);
         }
 
-        if ((toUpper(_param) == "EXTENDEDRESOLUTION") && (splitted.size() > 1))
-        {
+        if ((toUpper(_param) == "EXTENDEDRESOLUTION") && (splitted.size() > 1)) {
             handleDecimalExtendedResolution(splitted[0], splitted[1]);
         }
 
-        if ((toUpper(_param) == "IGNORELEADINGNAN") && (splitted.size() > 1))
-        {
-            if (toUpper(splitted[1]) == "TRUE")
-                IgnoreLeadingNaN = true;
-            else
+        if ((toUpper(_param) == "IGNORELEADINGNAN") && (splitted.size() > 1)) {
+            if (toUpper(splitted[1]) == "TRUE") {
+                if (flowDigit != NULL && flowDigit->getCNNType() != Digital) {
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Ignore Leading NaNs\' check, only applicable for dig-class11 models");
+                    IgnoreLeadingNaN = false;
+                }
+                else {
+                    IgnoreLeadingNaN = true;
+                }
+            }
+            else {
                 IgnoreLeadingNaN = false;
         }
 
@@ -676,7 +682,9 @@ void ClassFlowPostProcessing::InitNUMBERS()
     }
 
     for (int i = 0; i < NUMBERS.size(); ++i) {
-        ESP_LOGD(TAG, "Number sequence %s, Anz DIG: %d, Anz ANA %d", NUMBERS[i]->name.c_str(), NUMBERS[i]->AnzahlDigital, NUMBERS[i]->AnzahlAnalog);
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Number sequence: " + NUMBERS[i]->name + 
+                                                ", Digits: " + std::to_string(NUMBERS[i]->AnzahlDigital) + 
+                                                ", Analogs: " + std::to_string(NUMBERS[i]->AnzahlAnalog));
     }
 
 }
@@ -726,8 +734,6 @@ string ClassFlowPostProcessing::ShiftDecimal(string in, int _decShift){
 
 bool ClassFlowPostProcessing::doFlow(string zwtime)
 {
-    int64_t fr_start = esp_timer_get_time();
-
     PresetFlowStateHandler(false, zwtime);
     time_t imagetime = 0;
     int resultPreviousNumberAnalog = -1;
@@ -760,8 +766,6 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
         /* Process analog numbers of sequence */
         if (NUMBERS[j]->analog_roi) {      
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Get analog numbers");
-            
-            int64_t fr_start = esp_timer_get_time();
             NUMBERS[j]->ReturnRawValue = flowAnalog->getReadout(j, NUMBERS[j]->isExtendedResolution);
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Get analog numbers - Duration: " + std::to_string((esp_timer_get_time() - fr_start) / 1000));
 
@@ -783,14 +787,11 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
         /* Process digit numbers of sequence */
         if (NUMBERS[j]->digit_roi) {
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Get digit numbers");
-            int64_t fr_start = esp_timer_get_time();
             if (NUMBERS[j]->analog_roi) // If analog numbers available
                 NUMBERS[j]->ReturnRawValue = flowDigit->getReadout(j, false, NUMBERS[j]->analog_roi->ROI[0]->result_klasse, resultPreviousNumberAnalog, 
                                                                     NUMBERS[j]->AnalogDigitalTransitionStart) + NUMBERS[j]->ReturnRawValue;
             else
                 NUMBERS[j]->ReturnRawValue = flowDigit->getReadout(j, NUMBERS[j]->isExtendedResolution); // Extended resolution only if no analog
-
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Get digit numbers - Duration: " + std::to_string((esp_timer_get_time() - fr_start) / 1000));
         }
 
         #ifdef SERIAL_DEBUG
@@ -855,9 +856,11 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
         if (NUMBERS[j]->checkDigitIncreaseConsistency) {
             if (flowDigit) {
                 if (flowDigit->getCNNType() != Digital)
-                    ESP_LOGD(TAG, "checkDigitIncreaseConsistency: Skip; not supported by selected model");
-                else 
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models"); 
+                else {
+                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check digit increase consistency for sequence: " + NUMBERS[j]->name);
                     NUMBERS[j]->Value = checkDigitConsistency(NUMBERS[j]->Value, NUMBERS[j]->DecimalShift, NUMBERS[j]->analog_roi != NULL, NUMBERS[j]->PreValue);
+                }
             }
             else {
                 #ifdef SERIAL_DEBUG
@@ -872,8 +875,8 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
 
         /* Check negative rate */
         if (!NUMBERS[j]->AllowNegativeRates) {
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handleAllowNegativeRate for sequence: " + NUMBERS[j]->name);
             if (PreValueUse && NUMBERS[j]->PreValueOkay) {
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check negative rate for sequence: " + NUMBERS[j]->name);
                 if (NUMBERS[j]->Value < NUMBERS[j]->PreValue)
                 {
                     #ifdef SERIAL_DEBUG
@@ -915,6 +918,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
 
         /* Check rate too high */
         if (NUMBERS[j]->useMaxRateValue && PreValueUse && NUMBERS[j]->PreValueOkay) {
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check rate limit for sequence: " + NUMBERS[j]->name);
             double _ratedifference;  
             if (NUMBERS[j]->RateType == RateChange)
                 _ratedifference = NUMBERS[j]->FlowRateAct;
@@ -962,8 +966,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
     }
 
     SavePreValue();
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "PostProcessing - Duration: " + std::to_string((esp_timer_get_time() - fr_start) / 1000));
-    
+
     if (!FlowState.isSuccessful)
         return false;
 
