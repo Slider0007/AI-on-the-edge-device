@@ -1058,20 +1058,26 @@ string ClassFlowCNNGeneral::getReadoutRawString(int _seqNo)
     {
         if (CNNType == Analogue || CNNType == Analogue100)
         {
-            rt = rt + "," + RundeOutput(GENERAL[_seqNo]->ROI[i]->result_float, 1);
+            if (GENERAL[_seqNo]->ROI[i]->result_float >= 10.0)
+                rt = rt + ",0.0";
+            else
+                rt = rt + "," + RundeOutput(GENERAL[_seqNo]->ROI[i]->result_float, 1);
         }
 
-        if (CNNType == Digital)
+        else if ((CNNType == DoubleHyprid10) || (CNNType == Digital100))
+        {
+            if (GENERAL[_seqNo]->ROI[i]->result_float >= 10.0)
+                rt = rt + ",0.0";
+            else
+                rt = rt + "," + RundeOutput(GENERAL[_seqNo]->ROI[i]->result_float, 1);
+        }
+
+        else if (CNNType == Digital)
         {
             if (GENERAL[_seqNo]->ROI[i]->result_klasse == 10)
                 rt = rt + ",N";
             else
                 rt = rt + "," + RundeOutput(GENERAL[_seqNo]->ROI[i]->result_klasse, 0);
-        }
-
-        if ((CNNType == DoubleHyprid10) || (CNNType == Digital100))
-        {
-            rt = rt + "," + RundeOutput(GENERAL[_seqNo]->ROI[i]->result_float, 1);
         }
     }
     return rt;
