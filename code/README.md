@@ -2,18 +2,24 @@
 
 ## Preparations
 ```
-git clone https://github.com/jomjol/AI-on-the-edge-device.git
+git clone https://github.com/Slider0007/AI-on-the-edge-device.git
 cd AI-on-the-edge-device
-git checkout rolling
+git checkout develop
 git submodule update --init
 ```
 
 ## Build and Flash within terminal
 See further down to build it within an IDE.
-### Compile
+### Compile (firmware only)
 ```
 cd code
 platformio run --environment esp32cam
+```
+
+### Compile (with HTML parameter tooltips and file hashes)
+```
+cd code
+platformio run --environment esp32cam-localbuild
 ```
 
 ### Upload
@@ -40,17 +46,18 @@ pio device monitor -p /dev/ttyUSB0
   - in Linux: 
 
     ```
-    git clone https://github.com/jomjol/AI-on-the-edge-device.git
+    git clone https://github.com/Slider0007/AI-on-the-edge-device.git
     cd AI-on-the-edge-device
-    git checkout rolling
+    git checkout develop
     git submodule update --init
     ```
 
 - in VS code, open the `AI-on-the-edge-device/code` 
-	- from terminal: `cd AI-on-the-edge-device/code && code .`
+	- from terminal: `cd AI-on-the-edge-device/code`
 - open a pio terminal (click on the terminal sign in the bottom menu bar)
 - make sure you are in the `code` directory
-- To build, type  `platformio run --environment esp32cam`
+- To build, type `platformio run --environment esp32cam`
+- To build with parameter tooltips and file hashes, type `platformio run --environment esp32cam-localbuild`
   - or use the graphical interface:
     <img src="https://raw.githubusercontent.com/jomjol/ai-on-the-edge-device/master/images/platformio_build.jpg" width="200" align="middle">
   - the build artifacts are stored in  `code/.pio/build/esp32cam/`
