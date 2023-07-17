@@ -53,7 +53,7 @@ else()
 endif()
 
 if (NOT "${VERSION}" STREQUAL "${VERSION_}")
-    # file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp "${VERSION}")
+    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp "${VERSION}")
     file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/../sd-card/html/version.txt "${VERSION_HTML}")
 endif()
 #######################################################################
