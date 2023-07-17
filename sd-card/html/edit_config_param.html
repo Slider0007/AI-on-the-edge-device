@@ -204,12 +204,12 @@
     }
 </style>
 
-<link rel="stylesheet" href="mkdocs_theme.css?v=1689595084077" />
-<link rel="stylesheet" href="mkdocs_theme_extra.css?v=1689595084077" />
+<link rel="stylesheet" href="mkdocs_theme.css?v=$COMMIT_HASH" />
+<link rel="stylesheet" href="mkdocs_theme_extra.css?v=$COMMIT_HASH" />
 
-<link href="firework.css?v=1689595084077" rel="stylesheet">
-<script type="text/javascript" src="jquery-3.6.0.min.js?v=1689595084077"></script>  
-<script type="text/javascript" src="firework.js?v=1689595084077"></script>
+<link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+<script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
+<script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
 <body style="font-family: arial; padding: 0px 10px;">
@@ -276,47 +276,7 @@
 			<td>
 				<input required type="text" name="name" id="TakeImage_RawImagesLocation_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Raw Images Location</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Raw Images Location</td>
-<td style="text-align: left;">RawImagesLocation</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>/log/source</code></td>
-<td style="text-align: left;"><code>/log/source</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>Location on SD-Card where the raw image files are stored.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This image file saving function is disabled by default. A SD-Card has limited write cycles. Since the device does not do <a target=_blank href="https://en.wikipedia.org/wiki/Wear_leveling">Wear Leveling</a>, this can wear out your SD-Card!</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_RawImagesLocation</td>
 		</tr>
 
 		<tr class="expert">
@@ -328,53 +288,7 @@
 				<input required type="number" id="TakeImage_RawImagesRetention_value1" size="13" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Raw Images Retention</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Raw Images Retention</td>
-<td style="text-align: left;">RawImagesRetention</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>5</code></td>
-<td style="text-align: left;"><code>5</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Days</td>
-<td style="text-align: left;">Days</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>Number of days the raw image files are kept.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_RawImagesRetention</td>
 		</tr>
 
 		<tr class="expert">		
@@ -385,52 +299,7 @@
 				<input required type="number" id="TakeImage_WaitBeforeTakingPicture_value1" size="13" min="0" step="any"
 					oninput="(!validity.rangeUnderflow||(value=0));">Seconds
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Flash Duration</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Flash Duration</td>
-<td style="text-align: left;">WaitBeforeTakingPicture</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>2.0</code></td>
-<td style="text-align: left;"><code>2.0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0.0</code> .. &infin;</td>
-<td style="text-align: left;"><code>0.0</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Seconds</td>
-<td style="text-align: left;">Seconds</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Flash on time before taking the image.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>A shorter flash duration than 0.5s ist not recommended.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_WaitBeforeTakingPicture</td>
 		</tr>
 
 		<tr class="expert">
@@ -442,47 +311,7 @@
 					oninput="(!validity.rangeUnderflow||(value=8)) && (!validity.rangeOverflow||(value=63)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Image Quality</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Image Quality</td>
-<td style="text-align: left;">ImageQuality</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>12</code></td>
-<td style="text-align: left;"><code>12</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>8</code> (highest quality) .. <code>63</code> (lowest quality)</td>
-<td style="text-align: left;"><code>8</code> .. <code>63</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Image quality index</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Values lower than 12 could result in system instabilities!</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_ImageQuality</td>
 		</tr>
 
 		<tr class="expert">
@@ -495,48 +324,7 @@
 					<option value="QVGA" >QVGA</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Image Size</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Image Size</td>
-<td style="text-align: left;">ImageSize</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>VGA</code></td>
-<td style="text-align: left;"><code>VGA</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>VGA</code> (640 x 480 Pixel)<br><code>QVGA</code> (320 x 240 Pixel)</td>
-<td style="text-align: left;"><code>VGA</code><br><code>QVGA</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Size of the raw camera image taken by the camera module.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The camera module itself would support larger sizes than 640 x 480 pixel but it's not
-possible to process larger images due to RAM limitation. </p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_ImageSize</td>
 		</tr>
 
 		<tr>
@@ -548,44 +336,7 @@ possible to process larger images due to RAM limitation. </p>
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: LED Intensity</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">LED Intensity</td>
-<td style="text-align: left;">LEDIntensity</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>50</code></td>
-<td style="text-align: left;"><code>50</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0</code> .. <code>100</code></td>
-<td style="text-align: left;"><code>0</code> .. <code>100</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Set the flash intensity (PWM-controlled LED).</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>This parameter should be set on the 'Reference Image' configuration page.
-There you have a visual feedback.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_LEDIntensity</td>
 		</tr>
 
 		<tr>
@@ -597,44 +348,7 @@ There you have a visual feedback.</p>
 					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Brightness</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Brightness</td>
-<td style="text-align: left;">Brightness</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>0</code></td>
-<td style="text-align: left;"><code>0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>-2</code> .. <code>2</code></td>
-<td style="text-align: left;"><code>-2</code> .. <code>2</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Set the brightness level of the image.</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>This parameter should be set on the 'Reference Image' configuration page.
-There you have a visual feedback.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_Brightness</td>
 		</tr>
 
 		<tr>
@@ -646,44 +360,7 @@ There you have a visual feedback.</p>
 					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Contrast</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Contrast</td>
-<td style="text-align: left;">Contrast</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>0</code></td>
-<td style="text-align: left;"><code>0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>-2</code> .. <code>2</code></td>
-<td style="text-align: left;"><code>-2</code> .. <code>2</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Set the contrast level of the image.</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>This parameter should be set on the 'Reference Image' configuration page.
-There you have a visual feedback.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_Contrast</td>
 		</tr>
 
 		<tr>
@@ -695,44 +372,7 @@ There you have a visual feedback.</p>
 					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Saturation</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Saturation</td>
-<td style="text-align: left;">Saturation</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>0</code></td>
-<td style="text-align: left;"><code>0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>-2</code> .. <code>2</code></td>
-<td style="text-align: left;"><code>-2</code> .. <code>2</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Set the saturation level of the image.</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>This parameter should be set on the 'Reference Image' configuration page.
-There you have a visual feedback.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_Saturation</td>
 		</tr>
 		
 		<tr class="expert">
@@ -745,43 +385,7 @@ There you have a visual feedback.</p>
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Fixed Exposure</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Fixed Exposure</td>
-<td style="text-align: left;">FixedExposure</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>This option fixes the illumination setting of camera after intial capture and uses the same setting for any further capture event. This will slightly reduce processing time of 'Take Image' state but could result in worse results if environmental condition changed afterwards.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_FixedExposure</td>
 		</tr>
 
 		<tr class="expert">
@@ -794,51 +398,7 @@ There you have a visual feedback.</p>
 					<option value="false" selected>false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Demo Mode</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Demo Mode</td>
-<td style="text-align: left;">Demo</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Enable this feature to use demo images instead of the real camera images.
-This can be helpful for device testing. <br>
-Make sure to have a <code>/demo</code> folder on your SD-Card and it contains the expected files.
-Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/Demo-Mode">documentation</a> for more details. </p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Even demo files are used the camera module is still needed. After image is taken
-by camera the framebuffer content will be replaced by the demo image content.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_TakeImage_Demo</td>
 		</tr>
 
 
@@ -860,73 +420,7 @@ by camera the framebuffer content will be replaced by the demo image content.</p
 					<option value="off" >Off</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Alignment Algorithm</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Alignment Algorithm</td>
-<td style="text-align: left;">AlignmentAlgo</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>Rotation + Default Algo</code></td>
-<td style="text-align: left;"><code>Default</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>Rotation + Default Algo</code><br><code>Rotation + High Accuracy Algo</code><br><code>Rotation + Fast Algo</code><br><code>Only Rotation</code><br><code>Off</code></td>
-<td style="text-align: left;"><code>Default</code><br><code>HighAccuracy</code><br><code>Fast</code><br><code>Rotation</code><br><code>Off</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Image alignment is done in three steps during 'Image Alignment' state:<br />
-1. Flip image size and/or mirror image
-2. Rotate image using 'Image Rotation' parameter
-3. Use SAD algorithm to find pattern matches for the given alignment marker images</p>
-<h3>Input Options</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Input Option</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><code>Rotation + Default Algo</code></td>
-<td style="text-align: left;">Rotate image + Process SAD algorithm (only red color channel)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>Rotation + High Accuracy Algo</code></td>
-<td style="text-align: left;">Rotate image + Process SAD algorithm (all 3 color channels -&gt; 3x slower)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>Rotation + Fast Algo</code></td>
-<td style="text-align: left;">Rotate image + Use last working correction (If pattern still matching; Fallback: Default Algo)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>Only Rotation</code></td>
-<td style="text-align: left;">Only rotate image</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>Off</code></td>
-<td style="text-align: left;">Disable image rotation and SAD algorithm processing</td>
-</tr>
-</tbody>
-</table>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Alignment_AlignmentAlgo</td>
 		</tr>
 		
 		<tr class="expert">
@@ -937,54 +431,7 @@ by camera the framebuffer content will be replaced by the demo image content.</p
 				<input required type="number" name="name" id="Alignment_SearchFieldX_value1" size="13" min="1"  step="1"
 					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Pixel
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Search Field X</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Search Field X</td>
-<td style="text-align: left;">SearchFieldX</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>20</code></td>
-<td style="text-align: left;"><code>20</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Range</td>
-<td style="text-align: left;"><code>1</code> .. &infin;</td>
-<td style="text-align: left;"><code>1</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Pixel</td>
-<td style="text-align: left;">Pixel</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Target position top left of alignment marker set on "Alignment Marker" configuration page +/- SearchFieldX (pixels in X direction): Area where the alignment pattern will be evaluated.  </p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Since the alignment is one of the steps using a lot of computation time, 
- the search field should be as small as possible.
- The calculation time goes quadratic with the search field size.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Alignment_SearchFieldX</td>
 		</tr>
 
 		<tr class="expert">
@@ -995,54 +442,7 @@ by camera the framebuffer content will be replaced by the demo image content.</p
 				<input required type="number" name="name" id="Alignment_SearchFieldY_value1" size="13" min="1"
 					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Pixel
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Search Field Y</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Search Field Y</td>
-<td style="text-align: left;">SearchFieldY</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>20</code></td>
-<td style="text-align: left;"><code>20</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Range</td>
-<td style="text-align: left;"><code>1</code> .. &infin;</td>
-<td style="text-align: left;"><code>1</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Pixel</td>
-<td style="text-align: left;">Pixel</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Target position top left of alignment marker set on "Alignment Marker" configuration page +/- SearchFieldY (pixels in Y direction): Area where the alignment pattern will be evaluated.  </p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Since the alignment is one of the steps using a lot of computation time, 
- the search field should be as small as possible.
- The calculation time goes quadratic with the search field size.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Alignment_SearchFieldY</td>
 		</tr>
 
 		<tr class="expert">
@@ -1055,50 +455,7 @@ by camera the framebuffer content will be replaced by the demo image content.</p
 					<option value="false" selected>false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Flip Image Size</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Flip Image Size</td>
-<td style="text-align: left;">FlipImageSize</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>This parameter can be used to rotate the viewport together with the alignment rotation:<br />
-<br>
-<img alt="" src="/flipImageSize.png" />  </p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>This parameter should be set on the 'Reference Image' configuration page.
-There you have a visual feedback.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Alignment_FlipImageSize</td>
 		</tr>
 
 		<tr>
@@ -1110,49 +467,7 @@ There you have a visual feedback.</p>
                 oninput="(!validity.rangeUnderflow||(value=-360.0)) && (!validity.rangeOverflow||(value=360.0)) && 
                 (!validity.stepMismatch||(value=parseInt(this.value)));">Degree
             </td>
-            <td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Image Rotation</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Image Rotation</td>
-<td style="text-align: left;">InitialRotate</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>0.0</code></td>
-<td style="text-align: left;"><code>0.0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Range</td>
-<td style="text-align: left;"><code>-360.0</code> .. <code>360.0</code></td>
-<td style="text-align: left;"><code>-360.0</code> .. <code>360.0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Degree [°]</td>
-<td style="text-align: left;">Degree [°]</td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Rotate image before any further image processing.  </p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>This parameter should be set on the 'Reference Image' configuration page.
-There you have a visual feedback.  </p>
-</div>
-    </span></div></div>
-</td>
+            <td>$TOOLTIP_Alignment_InitialRotate</td>
         </tr>
 
 		<tr>
@@ -1165,44 +480,7 @@ There you have a visual feedback.  </p>
 					<option value="false" selected>false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Mirror Image</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Mirror Image</td>
-<td style="text-align: left;">InitialMirror</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Mirror the image on the x-axis</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>This parameter should be set on the 'Reference Image' configuration page.
-There you have a visual feedback.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Alignment_InitialMirror</td>
 		</tr>
 
 
@@ -1222,36 +500,7 @@ There you have a visual feedback.</p>
 				<select required class="select_large" id="Digits_Model_value1">
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Model</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Model</td>
-<td style="text-align: left;">Model</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>/config/dig-*.tflite</code></td>
-<td style="text-align: left;"><code>/config/dig-*.tflite</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Path to CNN model file for image recognition of digit ROI. <br>
-Test different models and choose the model which gives you the best results. There is not a best model, it depends on the environment and object.<br>
-Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/Choosing-the-Model/">documentation</a> for more details.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Digits_Model</td>
 		</tr>
 		
 		<tr class="DigitItem expert">
@@ -1263,47 +512,7 @@ Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: CNN Good Threshold</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">CNN Good Threshold</td>
-<td style="text-align: left;">CNNGoodThreshold</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>0.0</code></td>
-<td style="text-align: left;"><code>0.0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0.0</code> .. <code>1.0</code></td>
-<td style="text-align: left;"><code>0.0</code> .. <code>1.0</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>Threshold above which the classification should be to accept the value.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is only supported for <code>dig-class100-*.tflite</code> models!</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Digits_CNNGoodThreshold</td>
 		</tr>
 
 		<tr class="DigitItem expert">
@@ -1314,47 +523,7 @@ Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs
 			<td>
 				<input required type="text" name="name" id="Digits_ROIImagesLocation_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: ROI Images Location</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">ROI Images Location</td>
-<td style="text-align: left;">ROIImagesLocation</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>/log/digit</code></td>
-<td style="text-align: left;"><code>/log/digit</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>Location on SD-Card where the ROI image files are stored.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning<p>This image file saving function is disabled by default. A SD-Card has limited write cycles. Since the device does not do <a target=_blank href="https://en.wikipedia.org/wiki/Wear_leveling">Wear Leveling</a>, this can wear out your SD-Card!</p>
-</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Digits_ROIImagesLocation</td>
 		</tr>
 
 		<tr class="DigitItem expert">
@@ -1366,53 +535,7 @@ Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs
 				<input required type="number" id="Digits_ROIImagesRetention_value1" min="0"  step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: ROI Images Retention</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">ROI Images Retention</td>
-<td style="text-align: left;">ROIImagesRetention</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>5</code></td>
-<td style="text-align: left;"><code>5</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Days</td>
-<td style="text-align: left;">Days</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>Number of days the ROI image files are kept.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Digits_ROIImagesRetention</td>
 		</tr>
 
 
@@ -1432,36 +555,7 @@ Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs
 				<select required class="select_large" id="Analog_Model_value1">
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Model</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Model</td>
-<td style="text-align: left;">Model</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>/config/ana-*.tflite</code></td>
-<td style="text-align: left;"><code>/config/ana-*.tflite</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Path to CNN model file for image recognition of analog ROI. <br>
-Test different models and choose the model which gives you the best results. There is not a best model, it depends on the environment and object.<br>
-Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/Choosing-the-Model/">documentation</a> for more details. </p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Analog_Model</td>
 		</tr>
 
 		<tr class="AnalogItem expert">
@@ -1471,47 +565,7 @@ Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs
 				</label>
 			</td>
 			<td> <input required type="text" name="name" id="Analog_ROIImagesLocation_value1"> </td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: ROI Images Location</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">ROI Images Location</td>
-<td style="text-align: left;">ROIImagesLocation</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>/log/analog</code></td>
-<td style="text-align: left;"><code>/log/analog</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>Location on SD-Card where the ROI image files are stored.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning<p>This image file saving function is disabled by default. A SD-Card has limited write cycles. Since the device does not do <a target=_blank href="https://en.wikipedia.org/wiki/Wear_leveling">Wear Leveling</a>, this can wear out your SD-Card!</p>
-</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Analog_ROIImagesLocation</td>
 		</tr>
 
 		<tr class="AnalogItem expert">
@@ -1522,53 +576,7 @@ Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs
 				<input required type="number" id="Analog_ROIImagesRetention_value1" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: ROI Images Retention</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">ROI Images Retention</td>
-<td style="text-align: left;">ROIImagesRetention</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>5</code></td>
-<td style="text-align: left;"><code>5</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Days</td>
-<td style="text-align: left;">Days</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>Number of days the ROI image files are kept.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Analog_ROIImagesRetention</td>
 		</tr>
 
 
@@ -1587,43 +595,7 @@ Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Previous Value</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Previous Value</td>
-<td style="text-align: left;">PreValueUse</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>true</code></td>
-<td style="text-align: left;"><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Use the last valid result for post-processing plausibility checks (negative rate / rate too high).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The last valid result gets backuped to NVS to prevent against power loss.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_PreValueUse</td>
 		</tr>
 
 		<tr class="expert">
@@ -1634,53 +606,7 @@ Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs
 				<input required type="number" id="PostProcessing_PreValueAgeStartup_value1" size="13" min="0"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Minutes
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Max. Age of Previous Value</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Max. Age of Previous Value</td>
-<td style="text-align: left;">PreValueAgeStartup</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>30</code></td>
-<td style="text-align: left;"><code>30</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0</code> .. &infin;</td>
-<td style="text-align: left;"><code>0</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Minutes</td>
-<td style="text-align: left;">Minutes</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Defines the maximum age of the last valid result from last backup timestamp to actual boot timestamp.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This helps to prevent using a not up-to-date last valid result after e.g. a longer period being offline.
-An too old last valid result (Previous Value) will be updated with first new evaluated result.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_PreValueAgeStartup</td>
 		</tr>
 
 		<tr class="expert">
@@ -1693,44 +619,7 @@ An too old last valid result (Previous Value) will be updated with first new eva
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Skip Messages on Error</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Skip Messages on Error</td>
-<td style="text-align: left;">ErrorMessage</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>true</code></td>
-<td style="text-align: left;"><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>If true, do not use the result of a errornous processing flow.
-In an error case, the last valid result will be used for the various transmission protocols (MQTT, InfluxDB, REST, ...).</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_ErrorMessage</td>
 		</tr>
 
 		<tr class="expert">
@@ -1743,47 +632,7 @@ In an error case, the last valid result will be used for the various transmissio
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Check Digit Increase Consistency</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Check Digit Increase Consistency</td>
-<td style="text-align: left;">CheckDigitIncreaseConsistency</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>An additional post-processing consistency check. It especially improves the zero crossing check between digits.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Only useable for class-11 (0-9 + NaN) models.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_CheckDigitIncreaseConsistency</td>
 		</tr>
 
 		<tr style="margin-top:12px">
@@ -1805,53 +654,7 @@ In an error case, the last valid result will be used for the various transmissio
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Allow Negative Rates</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Allow Negative Rates</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].AllowNegativeRates</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Allow decreasing values (backwards counting).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For most use cases this option should be set to <code>false</code> e.g. for water or gas meters (-&gt; plausiblity check can be performed to avoid negative rates).
-But for some use cases like for e.g. pressure sensors negative rates a acepted.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately. Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_NUMBER.AllowNegativeRates</td>
 		</tr>
 
 		<tr>
@@ -1863,48 +666,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 					oninput="(!validity.rangeUnderflow||(value=-9)) && (!validity.rangeOverflow||(value=9)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Decimal Shift</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Decimal Shift</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].DecimalShift</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>0</code></td>
-<td style="text-align: left;"><code>0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>-9</code> .. <code>9</code></td>
-<td style="text-align: left;"><code>-9</code> .. <code>9</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Shift the decimal separator (positive or negative).<br>
-A positive shift of one (1) increase the result by factor 10, a positive shift of two (2) increase the result by factor 100, ...<br>
-A negative shift of one (1) decrease the result by factor 10, a negative shift of two (2) increase the result by factor 100, ...<br>
--&gt; E.g. To get a <code>liter</code> output from a <code>m³</code> reading  (<code>1 m³</code> -&gt; <code>1000 liters</code>), a decimal shift of 3 needs to be set.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_NUMBER.DecimalShift</td>
 		</tr>
 
 		<tr class="expert">
@@ -1916,52 +678,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 					oninput="(!validity.rangeUnderflow||(value=6.0)) && (!validity.rangeOverflow||(value=9.9)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Analog/Digital Transition Start</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Analog/Digital Transition Start</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].AnalogDigitalTransitionStart</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>9.2</code></td>
-<td style="text-align: left;"><code>9.2</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>6.0</code> .. <code>9.9</code></td>
-<td style="text-align: left;"><code>6.0</code> .. <code>9.9</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>This can be used if you have wrong values, but the recognition of the individual ROIs are correct.
-Look for the start of changing of the first digit and note the analog pointer value behind.
-Set it here. Only used on combination of digits and analog pointers.
-Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/Watermeter-specific-analog---digital-transition">documentation</a> for more details.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_NUMBER.AnalogDigitalTransitionStart</td>
 		</tr>
 
 		<tr>
@@ -1975,47 +692,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 					<option value="RateChange">Rate Change</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Maximum Rate Type</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Maximum Rate Type</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].MaxRateType</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>Absolute Change</code></td>
-<td style="text-align: left;"><code>AbsoluteChange</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>No Rate Check</code><br><code>Absolute Change</code><br><code>Rate Change</code></td>
-<td style="text-align: left;"><code>Off</code><br><code>AbsoluteChange</code><br><code>RateChange</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>This parameter defines if the maximum rate is calculated using the difference of the last two readings (<code>AbsoluteChange</code> = difference) or
-using the difference of the last two readings normalized to the interval (<code>RateChange</code> = difference per minute).<br>
-Set it to <code>No Rate Check</code> no maximum rate evaluation will be performed.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_NUMBER.MaxRateType</td>
 		</tr>
 
 		<tr>
@@ -2026,55 +703,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 				<input required type="number" id="PostProcessing_MaxRateValue_value1" size="13" min="0" step="any"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Maximum Rate Value</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Maximum Rate Value</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].MaxRateValue</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>0.1</code></td>
-<td style="text-align: left;"><code>0.1</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0.0</code> .. &infin;</td>
-<td style="text-align: left;"><code>0.0</code> .. &infin;</td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Maximum allowed rate between two readings, if exceeded the last reading will be rejected.<br>
-Behaviour depending on the setting of <code>Maximum Rate Type</code>.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<p>If negative rate is disallowed and no maximum rate value is set, one false high reading will
-lead to a period of missing measurements until the measurement reaches the previous false high
-reading. E.g. if the counter is at <code>600.00</code> and it's read incorrectly as<code>610.00</code>, all measurements
-will be skipped until the counter reaches <code>610.00</code>. Setting the MaxRateValue to <code>0.1</code> leads to a
-rejection of all readings with a difference <code>&gt; 0.1</code>, in this case a rejection of <code>610,00</code>.
-Be aware: The rejection also applies to correct readings with a difference <code>&gt; 0.1</code>!</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_NUMBER.MaxRateValue</td>
 		</tr>
 
 		<tr class="expert">
@@ -2087,53 +716,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 					<option value="false" selected>false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Extended Resolution</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Extended Resolution</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].ExtendedResolution</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Use the decimal place of the least significant number to increase number count by one.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter is only supported by <code>*-class*</code> and <code>*-const</code> models! See <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/Choosing-the-Model">Choosing-the-Model</a> for more details.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_NUMBER.ExtendedResolution</td>
 		</tr>
 
 		<tr class="expert">
@@ -2146,54 +729,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 					<option value="false" selected>false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Ignore Leading NaNs</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Ignore Leading NaNs</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].IgnoreLeadingNaN</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Leading <code>NaN</code>s will be deleted before further post-processing. </p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This is only relevant for class-11 models which use <code>NaN</code>!<br>
-See <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/Choosing-the-Model">Choosing-the-Model</a> for details.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_PostProcessing_NUMBER.IgnoreLeadingNaN</td>
 		</tr>
 
 
@@ -2214,38 +750,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 			<td>
 				<input required type="text" id="MQTT_Uri_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: URI</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">URI</td>
-<td style="text-align: left;">Uri</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>http://IP-ADDRESS:1883</code></td>
-<td style="text-align: left;"><code>http://IP-ADDRESS:1883</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>URI to the MQTT broker including the port, e.g. <code>mqtt://192.168.1.1:1883</code>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Only MQTT version 3.1.1 is supported up to now.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_MQTT_Uri</td>
 		</tr>
 
 		<tr class="MQTTItem">
@@ -2255,44 +760,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 			<td>
 				<input required type="text" id="MQTT_MainTopic_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Main Topic</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Main Topic</td>
-<td style="text-align: left;">MainTopic</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>watermeter</code></td>
-<td style="text-align: left;"><code>watermeter</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>MQTT main topic where the data are published.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The results are pubished per number sequence, e.g. <code>MainTopic/[NUMBER SEQUENCE]/[RESULT TOPIC]</code>.
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.<br>
-See <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/MQTT-API/#Result">MQTT Result Topics</a> for a full list of result topics.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The general connection status gets published to <code>MainTopic/connection</code>. </p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_MQTT_MainTopic</td>
 		</tr>
 
 		<tr class="MQTTItem">
@@ -2302,34 +770,7 @@ See <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/M
 			<td>
 				<input required type="text" id="MQTT_ClientID_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Client ID</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Client ID</td>
-<td style="text-align: left;">ClientID</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>watermeter</code></td>
-<td style="text-align: left;"><code>watermeter</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Client ID used to connect to the MQTT broker.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_MQTT_ClientID</td>
 		</tr>
 
 		<tr class="MQTTItem">
@@ -2340,43 +781,7 @@ See <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/M
 			<td>
 				<input type="text" id="MQTT_user_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Username</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Username</td>
-<td style="text-align: left;">user</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>USERNAME</code></td>
-<td style="text-align: left;"><code>USERNAME</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Username for MQTT broker authentication.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>TLS encryption is not supported up to now.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_MQTT_user</td>
 		</tr>
 
 		<tr class="MQTTItem">
@@ -2387,43 +792,7 @@ See <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/M
 			<td>
 				<input type="text" id="MQTT_password_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Password</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Password</td>
-<td style="text-align: left;">password</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>PASSWORD</code></td>
-<td style="text-align: left;"><code>PASSWORD</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Password for MQTT broker authentication.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>TLS encryption is not supported up to now.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_MQTT_password</td>
 		</tr>
 
 		<tr class="MQTTItem">
@@ -2436,39 +805,7 @@ See <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/M
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Retain Messages</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Retain Messages</td>
-<td style="text-align: left;">RetainMessages</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Enable or disable the <a target=_blank href="https://www.hivemq.com/blog/mqtt-essentials-part-8-retained-messages/">Retain Flag</a> for all MQTT entries.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_MQTT_RetainMessages</td>
 		</tr>
 
 		<tr class="MQTTItem">
@@ -2490,40 +827,7 @@ See <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/M
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Homeassistant Discovery</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Homeassistant Discovery</td>
-<td style="text-align: left;">HomeassistantDiscovery</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;"><code>false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Enable or disable the Homeassistant Discovery.<br>
-Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs//Integration-Home-Assistant">documentation</a> for more details.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_MQTT_HomeassistantDiscovery</td>
 		</tr>
 
 		<tr class="MQTTItem">
@@ -2545,49 +849,7 @@ Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs
 					<option value="energy_gj">Energymeter (Value: GJ, Rate: GJ/h)</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Meter Type</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Meter Type</td>
-<td style="text-align: left;">MeterType</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>Other (no Units)</code></td>
-<td style="text-align: left;"><code>other</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>Other (no Units)</code><br><code>Watermeter (Value: m³, Rate: m³/h)</code><br><code>Watermeter (Value: l, Rate: l/h)</code><br><code>Watermeter (Value: gal, Rate: gal/h)</code><br><code>Watermeter (Value: ft³, Rate: ft³/m)</code><br><code>Gasmeter (Value: m³, Rate: m³/h)</code><br><code>Gasmeter (Value: ft³, Rate: ft³/m)</code><br><code>Energymeter (Value: Wh, Rate: W)</code><br><code>Energymeter (Value: kWh, Rate: kW)</code><br><code>Energymeter (Value: MWh, Rate: MW)</code><br><code>Energymeter (Value: GJ, Rate: GJ/h)</code></td>
-<td style="text-align: left;"><code>other</code><br><code>water_m3</code><br><code>water_l</code><br><code>water_gal</code><br><code>water_ft3</code><br><code>gas_m3</code><br><code>gas_ft3</code><br><code>energy_wh</code><br><code>energy_kwh</code><br><code>energy_mwh</code><br><code>energy_gj</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Select the meter type so the sensors have the right units in Homeassistant.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For <code>Watermeter</code> you need to have Homeassistant 2022.11 or newer!</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Please make sure that the selected meter type matches the dimension provided by the meter.
-Eg. if your meter provides <code>m³</code>, set this parameter to <code>m³</code>.
-Any necessary conversion needs to be done using the `Decimal Shift´ parameter.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_MQTT_MeterType</td>
 		</tr>
 
 		
@@ -2607,34 +869,7 @@ Any necessary conversion needs to be done using the `Decimal Shift´ parameter.<
 			<td>
 				<input required type="text" id="InfluxDB_Uri_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: URI</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">URI</td>
-<td style="text-align: left;">Uri</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>http://IP-ADDRESS:PORT</code></td>
-<td style="text-align: left;"><code>http://IP-ADDRESS:PORT</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>URI of the HTTP interface to InfluxDB, without trailing slash, e.g. <code>http://192.168.1.1:8086</code>.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDB_Uri</td>
 		</tr>
 
         <tr class="InfluxDBv1Item">
@@ -2644,34 +879,7 @@ Any necessary conversion needs to be done using the `Decimal Shift´ parameter.<
 			<td>
 				<input required type="text" id="InfluxDB_Database_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Database</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Database</td>
-<td style="text-align: left;">Database</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Name of InfluxDB database where data needs to be published.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDB_Database</td>
 		</tr>
 
 		<tr class="InfluxDBv1Item">
@@ -2682,39 +890,7 @@ Any necessary conversion needs to be done using the `Decimal Shift´ parameter.<
 			<td>
 				<input type="text" id="InfluxDB_user_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Username</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Username</td>
-<td style="text-align: left;">user</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Username for the InfluxDB authentication.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDB_user</td>
 		</tr>
 
 		<tr class="InfluxDBv1Item">
@@ -2725,39 +901,7 @@ Any necessary conversion needs to be done using the `Decimal Shift´ parameter.<
 			<td>
 				<input type="text" id="InfluxDB_password_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Password</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Password</td>
-<td style="text-align: left;">password</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Password for the InfluxDB authentication.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDB_password</td>
 		</tr>
 
 		<tr class="InfluxDBv1Item" style="margin-top:12px">
@@ -2776,40 +920,7 @@ Any necessary conversion needs to be done using the `Decimal Shift´ parameter.<
 			<td>
 				<input required type="text" id="InfluxDB_Measurement_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Measurement</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Measurement</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].Measurement</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Name of the InfluxDB measurement container data needs to be published.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDB_NUMBER.Measurement</td>
 		</tr>
 
 		<tr class="InfluxDBv1Item">
@@ -2819,40 +930,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 			<td>
 				<input required type="text" id="InfluxDB_Field_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Field</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Field</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].Field</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Dedicated definition of the field for InfluxDB used for saving into InfluxDB database (e.g.: <code>watermeter/value</code>).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDB_NUMBER.Field</td>
 		</tr>
 
 
@@ -2872,34 +950,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 			<td>
 				<input required type="text" id="InfluxDBv2_Uri_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: URI</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">URI</td>
-<td style="text-align: left;">Uri</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>http://IP-ADDRESS:PORT</code></td>
-<td style="text-align: left;"><code>http://IP-ADDRESS:PORT</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>URI of the HTTP interface to InfluxDB, without trailing slash, e.g. <code>http://192.168.1.1:8086</code>.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDBv2_Uri</td>
 		</tr>
 
         <tr class="InfluxDBv2Item">
@@ -2909,34 +960,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 			<td>
 				<input required type="text" id="InfluxDBv2_Database_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Database</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Database</td>
-<td style="text-align: left;">Database</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Name of InfluxDB database where data needs to be published.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDBv2_Database</td>
 		</tr>
 
 		<tr class="InfluxDBv2Item">
@@ -2947,39 +971,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 			<td>
 				<input type="text" id="InfluxDBv2_Org_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Organization (Org)</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Organization (Org)</td>
-<td style="text-align: left;">Org</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Organisation (Org) for the InfluxDB authentication.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDBv2_Org</td>
 		</tr>
 
 		<tr class="InfluxDBv2Item">
@@ -2990,39 +982,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 			<td>
 				<input type="text" id="InfluxDBv2_Token_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Token</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Token</td>
-<td style="text-align: left;">Token</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Token (similar to a password) for the InfluxDB authentication.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDBv2_Token</td>
 		</tr>
 
 		<tr class="InfluxDBv2Item" style="margin-top:12px">
@@ -3041,40 +1001,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 			<td>
 				<input required type="text" id="InfluxDBv2_Measurement_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Measurement</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Measurement</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].Measurement</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Name of the InfluxDB measurement container data needs to be published.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDBv2_NUMBER.Measurement</td>
 		</tr>
 		
 		<tr class="InfluxDBv2Item">
@@ -3084,40 +1011,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 			<td>
 				<input required type="text" id="InfluxDBv2_Field_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Field</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Field</td>
-<td style="text-align: left;">[NUMBER SEQUENCE].Field</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>undefined</code></td>
-<td style="text-align: left;"><code>undefined</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Dedicated definition of the field for InfluxDB used for saving into InfluxDB database (e.g.: <code>watermeter/value</code>).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter can to be set for each number sequence separately.
-Use the drop down to choose the respective number sequence. 
-A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_InfluxDBv2_NUMBER.Field</td>
 		</tr>
 
 
@@ -3143,113 +1037,7 @@ A number sequence is a group of single digits and / or analog counter defined in
 						<option value="output">output</option>
 					</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter group: GPIO0</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Group Name</td>
-<td style="text-align: left;">GPIO0</td>
-<td style="text-align: left;">IO0</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;">Configuration: <code>input</code><br>Use Interrupt: <code>disabled</code><br>PWM Duty Cycle Resolution: <code>10</code> Bit<br>Enable MQTT: <code>false</code><br>Enable REST API: <code>false</code><br>Name: <code></code></td>
-<td style="text-align: left;"><code>input disabled 10 false false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Configuration</td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code></td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Use Interrupt</td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising edge</code><br><code>falling edge</code><br><code>rising and falling</code><br><code>low level trigger</code><br><code>high level trigger</code></td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising-edge</code><br><code>falling-edge</code><br><code>rising-and-falling</code><br><code>low-level-trigger</code><br><code>high-level-trigger</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: PWM Duty Cycle Resolution</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable MQTT</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable REST API</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Name</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>This parameter group can be used to configure the GPIO <code>IO0</code> pin.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This pin is only usable with some restrictions. It must be disabled when the camera module is used.
-Additionally, it is used to activate bootloader mode and must therefore be HIGH after a reset!</p>
-</div>
-<h3>Parameter</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Configuration</td>
-<td style="text-align: left;">Set the pin configuration</td>
-</tr>
-<tr>
-<td style="text-align: left;">Use Interrupt</td>
-<td style="text-align: left;">Enable interrupt for GPIO pin</td>
-</tr>
-<tr>
-<td style="text-align: left;">PWM Duty Cycle Resolution</td>
-<td style="text-align: left;">Set PWM duty resolution for the internal LED controller</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable MQTT</td>
-<td style="text-align: left;">If enabled the pin sate is provided by MQTT and pin can be controlled by MQTT (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable REST API</td>
-<td style="text-align: left;">If enabled the pin sate is provided by REST API and pin can be controlled by REST API (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Name</td>
-<td style="text-align: left;">Name which is used for this pin (MQTT topic, REST API)</td>
-</tr>
-</tbody>
-</table>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_GPIO_IO0</td>
 		</tr>
 
 		<tr class="GPIO_IO0 GPIO_item expert">
@@ -3320,112 +1108,7 @@ Additionally, it is used to activate bootloader mode and must therefore be HIGH 
 						<option value="output">output</option>
 					</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter group: GPIO1</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Group Name</td>
-<td style="text-align: left;">GPIO1</td>
-<td style="text-align: left;">IO1</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;">Configuration: <code>input</code><br>Use Interrupt: <code>disabled</code><br>PWM Duty Cycle Resolution: <code>10</code> Bit<br>Enable MQTT: <code>false</code><br>Enable REST API: <code>false</code><br>Name: <code></code></td>
-<td style="text-align: left;"><code>input disabled 10 false false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Configuration</td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code></td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Use Interrupt</td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising edge</code><br><code>falling edge</code><br><code>rising and falling</code><br><code>low level trigger</code><br><code>high level trigger</code></td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising-edge</code><br><code>falling-edge</code><br><code>rising-and-falling</code><br><code>low-level-trigger</code><br><code>high-level-trigger</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: PWM Duty Cycle Resolution</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable MQTT</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable REST API</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Name</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>This parameter group can be used to configure the GPIO <code>IO1</code> pin.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This pin is by default used for the serial communication as TX pin (USB logging)!</p>
-</div>
-<h3>Parameter</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Configuration</td>
-<td style="text-align: left;">Set the pin configuration</td>
-</tr>
-<tr>
-<td style="text-align: left;">Use Interrupt</td>
-<td style="text-align: left;">Enable interrupt for GPIO pin</td>
-</tr>
-<tr>
-<td style="text-align: left;">PWM Duty Cycle Resolution</td>
-<td style="text-align: left;">Set PWM duty resolution for the internal LED controller</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable MQTT</td>
-<td style="text-align: left;">If enabled the pin sate is provided by MQTT and pin can be controlled by MQTT (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable REST API</td>
-<td style="text-align: left;">If enabled the pin sate is provided by REST API and pin can be controlled by REST API (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Name</td>
-<td style="text-align: left;">Name which is used for this pin (MQTT topic, REST API)</td>
-</tr>
-</tbody>
-</table>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_GPIO_IO1</td>
 		</tr>
 
 		<tr class="GPIO_IO1 GPIO_item expert">
@@ -3495,112 +1178,7 @@ Additionally, it is used to activate bootloader mode and must therefore be HIGH 
 					<option value="output">output</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter group: GPIO3</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Group Name</td>
-<td style="text-align: left;">GPIO3</td>
-<td style="text-align: left;">IO3</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;">Configuration: <code>input</code><br>Use Interrupt: <code>disabled</code><br>PWM Duty Cycle Resolution: <code>10</code> Bit<br>Enable MQTT: <code>false</code><br>Enable REST API: <code>false</code><br>Name: <code></code></td>
-<td style="text-align: left;"><code>input disabled 10 false false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Configuration</td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code></td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Use Interrupt</td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising edge</code><br><code>falling edge</code><br><code>rising and falling</code><br><code>low level trigger</code><br><code>high level trigger</code></td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising-edge</code><br><code>falling-edge</code><br><code>rising-and-falling</code><br><code>low-level-trigger</code><br><code>high-level-trigger</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: PWM Duty Cycle Resolution</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable MQTT</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable REST API</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Name</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>This parameter group can be used to configure the GPIO <code>IO3</code> pin.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This pin is used for the serial communication as RX pin (USB logging) by default!</p>
-</div>
-<h3>Parameter</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Configuration</td>
-<td style="text-align: left;">Set the pin configuration</td>
-</tr>
-<tr>
-<td style="text-align: left;">Use Interrupt</td>
-<td style="text-align: left;">Enable interrupt for GPIO pin</td>
-</tr>
-<tr>
-<td style="text-align: left;">PWM Duty Cycle Resolution</td>
-<td style="text-align: left;">Set PWM duty resolution for the interval LED controller</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable MQTT</td>
-<td style="text-align: left;">If enabled the pin sate is provided by MQTT and pin can be controlled by MQTT (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable REST API</td>
-<td style="text-align: left;">If enabled the pin sate is provided by REST API and pin can be controlled by REST API (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Name</td>
-<td style="text-align: left;">Name which is used for this pin (MQTT topic, REST API)</td>
-</tr>
-</tbody>
-</table>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_GPIO_IO3</td>
 		</tr>
 
 		<tr class="GPIO_IO3 GPIO_item expert">
@@ -3671,112 +1249,7 @@ Additionally, it is used to activate bootloader mode and must therefore be HIGH 
 					<option value="built-in-led" selected>built-in led flash light</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter group: GPIO4</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Group Name</td>
-<td style="text-align: left;">GPIO4</td>
-<td style="text-align: left;">IO4</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;">Configuration: <code>built-in led flash light</code><br>Use Interrupt: <code>disabled</code><br>PWM Duty Cycle Resolution: <code>10</code> Bit<br>Enable MQTT: <code>false</code><br>Enable REST API: <code>false</code><br>Name: <code></code></td>
-<td style="text-align: left;"><code>built-in-led disabled 10 false false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Configuration</td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code><br><code>built-in led flash light</code></td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code><br><code>built-in-led</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Use Interrupt</td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising edge</code><br><code>falling edge</code><br><code>rising and falling</code><br><code>low level trigger</code><br><code>high level trigger</code></td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising-edge</code><br><code>falling-edge</code><br><code>rising-and-falling</code><br><code>low-level-trigger</code><br><code>high-level-trigger</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: PWM Duty Cycle Resolution</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable MQTT</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable REST API</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Name</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>This parameter group can be used to configure the GPIO <code>IO4</code> pin.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This pin is only usable with restrictions. This pin is used for build-in flash light (onboard LED) by default.</p>
-</div>
-<h3>Parameter</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Configuration</td>
-<td style="text-align: left;">Set the pin configuration</td>
-</tr>
-<tr>
-<td style="text-align: left;">Use Interrupt</td>
-<td style="text-align: left;">Enable interrupt for GPIO pin</td>
-</tr>
-<tr>
-<td style="text-align: left;">PWM Duty Cycle Resolution</td>
-<td style="text-align: left;">Set PWM duty resolution for the internal LED controller</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable MQTT</td>
-<td style="text-align: left;">If enabled the pin sate is provided by MQTT and pin can be controlled by MQTT (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable REST API</td>
-<td style="text-align: left;">If enabled the pin sate is provided by REST API and pin can be controlled by REST API (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Name</td>
-<td style="text-align: left;">Name which is used for this pin (MQTT topic, REST API)</td>
-</tr>
-</tbody>
-</table>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_GPIO_IO4</td>
 		</tr>
 
 		<tr class="GPIO_item" style="border-top: 0px;">
@@ -3856,113 +1329,7 @@ Additionally, it is used to activate bootloader mode and must therefore be HIGH 
 					<option value="external-flash-ws281x" selected>external flash light ws281x controlled</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter group: GPIO12</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Group Name</td>
-<td style="text-align: left;">GPIO12</td>
-<td style="text-align: left;">IO12</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;">Configuration: <code>external flash light ws281x controlled</code><br>Use Interrupt: <code>disabled</code><br>PWM Duty Cycle Resolution: <code>10</code> Bit<br>Enable MQTT: <code>false</code><br>Enable REST API: <code>false</code><br>Name: <code></code></td>
-<td style="text-align: left;"><code>external-flash-ws281x disabled 10 false false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Configuration</td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code><br><code>external flash light ws281x controlled</code></td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code><br><code>external-flash-ws281x</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Use Interrupt</td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising edge</code><br><code>falling edge</code><br><code>rising and falling</code><br><code>low level trigger</code><br><code>high level trigger</code></td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising-edge</code><br><code>falling-edge</code><br><code>rising-and-falling</code><br><code>low-level-trigger</code><br><code>high-level-trigger</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: PWM Duty Cycle Resolution</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable MQTT</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable REST API</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Name</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>This parameter group can be used to configure the GPIO <code>IO12</code> pin.<br>
-As a special function with this pin an external flash light can be controlled by using the <code>external flash light ws281x controlled</code> configuration. Further configuration is necessary. Please check parameter 'LED Type', 'Numbers of LEDs<code>and</code>LED Color`.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This pin is usable without any known restrictions.</p>
-</div>
-<h3>Parameter</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Configuration</td>
-<td style="text-align: left;">Set the pin configuration</td>
-</tr>
-<tr>
-<td style="text-align: left;">Use Interrupt</td>
-<td style="text-align: left;">Enable interrupt for GPIO pin</td>
-</tr>
-<tr>
-<td style="text-align: left;">PWM Duty Cycle Resolution</td>
-<td style="text-align: left;">Set PWM duty resolution for the internal LED controller</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable MQTT</td>
-<td style="text-align: left;">If enabled the pin sate is provided by MQTT and pin can be controlled by MQTT (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable REST API</td>
-<td style="text-align: left;">If enabled the pin sate is provided by REST API and pin can be controlled by REST API (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Name</td>
-<td style="text-align: left;">Name which is used for this pin (MQTT topic, REST API)</td>
-</tr>
-</tbody>
-</table>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_GPIO_IO12</td>
 		</tr>
 
 		<tr class="GPIO_IO12 GPIO_item expert">
@@ -4029,43 +1396,7 @@ As a special function with this pin an external flash light can be controlled by
 					<option value="WS2813">WS2813</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: LED Type (NeoPixel)</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">LED Type (NeoPixel)</td>
-<td style="text-align: left;">LEDType</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>WS2812</code></td>
-<td style="text-align: left;"><code>WS2812</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>WS2812</code><br><code>WS2812B</code><br><code>SK6812</code><br><code>WS2813</code></td>
-<td style="text-align: left;"><code>WS2812</code><br><code>WS2812B</code><br><code>SK6812</code><br><code>WS2813</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Set the type of external LEDs (LED stripe) which are connected to GPIO12.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In parameter group GPIO12, configuartion needs to be set to <code>external flash light ws281x controlled</code>.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_GPIO_LEDType</td>
 		</tr>
 
 		<tr class="GPIO_item">
@@ -4076,43 +1407,7 @@ As a special function with this pin an external flash light can be controlled by
 				<input required type="number" name="name" id="GPIO_LEDNumbers_value1" size="13" min="1"
 					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Number of LEDs</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Number of LEDs</td>
-<td style="text-align: left;">LEDNumbers</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>2</code></td>
-<td style="text-align: left;"><code>2</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Range</td>
-<td style="text-align: left;"><code>1</code> .. &infin;</td>
-<td style="text-align: left;"><code>1</code> .. &infin;</td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Set number of external LEDs (LED stripe) which are connected to GPIO12.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In parameter group GPIO12, configuartion needs to be set to <code>external flash light ws281x controlled</code>.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_GPIO_LEDNumbers</td>
 		</tr>
 
 		<tr class="GPIO_item">
@@ -4130,43 +1425,7 @@ As a special function with this pin an external flash light can be controlled by
 						size="12" min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: LED Color</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">LED Color</td>
-<td style="text-align: left;">LEDColor</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;">Red: <code>150</code><br>Green: <code>150</code><br>Blue: <code>150</code></td>
-<td style="text-align: left;"><code>150 150 150</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;">Red: <code>0</code> (0%) .. <code>255</code> (100%)<br>Green: <code>0</code> (0%) .. <code>255</code> (100%)<br>Blue: <code>0</code> (0%) .. <code>255</code> (100%)</td>
-<td style="text-align: left;">Red: <code>0</code> .. <code>255</code><br>Green: <code>0</code> .. <code>255</code><br>Blue: <code>0</code> .. <code>255</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Set color of the external LEDs connected to GPIO12.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In parameter group GPIO12, configuartion needs to be set to <code>external flash light ws281x controlled</code>.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_GPIO_LEDColor</td>
 		</tr>
 		<!------------- GPIO12 end ------------------>
 
@@ -4184,112 +1443,7 @@ As a special function with this pin an external flash light can be controlled by
 						<option value="output">output</option>
 					</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter group: GPIO13</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Group Name</td>
-<td style="text-align: left;">GPIO13</td>
-<td style="text-align: left;">IO13</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;">Configuration: <code>input</code><br>Use Interrupt: <code>disabled</code><br>PWM Duty Cycle Resolution: <code>10</code> Bit<br>Enable MQTT: <code>false</code><br>Enable REST API: <code>false</code><br>Name: <code></code></td>
-<td style="text-align: left;"><code>input disabled 10 false false</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Configuration</td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code></td>
-<td style="text-align: left;"><code>input</code><br><code>input-pullup</code><br><code>input-pulldown</code><br><code>output</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Use Interrupt</td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising edge</code><br><code>falling edge</code><br><code>rising and falling</code><br><code>low level trigger</code><br><code>high level trigger</code></td>
-<td style="text-align: left;"><code>disabled</code><br><code>rising-edge</code><br><code>falling-edge</code><br><code>rising-and-falling</code><br><code>low-level-trigger</code><br><code>high-level-trigger</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: PWM Duty Cycle Resolution</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-<td style="text-align: left;"><code>1</code> .. <code>20</code> Bit</td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable MQTT</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Enable REST API</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options: Name</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-<td style="text-align: left;">Empty = <code>GPIO0</code><br>Any name with <code>a-z, A-Z, 0-9, _, -</code>.</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>This parameter group can be used to configure the GPIO <code>IO13</code> pin.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This pin is usable without any known restrictions.</p>
-</div>
-<h3>Parameter</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Parameter</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Configuration</td>
-<td style="text-align: left;">Set the pin configuration</td>
-</tr>
-<tr>
-<td style="text-align: left;">Use Interrupt</td>
-<td style="text-align: left;">Enable interrupt for GPIO pin</td>
-</tr>
-<tr>
-<td style="text-align: left;">PWM Duty Cycle Resolution</td>
-<td style="text-align: left;">Set PWM duty resolution for the internal LED controller</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable MQTT</td>
-<td style="text-align: left;">If enabled the pin sate is provided by MQTT and pin can be controlled by MQTT (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Enable REST API</td>
-<td style="text-align: left;">If enabled the pin sate is provided by REST API and pin can be controlled by REST API (output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Name</td>
-<td style="text-align: left;">Name which is used for this pin (MQTT topic, REST API)</td>
-</tr>
-</tbody>
-</table>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_GPIO_IO13</td>
 		</tr>
 
 		<tr class="GPIO_IO13 GPIO_item expert">
@@ -4360,48 +1514,7 @@ As a special function with this pin an external flash light can be controlled by
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Automatic Process Start</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Automatic Process Start</td>
-<td style="text-align: left;">AutoStart</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>true</code></td>
-<td style="text-align: left;"><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>Start the process (digitization round) immediately after power up and restart in periodic interval (Processing Interval). </p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Typically this is set to <code>true</code>. If set to <code>false</code> process start can be triggered manually using the 
-<a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/REST-API">REST API</a> or <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/MQTT-API">MQTT-API</a>.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_AutoTimer_AutoStart</td>
 		</tr>
 
 		<tr>
@@ -4412,48 +1525,7 @@ As a special function with this pin an external flash light can be controlled by
 				<input required type="number" id="AutoTimer_Interval_value1" size="13" min="1" step="any"
 					oninput="(!validity.rangeUnderflow||(value=1));">Minutes
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Processing Interval</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Processing Interval</td>
-<td style="text-align: left;">Interval</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>5.0</code></td>
-<td style="text-align: left;"><code>5.0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>1.0</code> .. &infin;</td>
-<td style="text-align: left;"><code>1.0</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Minutes</td>
-<td style="text-align: left;">Minutes</td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Interval in which the process (digitization round) is started automatically (if 'Automatic Process Start' is configured).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If processing of a 'digitization round' takes longer than this interval, the next process gets only started when previous is completed.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_AutoTimer_Interval</td>
 		</tr>
 
 
@@ -4472,45 +1544,7 @@ As a special function with this pin an external flash light can be controlled by
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Data Logging</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Data Logging</td>
-<td style="text-align: left;">DataLogActive</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>true</code></td>
-<td style="text-align: left;"><code>true</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-<td style="text-align: left;"><code>false</code><br><code>true</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Activate data logging of the results to the SD-Card. The data will be stored in <code>/log/data/data_YYYY-MM-DD.csv</code>. <br>
-Check <a target=_blank href="https://jomjol.github.io/AI-on-the-edge-device-docs/data-logging"><code>documentation</code></a> for more details.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>A SD-Card has limited write cycles.
-Since the device does not do <a target=_blank href="https://en.wikipedia.org/wiki/Wear_leveling">Wear Leveling</a>, this can wear out your SD-Card!</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_DataLogging_DataLogActive</td>
 		</tr>
 
 		<tr>
@@ -4521,44 +1555,7 @@ Since the device does not do <a target=_blank href="https://en.wikipedia.org/wik
 				<input required type="number" id="DataLogging_DataFilesRetention_value1" size="13" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Data Files Retention</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Data Files Retention</td>
-<td style="text-align: left;">DataFilesRetention</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>5</code></td>
-<td style="text-align: left;"><code>5</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Days</td>
-<td style="text-align: left;">Days</td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Number of days the data files are kept.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_DataLogging_DataFilesRetention</td>
 		</tr>
 
 
@@ -4579,44 +1576,7 @@ Since the device does not do <a target=_blank href="https://en.wikipedia.org/wik
 					<option value="4">DEBUG</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Log File Log Level</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Log File Log Level</td>
-<td style="text-align: left;">LogLevel</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>WARNING</code></td>
-<td style="text-align: left;"><code>2</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>ERROR</code><br><code>WARNING</code><br><code>INFO</code><br><code>DEBUG</code></td>
-<td style="text-align: left;"><code>1</code><br><code>2</code><br><code>3</code><br><code>4</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Set the log level of system log written to SD-Card. Set level higher for more verbose logging.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p><code>DEBUG</code> or <code>INFO</code> might damage the SD-Card if enabled long term due to excessive writes to the SD-Card!
-A SD-Card has limited write cycles. Since the device does not do <a target=_blank href="https://en.wikipedia.org/wiki/Wear_leveling">Wear Leveling</a>, this can wear out your SD-Card!</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Debug_LogLevel</td>
 		</tr>
 
 		<tr>
@@ -4627,44 +1587,7 @@ A SD-Card has limited write cycles. Since the device does not do <a target=_blan
 				<input required type="number" id="Debug_LogfilesRetention_value1" size="13" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Log Files Retention</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Log Files Retention</td>
-<td style="text-align: left;">LogfilesRetention</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>5</code></td>
-<td style="text-align: left;"><code>5</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-<td style="text-align: left;"><code>0</code> = no deletion<br> <code>1</code> .. &infin;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Days</td>
-<td style="text-align: left;">Days</td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Number of days the log files are kept.</p>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_Debug_LogfilesRetention</td>
 		</tr>
 
 		<!------------- System ------------------>
@@ -4680,48 +1603,7 @@ A SD-Card has limited write cycles. Since the device does not do <a target=_blan
 			<td>
 				<input required type="text" id="System_TimeServer_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Time Server (NTP)</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Time Server (NTP)</td>
-<td style="text-align: left;">TimeServer</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>enabled</code> -&gt; selected</td>
-<td style="text-align: left;"><code>enabled</code> -&gt; no ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>pool.ntp.org</code></td>
-<td style="text-align: left;"><code>pool.ntp.org</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>NTP time server which is used to synchronize the internal system time.<br>
-If this option is disabled, no time synchronization will be performed. Then time always starts at <code>01.01.1970</code> after each power cycle!</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The device looses the intenal system time after power loss. After reboot the time is kept in memory, though.</p>
-</div>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>Most likely it's possible to set the address to the local IP of your router. Many routers like Fritzboxes acts as a local NTP server.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_System_TimeServer</td>
 		</tr>
 
 		<tr>
@@ -4733,38 +1615,7 @@ If this option is disabled, no time synchronization will be performed. Then time
 				<input required type="text" id="System_TimeZone_value1">
 				<p>Use <a href="timezones.html" target="_blank">timezones</a> to find your settings</p>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Time Zone</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Time Zone</td>
-<td style="text-align: left;">TimeZone</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>CET-1CEST,M3.5.0,M10.5.0/3</code></td>
-<td style="text-align: left;"><code>CET-1CEST,M3.5.0,M10.5.0/3</code></td>
-</tr>
-</tbody>
-</table>
-<h2>Description</h2>
-<p>Time zone in POSIX syntax (e.g. Europe/Berlin = <code>CET-1CEST,M3.5.0,M10.5.0/3</code> - incl. daylight saving)</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>Check the table on <code>http://&lt;DEVICE IP&gt;/timezones.html</code> to find the settings for your region.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_System_TimeZone</td>
 		</tr>
 
 		<tr class="expert">
@@ -4774,42 +1625,7 @@ If this option is disabled, no time synchronization will be performed. Then time
 			<td>
 				<input required type="text" id="System_Hostname_value1">
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: Hostname</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">Hostname</td>
-<td style="text-align: left;">Hostname</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>watermeter</code></td>
-<td style="text-align: left;"><code>watermeter</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>Hostname of the device</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter gets additionally saved to <code>/wlan.ini</code> file on the SD-Card during next startup.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_System_Hostname</td>
 		</tr>
 
 		<tr class="expert">
@@ -4822,62 +1638,7 @@ If this option is disabled, no time synchronization will be performed. Then time
 					oninput="(!validity.rangeUnderflow||(value=-100)) && (!validity.rangeOverflow||(value=0)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">dBm
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: WIFI Roaming RSSI Threshold</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">WIFI Roaming RSSI Threshold</td>
-<td style="text-align: left;">RSSIThreshold</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default State</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; unselected</td>
-<td style="text-align: left;"><code>disabled</code> -&gt; ;</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>-75</code></td>
-<td style="text-align: left;"><code>-75</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>-100</code> .. <code>0</code></td>
-<td style="text-align: left;"><code>-100</code> .. <code>0</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">dBm</td>
-<td style="text-align: left;">dBm</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!</p>
-</div>
-<h2>Description</h2>
-<p>This parameter activates a client triggered AP switching functionality (simplified roaming). 
-If actual RSSI value is lower (more negative) than this parameter, all WIFI channels will be scanned for configured access point SSID. If an access point is in range which has better RSSI value (less negative) than actual RSSI value + 5 dBm, the device is trying to connect to this access point with the better RSSI value.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The RSSI check only gets initiated at the end of each processing cycle to avoid any disturbance of image processing.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This parameter gets additionally saved to <code>/wlan.ini</code> file on the SD-Card during next startup.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_System_RSSIThreshold</td>
 		</tr>
 
 		<tr class="expert">
@@ -4890,55 +1651,7 @@ If actual RSSI value is lower (more negative) than this parameter, all WIFI chan
 					<option value="240">240 MHz</option>
 				</select>
 			</td>
-			<td>
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
-<h1>Parameter: CPU Frequency</h1>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;"></th>
-<th style="text-align: left;">WebUI</th>
-<th style="text-align: left;">Config.ini</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">Parameter Name</td>
-<td style="text-align: left;">CPU Frequency</td>
-<td style="text-align: left;">CPUFrequency</td>
-</tr>
-<tr>
-<td style="text-align: left;">Default Value</td>
-<td style="text-align: left;"><code>160</code></td>
-<td style="text-align: left;"><code>160</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Input Options</td>
-<td style="text-align: left;"><code>160</code><br><code>240</code></td>
-<td style="text-align: left;"><code>160</code><br><code>240</code></td>
-</tr>
-<tr>
-<td style="text-align: left;">Unit</td>
-<td style="text-align: left;">Mhz</td>
-<td style="text-align: left;">Mhz</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This is an <strong>Expert Parameter</strong>! Only change it if you understand what it does!  </p>
-</div>
-<h2>Description</h2>
-<p>Set the CPU Frequency.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p><strong>It is strongly recommended to use 160Mhz</strong><br>
-Setting it to 240Mhz will lead to a faster processing, but it requests a stronger power supply.
-Biggest drawback: Depending on the manufacturing quality of your device, system might generally run more
-unstable and WIFI performance could be bad / unstable.</p>
-</div>
-    </span></div></div>
-</td>
+			<td>$TOOLTIP_System_CPUFrequency</td>
 		</tr>
 
 	</table>
@@ -4950,9 +1663,9 @@ unstable and WIFI performance could be bad / unstable.</p>
 	</table>
 </div>
 
-<script type="text/javascript" src="common.js?v=1689595084077"></script> 
-<script type="text/javascript" src="readconfigcommon.js?v=1689595084077"></script>  
-<script type="text/javascript" src="readconfigparam.js?v=1689595084077"></script>  
+<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
+<script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
+<script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>  
  
 <script type="text/javascript">
 	var canvas = document.getElementById('canvas'),
@@ -5686,7 +2399,7 @@ function doReboot() {
 
 function editConfigDirect() {
     if (confirm("Proceed to switch the view? Unsaved changes get lost")) {
-        var stringota = getDomainname() + "/edit_config.html?v=1689595084077";
+        var stringota = getDomainname() + "/edit_config.html?v=$COMMIT_HASH";
         window.location = stringota;
         window.location.href = stringota;
         window.location.assign(stringota);

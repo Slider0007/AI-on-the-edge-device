@@ -68,7 +68,7 @@ body, html {
 
     <table style="border: none">
         <tr>
-            <td style="padding-right: 10px;"><img src="favicon.ico?v=1689595084077"></td>
+            <td style="padding-right: 10px;"><img src="favicon.ico?v=$COMMIT_HASH"></td>
             <td>
                 <h1> Digitizer - AI on the edge - Initial setup</h1>
                 <h2>An ESP32 all inclusive neural network recognition system for meter digitalization</h2>
@@ -107,7 +107,7 @@ body, html {
     </div>
 
 
-<script type="text/javascript" src="common.js?v=1689595084077"></script> 
+<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
 <script type="text/javascript">
     var aktstep = 0;
     var setupCompleted = false;
@@ -154,7 +154,7 @@ body, html {
       loadRSSI();
       switch (aktstep) {
         case 0: // Start page
-            document.getElementById('maincontent').src = 'edit_explain_0.html?v=1689595084077';
+            document.getElementById('maincontent').src = 'edit_explain_0.html?v=$COMMIT_HASH';
             document.getElementById('maincontent').style.display = "";
 
             document.getElementById('h_iframe_explain').style.display = "none";
@@ -175,7 +175,7 @@ body, html {
             document.getElementById('h_iframe_explain').style="height:155px;"
             document.getElementById('explaincontent').style="height:155px;"
             document.getElementById('explaincontent').scrolling="yes"
-            document.getElementById('explaincontent').src = 'explain_1.html?v=1689595084077';
+            document.getElementById('explaincontent').src = 'explain_1.html?v=$COMMIT_HASH';
             
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -195,14 +195,14 @@ body, html {
             break;
 
         case 2: // Reference image
-            document.getElementById('maincontent').src = 'edit_reference.html?v=1689595084077#description';
+            document.getElementById('maincontent').src = 'edit_reference.html?v=$COMMIT_HASH#description';
             document.getElementById('maincontent').style.display = "";
 
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_2.html?v=1689595084077';
+            document.getElementById('explaincontent').src = 'explain_2.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -214,13 +214,13 @@ body, html {
             break;
 
         case 3: // Alignment marker
-            document.getElementById('maincontent').src = 'edit_alignment.html?v=1689595084077#description';
+            document.getElementById('maincontent').src = 'edit_alignment.html?v=$COMMIT_HASH#description';
 
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_3.html?v=1689595084077';
+            document.getElementById('explaincontent').src = 'explain_3.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -232,13 +232,13 @@ body, html {
             break;
 
         case 4: // Digit ROIs
-            document.getElementById('maincontent').src = 'edit_digits.html?v=1689595084077#description';
+            document.getElementById('maincontent').src = 'edit_digits.html?v=$COMMIT_HASH#description';
 
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_4.html?v=1689595084077';
+            document.getElementById('explaincontent').src = 'explain_4.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -250,13 +250,13 @@ body, html {
             break;
 
         case 5: // Analog ROIs
-            document.getElementById('maincontent').src = 'edit_analog.html?v=1689595084077#description';
+            document.getElementById('maincontent').src = 'edit_analog.html?v=$COMMIT_HASH#description';
 
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_5.html?v=1689595084077';
+            document.getElementById('explaincontent').src = 'explain_5.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -268,13 +268,13 @@ body, html {
             break;
 
         case 6: // Config page
-            document.getElementById('maincontent').src = 'edit_config_param.html?v=1689595084077#description';
+            document.getElementById('maincontent').src = 'edit_config_param.html?v=$COMMIT_HASH#description';
 
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:100px;"
             document.getElementById('explaincontent').style="height:100px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_6.html?v=1689595084077';
+            document.getElementById('explaincontent').src = 'explain_6.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -289,10 +289,10 @@ body, html {
             document.getElementById('h_iframe').style="height:660px;"
             document.getElementById('maincontent').style="height:660px;"
             if (setupCompleted) {
-                document.getElementById('maincontent').src = 'edit_explain_7.html?v=1689595084077';
+                document.getElementById('maincontent').src = 'edit_explain_7.html?v=$COMMIT_HASH';
             }
             else {
-                document.getElementById('maincontent').src = 'edit_explain_7_abort.html?v=1689595084077';
+                document.getElementById('maincontent').src = 'edit_explain_7_abort.html?v=$COMMIT_HASH';
                 document.getElementById("previous").disabled = true; 
             }
 
