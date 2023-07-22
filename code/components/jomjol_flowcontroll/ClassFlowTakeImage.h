@@ -24,7 +24,7 @@ protected:
     bool FixedExposure;
 
     void SetInitialParameter(void);    
-    void CopyFile(string input, string output);
+    void CopyFile(std::string input, std::string output);
 
     esp_err_t camera_capture();
     bool takePictureWithFlash(int flash_duration);
@@ -35,13 +35,13 @@ public:
     ClassFlowTakeImage(std::vector<ClassFlow*>* lfc);
     virtual ~ClassFlowTakeImage();
 
-    bool ReadParameter(FILE* pfile, string& aktparamgraph);
-    bool doFlow(string time);
-    string getHTMLSingleStep(string host);
+    bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
+    bool doFlow(std::string time);
+    std::string getHTMLSingleStep(std::string host);
     time_t getTimeImageTaken();
     std::string getFileNameRawImage();
     void doAutoErrorHandling();
-    string name() {return "ClassFlowTakeImage";};
+    std::string name() {return "ClassFlowTakeImage";};
 
     ImageData* SendRawImage();
     esp_err_t SendRawJPG(httpd_req_t *req);

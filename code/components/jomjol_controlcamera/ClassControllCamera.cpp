@@ -21,7 +21,6 @@
 #include <esp_system.h>
 #include <nvs_flash.h>
 #include <sys/param.h>
-#include <string.h>
 #include <sys/stat.h>
 
 #include "freertos/FreeRTOS.h"
@@ -196,9 +195,9 @@ bool CCamera::testCamera(void)
 
 bool CCamera::SetBrightnessContrastSaturation(int _brightness, int _contrast, int _saturation)
 {
-    _brightness = min(2, max(-2, _brightness));
-    _contrast = min(2, max(-2, _contrast));
-    _saturation = min(2, max(-2, _saturation));
+    _brightness = std::min(2, std::max(-2, _brightness));
+    _contrast = std::min(2, std::max(-2, _contrast));
+    _saturation = std::min(2, std::max(-2, _saturation));
 
     sensor_t * s = esp_camera_sensor_get();
     if (s) {
@@ -256,7 +255,7 @@ bool CCamera::SetBrightnessContrastSaturation(int _brightness, int _contrast, in
 
 void CCamera::SetQualitySize(int qual, framesize_t resol)
 {
-    qual = min(63, max(8, qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
+    qual = std::min(63, std::max(8, qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
     
     sensor_t * s = esp_camera_sensor_get();
     if (s) {
@@ -285,8 +284,8 @@ void CCamera::SetQualitySize(int qual, framesize_t resol)
 
 void CCamera::SetLEDIntensity(int _intensity)
 {
-    _intensity = min(_intensity, 100);
-    _intensity = max(_intensity, 0);
+    _intensity = std::min(_intensity, 100);
+    _intensity = std::max(_intensity, 0);
     led_intensity = ((_intensity * LEDC_RESOLUTION) / 100);
     ESP_LOGD(TAG, "Set led_intensity to %d of %d", led_intensity, LEDC_RESOLUTION); // TODO: LOGD
 }
@@ -394,7 +393,7 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int _flashduration)
 
 esp_err_t CCamera::CaptureToFile(std::string nm, int _flashduration)
 {
-    string ftype;
+    std::string ftype;
     flashduration = _flashduration; // save last flashduration internally
 
     if (flashduration > 0) {    // Switch on for defined time if a flashduration is set

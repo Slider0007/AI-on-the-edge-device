@@ -11,8 +11,8 @@
 #include "server_mqtt.h"
 #include "interface_mqtt.h"
 #include "time_sntp.h"
+#include "Helper.h"
 #include "../../include/defines.h"
-
 
 
 static const char *TAG = "MQTT SERVER";
@@ -35,22 +35,26 @@ static std::string maintopic;
 bool sendingOf_DiscoveryAndStaticTopics_scheduled = true; // Set it to true to make sure it gets sent at least once after startup
 
 
-void mqttServer_setParameter(std::vector<NumberPost*>* _NUMBERS, int _keepAlive, float _roundInterval) {
+void mqttServer_setParameter(std::vector<NumberPost*>* _NUMBERS, int _keepAlive, float _roundInterval)
+{
     NUMBERS = _NUMBERS;
     keepAlive = _keepAlive;
     roundInterval = _roundInterval; 
 }
 
-void mqttServer_setMeterType(std::string _meterType, std::string _valueUnit, std::string _timeUnit,std::string _rateUnit) {
+
+void mqttServer_setMeterType(std::string _meterType, std::string _valueUnit, std::string _timeUnit,std::string _rateUnit)
+{
     meterType = _meterType;
     valueUnit = _valueUnit;
     timeUnit = _timeUnit;
     rateUnit = _rateUnit;
 }
 
-bool sendHomeAssistantDiscoveryTopic(std::string group, std::string field,
-    std::string name, std::string icon, std::string unit, std::string deviceClass, std::string stateClass, std::string entityCategory,
-    int qos) {
+
+bool sendHomeAssistantDiscoveryTopic(std::string group, std::string field, std::string name, std::string icon, std::string unit, 
+                                     std::string deviceClass, std::string stateClass, std::string entityCategory, int qos)
+{
     std::string version = std::string(libfive_git_version());
 
     if (version == "") {
@@ -76,7 +80,7 @@ bool sendHomeAssistantDiscoveryTopic(std::string group, std::string field,
     }
 
     /* See https://www.home-assistant.io/docs/mqtt/discovery/ */
-    payload = string("{")  +
+    payload = std::string("{")  +
         "\"~\": \"" + maintopic + "\","  +
         "\"unique_id\": \"" + maintopic + "-" + configTopic + "\","  +
         "\"object_id\": \"" + maintopic + "_" + configTopic + "\","  + // This used to generate the Entity ID
@@ -123,7 +127,7 @@ bool sendHomeAssistantDiscoveryTopic(std::string group, std::string field,
         "\"payload_available\": \"" + LWT_CONNECTED + "\","  +
         "\"payload_not_available\": \"" + LWT_DISCONNECTED + "\",";
 
-    payload += string("\"device\": {")  +
+    payload += std::string("\"device\": {")  +
         "\"identifiers\": [\"" + maintopic + "\"],"  +
         "\"name\": \"" + maintopic + "\","  +
         "\"model\": \"Meter Digitizer\","  +
@@ -136,7 +140,9 @@ bool sendHomeAssistantDiscoveryTopic(std::string group, std::string field,
     return MQTTPublish(topicFull, payload, qos, true);
 }
 
-bool MQTThomeassistantDiscovery(int qos) {  
+
+bool MQTThomeassistantDiscovery(int qos)
+{  
     bool allSendsSuccessed = false;
 
     if (!getMQTTisConnected()) {
@@ -185,13 +191,15 @@ bool MQTThomeassistantDiscovery(int qos) {
     int aMinFreeInternalHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Int. Heap Usage before Publishing Homeassistand Discovery Topics: " + 
-            to_string(aFreeInternalHeapSizeBefore) + ", after: " + to_string(aFreeInternalHeapSizeAfter) + ", delta: " + 
-            to_string(aFreeInternalHeapSizeBefore - aFreeInternalHeapSizeAfter) + ", lowest free: " + to_string(aMinFreeInternalHeapSize));
+            std::to_string(aFreeInternalHeapSizeBefore) + ", after: " + std::to_string(aFreeInternalHeapSizeAfter) + ", delta: " + 
+            std::to_string(aFreeInternalHeapSizeBefore - aFreeInternalHeapSizeAfter) + ", lowest free: " + std::to_string(aMinFreeInternalHeapSize));
 
     return allSendsSuccessed;
 }
 
-bool publishSystemData(int qos) {
+
+bool publishSystemData(int qos)
+{
     bool allSendsSuccessed = false;
 
     if (!getMQTTisConnected()) {
@@ -225,14 +233,15 @@ bool publishSystemData(int qos) {
 	int aMinFreeInternalHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Int. Heap Usage before publishing System Topics: " + 
-            to_string(aFreeInternalHeapSizeBefore) + ", after: " + to_string(aFreeInternalHeapSizeAfter) + ", delta: " + 
-            to_string(aFreeInternalHeapSizeBefore - aFreeInternalHeapSizeAfter) + ", lowest free: " + to_string(aMinFreeInternalHeapSize));
+            std::to_string(aFreeInternalHeapSizeBefore) + ", after: " + std::to_string(aFreeInternalHeapSizeAfter) + ", delta: " + 
+            std::to_string(aFreeInternalHeapSizeBefore - aFreeInternalHeapSizeAfter) + ", lowest free: " + std::to_string(aMinFreeInternalHeapSize));
 
     return allSendsSuccessed;
 }
 
 
-bool publishStaticData(int qos) {
+bool publishStaticData(int qos)
+{
     bool allSendsSuccessed = false;
 
     if (!getMQTTisConnected()) {
@@ -258,14 +267,15 @@ bool publishStaticData(int qos) {
 	int aMinFreeInternalHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Int. Heap Usage before Publishing Static Topics: " + 
-            to_string(aFreeInternalHeapSizeBefore) + ", after: " + to_string(aFreeInternalHeapSizeAfter) + ", delta: " + 
-            to_string(aFreeInternalHeapSizeBefore - aFreeInternalHeapSizeAfter) + ", lowest free: " + to_string(aMinFreeInternalHeapSize));
+            std::to_string(aFreeInternalHeapSizeBefore) + ", after: " + std::to_string(aFreeInternalHeapSizeAfter) + ", delta: " + 
+            std::to_string(aFreeInternalHeapSizeBefore - aFreeInternalHeapSizeAfter) + ", lowest free: " + std::to_string(aMinFreeInternalHeapSize));
 
     return allSendsSuccessed;
 }
 
 
-esp_err_t scheduleSendingDiscovery_and_static_Topics(httpd_req_t *req) {
+esp_err_t scheduleSendingDiscovery_and_static_Topics(httpd_req_t *req)
+{
     sendingOf_DiscoveryAndStaticTopics_scheduled = true;
     char msg[] = "MQTT Homeassistant Discovery and Static Topics scheduled";
     httpd_resp_send(req, msg, strlen(msg));  
@@ -273,7 +283,8 @@ esp_err_t scheduleSendingDiscovery_and_static_Topics(httpd_req_t *req) {
 }
 
 
-esp_err_t sendDiscovery_and_static_Topics(void) {
+esp_err_t sendDiscovery_and_static_Topics(void)
+{
     bool success = false;
 
     if (!sendingOf_DiscoveryAndStaticTopics_scheduled) {
@@ -299,11 +310,14 @@ esp_err_t sendDiscovery_and_static_Topics(void) {
 }
 
 
-void GotConnected(std::string maintopic, bool retainFlag) {
+void GotConnected(std::string maintopic, bool retainFlag)
+{
     // Nothing to do
 }
 
-void register_server_mqtt_uri(httpd_handle_t server) {
+
+void register_server_mqtt_uri(httpd_handle_t server)
+{
     httpd_uri_t uri = { };
     uri.method    = HTTP_GET;
 
@@ -314,25 +328,32 @@ void register_server_mqtt_uri(httpd_handle_t server) {
 }
 
 
-std::string getTimeUnit(void) {
+std::string getTimeUnit(void)
+{
     return timeUnit;
 }
 
 
-void SetHomeassistantDiscoveryEnabled(bool enabled) {
+void SetHomeassistantDiscoveryEnabled(bool enabled)
+{
     HomeassistantDiscovery = enabled;
 }
 
 
-void setMqtt_Server_Retain(bool _retainFlag) {
+void setMqtt_Server_Retain(bool _retainFlag)
+{
     retainFlag = _retainFlag;
 }
 
-void mqttServer_setMainTopic( std::string _maintopic) {
+
+void mqttServer_setMainTopic( std::string _maintopic)
+{
     maintopic = _maintopic;
 }
 
-std::string mqttServer_getMainTopic() {
+
+std::string mqttServer_getMainTopic()
+{
     return maintopic;
 }
 

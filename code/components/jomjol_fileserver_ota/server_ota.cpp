@@ -1,7 +1,6 @@
 #include "server_ota.h"
 
 #include <string>
-#include "string.h"
 
 /* TODO Rethink the usage of the int watchdog. It is no longer to be used, see
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/release-5.x/5.0/system.html?highlight=esp_int_wdt */
@@ -9,8 +8,6 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/rel
 
 #include <esp_task_wdt.h>
 
-
-#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -61,7 +58,7 @@ static void infinite_loop(void)
     int i = 0;
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "When a new firmware is available on the server, press the reset button to download it");
     while(1) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Waiting for a new firmware (" + to_string(++i) + ")");
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Waiting for a new firmware (" + std::to_string(++i) + ")");
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
@@ -154,8 +151,8 @@ static bool ota_update_task(std::string fn)
     const esp_partition_t *running = esp_ota_get_running_partition();
 
     if (configured != running) {        
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Configured OTA boot partition at offset " + to_string(configured->address) + 
-                ", but running from offset " + to_string(running->address));
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Configured OTA boot partition at offset " + std::to_string(configured->address) + 
+                ", but running from offset " + std::to_string(running->address));
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "(This can happen if either the OTA boot data or preferred boot image become somehow corrupted.)");
     }
     ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
@@ -210,7 +207,7 @@ static bool ota_update_task(std::string fn)
                         if (memcmp(invalid_app_info.version, new_app_info.version, sizeof(new_app_info.version)) == 0) {
                             LogFile.WriteToFile(ESP_LOG_WARN, TAG, "New version is the same as invalid version");
                             LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Previously, there was an attempt to launch the firmware with " + 
-                                    string(invalid_app_info.version) + " version, but it failed");
+                                    std::string(invalid_app_info.version) + " version, but it failed");
                             LogFile.WriteToFile(ESP_LOG_WARN, TAG, "The firmware has been rolled back to the previous version");
                             infinite_loop();
                         }
@@ -226,7 +223,7 @@ static bool ota_update_task(std::string fn)
 
                     err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
                     if (err != ESP_OK) {
-                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_begin failed (" + string(esp_err_to_name(err)) + ")");
+                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_begin failed (" + std::string(esp_err_to_name(err)) + ")");
                         return false;
                     }
                     ESP_LOGI(TAG, "esp_ota_begin succeeded");
@@ -247,7 +244,7 @@ static bool ota_update_task(std::string fn)
            // * `errno` to check for underlying transport connectivity closure if any
            //
             if (errno == ECONNRESET || errno == ENOTCONN) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Connection closed, errno = " + to_string(errno));
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Connection closed, errno = " + std::to_string(errno));
                 break;
             }
         }
@@ -262,13 +259,13 @@ static bool ota_update_task(std::string fn)
         if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image validation failed, image is corrupted");
         }
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_end failed (" + string(esp_err_to_name(err)) + ")");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_end failed (" + std::string(esp_err_to_name(err)) + ")");
         return false;
     }
 
     err = esp_ota_set_boot_partition(update_partition);
     if (err != ESP_OK) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_set_boot_partition failed (" + string(esp_err_to_name(err)) + ")");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_ota_set_boot_partition failed (" + std::string(esp_err_to_name(err)) + ")");
 
     }
 //    ESP_LOGI(TAG, "Prepare to restart system");
@@ -538,7 +535,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
         return ESP_OK;
     }
 
-    string zw = "ota without parameter - should not be the case";
+    std::string zw = "ota without parameter - should not be the case";
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_send(req, zw.c_str(), strlen(zw.c_str())); 
     httpd_resp_send_chunk(req, NULL, 0);  

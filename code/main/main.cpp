@@ -781,7 +781,7 @@ void migrateConfiguration(void) {
             fwrite("\n" , 1, 1, pfile);
         }
         fclose(pfile);
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Config file migrated. Saved backup to " + string(CONFIG_FILE_BACKUP));
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Config file migrated. Saved backup to " + std::string(CONFIG_FILE_BACKUP));
     }
 }
 
@@ -830,7 +830,7 @@ std::vector<std::string> splitString(const std::string& str) {
 
 bool setCpuFrequency(void) {
     ConfigFile configFile = ConfigFile(CONFIG_FILE); 
-    string cpuFrequency = "160";
+    std::string cpuFrequency = "160";
     esp_pm_config_esp32_t  pm_config; 
 
     if (!configFile.ConfigFileExists()){
@@ -888,7 +888,7 @@ bool setCpuFrequency(void) {
     }
 
     if (esp_pm_get_configuration(&pm_config) == ESP_OK) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, string("CPU frequency: ") + to_string(pm_config.max_freq_mhz) + " MHz");
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, std::string("CPU frequency: ") + std::to_string(pm_config.max_freq_mhz) + " MHz");
     }
 
     return true;

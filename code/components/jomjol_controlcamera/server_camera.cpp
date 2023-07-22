@@ -1,7 +1,6 @@
 #include "server_camera.h"
 
 #include <string>
-#include "string.h"
 
 #include "esp_camera.h"
 #include "ClassControllCamera.h"

@@ -10,8 +10,6 @@
 
 #include <string>
 
-using namespace std;
-
 class ClassFlowAlignment : public ClassFlow
 {
 protected:
@@ -39,10 +37,10 @@ public:
 
     CAlignAndCutImage* GetAlignAndCutImage() {return AlignAndCutImage;};
     void DrawRef(CImageBasis *_zw);
-    bool ReadParameter(FILE* pfile, string& aktparamgraph);
-    bool doFlow(string time);
-    string getHTMLSingleStep(string host);
-    string name() {return "ClassFlowAlignment";};
+    bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
+    bool doFlow(std::string time);
+    std::string getHTMLSingleStep(std::string host);
+    std::string name() {return "ClassFlowAlignment";};
 };
 
 

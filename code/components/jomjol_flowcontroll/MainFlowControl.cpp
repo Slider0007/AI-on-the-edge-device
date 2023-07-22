@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include "string.h"
 #include "esp_log.h"
 #include <esp_timer.h>
 
@@ -667,7 +666,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
     char _query[200];
     char _valuechar[30];
-    string _task;
+    std::string _task;
 
     if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK)
     {
@@ -676,7 +675,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
             #ifdef DEBUG_DETAIL_ON       
                 ESP_LOGD(TAG, "task is found: %s", _valuechar);
             #endif
-            _task = string(_valuechar);
+            _task = std::string(_valuechar);
         }
     }  
 
@@ -700,12 +699,12 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
     if (_task.compare("copy") == 0)
     {
-        string in, out, zw;
+        std::string in, out, zw;
 
         httpd_query_key_value(_query, "in", _valuechar, 30);
-        in = string(_valuechar);
+        in = std::string(_valuechar);
         httpd_query_key_value(_query, "out", _valuechar, 30);         
-        out = string(_valuechar);  
+        out = std::string(_valuechar);  
 
         #ifdef DEBUG_DETAIL_ON       
             ESP_LOGD(TAG, "in: %s", in.c_str());
@@ -805,7 +804,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
 
 //        ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
-//        string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
+//        std::string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         Camera.SetBrightnessContrastSaturation(bri, con, sat);
         Camera.SetLEDIntensity(intens);
         ESP_LOGD(TAG, "test_take - vor TakeImage");
@@ -823,7 +822,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         }
 //        ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
 
-//        string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
+//        std::string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         std::string zw = flowctrl.doSingleStep("[Alignment]", _host);
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send(req, zw.c_str(), zw.length()); 

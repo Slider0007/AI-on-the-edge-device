@@ -69,9 +69,9 @@ ClassFlowControll::~ClassFlowControll()
 }
 
 
-bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
+bool ClassFlowControll::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
 
     aktparamgraph = trim(aktparamgraph);
 
@@ -199,7 +199,7 @@ bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
             }
             else {
                 _RSSIThresholdTMP = atoi(splitted[1].c_str());
-                _RSSIThresholdTMP = min(0, max(-100, _RSSIThresholdTMP)); // Verify input limits (-100 - 0)
+                _RSSIThresholdTMP = std::min(0, std::max(-100, _RSSIThresholdTMP)); // Verify input limits (-100 - 0)
             }
             ChangeRSSIThreshold(WLAN_CONFIG_FILE, _RSSIThresholdTMP);
         }
@@ -528,7 +528,7 @@ void ClassFlowControll::DeinitFlow(void)
 }
 
 
-bool ClassFlowControll::doFlowImageEvaluation(string time)
+bool ClassFlowControll::doFlowImageEvaluation(std::string time)
 {
     bool result = true;
     FlowStateErrorsEvaluation.clear();
@@ -557,7 +557,7 @@ bool ClassFlowControll::doFlowImageEvaluation(string time)
 }
 
 
-bool ClassFlowControll::doFlowPublishData(string time)
+bool ClassFlowControll::doFlowPublishData(std::string time)
 {
     bool result = true;
     FlowStateErrorsPublish.clear();
@@ -585,7 +585,7 @@ bool ClassFlowControll::doFlowPublishData(string time)
 }
 
 
-bool ClassFlowControll::doFlowTakeImageOnly(string time)
+bool ClassFlowControll::doFlowTakeImageOnly(std::string time)
 {
     bool result = true;
     FlowStateErrorsEvaluation.clear();
@@ -759,7 +759,7 @@ bool ClassFlowControll::StartMQTTService()
 #endif //ENABLE_MQTT
 
 
-string ClassFlowControll::getJSON()
+std::string ClassFlowControll::getJSON()
 {
     return flowpostprocessing->GetJSON();
 }
@@ -934,8 +934,8 @@ std::string ClassFlowControll::getReadout(bool _rawvalue = false, bool _noerror 
     if (flowpostprocessing)
         return flowpostprocessing->getReadoutParam(_rawvalue, _noerror, _number);
 
-    string zw = "";
-    string result = "";
+    std::string zw = "";
+    std::string result = "";
 
     for (int i = 0; i < FlowControll.size(); ++i)
     {
@@ -953,7 +953,7 @@ std::string ClassFlowControll::getReadout(bool _rawvalue = false, bool _noerror 
 }
 
 
-string ClassFlowControll::GetPrevalue(std::string _number)	
+std::string ClassFlowControll::GetPrevalue(std::string _number)	
 {
     if (flowpostprocessing)
     {
@@ -1009,7 +1009,7 @@ int ClassFlowControll::CleanTempFolder() {
     struct dirent *entry;
     int deleted = 0;
     while ((entry = readdir(dir)) != NULL) {
-        std::string path = string(folderPath) + "/" + entry->d_name;
+        std::string path = std::string(folderPath) + "/" + entry->d_name;
 		if (entry->d_type == DT_REG) {
 			if (unlink(path.c_str()) == 0) {
 				deleted ++;

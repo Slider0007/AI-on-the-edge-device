@@ -1,6 +1,5 @@
 #include "connect_wlan.h"
 
-#include <string.h>
 #include <stdlib.h>
 #include <fstream>
 #include <vector>

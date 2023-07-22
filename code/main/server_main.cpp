@@ -344,7 +344,7 @@ esp_err_t sysinfo_handler(httpd_req_t *req)
     char freeheapmem[11];
     sprintf(freeheapmem, "%lu", (long) getESPHeapSize());
     
-    zw = string("[{") + 
+    zw = std::string("[{") + 
         "\"firmware\": \"" + gitversion + "\"," +
         "\"buildtime\": \"" + buildtime + "\"," +
         "\"gitbranch\": \"" + gitbranch + "\"," +

@@ -12,8 +12,7 @@
 
 
 #include <stdio.h>
-#include <string.h>
-#include <string>
+#include <cstring>
 #include <sys/param.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>
@@ -63,9 +62,7 @@ struct file_server_data {
 #include <sys/types.h>
 #include <dirent.h>
 
-using namespace std;
-
-string SUFFIX_ZW = "_0xge";
+std::string SUFFIX_ZW = "_0xge";
 
 
 static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file);
@@ -267,7 +264,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
             strlcpy(entrypath + dirpath_len, entry->d_name, sizeof(entrypath) - dirpath_len);
             ESP_LOGD(TAG, "Entrypath: %s", entrypath);
             if (stat(entrypath, &entry_stat) == -1) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to read " + string(entrytype) + ": " + string(entry->d_name));
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to read " + std::string(entrytype) + ": " + std::string(entry->d_name));
                 continue;
             }
 
@@ -387,7 +384,7 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos); 
 
             if (fseek(fd, pos, SEEK_SET)) { // Go to start position
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to go back " + to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
                 return ESP_FAIL;
             }
         }
@@ -476,7 +473,7 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos); 
 
             if (fseek(fd, pos, SEEK_SET)) { // Go to start position
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to go back " + to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
                 return ESP_FAIL;
             }
         }
@@ -644,14 +641,14 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     /* Filename cannot have a trailing '/' */
     if (filename[strlen(filename) - 1] == '/') {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: Invalid filename: " + string(filename));
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: Invalid filename: " + std::string(filename));
         /* Respond with 400 Bad Request */
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: Invalid filename");
         return ESP_FAIL;
     }
 
     if (stat(filepath, &file_stat) == 0) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File already exists: " + string(filepath));
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File already exists: " + std::string(filepath));
         /* Respond with 400 Bad Request */
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File already exists");
         return ESP_FAIL;
@@ -659,7 +656,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     /* File cannot be larger than a limit */
     if (req->content_len > MAX_FILE_SIZE) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File too large: " + to_string(req->content_len) + " bytes");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File too large: " + std::to_string(req->content_len) + " bytes");
         /* Respond with 400 Bad Request */
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File size must be less than " MAX_FILE_SIZE_STR);
         /* Return failure to close underlying connection else the
@@ -669,7 +666,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     fd = fopen(filepath, "w");
     if (!fd) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: Failed to create file: " + string(filepath));
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: Failed to create file: " + std::string(filepath));
         /* Respond with 500 Internal Server Error */
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "upload_post_handler: Failed to create file");
         return ESP_FAIL;
@@ -726,7 +723,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     /* Close file upon upload completion */
     fclose(fd);
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "upload_post_handler: File saved: " + string(filename));
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "upload_post_handler: File saved: " + std::string(filename));
     ESP_LOGI(TAG, "File reception completed");
 
     std::string directory = std::string(filepath);
@@ -791,7 +788,7 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         
         if (httpd_query_key_value(_query, "task", _valuechar, 30) == ESP_OK)
         {
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Task: " + string(_valuechar));
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Task: " + std::string(_valuechar));
             _task = std::string(_valuechar);
         }
     }
@@ -837,24 +834,24 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
 
         /* Filename cannot have a trailing '/' */
         if (filename[strlen(filename) - 1] == '/') {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "delete_post_handler: Invalid filename: " + string(filename));
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "delete_post_handler: Invalid filename: " + std::string(filename));
             /* Respond with 400 Bad Request */
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "delete_post_handler: Invalid filename");
             return ESP_FAIL;
         }
 
         if (strcmp(filename, "wlan.ini") == 0) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "delete_post_handler: Failed to delete protected file : " + string(filename));
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "delete_post_handler: Failed to delete protected file : " + std::string(filename));
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "delete_post_handler: Not allowed to delete wlan.ini");
             return ESP_FAIL;
         }
 
         if (stat(filepath, &file_stat) == -1) { // File does not exist
             /* This is ok, we would delete it anyway */
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Deletion triggered, but file not existing: " + string(filename));
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Deletion triggered, but file not existing: " + std::string(filename));
         }
         else {
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Deleting file: " + string(filename));
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Deleting file: " + std::string(filename));
             /* Delete file */
             unlink(filepath);
         }
@@ -938,7 +935,7 @@ std::string unzip_new(std::string _in_zip_file, std::string _target_zip, std::st
 
     // Get and print information about each file in the archive.
     int numberoffiles = (int)mz_zip_reader_get_num_files(&zip_archive);
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Files to be extracted: " + to_string(numberoffiles));
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Files to be extracted: " + std::to_string(numberoffiles));
 
     sort_iter = 0;
     {
@@ -961,7 +958,7 @@ std::string unzip_new(std::string _in_zip_file, std::string _target_zip, std::st
             p = mz_zip_reader_extract_file_to_heap(&zip_archive, archive_filename, &uncomp_size, 0);
                 if (!p)
                 {
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_extract_file_to_heap() failed on file " + string(archive_filename));
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_extract_file_to_heap() failed on file " + std::string(archive_filename));
                     mz_zip_reader_end(&zip_archive);
                     return ret;
                 }
@@ -1000,7 +997,7 @@ std::string unzip_new(std::string _in_zip_file, std::string _target_zip, std::st
 
                 }
             
-                string filename_zw = zw + SUFFIX_ZW;
+                std::string filename_zw = zw + SUFFIX_ZW;
 
                 ESP_LOGI(TAG, "File to extract: %s, Temp. Filename: %s", zw.c_str(), filename_zw.c_str());
 
@@ -1024,21 +1021,21 @@ std::string unzip_new(std::string _in_zip_file, std::string _target_zip, std::st
                 {
                     isokay = false;
                     LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ERROR in writting extracted file (function fwrite) extracted file \"" +
-                            string(archive_filename) + "\", size " + to_string(uncomp_size));
+                            std::string(archive_filename) + "\", size " + std::to_string(uncomp_size));
                 }
 
                 DeleteFile(zw);
                 if (!isokay)
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ERROR in fwrite \"" + string(archive_filename) + "\", size " + to_string(uncomp_size));
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ERROR in fwrite \"" + std::string(archive_filename) + "\", size " + std::to_string(uncomp_size));
                 isokay = isokay && RenameFile(filename_zw, zw);
                 if (!isokay)
                     LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ERROR in Rename \"" + filename_zw + "\" to \"" + zw);
 
                 if (isokay)
-                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Successfully extracted file \"" + string(archive_filename) + "\", size " + to_string(uncomp_size));
+                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Successfully extracted file \"" + std::string(archive_filename) + "\", size " + std::to_string(uncomp_size));
                 else
                 {
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ERROR in extracting file \"" + string(archive_filename) + "\", size " + to_string(uncomp_size));
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ERROR in extracting file \"" + std::string(archive_filename) + "\", size " + std::to_string(uncomp_size));
                     ret = "ERROR";
                 }
                 mz_free(p);

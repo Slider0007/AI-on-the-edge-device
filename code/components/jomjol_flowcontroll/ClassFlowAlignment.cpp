@@ -52,9 +52,9 @@ ClassFlowAlignment::ClassFlowAlignment(std::vector<ClassFlow*>* lfc)
 }
 
 
-bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
+bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
     int search_x = 20;  // target_x +/- search_x
     int search_y = 20;  // target_y +/- search_y
     int alg_algo = 0;   // 0= DEFAULT; 1 =HIGHACCURACY; 2= FAST; 3= OFF //add disable aligment algo |01.2023
@@ -175,9 +175,9 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
 }
 
 
-string ClassFlowAlignment::getHTMLSingleStep(string host)
+std::string ClassFlowAlignment::getHTMLSingleStep(std::string host)
 {
-    string result;
+    std::string result;
 
     result =          "<p>Rotated Image: </p> <p><img src=\"" + host + "/img_tmp/rot.jpg\"></p>\n";
     result = result + "<p>Found Alignment: </p> <p><img src=\"" + host + "/img_tmp/rot_roi.jpg\"></p>\n";
@@ -186,7 +186,7 @@ string ClassFlowAlignment::getHTMLSingleStep(string host)
 }
 
 
-bool ClassFlowAlignment::doFlow(string time) 
+bool ClassFlowAlignment::doFlow(std::string time) 
 {
     PresetFlowStateHandler();
     if (AlgROI == NULL)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation

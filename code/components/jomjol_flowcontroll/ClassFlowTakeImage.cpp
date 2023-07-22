@@ -40,9 +40,9 @@ ClassFlowTakeImage::ClassFlowTakeImage(std::vector<ClassFlow*>* lfc) : ClassFlow
 }
 
 
-bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
+bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
     int _brightness = 0;
     int _contrast = 0;
     int _saturation = 0;
@@ -90,8 +90,8 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
             ledintensity = stoi(splitted[1]);
             //checkMinMax(&ledintensity, 0, 100);
             //ESP_LOGI(TAG, "ledintensity: %d", ledintensity);
-            ledintensity = min(100, ledintensity);
-            ledintensity = max(0, ledintensity);
+            ledintensity = std::min(100, ledintensity);
+            ledintensity = std::max(0, ledintensity);
             //Camera.SetLEDIntensity(ledintensity);
         }
 
@@ -163,7 +163,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
 }
 
 
-bool ClassFlowTakeImage::doFlow(string zwtime)
+bool ClassFlowTakeImage::doFlow(std::string zwtime)
 {
     PresetFlowStateHandler();
     std::string logPath = CreateLogFolder(zwtime);
@@ -200,9 +200,9 @@ void ClassFlowTakeImage::doAutoErrorHandling()
 }
 
 
-string ClassFlowTakeImage::getHTMLSingleStep(string host)
+std::string ClassFlowTakeImage::getHTMLSingleStep(std::string host)
 {
-    string result = "Raw Image: <br>\n<img src=\"" + host + "/img_tmp/raw.jpg\">\n";
+    std::string result = "Raw Image: <br>\n<img src=\"" + host + "/img_tmp/raw.jpg\">\n";
     return result;
 }
 

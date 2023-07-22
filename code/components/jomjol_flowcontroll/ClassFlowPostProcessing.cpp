@@ -52,7 +52,7 @@ std::string ClassFlowPostProcessing::GetJSON(std::string _lineend)
 }
 
 
-string ClassFlowPostProcessing::getJsonFromNumber(int i, std::string _lineend) {
+std::string ClassFlowPostProcessing::getJsonFromNumber(int i, std::string _lineend) {
 	std::string json = "";
 
 	json += "  {" + _lineend;
@@ -78,7 +78,7 @@ string ClassFlowPostProcessing::getJsonFromNumber(int i, std::string _lineend) {
 }
 
 
-string ClassFlowPostProcessing::GetPreValue(std::string _number)
+std::string ClassFlowPostProcessing::GetPreValue(std::string _number)
 {
     std::string result;
     int index = -1;
@@ -99,7 +99,7 @@ string ClassFlowPostProcessing::GetPreValue(std::string _number)
 }
 
 
-bool ClassFlowPostProcessing::SetPreValue(double _newvalue, string _numbers, bool _extern)
+bool ClassFlowPostProcessing::SetPreValue(double _newvalue, std::string _numbers, bool _extern)
 {
     //ESP_LOGD(TAG, "SetPrevalue: %f, %s", zw, _numbers.c_str());
 
@@ -504,9 +504,9 @@ void ClassFlowPostProcessing::handleMaxRateValue(std::string _decsep, std::strin
 }
 
 
-bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, string& aktparamgraph)
+bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
     aktparamgraph = trim(aktparamgraph);
 
     if (aktparamgraph.size() == 0)
@@ -680,7 +680,7 @@ void ClassFlowPostProcessing::InitNUMBERS()
 
 }
 
-string ClassFlowPostProcessing::ShiftDecimal(string in, int _decShift){
+std::string ClassFlowPostProcessing::ShiftDecimal(std::string in, int _decShift){
 
     if (_decShift == 0){
         return in;
@@ -714,7 +714,7 @@ string ClassFlowPostProcessing::ShiftDecimal(string in, int _decShift){
         return in;      
     }
 
-    string zw;
+    std::string zw;
     zw = in.substr(0, _pos_dec_neu);
     zw = zw + ".";
     zw = zw + in.substr(_pos_dec_neu, in.length() - _pos_dec_neu);
@@ -723,7 +723,7 @@ string ClassFlowPostProcessing::ShiftDecimal(string in, int _decShift){
 }
 
 
-bool ClassFlowPostProcessing::doFlow(string zwtime)
+bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 {
     PresetFlowStateHandler();
     time_t imagetime = 0;
@@ -812,7 +812,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                 NUMBERS[j]->ReturnValue = ErsetzteN(NUMBERS[j]->ReturnValue, NUMBERS[j]->PreValue); 
             }
             else {
-                string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
+                std::string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
                                                 ", Status: " + NUMBERS[j]->ErrorMessageText;             
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, _zw);
 
@@ -877,7 +877,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                     // Include inaccuracy of 0.2 for isExtendedResolution.
                     if (NUMBERS[j]->Value >= (NUMBERS[j]->PreValue-(2/pow(10, NUMBERS[j]->Nachkomma))) && NUMBERS[j]->isExtendedResolution) {
                         NUMBERS[j]->Value = NUMBERS[j]->PreValue;
-                        NUMBERS[j]->ReturnValue = to_string(NUMBERS[j]->PreValue);
+                        NUMBERS[j]->ReturnValue = std::to_string(NUMBERS[j]->PreValue);
                     } 
                     else {
                         NUMBERS[j]->ErrorMessageText = NUMBERS[j]->ErrorMessageText + "Neg. Rate: Read: " + RundeOutput(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) +
@@ -886,7 +886,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                         NUMBERS[j]->ReturnValue = "";
                         NUMBERS[j]->lastvalue = imagetime;
 
-                        string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
+                        std::string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
                                                         ", Status: " + NUMBERS[j]->ErrorMessageText;
                         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _zw);
 
@@ -903,7 +903,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
 
         difference /= 60;  
         NUMBERS[j]->FlowRateAct = (NUMBERS[j]->Value - NUMBERS[j]->PreValue) / difference;
-        NUMBERS[j]->ReturnRateValue =  to_string(NUMBERS[j]->FlowRateAct);
+        NUMBERS[j]->ReturnRateValue =  std::to_string(NUMBERS[j]->FlowRateAct);
 
         /* Check rate too high */
         if (NUMBERS[j]->useMaxRateValue && PreValueUse && NUMBERS[j]->PreValueOkay) {
@@ -923,7 +923,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                 NUMBERS[j]->ReturnRateValue = "";
                 NUMBERS[j]->lastvalue = imagetime;
 
-                string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
+                std::string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
                                                 ", Status: " + NUMBERS[j]->ErrorMessageText;
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _zw);
 
@@ -947,7 +947,7 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
         NUMBERS[j]->ErrorMessageText = "no error";
         UpdatePreValueINI = true;
 
-        string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + ", Status: " + NUMBERS[j]->ErrorMessageText;
+        std::string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + ", Status: " + NUMBERS[j]->ErrorMessageText;
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, _zw);
 
         WriteDataLog(j);
@@ -963,9 +963,9 @@ void ClassFlowPostProcessing::WriteDataLog(int _index)
         return;
     }
     
-    string analog = "";
-    string digital = "";
-    string timezw = "";
+    std::string analog = "";
+    std::string digital = "";
+    std::string timezw = "";
     char buffer[80];
     struct tm* timeinfo = localtime(&NUMBERS[_index]->lastvalue);
     strftime(buffer, 80, PREVALUE_TIME_FORMAT_OUTPUT, timeinfo);
@@ -1026,12 +1026,12 @@ void ClassFlowPostProcessing::UpdateNachkommaDecimalShift()
 }
 
 
-string ClassFlowPostProcessing::getReadout(int _number)
+std::string ClassFlowPostProcessing::getReadout(int _number)
 {
     return NUMBERS[_number]->ReturnValue;
 }
 
-string ClassFlowPostProcessing::getReadoutParam(bool _rawValue, bool _noerror, int _number)
+std::string ClassFlowPostProcessing::getReadoutParam(bool _rawValue, bool _noerror, int _number)
 {
     if (_rawValue)
         return NUMBERS[_number]->ReturnRawValue;
@@ -1043,7 +1043,7 @@ string ClassFlowPostProcessing::getReadoutParam(bool _rawValue, bool _noerror, i
 }
 
 
-string ClassFlowPostProcessing::ErsetzteN(string input, double _prevalue)
+std::string ClassFlowPostProcessing::ErsetzteN(std::string input, double _prevalue)
 {
     int posN, posPunkt;
     int pot, ziffer;
@@ -1127,18 +1127,18 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decilams
     return input;
 }
 
-string ClassFlowPostProcessing::getReadoutRate(int _number)
+std::string ClassFlowPostProcessing::getReadoutRate(int _number)
 {
     return std::to_string(NUMBERS[_number]->FlowRateAct);
 }
 
-string ClassFlowPostProcessing::getReadoutTimeStamp(int _number)
+std::string ClassFlowPostProcessing::getReadoutTimeStamp(int _number)
 {
    return NUMBERS[_number]->timeStamp; 
 }
 
 
-string ClassFlowPostProcessing::getReadoutError(int _number) 
+std::string ClassFlowPostProcessing::getReadoutError(int _number) 
 {
     return NUMBERS[_number]->ErrorMessageText;
 }

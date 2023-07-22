@@ -75,9 +75,9 @@ ClassFlowInfluxDBv2::ClassFlowInfluxDBv2(std::vector<ClassFlow*>* lfc, ClassFlow
 }
 
 
-bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, string& aktparamgraph)
+bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
     std::string _param;
 
     aktparamgraph = trim(aktparamgraph);
@@ -144,7 +144,7 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, string& aktparamgraph)
 }
 
 
-bool ClassFlowInfluxDBv2::doFlow(string zwtime)
+bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
 {
     if (!InfluxDBenable)
         return true;
@@ -156,8 +156,8 @@ bool ClassFlowInfluxDBv2::doFlow(string zwtime)
     std::string resultraw = "";
     std::string resultrate = "";
     std::string resulttimestamp = "";
-    string zw = "";
-    string namenumber = "";
+    std::string zw = "";
+    std::string namenumber = "";
 
     if (flowpostprocessing != NULL)
     {
@@ -203,9 +203,9 @@ bool ClassFlowInfluxDBv2::doFlow(string zwtime)
 }
 
 
-void ClassFlowInfluxDBv2::handleMeasurement(string _decsep, string _value)
+void ClassFlowInfluxDBv2::handleMeasurement(std::string _decsep, std::string _value)
 {
-    string _digit, _decpos;
+    std::string _digit, _decpos;
     int _pospunkt = _decsep.find_first_of(".");
 
     if (_pospunkt > -1)
@@ -223,9 +223,9 @@ void ClassFlowInfluxDBv2::handleMeasurement(string _decsep, string _value)
 }
 
 
-void ClassFlowInfluxDBv2::handleFieldname(string _decsep, string _value)
+void ClassFlowInfluxDBv2::handleFieldname(std::string _decsep, std::string _value)
 {
-    string _digit, _decpos;
+    std::string _digit, _decpos;
     int _pospunkt = _decsep.find_first_of(".");
 
     if (_pospunkt > -1)

@@ -87,9 +87,9 @@ ClassFlowMQTT::ClassFlowMQTT(std::vector<ClassFlow*>* lfc, ClassFlow *_prev)
 }
 
 
-bool ClassFlowMQTT::ReadParameter(FILE* pfile, string& aktparamgraph)
+bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
 
     aktparamgraph = trim(aktparamgraph);
 
@@ -216,7 +216,7 @@ bool ClassFlowMQTT::Start(float AutoInterval)
 }
 
 
-bool ClassFlowMQTT::doFlow(string zwtime)
+bool ClassFlowMQTT::doFlow(std::string zwtime)
 {
     PresetFlowStateHandler();
     bool success;
@@ -228,8 +228,8 @@ bool ClassFlowMQTT::doFlow(string zwtime)
     std::string resultRatePerTimeUnit = ""; // According to selection
     std::string resulttimestamp = "";
     std::string resultchangabs = "";
-    string zw = "";
-    string namenumber = "";
+    std::string zw = "";
+    std::string namenumber = "";
     int qos = 1;
 
     /* Send the the Homeassistant Discovery and the Static Topics in case they where scheduled */
@@ -271,7 +271,7 @@ bool ClassFlowMQTT::doFlow(string zwtime)
                 
                 std::string resultRatePerTimeUnit;
                 if (getTimeUnit() == "h") { // Need conversion to be per hour
-                    resultRatePerTimeUnit = resultRatePerTimeUnit = to_string((*NUMBERS)[i]->FlowRateAct * 60); // per minutes => per hour
+                    resultRatePerTimeUnit = resultRatePerTimeUnit = std::to_string((*NUMBERS)[i]->FlowRateAct * 60); // per minutes => per hour
                 }
                 else { // Keep per minute
                     resultRatePerTimeUnit = resultrate;

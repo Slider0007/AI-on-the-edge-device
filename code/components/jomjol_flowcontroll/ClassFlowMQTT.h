@@ -32,9 +32,9 @@ public:
     virtual ~ClassFlowMQTT();
     bool Start(float AutoInterval);
 
-    bool ReadParameter(FILE* pfile, string& aktparamgraph);
-    bool doFlow(string time);
-    string name(){return "ClassFlowMQTT";};
+    bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
+    bool doFlow(std::string time);
+    std::string name() {return "ClassFlowMQTT";};
 };
 #endif //CLASSFFLOWMQTT_H
 #endif //ENABLE_MQTT

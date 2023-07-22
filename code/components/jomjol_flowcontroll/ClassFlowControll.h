@@ -6,6 +6,7 @@
 #include <string>
 
 #include "ClassFlow.h"
+#include "ClassFlowDefineTypes.h"
 #include "ClassFlowTakeImage.h"
 #include "ClassFlowAlignment.h"
 #include "ClassFlowCNNGeneral.h"
@@ -33,9 +34,13 @@ protected:
 	ClassFlowCNNGeneral* flowanalog;
 	ClassFlowCNNGeneral* flowdigit;
 	ClassFlowPostProcessing* flowpostprocessing;
+	#ifdef ENABLE_MQTT
 	ClassFlowMQTT* flowMQTT;
+	#endif //ENABLE_MQTT
+	#ifdef ENABLE_INFLUXDB
 	ClassFlowInfluxDB* flowInfluxDB;
 	ClassFlowInfluxDBv2* flowInfluxDBv2;
+	#endif //ENABLE_INFLUXDB
 	
 	ClassFlow* CreateClassFlow(std::string _type);
 	void SetInitialParameter(void);	
@@ -55,12 +60,12 @@ public:
 	bool InitFlow(std::string config);
 	void DeinitFlow(void);
 
-	bool ReadParameter(FILE* pfile, string& aktparamgraph);	
-	bool doFlowImageEvaluation(string time);
-	bool doFlowPublishData(string time);
-	bool doFlowTakeImageOnly(string time);
+	bool ReadParameter(FILE* pfile, std::string& aktparamgraph);	
+	bool doFlowImageEvaluation(std::string time);
+	bool doFlowPublishData(std::string time);
+	bool doFlowTakeImageOnly(std::string time);
 	
-	string TranslateAktstatus(std::string _input);
+	std::string TranslateAktstatus(std::string _input);
 	bool getStatusSetupModus(){return SetupModeActive;};
 
 	std::string getNumbersName();
@@ -73,9 +78,9 @@ public:
 	std::string getReadout(bool _rawvalue, bool _noerror, int _number);
 
 	bool UpdatePrevalue(std::string _newvalue, std::string _numbers, bool _extern);
-	string GetPrevalue(std::string _number = "");	
+	std::string GetPrevalue(std::string _number = "");	
 
-	string getJSON();
+	std::string getJSON();
 
 	#ifdef ENABLE_MQTT
 	bool StartMQTTService();
@@ -108,7 +113,7 @@ public:
 
 	int CleanTempFolder();
 
-	string name(){return "ClassFlowControll";};
+	std::string name() {return "ClassFlowControll";};
 };
 
 #endif //CLASSFLOWCONTROLL_H

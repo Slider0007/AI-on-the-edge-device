@@ -12,7 +12,6 @@ extern "C"
 }
 
 #include <string>
-#include <string.h>
 #include "Helper.h"
 #include <fstream>
 #include <algorithm>
@@ -55,7 +54,7 @@ std::string getFwVersion(void) {
 std::string getHTMLversion(void){
     char buf[100]="?\0";
     FILE* pFile;
-    string fn = FormatFileName("/sdcard/html/version.txt");
+    std::string fn = FormatFileName("/sdcard/html/version.txt");
     pFile = fopen(fn.c_str(), "r");
 
     if (pFile == NULL)
@@ -64,7 +63,7 @@ std::string getHTMLversion(void){
     fgets(buf, sizeof(buf), pFile); // Line 1: Version
     fclose(pFile);
 
-    string value = string(buf);
+    std::string value = std::string(buf);
     value.erase(std::remove(value.begin(), value.end(), '\n'), value.end()); // Remove any newlines
 
     return value;
@@ -73,7 +72,7 @@ std::string getHTMLversion(void){
 std::string getHTMLcommit(void){
     char buf[100]="?\0";
     FILE* pFile;
-    string fn = FormatFileName("/sdcard/html/version.txt");
+    std::string fn = FormatFileName("/sdcard/html/version.txt");
     pFile = fopen(fn.c_str(), "r");
 
     if (pFile == NULL)
@@ -83,7 +82,7 @@ std::string getHTMLcommit(void){
     fgets(buf, sizeof(buf), pFile); // Line 2: Commit
     fclose(pFile);
 
-    string value = string(buf);
+    std::string value = std::string(buf);
     value.erase(std::remove(value.begin(), value.end(), '\n'), value.end()); // Remove any newlines
 
     return value;

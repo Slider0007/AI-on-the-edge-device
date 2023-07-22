@@ -4,19 +4,18 @@
 #define CLASSFLOWIMAGE_H
 
 #include "ClassFlow.h"
-
-using namespace std;
+#include "ClassFlowDefineTypes.h"
 
 class ClassFlowImage : public ClassFlow
 {
 protected:
-	string imagesLocation;
+	std::string imagesLocation;
     bool isLogImage;
     unsigned short imagesRetention;
 	const char* logTag;
 
-	string CreateLogFolder(string time);
-	void LogImage(string logPath, string name, float *resultFloat, int *resultInt, string time, CImageBasis *_img);
+	std::string CreateLogFolder(std::string time);
+	void LogImage(std::string logPath, std::string name, float *resultFloat, int *resultInt, std::string time, CImageBasis *_img);
 
 
 public:
