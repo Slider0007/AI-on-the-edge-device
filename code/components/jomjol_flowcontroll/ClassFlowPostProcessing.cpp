@@ -981,7 +981,7 @@ void ClassFlowPostProcessing::doAutoErrorHandling()
     
     if (SaveDebugInfo && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and "rate negative" or "rate too high"
         bool saveData = false;
-        std::string destination = "/sdcard/log/debug/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
+        std::string destination = "/sdcard/log/debug/" + getFlowState()->ClassName + "/" + getDateString() + "/" + getFlowState()->ExecutionTime;
         std::string resultFileName;
         if (!MakeDir(destination)) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Failed to create folder " + destination);

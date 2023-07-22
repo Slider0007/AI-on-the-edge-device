@@ -316,7 +316,7 @@ void ClassFlowAlignment::doAutoErrorHandling()
     // Error handling can be included here. Function is called after round is completed.
     
     if (SaveDebugInfo && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and alignment failed
-        std::string destination = "/sdcard/log/debug/" + getFlowState()->ClassName + "/" + getFlowState()->ExecutionTime;
+        std::string destination = "/sdcard/log/debug/" + getFlowState()->ClassName + "/" + getDateString() + "/" + getFlowState()->ExecutionTime;
         if (!MakeDir(destination)) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Failed to create folder " + destination);
             return;

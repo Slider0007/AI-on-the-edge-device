@@ -472,6 +472,20 @@ string getFileType(string filename)
 }
 
 
+std::string getDateString(void)
+{
+    time_t rawtime;
+    struct tm* timeinfo;
+    char cmpfilename[30];
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(cmpfilename, 30, "%Y%m%d", timeinfo);
+
+    return std::string(cmpfilename);
+}
+
+
 /* recursive mkdir */
 int mkdir_r(const char *dir, const mode_t mode) {
     char tmp[FILE_PATH_MAX];
