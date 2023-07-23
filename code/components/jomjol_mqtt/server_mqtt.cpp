@@ -11,6 +11,7 @@
 #include "server_mqtt.h"
 #include "interface_mqtt.h"
 #include "time_sntp.h"
+#include "Helper.h"
 #include "../../include/defines.h"
 
 

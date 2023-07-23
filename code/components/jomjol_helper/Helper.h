@@ -21,7 +21,7 @@ bool MakeDir(std::string _what);
 bool FileExists(string filename);
 
 
-string RundeOutput(double _in, int _anzNachkomma);
+std::string to_stringWithPrecision(const double _value, int _decPlace);
 
 size_t findDelimiterPos(string input, string delimiter);
 //string trim(string istring);

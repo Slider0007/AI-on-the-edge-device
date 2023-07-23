@@ -93,7 +93,7 @@ string ClassFlowPostProcessing::GetPreValue(std::string _number)
     if (index == -1)
         return std::string("");
 
-    result = RundeOutput(NUMBERS[index]->PreValue, NUMBERS[index]->Nachkomma);
+    result = to_stringWithPrecision(NUMBERS[index]->PreValue, NUMBERS[index]->Nachkomma);
 
     return result;
 }
@@ -223,7 +223,7 @@ bool ClassFlowPostProcessing::LoadPreValue(void)
             {
 
                 NUMBERS[j]->PreValue = stod(std::string(cValue));
-                NUMBERS[j]->ReturnPreValue = RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma + 1);      // To be on the safe side, 1 digit more, as Exgtended Resolution may be on (will only be set during the first run).
+                NUMBERS[j]->ReturnPreValue = to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma + 1);      // To be on the safe side, 1 digit more, as Exgtended Resolution may be on (will only be set during the first run).
 
                 time_t tStart;
                 int yy, month, dd, hh, mm, ss;
@@ -282,7 +282,7 @@ bool ClassFlowPostProcessing::SavePreValue()
     for (int j = 0; j < NUMBERS.size(); ++j)
     {           
         //ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->timeStamp).c_str(), 
-        //                                        (RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
+        //                                        (to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
 
         struct tm* timeinfo = localtime(&NUMBERS[j]->lastvalue);
         strftime(buffer, 80, PREVALUE_TIME_FORMAT_OUTPUT, timeinfo);
@@ -299,7 +299,7 @@ bool ClassFlowPostProcessing::SavePreValue()
             return false;
         }
         err = nvs_set_str(prevalue_nvshandle, ("value" + std::to_string(j)).c_str(), 
-                            (RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
+                            (to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
         if (err != ESP_OK) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_set_str prevalue - error code: " + std::to_string(err));
             return false;
@@ -880,8 +880,8 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                         NUMBERS[j]->ReturnValue = to_string(NUMBERS[j]->PreValue);
                     } 
                     else {
-                        NUMBERS[j]->ErrorMessageText = NUMBERS[j]->ErrorMessageText + "Neg. Rate: Read: " + RundeOutput(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) +
-                                                                                                ", Pre: " + RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma); 
+                        NUMBERS[j]->ErrorMessageText = NUMBERS[j]->ErrorMessageText + "Neg. Rate: Read: " + to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) +
+                                                                                                ", Pre: " + to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma); 
                         NUMBERS[j]->Value = NUMBERS[j]->PreValue;
                         NUMBERS[j]->ReturnValue = "";
                         NUMBERS[j]->lastvalue = imagetime;
@@ -915,9 +915,9 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                 _ratedifference = (NUMBERS[j]->Value - NUMBERS[j]->PreValue);
 
             if (abs(_ratedifference) > abs(NUMBERS[j]->MaxRateValue)) {
-                NUMBERS[j]->ErrorMessageText = NUMBERS[j]->ErrorMessageText + "Rate too high: Read: " + RundeOutput(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) + 
-                                                                                            ", Pre: " + RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma) + 
-                                                                                           ", Rate: " + RundeOutput(_ratedifference, NUMBERS[j]->Nachkomma);
+                NUMBERS[j]->ErrorMessageText = NUMBERS[j]->ErrorMessageText + "Rate too high: Read: " + to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) + 
+                                                                                            ", Pre: " + to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma) + 
+                                                                                           ", Rate: " + to_stringWithPrecision(_ratedifference, NUMBERS[j]->Nachkomma);
                 NUMBERS[j]->Value = NUMBERS[j]->PreValue;
                 NUMBERS[j]->ReturnValue = "";
                 NUMBERS[j]->ReturnRateValue = "";
@@ -936,13 +936,13 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
            ESP_LOGD(TAG, "After MaxRateCheck: Value %f", NUMBERS[j]->Value);
         #endif
         
-        NUMBERS[j]->ReturnChangeAbsolute = RundeOutput(NUMBERS[j]->Value - NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma);
+        NUMBERS[j]->ReturnChangeAbsolute = to_stringWithPrecision(NUMBERS[j]->Value - NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma);
         NUMBERS[j]->PreValue = NUMBERS[j]->Value;
         NUMBERS[j]->PreValueOkay = true;
         NUMBERS[j]->lastvalue = imagetime;
 
-        NUMBERS[j]->ReturnValue = RundeOutput(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma);
-        NUMBERS[j]->ReturnPreValue = RundeOutput(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma);
+        NUMBERS[j]->ReturnValue = to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma);
+        NUMBERS[j]->ReturnPreValue = to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma);
 
         NUMBERS[j]->ErrorMessageText = "no error";
         UpdatePreValueINI = true;

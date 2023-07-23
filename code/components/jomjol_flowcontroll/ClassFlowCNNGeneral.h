@@ -6,18 +6,8 @@
 #include"ClassFlowDefineTypes.h"
 #include "ClassFlowAlignment.h"
 #include "CTfLiteClass.h"
+#include "ClassFlowImage.h"
 
-
-enum t_CNNType {
-    AutoDetect,
-    Analogue,
-    Analogue100,
-    Digital,
-    DigitalHyprid10,
-    DoubleHyprid10,
-    Digital100,
-    None
- };
 
 class ClassFlowCNNGeneral : public ClassFlowImage
 {
@@ -54,7 +44,7 @@ public:
     string getHTMLSingleStep(string host);
     std::string getReadout(int _seqNo = 0, bool _extendedResolution = false, int _valuePreviousNumber = -1, int _resultPreviousNumber = -1, int analogDigitalTransitionStart = 92);
 
-    string getReadoutRawString(int _analog);  
+    std::string getReadoutRawString(int _seqNo);  
 
     void DrawROI(CImageBasis *_zw); 
 

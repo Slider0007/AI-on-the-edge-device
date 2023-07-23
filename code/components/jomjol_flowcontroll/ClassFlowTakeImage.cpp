@@ -181,7 +181,7 @@ bool ClassFlowTakeImage::doFlow(string zwtime)
         LogFile.WriteHeapInfo("ClassFlowTakeImage::doFlow - After takePictureWithFlash");
     #endif
 
-    LogImage(logPath, "raw", NULL, NULL, zwtime, rawImage);
+    LogImage(logPath, "raw", None, -1, zwtime, rawImage);
 
     RemoveOldLogs();
 

@@ -558,12 +558,10 @@ esp_err_t handler_value(httpd_req_t *req)
                     }
                     else {
                         if (htmlinfo[i]->val >= 10.0) {
-                            zw = "0.00";
+                            zw = "0.0";
                         }
                         else {
-                            std::stringstream stream;
-                            stream << std::fixed << std::setprecision(2) << htmlinfo[i]->val;
-                            zw = stream.str();
+                            zw = to_stringWithPrecision(htmlinfo[i]->val, 1);
                         }
                     }
 
@@ -600,12 +598,10 @@ esp_err_t handler_value(httpd_req_t *req)
                     }
 
                     if (htmlinfo[i]->val >= 10.0) {
-                            zw = "0.00";
+                            zw = "0.0";
                     }
                     else {
-                        std::stringstream stream;
-                        stream << std::fixed << std::setprecision(2) << htmlinfo[i]->val;
-                        zw = stream.str();
+                        zw = to_stringWithPrecision(htmlinfo[i]->val, 1);
                     }
 
                     if (htmlinfo[i]->val > -1) // Only show image if result is set, otherwise text "No Image"

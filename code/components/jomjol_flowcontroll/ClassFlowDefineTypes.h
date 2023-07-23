@@ -3,7 +3,23 @@
 #ifndef CLASSFLOWDEFINETYPES_H
 #define CLASSFLOWDEFINETYPES_H
 
-#include "ClassFlowImage.h"
+#include <vector>
+#include "CImageBasis.h"
+
+using namespace std;
+
+
+enum t_CNNType {
+    AutoDetect,
+    Analogue,
+    Analogue100,
+    Digital,
+    DigitalHyprid10,
+    DoubleHyprid10,
+    Digital100,
+    None
+ };
+
 
 struct roi {
     int posx, posy, deltax, deltay;

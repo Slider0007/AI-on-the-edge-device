@@ -4,6 +4,7 @@
 #define CLASSFLOWIMAGE_H
 
 #include "ClassFlow.h"
+#include "ClassFlowDefineTypes.h"
 
 using namespace std;
 
@@ -16,7 +17,7 @@ protected:
 	const char* logTag;
 
 	string CreateLogFolder(string time);
-	void LogImage(string logPath, string name, float *resultFloat, int *resultInt, string time, CImageBasis *_img);
+	void LogImage(std::string _logPath, std::string _numbername, t_CNNType _type, int _value, std::string _time, CImageBasis *_img);
 
 
 public:
