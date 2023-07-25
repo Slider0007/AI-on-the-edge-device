@@ -78,27 +78,14 @@ void ClassFlowImage::LogImage(std::string _logPath, std::string _numbername, t_C
 	
 	char buf[10];
 
-    if (_type == None) { // log with no label
+    if (_type == None) { // log with no label -> raw image
         buf[0] = '\0';
     }
     else if (_type == Digital) { // dig-class10 (0-9 + NaN)
         sprintf(buf, "%d_", _value);
     }
-    else if (_type == DoubleHyprid10) { // dig-cont
-        if (_value < 0)
-            sprintf(buf, "%.1f_", _value/10.0); // Save anyway
-        else if (_value >= 100)
-            sprintf(buf, "0.0_");
-        else
-            sprintf(buf, "%.1f_", _value/10.0);
-    }
-    else {
-        if (_value < 0)
-            sprintf(buf, "N.N_");
-        else if (_value >= 100)
-            sprintf(buf, "0.0_");
-        else
-            sprintf(buf, "%.1f_", _value/10.0);
+    else { // ana-class100, dig-class100, dig-cont
+        sprintf(buf, "%.1f_", _value/10.0);
     }
 
 	std::string nm = _logPath + "/" + buf + _numbername + "_" + _time + ".jpg";

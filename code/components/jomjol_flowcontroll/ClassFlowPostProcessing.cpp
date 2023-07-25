@@ -244,10 +244,13 @@ bool ClassFlowPostProcessing::LoadPreValue(void)
                 localtime(&tStart);
                 double difference = difftime(tStart, NUMBERS[j]->lastvalue);
                 difference /= 60;
-                if (difference > PreValueAgeStartup)
+                if (difference > PreValueAgeStartup) {
                     NUMBERS[j]->PreValueOkay = false;
-                else
+                    NUMBERS[j]->ReturnPreValue = "";
+                }
+                else {
                     NUMBERS[j]->PreValueOkay = true;
+                }
             }
         }
     }
@@ -746,10 +749,8 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
         NUMBERS[j]->Value = -1.0;
 
         /* Calculate time difference BEFORE 'NUMBERS[j]->lastvalue' gets overwritten */
-        double difference = difftime(imagetime, NUMBERS[j]->lastvalue);      // in seconds
-        /* TODO:
-         * We could call `NUMBERS[j]->lastvalue = imagetime;` here and remove all other such calls further down.
-         * But we should check nothing breaks! */
+        double difference = difftime(imagetime, NUMBERS[j]->lastvalue); // Calc difference between this eval und last eval in seconds
+        NUMBERS[j]->lastvalue = imagetime; // update timestamp
 
         /* Set decimal shift and number of decimal places */
         UpdateNachkommaDecimalShift();
@@ -778,10 +779,10 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
         if (NUMBERS[j]->digit_roi) {
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Get digit numbers");
             if (NUMBERS[j]->analog_roi) // If analog numbers available
-                NUMBERS[j]->ReturnRawValue = flowDigit->getReadout(j, false, NUMBERS[j]->analog_roi->ROI[0]->result_klasse, resultPreviousNumberAnalog, 
+                NUMBERS[j]->ReturnRawValue = flowDigit->getReadout(j, false, NUMBERS[j]->analog_roi->ROI[0]->CNNResult, resultPreviousNumberAnalog, 
                                                                     NUMBERS[j]->AnalogDigitalTransitionStart) + NUMBERS[j]->ReturnRawValue;
             else
-                NUMBERS[j]->ReturnRawValue = flowDigit->getReadout(j, NUMBERS[j]->isExtendedResolution); // Extended resolution only if no analog
+                NUMBERS[j]->ReturnRawValue = flowDigit->getReadout(j, NUMBERS[j]->isExtendedResolution); // Extended resolution for digits only if no analog previous number
         }
 
         #ifdef SERIAL_DEBUG
@@ -806,18 +807,20 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
 
         NUMBERS[j]->ReturnValue = NUMBERS[j]->ReturnRawValue;
 
-        /* Replace N position with last valid number if available */
+        /* Substitute N position with last valid number if available */
         if (findDelimiterPos(NUMBERS[j]->ReturnValue, "N") != std::string::npos) {
-            if (PreValueUse && NUMBERS[j]->PreValueOkay) {
+            if (PreValueUse && NUMBERS[j]->PreValueOkay) { // PreValue can be used to replace the N
                 NUMBERS[j]->ReturnValue = ErsetzteN(NUMBERS[j]->ReturnValue, NUMBERS[j]->PreValue); 
             }
-            else {
+            else { // Prevalue not valid to replace any N
+                if (!PreValueUse)
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Previous Value\' to be able to substitude N");
+
+                NUMBERS[j]->ErrorMessageText = "No data to substitute N"; 
+                NUMBERS[j]->ReturnValue = "";   // Reset return value
                 string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
                                                 ", Status: " + NUMBERS[j]->ErrorMessageText;             
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, _zw);
-
-               /* TODO to be discussed, see https://github.com/jomjol/AI-on-the-edge-device/issues/1617 */
-                NUMBERS[j]->lastvalue = imagetime;
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, _zw);
 
                 WriteDataLog(j);
                 continue; // there is no number because there is still an N.
@@ -880,11 +883,10 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                         NUMBERS[j]->ReturnValue = to_string(NUMBERS[j]->PreValue);
                     } 
                     else {
-                        NUMBERS[j]->ErrorMessageText = NUMBERS[j]->ErrorMessageText + "Neg. Rate: Read: " + to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) +
-                                                                                                ", Pre: " + to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma); 
+                        NUMBERS[j]->ErrorMessageText = "Neg. Rate: Read: " + to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) +
+                                                            ", Pre: " + to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma); 
                         NUMBERS[j]->Value = NUMBERS[j]->PreValue;
                         NUMBERS[j]->ReturnValue = "";
-                        NUMBERS[j]->lastvalue = imagetime;
 
                         string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
                                                         ", Status: " + NUMBERS[j]->ErrorMessageText;
@@ -915,13 +917,12 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
                 _ratedifference = (NUMBERS[j]->Value - NUMBERS[j]->PreValue);
 
             if (abs(_ratedifference) > abs(NUMBERS[j]->MaxRateValue)) {
-                NUMBERS[j]->ErrorMessageText = NUMBERS[j]->ErrorMessageText + "Rate too high: Read: " + to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) + 
-                                                                                            ", Pre: " + to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma) + 
-                                                                                           ", Rate: " + to_stringWithPrecision(_ratedifference, NUMBERS[j]->Nachkomma);
+                NUMBERS[j]->ErrorMessageText = "Rate too high: Read: " + to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) + 
+                                                    ", Pre: " + to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma) + 
+                                                    ", Rate: " + to_stringWithPrecision(_ratedifference, NUMBERS[j]->Nachkomma);
                 NUMBERS[j]->Value = NUMBERS[j]->PreValue;
                 NUMBERS[j]->ReturnValue = "";
                 NUMBERS[j]->ReturnRateValue = "";
-                NUMBERS[j]->lastvalue = imagetime;
 
                 string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
                                                 ", Status: " + NUMBERS[j]->ErrorMessageText;
@@ -939,7 +940,6 @@ bool ClassFlowPostProcessing::doFlow(string zwtime)
         NUMBERS[j]->ReturnChangeAbsolute = to_stringWithPrecision(NUMBERS[j]->Value - NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma);
         NUMBERS[j]->PreValue = NUMBERS[j]->Value;
         NUMBERS[j]->PreValueOkay = true;
-        NUMBERS[j]->lastvalue = imagetime;
 
         NUMBERS[j]->ReturnValue = to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma);
         NUMBERS[j]->ReturnPreValue = to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma);

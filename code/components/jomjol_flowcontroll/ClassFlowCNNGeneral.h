@@ -29,7 +29,7 @@ protected:
     int EvalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool isPreviousAnalog = false, int analogDigitalTransitionStart=92);
     int EvalAnalogToDigitTransition(int _value, int _valuePreviousNumber,  int _resultPreviousNumber, int analogDigitalTransitionStart);
 
-    bool doNeuralNetwork(string time); 
+    bool doNeuralNetwork(std::string time); 
     bool doAlignAndCut(string time);
 
     bool getNetworkParameter();
