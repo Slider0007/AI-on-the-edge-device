@@ -19,7 +19,7 @@ bool MakeDir(std::string _what);
 bool FileExists(std::string filename);
 
 
-std::string RundeOutput(double _in, int _anzNachkomma);
+std::string to_stringWithPrecision(const double _value, int _decPlace);
 
 size_t findDelimiterPos(std::string input, std::string delimiter);
 std::string trim(std::string istring, std::string adddelimiter = "");

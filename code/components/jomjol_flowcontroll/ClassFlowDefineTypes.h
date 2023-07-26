@@ -6,6 +6,7 @@
 #include <vector>
 #include "CImageBasis.h"
 
+
 enum t_CNNType {
     AutoDetect,
     Analogue,
@@ -19,10 +20,9 @@ enum t_CNNType {
 
 
 struct roi {
-    int posx, posy, deltax, deltay;
-    float result_float = -1.0;
-    int result_klasse = -1;
-    bool isReject, CCW;
+    int posx, posy, deltax, deltay; 
+    int CNNResult = -10;     // normalized to 0-99 (exception for class11: 0-10: 0-9+NaN), default: negative number equal to "-1.0"
+    bool isRejected, CCW;
     std::string name;
     CImageBasis *image, *image_org;
 };

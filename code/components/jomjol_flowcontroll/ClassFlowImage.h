@@ -15,7 +15,7 @@ protected:
 	const char* logTag;
 
 	std::string CreateLogFolder(std::string time);
-	void LogImage(std::string logPath, std::string name, float *resultFloat, int *resultInt, std::string time, CImageBasis *_img);
+	void LogImage(std::string _logPath, std::string _numbername, t_CNNType _type, int _value, std::string _time, CImageBasis *_img);
 
 
 public:

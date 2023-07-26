@@ -799,28 +799,16 @@ std::string SDCardParseManufacturerIDs(int id)
 }
 
 
-std::string RundeOutput(double _in, int _anzNachkomma)
+std::string to_stringWithPrecision(const double _value, int _decPlace = 6)
 {
-    std::stringstream stream;
-    int _zw = _in;    
-//    ESP_LOGD(TAG, "AnzNachkomma: %d", _anzNachkomma);
-
-    if (_anzNachkomma < 0) {
-        _anzNachkomma = 0;
-    }
-
-    if (_anzNachkomma > 0)
-    {
-        stream << std::fixed << std::setprecision(_anzNachkomma) << _in;
-        return stream.str();          
-    }
-    else
-    {
-        stream << _zw;
-    }
-
-
-    return stream.str();  
+	std::ostringstream out;
+	
+	if (_decPlace < 0)
+		_decPlace = 0;
+	
+    out.precision(_decPlace);
+    out << std::fixed << _value;
+    return out.str();
 }
 
 
@@ -846,7 +834,8 @@ void setSystemStatusFlag(SystemStatusFlag_t flag)
 }
 
 
-void clearSystemStatusFlag(SystemStatusFlag_t flag) {
+void clearSystemStatusFlag(SystemStatusFlag_t flag)
+{
 	systemStatus = systemStatus | ~flag; // clear bit
 
 	char buf[20];
@@ -855,7 +844,8 @@ void clearSystemStatusFlag(SystemStatusFlag_t flag) {
 }
 
 
-int getSystemStatus(void) {
+int getSystemStatus(void)
+{
     return systemStatus;
 }
 

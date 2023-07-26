@@ -16,7 +16,7 @@ void test_getReadoutRawString() {
     roi* anaROI = new roi();
     string name = "ana_1";
     anaROI->name = name;
-    anaROI->result_float = 5.5;
+    anaROI->CNNResult = 55; // 5.5
     gen_analog->ROI.push_back(anaROI);
 
     result = _undertestPost->flowAnalog->getReadoutRawString(0);

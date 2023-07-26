@@ -65,11 +65,10 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
             string name = "digit_" + std::to_string(i);
             digitROI->name = name;
             if (digType != Digital)
-                digitROI->result_klasse = digits[i]*10.01;
+                digitROI->CNNResult = digits[i] * 10.0 + 0.1; // + 0.1 due to float to int rounding, will be truncated anyway
             else 
-                digitROI->result_klasse = digits[i];
+                digitROI->CNNResult = digits[i];
             
-            digitROI->result_float = digits[i];
             gen_digit->ROI.push_back(digitROI);
         }
     }
@@ -83,8 +82,7 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
             roi* anaROI = new roi();
             string name = "ana_1" + std::to_string(i);
             anaROI->name = name;
-            anaROI->result_klasse = analog[i]*10.01;
-            anaROI->result_float = analog[i];
+            anaROI->CNNResult = analog[i] * 10.0 + 0.1; // + 0.1 due to float to int rounding, will be truncated anyway
             gen_analog->ROI.push_back(anaROI);
         }
     } else {

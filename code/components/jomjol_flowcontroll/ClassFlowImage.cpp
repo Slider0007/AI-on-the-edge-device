@@ -65,38 +65,31 @@ std::string ClassFlowImage::CreateLogFolder(std::string time)
 }
 
 
-void ClassFlowImage::LogImage(std::string logPath, std::string name, float *resultFloat, int *resultInt, std::string time, CImageBasis *_img) 
+void ClassFlowImage::LogImage(std::string _logPath, std::string _numbername, t_CNNType _type, int _value, std::string _time, CImageBasis *_img) 
 {
 	if (!isLogImage)
 		return;
 
-    if (logPath.empty()) {
+    if (_logPath.empty()) {
         LogFile.WriteToFile(ESP_LOG_ERROR, logTag, "LogImage: logPath empty");
         return;
     }
 	
 	char buf[10];
 
-	if (resultFloat != NULL) {
-        if (*resultFloat < 0)
-            sprintf(buf, "N.N_");
-        else {
-            sprintf(buf, "%.1f_", *resultFloat);
-            if (strcmp(buf, "10.0_") == 0)
-                sprintf(buf, "0.0_");
-        }
-            
-	} 
-    else if (resultInt != NULL) {
-		sprintf(buf, "%d_", *resultInt);
-	} 
-    else {
-		buf[0] = '\0';
-	}
+    if (_type == None) { // log with no label -> raw image
+        buf[0] = '\0';
+    }
+    else if (_type == Digital) { // dig-class10 (0-9 + NaN)
+        sprintf(buf, "%d_", _value);
+    }
+    else { // ana-class100, dig-class100, dig-cont
+        sprintf(buf, "%.1f_", _value/10.0);
+    }
 
-	std::string nm = logPath + "/" + buf + name + "_" + time + ".jpg";
+	std::string nm = _logPath + "/" + buf + _numbername + "_" + _time + ".jpg";
 	nm = FormatFileName(nm);
-	std::string output = "/sdcard/img_tmp/" + name + ".jpg";
+	std::string output = "/sdcard/img_tmp/" + _numbername + ".jpg";
 	output = FormatFileName(output);
 	ESP_LOGD(logTag, "save to file: %s", nm.c_str());
     if (_img == NULL) {

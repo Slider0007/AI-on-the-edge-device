@@ -259,6 +259,8 @@
 							out = "Invalid - Negative rate";
 						else if (_zer[1].substring(0,4) == "Rate")
 							out = "Invalid - Rate too high";
+						else if (_zer[1].substring(0,7) == "No data")
+							out = "Invalid - No data to replace N";
 						else 
 							out = "Valid";
 					}

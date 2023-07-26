@@ -7,6 +7,7 @@
 #include "ClassFlowImage.h"
 #include "ClassFlowAlignment.h"
 #include "CTfLiteClass.h"
+#include "ClassFlowImage.h"
 
 
 class ClassFlowCNNGeneral : public ClassFlowImage
