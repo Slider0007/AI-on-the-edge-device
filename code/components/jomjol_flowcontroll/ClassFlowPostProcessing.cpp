@@ -818,6 +818,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                 NUMBERS[j]->ErrorMessageText = "No data to substitute N"; 
                 NUMBERS[j]->ReturnValue = "";   // Reset return value
+
                 std::string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
                                                 ", Status: " + NUMBERS[j]->ErrorMessageText;             
                 LogFile.WriteToFile(ESP_LOG_WARN, TAG, _zw);

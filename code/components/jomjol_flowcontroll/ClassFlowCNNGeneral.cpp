@@ -761,8 +761,7 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
                 {
                     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Type: Digital (dig-class11)");
 
-                    GENERAL[n]->ROI[roi]->CNNResult = tflite->GetClassFromImageBasis(GENERAL[n]->ROI[roi]->image); // 0-9 + 10 => NaN
-                    
+                    GENERAL[n]->ROI[roi]->CNNResult = tflite->GetClassFromImageBasis(GENERAL[n]->ROI[roi]->image); // 0-9 + 10 => NaN             
                     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Result: " + std::to_string(GENERAL[n]->ROI[roi]->CNNResult));
 
                     if (isLogImage) {

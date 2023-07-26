@@ -6,6 +6,7 @@
 #include "ClassFlow.h"
 #include "ClassFlowDefineTypes.h"
 
+
 class ClassFlowImage : public ClassFlow
 {
 protected:

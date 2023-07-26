@@ -27,7 +27,8 @@ protected:
     bool SaveAllFiles;   
 
     int EvalAnalogNumber(int _value, int _resultPreviousNumber);
-    int EvalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool isPreviousAnalog = false, int analogDigitalTransitionStart=92);
+    int EvalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, 
+                            bool isPreviousAnalog = false, int analogDigitalTransitionStart=92);
     int EvalAnalogToDigitTransition(int _value, int _valuePreviousNumber,  int _resultPreviousNumber, int analogDigitalTransitionStart);
 
     bool doNeuralNetwork(std::string time); 
@@ -44,7 +45,7 @@ public:
 
     std::string getHTMLSingleStep(std::string host);
     std::string getReadout(int _seqNo = 0, bool _extendedResolution = false, int _valuePreviousNumber = -1, 
-                           int _resultPreviousNumber = -1, int analogDigitalTransitionStart = 92);
+                                int _resultPreviousNumber = -1, int analogDigitalTransitionStart = 92);
 
     std::string getReadoutRawString(int _seqNo);  
 
