@@ -1,19 +1,19 @@
 #include "CTfLiteClass.h"
+
 #include "ClassLogFile.h"
 #include "Helper.h"
 #include "psram.h"
-#include "esp_log.h"
 #include "../../include/defines.h"
-
-
-// #define DEBUG_DETAIL_ON
 
 
 static const char *TAG = "TFLITE";
 
+// #define DEBUG_DETAIL_ON
+
+
 float CTfLiteClass::GetOutputValue(int nr)
 {
-    TfLiteTensor* output2 = this->interpreter->output(0);
+    TfLiteTensor* output2 = interpreter->output(0);
 
     if (output2 == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "GetOutputValue failed");
@@ -84,7 +84,7 @@ int CTfLiteClass::GetOutClassification(int _von, int _bis)
 
 bool CTfLiteClass::GetInputDimension(bool silent = false)
 {
-  TfLiteTensor* input2 = this->interpreter->input(0);
+  TfLiteTensor* input2 = interpreter->input(0);
 
     if (input2 == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "GetInputDimension failed");
@@ -123,7 +123,7 @@ int CTfLiteClass::ReadInputDimenstion(int _dim)
 
 int CTfLiteClass::GetAnzOutPut(bool silent)
 {
-  TfLiteTensor* output2 = this->interpreter->output(0);
+  TfLiteTensor* output2 = interpreter->output(0);
 
     if (output2 == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "GetAnzOutPut failed");
@@ -205,28 +205,43 @@ bool CTfLiteClass::LoadInputImageBasis(CImageBasis *rs)
 }
 
 
+void CTfLiteClass::LoadOpResolver(void)
+{
+    // Add only needed OP resolver to save memory (flash memory + RAM)
+    // NOTE: Whenever used model gets extended by new ops, they need to be added here
+    microOpResolver.AddConv2D();
+    microOpResolver.AddMaxPool2D();
+    microOpResolver.AddMul();
+    microOpResolver.AddAdd();
+    microOpResolver.AddLeakyRelu();
+    microOpResolver.AddQuantize();
+    microOpResolver.AddDequantize();
+    microOpResolver.AddReshape();
+    microOpResolver.AddFullyConnected();
+    microOpResolver.AddSoftmax();
+}
+
+
 bool CTfLiteClass::MakeAllocate()
 {
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Allocating tensors");
-    static tflite::AllOpsResolver resolver;
+    tensor_arena = (uint8_t*)malloc_psram_heap(std::string(TAG) + "->tensor_arena", kTensorArenaSize, MALLOC_CAP_SPIRAM);
 
-    this->tensor_arena = (uint8_t*)malloc_psram_heap(std::string(TAG) + "->tensor_arena", kTensorArenaSize, MALLOC_CAP_SPIRAM);
-
-    if (this->tensor_arena == NULL) {
+    if (tensor_arena == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Tensor arena: malloc failed");
         LogFile.WriteHeapInfo("MakeAllocate-Tensor arena: malloc failed");
         return false;
     }
 
-    this->interpreter = new tflite::MicroInterpreter(this->model, resolver, this->tensor_arena, this->kTensorArenaSize);
+    interpreter = new tflite::MicroInterpreter(model, microOpResolver, tensor_arena, kTensorArenaSize);
 
-    if (this->interpreter == NULL) {
+    if (interpreter == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "new tflite::MicroInterpreter failed");
         LogFile.WriteHeapInfo("MakeAllocate-new tflite::MicroInterpreter failed");
         return false;
     }
 
-    TfLiteStatus allocate_status = this->interpreter->AllocateTensors();
+    TfLiteStatus allocate_status = interpreter->AllocateTensors();
     if (allocate_status != kTfLiteOk) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Allocate tensors failed");
         return false;
@@ -240,7 +255,7 @@ bool CTfLiteClass::MakeAllocate()
 void CTfLiteClass::GetInputTensorSize()
 {
 #ifdef DEBUG_DETAIL_ON    
-    float *zw = this->input;
+    float *zw = input;
     int test = sizeof(zw);
     ESP_LOGD(TAG, "Input Tensor Dimension: %d", test);
 #endif
@@ -302,52 +317,53 @@ bool CTfLiteClass::LoadModel(std::string _fn)
         return false;
     }
 
-    /*if (model->version() != TFLITE_SCHEMA_VERSION) {
+    if (model->version() != TFLITE_SCHEMA_VERSION) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadModel: Model provided is schema version " + std::to_string(model->version()) +
                                                 " not euqal to supported version " + std::to_string(TFLITE_SCHEMA_VERSION));
         return false;
-    }*/
+    }
+
+    LoadOpResolver(); // Preload operation resolver for tensor interpreter execution (make sure that this only gets called once)
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TFLITE model successfully loaded");
     return true;
 }
 
 
-
 CTfLiteClass::CTfLiteClass()
 {
-    this->model = nullptr;
-    this->modelfile = NULL;
-    this->interpreter = nullptr;
-    this->input = nullptr;
-    this->output = nullptr;  
-    this->kTensorArenaSize = 800 * 1024;   /// according to testfile: 108000 - so far 600;; 2021-09-11: 200 * 1024
+    model = nullptr;
+    modelfile = NULL;
+    interpreter = nullptr;
+    input = nullptr;
+    output = nullptr;  
+    kTensorArenaSize = 800 * 1024; // according to testfile: 108000 - so far 600;; 2021-09-11: 200 * 1024
 }
 
 
 void CTfLiteClass::CTfLiteClassDeleteInterpreter()
 {
-    if (this->tensor_arena != nullptr) {  
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TFLITE arena - Used bytes: " + std::to_string(this->interpreter->arena_used_bytes())); 
-        free_psram_heap(std::string(TAG) + "->tensor_arena", this->tensor_arena);
-        this->tensor_arena = nullptr;
+    if (tensor_arena != nullptr) {  
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TFLITE arena - Used bytes: " + std::to_string(interpreter->arena_used_bytes())); 
+        free_psram_heap(std::string(TAG) + "->tensor_arena", tensor_arena);
+        tensor_arena = nullptr;
     }
 
-    if (this->interpreter != nullptr) {
-        delete this->interpreter;
-        this->interpreter = nullptr;
+    if (interpreter != nullptr) {
+        delete interpreter;
+        interpreter = nullptr;
     }
 }
 
 
 CTfLiteClass::~CTfLiteClass()
 {
-    if (this->tensor_arena != nullptr) {  
-        free_psram_heap(std::string(TAG) + "->tensor_arena", this->tensor_arena);
+    if (tensor_arena != nullptr) {  
+        free_psram_heap(std::string(TAG) + "->tensor_arena", tensor_arena);
     }
 
-    if (this->interpreter != nullptr) {
-        delete this->interpreter;
+    if (interpreter != nullptr) {
+        delete interpreter;
     }
     
     free_psram_heap(std::string(TAG) + "->modelfile", modelfile);

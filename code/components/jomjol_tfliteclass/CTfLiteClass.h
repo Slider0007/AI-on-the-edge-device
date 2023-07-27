@@ -3,25 +3,20 @@
 #ifndef CTFLITECLASS_H
 #define CTFLITECLASS_H
 
-#include "tensorflow/lite/micro/all_ops_resolver.h"
-#include "tensorflow/lite/micro/tflite_bridge/micro_error_reporter.h"
+#include <tensorflow/lite/micro/micro_mutable_op_resolver.h>
+//#include "tensorflow/lite/micro/tflite_bridge/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/schema/schema_generated.h"
-#include "tensorflow/lite/micro/kernels/micro_ops.h"
-#include "esp_err.h"
-#include "esp_log.h"
 
 #include "CImageBasis.h"
-
 
 class CTfLiteClass
 {
     protected:
+        tflite::MicroMutableOpResolver<10> microOpResolver;
         const tflite::Model* model;
         tflite::MicroInterpreter* interpreter;
-        TfLiteTensor* output = nullptr;     
-        static tflite::AllOpsResolver resolver;
-
+        TfLiteTensor* output = nullptr;            
         int kTensorArenaSize;
         uint8_t *tensor_arena;
         unsigned char *modelfile = NULL;
@@ -30,8 +25,8 @@ class CTfLiteClass
         int input_i;
         int im_height, im_width, im_channel;
 
-        long GetFileSize(std::string filename);
         bool ReadFileToModel(std::string _fn);
+        void LoadOpResolver(void);
 
     public:
         CTfLiteClass();
