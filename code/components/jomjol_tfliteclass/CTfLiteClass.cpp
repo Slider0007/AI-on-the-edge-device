@@ -5,7 +5,6 @@
 #include "esp_log.h"
 #include "../../include/defines.h"
 
-#include <sys/stat.h>
 
 // #define DEBUG_DETAIL_ON
 
@@ -248,14 +247,6 @@ void CTfLiteClass::GetInputTensorSize()
 }
 
 
-long CTfLiteClass::GetFileSize(std::string filename)
-{
-    struct stat stat_buf;
-    long rc = stat(filename.c_str(), &stat_buf);
-    return rc == 0 ? stat_buf.st_size : -1;
-}
-
-
 bool CTfLiteClass::ReadFileToModel(std::string _fn)
 {
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Read TFLITE model file: " + _fn);
@@ -264,7 +255,7 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
             LogFile.WriteHeapInfo("ReadFileToModel: start");
     #endif
 
-    long size = GetFileSize(_fn);
+    long size = getFileSize(_fn);
     if (size <= 0) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File not existing or zero size: " + _fn);
         return false;

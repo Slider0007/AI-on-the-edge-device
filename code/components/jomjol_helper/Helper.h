@@ -28,6 +28,7 @@ bool ctype_space(const char c, std::string adddelimiter);
 std::string getFileType(std::string filename);
 std::string getFileFullFileName(std::string filename);
 std::string getDirectory(std::string filename);
+long getFileSize(std::string filename);
 
 
 int mkdir_r(const char *dir, const mode_t mode);

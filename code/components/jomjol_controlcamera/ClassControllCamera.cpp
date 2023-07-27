@@ -21,7 +21,6 @@
 #include <esp_system.h>
 #include <nvs_flash.h>
 #include <sys/param.h>
-#include <sys/stat.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -809,7 +808,7 @@ bool CCamera::loadNextDemoImage(camera_fb_t *fb) {
         return false;
     }
 
-    fileSize = GetFileSize(filename);
+    fileSize = getFileSize(filename);
     if (fileSize > DEMO_IMAGE_SIZE) {
         char buf[100];
         snprintf(buf, sizeof(buf), "Demo Image (%d bytes) is larger than provided buffer (%d bytes)",
@@ -827,14 +826,6 @@ bool CCamera::loadNextDemoImage(camera_fb_t *fb) {
     // ToDo do we also need to set height, width, format and timestamp?
 
     return true;
-}
-
-
-long CCamera::GetFileSize(std::string filename)
-{
-    struct stat stat_buf;
-    long rc = stat(filename.c_str(), &stat_buf);
-    return rc == 0 ? stat_buf.st_size : -1;
 }
 
 

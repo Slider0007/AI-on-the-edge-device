@@ -470,6 +470,15 @@ std::string getFileType(std::string filename)
 }
 
 
+long getFileSize(std::string filename)
+{
+    struct stat stat_buf;
+    long rc = stat(filename.c_str(), &stat_buf);
+    return rc == 0 ? stat_buf.st_size : -1;
+}
+
+
+
 /* recursive mkdir */
 int mkdir_r(const char *dir, const mode_t mode) {
     char tmp[FILE_PATH_MAX];
