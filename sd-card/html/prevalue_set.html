@@ -141,8 +141,8 @@
 <script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>  
 
 <script type="text/javascript">
- 	var domainname = getDomainname(); 
-  var	NUMBERS;
+    var domainname = getDomainname(); 
+    var	NUMBERS;
 
 function setprevalue() {
 	var inputVal = document.getElementById("myInput").value;
@@ -151,68 +151,73 @@ function setprevalue() {
 	inputVal = inputVal.replace(",", ".");
   	var xhttp = new XMLHttpRequest();
     try {
-          url = domainname + "/setPreValue?value=" + inputVal + "&numbers=" + _number;     
-          xhttp.open("GET", url, false);
-          xhttp.send();
-          response = xhttp.responseText;
-          document.getElementById("result").innerHTML=response;
-          firework.launch('New \"previous value\" set', 'success', 5000);
-     }
+        url = domainname + "/setPreValue?value=" + inputVal + "&numbers=" + _number;     
+        xhttp.open("GET", url, false);
+        xhttp.send();
+        response = xhttp.responseText;
+        document.getElementById("result").innerHTML=response;
+        firework.launch('New \"previous value\" set', 'success', 5000);
+    }
     catch (error)
     {
       firework.launch('Failed to get data from device!', 'danger', 30000);
     }
 }
 
+
 function loadPrevalue(_domainname) {
-  // Get current Pre Value
-  var sel = document.getElementById("Numbers_value1");
-  var _number = sel.options[sel.selectedIndex].text;
+    // Get current Pre Value
+    var sel = document.getElementById("Numbers_value1");
+    var _number = sel.options[sel.selectedIndex].text;
 
-  var xhttp = new XMLHttpRequest();
-  try {
-      url = _domainname + '/setPreValue?numbers=' + _number;
-      xhttp.open("GET", url, false);
-      xhttp.send();
-      response = xhttp.responseText;
-      document.getElementById("prevalue").innerHTML=response;
-  }
-  catch (error)
-  {
-    firework.launch('Failed to get data from device!', 'danger', 30000);
-  }
+    var xhttp = new XMLHttpRequest();
+    try {
+        url = _domainname + '/setPreValue?numbers=' + _number;
+        xhttp.open("GET", url, false);
+        xhttp.send();
+        response = xhttp.responseText;
+        document.getElementById("prevalue").innerHTML=response;
+    }
+    catch (error)
+    {
+        firework.launch('Failed to get data from device!', 'danger', 30000);
+    }
 
-  // Get current RAW Value
-  var sel = document.getElementById("Numbers_value1");
-  var _number = sel.options[sel.selectedIndex].text;
+    // Get current RAW Value
+    var sel = document.getElementById("Numbers_value1");
+    var _number = sel.options[sel.selectedIndex].text;
 
-  var xhttp = new XMLHttpRequest();
-  try {
-    url = _domainname + '/value?all=true&type=raw';
-    xhttp.open("GET", url, false);
-    xhttp.send();
-    response = xhttp.responseText;
+    var xhttp = new XMLHttpRequest();
+    try {
+        url = _domainname + '/value?all=true&type=raw';
+        xhttp.open("GET", url, false);
+        xhttp.send();
+        response = xhttp.responseText;
 
-    lines = response.split(/\r?\n/);
+        lines = response.split(/\r?\n/);
 
-    lines.forEach(function(line) {
-      arr = line.split("\t");
-      if (_number == arr[0]) {
-        document.getElementById("myInput").value = Number(arr[1]);
-        return;
-      }
-    });
-  }
-  catch (error)
-  {
-    firework.launch('Failed to get data from device!', 'danger', 30000);
-  }
+        lines.forEach(function(line) {
+            arr = line.split("\t");
+            if (_number == arr[0]) {
+                document.getElementById("myInput").value = Number(arr[1]);
+                return;
+            }
+        });
+    }
+    catch (error)
+    {
+        firework.launch('Failed to get data from device!', 'danger', 30000);
+    }
+
+    // Reset result
+    document.getElementById("result").innerHTML="";
 }
 
 
 function numberChanged(){
   loadPrevalue(domainname);
 }
+
 
 function UpdateNUMBERS(_sel){
     zw = getNUMBERInfo();
@@ -241,13 +246,12 @@ function UpdateNUMBERS(_sel){
 }
 
 
-function init(){
-  domainname = getDomainname();
-  loadConfig(domainname); 
-  ParseConfig();
-  UpdateNUMBERS();
-  loadPrevalue(domainname);
+function init() {
+    loadConfig(getDomainname()); 
+    ParseConfig();
+    UpdateNUMBERS();
 }
+
 
 init();
 </script>

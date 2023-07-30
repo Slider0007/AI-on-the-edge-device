@@ -162,7 +162,6 @@ function loadConfig(_domainname)
           xhttp.open("GET", url, false);
           xhttp.send();
           config_gesamt = xhttp.responseText;
-          config_gesamt = config_gesamt.replace("InitalRotate", "InitialRotate");         // Korrigiere Schreibfehler in config.ini !!!!!
      }
      catch (error)
      {

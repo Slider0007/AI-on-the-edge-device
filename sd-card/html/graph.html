@@ -39,7 +39,7 @@
     function run() {
         datefile = document.getElementById("datafiles").value;
         numbername = document.getElementById("numbers").value;
-        showRrelativeValues = document.getElementById("showRrelativeValues").checked;
+        showRelativeValues = document.getElementById("showRelativeValues").checked;
         //alert("Auslesen: " + datefile + " " + numbername);
 
         _domainname = getDomainname();
@@ -130,7 +130,7 @@
 
                 traceValue.connectgaps = true;
 
-                if (showRrelativeValues) {
+                if (showRelativeValues) {
                     traceValue.y.forEach(function(part, index, arr) {
                         arr[index] = arr[index] - offsetValue;
                     });
@@ -191,13 +191,13 @@
     <select id="numbers" onchange="run();"></select>
     Day:
     <select id="datafiles" onchange="run();"></select>
-    <input type="checkbox" id="showRrelativeValues" onclick = 'run();' unchecked ><label for="showRrelativeValues">Show relative values</label><br><br>
+    <input type="checkbox" id="showRelativeValues" onclick = 'run();' unchecked ><label for="showRelativeValues">Show relative values</label><br><br>
     <button class="button" onclick="run();">Refresh</button>
     <button class="button" onClick="window.location.href = 'data.html?v=$COMMIT_HASH'">Show Data Viewer</button>
     <button class="button" onClick="window.location.href = getDomainname() + '/fileserver/log/data/'">Show Data Files</button>
 
 <script>
-    function WriteModelFiles()
+    function WriteDataFiles()
     {
         list_data = getDATAList();
 
@@ -235,7 +235,7 @@
         }
     }
 
-    WriteModelFiles();
+    WriteDataFiles();
     WriteNumbers();
 
     function Refresh() {
