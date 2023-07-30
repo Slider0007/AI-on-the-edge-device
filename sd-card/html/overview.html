@@ -86,7 +86,8 @@
 	<script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>
 	<script type="text/javascript">
 
-	function addZero(i) {
+	function addZero(i)
+	{
 	  if (i < 10) {
 		i = "0" + i;
 	  }
@@ -94,13 +95,14 @@
 	}
 
 
-	$(document).ready(function() {
+	$(document).ready(function(){
 		LoadProcessData();
 		LoadROIImage();
 	});
 
 
-	function LoadROIImage(){
+	function LoadROIImage()
+	{
 		var d = new Date();
 		var timestamp = d.getTime();
 		var h = addZero(d.getHours());
@@ -111,7 +113,8 @@
 	}
 
 
-	function Refresh() {
+	function Refresh()
+	{
 		setTimeout (function() {
 			LoadProcessData();
 			LoadROIImage();
@@ -131,9 +134,7 @@
 		if (_split == null)
 				return;
 
-		if (_split.length == 1)
-		{
-			console.log(_zer)
+		if (_split.length == 1) {
 			var _zer = ZerlegeZeile(_split[0], "\t")
 			if (_zer.length > 1) {
 				out = _zer[1];
@@ -154,10 +155,8 @@
 				out = "";
 			}
 		}
-		else
-		{
-			for (var j = 0; j < _split.length; ++j)
-			{
+		else {
+			for (var j = 0; j < _split.length; ++j) {
 				var _zer = ZerlegeZeile(_split[j], "\t");
 				
 				if (_div == "error") {
@@ -264,7 +263,8 @@
 	}
 
 
-	function init(){
+	function init()
+	{
 		domainname = getDomainname();
 		setImageMaxWidth();
 		Refresh();
