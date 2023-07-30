@@ -690,13 +690,13 @@ void register_server_ota_sdcard_uri(httpd_handle_t server)
     camuri.method    = HTTP_GET;
     camuri.uri       = "/ota";
     camuri.handler   = handler_ota_update;
-    camuri.user_ctx  = (void*) "Do OTA";    
+    camuri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &camuri);
 
     camuri.method    = HTTP_GET;
     camuri.uri       = "/reboot";
     camuri.handler   = handler_reboot;
-    camuri.user_ctx  = (void*) "Reboot";    
+    camuri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &camuri);
 
 }

@@ -245,12 +245,12 @@ void register_server_camera_uri(httpd_handle_t server)
 
     camuri.uri       = "/lighton";
     camuri.handler   = handler_lightOn;
-    camuri.user_ctx  = (void*) "Light On";    
+    camuri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/lightoff";
     camuri.handler   = handler_lightOff;
-    camuri.user_ctx  = (void*) "Light Off"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);    
 
     camuri.uri       = "/capture";

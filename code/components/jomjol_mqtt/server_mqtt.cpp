@@ -323,7 +323,7 @@ void register_server_mqtt_uri(httpd_handle_t server)
 
     uri.uri       = "/mqtt_publish_discovery";
     uri.handler   = scheduleSendingDiscovery_and_static_Topics;
-    uri.user_ctx  = (void*) "";    
+    uri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &uri); 
 }
 
