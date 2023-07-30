@@ -5,6 +5,7 @@ var category;
 var ref = new Array(2);
 var NUMBERS = new Array(0);
 var REFERENCES = new Array(0);
+var tflite_list = "";
 
 
 function getNUMBERSList() {
@@ -68,14 +69,14 @@ function getDATAList() {
 }
 
 
-function getTFLITEList() {
+function fetchTFLITEList() {
 	_domainname = getDomainname(); 
-     tflitelist = "";
+     var response = "";
 
 	var xhttp = new XMLHttpRequest();
 	xhttp.addEventListener('load', function(event) {
           if (xhttp.status >= 200 && xhttp.status < 300) {
-               tflitelist = xhttp.responseText;
+               response = xhttp.responseText;
           } else {
                console.warn(request.statusText, request.responseText);
           }
@@ -91,10 +92,15 @@ function getTFLITEList() {
 //               alert("Loading Hostname failed");
      }
 
-     tflitelist = tflitelist.split("\t").filter(element => element); // Split at tab position and remove empty elements
-     tflitelist.sort();  // Sort elements by name
+     response = response.split("\t").filter(element => element); // Split at tab position and remove empty elements
+     response.sort();  // Sort elements by name
 
-     return tflitelist;
+     tflite_list = response;
+}
+
+
+function getTFLITEList() {
+     return tflite_list;
 }
 
 
@@ -299,6 +305,54 @@ function ParseConfig() {
           param["DataLogging"]["DataFilesRetention"]["found"] = true;
           param["DataLogging"]["DataFilesRetention"]["enabled"] = true;
           param["DataLogging"]["DataFilesRetention"]["value1"] = "3";
+     }
+}
+
+
+function ParseConfigReduced() {
+     config_split = config_gesamt.split("\n");
+     var aktline = 0;
+
+     param = new Object();
+     category = new Object(); 
+
+     var catname = "TakeImage";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "ImageSize", true, "VGA");
+
+     var catname = "Alignment";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
+
+     var catname = "MQTT";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = false;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "HomeassistantDiscovery", true, "false");
+
+     while (aktline < config_split.length) {
+          for (var cat in category) {
+               zw = cat.toUpperCase();
+               zw1 = "[" + zw + "]";
+               zw2 = ";[" + zw + "]";
+               if ((config_split[aktline].trim().toUpperCase() == zw1) || (config_split[aktline].trim().toUpperCase() == zw2)) {
+                    if (config_split[aktline].trim().toUpperCase() == zw1) {
+                         category[cat]["enabled"] = true;
+                    }
+                    category[cat]["found"] = true;
+                    category[cat]["line"] = aktline;
+                    aktline = ParseConfigParamAll(aktline, cat);
+                    continue;
+               }
+          }
+          aktline++;
      }
 }
 
