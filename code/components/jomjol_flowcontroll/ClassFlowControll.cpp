@@ -897,12 +897,17 @@ std::string ClassFlowControll::getReadoutAll(int _type)
         {
             out = out + (*numbers)[i]->name + "\t";
             switch (_type) {
+                /*case READOUT_TYPE_TIMESTAMP_PROCESSED:
+                    out = out + (*numbers)[i]->lastvalue; // up to now not available as string
+                    break;*/
+                case READOUT_TYPE_TIMESTAMP_VALID:
+                    out = out + (*numbers)[i]->timeStamp;
+                    break;
                 case READOUT_TYPE_VALUE:
                     out = out + (*numbers)[i]->ReturnValue;
                     break;
                 case READOUT_TYPE_PREVALUE:
-                    if (flowpostprocessing->PreValueUse)
-                    {
+                    if (flowpostprocessing->PreValueUse) {
                         if ((*numbers)[i]->PreValueOkay)
                             out = out + (*numbers)[i]->ReturnPreValue;
                         else
@@ -916,6 +921,12 @@ std::string ClassFlowControll::getReadoutAll(int _type)
                     break;
                 case READOUT_TYPE_ERROR:
                     out = out + (*numbers)[i]->ErrorMessageText;
+                    break;
+                case READOUT_TYPE_RATE_PER_MIN:
+                    out = out + (*numbers)[i]->ReturnRateValue;
+                    break;
+                case READOUT_TYPE_RATE_PER_ROUND:
+                    out = out + (*numbers)[i]->ReturnChangeAbsolute;
                     break;
             }
             if (i < (*numbers).size()-1)

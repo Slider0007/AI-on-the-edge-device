@@ -26,11 +26,13 @@
 #include "read_wlanini.h"
 #include "connect_wlan.h"
 #include "psram.h"
+#include "cJSON.h"
 
 #ifdef ENABLE_MQTT
     #include "interface_mqtt.h"
     #include "server_mqtt.h"
 #endif //ENABLE_MQTT
+
 
 // support IDF 5.x
 #ifndef portTICK_RATE_MS
@@ -367,6 +369,73 @@ esp_err_t handler_json(httpd_req_t *req)
     #endif
 
     return ESP_OK;
+}
+
+
+esp_err_t handler_process_data(httpd_req_t *req)
+{
+    esp_err_t retVal = ESP_OK;
+    std::string sReturnMessage = "E90: Uninitialized";      // Default return error message when no return is programmed
+    
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_process_data - Start");    
+    #endif
+
+    cJSON *cJSONObject = cJSON_CreateObject();
+    
+    if (cJSONObject == NULL) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
+        return ESP_FAIL;
+    }
+    else {
+        if (cJSON_AddStringToObject(cJSONObject, "api_name", "handler_process_data") == NULL)
+            retVal = ESP_FAIL;
+        /*if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
+            retVal = ESP_FAIL;*/ 
+        if (cJSON_AddStringToObject(cJSONObject, "timestamp_vaild", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_VALID).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "actual_value", flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "pre_value", flowctrl.getReadoutAll(READOUT_TYPE_PREVALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "raw_value", flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "value_status", flowctrl.getReadoutAll(READOUT_TYPE_ERROR).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "rate_per_min", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "rate_per_round", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_ROUND).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "process_error", std::to_string(flowctrl.getActFlowError()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "temperature", std::to_string((int)temperatureRead()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "rssi", std::to_string(get_WIFI_RSSI()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "uptime", getFormatedUptime(false).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "round_counter", std::to_string(getCountFlowRounds()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+
+        sReturnMessage = std::string(cJSON_Print(cJSONObject));
+    }
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+
+    if (retVal == ESP_OK)
+        httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
+    else
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
+
+    cJSON_Delete(cJSONObject);
+
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_process_data - Done");    
+    #endif
+
+    return retVal;
 }
 
 
@@ -1372,90 +1441,72 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
 
     camuri.uri       = "/reload_config";
     camuri.handler   = handler_reload_config;
-    camuri.user_ctx  = (void*) "reload_config";    
+    camuri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &camuri);
 
-    // Legacy API => New: "/setPreValue"
-    camuri.uri       = "/setPreValue.html";
-    camuri.handler   = handler_prevalue;
-    camuri.user_ctx  = (void*) "Prevalue";    
+    camuri.uri       = "/process_data";
+    camuri.handler   = handler_process_data;
+    camuri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/setPreValue";
     camuri.handler   = handler_prevalue;
-    camuri.user_ctx  = (void*) "Prevalue";    
+    camuri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/flow_start";
     camuri.handler   = handler_flow_start;
-    camuri.user_ctx  = (void*) "Flow Start"; 
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/statusflow.html";
-    camuri.handler   = handler_statusflow;
-    camuri.user_ctx  = (void*) "statusflow.html"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/statusflow";
     camuri.handler   = handler_statusflow;
-    camuri.user_ctx  = (void*) "statusflow";
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/flowerror";
     camuri.handler   = handler_flowerror;
-    camuri.user_ctx  = (void*) "flowerror";
-    httpd_register_uri_handler(server, &camuri);
-
-    // Legacy API => New: "/cpu_temperature"
-    camuri.uri       = "/cputemp.html";
-    camuri.handler   = handler_cputemp;
-    camuri.user_ctx  = (void*) "cputemp";
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/cpu_temperature";
     camuri.handler   = handler_cputemp;
-    camuri.user_ctx  = (void*) "cpu_temperature"; 
-    httpd_register_uri_handler(server, &camuri);
-
-    // Legacy API => New: "/rssi"
-    camuri.uri       = "/rssi.html";
-    camuri.handler   = handler_rssi;
-    camuri.user_ctx  = (void*) "Light Off"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/rssi";
     camuri.handler   = handler_rssi;
-    camuri.user_ctx  = (void*) "Light Off";
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/uptime";
     camuri.handler   = handler_uptime;
-    camuri.user_ctx  = (void*) "Light Off";
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/editflow";
     camuri.handler   = handler_editflow;
-    camuri.user_ctx  = (void*) "EditFlow"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);   
 
     camuri.uri       = "/value";
     camuri.handler   = handler_value;
-    camuri.user_ctx  = (void*) "Value"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/json";
     camuri.handler   = handler_json;
-    camuri.user_ctx  = (void*) "JSON"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/heap";
     camuri.handler   = handler_get_heap;
-    camuri.user_ctx  = (void*) "Heap"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/stream";
     camuri.handler   = handler_stream;
-    camuri.user_ctx  = (void*) "stream"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
 }

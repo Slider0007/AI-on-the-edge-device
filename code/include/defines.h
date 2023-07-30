@@ -129,10 +129,14 @@
 
 
     //ClassFlowControll
-    #define READOUT_TYPE_VALUE 0
-    #define READOUT_TYPE_PREVALUE 1
-    #define READOUT_TYPE_RAWVALUE 2
-    #define READOUT_TYPE_ERROR 3
+    #define READOUT_TYPE_TIMESTAMP_PROCESSED    0
+    #define READOUT_TYPE_TIMESTAMP_VALID        1
+    #define READOUT_TYPE_VALUE                  2
+    #define READOUT_TYPE_PREVALUE               3
+    #define READOUT_TYPE_RAWVALUE               4
+    #define READOUT_TYPE_ERROR                  5
+    #define READOUT_TYPE_RATE_PER_MIN           6
+    #define READOUT_TYPE_RATE_PER_ROUND         7
 
     //ClassFlowMQTT
     #define LWT_TOPIC        "connection"
