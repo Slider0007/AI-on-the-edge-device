@@ -390,9 +390,9 @@ esp_err_t handler_process_data(httpd_req_t *req)
     else {
         if (cJSON_AddStringToObject(cJSONObject, "api_name", "handler_process_data") == NULL)
             retVal = ESP_FAIL;
-        /*if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
-            retVal = ESP_FAIL;*/ 
-        if (cJSON_AddStringToObject(cJSONObject, "timestamp_vaild", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_VALID).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", "NOT YET SUPPORTED") == NULL) // TODO: Provide data as timestamp
+            retVal = ESP_FAIL; 
+        if (cJSON_AddStringToObject(cJSONObject, "timestamp_valid", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_VALID).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "actual_value", flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str()) == NULL)
             retVal = ESP_FAIL;
