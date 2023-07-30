@@ -419,7 +419,10 @@ esp_err_t handler_process_data(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "round_counter", std::to_string(getCountFlowRounds()).c_str()) == NULL)
             retVal = ESP_FAIL;
 
-        sReturnMessage = std::string(cJSON_Print(cJSONObject));
+        char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024, 1); // Print with predefined buffer of 1024 bytes, avoid dynamic allocations
+        sReturnMessage = std::string(jsonString);
+        cJSON_free(jsonString);  
+        cJSON_Delete(cJSONObject);
     }
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -428,8 +431,6 @@ esp_err_t handler_process_data(httpd_req_t *req)
         httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
     else
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
-
-    cJSON_Delete(cJSONObject);
 
     #ifdef DEBUG_DETAIL_ON       
         LogFile.WriteHeapInfo("handler_process_data - Done");    
