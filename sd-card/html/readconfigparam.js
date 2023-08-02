@@ -532,9 +532,6 @@ function ParamExtractValueAll(_param, _linesplit, _catname, _aktline, _iscom){
      }
 }
 
-function getConfigParameters() {
-     return param;
-}
 
 function WriteConfigININew()
 {
@@ -656,29 +653,14 @@ function isCommented(input)
           return [isComment, input];
      }    
 
-function SaveConfigToServer(_domainname){
-     // leere Zeilen am Ende löschen
-     var zw = config_split.length - 1;
-     while (config_split[zw] == "") {
-          config_split.pop();
-     }
 
-     var config_gesamt = "";
-     for (var i = 0; i < config_split.length; ++i)
-     {
-          config_gesamt = config_gesamt + config_split[i] + "\n";
-     } 
-
-     FileDeleteOnServer("/config/config.ini", _domainname);
-     FileSendContent(config_gesamt, "/config/config.ini", _domainname);          
-}
-	 
-function getConfig() {
-	return config_gesamt;
-     }
-
-function getConfigCategory() {
+     function getConfigCategory() {
      return category;
+}
+
+
+function getConfigParameters() {
+     return param;
 }
 
 

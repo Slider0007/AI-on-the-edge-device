@@ -5,15 +5,14 @@ function SaveConfigToServer(_domainname){
           config_split.pop();
      }
 
-     var config_gesamt = "";
+     var _config_gesamt = "";
      for (var i = 0; i < config_split.length; ++i)
      {
-          config_gesamt = config_gesamt + config_split[i] + "\n";
+          _config_gesamt = _config_gesamt + config_split[i] + "\n";
      } 
 
      FileDeleteOnServer("/config/config.ini", _domainname);
-
-     FileSendContent(config_gesamt, "/config/config.ini", _domainname);          
+     FileSendContent(_config_gesamt, "/config/config.ini", _domainname);          
 }
 
 

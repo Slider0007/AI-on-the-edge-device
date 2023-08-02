@@ -63,7 +63,6 @@
             return "";
         }
 
-        loadConfig(getDomainname());
     </script>
 </head>
 
@@ -175,11 +174,11 @@
 
 
     function HA_send_discovery_visibililty() {
-		loadConfig(getDomainname()); 
+		loadConfig(getDomainname());
 		ParseConfigReduced();
-		category = getConfigCategory();
-        param = getConfigParameters();
-		if (category["MQTT"]["enabled"] && param["MQTT"]["HomeassistantDiscovery"]["value1"] == "true")
+		_category = getConfigCategory();
+        _param = getConfigParameters();
+		if (_category["MQTT"]["enabled"] && _param["MQTT"]["HomeassistantDiscovery"]["value1"] == "true")
             document.getElementById("HASendDiscovery").style.display="";
 	}
 
