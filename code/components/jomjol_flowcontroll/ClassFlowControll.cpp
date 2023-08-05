@@ -905,7 +905,7 @@ std::string ClassFlowControll::getReadoutAll(int _type)
             out = out + (*numbers)[i]->name + "\t";
             switch (_type) {
                 case READOUT_TYPE_TIMESTAMP_PROCESSED:
-                    out = out + (*numbers)[i]->sTimeProcessed
+                    out = out + (*numbers)[i]->sTimeProcessed;
                     break;
                 case READOUT_TYPE_TIMESTAMP_FALLBACKVALUE:
                     out = out + (*numbers)[i]->sTimeFallbackValue;
