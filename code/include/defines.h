@@ -134,7 +134,7 @@
     #define READOUT_TYPE_VALUE                   2
     #define READOUT_TYPE_FALLBACKVALUE           3
     #define READOUT_TYPE_RAWVALUE                4
-    #define READOUT_TYPE_ERROR                   5
+    #define READOUT_TYPE_VALUE_STATUS            5
     #define READOUT_TYPE_RATE_PER_MIN            6
     #define READOUT_TYPE_RATE_PER_PROCESSING     7
 

@@ -848,7 +848,7 @@ std::string ClassFlowControll::getNumbersValue(std::string _name, int _type)
         case READOUT_TYPE_FALLBACKVALUE:
             return (*flowpostprocessing->GetNumbers())[pos]->sFallbackValue;
 
-        case READOUT_TYPE_ERROR:
+        case READOUT_TYPE_VALUE_STATUS:
             return (*flowpostprocessing->GetNumbers())[pos]->sValueStatus;
 
         default:
@@ -881,7 +881,7 @@ std::string ClassFlowControll::getNumbersValue(int _position, int _type)
         case READOUT_TYPE_FALLBACKVALUE:
             return (*flowpostprocessing->GetNumbers())[_position]->sFallbackValue;
 
-        case READOUT_TYPE_ERROR:
+        case READOUT_TYPE_VALUE_STATUS:
             return (*flowpostprocessing->GetNumbers())[_position]->sValueStatus;
 
         default:
@@ -926,7 +926,7 @@ std::string ClassFlowControll::getReadoutAll(int _type)
                 case READOUT_TYPE_RAWVALUE:
                     out = out + (*numbers)[i]->sRawValue;
                     break;
-                case READOUT_TYPE_ERROR:
+                case READOUT_TYPE_VALUE_STATUS:
                     out = out + (*numbers)[i]->sValueStatus;
                     break;
                 case READOUT_TYPE_RATE_PER_MIN:

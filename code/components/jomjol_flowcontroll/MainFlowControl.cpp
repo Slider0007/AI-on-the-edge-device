@@ -400,7 +400,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "raw_value", flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "value_status", flowctrl.getReadoutAll(READOUT_TYPE_ERROR).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "value_status", flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "rate_per_min", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -529,7 +529,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 else if (_type == "raw")
                     zw = flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE);
                 else if (_type == "error")
-                    zw = flowctrl.getReadoutAll(READOUT_TYPE_ERROR);
+                    zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS);
                 else {
                     sReturnMessage = "E92: Type not found";
                     httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
@@ -552,7 +552,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 else if (_type == "raw")
                     zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_RAWVALUE);
                 else if (_type == "error")
-                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_ERROR);
+                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE_STATUS);
                 else {
                     sReturnMessage = "E92: Type not found";
                     httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());

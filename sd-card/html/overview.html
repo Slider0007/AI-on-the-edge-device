@@ -51,7 +51,7 @@
 		</tr>	
 		<tr>	
 			<td class="tg-2">
-				<div id="error"></div>
+				<div id="status"></div>
 			</td>	
 		</tr>
 		<tr>
@@ -136,15 +136,16 @@
 
 		if (_split.length == 1) {
 			var _zer = ZerlegeZeile(_split[0], "\t")
+			console.log(_zer)
 			if (_zer.length > 1) {
 				out = _zer[1];
-				if (_div == "error") {
+				if (_div == "status") {
 					if (_zer[1] != null && _zer[1].length > 0) {
-						if (_zer[1].substring(0,4) == "002")
+						if (_zer[1].substring(0,3) == "002")
 							out = "Rate > Rate limit: Positive deviation";
 						else if (_zer[1].substring(0,3) == "003")
 							out = "Rate > Rate limit: Negative deviation";
-						else if (_zer[1].substring(0,7) == "001")
+						else if (_zer[1].substring(0,3) == "001")
 							out = "No data to replace N -> No valid value";
 						else 
 							out = "Valid";
@@ -157,14 +158,15 @@
 		}
 		else {
 			for (var j = 0; j < _split.length; ++j) {
-				var _zer = ZerlegeZeile(_split[j], "\t");
-				
-				if (_div == "error") {
+				var _zer = ZerlegeZeile(_split[j], "\t");				
+				if (_div == "status") {
 					if (_zer[1] != null && _zer[1].length > 0) {
-						if (_zer[1].substring(0,4) == "Neg.")
-							_zer[1] = "Invaild - Negative rate";
-						else if (_zer[1].substring(0,4) == "Rate")
-							_zer[1] = "Invalid - Rate too high";
+						if (_zer[1].substring(0,3) == "002")
+							_zer[1] = "Rate > Rate limit: Positive deviation";
+						else if (_zer[1].substring(0,3) == "003")
+							_zer[1] = "Rate > Rate limit: Negative deviation";
+						else if (_zer[1].substring(0,3) == "001")
+							_zer[1] = "No data to replace N -> No valid value";
 						else 
 							_zer[1] = "Valid";
 					}
@@ -223,9 +225,9 @@
 			if (this.readyState == 4 && this.status == 200) {
 				const _jsonData = JSON.parse(xhttp.responseText);			
 				loadValue(_jsonData.actual_value, "value", "border-collapse: collapse; width: 100%");
-				loadValue(_jsonData.pre_value, "fallback", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.fallback_value, "fallback", "border-collapse: collapse; width: 100%");
 				loadValue(_jsonData.raw_value, "raw", "border-collapse: collapse; width: 100%");
-				loadValue(_jsonData.value_status, "error", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.value_status, "status", "border-collapse: collapse; width: 100%");
 				$('#statusflow').html(_jsonData.process_state);
 				loadFlowError(_jsonData.process_error);
 				$('#cputemp').html("CPU Temperature: " + _jsonData.temperature + "°C");
