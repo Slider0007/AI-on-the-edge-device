@@ -70,7 +70,7 @@ function getDATAList() {
 
 function getTFLITEList() {
 	_domainname = getDomainname(); 
-     tflitelist = "";
+     var response = "";
 
 	var xhttp = new XMLHttpRequest();
 	xhttp.addEventListener('load', function(event) {
@@ -158,8 +158,8 @@ function ParseConfig() {
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddSingleValueWithPreset(param, catname, "PreValueUse", true, "true");
-     ParamAddSingleValueWithPreset(param, catname, "PreValueAgeStartup", true, "720");
+     ParamAddSingleValueWithPreset(param, catname, "FallbackValueUse", true, "true");
+     ParamAddSingleValueWithPreset(param, catname, "FallbackValueAgeStartup", true, "720");
      ParamAddSingleValueWithPreset(param, catname, "ErrorMessage", true, "true");
      ParamAddSingleValueWithPreset(param, catname, "CheckDigitIncreaseConsistency", true, "false");
      ParamAddValue(param, catname, "AllowNegativeRates", 1, true, "true");

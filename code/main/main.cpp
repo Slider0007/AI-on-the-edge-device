@@ -589,8 +589,10 @@ void migrateConfiguration(void) {
         if (section == "[PostProcessing]") {
             migrated = migrated | replaceString(configLines[i], ";PreValueUse = true", ";PreValueUse = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";PreValueUse", "PreValueUse"); // Enable it
+            migrated = migrated | replaceString(configLines[i], "PreValueUse", "FallbackValueUse"); // Rename it
 
             migrated = migrated | replaceString(configLines[i], ";PreValueAgeStartup", "PreValueAgeStartup"); // Enable it
+            migrated = migrated | replaceString(configLines[i], ";ValueAgeStartup", "FallbackValueAgeStartup");
 
             migrated = migrated | replaceString(configLines[i], ";ErrorMessage = true", ";ErrorMessage = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";ErrorMessage", "ErrorMessage"); // Enable it

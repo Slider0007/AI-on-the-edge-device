@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en">
 <head>
-    <title>Set PreValue</title>
+    <title>Set Fallback Value</title>
     <meta charset="UTF-8" />
 
     <style>
@@ -62,24 +62,25 @@
 </head>
 
 <body style="font-family: arial; padding: 0px 10px;">
-    <h2>Set "Previous Value"</h2>
+    <h2>Set "Fallback Value"</h2>
     <details id="desc_details">
         <summary><b>CLICK HERE</b> for usage description. More infos in documentation: 
-            <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/FAQs/#pre-value target=_blank>"Previous Value"</a>
+            <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/FAQs/#pre-value target=_blank>"Fallback Value"</a>
         </summary>
         <p>
-            Set the "previous value" for consistency checks and substitution for NaN
+            Set the "Fallback Value" for consistency checks and substitution for N positions in number sequence.
         </p>
         <p>
-            Previous value is a bit missleading, because normally it is the last valid value but not always the value of the previous round. 
-            The result of the the new round, as long it's a vaild result, will be promoted to the new "previous value". If the result is not usable the 
-            "previous value" will not be updated.
-            If activated in configuration, the "previous value" will be used in the following round to check negtive rates, high rates
-            (MaxRateValue / MaxRateType) and for the option "Check Digit Increase Consistency" (configuration paramter, only for dig-class11 models). 
+            The Fallback Value is the last successful valid reading of any processing round. The result of the the actual processing round, 
+            as long it's a vaild result, will be promoted to the new "Fallback Value". If the result is not usable the 
+            "Fallback Value" will not be updated.
+            If activated in configuration, the "Fallback Value" will be used in the following processing round to check for negtive rates, 
+            too high rates (MaxRateValue / MaxRateType), for "Check Digit Increase Consistency" (configuration paramter, only for dig-class11 models)
+            and for possible substitution of any N positions in the "Raw Value" reading (only valid for dig-class11 models and dig-cont* models). 
         </p>
         <p>
-            The field to enter new "previous value" is prefilled with actual "raw value" because it's the most likely use case. Nevertheless every other
-            positive value can be set as new "previous value".
+            The field to enter new "Fallback Value" is prefilled with actual "Raw Value" because it's the most likely use case. Nevertheless every other
+            positive value can be set as new "Fallback Value".
         </p>
     </details>
     <hr />
@@ -107,22 +108,22 @@
             <col span="1" style="width: 65%;">
         </colgroup>
         <tr>
-            <td>Current "previous value":</td>
+            <td>Current "Fallback Value":</td>
             <td>
-                <div style="padding-left:5px" id="prevalue"></div>
+                <div style="padding-left:5px" id="fallbackvalue"></div>
             </td>
         </tr>
         <tr>
-            <td style="vertical-align: text-top; padding-top: 12px;">Enter new "previous value":</td>
+            <td style="vertical-align: text-top; padding-top: 12px;">Enter new "Fallback Value":</td>
             <td>
                 <input required type="number" id="myInput" name="myInput" min="0" oninput="(!validity.rangeUnderflow||(value=0));">
-                <button class="button" type="button" onclick="setprevalue()">Update Value</button>
-                <p style="padding-left: 5px;">NOTE: The current "raw value" is prefilled as 
-                    <br>the suggested new "previous value"</p>
+                <button class="button" type="button" onclick="setFallbackValue()">Update Value</button>
+                <p style="padding-left: 5px;">NOTE: The current "Raw Value" is prefilled as 
+                    <br>the suggested new "Fallback Value"</p>
             </td>
         </tr>	
         <tr>
-            <td id="result_text">"Previous value" updated to:</td>
+            <td id="result_text">"Fallback Value" updated to:</td>
             <td>
                 <div id="result" style="padding-left:5px;"></div>
             </td>
@@ -141,78 +142,84 @@
 <script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>  
 
 <script type="text/javascript">
- 	var domainname = getDomainname(); 
-  var	NUMBERS;
+    var domainname = getDomainname(); 
+    var	NUMBERS;
 
-function setprevalue() {
+
+function setFallbackValue() {
 	var inputVal = document.getElementById("myInput").value;
 	var sel = document.getElementById("Numbers_value1");
 	var _number = sel.options[sel.selectedIndex].text;  
 	inputVal = inputVal.replace(",", ".");
   	var xhttp = new XMLHttpRequest();
     try {
-          url = domainname + "/setPreValue?value=" + inputVal + "&numbers=" + _number;     
-          xhttp.open("GET", url, false);
-          xhttp.send();
-          response = xhttp.responseText;
-          document.getElementById("result").innerHTML=response;
-          firework.launch('New \"previous value\" set', 'success', 5000);
-     }
+        url = domainname + "/setFallbackValue?value=" + inputVal + "&numbers=" + _number;     
+        xhttp.open("GET", url, false);
+        xhttp.send();
+        response = xhttp.responseText;
+        document.getElementById("result").innerHTML=response;
+        firework.launch('New \"Fallback Value\" set', 'success', 5000);
+    }
     catch (error)
     {
       firework.launch('Failed to get data from device!', 'danger', 30000);
     }
 }
 
-function loadPrevalue(_domainname) {
-  // Get current Pre Value
-  var sel = document.getElementById("Numbers_value1");
-  var _number = sel.options[sel.selectedIndex].text;
 
-  var xhttp = new XMLHttpRequest();
-  try {
-      url = _domainname + '/setPreValue?numbers=' + _number;
-      xhttp.open("GET", url, false);
-      xhttp.send();
-      response = xhttp.responseText;
-      document.getElementById("prevalue").innerHTML=response;
-  }
-  catch (error)
-  {
-    firework.launch('Failed to get data from device!', 'danger', 30000);
-  }
+function loadFallbackValue(_domainname) {
+    // Get current Fallback Value
+    var sel = document.getElementById("Numbers_value1");
+    var _number = sel.options[sel.selectedIndex].text;
 
-  // Get current RAW Value
-  var sel = document.getElementById("Numbers_value1");
-  var _number = sel.options[sel.selectedIndex].text;
+    var xhttp = new XMLHttpRequest();
+    try {
+        url = _domainname + '/setFallbackValue?numbers=' + _number;
+        xhttp.open("GET", url, false);
+        xhttp.send();
+        response = xhttp.responseText;
+        document.getElementById("fallbackvalue").innerHTML=response;
+    }
+    catch (error)
+    {
+        firework.launch('Failed to get data from device!', 'danger', 30000);
+    }
 
-  var xhttp = new XMLHttpRequest();
-  try {
-    url = _domainname + '/value?all=true&type=raw';
-    xhttp.open("GET", url, false);
-    xhttp.send();
-    response = xhttp.responseText;
+    // Get current RAW Value
+    var sel = document.getElementById("Numbers_value1");
+    var _number = sel.options[sel.selectedIndex].text;
 
-    lines = response.split(/\r?\n/);
+    var xhttp = new XMLHttpRequest();
+    try {
+        url = _domainname + '/value?all=true&type=raw';
+        xhttp.open("GET", url, false);
+        xhttp.send();
+        response = xhttp.responseText;
 
-    lines.forEach(function(line) {
-      arr = line.split("\t");
-      if (_number == arr[0]) {
-        document.getElementById("myInput").value = Number(arr[1]);
-        return;
-      }
-    });
-  }
-  catch (error)
-  {
-    firework.launch('Failed to get data from device!', 'danger', 30000);
-  }
+        lines = response.split(/\r?\n/);
+
+        lines.forEach(function(line) {
+            arr = line.split("\t");
+            if (_number == arr[0]) {
+                document.getElementById("myInput").value = Number(arr[1]);
+                return;
+            }
+        });
+    }
+    catch (error)
+    {
+        firework.launch('Failed to get data from device!', 'danger', 30000);
+    }
+
+    // Reset result
+    document.getElementById("result").innerHTML = "";
 }
 
 
 function numberChanged(){
-  loadPrevalue(domainname);
+    loadFallbackValue(domainname);
 }
+
 
 function UpdateNUMBERS(_sel){
     zw = getNUMBERInfo();
@@ -237,17 +244,17 @@ function UpdateNUMBERS(_sel){
     }
     _index.selectedIndex = index;
 
-    loadPrevalue(domainname);
+    loadFallbackValue(domainname);
 }
 
 
-function init(){
-  domainname = getDomainname();
-  loadConfig(domainname); 
-  ParseConfig();
-  UpdateNUMBERS();
-  loadPrevalue(domainname);
+function init() {
+    domainname = getDomainname();
+    loadConfig(domainname); 
+    ParseConfig();
+    UpdateNUMBERS();
 }
+
 
 init();
 </script>

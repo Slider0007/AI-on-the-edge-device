@@ -587,26 +587,26 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="PostProcessing_PreValueUse_text" style="color:black;">Previous Value</class>
+				<class id="PostProcessing_FallbackValueUse_text" style="color:black;">Use Fallback Value</class>
 			</td>
 			<td>
-				<select id="PostProcessing_PreValueUse_value1">
+				<select id="PostProcessing_FallbackValueUse_value1">
 					<option value="true" selected>true</option>
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_PostProcessing_PreValueUse</td>
+			<td>$TOOLTIP_PostProcessing_FallbackValueUse</td>
 		</tr>
 
 		<tr class="expert">
 			<td class="indent1">
-				<class id="PostProcessing_PreValueAgeStartup_text" style="color:black;">Max. Age of Previous Value</class>
+				<class id="PostProcessing_FallbackValueAgeStartup_text" style="color:black;">Max. Age of Fallback Value</class>
 			</td>
 			<td>
-				<input required type="number" id="PostProcessing_PreValueAgeStartup_value1" size="13" min="0"
+				<input required type="number" id="PostProcessing_FallbackValueAgeStartup_value1" size="13" min="0"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Minutes
 			</td>
-			<td>$TOOLTIP_PostProcessing_PreValueAgeStartup</td>
+			<td>$TOOLTIP_PostProcessing_FallbackValueAgeStartup</td>
 		</tr>
 
 		<tr class="expert">
@@ -2111,8 +2111,8 @@ function UpdateInput() {
     WriteParameter(param, category, "Analog", "ROIImagesLocation", true);		
     WriteParameter(param, category, "Analog", "ROIImagesRetention", true);		
     
-    WriteParameter(param, category, "PostProcessing", "PreValueUse", false);		
-    WriteParameter(param, category, "PostProcessing", "PreValueAgeStartup", false);		
+    WriteParameter(param, category, "PostProcessing", "FallbackValueUse", false);		
+    WriteParameter(param, category, "PostProcessing", "FallbackValueAgeStartup", false);		
     WriteParameter(param, category, "PostProcessing", "ErrorMessage", false);
     WriteParameter(param, category, "PostProcessing", "CheckDigitIncreaseConsistency", false);
 
@@ -2244,8 +2244,8 @@ function ReadParameterAll()
     ReadParameter(param, "Analog", "ROIImagesLocation", true);
     ReadParameter(param, "Analog", "ROIImagesRetention", true);
 
-    ReadParameter(param, "PostProcessing", "PreValueUse", false);
-    ReadParameter(param, "PostProcessing", "PreValueAgeStartup", false);
+    ReadParameter(param, "PostProcessing", "FallbackValueUse", false);
+    ReadParameter(param, "PostProcessing", "FallbackValueAgeStartup", false);
     ReadParameter(param, "PostProcessing", "ErrorMessage", false);
     ReadParameter(param, "PostProcessing", "CheckDigitIncreaseConsistency", false);
 

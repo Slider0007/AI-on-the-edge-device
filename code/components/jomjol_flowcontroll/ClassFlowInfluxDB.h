@@ -17,7 +17,6 @@ protected:
     ClassFlowPostProcessing* flowpostprocessing;
     std::string uri, database, measurement;
     std::string user, password;
-    std::string OldValue;
     bool InfluxDBenable;
 
     void SetInitialParameter(void);    

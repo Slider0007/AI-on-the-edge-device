@@ -17,6 +17,22 @@
 
 static const char* TAG = "POSTPROC";
 
+
+//#define DEBUG_DETAIL_ON 
+
+
+bool ClassFlowPostProcessing::getUseFallbackValue(void)
+{
+    return UseFallbackValue;
+}
+
+
+void ClassFlowPostProcessing::setUseFallbackValue(bool _value)
+{
+    UseFallbackValue = _value;
+}
+
+
 std::string ClassFlowPostProcessing::getNumbersName()
 {
     std::string ret="";
@@ -56,29 +72,21 @@ std::string ClassFlowPostProcessing::getJsonFromNumber(int i, std::string _linee
 	std::string json = "";
 
 	json += "  {" + _lineend;
+	json += "    \"actual_value\": \"" + NUMBERS[i]->sActualValue + "\"," + _lineend;
+	json += "    \"fallback_value\": \"" + NUMBERS[i]->sFallbackValue + "\"," + _lineend;
+	json += "    \"raw_value\": \"" + NUMBERS[i]->sRawValue + "\"," + _lineend;
+	json += "    \"value_status\": \"" + NUMBERS[i]->sValueStatus + "\"," + _lineend;
+	json += "    \"rate_per_min\": \"" + NUMBERS[i]->sRatePerMin + "\"," + _lineend;
+    json += "    \"rate_per_processing\": \"" + NUMBERS[i]->sRatePerProcessing + "\"," + _lineend;
+	json += "    \"timestamp_processed\": \"" + NUMBERS[i]->sTimeProcessed + "\"" + _lineend;
 
-	if (NUMBERS[i]->ReturnValue.length() > 0)
-		json += "    \"value\": \"" + NUMBERS[i]->ReturnValue + "\"," + _lineend;
-	else
-		json += "    \"value\": \"\"," + _lineend;
-
-	json += "    \"raw\": \"" + NUMBERS[i]->ReturnRawValue + "\"," + _lineend;
-	json += "    \"pre\": \"" + NUMBERS[i]->ReturnPreValue + "\"," + _lineend;
-	json += "    \"error\": \"" + NUMBERS[i]->ErrorMessageText + "\"," + _lineend;
-
-	if (NUMBERS[i]->ReturnRateValue.length() > 0)
-		json += "    \"rate\": \"" + NUMBERS[i]->ReturnRateValue + "\"," + _lineend;
-	else
-		json += "    \"rate\": \"\"," + _lineend;
-
-	json += "    \"timestamp\": \"" + NUMBERS[i]->timeStamp + "\"" + _lineend;
 	json += "  }" + _lineend;
 
 	return json;
 }
 
 
-std::string ClassFlowPostProcessing::GetPreValue(std::string _number)
+std::string ClassFlowPostProcessing::GetFallbackValue(std::string _number)
 {
     std::string result;
     int index = -1;
@@ -93,143 +101,146 @@ std::string ClassFlowPostProcessing::GetPreValue(std::string _number)
     if (index == -1)
         return std::string("");
 
-    result = to_stringWithPrecision(NUMBERS[index]->PreValue, NUMBERS[index]->Nachkomma);
+    result = to_stringWithPrecision(NUMBERS[index]->fallbackValue, NUMBERS[index]->decimalPlaceCount);
 
     return result;
 }
 
 
-bool ClassFlowPostProcessing::SetPreValue(double _newvalue, std::string _numbers, bool _extern)
+bool ClassFlowPostProcessing::SetFallbackValue(double _newvalue, std::string _numbersname, bool _extern)
 {
-    //ESP_LOGD(TAG, "SetPrevalue: %f, %s", zw, _numbers.c_str());
+    ESP_LOGI(TAG, "SetFallbackValue: %f, %s", _newvalue, _numbersname.c_str());
 
     for (int j = 0; j < NUMBERS.size(); ++j) {
         //ESP_LOGD(TAG, "Number %d, %s", j, NUMBERS[j]->name.c_str());
-        if (NUMBERS[j]->name == _numbers) {
-            if (_newvalue >= 0) {  // if new value posivive, use provided value to preset PreValue
-                NUMBERS[j]->PreValue = _newvalue;
+        if (NUMBERS[j]->name == _numbersname) {
+            if (_newvalue >= 0) {  // if new value posivive, use provided value to preset fallbackValue
+                NUMBERS[j]->fallbackValue = _newvalue;
             }
-            else {          // if new value negative, use last raw value to preset PreValue
+            else {          // if new value negative, use last raw value to preset fallbackValue
                 char* p;
-                double ReturnRawValueAsDouble = strtod(NUMBERS[j]->ReturnRawValue.c_str(), &p);
+                double ReturnRawValueAsDouble = strtod(NUMBERS[j]->sRawValue.c_str(), &p);
                 if (ReturnRawValueAsDouble == 0) {
-                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "SetPreValue: RawValue not a valid value for further processing: "
-                                                            + NUMBERS[j]->ReturnRawValue);
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "SetFallbackValue: RawValue not a valid value for further processing: "
+                                                            + NUMBERS[j]->sRawValue);
                     return false;
                 }
-                NUMBERS[j]->PreValue = ReturnRawValueAsDouble;
+                NUMBERS[j]->fallbackValue = ReturnRawValueAsDouble;
             }
 
-            NUMBERS[j]->ReturnPreValue = std::to_string(NUMBERS[j]->PreValue);
-            NUMBERS[j]->PreValueOkay = true;
+            NUMBERS[j]->sFallbackValue = std::to_string(NUMBERS[j]->fallbackValue);
+            NUMBERS[j]->isFallbackValueValid = true;
 
             if (_extern)
             {
-                time(&(NUMBERS[j]->lastvalue));
-                localtime(&(NUMBERS[j]->lastvalue));
+                time(&(NUMBERS[j]->timeFallbackValue)); // timezone already set at boot
             }
-            //ESP_LOGD(TAG, "Found %d! - set to %.8f", j,  NUMBERS[j]->PreValue);
+            //ESP_LOGD(TAG, "Found %d! - set to %.8f", j,  NUMBERS[j]->fallbackValue);
             
-            UpdatePreValueINI = true;   // Only update prevalue file if a new value is set
-            SavePreValue();
+            UpdateFallbackValue = true;   // Only update fallbackValue file if a new value is set
+            SaveFallbackValue();
 
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "SetPreValue: PreValue for " + NUMBERS[j]->name + " set to " + 
-                                                     std::to_string(NUMBERS[j]->PreValue));
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "SetFallbackValue: FallbackValue for " + NUMBERS[j]->name + " set to " + 
+                                                     std::to_string(NUMBERS[j]->fallbackValue));
             return true;
         }
     }
     
-    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "SetPreValue: Numbersname not found or not valid");
+    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "SetFallbackValue: Numbersname not found or not valid");
     return false;   // No new value was set (e.g. wrong numbersname, no numbers at all)
 }
 
 
-bool ClassFlowPostProcessing::LoadPreValue(void)
+bool ClassFlowPostProcessing::LoadFallbackValue(void)
 {
     esp_err_t err = ESP_OK;
 
-    nvs_handle_t prevalue_nvshandle;
+    nvs_handle_t fallbackvalue_nvshandle;
 
-    err = nvs_open("prevalue", NVS_READONLY, &prevalue_nvshandle);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND ) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: No valid NVS handle - error code: " + std::to_string(err));
+    err = nvs_open("fallbackvalue", NVS_READONLY, &fallbackvalue_nvshandle);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFallbackValue: No valid NVS handle - error code: " + std::to_string(err));
+        return false;
+    }
+    else if (err != ESP_OK && (err == ESP_ERR_NVS_NOT_FOUND || err == ESP_ERR_NVS_INVALID_HANDLE)) {
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "LoadFallbackValue: No NVS data avilable for namespace 'fallbackvalue'");
         return false;
     }
 
     int16_t numbers_size = 0;
-    err = nvs_get_i16(prevalue_nvshandle, "numbers_size", &numbers_size);   // Use numbers size to ensure that only already saved data will be loaded
+    err = nvs_get_i16(fallbackvalue_nvshandle, "numbers_size", &numbers_size);   // Use numbers size to ensure that only already saved data will be loaded
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_i16 numbers_size - error code: " + std::to_string(err));
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFallbackValue: nvs_get_i16 numbers_size - error code: " + std::to_string(err));
         return false;
     }
 
     for (int i = 0; i < numbers_size; ++i) {
         // Name: Read from NVS
         size_t required_size = 0;
-        err = nvs_get_str(prevalue_nvshandle, ("name" + std::to_string(i)).c_str(), NULL, &required_size);
+        err = nvs_get_str(fallbackvalue_nvshandle, ("name" + std::to_string(i)).c_str(), NULL, &required_size);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str name size - error code: " + std::to_string(err));
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFallbackValue: nvs_get_str name size - error code: " + std::to_string(err));
             return false;
         }
 
         char cName[required_size+1];
         if (required_size > 0) {
-            err = nvs_get_str(prevalue_nvshandle, ("name" + std::to_string(i)).c_str(), cName, &required_size);
+            err = nvs_get_str(fallbackvalue_nvshandle, ("name" + std::to_string(i)).c_str(), cName, &required_size);
             if (err != ESP_OK) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str name - error code: " + std::to_string(err));
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFallbackValue: nvs_get_str name - error code: " + std::to_string(err));
                 return false;
             }
         }
 
         // Timestamp: Read from NVS
         required_size = 0;
-        err = nvs_get_str(prevalue_nvshandle, ("time" + std::to_string(i)).c_str(), NULL, &required_size);
+        err = nvs_get_str(fallbackvalue_nvshandle, ("time" + std::to_string(i)).c_str(), NULL, &required_size);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str timestamp size - error code: " + std::to_string(err));
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFallbackValue: nvs_get_str timestamp size - error code: " + std::to_string(err));
             return false;
         }
 
         char cTime[required_size+1];
         if (required_size > 0) {
-            err = nvs_get_str(prevalue_nvshandle, ("time" + std::to_string(i)).c_str(), cTime, &required_size);
+            err = nvs_get_str(fallbackvalue_nvshandle, ("time" + std::to_string(i)).c_str(), cTime, &required_size);
             if (err != ESP_OK) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str timestamp - error code: " + std::to_string(err));
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFallbackValue: nvs_get_str timestamp - error code: " + std::to_string(err));
                 return false;
             }
         }
 
         // Value: Read from NVS
         required_size = 0;
-        err = nvs_get_str(prevalue_nvshandle, ("value" + std::to_string(i)).c_str(), NULL, &required_size);
+        err = nvs_get_str(fallbackvalue_nvshandle, ("value" + std::to_string(i)).c_str(), NULL, &required_size);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str prevalue size - error code: " + std::to_string(err));
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFallbackValue: nvs_get_str fallbackvalue size - error code: " + std::to_string(err));
             return false;
         }
 
         char cValue[required_size+1];
         if (required_size > 0) {
-            err = nvs_get_str(prevalue_nvshandle, ("value" + std::to_string(i)).c_str(), cValue, &required_size);
+            err = nvs_get_str(fallbackvalue_nvshandle, ("value" + std::to_string(i)).c_str(), cValue, &required_size);
             if (err != ESP_OK) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadPreValue: nvs_get_str prevalue - error code: " + std::to_string(err));
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFallbackValue: nvs_get_str fallbackvalue - error code: " + std::to_string(err));
                 return false;
             }
         }
 
-        //ESP_LOGI(TAG, "name: %s, time: %s, value: %s", cName, cTime, cValue);
+        ESP_LOGI(TAG, "name: %s, time: %s, value: %s", cName, cTime, cValue);
 
         for (int j = 0; j < NUMBERS.size(); ++j)
         {           
             if ((NUMBERS[j]->name).compare(std::string(cName)) == 0)
             {
 
-                NUMBERS[j]->PreValue = stod(std::string(cValue));
-                NUMBERS[j]->ReturnPreValue = to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma + 1);      // To be on the safe side, 1 digit more, as Exgtended Resolution may be on (will only be set during the first run).
+                NUMBERS[j]->fallbackValue = stod(std::string(cValue));
+                NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount + 1);      // To be on the safe side, 1 digit more, as Exgtended Resolution may be on (will only be set during the first run).
 
                 time_t tStart;
                 int yy, month, dd, hh, mm, ss;
                 struct tm whenStart;
 
-                sscanf(cTime, PREVALUE_TIME_FORMAT_INPUT, &yy, &month, &dd, &hh, &mm, &ss);
+                sscanf(cTime, FALLBACKVALUE_TIME_FORMAT_INPUT, &yy, &month, &dd, &hh, &mm, &ss);
                 whenStart.tm_year = yy - 1900;
                 whenStart.tm_mon = month - 1;
                 whenStart.tm_mday = dd;
@@ -238,82 +249,75 @@ bool ClassFlowPostProcessing::LoadPreValue(void)
                 whenStart.tm_sec = ss;
                 whenStart.tm_isdst = -1;
 
-                NUMBERS[j]->lastvalue = mktime(&whenStart);
+                NUMBERS[j]->timeFallbackValue = mktime(&whenStart);
 
                 time(&tStart);
-                localtime(&tStart);
-                double difference = difftime(tStart, NUMBERS[j]->lastvalue);
-                difference /= 60;
-                if (difference > PreValueAgeStartup) {
-                    NUMBERS[j]->PreValueOkay = false;
-                    NUMBERS[j]->ReturnPreValue = "";
+                int AgeInMinutes = (int)(difftime(tStart, NUMBERS[j]->timeFallbackValue) / 60.0); // delta in minutes
+                if (AgeInMinutes > FallbackValueAgeStartup) {
+                    NUMBERS[j]->isFallbackValueValid = false;
+                    NUMBERS[j]->fallbackValue = 0.0;
+                    NUMBERS[j]->sFallbackValue = "";
                 }
                 else {
-                    NUMBERS[j]->PreValueOkay = true;
+                    NUMBERS[j]->isFallbackValueValid = true;
                 }
             }
         }
     }
-    nvs_close(prevalue_nvshandle);
+    nvs_close(fallbackvalue_nvshandle);
     
     return true;
 }
 
 
-bool ClassFlowPostProcessing::SavePreValue()
+bool ClassFlowPostProcessing::SaveFallbackValue()
 { 
-    if (!UpdatePreValueINI)         // PreValue unchanged
+    if (!UpdateFallbackValue)         // fallbackValue unchanged
         return false;
     
-    esp_err_t err = ESP_OK;
-    char buffer[80];
-    
-    nvs_handle_t prevalue_nvshandle;
+    esp_err_t err = ESP_OK;    
+    nvs_handle_t fallbackvalue_nvshandle;
 
-    err = nvs_open("prevalue", NVS_READWRITE, &prevalue_nvshandle);
+    err = nvs_open("fallbackvalue", NVS_READWRITE, &fallbackvalue_nvshandle);
     if (err != ESP_OK) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: No valid NVS handle - error code : " + std::to_string(err));
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: No valid NVS handle - error code : " + std::to_string(err));
         return false;
     }
 
-    err = nvs_set_i16(prevalue_nvshandle, "numbers_size", (int16_t)NUMBERS.size());    // Save numbers size to ensure that only already saved data will be loaded
+    err = nvs_set_i16(fallbackvalue_nvshandle, "numbers_size", (int16_t)NUMBERS.size());    // Save numbers size to ensure that only already saved data will be loaded
     if (err != ESP_OK) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_set_i16 numbers_size - error code: " + std::to_string(err));
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: nvs_set_i16 numbers_size - error code: " + std::to_string(err));
         return false;
     }
 
     for (int j = 0; j < NUMBERS.size(); ++j)
     {           
-        //ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->timeStamp).c_str(), 
-        //                                        (to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
-
-        struct tm* timeinfo = localtime(&NUMBERS[j]->lastvalue);
-        strftime(buffer, 80, PREVALUE_TIME_FORMAT_OUTPUT, timeinfo);
-        NUMBERS[j]->timeStamp = std::string(buffer);
+        ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->sTimeFallbackValue).c_str(), 
+                                                (to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount)).c_str());
         
-        err = nvs_set_str(prevalue_nvshandle, ("name" + std::to_string(j)).c_str(), (NUMBERS[j]->name).c_str());
+        err = nvs_set_str(fallbackvalue_nvshandle, ("name" + std::to_string(j)).c_str(), (NUMBERS[j]->name).c_str());
         if (err != ESP_OK) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_set_str name - error code: " + std::to_string(err));
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: nvs_set_str name - error code: " + std::to_string(err));
             return false;
         }
-        err = nvs_set_str(prevalue_nvshandle, ("time" + std::to_string(j)).c_str(), (NUMBERS[j]->timeStamp).c_str());
+        err = nvs_set_str(fallbackvalue_nvshandle, ("time" + std::to_string(j)).c_str(), (NUMBERS[j]->sTimeFallbackValue).c_str());
         if (err != ESP_OK) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_set_str timestamp - error code: " + std::to_string(err));
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: nvs_set_str timestamp - error code: " + std::to_string(err));
             return false;
         }
-        err = nvs_set_str(prevalue_nvshandle, ("value" + std::to_string(j)).c_str(), 
-                            (to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
+        err = nvs_set_str(fallbackvalue_nvshandle, ("value" + std::to_string(j)).c_str(), 
+                            (to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount)).c_str());
         if (err != ESP_OK) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_set_str prevalue - error code: " + std::to_string(err));
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: nvs_set_str fallbackvalue - error code: " + std::to_string(err));
             return false;
         }
     }
 
-    err = nvs_commit(prevalue_nvshandle);
-    nvs_close(prevalue_nvshandle);
+    err = nvs_commit(fallbackvalue_nvshandle);
+    nvs_close(fallbackvalue_nvshandle);
 
     if (err != ESP_OK) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SavePreValue: nvs_commit - error code: " + std::to_string(err));
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: nvs_commit - error code: " + std::to_string(err));
         return false;
     }
 
@@ -324,12 +328,12 @@ bool ClassFlowPostProcessing::SavePreValue()
 ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, ClassFlowCNNGeneral *_analog, ClassFlowCNNGeneral *_digit)
 {
     PresetFlowStateHandler(true);
-    PreValueUse = false;
-    PreValueAgeStartup = 30;
+    UseFallbackValue = false;
+    UpdateFallbackValue = false;
+    FallbackValueAgeStartup = 30;
     ErrorMessage = false;
     ListFlowControll = lfc;
     flowTakeImage = NULL;
-    UpdatePreValueINI = false;
     IgnoreLeadingNaN = false;
     flowAnalog = _analog;
     flowDigit = _digit;
@@ -386,12 +390,9 @@ void ClassFlowPostProcessing::handleDecimalSeparator(std::string _decsep, std::s
         value = stoi(_value);
 
         if (_digit == "default" || NUMBERS[j]->name == _digit)
-        {
-            NUMBERS[j]->DecimalShift = value;
-            NUMBERS[j]->DecimalShiftInitial = value;
-        }
+            NUMBERS[j]->decimalShift = value;
 
-        NUMBERS[j]->Nachkomma = NUMBERS[j]->AnzahlAnalog - NUMBERS[j]->DecimalShift;
+        NUMBERS[j]->decimalPlaceCount = NUMBERS[j]->analogCount - NUMBERS[j]->decimalShift;
 
         //ESP_LOGI(TAG, "handleDecimalSeparator: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, value);
     }
@@ -411,9 +412,9 @@ void ClassFlowPostProcessing::handleAnalogDigitalTransitionStart(std::string _de
     for (int j = 0; j < NUMBERS.size(); ++j)
     {    
         if (_digit == "default" || NUMBERS[j]->name == _digit)  // Set to default first (if nothing else is set)
-            NUMBERS[j]->AnalogDigitalTransitionStart = (int) (stof(_value) * 10);
+            NUMBERS[j]->analogDigitalTransitionStart = (int) (stof(_value) * 10);
 
-        //ESP_LOGI(TAG, "handleAnalogDigitalTransitionStart: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->AnalogDigitalTransitionStart);
+        //ESP_LOGI(TAG, "handleAnalogDigitalTransitionStart: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->analogDigitalTransitionStart);
     }
 }
 
@@ -436,12 +437,12 @@ void ClassFlowPostProcessing::handleAllowNegativeRate(std::string _decsep, std::
         else {
             value = false;
             
-            if (!PreValueUse) // Previous Value is mandatory to evaluate negative rates
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Previous Value\' to use negative rate evaluation"); 
+            if (!UseFallbackValue) // Fallback Value is mandatory to evaluate negative rates
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use negative rate evaluation"); 
         }
 
         if (_digit == "default" || NUMBERS[j]->name == _digit)
-            NUMBERS[j]->AllowNegativeRates = value;
+            NUMBERS[j]->allowNegativeRates = value;
 
         //ESP_LOGI(TAG, "handleAllowNegativeRate: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, value);
     }
@@ -464,8 +465,8 @@ void ClassFlowPostProcessing::handleMaxRateType(std::string _decsep, std::string
             NUMBERS[j]->useMaxRateValue = true;
             _rt = RateChange;
 
-            if (!PreValueUse) // Previous Value is mandatory to evaluate rate limits
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Previous Value\' to use rate limit evaluation"); 
+            if (!UseFallbackValue) // Fallback Value is mandatory to evaluate rate limits
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use rate limit evaluation"); 
         }
         else if (toUpper(_value) == "OFF") {
             NUMBERS[j]->useMaxRateValue = false;
@@ -475,14 +476,14 @@ void ClassFlowPostProcessing::handleMaxRateType(std::string _decsep, std::string
             NUMBERS[j]->useMaxRateValue = true;
             _rt = AbsoluteChange;
 
-            if (!PreValueUse) // Previous Value is mandatory to evaluate rate limits
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Previous Value\' to use rate limit evaluation"); 
+            if (!UseFallbackValue) // Fallback Value is mandatory to evaluate rate limits
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use rate limit evaluation"); 
         }
 
         if (_digit == "default" || NUMBERS[j]->name == _digit)
-            NUMBERS[j]->RateType = _rt;
+            NUMBERS[j]->rateType = _rt;
 
-        //ESP_LOGI(TAG, "handleMaxRateType: Name: %s, Pospunkt: %d, ratetype: %d", _digit.c_str(), _pospunkt, _rt);
+        //ESP_LOGI(TAG, "handleMaxRateType: Name: %s, Pospunkt: %d, rateType: %d", _digit.c_str(), _pospunkt, _rt);
     }
 }
 
@@ -500,9 +501,9 @@ void ClassFlowPostProcessing::handleMaxRateValue(std::string _decsep, std::strin
     for (int j = 0; j < NUMBERS.size(); ++j)
     {
         if (_digit == "default" || NUMBERS[j]->name == _digit)
-            NUMBERS[j]->MaxRateValue = stof(_value);
+            NUMBERS[j]->maxRateValue = stof(_value);
 
-        //ESP_LOGI(TAG, "handleMaxRateValue: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->MaxRateValue);
+        //ESP_LOGI(TAG, "handleMaxRateValue: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->maxRateValue);
     }
 }
 
@@ -526,15 +527,15 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgr
         splitted = ZerlegeZeile(aktparamgraph);
         std::string _param = GetParameterName(splitted[0]);
 
-        if ((toUpper(_param) == "PREVALUEUSE") && (splitted.size() > 1)) {
+        if ((toUpper(_param) == "FALLBACKVALUEUSE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                PreValueUse = true;
+                UseFallbackValue = true;
             else
-                PreValueUse = false;
+                UseFallbackValue = false;
         }
 
-        if ((toUpper(_param) == "PREVALUEAGESTARTUP") && (splitted.size() > 1)) {
-            PreValueAgeStartup = std::stoi(splitted[1]);
+        if ((toUpper(_param) == "FALLBACKVALUEAGESTARTUP") && (splitted.size() > 1)) {
+            FallbackValueAgeStartup = std::stoi(splitted[1]);
         }
 
         if ((toUpper(_param) == "ERRORMESSAGE") && (splitted.size() > 1)) {
@@ -550,7 +551,10 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgr
                     NUMBERS[j]->checkDigitIncreaseConsistency = true;
 
                     if (flowDigit != NULL && flowDigit->getCNNType() != Digital)
-                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models"); 
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models");
+
+                    if (!UseFallbackValue)
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to be able use \'Digit Increase Consistency\' check");
                 }
             }
             else {
@@ -600,8 +604,8 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgr
         }
     }
 
-    if (PreValueUse) {
-        LoadPreValue();
+    if (UseFallbackValue) {
+        LoadFallbackValue();
     }
 
     return true;
@@ -637,9 +641,9 @@ void ClassFlowPostProcessing::InitNUMBERS()
             _number->digit_roi = flowDigit->FindGENERAL(name_numbers[_num]);
         
         if (_number->digit_roi)
-            _number->AnzahlDigital = _number->digit_roi->ROI.size();
+            _number->digitCount = _number->digit_roi->ROI.size();
         else
-            _number->AnzahlDigital = 0;
+            _number->digitCount = 0;
 
         _number->analog_roi = NULL;
         if (flowAnalog)
@@ -647,38 +651,40 @@ void ClassFlowPostProcessing::InitNUMBERS()
 
 
         if (_number->analog_roi)
-            _number->AnzahlAnalog = _number->analog_roi->ROI.size();
+            _number->analogCount = _number->analog_roi->ROI.size();
         else
-            _number->AnzahlAnalog = 0;
+            _number->analogCount = 0;
 
-        _number->ReturnRawValue = "";   // Raw value (with N & leading 0).    
-        _number->ReturnValue = "";      // Corrected return value, possibly with error message
-        _number->ErrorMessageText = ""; // Error message for consistency check
-        _number->ReturnPreValue = "";
-        _number->PreValueOkay = false;
-        _number->AllowNegativeRates = false;
-        _number->MaxRateValue = 0.1;
-        _number->RateType = AbsoluteChange;
+        _number->isFallbackValueValid = false;
+        _number->allowNegativeRates = false;
+        _number->maxRateValue = 0.1;
+        _number->rateType = AbsoluteChange;
         _number->useMaxRateValue = false;
         _number->checkDigitIncreaseConsistency = false;
-        _number->DecimalShift = 0;
-        _number->DecimalShiftInitial = 0;
+        _number->decimalShift = 0;
         _number->isExtendedResolution = false;
-        _number->AnalogDigitalTransitionStart = 92; // 9.2
+        _number->analogDigitalTransitionStart = 92; // 9.2
 
-        _number->FlowRateAct = 0; // m3 / min
-        _number->PreValue = 0; // last value read out well
-        _number->Value = 0; // last value read out, incl. corrections
+        _number->ratePerMin = 0; // m3 / min
+        _number->fallbackValue = 0; // last value read out well
+        _number->actualValue = 0; // last value read out, incl. corrections
 
-        _number->Nachkomma = _number->AnzahlAnalog;
+        _number->decimalPlaceCount = _number->analogCount;
+
+        _number->sRatePerMin = "";
+        _number->sRatePerProcessing = "";
+        _number->sRawValue = "";   // Raw value (with N & leading 0).
+        _number->sFallbackValue = "";   
+        _number->sActualValue = "";      // Corrected return value, possibly with error message
+        _number->sValueStatus = ""; // Error message for consistency check
 
         NUMBERS.push_back(_number);
     }
 
     for (int i = 0; i < NUMBERS.size(); ++i) {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Number sequence: " + NUMBERS[i]->name + 
-                                                ", Digits: " + std::to_string(NUMBERS[i]->AnzahlDigital) + 
-                                                ", Analogs: " + std::to_string(NUMBERS[i]->AnzahlAnalog));
+                                                ", Digits: " + std::to_string(NUMBERS[i]->digitCount) + 
+                                                ", Analogs: " + std::to_string(NUMBERS[i]->analogCount));
     }
 
 }
@@ -729,259 +735,271 @@ std::string ClassFlowPostProcessing::ShiftDecimal(std::string in, int _decShift)
 bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 {
     PresetFlowStateHandler();
-    time_t imagetime = 0;
     int resultPreviousNumberAnalog = -1;
 
-    imagetime = flowTakeImage->getTimeImageTaken();
-    if (imagetime == 0)
-        time(&imagetime);
+    time_t _timeProcessed = flowTakeImage->getTimeImageTaken();
+    if (_timeProcessed == 0)
+        time(&_timeProcessed);
 
-    #ifdef SERIAL_DEBUG
+    #ifdef DEBUG_DETAIL_ON 
         ESP_LOGD(TAG, "Quantity NUMBERS: %d", NUMBERS.size());
     #endif
 
     /* Post-processing for all defined number sequences */
-    for (int j = 0; j < NUMBERS.size(); ++j) { 
-        NUMBERS[j]->ReturnRawValue = "";
-        NUMBERS[j]->ReturnRateValue = "";
-        NUMBERS[j]->ReturnValue = "";
-        NUMBERS[j]->ErrorMessageText = "";
-        NUMBERS[j]->Value = -1.0;
-
-        /* Calculate time difference BEFORE 'NUMBERS[j]->lastvalue' gets overwritten */
-        double difference = difftime(imagetime, NUMBERS[j]->lastvalue); // Calc difference between this eval und last eval in seconds
-        NUMBERS[j]->lastvalue = imagetime; // update timestamp
+    for (int j = 0; j < NUMBERS.size(); ++j) {
+        NUMBERS[j]->timeProcessedPrevious = NUMBERS[j]->timeProcessed;
+        NUMBERS[j]->timeProcessed = _timeProcessed; // Update process time in seconds
+        NUMBERS[j]->sTimeProcessed = ConvertTimeToString(NUMBERS[j]->timeProcessed, TIME_FORMAT_OUTPUT);
+        NUMBERS[j]->isActualValueANumber = true;
+        NUMBERS[j]->isActualValueConfirmed = true;
 
         /* Set decimal shift and number of decimal places */
         UpdateNachkommaDecimalShift();
 
         /* Process analog numbers of sequence */
         if (NUMBERS[j]->analog_roi) {      
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Get analog numbers");
-            NUMBERS[j]->ReturnRawValue = flowAnalog->getReadout(j, NUMBERS[j]->isExtendedResolution);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "doFlow: Get analog numbers");
+            NUMBERS[j]->sRawValue = flowAnalog->getReadout(j, NUMBERS[j]->isExtendedResolution);
 
-            if (NUMBERS[j]->ReturnRawValue.length() > 0) {
-                char zw = NUMBERS[j]->ReturnRawValue[0];  // Convert highest analog number to integer
-                if (zw >= 48 && zw <= 57) // A number?
-                    resultPreviousNumberAnalog = zw - 48;
+            if (NUMBERS[j]->sRawValue.length() > 0) {
+                char cRawValue0 = NUMBERS[j]->sRawValue[0];  // Convert highest analog number to integer
+                if (cRawValue0 >= 48 && cRawValue0 <= 57) // A number?
+                    resultPreviousNumberAnalog = cRawValue0 - 48;
             }
         }
 
-        #ifdef SERIAL_DEBUG
-            ESP_LOGD(TAG, "After analog->getReadout: ReturnRaw %s", NUMBERS[j]->ReturnRawValue.c_str());
+        #ifdef DEBUG_DETAIL_ON 
+            ESP_LOGD(TAG, "After analog->getReadout: ReturnRaw %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
         /* Add decimal separator */
         if (NUMBERS[j]->digit_roi && NUMBERS[j]->analog_roi)
-            NUMBERS[j]->ReturnRawValue = "." + NUMBERS[j]->ReturnRawValue;
+            NUMBERS[j]->sRawValue = "." + NUMBERS[j]->sRawValue;
 
         /* Process digit numbers of sequence */
         if (NUMBERS[j]->digit_roi) {
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Get digit numbers");
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "doFlow: Get digit numbers");
             if (NUMBERS[j]->analog_roi) // If analog numbers available
-                NUMBERS[j]->ReturnRawValue = flowDigit->getReadout(j, false, NUMBERS[j]->analog_roi->ROI[0]->CNNResult, resultPreviousNumberAnalog, 
-                                                                    NUMBERS[j]->AnalogDigitalTransitionStart) + NUMBERS[j]->ReturnRawValue;
+                NUMBERS[j]->sRawValue = flowDigit->getReadout(j, false, NUMBERS[j]->analog_roi->ROI[0]->CNNResult, resultPreviousNumberAnalog, 
+                                                                    NUMBERS[j]->analogDigitalTransitionStart) + NUMBERS[j]->sRawValue;
             else
-                NUMBERS[j]->ReturnRawValue = flowDigit->getReadout(j, NUMBERS[j]->isExtendedResolution); // Extended resolution for digits only if no analog previous number
+                NUMBERS[j]->sRawValue = flowDigit->getReadout(j, NUMBERS[j]->isExtendedResolution); // Extended resolution for digits only if no analog previous number
         }
 
-        #ifdef SERIAL_DEBUG
-            ESP_LOGD(TAG, "After digital->getReadout: ReturnRaw %s", NUMBERS[j]->ReturnRawValue.c_str());
+        #ifdef DEBUG_DETAIL_ON 
+            ESP_LOGD(TAG, "After digital->getReadout: ReturnRaw %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
         /* Apply parametrized decimal shift */
-        NUMBERS[j]->ReturnRawValue = ShiftDecimal(NUMBERS[j]->ReturnRawValue, NUMBERS[j]->DecimalShift);
+        NUMBERS[j]->sRawValue = ShiftDecimal(NUMBERS[j]->sRawValue, NUMBERS[j]->decimalShift);
 
-        #ifdef SERIAL_DEBUG
-            ESP_LOGD(TAG, "After ShiftDecimal: ReturnRaw %s", NUMBERS[j]->ReturnRawValue.c_str());
+        #ifdef DEBUG_DETAIL_ON 
+            ESP_LOGD(TAG, "After ShiftDecimal: ReturnRaw %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
         /* Remove leading N */
         if (IgnoreLeadingNaN)               
-            while ((NUMBERS[j]->ReturnRawValue.length() > 1) && (NUMBERS[j]->ReturnRawValue[0] == 'N'))
-                NUMBERS[j]->ReturnRawValue.erase(0, 1);
+            while ((NUMBERS[j]->sRawValue.length() > 1) && (NUMBERS[j]->sRawValue[0] == 'N'))
+                NUMBERS[j]->sRawValue.erase(0, 1);
 
-        #ifdef SERIAL_DEBUG
-            ESP_LOGD(TAG, "After IgnoreLeadingNaN: ReturnRaw %s", NUMBERS[j]->ReturnRawValue.c_str());
+        #ifdef DEBUG_DETAIL_ON 
+            ESP_LOGD(TAG, "After IgnoreLeadingNaN: ReturnRaw %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
-        NUMBERS[j]->ReturnValue = NUMBERS[j]->ReturnRawValue;
+        /* Use fully processed "Raw Value" and transfer to "Value" for further processing */
+        NUMBERS[j]->sActualValue = NUMBERS[j]->sRawValue;
 
-        /* Substitute N position with last valid number if available */
-        if (findDelimiterPos(NUMBERS[j]->ReturnValue, "N") != std::string::npos) {
-            if (PreValueUse && NUMBERS[j]->PreValueOkay) { // PreValue can be used to replace the N
-                NUMBERS[j]->ReturnValue = ErsetzteN(NUMBERS[j]->ReturnValue, NUMBERS[j]->PreValue); 
+        /* Substitute any N position with last valid number if available */
+        if (findDelimiterPos(NUMBERS[j]->sActualValue, "N") != std::string::npos) {
+            if (UseFallbackValue && NUMBERS[j]->isFallbackValueValid) { // fallbackValue can be used to replace the N
+                NUMBERS[j]->sActualValue = ErsetzteN(NUMBERS[j]->sActualValue, NUMBERS[j]->fallbackValue); 
             }
-            else { // Prevalue not valid to replace any N
-                if (!PreValueUse)
-                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Previous Value\' to be able to substitude N");
+            else { // fallbackValue not valid to replace any N
+                if (!UseFallbackValue)
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to be able to substitude N positions");
 
-                NUMBERS[j]->ErrorMessageText = "No data to substitute N"; 
-                NUMBERS[j]->ReturnValue = "";   // Reset return value
+                NUMBERS[j]->ratePerMin = 0.0;
+                NUMBERS[j]->ratePerProcessing = 0.0;
+                NUMBERS[j]->sRatePerMin =  to_stringWithPrecision(NUMBERS[j]->ratePerMin, NUMBERS[j]->decimalPlaceCount);
+                NUMBERS[j]->sRatePerProcessing = to_stringWithPrecision(NUMBERS[j]->ratePerProcessing, NUMBERS[j]->decimalPlaceCount);
 
-                std::string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
-                                                ", Status: " + NUMBERS[j]->ErrorMessageText;             
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, _zw);
+                NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_001_NO_DATA_N_SUBST) + "; Raw value: " + NUMBERS[j]->sRawValue;
+                NUMBERS[j]->sActualValue = "";
+                NUMBERS[j]->isActualValueANumber = false;
+                NUMBERS[j]->isActualValueConfirmed = false;
+      
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, NUMBERS[j]->name + ": Value Status: " + NUMBERS[j]->sValueStatus);
 
                 WriteDataLog(j);
-                continue; // there is no number because there is still an N.
+                continue; // Stop here, no valid number because there are still N.
             }
         }
 
-        #ifdef SERIAL_DEBUG
-            ESP_LOGD(TAG, "After findDelimiterPos: ReturnValue %s", NUMBERS[j]->ReturnRawValue.c_str());
+        #ifdef DEBUG_DETAIL_ON 
+            ESP_LOGD(TAG, "After findDelimiterPos: sValue %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
         /* Delete leading zeros (unless there is only one 0 left) */
-        while ((NUMBERS[j]->ReturnValue.length() > 1) && (NUMBERS[j]->ReturnValue[0] == '0'))
-            NUMBERS[j]->ReturnValue.erase(0, 1);
+        while ((NUMBERS[j]->sActualValue.length() > 1) && (NUMBERS[j]->sActualValue[0] == '0'))
+            NUMBERS[j]->sActualValue.erase(0, 1);
         
-        #ifdef SERIAL_DEBUG
-            ESP_LOGD(TAG, "After removeLeadingZeros: ReturnValue %s", NUMBERS[j]->ReturnRawValue.c_str());
+        #ifdef DEBUG_DETAIL_ON 
+            ESP_LOGD(TAG, "After removeLeadingZeros: sValue %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
-        NUMBERS[j]->Value = std::stod(NUMBERS[j]->ReturnValue);
+        /* Convert actual value to double interpretation */
+        NUMBERS[j]->actualValuePrevious = NUMBERS[j]->actualValue;
+        NUMBERS[j]->actualValue = std::stod(NUMBERS[j]->sActualValue);
 
-        #ifdef SERIAL_DEBUG
-            ESP_LOGD(TAG, "After setting the Value: Value %f and as double is %f", NUMBERS[j]->Value, std::stod(NUMBERS[j]->ReturnValue));
+        #ifdef DEBUG_DETAIL_ON 
+            ESP_LOGD(TAG, "After setting the Value: Value %f and as double is %f", NUMBERS[j]->actualValue, std::stod(NUMBERS[j]->sActualValue));
         #endif
 
-        /* Check digit plausibitily (only support and necessary for class-11 models (0-9 + NaN)) */
-        if (NUMBERS[j]->checkDigitIncreaseConsistency) {
-            if (flowDigit) {
-                if (flowDigit->getCNNType() != Digital)
-                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models"); 
-                else {
-                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check digit increase consistency for sequence: " + NUMBERS[j]->name);
-                    NUMBERS[j]->Value = checkDigitConsistency(NUMBERS[j]->Value, NUMBERS[j]->DecimalShift, NUMBERS[j]->analog_roi != NULL, NUMBERS[j]->PreValue);
+        if (UseFallbackValue) {
+            /* Is fallbackValue OK (== not too old)*/
+            if (NUMBERS[j]->isFallbackValueValid) {
+                /* Update fallbackValue */
+                NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount);
+
+                /* Check digit plausibitily (only support and necessary for class-11 models (0-9 + NaN)) */
+                if (NUMBERS[j]->checkDigitIncreaseConsistency) {
+                    if (flowDigit) {
+                        if (flowDigit->getCNNType() != Digital)
+                            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models"); 
+                        else {
+                            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check digit increase consistency for number sequence: " + NUMBERS[j]->name);
+                            NUMBERS[j]->actualValue = checkDigitConsistency(NUMBERS[j]->actualValue, NUMBERS[j]->decimalShift, 
+                                                                            NUMBERS[j]->analog_roi != NULL, NUMBERS[j]->fallbackValue);
+                        }
+                    }
+                    else {
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, no digit numbers configured"); 
+                    }
                 }
-            }
-            else {
-                #ifdef SERIAL_DEBUG
-                    ESP_LOGD(TAG, "checkDigitIncreaseConsistency: Skip; no digit numbers");
+
+                #ifdef DEBUG_DETAIL_ON 
+                    ESP_LOGD(TAG, "After checkDigitIncreaseConsistency: Value %f", NUMBERS[j]->actualValue);
+                #endif
+
+                /* Update Rates */
+                //Calculate delta time between this reading und last valid reading in seconds
+                double timeDeltaLastValidValue = difftime(NUMBERS[j]->timeProcessed, NUMBERS[j]->timeFallbackValue) / 60.0;  // delta in minutes
+                NUMBERS[j]->ratePerMin = (NUMBERS[j]->actualValue - NUMBERS[j]->fallbackValue) / timeDeltaLastValidValue;
+                NUMBERS[j]->ratePerProcessing = NUMBERS[j]->actualValue - NUMBERS[j]->fallbackValue;
+
+                /* Check for rate too high */
+                if (NUMBERS[j]->useMaxRateValue) {
+                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check rate limit for number sequence: " + NUMBERS[j]->name);
+                    double _rate;  
+                    if (NUMBERS[j]->rateType == RateChange)
+                        _rate = NUMBERS[j]->ratePerMin;
+                    else
+                        _rate = NUMBERS[j]->ratePerProcessing;
+
+                    if (abs(_rate) > abs((double)NUMBERS[j]->maxRateValue)) {
+                        if (_rate > 0)
+                            NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_002_RATE_TOO_HIGH_POS); 
+                        else
+                            NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_003_RATE_TOO_HIGH_NEG); 
+
+                        NUMBERS[j]->sValueStatus += "; Read: " + to_stringWithPrecision(NUMBERS[j]->actualValue, NUMBERS[j]->decimalPlaceCount) + 
+                                                    ", Fallback: " + NUMBERS[j]->sFallbackValue + 
+                                                    ", Rate: " + to_stringWithPrecision(_rate, NUMBERS[j]->decimalPlaceCount);
+                         
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, NUMBERS[j]->name + ": Value Status: " + NUMBERS[j]->sValueStatus);
+                        
+                        NUMBERS[j]->isActualValueConfirmed = false;
+                    }
+                }
+
+                #ifdef DEBUG_DETAIL_ON 
+                ESP_LOGD(TAG, "After MaxRateCheck: Value %f", NUMBERS[j]->actualValue);
+                #endif
+
+                /* Check for negative rate */
+                if (!NUMBERS[j]->allowNegativeRates && NUMBERS[j]->isActualValueConfirmed) {
+                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check negative rate for number sequence: " + NUMBERS[j]->name);
+                    if (NUMBERS[j]->actualValue < NUMBERS[j]->fallbackValue) {                        
+                        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Negative rate; Read: " + std::to_string(NUMBERS[j]->actualValue) +
+                                                                "FallbackValue: " + std::to_string(NUMBERS[j]->fallbackValue));
+                        NUMBERS[j]->isActualValueConfirmed = false;
+                    }
+                }
+
+                #ifdef DEBUG_DETAIL_ON 
+                    ESP_LOGD(TAG, "After allowNegativeRates: Value %f", NUMBERS[j]->actualValue);
                 #endif
             }
-        }
 
-        #ifdef SERIAL_DEBUG
-            ESP_LOGD(TAG, "After checkDigitIncreaseConsistency: Value %f", NUMBERS[j]->Value);
-        #endif
-
-        /* Check negative rate */
-        if (!NUMBERS[j]->AllowNegativeRates) {
-            if (PreValueUse && NUMBERS[j]->PreValueOkay) {
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check negative rate for sequence: " + NUMBERS[j]->name);
-                if (NUMBERS[j]->Value < NUMBERS[j]->PreValue)
-                {
-                    #ifdef SERIAL_DEBUG
-                        ESP_LOGD(TAG, "Neg: value=%f, preValue=%f, preToll%f", NUMBERS[j]->Value, NUMBERS[j]->PreValue,
-                                    NUMBERS[j]->PreValue-(2/pow(10, NUMBERS[j]->Nachkomma)));
-                    #endif
-
-                    // Include inaccuracy of 0.2 for isExtendedResolution.
-                    if (NUMBERS[j]->Value >= (NUMBERS[j]->PreValue-(2/pow(10, NUMBERS[j]->Nachkomma))) && NUMBERS[j]->isExtendedResolution) {
-                        NUMBERS[j]->Value = NUMBERS[j]->PreValue;
-                        NUMBERS[j]->ReturnValue = std::to_string(NUMBERS[j]->PreValue);
-                    } 
-                    else {
-                        NUMBERS[j]->ErrorMessageText = "Neg. Rate: Read: " + to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) +
-                                                            ", Pre: " + to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma); 
-                        NUMBERS[j]->Value = NUMBERS[j]->PreValue;
-                        NUMBERS[j]->ReturnValue = "";
-
-                        std::string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
-                                                        ", Status: " + NUMBERS[j]->ErrorMessageText;
-                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _zw);
-
-                        WriteDataLog(j);
-                        continue;
-                    }   
-                }
+            /* Update string outputs */
+            if (NUMBERS[j]->isActualValueANumber && NUMBERS[j]->isActualValueConfirmed) { // Value of actual reading is valid
+                // Save value as fallback value
+                NUMBERS[j]->fallbackValue = NUMBERS[j]->actualValue;
+                NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount);
+                
+                NUMBERS[j]->timeFallbackValue = NUMBERS[j]->timeProcessed;
+                NUMBERS[j]->sTimeFallbackValue = ConvertTimeToString(NUMBERS[j]->timeFallbackValue, TIME_FORMAT_OUTPUT);
+                NUMBERS[j]->isFallbackValueValid = true;
+                UpdateFallbackValue = true;
+                NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID); 
+            }
+            else { // Value of actual reading is invalid
+                NUMBERS[j]->ratePerMin = 0.0;
+                NUMBERS[j]->ratePerProcessing = 0.0;
+                NUMBERS[j]->actualValue = NUMBERS[j]->fallbackValue;
             }
         }
-
-        #ifdef SERIAL_DEBUG
-            ESP_LOGD(TAG, "After AllowNegativeRates: Value %f", NUMBERS[j]->Value);
-        #endif
-
-        difference /= 60;  
-        NUMBERS[j]->FlowRateAct = (NUMBERS[j]->Value - NUMBERS[j]->PreValue) / difference;
-        NUMBERS[j]->ReturnRateValue =  std::to_string(NUMBERS[j]->FlowRateAct);
-
-        /* Check rate too high */
-        if (NUMBERS[j]->useMaxRateValue && PreValueUse && NUMBERS[j]->PreValueOkay) {
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check rate limit for sequence: " + NUMBERS[j]->name);
-            double _ratedifference;  
-            if (NUMBERS[j]->RateType == RateChange)
-                _ratedifference = NUMBERS[j]->FlowRateAct;
-            else
-                _ratedifference = (NUMBERS[j]->Value - NUMBERS[j]->PreValue);
-
-            if (abs(_ratedifference) > abs(NUMBERS[j]->MaxRateValue)) {
-                NUMBERS[j]->ErrorMessageText = "Rate too high: Read: " + to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma) + 
-                                                    ", Pre: " + to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma) + 
-                                                    ", Rate: " + to_stringWithPrecision(_ratedifference, NUMBERS[j]->Nachkomma);
-                NUMBERS[j]->Value = NUMBERS[j]->PreValue;
-                NUMBERS[j]->ReturnValue = "";
-                NUMBERS[j]->ReturnRateValue = "";
-
-                std::string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + 
-                                                ", Status: " + NUMBERS[j]->ErrorMessageText;
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _zw);
-
-                WriteDataLog(j);
-                continue;
-            }
+        else { // FallbackValue usage disabled, no rate checking possible
+            //Calculate delta time between this reading und last reading in seconds
+            double timeDeltaLastValidValue = difftime(NUMBERS[j]->timeProcessed, NUMBERS[j]->timeProcessedPrevious) / 60.0;  // delta in minutes
+            NUMBERS[j]->ratePerMin = (NUMBERS[j]->actualValue - NUMBERS[j]->actualValuePrevious) / timeDeltaLastValidValue;
+            NUMBERS[j]->ratePerProcessing = NUMBERS[j]->actualValue - NUMBERS[j]->actualValuePrevious;
+            NUMBERS[j]->fallbackValue = 0.0;
+            NUMBERS[j]->sFallbackValue = "";
+            NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID); 
         }
 
-        #ifdef SERIAL_DEBUG
-           ESP_LOGD(TAG, "After MaxRateCheck: Value %f", NUMBERS[j]->Value);
-        #endif
-        
-        NUMBERS[j]->ReturnChangeAbsolute = to_stringWithPrecision(NUMBERS[j]->Value - NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma);
-        NUMBERS[j]->PreValue = NUMBERS[j]->Value;
-        NUMBERS[j]->PreValueOkay = true;
+        /* Write output values */
+        NUMBERS[j]->sRatePerMin =  to_stringWithPrecision(NUMBERS[j]->ratePerMin, NUMBERS[j]->decimalPlaceCount);
+        NUMBERS[j]->sRatePerProcessing = to_stringWithPrecision(NUMBERS[j]->ratePerProcessing, NUMBERS[j]->decimalPlaceCount);
+        NUMBERS[j]->sActualValue = to_stringWithPrecision(NUMBERS[j]->actualValue, NUMBERS[j]->decimalPlaceCount);
 
-        NUMBERS[j]->ReturnValue = to_stringWithPrecision(NUMBERS[j]->Value, NUMBERS[j]->Nachkomma);
-        NUMBERS[j]->ReturnPreValue = to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma);
-
-        NUMBERS[j]->ErrorMessageText = "no error";
-        UpdatePreValueINI = true;
-
-        std::string _zw = NUMBERS[j]->name + ": Raw: " + NUMBERS[j]->ReturnRawValue + ", Value: " + NUMBERS[j]->ReturnValue + ", Status: " + NUMBERS[j]->ErrorMessageText;
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, _zw);
+        /* Write log file entry */
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": Value: " + NUMBERS[j]->sActualValue + 
+                                                                  ", Rate per min: " + NUMBERS[j]->sRatePerMin + 
+                                                                  ", Value status: " + NUMBERS[j]->sValueStatus);
 
         WriteDataLog(j);
     }
 
-    SavePreValue();
+    SaveFallbackValue();
     return true;
 }
 
+
 void ClassFlowPostProcessing::WriteDataLog(int _index)
 {
-    if (!LogFile.GetDataLogToSD()){
+    if (!LogFile.GetDataLogToSD()) {
         return;
     }
     
     std::string analog = "";
     std::string digital = "";
-    std::string timezw = "";
-    char buffer[80];
-    struct tm* timeinfo = localtime(&NUMBERS[_index]->lastvalue);
-    strftime(buffer, 80, PREVALUE_TIME_FORMAT_OUTPUT, timeinfo);
-    timezw = std::string(buffer);
     
     if (flowAnalog)
         analog = flowAnalog->getReadoutRawString(_index);
+    
     if (flowDigit)
         digital = flowDigit->getReadoutRawString(_index);
-    LogFile.WriteToData(timezw, NUMBERS[_index]->name, 
-                        NUMBERS[_index]->ReturnRawValue, NUMBERS[_index]->ReturnValue, NUMBERS[_index]->ReturnPreValue, 
-                        NUMBERS[_index]->ReturnRateValue, NUMBERS[_index]->ReturnChangeAbsolute,
-                        NUMBERS[_index]->ErrorMessageText, 
+    
+    LogFile.WriteToData(NUMBERS[_index]->sTimeProcessed, NUMBERS[_index]->name, 
+                        NUMBERS[_index]->sRawValue, NUMBERS[_index]->sActualValue, NUMBERS[_index]->sFallbackValue, 
+                        NUMBERS[_index]->sRatePerMin, NUMBERS[_index]->sRatePerProcessing,
+                        NUMBERS[_index]->sValueStatus, 
                         digital, analog);
-    ESP_LOGD(TAG, "WriteDataLog: %s, %s, %s, %s, %s", NUMBERS[_index]->ReturnRawValue.c_str(), NUMBERS[_index]->ReturnValue.c_str(), NUMBERS[_index]->ErrorMessageText.c_str(), digital.c_str(), analog.c_str());
+    
+    ESP_LOGD(TAG, "WriteDataLog: %s, %s, %s, %s, %s", NUMBERS[_index]->sRawValue.c_str(), NUMBERS[_index]->sActualValue.c_str(), 
+                        NUMBERS[_index]->sValueStatus.c_str(), digital.c_str(), analog.c_str());
 }
 
 
@@ -989,62 +1007,54 @@ void ClassFlowPostProcessing::UpdateNachkommaDecimalShift()
 {
     for (int j = 0; j < NUMBERS.size(); ++j)
     {
-        if (NUMBERS[j]->digit_roi && !NUMBERS[j]->analog_roi)            // There are only digital digits
-        {
-//            ESP_LOGD(TAG, "Nurdigital");
-            NUMBERS[j]->DecimalShift = NUMBERS[j]->DecimalShiftInitial;
+        if (NUMBERS[j]->digit_roi && !NUMBERS[j]->analog_roi) { // Only digit numbers
+            //ESP_LOGD(TAG, "Nurdigital");
+            if (NUMBERS[j]->isExtendedResolution && flowDigit->isExtendedResolution()) // Extended resolution is on and should also be used
+                NUMBERS[j]->decimalShift = NUMBERS[j]->decimalShift-1;
 
-            if (NUMBERS[j]->isExtendedResolution && flowDigit->isExtendedResolution())  // Extended resolution is on and should also be used for this digit.
-                NUMBERS[j]->DecimalShift = NUMBERS[j]->DecimalShift-1;
-
-            NUMBERS[j]->Nachkomma = -NUMBERS[j]->DecimalShift;
+            NUMBERS[j]->decimalPlaceCount = -NUMBERS[j]->decimalShift;
         }
 
-        if (!NUMBERS[j]->digit_roi && NUMBERS[j]->analog_roi)
-        {
-//            ESP_LOGD(TAG, "Nur analog");
-            NUMBERS[j]->DecimalShift = NUMBERS[j]->DecimalShiftInitial;
-            if (NUMBERS[j]->isExtendedResolution && flowAnalog->isExtendedResolution()) 
-                NUMBERS[j]->DecimalShift = NUMBERS[j]->DecimalShift-1;
+        if (!NUMBERS[j]->digit_roi && NUMBERS[j]->analog_roi) { // Only analog pointers
+            //ESP_LOGD(TAG, "Nur analog");
+            if (NUMBERS[j]->isExtendedResolution && flowAnalog->isExtendedResolution()) // Extended resolution is on and should also be used.
+                NUMBERS[j]->decimalShift = NUMBERS[j]->decimalShift-1;
 
-            NUMBERS[j]->Nachkomma = -NUMBERS[j]->DecimalShift;
+            NUMBERS[j]->decimalPlaceCount = -NUMBERS[j]->decimalShift;
         }
 
-        if (NUMBERS[j]->digit_roi && NUMBERS[j]->analog_roi)            // digital + analog
-        {
-//            ESP_LOGD(TAG, "Nur digital + analog");
+        if (NUMBERS[j]->digit_roi && NUMBERS[j]->analog_roi) { // Digit numbers & analog pointer available 
+            //ESP_LOGD(TAG, "Nur digital + analog");
+            NUMBERS[j]->decimalPlaceCount = NUMBERS[j]->analog_roi->ROI.size() - NUMBERS[j]->decimalShift;
 
-            NUMBERS[j]->DecimalShift = NUMBERS[j]->DecimalShiftInitial;
-            NUMBERS[j]->Nachkomma = NUMBERS[j]->analog_roi->ROI.size() - NUMBERS[j]->DecimalShift;
-
-            if (NUMBERS[j]->isExtendedResolution && flowAnalog->isExtendedResolution())  // Extended resolution is on and should also be used for this digit.
-                NUMBERS[j]->Nachkomma = NUMBERS[j]->Nachkomma+1;
+            if (NUMBERS[j]->isExtendedResolution && flowAnalog->isExtendedResolution()) // Extended resolution is on and should also be used
+                NUMBERS[j]->decimalPlaceCount = NUMBERS[j]->decimalPlaceCount+1;
 
         }
 
-        ESP_LOGD(TAG, "UpdateNachkommaDecShift NUMBER%i: Nachkomma %i, DecShift %i", j, NUMBERS[j]->Nachkomma,NUMBERS[j]->DecimalShift);
+        ESP_LOGD(TAG, "UpdateNachkommaDecShift NUMBER%i: decimalPlace %i, DecShift %i", j, NUMBERS[j]->decimalPlaceCount,NUMBERS[j]->decimalShift);
     }
 }
 
 
 std::string ClassFlowPostProcessing::getReadout(int _number)
 {
-    return NUMBERS[_number]->ReturnValue;
+    return NUMBERS[_number]->sActualValue;
 }
 
 std::string ClassFlowPostProcessing::getReadoutParam(bool _rawValue, bool _noerror, int _number)
 {
     if (_rawValue)
-        return NUMBERS[_number]->ReturnRawValue;
+        return NUMBERS[_number]->sRawValue;
     
     if (_noerror)
-        return NUMBERS[_number]->ReturnValue;
+        return NUMBERS[_number]->sActualValue;
     
-    return NUMBERS[_number]->ReturnValue;
+    return NUMBERS[_number]->sActualValue;
 }
 
 
-std::string ClassFlowPostProcessing::ErsetzteN(std::string input, double _prevalue)
+std::string ClassFlowPostProcessing::ErsetzteN(std::string input, double _fallbackValue)
 {
     int posN, posPunkt;
     int pot, ziffer;
@@ -1065,7 +1075,7 @@ std::string ClassFlowPostProcessing::ErsetzteN(std::string input, double _preval
             pot = posPunkt - posN;
         }
 
-        zw =_prevalue / pow(10, pot);
+        zw =_fallbackValue / pow(10, pot);
         ziffer = ((int) zw) % 10;
         input[posN] = ziffer + 48;
 
@@ -1075,7 +1085,7 @@ std::string ClassFlowPostProcessing::ErsetzteN(std::string input, double _preval
     return input;
 }
 
-float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decilamshift, bool _isanalog, double _preValue){
+float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decilamshift, bool _isanalog, double _fallbackValue){
     int aktdigit, olddigit;
     int aktdigit_before, olddigit_before;
     int pot, pot_max;
@@ -1087,20 +1097,20 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decilams
     {
         pot++;
     }
-    #ifdef SERIAL_DEBUG
-        ESP_LOGD(TAG, "checkDigitConsistency: pot=%d, decimalshift=%d", pot, _decilamshift);
+    #ifdef DEBUG_DETAIL_ON 
+        ESP_LOGD(TAG, "checkDigitConsistency: pot=%d, decimalShift=%d", pot, _decilamshift);
     #endif
     pot_max = ((int) log10(input)) + 1;
     while (pot <= pot_max)
     {
         zw = input / pow(10, pot-1);
         aktdigit_before = ((int) zw) % 10;
-        zw = _preValue / pow(10, pot-1);
+        zw = _fallbackValue / pow(10, pot-1);
         olddigit_before = ((int) zw) % 10;
 
         zw = input / pow(10, pot);
         aktdigit = ((int) zw) % 10;
-        zw = _preValue / pow(10, pot);
+        zw = _fallbackValue / pow(10, pot);
         olddigit = ((int) zw) % 10;
 
         no_nulldurchgang = (olddigit_before <= aktdigit_before);
@@ -1119,7 +1129,7 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decilams
                 input = input + ((float) (1)) * pow(10, pot);   // add 1 at the point
             }
         }
-        #ifdef SERIAL_DEBUG
+        #ifdef DEBUG_DETAIL_ON 
             ESP_LOGD(TAG, "checkDigitConsistency: input=%f", input);
         #endif
         pot++;
@@ -1130,18 +1140,18 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decilams
 
 std::string ClassFlowPostProcessing::getReadoutRate(int _number)
 {
-    return std::to_string(NUMBERS[_number]->FlowRateAct);
+    return std::to_string(NUMBERS[_number]->ratePerMin);
 }
 
 std::string ClassFlowPostProcessing::getReadoutTimeStamp(int _number)
 {
-   return NUMBERS[_number]->timeStamp; 
+   return NUMBERS[_number]->sTimeFallbackValue;
 }
 
 
 std::string ClassFlowPostProcessing::getReadoutError(int _number) 
 {
-    return NUMBERS[_number]->ErrorMessageText;
+    return NUMBERS[_number]->sValueStatus;
 }
 
 

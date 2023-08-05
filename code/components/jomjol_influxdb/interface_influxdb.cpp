@@ -53,7 +53,7 @@ void InfluxDB_V2_Publish(std::string _measurement, std::string _key, std::string
     if (_timestamp.length() > 0)
     {
         struct tm tm;
-        strptime(_timestamp.c_str(), PREVALUE_TIME_FORMAT_OUTPUT, &tm);
+        strptime(_timestamp.c_str(), TIME_FORMAT_OUTPUT, &tm);
         time_t t = mktime(&tm); // Time in Localtime (looks like timezone is not used by strptime)
 
 //        struct tm * ptm;
@@ -173,7 +173,7 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
     if (_timestamp.length() > 0)
     {
         struct tm tm;
-        strptime(_timestamp.c_str(), PREVALUE_TIME_FORMAT_OUTPUT, &tm);
+        strptime(_timestamp.c_str(), TIME_FORMAT_OUTPUT, &tm);
         time_t t = mktime(&tm); // Time in Localtime (looks like timezone is not used by strptime)
 
 //        struct tm * ptm;

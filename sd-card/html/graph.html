@@ -52,10 +52,10 @@
             response.text()
             .then( result => {
                 var lines = result.split("\n");
-                var traceValue =          { x: [], y: [], type: 'scatter', line: {width: 6}, name: 'Value'};
-                var tracePreValue =       { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Previous Value', visible: 'legendonly'};
-                var traceChangeRate =     { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Change Rate'};
-                var traceChangeAbsolute = { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Change Absolute', visible: 'legendonly'};
+                var traceValue =         { x: [], y: [], type: 'scatter', line: {width: 6}, name: 'Value'};
+                var traceFallbackValue = { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Fallback Value', visible: 'legendonly'};
+                var traceRatePerMin =    { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Minute'};
+                var traceRatePerRound =  { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Round', visible: 'legendonly'};
 
                 var timex = 1;
                 for (let line of lines) {
@@ -64,9 +64,9 @@
                         if (line.split(",")[1] == numbername)
                         {
                             var value = line.split(",")[3];
-                            var preValue = line.split(",")[4];
-                            var changeRate = line.split(",")[5];
-                            var changeAbsolute = line.split(",")[6];
+                            var fallbackValue = line.split(",")[4];
+                            var RatePerMin = line.split(",")[5];
+                            var RatePerRound = line.split(",")[6];
                             var time  = line.split(",")[0];
                             //console.log("> "+time+" "+value+"\n");
 
@@ -77,22 +77,22 @@
                                 value = NaN;
                             }
 
-                            if (preValue == "" || isNaN(preValue)) {
-                                preValue = NaN;
+                            if (fallbackValue == "" || isNaN(fallbackValue)) {
+                                fallbackValue = NaN;
                             }
 
-                            if (changeRate == "" || isNaN(changeRate)) {
-                                changeRate = NaN;
+                            if (RatePerMin == "" || isNaN(RatePerMin)) {
+                                RatePerMin = NaN;
                             }
 
-                            if (changeAbsolute == "" || isNaN(changeAbsolute)) {
-                                changeAbsolute = NaN;
+                            if (RatePerRound == "" || isNaN(RatePerRound)) {
+                                RatePerRound = NaN;
                             }
 
                             traceValue.y.push(value);
-                            tracePreValue.y.push(preValue);
-                            traceChangeRate.y.push(changeRate);
-                            traceChangeAbsolute.y.push(changeAbsolute);
+                            traceFallbackValue.y.push(fallbackValue);
+                            traceRatePerMin.y.push(RatePerMin);
+                            traceRatePerRound.y.push(RatePerRound);
                         }
                     }
                 }
@@ -119,14 +119,14 @@
 
 
                 // Copy time to all traces
-                tracePreValue.x = traceValue.x;
-                traceChangeRate.x = traceValue.x;
-                traceChangeAbsolute.x = traceValue.x;
+                traceFallbackValue.x = traceValue.x;
+                traceRatePerMin.x = traceValue.x;
+                traceRatePerRound.x = traceValue.x;
 
                 //console.log(traceValue.y);
 
                 var offsetValue = traceValue.y[0];
-                var offsetPreValue = tracePreValue.y[0];
+                var offsetFallbackValue = traceFallbackValue.y[0];
 
                 traceValue.connectgaps = true;
 
@@ -135,14 +135,14 @@
                         arr[index] = arr[index] - offsetValue;
                     });
 
-                    tracePreValue.y.forEach(function(part, index, arr) {
-                        arr[index] = arr[index] - offsetPreValue;
+                    traceFallbackValue.y.forEach(function(part, index, arr) {
+                        arr[index] = arr[index] - offsetFallbackValue;
                     });
                 }
 
               //  console.log(traceValue.x)
 
-                var data = [traceValue, tracePreValue, traceChangeRate, traceChangeAbsolute];
+                var data = [traceValue, traceFallbackValue, traceRatePerMin, traceRatePerRound];
 
                 var layout = {
                     showlegend: true,
@@ -150,7 +150,7 @@
 
                     yaxis: {title: 'Value'},
                     yaxis2: {
-                        title: 'Change',
+                        title: 'Rate',
                         overlaying: 'y',
                         side: 'right'
                     },

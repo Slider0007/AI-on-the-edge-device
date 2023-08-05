@@ -389,14 +389,14 @@ esp_err_t handler_value(httpd_req_t *req)
         const std::string RESTUsageInfo = 
             "00: Handler usage:<br>"
             "1. Return data from all number sequences:<br>"
-            " - Value:          /value?all=true&type=value<br>"
+            " - Actual Value:   /value?all=true&type=value<br>"
+            " - Fallback Value: /value?all=true&type=fallback<br>"
             " - Raw Value:      /value?all=true&type=raw<br>"
-            " - Previous Value: /value?all=true&type=prevalue<br>"
             " - Value Status:   /value?all=true&type=error<br><br>"
             "2. Return data from a specific number sequence with e.g. name \"main\":<br>"
-            " - Value:          /value?all=true&type=value&numbersname=main<br>"
+            " - Actual Value:   /value?all=true&type=value&numbersname=main<br>"
             " - Raw Value:      /value?all=true&type=raw&numbersname=main<br>"
-            " - Previous Value: /value?all=true&type=prevalue&numbersname=main<br>"
+            " - Fallback Value: /value?all=true&type=fallback&numbersname=main<br>"
             " - Value Status:   /value?all=true&type=error&numbersname=main<br><br>"
             "3. Retrieve WebUI recognition page content, use /value?full=true<br>";
 
@@ -454,8 +454,8 @@ esp_err_t handler_value(httpd_req_t *req)
             if (!_numberspecific) {
                 if (_type == "value")
                     zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE);
-                else if (_type == "prevalue")
-                    zw = flowctrl.getReadoutAll(READOUT_TYPE_PREVALUE);
+                else if (_type == "fallback")
+                    zw = flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE);
                 else if (_type == "raw")
                     zw = flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE);
                 else if (_type == "error")
@@ -477,8 +477,8 @@ esp_err_t handler_value(httpd_req_t *req)
 
                 if (_type == "value")
                     zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE);
-                else if (_type == "prevalue")
-                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_PREVALUE);
+                else if (_type == "fallback")
+                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_FALLBACKVALUE);
                 else if (_type == "raw")
                     zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_RAWVALUE);
                 else if (_type == "error")
@@ -959,20 +959,20 @@ esp_err_t handler_uptime(httpd_req_t *req)
 }
 
 
-esp_err_t handler_prevalue(httpd_req_t *req)
+esp_err_t handler_fallbackvalue(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_prevalue - Start");       
+        LogFile.WriteHeapInfo("handler_fallbackvalue - Start");       
     #endif
 
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
-        "- To retrieve actual PreValue, please provide only a numbersname, e.g. /setPreValue?numbers=main<br>"
-        "- To set PreValue to a new value, please provide a numbersname and a value, e.g. /setPreValue?numbers=main&value=1234.5678<br>"
+        "- To retrieve actual Fallback Value, please provide only a numbersname, e.g. /setFallbackValue?numbers=main<br>"
+        "- To set Fallback Value to a new value, please provide a numbersname and a value, e.g. /setFallbackValue?numbers=main&value=1234.5678<br>"
         "NOTE:<br>"
-        "value >= 0.0: Set PreValue to provided value<br>"
-        "value <  0.0: Set PreValue to actual RAW value (as long RAW value is a valid number, without N)";
+        "value >= 0.0: Set Fallback Value to provided value<br>"
+        "value <  0.0: Set Fallback Value to actual RAW value (as long RAW value is a valid number, without N)";
 
     // Default return error message when no return is programmed
     std::string sReturnMessage = "E90: Uninitialized";
@@ -990,7 +990,7 @@ esp_err_t handler_prevalue(httpd_req_t *req)
 
         if (httpd_query_key_value(_query, "numbers", _numbersname, 50) != ESP_OK) { // If request is incomplete
             sReturnMessage = "E91: Query parameter incomplete or not valid!<br> "
-                             "Call /setPreValue to show REST API usage info and/or check documentation";
+                             "Call /setFallbackValue to show REST API usage info and/or check documentation";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
             return ESP_FAIL; 
         }
@@ -1006,8 +1006,8 @@ esp_err_t handler_prevalue(httpd_req_t *req)
         return ESP_OK; 
     }   
 
-    if (strlen(_value) == 0) { // If no value is povided --> return actual PreValue
-        sReturnMessage = flowctrl.GetPrevalue(std::string(_numbersname));
+    if (strlen(_value) == 0) { // If no value is povided --> return actual FallbackValue
+        sReturnMessage = flowctrl.GetFallbackValue(std::string(_numbersname));
 
         if (sReturnMessage.empty()) {
             sReturnMessage = "E92: Numbers name not found";
@@ -1016,17 +1016,17 @@ esp_err_t handler_prevalue(httpd_req_t *req)
         }
     }
     else {
-        // New value is positive: Set PreValue to provided value and return value
-        // New value is negative and actual RAW value is a valid number: Set PreValue to RAW value and return value
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "REST API handler_prevalue called: numbersname: " + std::string(_numbersname) + 
+        // New value is positive: Set FallbackValue to provided value and return value
+        // New value is negative and actual RAW value is a valid number: Set FallbackValue to RAW value and return value
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "REST API handler_fallbackvalue called: numbersname: " + std::string(_numbersname) + 
                                                 ", value: " + std::string(_value));
-        if (!flowctrl.UpdatePrevalue(_value, _numbersname, true)) {
+        if (!flowctrl.UpdateFallbackValue(_value, _numbersname, true)) {
             sReturnMessage = "E93: Update request rejected. Please check device logs for more details";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());  
             return ESP_FAIL;
         }
 
-        sReturnMessage = flowctrl.GetPrevalue(std::string(_numbersname));
+        sReturnMessage = flowctrl.GetFallbackValue(std::string(_numbersname));
 
         if (sReturnMessage.empty()) {
             sReturnMessage = "E94: Numbers name not found";
@@ -1038,7 +1038,7 @@ esp_err_t handler_prevalue(httpd_req_t *req)
     httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());  
 
     #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_prevalue - End");       
+        LogFile.WriteHeapInfo("handler_fallbackvalue - End");       
     #endif
 
     return ESP_OK;
@@ -1375,15 +1375,10 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
     camuri.user_ctx  = (void*) "reload_config";    
     httpd_register_uri_handler(server, &camuri);
 
-    // Legacy API => New: "/setPreValue"
-    camuri.uri       = "/setPreValue.html";
-    camuri.handler   = handler_prevalue;
-    camuri.user_ctx  = (void*) "Prevalue";    
-    httpd_register_uri_handler(server, &camuri);
 
-    camuri.uri       = "/setPreValue";
-    camuri.handler   = handler_prevalue;
-    camuri.user_ctx  = (void*) "Prevalue";    
+    camuri.uri       = "/setFallbackValue";
+    camuri.handler   = handler_fallbackvalue;
+    camuri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/flow_start";

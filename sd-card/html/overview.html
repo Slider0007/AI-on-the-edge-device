@@ -20,7 +20,7 @@
 
 	<table class="tg">
 		<tr>
-			<th class="th">Value</th>
+			<th class="th">Actual Value</th>
 			<td class="tg-1" rowspan="13">
 				<img style="padding-left: 5px; padding-top: 0px; max-width:640px; width:100%; height:auto;" id="img" src="">
 			</td>
@@ -31,11 +31,11 @@
 			</td>	
 		</tr>
 		<tr>
-			<th class="th">Previous Value</th>
+			<th class="th">Fallback Value</th>
 		</tr>	
 		<tr>	
 			<td class="tg-2">
-				<div id="prevalue"></div>
+				<div id="fallback"></div>
 			</td>	
 		</tr>
 		<tr>
@@ -103,7 +103,7 @@
 	function LoadData(){
 		loadValue("value", "value", "border-collapse: collapse; width: 100%");
 		loadValue("raw", "raw", "border-collapse: collapse; width: 100%");
-		loadValue("prevalue", "prevalue", "border-collapse: collapse; width: 100%");
+		loadValue("fallback", "fallback", "border-collapse: collapse; width: 100%");
 		loadValue("error", "error", "border-collapse: collapse; width: 100%");
 		loadStatus();
 		loadFlowError();
