@@ -136,7 +136,7 @@
     #define READOUT_TYPE_RAWVALUE                4
     #define READOUT_TYPE_ERROR                   5
     #define READOUT_TYPE_RATE_PER_MIN            6
-    #define READOUT_TYPE_RATE_PER_ROUND          7
+    #define READOUT_TYPE_RATE_PER_PROCESSING     7
 
     //ClassFlowMQTT
     #define LWT_TOPIC        "connection"

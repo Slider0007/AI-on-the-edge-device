@@ -392,11 +392,11 @@ esp_err_t handler_process_data(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
             retVal = ESP_FAIL; 
-        if (cJSON_AddStringToObject(cJSONObject, "timestamp_valid", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "timestamp_fallbackvalue", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "actual_value", flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "pre_value", flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "fallback_value", flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "raw_value", flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -404,7 +404,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "rate_per_min", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "rate_per_round", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_ROUND).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "rate_per_processing", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
             retVal = ESP_FAIL;
