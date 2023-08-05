@@ -579,12 +579,11 @@ function UpdateROIs(_sel){
 
         function init() {
             openDescription();
-            domainname = getDomainname();
             canvas.addEventListener('mousedown', mouseDown, false);
             canvas.addEventListener('mouseup', mouseUp, false);
             canvas.addEventListener('mousemove', mouseMove, false);
-            loadCanvas(domainname + "/fileserver/config/reference.jpg");
-            loadConfig(domainname); 
+            loadCanvas(getDomainname() + "/fileserver/config/reference.jpg");
+            loadConfig(getDomainname()); 
             ParseConfig();
             param = getConfigParameters(); 
             cofcat = getConfigCategory();

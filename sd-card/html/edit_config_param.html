@@ -810,10 +810,7 @@
 
 		<tr class="MQTTItem">
 			<td class="indent1" style="padding-top:25px" colspan="2">
-				<b>Homeassistant Discovery (using MQTT)</b><br>
-					If activated, the discovery topics gets automatically scheduled to sent once after device startup during state "Publish to MQTT".
-					To schedule a retransmission: Use "Manual Control > Resend HA Discovery" or call REST API: 
-					<a href=mqtt_publish_discovery target="_blank">http://&lt;IP&gt;/mqtt_publish_discovery</a>
+				<b>Homeassistant Discovery (using MQTT)</b>
 			</td>
 		</tr>
 
@@ -1677,7 +1674,6 @@
 
 
 function LoadConfigNeu() {
-	domainname = getDomainname(); 
 	if (!loadConfig(domainname)) {
 		firework.launch('Configuration could not be loaded! Please reload the page!', 'danger', 30000);
 		return;
@@ -2166,8 +2162,6 @@ function UpdateInput() {
 
 function WriteModelFiles()
 {
-    list_tflite = getTFLITEList();
-
     var _indexDig = document.getElementById("Digits_Model_value1");
     var _indexAna = document.getElementById("Analog_Model_value1");
     while (_indexDig.length)
@@ -2462,6 +2456,7 @@ function openDescription()
 }
 
 openDescription();
+fetchTFLITEList();
 LoadConfigNeu();
  
 </script>

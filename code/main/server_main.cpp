@@ -424,8 +424,8 @@ httpd_handle_t start_webserver(void)
     config.max_resp_headers = 8;                        
     config.backlog_conn = 5;                        
     config.lru_purge_enable = true; // this cuts old connections if new ones are needed.               
-    config.recv_wait_timeout = 10; // default: 5 20210924 --> previously 30              
-    config.send_wait_timeout = 10; // default: 5 20210924 --> previously 30                    
+    config.recv_wait_timeout = 15; // default: 5 20210924 --> previously 30              
+    config.send_wait_timeout = 15; // default: 5 20210924 --> previously 30                    
     config.global_user_ctx = NULL;                        
     config.global_user_ctx_free_fn = NULL;                
     config.global_transport_ctx = NULL;                   

@@ -904,12 +904,17 @@ std::string ClassFlowControll::getReadoutAll(int _type)
         {
             out = out + (*numbers)[i]->name + "\t";
             switch (_type) {
+                case READOUT_TYPE_TIMESTAMP_PROCESSED:
+                    out = out + (*numbers)[i]->sTimeProcessed
+                    break;
+                case READOUT_TYPE_TIMESTAMP_FALLBACKVALUE:
+                    out = out + (*numbers)[i]->sTimeFallbackValue;
+                    break;
                 case READOUT_TYPE_VALUE:
                     out = out + (*numbers)[i]->sActualValue;
                     break;
                 case READOUT_TYPE_FALLBACKVALUE:
-                    if (flowpostprocessing->getUseFallbackValue())
-                    {
+                    if (flowpostprocessing->getUseFallbackValue()) {
                         if ((*numbers)[i]->isFallbackValueValid)
                             out = out + (*numbers)[i]->sFallbackValue;
                         else
@@ -923,6 +928,12 @@ std::string ClassFlowControll::getReadoutAll(int _type)
                     break;
                 case READOUT_TYPE_ERROR:
                     out = out + (*numbers)[i]->sValueStatus;
+                    break;
+                case READOUT_TYPE_RATE_PER_MIN:
+                    out = out + (*numbers)[i]->sRatePerMin;
+                    break;
+                case READOUT_TYPE_RATE_PER_PROCESSING:
+                    out = out + (*numbers)[i]->sRatePerProcessing;
                     break;
             }
             if (i < (*numbers).size()-1)

@@ -289,7 +289,7 @@ extern "C" void app_main(void)
  
     if (getHTMLcommit().substr(0, 7) != std::string(GIT_REV).substr(0, 7)) { // Compare the first 7 characters of both hashes
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Web UI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat installation using AI-on-the-edge-device__update__*.zip");    
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using AI-on-the-edge-device__update__*.zip file");    
     }
 
     // Check reboot reason

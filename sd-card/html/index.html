@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en">
 <head>
-    <link rel="icon" href="favicon.ico?v=$COMMIT_HASH" type="image/x-icon">
-    <title>AI on the edge</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=$COMMIT_HASH">
+    <link rel="icon" type="image/x-icon" href="icon.svg?v=$COMMIT_HASH">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-apple-touch-icon.png?v=$COMMIT_HASH">
+    <link rel="manifest" href="/site.webmanifest?v=$COMMIT_HASH">
+
+    <title>AI on the Edge</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css?v=$COMMIT_HASH" type="text/css" >
@@ -44,20 +48,21 @@
         }
         
         function getCookie(cname) {
-        let name = cname + "=";
-        let decodedCookie = decodeURIComponent(document.cookie);
-        let ca = decodedCookie.split(';');
-        for(let i = 0; i <ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) == ' ') {
-            c = c.substring(1);
+            let name = cname + "=";
+            let decodedCookie = decodeURIComponent(document.cookie);
+            let ca = decodedCookie.split(';');
+            for(let i = 0; i <ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
             }
-            if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-            }
+            return "";
         }
-        return "";
-        }        
+
     </script>
 </head>
 
@@ -66,9 +71,9 @@
 
 <table style="border: none; width:100%">
     <tr>
-        <td style="padding-right: 10px;"><img style="width:64px; height:64px" src="favicon.ico?v=$COMMIT_HASH"></td>
-        <td><h1 id="id_title"> Digitizer - AI on the edge</h1>
-            <h2>An ESP32 all inclusive neural network recognition system for meter digitalization</h2>
+        <td style="padding: 10px; width: 64px; height: 64px"><img style="width:64px; height:64px" src="favicon.ico?v=$COMMIT_HASH"></td>
+        <td><h1 id="id_title" style="margin-block-start: 0.2em;margin-block-end: 0.1em;">AI on the Edge | </h1>
+            <h3 style="margin-top: 0px; margin-bottom: 10px">A Neural Network Recognition System For Meter Digitalization</h3>
         </td>
     </tr>
 </table>
@@ -137,7 +142,7 @@
     LoadHostname();
     LoadFwVersion();
     LoadWebUiVersion();
-    HA_send_discovery_visiblilty();
+    HA_send_discovery_visibililty();
 
     if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH") {
     document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/";
@@ -168,18 +173,18 @@
     }
 
 
-    function HA_send_discovery_visiblilty()	{
-		loadConfig(domainname); 
-		ParseConfig();
-		category = getConfigCategory();
-        param = getConfigParameters();
-		if (category["MQTT"]["enabled"] && param["MQTT"]["HomeassistantDiscovery"]["value1"] == "true")
+    function HA_send_discovery_visibililty() {
+		loadConfig(getDomainname());
+		ParseConfigReduced();
+		_category = getConfigCategory();
+        _param = getConfigParameters();
+		if (_category["MQTT"]["enabled"] && _param["MQTT"]["HomeassistantDiscovery"]["value1"] == "true")
             document.getElementById("HASendDiscovery").style.display="";
 	}
 
 
     function HA_send_discovery() {
-    var url = getDomainname() + '/mqtt_publish_discovery'; 
+        var url = getDomainname() + '/mqtt_publish_discovery'; 
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {

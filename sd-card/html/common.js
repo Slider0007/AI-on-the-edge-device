@@ -1,24 +1,19 @@
- 
-/* The UI can also be run locally, but you have to set the IP of your devide accordingly.
+ /* The UI can also be run locally, but you have to set the IP of your devide accordingly.
  * And you also might have to disable CORS in your webbrowser! */
 var domainname_for_testing = "192.168.2.68";
-
 
 
 /* Returns the domainname with prepended protocol.
 Eg. http://watermeter.fritz.box or http://192.168.1.5 */
 function getDomainname(){
     var host = window.location.hostname;
-    if (((host == "127.0.0.1") || (host == "localhost") || (host == "")) 
-//       && ((window.location.port == "80") || (window.location.port == ""))
-       )
+    var domainname;
     
-    {
+    if ((host == "127.0.0.1") || (host == "localhost") || (host == "")) {
         console.log("Using pre-defined domainname for testing: " + domainname_for_testing);
         domainname = "http://" + domainname_for_testing
     }
-    else
-    {
+    else {
         domainname = window.location.protocol + "//" + host;
         if (window.location.port != "") {
             domainname = domainname + ":" + window.location.port;
@@ -27,6 +22,7 @@ function getDomainname(){
 
     return domainname;
 }
+
 
 function UpdatePage(_dosession = true){
     var zw = location.href;
@@ -48,8 +44,8 @@ function LoadHostname() {
     xhttp.addEventListener('load', function(event) {
         if (xhttp.status >= 200 && xhttp.status < 300) {
             hostname = xhttp.responseText;
-                document.title = hostname + " - AI on the edge";
-                document.getElementById("id_title").innerHTML  = "Digitizer - AI on the edge - " + hostname;
+                document.title = hostname + " | AI on the Edge";
+                document.getElementById("id_title").innerHTML  += hostname;
         } 
         else {
                 console.warn(request.statusText, request.responseText);
@@ -80,7 +76,7 @@ function LoadFwVersion() {
     xhttp.addEventListener('load', function(event) {
         if (xhttp.status >= 200 && xhttp.status < 300) {
             fwVersion = xhttp.responseText;
-            document.getElementById("Version").innerHTML  = fwVersion;
+            document.getElementById("Version").innerHTML  = "Slider0007 Fork | " + fwVersion;
             console.log(fwVersion);
             compareVersions();
         } 
@@ -99,6 +95,7 @@ function LoadFwVersion() {
         fwVersion = "NaN";
     }
 }
+
 
 function LoadWebUiVersion() {
     _domainname = getDomainname(); 
