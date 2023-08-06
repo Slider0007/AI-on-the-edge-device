@@ -48,10 +48,6 @@
 
     <br>
     <br>
-    <div id="warning_text" style="color: rgb(255, 255, 255);">
-        <b>Do not reload this page or switch to another page while the update is in progress!</b>
-    </div>
-    <br>
 
     <form id="upload_form" enctype="multipart/form-data" method="post">
         <input type="file" accept=".bin,.zip,.tfl,.tflite" name="file_selector" id="file_selector" onchange="validate_file()"><br><br>
@@ -142,7 +138,7 @@
 
             var file_name = document.getElementById("file_selector").value;
             document.getElementById("file_selector").disabled = true;
-            document.getElementById("warning_text").style.color = "red";
+            firework.launch('Do not reload this page or switch to another page while the update is in progress!', 'warning', 60000);
             file_name = file_name.split(/[\\\/]/).pop();
             document.getElementById("status").innerText = "Status: File selected";
 

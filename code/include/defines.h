@@ -235,10 +235,11 @@
     #define FLOWSTATE_ERRORS_IN_ROW_LIMIT 3
 
     // ClassFlowPostProcessing.cpp: Post-Processing result value status
-    #define VALUE_STATUS_000_VALID              "000 - Valid"
-    #define VALUE_STATUS_001_NO_DATA_N_SUBST    "001 - No data to substitute N"
-    #define VALUE_STATUS_002_RATE_TOO_HIGH_POS  "002 - Rate too high, positive"
-    #define VALUE_STATUS_003_RATE_TOO_HIGH_NEG  "003 - Rate too high, negative"
+    #define VALUE_STATUS_000_VALID              "000: Valid"
+    #define VALUE_STATUS_001_NO_DATA_N_SUBST    "001: No data to substitute N"
+    #define VALUE_STATUS_002_RATE_TOO_HIGH_POS  "002: Rate too high, positive"
+    #define VALUE_STATUS_003_RATE_TOO_HIGH_NEG  "003: Rate too high, negative"
+    #define VALUE_STATUS_004_NEG_RATE           "004: Negative rate"
 
 
 /////////////////////////////////////////////

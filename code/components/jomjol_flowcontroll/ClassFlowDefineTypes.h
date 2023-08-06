@@ -58,7 +58,6 @@ struct NumberPost {
     int digitCount;                 // Number of digit numbers
 
     time_t timeProcessed;           // Time of actual source image was taken (== actual result time)
-    time_t timeProcessedPrevious;   // Time of previous source image was taken (== previous result time)    
     time_t timeFallbackValue;       // Time of FallbackValue in seconds
 
     t_RateType rateType;            // Parameter: Select Rate Checking Procedure
@@ -68,7 +67,6 @@ struct NumberPost {
 
     double fallbackValue;           // Fallback value, equal the last successful processed value (legacy name: prevalue)
     double actualValue;             // Actual result value
-    double actualValuePrevious;     // Actual result value of previous processing round (only needed when use without fallbackValue)
 
     std::string sTimeProcessed;     // Processed timestamp -> Time of last processing
     std::string sTimeFallbackValue; // FallbackValue timestamp -> Time of last valid value
