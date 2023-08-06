@@ -59,11 +59,10 @@ public:
     general* FindGENERAL(std::string _numbername);    
     std::string getNameGENERAL(int _seqNo);    
 
-    bool isExtendedResolution(int _number = 0);
-
     void UpdateNameNumbers(std::vector<std::string> *_name_numbers);
 
-    t_CNNType getCNNType(){return CNNType;};
+    t_CNNType getCNNType() {return CNNType;};
+    bool CNNTypeWithExtendedResolution();
 
     std::string name() {return "ClassFlowCNNGeneral - " +  cnnname;}; 
 };

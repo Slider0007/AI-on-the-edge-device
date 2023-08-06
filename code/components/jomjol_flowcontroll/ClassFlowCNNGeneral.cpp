@@ -919,12 +919,12 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
 }
 
 
-bool ClassFlowCNNGeneral::isExtendedResolution(int _number)
+bool ClassFlowCNNGeneral::CNNTypeWithExtendedResolution()
 {
-    if (!(CNNType == Digital))
-        return true;
+    if (CNNType == Digital)
+        return false;
 
-    return false;
+    return true;
 }
 
 

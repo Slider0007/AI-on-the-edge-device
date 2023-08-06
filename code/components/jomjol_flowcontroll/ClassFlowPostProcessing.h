@@ -27,10 +27,10 @@ protected:
     bool LoadFallbackValue(void);
     bool SaveFallbackValue(void);
 
-    void UpdateNachkommaDecimalShift();
+    void setDecimalShift();
     std::string ShiftDecimal(std::string in, int _decShift);
 
-    std::string ErsetzteN(std::string, double _fallbackValue);
+    std::string SubstitudeN(std::string, double _fallbackValue);
     float checkDigitConsistency(double _value, int _decimalshift, bool _isanalog, double _fallbackValue);
 
     void InitNUMBERS();
