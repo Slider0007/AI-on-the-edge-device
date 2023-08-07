@@ -236,10 +236,10 @@
 
     // ClassFlowPostProcessing.cpp: Post-Processing result value status
     #define VALUE_STATUS_000_VALID              "000 Valid"
-    #define VALUE_STATUS_001_NO_DATA_N_SUBST    "001 No data to substitute N"
-    #define VALUE_STATUS_002_RATE_NEGATIVE      "002 Rate negative"
-    #define VALUE_STATUS_003_RATE_TOO_HIGH_NEG  "003 Rate too high (negative)"
-    #define VALUE_STATUS_004_RATE_TOO_HIGH_POS  "004 Rate too high (positive)"
+    #define VALUE_STATUS_001_NO_DATA_N_SUBST    "E01 No data to substitute N"
+    #define VALUE_STATUS_002_RATE_NEGATIVE      "E02 Rate negative"
+    #define VALUE_STATUS_003_RATE_TOO_HIGH_NEG  "E03 Rate too high (-)"
+    #define VALUE_STATUS_004_RATE_TOO_HIGH_POS  "E04 Rate too high (+)"
 
 
 /////////////////////////////////////////////

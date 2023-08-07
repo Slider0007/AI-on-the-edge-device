@@ -683,13 +683,13 @@
 
 		<tr>
 			<td class="indent2">
-				<class id="PostProcessing_MaxRateType_text" style="color:black;">Maximum Rate Type</class>
+				<class id="PostProcessing_MaxRateType_text" style="color:black;">Maximum Rate Check Type</class>
 			</td>
 			<td>
 				<select id="PostProcessing_MaxRateType_value1">
-					<option value="Off" >No Rate Check</option>
-					<option value="AbsoluteChange" selected>Rate Per Processing</option>
-					<option value="RateChange">Rate Per Minute</option>
+					<option value="RatePerMin" selected>Rate Per Minute</option>
+					<option value="RatePerProcessing">Rate Per Processing</option>
+					<option value="RateOff" >No Rate Check</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.MaxRateType</td>

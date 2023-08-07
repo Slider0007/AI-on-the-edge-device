@@ -171,7 +171,7 @@ function ParseConfig() {
      ParamAddValue(param, catname, "AllowNegativeRates", 1, true, "true");
      ParamAddValue(param, catname, "DecimalShift", 1, true, "0");
      ParamAddValue(param, catname, "AnalogDigitalTransitionStart", 1, true, "9.2");
-     ParamAddValue(param, catname, "MaxRateType", 1, true, "AbsoluteChange");
+     ParamAddValue(param, catname, "MaxRateType", 1, true, "RatePerMin");
      ParamAddValue(param, catname, "MaxRateValue", 1, true, "0.1");
      ParamAddValue(param, catname, "ExtendedResolution", 1, true, "false");
      ParamAddValue(param, catname, "IgnoreLeadingNaN", 1, true, "false");

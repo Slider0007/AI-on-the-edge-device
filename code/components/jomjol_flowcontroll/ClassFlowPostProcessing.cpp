@@ -26,11 +26,11 @@ ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, C
     PresetFlowStateHandler(true);
     UseFallbackValue = true;
     UpdateFallbackValue = false;
-    FallbackValueAgeStartup = 30;
+    FallbackValueAgeStartup = 60;
     ErrorMessage = false;
+    IgnoreLeadingNaN = false;
     ListFlowControll = lfc;
     flowTakeImage = NULL;
-    IgnoreLeadingNaN = false;
     flowAnalog = _analog;
     flowDigit = _digit;
 
@@ -46,7 +46,6 @@ void ClassFlowPostProcessing::handleDecimalExtendedResolution(std::string _decse
 {
     std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
-    bool value;
 
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
@@ -54,15 +53,14 @@ void ClassFlowPostProcessing::handleDecimalExtendedResolution(std::string _decse
         _digit = "default";
 
     for (int j = 0; j < NUMBERS.size(); ++j) {
-        if (toUpper(_value) == "TRUE")
-            value = true;
-        else
-            value = false;
-     
-        if (_digit == "default" || NUMBERS[j]->name == _digit)
-            NUMBERS[j]->isExtendedResolution = value;
+        if (_digit == "default" || NUMBERS[j]->name == _digit) {
+            if (toUpper(_value) == "TRUE")
+                NUMBERS[j]->isExtendedResolution = true;
+            else
+                NUMBERS[j]->isExtendedResolution = false;
 
-        //ESP_LOGI(TAG, "handleDecimalExtendedResolution: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, value);
+            //ESP_LOGI(TAG, "handleDecimalExtendedResolution: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, NUMBERS[j]->isExtendedResolution);
+        }
     }
 }
 
@@ -102,10 +100,11 @@ void ClassFlowPostProcessing::handleAnalogDigitalTransitionStart(std::string _de
         _digit = "default";
 
     for (int j = 0; j < NUMBERS.size(); ++j) {    
-        if (_digit == "default" || NUMBERS[j]->name == _digit)  // Set to default first (if nothing else is set)
+        if (_digit == "default" || NUMBERS[j]->name == _digit) { 
             NUMBERS[j]->analogDigitalTransitionStart = (int) (stof(_value) * 10);
 
-        //ESP_LOGI(TAG, "handleAnalogDigitalTransitionStart: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->analogDigitalTransitionStart);
+            //ESP_LOGI(TAG, "handleAnalogDigitalTransitionStart: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->analogDigitalTransitionStart/10.0);
+        }
     }
 }
 
@@ -114,7 +113,6 @@ void ClassFlowPostProcessing::handleAllowNegativeRate(std::string _decsep, std::
 {
     std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
-    bool value;
 
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
@@ -122,20 +120,19 @@ void ClassFlowPostProcessing::handleAllowNegativeRate(std::string _decsep, std::
         _digit = "default";
 
     for (int j = 0; j < NUMBERS.size(); ++j) {
-        if (toUpper(_value) == "TRUE") {
-            value = true;
-        }
-        else {
-            value = false;
-            
-            if (!UseFallbackValue) // Fallback Value is mandatory to evaluate negative rates
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use negative rate evaluation"); 
-        }
+        if (_digit == "default" || NUMBERS[j]->name == _digit) {
+            if (toUpper(_value) == "TRUE") {
+                NUMBERS[j]->allowNegativeRates = true;
+            }
+            else {
+                NUMBERS[j]->allowNegativeRates = false;
+                
+                if (!UseFallbackValue) // Fallback Value is mandatory to evaluate negative rates
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use negative rate evaluation"); 
+            }
 
-        if (_digit == "default" || NUMBERS[j]->name == _digit)
-            NUMBERS[j]->allowNegativeRates = value;
-
-        //ESP_LOGI(TAG, "handleAllowNegativeRate: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, value);
+            //ESP_LOGI(TAG, "handleAllowNegativeRate: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, NUMBERS[j]->allowNegativeRates);
+        }
     }
 }
 
@@ -144,7 +141,6 @@ void ClassFlowPostProcessing::handleMaxRateType(std::string _decsep, std::string
 {
     std::string _digit;
     int _pospunkt = _decsep.find_first_of(".");
-    t_RateType _rt;
 
     if (_pospunkt > -1)
         _digit = _decsep.substr(0, _pospunkt);
@@ -152,29 +148,25 @@ void ClassFlowPostProcessing::handleMaxRateType(std::string _decsep, std::string
         _digit = "default";
 
     for (int j = 0; j < NUMBERS.size(); ++j) {
-        if (toUpper(_value) == "RATECHANGE") {
-            NUMBERS[j]->useMaxRateValue = true;
-            _rt = RateChange;
+        if (_digit == "default" || NUMBERS[j]->name == _digit) {
+            if (toUpper(_value) == "RATEPERMIN") {
+                NUMBERS[j]->rateType = rtRatePerMin;
+                NUMBERS[j]->useMaxRateValue = true;
+            }
+            else if (toUpper(_value) == "RATEOFF") {
+                NUMBERS[j]->rateType = rtRateOff;
+                NUMBERS[j]->useMaxRateValue = false;
+            }
+            else {
+                NUMBERS[j]->rateType = rtRatePerProcessing;
+                NUMBERS[j]->useMaxRateValue = true;
+            }
 
-            if (!UseFallbackValue) // Fallback Value is mandatory to evaluate rate limits
+            if (NUMBERS[j]->useMaxRateValue && !UseFallbackValue) // Fallback Value is mandatory to evaluate rate limits
                 LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use rate limit evaluation"); 
         }
-        else if (toUpper(_value) == "OFF") {
-            NUMBERS[j]->useMaxRateValue = false;
-            _rt = RateCheckOff;
-        }
-        else {
-            NUMBERS[j]->useMaxRateValue = true;
-            _rt = AbsoluteChange;
 
-            if (!UseFallbackValue) // Fallback Value is mandatory to evaluate rate limits
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use rate limit evaluation"); 
-        }
-
-        if (_digit == "default" || NUMBERS[j]->name == _digit)
-            NUMBERS[j]->rateType = _rt;
-
-        //ESP_LOGI(TAG, "handleMaxRateType: Name: %s, Pospunkt: %d, rateType: %d", _digit.c_str(), _pospunkt, _rt);
+        //ESP_LOGI(TAG, "handleMaxRateType: Name: %s, Pospunkt: %d, rateType: %d", _digit.c_str(), _pospunkt, NUMBERS[j]->rateType);
     }
 }
 
@@ -190,10 +182,11 @@ void ClassFlowPostProcessing::handleMaxRateValue(std::string _decsep, std::strin
         _digit = "default";
     
     for (int j = 0; j < NUMBERS.size(); ++j) {
-        if (_digit == "default" || NUMBERS[j]->name == _digit)
+        if (_digit == "default" || NUMBERS[j]->name == _digit) {
             NUMBERS[j]->maxRateValue = stof(_value);
 
-        //ESP_LOGI(TAG, "handleMaxRateValue: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->maxRateValue);
+            //ESP_LOGI(TAG, "handleMaxRateValue: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), _pospunkt, NUMBERS[j]->maxRateValue);
+        }
     }
 }
 
@@ -352,7 +345,7 @@ void ClassFlowPostProcessing::InitNUMBERS()
         _number->isFallbackValueValid = false;
         _number->allowNegativeRates = false;
         _number->maxRateValue = 0.1;
-        _number->rateType = AbsoluteChange;
+        _number->rateType = rtRatePerMin;
         _number->useMaxRateValue = false;
         _number->checkDigitIncreaseConsistency = false;
         _number->decimalShift = 0;
@@ -538,8 +531,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 if (!UseFallbackValue)
                     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to be able to substitude N positions");
 
-                NUMBERS[j]->ratePerMin = 0.0;
-                NUMBERS[j]->ratePerProcessing = 0.0;
+                NUMBERS[j]->ratePerMin = 0;
+                NUMBERS[j]->ratePerProcessing = 0;
                 NUMBERS[j]->sRatePerMin =  to_stringWithPrecision(NUMBERS[j]->ratePerMin, NUMBERS[j]->decimalPlaceCount);
                 NUMBERS[j]->sRatePerProcessing = to_stringWithPrecision(NUMBERS[j]->ratePerProcessing, NUMBERS[j]->decimalPlaceCount);
 
@@ -602,14 +595,14 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                 /* Update Rates */
                 //Calculate delta time between this reading und last valid reading in seconds
-                double timeDeltaLastValidValue = difftime(NUMBERS[j]->timeProcessed, NUMBERS[j]->timeFallbackValue) / 60.0;  // delta in minutes
-                NUMBERS[j]->ratePerMin = (NUMBERS[j]->actualValue - NUMBERS[j]->fallbackValue) / timeDeltaLastValidValue;
+                double timeDeltaToFallbackValue = difftime(NUMBERS[j]->timeProcessed, NUMBERS[j]->timeFallbackValue) / 60.0;  // delta in minutes
+                NUMBERS[j]->ratePerMin = (NUMBERS[j]->actualValue - NUMBERS[j]->fallbackValue) / timeDeltaToFallbackValue;
                 NUMBERS[j]->ratePerProcessing = NUMBERS[j]->actualValue - NUMBERS[j]->fallbackValue;
                 double RatePerSelection;  
-                    if (NUMBERS[j]->rateType == RateChange)
+                    if (NUMBERS[j]->rateType == rtRatePerMin)
                         RatePerSelection = NUMBERS[j]->ratePerMin;
                     else
-                        RatePerSelection = NUMBERS[j]->ratePerProcessing;
+                        RatePerSelection = NUMBERS[j]->ratePerProcessing; // If Rate check is off, use 'RatePerProcessing' for display only purpose (easier to interprete)
 
                 /* Check for rate too high */
                 if (NUMBERS[j]->useMaxRateValue) {
@@ -667,15 +660,15 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID); 
             }
             else { // Value of actual reading is invalid, use fallback + rates = 0
-                NUMBERS[j]->ratePerMin = 0.0;
-                NUMBERS[j]->ratePerProcessing = 0.0;
+                NUMBERS[j]->ratePerMin = 0;
+                NUMBERS[j]->ratePerProcessing = 0;
                 NUMBERS[j]->actualValue = NUMBERS[j]->fallbackValue;
             }
         }
         else { // FallbackValue usage disabled, no rate checking possible
-            NUMBERS[j]->ratePerMin = 0.0;
-            NUMBERS[j]->ratePerProcessing = 0.0;
-            NUMBERS[j]->fallbackValue = 0.0;
+            NUMBERS[j]->ratePerMin = 0;
+            NUMBERS[j]->ratePerProcessing = 0;
+            NUMBERS[j]->fallbackValue = 0;
             NUMBERS[j]->sFallbackValue = "";
             NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID); 
         }
@@ -833,7 +826,7 @@ std::string ClassFlowPostProcessing::GetFallbackValue(std::string _number)
 
 bool ClassFlowPostProcessing::SetFallbackValue(double _newvalue, std::string _numbersname, bool _extern)
 {
-    ESP_LOGI(TAG, "SetFallbackValue: %f, %s", _newvalue, _numbersname.c_str());
+    //ESP_LOGI(TAG, "SetFallbackValue: %f, %s", _newvalue, _numbersname.c_str());
 
     for (int j = 0; j < NUMBERS.size(); ++j) {
         //ESP_LOGD(TAG, "Number %d, %s", j, NUMBERS[j]->name.c_str());
@@ -950,7 +943,7 @@ bool ClassFlowPostProcessing::LoadFallbackValue(void)
             }
         }
 
-        ESP_LOGI(TAG, "name: %s, time: %s, value: %s", cName, cTime, cValue);
+        //ESP_LOGI(TAG, "LoadFallbackValue: sequence: %s, timestamp: %s, value: %s", cName, cTime, cValue);
 
         for (int j = 0; j < NUMBERS.size(); ++j)
         {           
@@ -1016,8 +1009,8 @@ bool ClassFlowPostProcessing::SaveFallbackValue()
 
     for (int j = 0; j < NUMBERS.size(); ++j)
     {           
-        ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->sTimeFallbackValue).c_str(), 
-                                                (to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount)).c_str());
+        //ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->sTimeFallbackValue).c_str(), 
+        //                                        (to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount)).c_str());
         
         err = nvs_set_str(fallbackvalue_nvshandle, ("name" + std::to_string(j)).c_str(), (NUMBERS[j]->name).c_str());
         if (err != ESP_OK) {
