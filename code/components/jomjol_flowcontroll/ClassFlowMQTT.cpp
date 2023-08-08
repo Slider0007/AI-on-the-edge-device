@@ -198,8 +198,8 @@ bool ClassFlowMQTT::Start(float _processingInterval)
     keepAlive = _processingInterval * 60 * 2.5; // Seconds, make sure it is greater thatn 2 rounds!
 
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(1) << "Processing interval is " << _processingInterval <<
-            " minutes => setting MQTT LWT timeout to " << ((float)keepAlive/60) << " minutes.";
+    stream << std::fixed << std::setprecision(1) << "Processing interval: " << _processingInterval <<
+            "min -> MQTT LWT timeout: " << ((float)keepAlive/60) << "min";
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, stream.str());
 
     mqttServer_setParameter(flowpostprocessing->GetNumbers(), keepAlive, _processingInterval);

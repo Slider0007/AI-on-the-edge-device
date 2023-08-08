@@ -874,14 +874,11 @@ bool ClassFlowPostProcessing::SetFallbackValue(double _newvalue, std::string _nu
             NUMBERS[j]->sTimeFallbackValue = ConvertTimeToString(NUMBERS[j]->timeFallbackValue, TIME_FORMAT_OUTPUT);
             NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount + 1);
             NUMBERS[j]->isFallbackValueValid = true;
-
-            //ESP_LOGD(TAG, "Found %d! - set to %.8f", j,  NUMBERS[j]->fallbackValue);
-            
-            UpdateFallbackValue = true;   // Only update fallbackValue file if a new value is set
+            UpdateFallbackValue = true;
             SaveFallbackValue();
 
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "SetFallbackValue: FallbackValue for " + NUMBERS[j]->name + " set to " + 
-                                                     std::to_string(NUMBERS[j]->fallbackValue));
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": Set FallbackValue to: " + NUMBERS[j]->sFallbackValue);
+
             return true;
         }
     }
@@ -974,24 +971,20 @@ bool ClassFlowPostProcessing::LoadFallbackValue(void)
         {           
             if ((NUMBERS[j]->name).compare(std::string(cName)) == 0)
             {
-
-                NUMBERS[j]->fallbackValue = stod(std::string(cValue));
-                NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount + 1);      // To be on the safe side, 1 digit more, as Exgtended Resolution may be on (will only be set during the first run).
-
                 time_t tStart;
                 int yy, month, dd, hh, mm, ss;
-                struct tm whenStart;
+                struct tm tmFallbackValue;
 
                 sscanf(cTime, FALLBACKVALUE_TIME_FORMAT_INPUT, &yy, &month, &dd, &hh, &mm, &ss);
-                whenStart.tm_year = yy - 1900;
-                whenStart.tm_mon = month - 1;
-                whenStart.tm_mday = dd;
-                whenStart.tm_hour = hh;
-                whenStart.tm_min = mm;
-                whenStart.tm_sec = ss;
-                whenStart.tm_isdst = -1;
+                tmFallbackValue.tm_year = yy - 1900;
+                tmFallbackValue.tm_mon = month - 1;
+                tmFallbackValue.tm_mday = dd;
+                tmFallbackValue.tm_hour = hh;
+                tmFallbackValue.tm_min = mm;
+                tmFallbackValue.tm_sec = ss;
+                tmFallbackValue.tm_isdst = -1;
 
-                NUMBERS[j]->timeFallbackValue = mktime(&whenStart);
+                NUMBERS[j]->timeFallbackValue = mktime(&tmFallbackValue);
 
                 time(&tStart);
                 int AgeInMinutes = (int)(difftime(tStart, NUMBERS[j]->timeFallbackValue) / 60.0); // delta in minutes
@@ -999,9 +992,13 @@ bool ClassFlowPostProcessing::LoadFallbackValue(void)
                     NUMBERS[j]->isFallbackValueValid = false;
                     NUMBERS[j]->fallbackValue = 0;
                     NUMBERS[j]->sFallbackValue = "";
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": FallbackValue outdated | Time: " + std::string(cTime));
                 }
                 else {
+                    NUMBERS[j]->fallbackValue = stod(std::string(cValue));
+                    NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount + 1); // To be on the safe side, keep one digit more 
                     NUMBERS[j]->isFallbackValueValid = true;
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": FallbackValue valid | Time: " + std::string(cTime));
                 }
             }
         }
@@ -1026,7 +1023,7 @@ bool ClassFlowPostProcessing::SaveFallbackValue()
         return false;
     }
 
-    err = nvs_set_i16(fallbackvalue_nvshandle, "numbers_size", (int16_t)NUMBERS.size());    // Save numbers size to ensure that only already saved data will be loaded
+    err = nvs_set_i16(fallbackvalue_nvshandle, "numbers_size", (int16_t)NUMBERS.size()); // Save numbers size to ensure that only already saved data will be loaded
     if (err != ESP_OK) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: nvs_set_i16 numbers_size - error code: " + std::to_string(err));
         return false;
