@@ -739,7 +739,7 @@ void migrateConfiguration(void) {
         }
 
         if (section == "[System]") {
-            if ((isInString(configLines[i], "TimeServer = undefined") || isInString(configLines[i], "TimeServer = pool.ntp.org")) && isInString(configLines[i], ";")) 
+            if (isInString(configLines[i], "TimeServer = undefined") && isInString(configLines[i], ";")) 
             { // It is the parameter "TimeServer" and is it disabled
                 migrated = migrated | replaceString(configLines[i], "undefined", "pool.ntp.org");
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
