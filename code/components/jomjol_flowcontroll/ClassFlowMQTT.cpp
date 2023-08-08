@@ -180,29 +180,29 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             }
         }
     }
+      
+    scheduleSendingStaticTopics();
+    mqttServer_setMainTopic(maintopic);
 
     /* Note:
      * Originally, we started the MQTT client here.
      * How ever we need the interval parameter from the ClassFlowControll, but that only gets started later.
      * To work around this, we delay the start and trigger it from ClassFlowControll::ReadParameter() */
 
-    mqttServer_setMainTopic(maintopic);
-
     return true;
 }
 
 
-bool ClassFlowMQTT::Start(float AutoInterval) 
+bool ClassFlowMQTT::Start(float _processingInterval) 
 {
-    roundInterval = AutoInterval; // Minutes
-    keepAlive = roundInterval * 60 * 2.5; // Seconds, make sure it is greater thatn 2 rounds!
+    keepAlive = _processingInterval * 60 * 2.5; // Seconds, make sure it is greater thatn 2 rounds!
 
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(1) << "Digitizer interval is " << roundInterval <<
+    stream << std::fixed << std::setprecision(1) << "Processing interval is " << _processingInterval <<
             " minutes => setting MQTT LWT timeout to " << ((float)keepAlive/60) << " minutes.";
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, stream.str());
 
-    mqttServer_setParameter(flowpostprocessing->GetNumbers(), keepAlive, roundInterval);
+    mqttServer_setParameter(flowpostprocessing->GetNumbers(), keepAlive, _processingInterval);
 
     bool MQTTConfigCheck = MQTT_Configure(uri, clientname, user, password, maintopic, LWT_TOPIC, LWT_CONNECTED,
                                      LWT_DISCONNECTED, keepAlive, SetRetainFlag, (void *)&GotConnected);
@@ -222,7 +222,7 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
     std::string namenumber = "";
     int qos = 1;
 
-    /* Send the the Homeassistant Discovery and the Static Topics in case they where scheduled */
+    /* Send static topics and if selected the the HA discovery topics as well*/
     sendDiscovery_and_static_Topics();
 
     success = publishSystemData(qos);
@@ -261,7 +261,7 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
     }
 
     if (!success) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "One or more MQTT topics failed to be published");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Failed to publish one or more topics (system / result)");
     }
     
     return true;

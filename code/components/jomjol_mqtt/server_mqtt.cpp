@@ -32,7 +32,8 @@ float roundInterval; // Minutes
 int keepAlive = 0; // Seconds
 bool retainFlag;
 static std::string maintopic;
-bool sendingOf_DiscoveryAndStaticTopics_scheduled = true; // Set it to true to make sure it gets sent at least once after startup
+static bool sendingOf_DiscoveryAndStaticTopics_scheduled;
+
 
 
 void mqttServer_setParameter(std::vector<NumberPost*>* _NUMBERS, int _keepAlive, float _roundInterval)
@@ -201,13 +202,13 @@ bool publishSystemData(int qos)
     bool allSendsSuccessed = false;
 
     if (!getMQTTisConnected()) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to send System Topics, device is not connected to MQTT broker");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to publish system topics, not connected to MQTT broker");
         return false;
     }
 
     char tmp_char[50];
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing System MQTT topics");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing system topics");
 
 	//int aFreeInternalHeapSizeBefore = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
@@ -225,7 +226,7 @@ bool publishSystemData(int qos)
     sprintf(tmp_char, "%d", (int)temperatureRead());
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + "CPUtemp", std::string(tmp_char), qos, retainFlag);
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Successfully published all System MQTT topics");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Successfully published system topics");
 
 	/*int aFreeInternalHeapSizeAfter = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 	int aMinFreeInternalHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
@@ -243,11 +244,11 @@ bool publishStaticData(int qos)
     bool allSendsSuccessed = false;
 
     if (!getMQTTisConnected()) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to send Static Topics, device is not connected to MQTT broker");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Unable to publish static topics, not connected to MQTT broker");
         return false;
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing static MQTT topics");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing static topics");
 
 	//int aFreeInternalHeapSizeBefore = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
@@ -259,7 +260,7 @@ bool publishStaticData(int qos)
     stream << std::fixed << std::setprecision(1) << roundInterval; // minutes
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + "interval", stream.str(), qos, retainFlag);
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Successfully published all Static MQTT topics");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Successfully published static topics");
 
 	/*int aFreeInternalHeapSizeAfter = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 	int aMinFreeInternalHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
@@ -275,7 +276,7 @@ bool publishStaticData(int qos)
 esp_err_t scheduleSendingDiscovery_and_static_Topics(httpd_req_t *req)
 {
     sendingOf_DiscoveryAndStaticTopics_scheduled = true;
-    char msg[] = "HA Discovery and Static MQTT Topics scheduled";
+    char msg[] = "Publishing of HA Discovery and static topics scheduled";
     httpd_resp_send(req, msg, strlen(msg));  
     return ESP_OK;
 }
@@ -283,12 +284,12 @@ esp_err_t scheduleSendingDiscovery_and_static_Topics(httpd_req_t *req)
 
 esp_err_t sendDiscovery_and_static_Topics(void)
 {
-    bool success = false;
-
     if (!sendingOf_DiscoveryAndStaticTopics_scheduled) {
         // Flag not set, nothing to do
         return ESP_OK;
     }
+    
+    bool success = false;
 
     if (HomeassistantDiscovery) {
         success = MQTThomeassistantDiscovery(1);
@@ -301,8 +302,8 @@ esp_err_t sendDiscovery_and_static_Topics(void)
         return ESP_OK;
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "One or more MQTT topics failed to be published, retry next round");
-        /* Keep sendingOf_DiscoveryAndStaticTopics_scheduled set so we can retry after the next round */
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Failed to publish one or more topics (static / HA discovery)");
+        /* Keep sendingOf_DiscoveryAndStaticTopics_scheduled set so we can retry after the next processing cycle */
         return ESP_FAIL;
     }
 }
@@ -353,6 +354,12 @@ void mqttServer_setMainTopic( std::string _maintopic)
 std::string mqttServer_getMainTopic()
 {
     return maintopic;
+}
+
+
+void scheduleSendingStaticTopics()
+{
+    sendingOf_DiscoveryAndStaticTopics_scheduled = true;
 }
 
 #endif //ENABLE_MQTT
