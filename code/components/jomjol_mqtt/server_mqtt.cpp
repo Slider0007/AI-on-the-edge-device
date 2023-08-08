@@ -173,9 +173,9 @@ bool MQTThomeassistantDiscovery(int qos)
         }
 
         //                                                   Group | Field                   | User Friendly Name            | Icon                      | Unit         | Device Class   | State Class       | Entity Category | QOS
-        allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "value",                  "Actual Value",                 "gauge",                    valueUnit,      meterType,      "total_increasing", "",               qos);
-        allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "raw",                    "Raw Value",                    "raw",                      "",             "",             "",                 "diagnostic",     qos);
-        allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "status",                 "Value Status",                 "alert-circle-outline",     "",             "",             "",                 "diagnostic",     qos);        
+        allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "actual_value",           "Actual Value",                 "gauge",                    valueUnit,      meterType,      "total_increasing", "",               qos);
+        allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "raw_value",              "Raw Value",                    "raw",                      "",             "",             "",                 "diagnostic",     qos);
+        allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "value_status",           "Value Status",                 "alert-circle-outline",     "",             "",             "",                 "diagnostic",     qos);        
         allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "rate_per_time_unit",     "Rate (" + rateUnit + ")",      "swap-vertical",            rateUnit,       "",             "measurement",      "",               qos);
         allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "rate_per_processing",    "Rate per processing interval", "arrow-expand-vertical",    valueUnit,      "",             "measurement",      "",               qos); // correctly the Unit is Unit/Interval!
         allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "timestamp_processed",    "Timestamp last processed",     "clock-time-eight-outline", "",             "timestamp",    "",                 "diagnostic",     qos);

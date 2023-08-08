@@ -240,9 +240,10 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
             else
                 namenumber = maintopic + "/" + namenumber + "/";
 
-            success |= MQTTPublish(namenumber + "value", (*NUMBERS)[i]->sActualValue, qos, SetRetainFlag);
-            success |= MQTTPublish(namenumber + "raw", (*NUMBERS)[i]->sRawValue, qos, SetRetainFlag);
-            success |= MQTTPublish(namenumber + "status", (*NUMBERS)[i]->sValueStatus, qos, SetRetainFlag);
+            success |= MQTTPublish(namenumber + "actual_value", (*NUMBERS)[i]->sActualValue, qos, SetRetainFlag);
+            success |= MQTTPublish(namenumber + "fallback_value", (*NUMBERS)[i]->sFallbackValue, qos, SetRetainFlag);
+            success |= MQTTPublish(namenumber + "raw_value", (*NUMBERS)[i]->sRawValue, qos, SetRetainFlag);
+            success |= MQTTPublish(namenumber + "value_status", (*NUMBERS)[i]->sValueStatus, qos, SetRetainFlag);
             success |= MQTTPublish(namenumber + "rate_per_min", (*NUMBERS)[i]->sRatePerMin, qos, SetRetainFlag);
             success |= MQTTPublish(namenumber + "rate_per_processing", (*NUMBERS)[i]->sRatePerProcessing, qos, SetRetainFlag);
 

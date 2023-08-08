@@ -1131,10 +1131,10 @@ std::string ClassFlowPostProcessing::getJsonFromNumber(int i, std::string _linee
 	std::string json = "";
 
 	json += "  {" + _lineend;
-	json += "    \"value\": \"" + NUMBERS[i]->sActualValue + "\"," + _lineend;
-	json += "    \"fallback\": \"" + NUMBERS[i]->sFallbackValue + "\"," + _lineend;
-	json += "    \"raw\": \"" + NUMBERS[i]->sRawValue + "\"," + _lineend;
-	json += "    \"status\": \"" + NUMBERS[i]->sValueStatus + "\"," + _lineend;
+	json += "    \"actual_value\": \"" + NUMBERS[i]->sActualValue + "\"," + _lineend;
+	json += "    \"fallback_value\": \"" + NUMBERS[i]->sFallbackValue + "\"," + _lineend;
+	json += "    \"raw_value\": \"" + NUMBERS[i]->sRawValue + "\"," + _lineend;
+	json += "    \"value_status\": \"" + NUMBERS[i]->sValueStatus + "\"," + _lineend;
 	json += "    \"rate_per_min\": \"" + NUMBERS[i]->sRatePerMin + "\"," + _lineend;
     json += "    \"rate_per_processing\": \"" + NUMBERS[i]->sRatePerProcessing + "\"," + _lineend;
 	json += "    \"timestamp_processed\": \"" + NUMBERS[i]->sTimeProcessed + "\"" + _lineend;
