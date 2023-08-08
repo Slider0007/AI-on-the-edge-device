@@ -845,7 +845,7 @@ bool ClassFlowPostProcessing::SetFallbackValue(double _newvalue, std::string _nu
                 NUMBERS[j]->fallbackValue = ReturnRawValueAsDouble;
             }
 
-            NUMBERS[j]->sFallbackValue = std::to_string(NUMBERS[j]->fallbackValue);
+            NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount + 1);
             NUMBERS[j]->isFallbackValueValid = true;
 
             if (_extern)
@@ -972,7 +972,7 @@ bool ClassFlowPostProcessing::LoadFallbackValue(void)
                 int AgeInMinutes = (int)(difftime(tStart, NUMBERS[j]->timeFallbackValue) / 60.0); // delta in minutes
                 if (AgeInMinutes > FallbackValueAgeStartup) {
                     NUMBERS[j]->isFallbackValueValid = false;
-                    NUMBERS[j]->fallbackValue = 0.0;
+                    NUMBERS[j]->fallbackValue = 0;
                     NUMBERS[j]->sFallbackValue = "";
                 }
                 else {
