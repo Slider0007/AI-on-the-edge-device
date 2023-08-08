@@ -611,19 +611,6 @@
 
 		<tr class="expert">
 			<td class="indent1">
-				<class id="PostProcessing_ErrorMessage_text" style="color:black;">Skip Messages on Error</class>
-			</td>
-			<td>
-				<select id="PostProcessing_ErrorMessage_value1">
-					<option value="true" selected>true</option>
-					<option value="false" >false</option>
-				</select>
-			</td>
-			<td>$TOOLTIP_PostProcessing_ErrorMessage</td>
-		</tr>
-
-		<tr class="expert">
-			<td class="indent1">
 				<class id="PostProcessing_CheckDigitIncreaseConsistency_text" style="color:black;">Check Digit Increase Consistency</class>
 			</td>
 			<td>
@@ -2109,7 +2096,6 @@ function UpdateInput() {
     
     WriteParameter(param, category, "PostProcessing", "FallbackValueUse", false);		
     WriteParameter(param, category, "PostProcessing", "FallbackValueAgeStartup", false);		
-    WriteParameter(param, category, "PostProcessing", "ErrorMessage", false);
     WriteParameter(param, category, "PostProcessing", "CheckDigitIncreaseConsistency", false);
 
     WriteParameter(param, category, "MQTT", "Uri", false);	
@@ -2240,7 +2226,6 @@ function ReadParameterAll()
 
     ReadParameter(param, "PostProcessing", "FallbackValueUse", false);
     ReadParameter(param, "PostProcessing", "FallbackValueAgeStartup", false);
-    ReadParameter(param, "PostProcessing", "ErrorMessage", false);
     ReadParameter(param, "PostProcessing", "CheckDigitIncreaseConsistency", false);
 
     ReadParameter(param, "MQTT", "Uri", false);

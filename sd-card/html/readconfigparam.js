@@ -166,7 +166,6 @@ function ParseConfig() {
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "FallbackValueUse", true, "true");
      ParamAddSingleValueWithPreset(param, catname, "FallbackValueAgeStartup", true, "720");
-     ParamAddSingleValueWithPreset(param, catname, "ErrorMessage", true, "true");
      ParamAddSingleValueWithPreset(param, catname, "CheckDigitIncreaseConsistency", true, "false");
      ParamAddValue(param, catname, "AllowNegativeRates", 1, true, "true");
      ParamAddValue(param, catname, "DecimalShift", 1, true, "0");

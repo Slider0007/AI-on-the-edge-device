@@ -27,7 +27,6 @@ ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, C
     UseFallbackValue = true;
     UpdateFallbackValue = false;
     FallbackValueAgeStartup = 60;
-    ErrorMessage = false;
     IgnoreLeadingNaN = false;
     ListFlowControll = lfc;
     flowTakeImage = NULL;
@@ -232,13 +231,6 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgr
 
         if ((toUpper(_param) == "FALLBACKVALUEAGESTARTUP") && (splitted.size() > 1)) {
             FallbackValueAgeStartup = std::stoi(splitted[1]);
-        }
-
-        if ((toUpper(_param) == "ERRORMESSAGE") && (splitted.size() > 1)) {
-            if (toUpper(splitted[1]) == "TRUE")
-                ErrorMessage = true;
-            else
-                ErrorMessage = false;
         }
 
         if ((toUpper(_param) == "CHECKDIGITINCREASECONSISTENCY") && (splitted.size() > 1)) {

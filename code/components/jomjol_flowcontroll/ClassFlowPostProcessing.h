@@ -17,8 +17,7 @@ protected:
     bool UseFallbackValue;
     bool UpdateFallbackValue;
     int FallbackValueAgeStartup; 
-    bool ErrorMessage;
-    bool IgnoreLeadingNaN;          // SPECIAL CASE for User Gustl ???
+    bool IgnoreLeadingNaN;
 
     ClassFlowCNNGeneral* flowAnalog;
     ClassFlowCNNGeneral* flowDigit;    
