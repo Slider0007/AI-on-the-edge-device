@@ -1038,8 +1038,8 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
-        "- To retrieve actual Fallback Value, please provide only a numbersname, e.g. /setFallbackValue?numbers=main<br>"
-        "- To set Fallback Value to a new value, please provide a numbersname and a value, e.g. /setFallbackValue?numbers=main&value=1234.5678<br>"
+        "- To retrieve actual Fallback Value, please provide only a numbersname, e.g. /set_fallbackvalue?numbers=main<br>"
+        "- To set Fallback Value to a new value, please provide a numbersname and a value, e.g. /set_fallbackvalue?numbers=main&value=1234.5678<br>"
         "NOTE:<br>"
         "value >= 0.0: Set Fallback Value to provided value<br>"
         "value <  0.0: Set Fallback Value to actual RAW value (as long RAW value is a valid number, without N)";
@@ -1060,7 +1060,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 
         if (httpd_query_key_value(_query, "numbers", _numbersname, 50) != ESP_OK) { // If request is incomplete
             sReturnMessage = "E91: Query parameter incomplete or not valid!<br> "
-                             "Call /setFallbackValue to show REST API usage info and/or check documentation";
+                             "Call /set_fallbackvalue to show REST API usage info and/or check documentation";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
             return ESP_FAIL; 
         }
@@ -1300,7 +1300,7 @@ void task_autodoFlow(void *pvParameter)
                     // Provide flow error indicator to MQTT interface (error occured 3 times in a row)
                     FlowStateErrorsInRow++;
                     if (FlowStateErrorsInRow >= FLOWSTATE_ERRORS_IN_ROW_LIMIT) {
-                        MQTTPublish(mqttServer_getMainTopic() + "/" + "flowerror", "true", 1, false);
+                        MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "true", 1, false);
                     }
                 #endif //ENABLE_MQTT
             
@@ -1309,7 +1309,7 @@ void task_autodoFlow(void *pvParameter)
             else {
                 #ifdef ENABLE_MQTT
                     FlowStateErrorsInRow = 0;
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "flowerror", "false", 1, false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "false", 1, false);
                 #endif //ENABLE_MQTT
             }
 
@@ -1450,7 +1450,7 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
     camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
-    camuri.uri       = "/setFallbackValue";
+    camuri.uri       = "/set_fallbackvalue";
     camuri.handler   = handler_fallbackvalue;
     camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
@@ -1465,7 +1465,7 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
     camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
-    camuri.uri       = "/flowerror";
+    camuri.uri       = "/process_error";
     camuri.handler   = handler_flowerror;
     camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
