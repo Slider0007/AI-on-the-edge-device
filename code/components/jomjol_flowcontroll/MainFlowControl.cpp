@@ -1090,7 +1090,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
         // New value is negative and actual RAW value is a valid number: Set FallbackValue to RAW value and return value
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "REST API handler_fallbackvalue called: numbersname: " + std::string(_numbersname) + 
                                                 ", value: " + std::string(_value));
-        if (!flowctrl.UpdateFallbackValue(_value, _numbersname, true)) {
+        if (!flowctrl.UpdateFallbackValue(_value, _numbersname)) {
             sReturnMessage = "E93: Update request rejected. Please check device logs for more details";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());  
             return ESP_FAIL;

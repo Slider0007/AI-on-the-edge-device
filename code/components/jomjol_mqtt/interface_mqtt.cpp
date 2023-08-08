@@ -366,7 +366,7 @@ bool mqtt_handler_set_fallbackvalue(std::string _topic, char* _data, int _data_l
             if (cJSON_IsNumber(value)) {   // Check if value is a number
                 LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handler_set_fallbackvalue called: numbersname: " + std::string(numbersname->valuestring) + 
                                                                                          ", value: " + std::to_string(value->valuedouble));
-                if (flowctrl.UpdateFallbackValue(std::to_string(value->valuedouble), std::string(numbersname->valuestring), true)) {
+                if (flowctrl.UpdateFallbackValue(std::to_string(value->valuedouble), std::string(numbersname->valuestring))) {
                     cJSON_Delete(jsonData);
                     return ESP_OK;
                 }

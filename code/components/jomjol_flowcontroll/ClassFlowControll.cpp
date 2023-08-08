@@ -982,7 +982,7 @@ std::string ClassFlowControll::GetFallbackValue(std::string _number)
 }
 
 
-bool ClassFlowControll::UpdateFallbackValue(std::string _newvalue, std::string _numbers, bool _extern)
+bool ClassFlowControll::UpdateFallbackValue(std::string _newvalue, std::string _numbers)
 {
     double newvalueAsDouble;
     char* p;
@@ -1002,7 +1002,7 @@ bool ClassFlowControll::UpdateFallbackValue(std::string _newvalue, std::string _
     }
     
     if (flowpostprocessing) {
-        if (flowpostprocessing->SetFallbackValue(newvalueAsDouble, _numbers, _extern))
+        if (flowpostprocessing->SetFallbackValue(newvalueAsDouble, _numbers))
             return true;
         else
             return false;

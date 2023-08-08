@@ -29,13 +29,12 @@ protected:
 
     void setDecimalShift();
     std::string ShiftDecimal(std::string in, int _decShift);
-
     std::string SubstitudeN(std::string, double _fallbackValue);
     float checkDigitConsistency(double _value, int _decimalshift, bool _isanalog, double _fallbackValue);
 
     void InitNUMBERS();
 
-    void handleDecimalSeparator(std::string _decsep, std::string _value);
+    void handleDecimalShift(std::string _decsep, std::string _value);
     void handleMaxRateValue(std::string _decsep, std::string _value);
     void handleDecimalExtendedResolution(std::string _decsep, std::string _value); 
     void handleMaxRateType(std::string _decsep, std::string _value);
@@ -50,8 +49,6 @@ public:
     bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
     bool doFlow(std::string time);
 
-    bool getUseFallbackValue(void);
-    void setUseFallbackValue(bool _value);
     std::vector<NumberPost*>* GetNumbers() {return &NUMBERS;};
     std::string getNumbersName();
     std::string getReadout(int _number);
@@ -62,7 +59,9 @@ public:
     std::string getJsonFromNumber(int i, std::string _lineend);
     std::string GetJSON(std::string _lineend = "\n");
     std::string GetFallbackValue(std::string _number = "");
-    bool SetFallbackValue(double zw, std::string _numbers, bool _extern = false);
+    bool SetFallbackValue(double zw, std::string _numbers);
+    bool getUseFallbackValue(void);
+    void setUseFallbackValue(bool _value);
 
     std::string name() {return "ClassFlowPostProcessing";};
 };
