@@ -659,8 +659,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     if (NUMBERS[j]->actualValue < NUMBERS[j]->fallbackValue) {
                         NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_002_RATE_NEGATIVE);  
 
-                        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + NUMBERS[j]->name + 
-                                                                ", Rate negative, use fallback | Value: " + std::to_string(NUMBERS[j]->actualValue) +
+                        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + NUMBERS[j]->name + ", Status: " + NUMBERS[j]->sValueStatus + 
+                                                                " | Value: " + std::to_string(NUMBERS[j]->actualValue) +
                                                                 ", Fallback: " + std::to_string(NUMBERS[j]->fallbackValue) +
                                                                 ", Rate: " + to_stringWithPrecision(RatePerSelection, NUMBERS[j]->decimalPlaceCount));
                         NUMBERS[j]->isActualValueConfirmed = false;
