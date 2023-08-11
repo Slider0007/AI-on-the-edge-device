@@ -462,12 +462,12 @@ esp_err_t handler_value(httpd_req_t *req)
             " - Actual Value:   /value?all=true&type=value<br>"
             " - Fallback Value: /value?all=true&type=fallback<br>"
             " - Raw Value:      /value?all=true&type=raw<br>"
-            " - Value Status:   /value?all=true&type=error<br><br>"
+            " - Value Status:   /value?all=true&type=status<br><br>"
             "2. Return data from a specific number sequence with e.g. name \"main\":<br>"
             " - Actual Value:   /value?all=true&type=value&numbersname=main<br>"
             " - Raw Value:      /value?all=true&type=raw&numbersname=main<br>"
             " - Fallback Value: /value?all=true&type=fallback&numbersname=main<br>"
-            " - Value Status:   /value?all=true&type=error&numbersname=main<br><br>"
+            " - Value Status:   /value?all=true&type=status&numbersname=main<br><br>"
             "3. Retrieve WebUI recognition page content, use /value?full=true<br>";
 
         // Default return error message when no return is programmed
@@ -528,7 +528,7 @@ esp_err_t handler_value(httpd_req_t *req)
                     zw = flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE);
                 else if (_type == "raw")
                     zw = flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE);
-                else if (_type == "error")
+                else if (_type == "status")
                     zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS);
                 else {
                     sReturnMessage = "E92: Type not found";
@@ -551,7 +551,7 @@ esp_err_t handler_value(httpd_req_t *req)
                     zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_FALLBACKVALUE);
                 else if (_type == "raw")
                     zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_RAWVALUE);
-                else if (_type == "error")
+                else if (_type == "status")
                     zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE_STATUS);
                 else {
                     sReturnMessage = "E92: Type not found";
@@ -595,7 +595,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 txt += "<table style=\"width:500px;border-collapse: collapse;table-layout: fixed;\">";
                 txt += "<tr><td style=\"font-weight: bold;width: 50%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Number Sequence</td>"
                         "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Raw Value</td>"
-                        "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Value</td></tr>";
+                        "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Actual Value</td></tr>";
                 for (int i = 0; i < flowctrl.getNumbersSize(); ++i) {   
 					txt += "<tr><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
 						flowctrl.getNumbersName(i) + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" +
