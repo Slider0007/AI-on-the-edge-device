@@ -629,16 +629,22 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 if (NUMBERS[j]->useMaxRateValue) {
                     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check rate limit for number sequence: " + NUMBERS[j]->name);
                     if (abs(RatePerSelection) > abs((double)NUMBERS[j]->maxRateValue)) {
-                        if (RatePerSelection < 0)
+                        if (RatePerSelection < 0) {
                             NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_003_RATE_TOO_HIGH_NEG);
-                        else
+                            
+                            /* Update timestamp of fallback value to be prepared to identify next negative movement larger than max. rate threshold (diagnostic purpose) */
+                            NUMBERS[j]->timeFallbackValue = NUMBERS[j]->timeProcessed;
+                            NUMBERS[j]->sTimeFallbackValue = ConvertTimeToString(NUMBERS[j]->timeFallbackValue, TIME_FORMAT_OUTPUT);
+                        }
+                        else {
                             NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_004_RATE_TOO_HIGH_POS);
+                        }
 
                         NUMBERS[j]->sValueStatus += " | Value: " + to_stringWithPrecision(NUMBERS[j]->actualValue, NUMBERS[j]->decimalPlaceCount) + 
                                                     ", Fallback: " + NUMBERS[j]->sFallbackValue + 
                                                     ", Rate: " + to_stringWithPrecision(RatePerSelection, NUMBERS[j]->decimalPlaceCount);
                          
-                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Sequence: " + NUMBERS[j]->name + ": Status: " + NUMBERS[j]->sValueStatus);           
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Sequence: " + NUMBERS[j]->name + ", Status: " + NUMBERS[j]->sValueStatus);           
                         NUMBERS[j]->isActualValueConfirmed = false;
                     }
                 }
@@ -651,12 +657,17 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 if (!NUMBERS[j]->allowNegativeRates && NUMBERS[j]->isActualValueConfirmed) {
                     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check negative rate for number sequence: " + NUMBERS[j]->name);
                     if (NUMBERS[j]->actualValue < NUMBERS[j]->fallbackValue) {
-                        NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_002_RATE_NEGATIVE);                      
+                        NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_002_RATE_NEGATIVE);  
+
                         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + NUMBERS[j]->name + 
-                                                                ": Rate negative, use fallback | Value: " + std::to_string(NUMBERS[j]->actualValue) +
+                                                                ", Rate negative, use fallback | Value: " + std::to_string(NUMBERS[j]->actualValue) +
                                                                 ", Fallback: " + std::to_string(NUMBERS[j]->fallbackValue) +
                                                                 ", Rate: " + to_stringWithPrecision(RatePerSelection, NUMBERS[j]->decimalPlaceCount));
                         NUMBERS[j]->isActualValueConfirmed = false;
+
+                        /* Update timestamp of fallback value to be prepared to identify every negative movement larger than max. rate threshold (diagnostic purpose) */
+                        NUMBERS[j]->timeFallbackValue = NUMBERS[j]->timeProcessed;
+                        NUMBERS[j]->sTimeFallbackValue = ConvertTimeToString(NUMBERS[j]->timeFallbackValue, TIME_FORMAT_OUTPUT);
                     }
                 }
 
