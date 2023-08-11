@@ -577,7 +577,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         NUMBERS[j]->actualValue = std::stod(NUMBERS[j]->sActualValue);
 
         #ifdef DEBUG_DETAIL_ON 
-            ESP_LOGI(TAG, "After converting to double: sActualValue: %s, actualValue: %f", NUMBERS[j]->sActualValue, NUMBERS[j]->actualValue);
+            ESP_LOGI(TAG, "After converting to double: sActualValue: %s, actualValue: %f", NUMBERS[j]->sActualValue.c_str(), NUMBERS[j]->actualValue);
         #endif
 
         if (UseFallbackValue) {
