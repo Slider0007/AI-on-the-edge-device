@@ -40,7 +40,7 @@ void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::s
     time_t rawtime;
 
     time(&rawtime);
-    std::string logpath = dataroot + "/" + ConvertTimeToString(rawtime, LOGFILE_TIME_FORMAT); 
+    std::string logpath = dataroot + "/" + ConvertTimeToString(rawtime, datafile.c_str()); 
     
     FILE* pFile;
     std::string zwtime;
