@@ -1006,19 +1006,19 @@ bool ClassFlowPostProcessing::LoadFallbackValue(void)
                     NUMBERS[j]->isFallbackValueValid = false;
                     NUMBERS[j]->fallbackValue = 0;
                     NUMBERS[j]->sFallbackValue = "";
-                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": FallbackValue outdated | Time: " + std::string(cTime));
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": Fallback value outdated | Time: " + std::string(cTime));
                 }
                 else if (AgeInMinutes < 0) { // Start time is older than fallback value timestamp -> age indeterminable
                     NUMBERS[j]->isFallbackValueValid = false;
                     NUMBERS[j]->fallbackValue = 0;
                     NUMBERS[j]->sFallbackValue = "";
-                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": FallbackValue age indeterminable | Time: " + std::string(cTime));
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": Fallback value age indeterminable | Time: " + std::string(cTime));
                 }
                 else {
                     NUMBERS[j]->fallbackValue = stod(std::string(cValue));
                     NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount + 1); // To be on the safe side, keep one digit more 
                     NUMBERS[j]->isFallbackValueValid = true;
-                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": FallbackValue valid | Time: " + std::string(cTime));
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": Fallback value valid | Time: " + std::string(cTime));
                 }
             }
         }
