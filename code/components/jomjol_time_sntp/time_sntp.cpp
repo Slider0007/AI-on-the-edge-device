@@ -36,25 +36,19 @@ std::string ConvertTimeToString(time_t _time, const char * frm)
 {
     struct tm timeinfo;
     char strftime_buf[64];
+
     localtime_r(&_time, &timeinfo);
     strftime(strftime_buf, sizeof(strftime_buf), frm, &timeinfo);
-
-    std::string result(strftime_buf);
-    return result;
+    return std::string(strftime_buf);
 }
 
 
 std::string getCurrentTimeString(const char * frm)
 {
     time_t now;
-    struct tm timeinfo;
-    time(&now);
-    char strftime_buf[64];
-    localtime_r(&now, &timeinfo);
-    strftime(strftime_buf, sizeof(strftime_buf), frm, &timeinfo);
 
-    std::string result(strftime_buf);
-    return result;
+    time(&now);
+    return ConvertTimeToString(now, frm);
 }
 
 
@@ -114,6 +108,7 @@ bool getTimeIsSet(void)
 {
     time_t now;
     struct tm timeinfo;
+
     time(&now);
     localtime_r(&now, &timeinfo);
 
@@ -161,10 +156,6 @@ std::string getServerName(void)
  */
 bool setupTime()
 {
-    time_t now;
-    struct tm timeinfo;
-    char strftime_buf[64];
-
     ConfigFile configFile = ConfigFile(CONFIG_FILE); 
 
     if (!configFile.ConfigFileExists()){
@@ -226,14 +217,15 @@ bool setupTime()
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer deactivated, disabling NTP");
         useNtp = false;
     }
+
+    // Set timezone in any case, even no time source is selected.
+    setTimeZone(timeZone);
     
     if (useNtp) {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Configure NTP client");        
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
         sntp_setservername(0, timeServer.c_str());
         sntp_set_time_sync_notification_cb(time_sync_notification_cb);
-        setTimeZone(timeZone);
-
         sntp_init();
     }
 
@@ -241,15 +233,15 @@ bool setupTime()
      * There should only be a minor correction through NTP */
 
     // Get current time from RTC
+    time_t now;
     time(&now);
-    localtime_r(&now, &timeinfo);
-    strftime(strftime_buf, sizeof(strftime_buf), "%Y-%m-%d %H:%M:%S", &timeinfo);
+    std::string sTimeString = ConvertTimeToString(now, "%Y-%m-%d %H:%M:%S");
 
     if (getTimeIsSet()) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is already set: " + std::string(strftime_buf));
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is already set: " + sTimeString);
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "The local time is unknown, starting with " + std::string(strftime_buf));
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "The local time is unknown, starting with " + sTimeString);
         timeWasNotSetAtBoot = true;
         timeWasNotSetAtBoot_PrintStartBlock = true;
         

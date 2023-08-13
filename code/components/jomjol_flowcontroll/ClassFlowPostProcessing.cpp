@@ -126,7 +126,6 @@ bool ClassFlowPostProcessing::SetPreValue(double _newvalue, std::string _numbers
             if (_extern)
             {
                 time(&(NUMBERS[j]->lastvalue));
-                localtime(&(NUMBERS[j]->lastvalue));
             }
             //ESP_LOGD(TAG, "Found %d! - set to %.8f", j,  NUMBERS[j]->PreValue);
             
@@ -241,7 +240,6 @@ bool ClassFlowPostProcessing::LoadPreValue(void)
                 NUMBERS[j]->lastvalue = mktime(&whenStart);
 
                 time(&tStart);
-                localtime(&tStart);
                 double difference = difftime(tStart, NUMBERS[j]->lastvalue);
                 difference /= 60;
                 if (difference > PreValueAgeStartup) {
@@ -265,9 +263,7 @@ bool ClassFlowPostProcessing::SavePreValue()
     if (!UpdatePreValueINI)         // PreValue unchanged
         return false;
     
-    esp_err_t err = ESP_OK;
-    char buffer[80];
-    
+    esp_err_t err = ESP_OK;    
     nvs_handle_t prevalue_nvshandle;
 
     err = nvs_open("prevalue", NVS_READWRITE, &prevalue_nvshandle);
@@ -284,12 +280,10 @@ bool ClassFlowPostProcessing::SavePreValue()
 
     for (int j = 0; j < NUMBERS.size(); ++j)
     {           
-        //ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->timeStamp).c_str(), 
-        //                                        (to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
-
-        struct tm* timeinfo = localtime(&NUMBERS[j]->lastvalue);
-        strftime(buffer, 80, PREVALUE_TIME_FORMAT_OUTPUT, timeinfo);
-        NUMBERS[j]->timeStamp = std::string(buffer);
+        NUMBERS[j]->timeStamp = ConvertTimeToString(NUMBERS[j]->lastvalue, PREVALUE_TIME_FORMAT_OUTPUT);
+        
+        ESP_LOGI(TAG, "name: %s, time: %s, value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->timeStamp).c_str(), 
+                                                (to_stringWithPrecision(NUMBERS[j]->PreValue, NUMBERS[j]->Nachkomma)).c_str());
         
         err = nvs_set_str(prevalue_nvshandle, ("name" + std::to_string(j)).c_str(), (NUMBERS[j]->name).c_str());
         if (err != ESP_OK) {

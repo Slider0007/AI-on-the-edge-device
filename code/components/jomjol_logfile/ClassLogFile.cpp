@@ -38,14 +38,9 @@ void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::s
 {
     ESP_LOGD(TAG, "Start WriteToData");
     time_t rawtime;
-    struct tm* timeinfo;
-    char buffer[30];
 
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
-
-    strftime(buffer, 30, datafile.c_str(), timeinfo);
-    std::string logpath = dataroot + "/" + buffer; 
+    std::string logpath = dataroot + "/" + ConvertTimeToString(rawtime, LOGFILE_TIME_FORMAT); 
     
     FILE* pFile;
     std::string zwtime;
@@ -143,19 +138,14 @@ std::string fileNameDate;
 
 void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::string message, bool _time)
 {
-    time_t rawtime;
-    struct tm* timeinfo;
     std::string fileNameDateNew;
-
     std::string zwtime;
     std::string ntpTime = "";
 
+    time_t rawtime;
 
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    char buf[30];
-    strftime(buf, sizeof(buf), logfile.c_str(), timeinfo);
-    fileNameDateNew = std::string(buf);
+    fileNameDateNew = ConvertTimeToString(rawtime, logfile.c_str());
 
     std::replace(message.begin(), message.end(), '\n', ' '); // Replace all newline characters
 
@@ -167,17 +157,12 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
         ESP_LOG_LEVEL(level, "", "%s", message.c_str());
     }
     
-
     if (level > loglevel) {// Only write to file if loglevel is below threshold
         return;
     }
 
-
-    if (_time)
-    {
-        char logLineDate[30];
-        strftime(logLineDate, sizeof(logLineDate), "%Y-%m-%dT%H:%M:%S", timeinfo);
-        ntpTime = std::string(logLineDate);
+    if (_time) {
+        ntpTime = ConvertTimeToString(rawtime, "%Y-%m-%dT%H:%M:%S");
     }
 
     std::string loglevelString; 
@@ -204,7 +189,6 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
     }
 
     std::string formatedUptime = getFormatedUptime(true);
-
     std::string fullmessage = "[" + formatedUptime + "] "  + ntpTime + "\t<" + loglevelString + ">\t" + message + "\n";
 
 
@@ -260,14 +244,9 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
 std::string ClassLogFile::GetCurrentFileNameData()
 {
     time_t rawtime;
-    struct tm* timeinfo;
-    char buffer[60];
 
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
-
-    strftime(buffer, 60, datafile.c_str(), timeinfo);
-    std::string logpath = dataroot + "/" + buffer; 
+    std::string logpath = dataroot + "/" + ConvertTimeToString(rawtime, datafile.c_str());
 
     return logpath;
 }
@@ -276,14 +255,9 @@ std::string ClassLogFile::GetCurrentFileNameData()
 std::string ClassLogFile::GetCurrentFileName()
 {
     time_t rawtime;
-    struct tm* timeinfo;
-    char buffer[60];
 
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
-
-    strftime(buffer, 60, logfile.c_str(), timeinfo);
-    std::string logpath = logroot + "/" + buffer; 
+    std::string logpath = logroot + "/" + ConvertTimeToString(rawtime, logfile.c_str()); 
 
     return logpath;
 }
@@ -298,16 +272,14 @@ void ClassLogFile::RemoveOldLogFile()
     ESP_LOGD(TAG, "Remove old log files");
 
     time_t rawtime;
-    struct tm* timeinfo;
+    struct tm timeinfo;
     char cmpfilename[30];
 
     time(&rawtime);
-    rawtime = addDays(rawtime, -logFileRetentionInDays + 1);
-    timeinfo = localtime(&rawtime);
+    rawtime = addDays(rawtime, -logFileRetentionInDays + 1);   
+    localtime_r(&rawtime, &timeinfo);
     //ESP_LOGD(TAG, "logFileRetentionInDays: %d", logFileRetentionInDays);
-
-
-    strftime(cmpfilename, 30, logfile.c_str(), timeinfo);
+    strftime(cmpfilename, sizeof(cmpfilename), logfile.c_str(), &timeinfo);
     //ESP_LOGD(TAG, "log file name to compare: %s", cmpfilename);
 
     DIR *dir = opendir(logroot.c_str());
@@ -358,15 +330,14 @@ void ClassLogFile::RemoveOldDataLog()
     ESP_LOGD(TAG, "Remove old data files");
 
     time_t rawtime;
-    struct tm* timeinfo;
+    struct tm timeinfo;
     char cmpfilename[30];
 
     time(&rawtime);
     rawtime = addDays(rawtime, -dataLogRetentionInDays + 1);
-    timeinfo = localtime(&rawtime);
+    localtime_r(&rawtime, &timeinfo);
     //ESP_LOGD(TAG, "dataLogRetentionInDays: %d", dataLogRetentionInDays);
-
-    strftime(cmpfilename, 30, datafile.c_str(), timeinfo);
+    strftime(cmpfilename, sizeof(cmpfilename), datafile.c_str(), &timeinfo);
     //ESP_LOGD(TAG, "data file name to compare: %s", cmpfilename);
 
     DIR *dir = opendir(dataroot.c_str());

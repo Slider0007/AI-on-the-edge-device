@@ -215,7 +215,6 @@ esp_err_t ClassFlowTakeImage::camera_capture()
         return ESP_FAIL;
 
     time(&TimeImageTaken);
-    localtime(&TimeImageTaken);
 
     return ESP_OK;
 }
@@ -237,7 +236,6 @@ bool ClassFlowTakeImage::takePictureWithFlash(int _flash_duration)
         return false;
 
     time(&TimeImageTaken);
-    localtime(&TimeImageTaken);
 
     if (SaveAllFiles)
         rawImage->SaveToFile(namerawimage);
@@ -249,7 +247,6 @@ bool ClassFlowTakeImage::takePictureWithFlash(int _flash_duration)
 esp_err_t ClassFlowTakeImage::SendRawJPG(httpd_req_t *req)
 {
     time(&TimeImageTaken);
-    localtime(&TimeImageTaken);
 
     return Camera.CaptureToHTTP(req, flash_duration);
 }
@@ -264,7 +261,6 @@ ImageData* ClassFlowTakeImage::SendRawImage()
         return NULL;
 
     time(&TimeImageTaken);
-    localtime(&TimeImageTaken);
 
     id = zw->writeToMemoryAsJPG();    
     delete zw;

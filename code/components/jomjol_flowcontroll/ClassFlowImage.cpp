@@ -112,17 +112,10 @@ void ClassFlowImage::RemoveOldLogs()
     }
 
     time_t rawtime;
-    struct tm* timeinfo;
-    char cmpfilename[30];
-
+    
     time(&rawtime);
     rawtime = addDays(rawtime, -1 * imagesRetention + 1);
-    timeinfo = localtime(&rawtime);
-    //ESP_LOGD(TAG, "ImagefileRetentionInDays: %d", imagesRetention);
-    
-    strftime(cmpfilename, 30, LOGFILE_TIME_FORMAT, timeinfo);
-    //ESP_LOGD(TAG, "file name to compare: %s", cmpfilename);
-	std::string folderName = std::string(cmpfilename).LOGFILE_TIME_FORMAT_DATE_EXTR;
+	std::string folderName = ConvertTimeToString(rawtime, LOGFILE_TIME_FORMAT).LOGFILE_TIME_FORMAT_DATE_EXTR;
 
     DIR* dir = opendir(imagesLocation.c_str());
     if (!dir) {
