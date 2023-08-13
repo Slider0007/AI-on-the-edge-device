@@ -46,7 +46,7 @@ struct NumberPost {
     bool allowNegativeRates;        // Rate negative check evaluation
     bool checkDigitIncreaseConsistency; // Plausibility check for class11 models
     bool isExtendedResolution;      // Extended Resolution activated
-    bool isFallbackValueValid;      // Fallback value is valid in terms of not being too old
+    bool isFallbackValueValid;      // Fallback value is valid in terms of not being outdated
     bool isActualValueANumber;      // Actual value is valid number (further processing possible)
     bool isActualValueConfirmed;    // Actual value is without any deviation (fully processed by post-processing without deviation)
 

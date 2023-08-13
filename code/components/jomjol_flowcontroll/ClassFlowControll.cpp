@@ -492,11 +492,14 @@ void ClassFlowControll::DeinitFlow(void)
 
     gpio_handler_destroy();
     //LogFile.WriteHeapInfo("After GPIO");
-
+    
+    #ifdef ENABLE_MQTT
 	delete flowMQTT;
     flowMQTT = NULL;
     //LogFile.WriteHeapInfo("After MQTT");
+    #endif //ENABLE_MQTT
     
+    #ifdef ENABLE_INFLUXDB
     delete flowInfluxDB;
     flowInfluxDB = NULL;
     //LogFile.WriteHeapInfo("After INFLUX");
@@ -504,6 +507,7 @@ void ClassFlowControll::DeinitFlow(void)
     delete flowInfluxDBv2;
     flowInfluxDBv2 = NULL;
     //LogFile.WriteHeapInfo("After INFLUXv2");
+    #endif //ENABLE_INFLUXDB
 
     delete flowpostprocessing;
     flowpostprocessing = NULL;
@@ -918,10 +922,10 @@ std::string ClassFlowControll::getReadoutAll(int _type)
                         if ((*numbers)[i]->isFallbackValueValid)
                             out = out + (*numbers)[i]->sFallbackValue;
                         else
-                            out = out + "Fallback Value too old";                
+                            out = out + "Outdated or age indeterminable";                
                     }
                     else
-                        out = out + "Fallback Value deactivated";
+                        out = out + "Deactivated";
                     break;
                 case READOUT_TYPE_RAWVALUE:
                     out = out + (*numbers)[i]->sRawValue;

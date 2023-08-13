@@ -581,7 +581,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         #endif
 
         if (UseFallbackValue) {
-            /* Is fallbackValue OK (== not too old)*/
+            /* Is fallbackValue valid (== not outdated) */
             if (NUMBERS[j]->isFallbackValueValid) {
                 /* Update fallbackValue */
                 NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount);
@@ -615,10 +615,11 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 }
                 else {
                     NUMBERS[j]->ratePerMin = 0;
-                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Rate per minute calculation not possible, time delta is zero");
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Rate calculation skipped, time delta between now and fallback value timestamp is zero");
                 }
                 
                 NUMBERS[j]->ratePerProcessing = NUMBERS[j]->actualValue - NUMBERS[j]->fallbackValue;
+
                 double RatePerSelection;  
                     if (NUMBERS[j]->rateType == rtRatePerMin)
                         RatePerSelection = NUMBERS[j]->ratePerMin;
@@ -627,7 +628,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                 /* Check for rate too high */
                 if (NUMBERS[j]->useMaxRateValue) {
-                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check rate limit for number sequence: " + NUMBERS[j]->name);
+                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Max. rate check for number sequence: " + NUMBERS[j]->name);
                     if (abs(RatePerSelection) > abs((double)NUMBERS[j]->maxRateValue)) {
                         if (RatePerSelection < 0) {
                             NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_003_RATE_TOO_HIGH_NEG);
@@ -655,7 +656,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                 /* Check for negative rate */
                 if (!NUMBERS[j]->allowNegativeRates && NUMBERS[j]->isActualValueConfirmed) {
-                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check negative rate for number sequence: " + NUMBERS[j]->name);
+                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Negative rate check for number sequence: " + NUMBERS[j]->name);
                     if (NUMBERS[j]->actualValue < NUMBERS[j]->fallbackValue) {
                         NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_002_RATE_NEGATIVE);  
 
@@ -675,11 +676,13 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     ESP_LOGI(TAG, "After allowNegativeRates: actualValue %f", NUMBERS[j]->actualValue);
                 #endif
             }
-            else {
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Fallback Value not valid");
+            else { // Fallback value is outdated or age indeterminable (could be the case after a reboot) -> force rates to zero
+                NUMBERS[j]->ratePerMin = 0;
+                NUMBERS[j]->ratePerProcessing = 0;
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Fallback value outdated or age indeterminable");
             }
 
-            /* Update string outputs */
+            /* Update fallback value + set status */
             if (NUMBERS[j]->isActualValueANumber && NUMBERS[j]->isActualValueConfirmed) { // Value of actual reading is valid
                 // Save value as fallback value
                 NUMBERS[j]->fallbackValue = NUMBERS[j]->actualValue;
@@ -691,7 +694,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                 NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID); 
             }
-            else { // Value of actual reading is invalid, use fallback + rates = 0
+            else { // Value of actual reading is invalid, use fallback value and froce rates to zero
                 NUMBERS[j]->ratePerMin = 0;
                 NUMBERS[j]->ratePerProcessing = 0;
                 NUMBERS[j]->actualValue = NUMBERS[j]->fallbackValue;
@@ -1004,6 +1007,12 @@ bool ClassFlowPostProcessing::LoadFallbackValue(void)
                     NUMBERS[j]->fallbackValue = 0;
                     NUMBERS[j]->sFallbackValue = "";
                     LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": FallbackValue outdated | Time: " + std::string(cTime));
+                }
+                else if (AgeInMinutes < 0) { // Start time is older than fallback value timestamp -> age indeterminable
+                    NUMBERS[j]->isFallbackValueValid = false;
+                    NUMBERS[j]->fallbackValue = 0;
+                    NUMBERS[j]->sFallbackValue = "";
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": FallbackValue age indeterminable | Time: " + std::string(cTime));
                 }
                 else {
                     NUMBERS[j]->fallbackValue = stod(std::string(cValue));
