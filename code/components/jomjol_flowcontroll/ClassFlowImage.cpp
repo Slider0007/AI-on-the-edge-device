@@ -105,11 +105,12 @@ void ClassFlowImage::RemoveOldLogs()
 	if (!isLogImage)
 		return;
 	
-	ESP_LOGD(TAG, "remove old images");
     if (imagesRetention == 0) {
         LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "RemoveOldLogs: Retention deactivated");
         return;
     }
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "Delete images older than retention setting (This might take a while)");
 
     time_t rawtime;
     
@@ -138,9 +139,9 @@ void ClassFlowImage::RemoveOldLogs()
             }
 		}
     }
-    
-    LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "Folder deleted: " + std::to_string(deleted) + ", folder not deleted: " + std::to_string(notDeleted));
     closedir(dir);
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "Folders deleted: " + std::to_string(deleted) + " | Folders kept: " + std::to_string(notDeleted));
 }
 
 

@@ -269,7 +269,7 @@ void ClassLogFile::RemoveOldLogFile()
         return;
     }
 
-    ESP_LOGD(TAG, "Remove old log files");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete log files older than retention setting");
 
     time_t rawtime;
     struct tm timeinfo;
@@ -316,8 +316,10 @@ void ClassLogFile::RemoveOldLogFile()
             }
         }
     }
-    ESP_LOGD(TAG, "log files deleted: %d | files not deleted (incl. leer.txt): %d", deleted, notDeleted);	
+
     closedir(dir);
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Files deleted: " + std::to_string(deleted) + " | Files kept: " + std::to_string(notDeleted));
 }
 
 
@@ -327,7 +329,7 @@ void ClassLogFile::RemoveOldDataLog()
         return;
     }
 
-    ESP_LOGD(TAG, "Remove old data files");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete data files older than retention setting");
 
     time_t rawtime;
     struct tm timeinfo;
@@ -366,8 +368,10 @@ void ClassLogFile::RemoveOldDataLog()
             }
         }
     }
-    ESP_LOGD(TAG, "data files deleted: %d | files not deleted (incl. leer.txt): %d", deleted, notDeleted);	
+
     closedir(dir);
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Files deleted: " + std::to_string(deleted) + " | Files kept: " + std::to_string(notDeleted));
 }
 
 
