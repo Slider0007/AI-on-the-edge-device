@@ -40,7 +40,6 @@ void ClassFlowMQTT::SetInitialParameter(void)
 
     clientname = wlan_config.hostname;
 
-    OldValue = "";
     flowpostprocessing = NULL;  
     user = "";
     password = ""; 
@@ -181,29 +180,29 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             }
         }
     }
+      
+    scheduleSendingStaticTopics();
+    mqttServer_setMainTopic(maintopic);
 
     /* Note:
      * Originally, we started the MQTT client here.
      * How ever we need the interval parameter from the ClassFlowControll, but that only gets started later.
      * To work around this, we delay the start and trigger it from ClassFlowControll::ReadParameter() */
 
-    mqttServer_setMainTopic(maintopic);
-
     return true;
 }
 
 
-bool ClassFlowMQTT::Start(float AutoInterval) 
+bool ClassFlowMQTT::Start(float _processingInterval) 
 {
-    roundInterval = AutoInterval; // Minutes
-    keepAlive = roundInterval * 60 * 2.5; // Seconds, make sure it is greater thatn 2 rounds!
+    keepAlive = _processingInterval * 60 * 2.5; // Seconds, make sure it is greater thatn 2 rounds!
 
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(1) << "Digitizer interval is " << roundInterval <<
-            " minutes => setting MQTT LWT timeout to " << ((float)keepAlive/60) << " minutes.";
+    stream << std::fixed << std::setprecision(1) << "Processing interval: " << _processingInterval <<
+            "min -> MQTT LWT timeout: " << ((float)keepAlive/60) << "min";
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, stream.str());
 
-    mqttServer_setParameter(flowpostprocessing->GetNumbers(), keepAlive, roundInterval);
+    mqttServer_setParameter(flowpostprocessing->GetNumbers(), keepAlive, _processingInterval);
 
     bool MQTTConfigCheck = MQTT_Configure(uri, clientname, user, password, maintopic, LWT_TOPIC, LWT_CONNECTED,
                                      LWT_DISCONNECTED, keepAlive, SetRetainFlag, (void *)&GotConnected);
@@ -220,19 +219,10 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
 {
     PresetFlowStateHandler();
     bool success;
-    std::string result;
-    std::string resulterror = "";
-    std::string resultraw = "";
-    std::string resultpre = "";
-    std::string resultrate = ""; // Always Unit / Minute
-    std::string resultRatePerTimeUnit = ""; // According to selection
-    std::string resulttimestamp = "";
-    std::string resultchangabs = "";
-    std::string zw = "";
     std::string namenumber = "";
     int qos = 1;
 
-    /* Send the the Homeassistant Discovery and the Static Topics in case they where scheduled */
+    /* Send static topics and if selected the the HA discovery topics as well*/
     sendDiscovery_and_static_Topics();
 
     success = publishSystemData(qos);
@@ -243,79 +233,35 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
 
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing MQTT topics");
 
-        for (int i = 0; i < (*NUMBERS).size(); ++i)
-        {
-            result =  (*NUMBERS)[i]->ReturnValue;
-            resultraw =  (*NUMBERS)[i]->ReturnRawValue;
-            resultpre =  (*NUMBERS)[i]->ReturnPreValue;
-            resulterror = (*NUMBERS)[i]->ErrorMessageText;
-            resultrate = (*NUMBERS)[i]->ReturnRateValue; // Unit per minutes
-            resultchangabs = (*NUMBERS)[i]->ReturnChangeAbsolute; // Units per round
-            resulttimestamp = (*NUMBERS)[i]->timeStamp;
-
+        for (int i = 0; i < (*NUMBERS).size(); ++i) {
             namenumber = (*NUMBERS)[i]->name;
             if (namenumber == "default")
                 namenumber = maintopic + "/";
             else
                 namenumber = maintopic + "/" + namenumber + "/";
 
+            success |= MQTTPublish(namenumber + "actual_value", (*NUMBERS)[i]->sActualValue, qos, SetRetainFlag);
+            success |= MQTTPublish(namenumber + "fallback_value", (*NUMBERS)[i]->sFallbackValue, qos, SetRetainFlag);
+            success |= MQTTPublish(namenumber + "raw_value", (*NUMBERS)[i]->sRawValue, qos, SetRetainFlag);
+            success |= MQTTPublish(namenumber + "value_status", (*NUMBERS)[i]->sValueStatus, qos, SetRetainFlag);
+            success |= MQTTPublish(namenumber + "rate_per_min", (*NUMBERS)[i]->sRatePerMin, qos, SetRetainFlag);
+            success |= MQTTPublish(namenumber + "rate_per_processing", (*NUMBERS)[i]->sRatePerProcessing, qos, SetRetainFlag);
 
-            if (result.length() > 0)   
-                success |= MQTTPublish(namenumber + "value", result, qos, SetRetainFlag);
-
-            if (resulterror.length() > 0)  
-                success |= MQTTPublish(namenumber + "error", resulterror, qos, SetRetainFlag);
-
-            if (resultrate.length() > 0) {
-                success |= MQTTPublish(namenumber + "rate", resultrate, qos, SetRetainFlag);
-                
-                std::string resultRatePerTimeUnit;
-                if (getTimeUnit() == "h") { // Need conversion to be per hour
-                    resultRatePerTimeUnit = resultRatePerTimeUnit = std::to_string((*NUMBERS)[i]->FlowRateAct * 60); // per minutes => per hour
-                }
-                else { // Keep per minute
-                    resultRatePerTimeUnit = resultrate;
-                }
-                success |= MQTTPublish(namenumber + "rate_per_time_unit", resultRatePerTimeUnit, qos, SetRetainFlag);
+            if (getTimeUnit() == "h") { // Rate per hour
+                success |= MQTTPublish(namenumber + "rate_per_time_unit", std::to_string((*NUMBERS)[i]->ratePerMin * 60), qos, SetRetainFlag); // per minutes => per hour
             }
-
-            if (resultchangabs.length() > 0) {
-                success |= MQTTPublish(namenumber + "changeabsolut", resultchangabs, qos, SetRetainFlag); // Legacy API
-                success |= MQTTPublish(namenumber + "rate_per_digitalization_round", resultchangabs, qos, SetRetainFlag);
+            else { // Default: Rate per minute
+                success |= MQTTPublish(namenumber + "rate_per_time_unit", (*NUMBERS)[i]->sRatePerMin, qos, SetRetainFlag); // rate per minutes
             }
-
-            if (resultraw.length() > 0)   
-                success |= MQTTPublish(namenumber + "raw", resultraw, qos, SetRetainFlag);
-
-            if (resulttimestamp.length() > 0)
-                success |= MQTTPublish(namenumber + "timestamp", resulttimestamp, qos, SetRetainFlag);
-
+            success |= MQTTPublish(namenumber + "timestamp_processed", (*NUMBERS)[i]->sTimeProcessed, qos, SetRetainFlag);
+            
             std::string json = flowpostprocessing->getJsonFromNumber(i, "\n");
             success |= MQTTPublish(namenumber + "json", json, qos, SetRetainFlag);
         }
     }
-    
-    /* Disabled because this is no longer a use case */
-    // else
-    // {
-    //     for (int i = 0; i < ListFlowControll->size(); ++i)
-    //     {
-    //         zw = (*ListFlowControll)[i]->getReadout();
-    //         if (zw.length() > 0)
-    //         {
-    //             if (result.length() == 0)
-    //                 result = zw;
-    //             else
-    //                 result = result + "\t" + zw;
-    //         }
-    //     }
-    //     success |= MQTTPublish(topic, result, qos, SetRetainFlag);
-    // }
-    
-    OldValue = result;
 
     if (!success) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "One or more MQTT topics failed to be published");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Failed to publish one or more topics (system / result)");
     }
     
     return true;

@@ -20,9 +20,9 @@
 
 	<table class="tg">
 		<tr>
-			<th class="th">Value</th>
+			<th class="th">Actual Value</th>
 			<td class="tg-1" rowspan="13">
-				<img style="padding-left: 5px; padding-top: 0px; max-width:640px; width:100%; height:auto;" id="img" src="">
+				<img style="padding-left: 5px; padding-top: 0px; max-width: 100%; width: auto; height: auto;" id="img" src="">
 			</td>
 		</tr>	 
 		<tr>	
@@ -31,11 +31,11 @@
 			</td>	
 		</tr>
 		<tr>
-			<th class="th">Previous Value</th>
+			<th class="th">Fallback Value</th>
 		</tr>	
 		<tr>	
 			<td class="tg-2">
-				<div id="prevalue"></div>
+				<div id="fallback"></div>
 			</td>	
 		</tr>
 		<tr>
@@ -51,7 +51,7 @@
 		</tr>	
 		<tr>	
 			<td class="tg-2">
-				<div id="error"></div>
+				<div id="status"></div>
 			</td>	
 		</tr>
 		<tr>
@@ -60,7 +60,7 @@
 		<tr>	
 			<td class="tg-3">
 				<div id="statusflow" ></div>
-				<b><div id="flowerror" style="color: rgb(255, 0, 0)"></div></b>
+				<b><div id="processerror" style="color: rgb(255, 0, 0)"></div></b>
 			</td>
 		</tr>  
 		<tr>
@@ -86,7 +86,8 @@
 	<script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>
 	<script type="text/javascript">
 
-	function addZero(i) {
+	function addZero(i)
+	{
 	  if (i < 10) {
 		i = "0" + i;
 	  }
@@ -94,241 +95,162 @@
 	}
 
 
-	$(document).ready(function() {
-		LoadData();
+	$(document).ready(function(){
+		LoadProcessData();
 		LoadROIImage();
 	});
 
 
-	function LoadData(){
-		loadValue("value", "value", "border-collapse: collapse; width: 100%");
-		loadValue("raw", "raw", "border-collapse: collapse; width: 100%");
-		loadValue("prevalue", "prevalue", "border-collapse: collapse; width: 100%");
-		loadValue("error", "error", "border-collapse: collapse; width: 100%");
-		loadStatus();
-		loadFlowError();
-		loadCPUTemp();
-		loadRSSI();
-		loadUptime();
-		loadRoundCounter();
-	}
-
-
-	function LoadROIImage(){
+	function LoadROIImage()
+	{
 		var d = new Date();
 		var timestamp = d.getTime();
 		var h = addZero(d.getHours());
 		var m = addZero(d.getMinutes());
 		var s = addZero(d.getSeconds());
 		document.getElementById("img").src = getDomainname() + '/img_tmp/alg_roi.jpg?timestamp=' + timestamp;
-		$('#timestamp').html("Last Page Refresh:" + (h + ":" + m + ":" + s));
+		$('#timestamp').html("Last Page Refresh: " + (h + ":" + m + ":" + s));
 	}
 
 
-	function Refresh() {
+	function Refresh()
+	{
 		setTimeout (function() {
-			LoadData();
+			LoadProcessData();
 			LoadROIImage();
 			Refresh();
 		}, 300000);
 	}
 
 
-	function loadStatus() {
-		url = domainname + '/statusflow';     
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var _rsp = xhttp.responseText;
-				$('#statusflow').html(_rsp);
-			}
-		}
-		xhttp.open("GET", url, true);
-		xhttp.send();
-	}
-
-
-	function loadFlowError() {
-		url = domainname + '/flowerror';     
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				if (xhttp.responseText.substring(0,3) == "001" || xhttp.responseText.substring(0,3) == "002") {
-					$('#flowerror').html("!!! Process error detected. Check logs !!!");
-				}
-				else {
-					$('#flowerror').html("");
-				}
-			}
-		}
-		xhttp.open("GET", url, true);
-		xhttp.send();
-	}
-
-
-	function loadCPUTemp() {
-		url = domainname + '/cpu_temperature';     
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var _rsp = xhttp.responseText;
-				$('#cputemp').html("CPU Temperature: " +_rsp + "°C");
-			}
-		}
-		xhttp.open("GET", url, true);
-		xhttp.send();
-	}
-
-
-	function loadRSSI() {
-		url = domainname + '/rssi';     
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var _rsp = xhttp.responseText;
-				
-				if (_rsp >= -55) {
-					$('#rssi').html("WIFI Signal: Excellent (" + _rsp + "dBm)");
-				}
-				else if (_rsp < -55 && _rsp >= -67) {
-					$('#rssi').html("WIFI Signal: Good (" + _rsp + "dBm)");
-				}
-				else if (_rsp < -67 && _rsp >= -78) {
-					$('#rssi').html("WIFI Signal: Fair (" + _rsp + "dBm)");
-				}
-				else if (_rsp < -78 && _rsp >= -85) {
-					$('#rssi').html("WIFI Signal: Weak (" + _rsp + "dBm)");
-				}
-				else {
-					$('#rssi').html("WIFI Signal: Unreliable (" + _rsp + "dBm)");
-				}
-			}
-		}
-		xhttp.open("GET", url, true);
-		xhttp.send();		
-	}
-
-
-	function loadUptime() {
-		url = domainname + '/uptime';     
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var _rsp = xhttp.responseText;
-				$('#uptime').html("Uptime: " + _rsp);
-			}
-		}
-		xhttp.open("GET", url, true);
-		xhttp.send();
-	}
-
-
-	function loadRoundCounter() {
-		url = domainname + '/info?type=Round';     
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var _rsp = xhttp.responseText;
-				$('#round').html("(Round: " + _rsp + ")");
-			}
-		}
-		xhttp.open("GET", url, true);
-		xhttp.send();
-	}
-		
-	
-	function loadValue(_type, _div, _style) {
-		url = domainname + '/value?all=true&type=' + _type;     
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-			var _rsp = xhttp.responseText;
-			var _split = _rsp.split("\r");
-			if (typeof _style == undefined)
-				out = "<table>";
-			else
-				out = "<table style=\"" + _style + "\">";
-
-			if (_split.length == 1)
-			{
-				var _zer = ZerlegeZeile(_split[0], "\t")
-				if (_zer.length > 1) {
-					out = _zer[1];
-					if (_type == "error") {
-						if (_zer[1].substring(0,4) == "Neg.")
-							out = "Invalid - Negative rate";
-						else if (_zer[1].substring(0,4) == "Rate")
-							out = "Invalid - Rate too high";
-						else if (_zer[1].substring(0,7) == "No data")
-							out = "Invalid - No data to replace N";
-						else 
-							out = "Valid";
-					}
-				}
-				else {
-					out = "";
-                }
-			}
-			else
-			{
-				for (var j = 0; j < _split.length; ++j)
-				{
-					var _zer = ZerlegeZeile(_split[j], "\t");
-                    
-                    if (_type == "error") {
-						if (_zer[1].substring(0,4) == "Neg.")
-							_zer[1] = "Invaild - Negative rate";
-						else if (_zer[1].substring(0,4) == "Rate")
-							_zer[1] = "Invalid - Rate too high";
-						else 
-							_zer[1] = "Valid";
-					}
-                    
-					if (_zer.length == 1)
-						out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
-							_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\"> </td></tr>"; 
-					else
-						out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
-							_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\" >" + _zer[1] + "</td></tr>"; 
-				}
-				out = out + "</table>"
-
-				}
-			document.getElementById(_div).innerHTML = out;
-			}
-		};
-		xhttp.open("GET", url, true);
-		xhttp.send();		
-	}
-
-
-	function setImageMaxWidth()
+	function loadValue(_value, _div, _style)
 	{
-		loadConfig(domainname); 
-		ParseConfig();
-		param = getConfigParameters();
-		if(param["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
-			if (param["Alignment"]["FlipImageSize"]["value1"] == "false") {
-				document.getElementById("img").style.maxWidth = "320px";
+		var _split = _value.split("\r");
+		if (typeof _style == undefined)
+			out = "<table>";
+		else
+			out = "<table style=\"" + _style + "\">";
+
+		if (_split == null)
+				return;
+
+		if (_split.length == 1) {
+			var _zer = ZerlegeZeile(_split[0], "\t")
+			if (_zer.length > 1) {
+				out = _zer[1];
+				if (_div == "status") {
+					if (_zer[1] != null && _zer[1].length > 0) {
+						if (_zer[1].substring(0,3) == "000")
+							out = "Valid";
+						else if (_zer[1].substring(0,3) == "E90")
+							out = "No Valid Value (NaN)";
+						else if (_zer[1].substring(0,3) == "E91")
+							out = "Rate Negative | Use Fallback";
+						else if (_zer[1].substring(0,3) == "E92")
+							out = "Rate Too High (<) | Use Fallback";
+						else if (_zer[1].substring(0,3) == "E93")
+							out = "Rate Too High (>) | Use Fallback";
+						else
+							out = ""
+					}
+				}
 			}
 			else {
-				document.getElementById("img").style.maxWidth = "240px";
+				out = "";
 			}
 		}
 		else {
-			if (param["Alignment"]["FlipImageSize"]["value1"] == "false") { 
-				document.getElementById("img").style.maxWidth = "640px";
+			for (var j = 0; j < _split.length; ++j) {
+				var _zer = ZerlegeZeile(_split[j], "\t");				
+				if (_div == "status") {
+					if (_zer[1] != null && _zer[1].length > 0) {
+						if (_zer[1].substring(0,3) == "000")
+							_zer[1] = "Valid";
+						else if (_zer[1].substring(0,3) == "E90")
+							_zer[1] = "No Valid Value (NaN)";
+						else if (_zer[1].substring(0,3) == "E91")
+							_zer[1] = "Negative Rate | Use Fallback";
+						else if (_zer[1].substring(0,3) == "E92")
+							_zer[1] = "Rate Too High (<) | Use Fallback";
+						else if (_zer[1].substring(0,3) == "E93")
+							_zer[1] = "Rate Too High (>) | Use Fallback";
+						else
+							_zer[1] = "";
+					}
+				}
+				
+				if (_zer.length == 1)
+					out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
+						_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\"> </td></tr>"; 
+				else
+					out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
+						_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\" >" + _zer[1] + "</td></tr>"; 
 			}
-			else {
-				document.getElementById("img").style.maxWidth = "480px";
-			}
+			out = out + "</table>"
+		}
+
+		document.getElementById(_div).innerHTML = out;
+	}
+
+
+	function loadProcessError(_value)
+	{
+		if (_value.substring(0,3) == "001" || _value.substring(0,3) == "002") {
+			$('#processerror').html("!!! Process error detected. Check logs !!!");
+		}
+		else {
+			$('#processerror').html("");
 		}
 	}
 
 
-	function init(){
+	function loadRSSI(_value)
+	{		
+		if (_value >= -55) {
+			$('#rssi').html("WIFI Signal: Excellent (" + _value + "dBm)");
+		}
+		else if (_value < -55 && _value >= -67) {
+			$('#rssi').html("WIFI Signal: Good (" + _value + "dBm)");
+		}
+		else if (_value < -67 && _value >= -78) {
+			$('#rssi').html("WIFI Signal: Fair (" + _value + "dBm)");
+		}
+		else if (_value < -78 && _value >= -85) {
+			$('#rssi').html("WIFI Signal: Weak (" + _value + "dBm)");
+		}
+		else {
+			$('#rssi').html("WIFI Signal: Unreliable (" + _value + "dBm)");
+		}
+	}
+
+
+	function LoadProcessData()
+	{
+		url = domainname + '/process_data';     
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				const _jsonData = JSON.parse(xhttp.responseText);			
+				loadValue(_jsonData.actual_value, "value", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.fallback_value, "fallback", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.raw_value, "raw", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.value_status, "status", "border-collapse: collapse; width: 100%");
+				$('#statusflow').html(_jsonData.process_state);
+				loadProcessError(_jsonData.process_error);
+				$('#cputemp').html("CPU Temperature: " + _jsonData.temperature + "°C");
+				loadRSSI(_jsonData.rssi);
+				$('#uptime').html("Uptime: " + _jsonData.uptime);
+				$('#round').html("(Round: " + _jsonData.round_counter + ")");
+			}
+		}
+		xhttp.open("GET", url, true);
+		xhttp.send();
+	}
+
+
+	function init()
+	{
 		domainname = getDomainname();
-		setImageMaxWidth();
 		Refresh();
 	}
 

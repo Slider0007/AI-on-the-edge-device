@@ -13,8 +13,8 @@ void testNegative() {
         // Ohne decimal_shift
         std::vector<float> digits = { 1.2, 6.7};
         std::vector<float> analogs = { 9.5, 8.4};
-        double preValue_extended = 16.985;
-        double preValue = 16.98;
+        double fallbackValue_extended = 16.985;
+        double fallbackValue = 16.98;
         
         const char* expected = "16.98";
         
@@ -22,7 +22,7 @@ void testNegative() {
         // da kein negativ, sollte kein Error auftreten
         UnderTestPost* underTestPost = init_do_flow(analogs, digits, Digital100, false, false, 0);
         setAllowNegatives(underTestPost, false);
-        setPreValue(underTestPost, preValue);
+        SetFallbackValue(underTestPost, fallbackValue);
         std::string result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("no error", underTestPost->getReadoutError().c_str());
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -30,32 +30,32 @@ void testNegative() {
 
         // extendResolution=true
         // da negativ im Rahmen (letzte Stelle -0.2 > ergebnis), kein Error
-        // Aber der PreValue wird gesetzt
+        // Aber der SetFallbackValue wird gesetzt
         underTestPost = init_do_flow(analogs, digits, Digital100, false, true, 0);
         setAllowNegatives(underTestPost, false);
-        setPreValue(underTestPost, preValue_extended);
+        SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("no error", underTestPost->getReadoutError().c_str());
-        //TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(preValue_extended, analogs.size()+1).c_str(), result.c_str());
+        //TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, analogs.size()+1).c_str(), result.c_str());
         delete underTestPost;
 
         // extendResolution=true
         // Toleranz überschritten, Error wird gesetzt, kein ReturnValue
-        preValue_extended = 16.988; // zu groß
+        fallbackValue_extended = 16.988; // zu groß
         underTestPost = init_do_flow(analogs, digits, Digital100, false, true, 0);
         setAllowNegatives(underTestPost, false);
-        setPreValue(underTestPost, preValue_extended);
+        SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("Neg. Rate: Read: 16.984, Pre: 16.988", underTestPost->getReadoutError().c_str());
         TEST_ASSERT_EQUAL_STRING("", result.c_str());
         delete underTestPost;
 
         // extendResolution=false
-        // value < preValue
-        preValue = 16.99; // zu groß
+        // value < fallbackValue
+        fallbackValue = 16.99; // zu groß
         underTestPost = init_do_flow(analogs, digits, Digital100, false, false, 0);
         setAllowNegatives(underTestPost, false);
-        setPreValue(underTestPost, preValue_extended);
+        SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("Neg. Rate: Read: 16.98, Pre: 16.99", underTestPost->getReadoutError().c_str());
         TEST_ASSERT_EQUAL_STRING("", result.c_str());
@@ -63,12 +63,12 @@ void testNegative() {
 
 
         // extendResolution=false
-        // value < preValue
+        // value < fallbackValue
         // Aber Prüfung abgeschaltet => kein Fehler
-        preValue = 16.99; // zu groß
+        fallbackValue = 16.99; // zu groß
         underTestPost = init_do_flow(analogs, digits, Digital100, false, false, 0);
         setAllowNegatives(underTestPost, true);
-        setPreValue(underTestPost, preValue_extended);
+        SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("no error", underTestPost->getReadoutError().c_str());
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -84,19 +84,19 @@ void testNegative_Issues() {
         // Ohne decimal_shift
         std::vector<float> digits = { 2.0, 2.0, 0.0, 1.0, 7.2, 9.0, 8.0};
         std::vector<float> analogs = { };
-        double preValue_extended = 22018.080;
-        double preValue = 22018.08;
+        double fallbackValue_extended = 22018.080;
+        double fallbackValue = 22018.08;
         
         const char* expected = "22017.98";
 
         // https://github.com/jomjol/AI-on-the-edge-device/issues/2145#issuecomment-1461899094
         // extendResolution=false
-        // value < preValue
+        // value < fallbackValue
         // Prüfung eingeschaltet => Fehler
-        preValue = 22018.08; // zu groß
+        fallbackValue = 22018.08; // zu groß
         UnderTestPost* underTestPost = init_do_flow(analogs, digits, Digital100, false, false, -2);
         setAllowNegatives(underTestPost, false);
-        setPreValue(underTestPost, preValue_extended);
+        SetFallbackValue(underTestPost, fallbackValue_extended);
         std::string result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("Neg. Rate: Read: 22017.98, Pre: 22018.08", underTestPost->getReadoutError().c_str());
         TEST_ASSERT_EQUAL_STRING("", result.c_str());

@@ -39,7 +39,7 @@
     function run() {
         datefile = document.getElementById("datafiles").value;
         numbername = document.getElementById("numbers").value;
-        showRrelativeValues = document.getElementById("showRrelativeValues").checked;
+        showRelativeValues = document.getElementById("showRelativeValues").checked;
         //alert("Auslesen: " + datefile + " " + numbername);
 
         _domainname = getDomainname();
@@ -52,10 +52,11 @@
             response.text()
             .then( result => {
                 var lines = result.split("\n");
-                var traceValue =          { x: [], y: [], type: 'scatter', line: {width: 6}, name: 'Value'};
-                var tracePreValue =       { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Previous Value', visible: 'legendonly'};
-                var traceChangeRate =     { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Change Rate'};
-                var traceChangeAbsolute = { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Change Absolute', visible: 'legendonly'};
+                var traceValue =             { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Actual Value'};
+                var traceRawValue =          { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Raw Value', visible: 'legendonly'};
+                var traceFallbackValue =     { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Fallback Value', visible: 'legendonly'};
+                var traceRatePerMin =        { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Minute'};
+                var traceRatePerProcessing = { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Processing', visible: 'legendonly'};
 
                 var timex = 1;
                 for (let line of lines) {
@@ -64,9 +65,10 @@
                         if (line.split(",")[1] == numbername)
                         {
                             var value = line.split(",")[3];
-                            var preValue = line.split(",")[4];
-                            var changeRate = line.split(",")[5];
-                            var changeAbsolute = line.split(",")[6];
+                            var rawValue = line.split(",")[2];
+                            var fallbackValue = line.split(",")[4];
+                            var RatePerMin = line.split(",")[5];
+                            var RatePerProcessing = line.split(",")[6];
                             var time  = line.split(",")[0];
                             //console.log("> "+time+" "+value+"\n");
 
@@ -77,22 +79,27 @@
                                 value = NaN;
                             }
 
-                            if (preValue == "" || isNaN(preValue)) {
-                                preValue = NaN;
+                            if (fallbackValue == "" || isNaN(fallbackValue)) {
+                                fallbackValue = NaN;
                             }
 
-                            if (changeRate == "" || isNaN(changeRate)) {
-                                changeRate = NaN;
+                            if (rawValue == "" || isNaN(rawValue)) {
+                                rawValue = NaN;
                             }
 
-                            if (changeAbsolute == "" || isNaN(changeAbsolute)) {
-                                changeAbsolute = NaN;
+                            if (RatePerMin == "" || isNaN(RatePerMin)) {
+                                RatePerMin = NaN;
+                            }
+
+                            if (RatePerProcessing == "" || isNaN(RatePerProcessing)) {
+                                RatePerProcessing = NaN;
                             }
 
                             traceValue.y.push(value);
-                            tracePreValue.y.push(preValue);
-                            traceChangeRate.y.push(changeRate);
-                            traceChangeAbsolute.y.push(changeAbsolute);
+                            traceRawValue.y.push(rawValue);
+                            traceFallbackValue.y.push(fallbackValue);
+                            traceRatePerMin.y.push(RatePerMin);
+                            traceRatePerProcessing.y.push(RatePerProcessing);
                         }
                     }
                 }
@@ -119,30 +126,36 @@
 
 
                 // Copy time to all traces
-                tracePreValue.x = traceValue.x;
-                traceChangeRate.x = traceValue.x;
-                traceChangeAbsolute.x = traceValue.x;
+                traceRawValue.x = traceValue.x;
+                traceFallbackValue.x = traceValue.x;
+                traceRatePerMin.x = traceValue.x;
+                traceRatePerProcessing.x = traceValue.x;
 
                 //console.log(traceValue.y);
 
                 var offsetValue = traceValue.y[0];
-                var offsetPreValue = tracePreValue.y[0];
+                var offsetRawValue = traceRawValue.y[0];
+                var offsetFallbackValue = traceFallbackValue.y[0];
 
                 traceValue.connectgaps = true;
 
-                if (showRrelativeValues) {
+                if (showRelativeValues) {
                     traceValue.y.forEach(function(part, index, arr) {
                         arr[index] = arr[index] - offsetValue;
                     });
 
-                    tracePreValue.y.forEach(function(part, index, arr) {
-                        arr[index] = arr[index] - offsetPreValue;
+                    traceRawValue.y.forEach(function(part, index, arr) {
+                        arr[index] = arr[index] - offsetRawValue;
+                    });
+
+                    traceFallbackValue.y.forEach(function(part, index, arr) {
+                        arr[index] = arr[index] - offsetFallbackValue;
                     });
                 }
 
               //  console.log(traceValue.x)
 
-                var data = [traceValue, tracePreValue, traceChangeRate, traceChangeAbsolute];
+                var data = [traceValue, traceRawValue, traceFallbackValue, traceRatePerMin, traceRatePerProcessing];
 
                 var layout = {
                     showlegend: true,
@@ -150,7 +163,7 @@
 
                     yaxis: {title: 'Value'},
                     yaxis2: {
-                        title: 'Change',
+                        title: 'Rate',
                         overlaying: 'y',
                         side: 'right'
                     },
@@ -191,13 +204,13 @@
     <select id="numbers" onchange="run();"></select>
     Day:
     <select id="datafiles" onchange="run();"></select>
-    <input type="checkbox" id="showRrelativeValues" onclick = 'run();' unchecked ><label for="showRrelativeValues">Show relative values</label><br><br>
+    <input type="checkbox" id="showRelativeValues" onclick = 'run();' unchecked ><label for="showRelativeValues">Show relative values</label><br><br>
     <button class="button" onclick="run();">Refresh</button>
     <button class="button" onClick="window.location.href = 'data.html?v=$COMMIT_HASH'">Show Data Viewer</button>
     <button class="button" onClick="window.location.href = getDomainname() + '/fileserver/log/data/'">Show Data Files</button>
 
 <script>
-    function WriteModelFiles()
+    function WriteDataFiles()
     {
         list_data = getDATAList();
 
@@ -235,7 +248,7 @@
         }
     }
 
-    WriteModelFiles();
+    WriteDataFiles();
     WriteNumbers();
 
     function Refresh() {

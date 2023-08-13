@@ -39,8 +39,9 @@ public:
     void RemoveOldLogFile();
     void RemoveOldDataLog();
 
-//    void WriteToData(std::string _ReturnRawValue, std::string _ReturnValue, std::string _ReturnPreValue, std::string _ErrorMessageText, std::string _digital, std::string _analog);
-    void WriteToData(std::string _timestamp, std::string _name, std::string  _ReturnRawValue, std::string  _ReturnValue, std::string  _ReturnPreValue, std::string  _ReturnRateValue, std::string  _ReturnChangeAbsolute, std::string  _ErrorMessageText, std::string  _digital, std::string  _analog);
+    void WriteToData(std::string _timestamp, std::string _name, std::string  _sRawValue, std::string  _sValue, 
+                     std::string  _sFallbackValue, std::string  _sRatePerMin, std::string  _sRatePerProcessing, 
+                     std::string  _sValueStatus, std::string  _digital, std::string  _analog);
 
 
     std::string GetCurrentFileName();

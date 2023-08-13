@@ -585,41 +585,28 @@
 			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Post-Processing</h4></td>
 		</tr>
 
-		<tr>
+		<tr class="expert">
 			<td class="indent1">
-				<class id="PostProcessing_PreValueUse_text" style="color:black;">Previous Value</class>
+				<class id="PostProcessing_FallbackValueUse_text" style="color:black;">Use Fallback Value</class>
 			</td>
 			<td>
-				<select id="PostProcessing_PreValueUse_value1">
+				<select id="PostProcessing_FallbackValueUse_value1">
 					<option value="true" selected>true</option>
 					<option value="false" >false</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_PostProcessing_PreValueUse</td>
+			<td>$TOOLTIP_PostProcessing_FallbackValueUse</td>
 		</tr>
 
 		<tr class="expert">
 			<td class="indent1">
-				<class id="PostProcessing_PreValueAgeStartup_text" style="color:black;">Max. Age of Previous Value</class>
+				<class id="PostProcessing_FallbackValueAgeStartup_text" style="color:black;">Max. Age of Fallback Value</class>
 			</td>
 			<td>
-				<input required type="number" id="PostProcessing_PreValueAgeStartup_value1" size="13" min="0"
+				<input required type="number" id="PostProcessing_FallbackValueAgeStartup_value1" size="13" min="0"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Minutes
 			</td>
-			<td>$TOOLTIP_PostProcessing_PreValueAgeStartup</td>
-		</tr>
-
-		<tr class="expert">
-			<td class="indent1">
-				<class id="PostProcessing_ErrorMessage_text" style="color:black;">Skip Messages on Error</class>
-			</td>
-			<td>
-				<select id="PostProcessing_ErrorMessage_value1">
-					<option value="true" selected>true</option>
-					<option value="false" >false</option>
-				</select>
-			</td>
-			<td>$TOOLTIP_PostProcessing_ErrorMessage</td>
+			<td>$TOOLTIP_PostProcessing_FallbackValueAgeStartup</td>
 		</tr>
 
 		<tr class="expert">
@@ -683,13 +670,13 @@
 
 		<tr>
 			<td class="indent2">
-				<class id="PostProcessing_MaxRateType_text" style="color:black;">Maximum Rate Type</class>
+				<class id="PostProcessing_MaxRateType_text" style="color:black;">Maximum Rate Check Type</class>
 			</td>
 			<td>
 				<select id="PostProcessing_MaxRateType_value1">
-					<option value="Off" >No Rate Check</option>
-					<option value="AbsoluteChange" selected>Absolute Change</option>
-					<option value="RateChange">Rate Change</option>
+					<option value="RatePerMin" selected>Rate Per Minute</option>
+					<option value="RatePerProcessing">Rate Per Processing</option>
+					<option value="RateOff" >No Rate Check</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.MaxRateType</td>
@@ -810,10 +797,7 @@
 
 		<tr class="MQTTItem">
 			<td class="indent1" style="padding-top:25px" colspan="2">
-				<b>Homeassistant Discovery (using MQTT)</b><br>
-					If activated, the discovery topics gets automatically scheduled to sent once after device startup during state "Publish to MQTT".
-					To schedule a retransmission: Use "Manual Control > Resend HA Discovery" or call REST API: 
-					<a href=mqtt_publish_discovery target="_blank">http://&lt;IP&gt;/mqtt_publish_discovery</a>
+				<b>Homeassistant Discovery (using MQTT)</b>
 			</td>
 		</tr>
 
@@ -1677,7 +1661,6 @@
 
 
 function LoadConfigNeu() {
-	domainname = getDomainname(); 
 	if (!loadConfig(domainname)) {
 		firework.launch('Configuration could not be loaded! Please reload the page!', 'danger', 30000);
 		return;
@@ -2111,9 +2094,8 @@ function UpdateInput() {
     WriteParameter(param, category, "Analog", "ROIImagesLocation", true);		
     WriteParameter(param, category, "Analog", "ROIImagesRetention", true);		
     
-    WriteParameter(param, category, "PostProcessing", "PreValueUse", false);		
-    WriteParameter(param, category, "PostProcessing", "PreValueAgeStartup", false);		
-    WriteParameter(param, category, "PostProcessing", "ErrorMessage", false);
+    WriteParameter(param, category, "PostProcessing", "FallbackValueUse", false);		
+    WriteParameter(param, category, "PostProcessing", "FallbackValueAgeStartup", false);		
     WriteParameter(param, category, "PostProcessing", "CheckDigitIncreaseConsistency", false);
 
     WriteParameter(param, category, "MQTT", "Uri", false);	
@@ -2166,8 +2148,6 @@ function UpdateInput() {
 
 function WriteModelFiles()
 {
-    list_tflite = getTFLITEList();
-
     var _indexDig = document.getElementById("Digits_Model_value1");
     var _indexAna = document.getElementById("Analog_Model_value1");
     while (_indexDig.length)
@@ -2244,9 +2224,8 @@ function ReadParameterAll()
     ReadParameter(param, "Analog", "ROIImagesLocation", true);
     ReadParameter(param, "Analog", "ROIImagesRetention", true);
 
-    ReadParameter(param, "PostProcessing", "PreValueUse", false);
-    ReadParameter(param, "PostProcessing", "PreValueAgeStartup", false);
-    ReadParameter(param, "PostProcessing", "ErrorMessage", false);
+    ReadParameter(param, "PostProcessing", "FallbackValueUse", false);
+    ReadParameter(param, "PostProcessing", "FallbackValueAgeStartup", false);
     ReadParameter(param, "PostProcessing", "CheckDigitIncreaseConsistency", false);
 
     ReadParameter(param, "MQTT", "Uri", false);
@@ -2462,6 +2441,7 @@ function openDescription()
 }
 
 openDescription();
+fetchTFLITEList();
 LoadConfigNeu();
  
 </script>

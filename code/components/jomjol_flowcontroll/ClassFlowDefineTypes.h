@@ -19,7 +19,7 @@ enum t_CNNType {
  };
 
 
-struct roi {
+struct t_ROI {
     int posx, posy, deltax, deltay; 
     int CNNResult = -10;     // normalized to 0-99 (exception for class11: 0-10: 0-9+NaN), default: negative number equal to "-1.0"
     bool isRejected, CCW;
@@ -30,55 +30,63 @@ struct roi {
 
 struct general {
     std::string name;
-    std::vector<roi*> ROI;
+    std::vector<t_ROI*> ROI;
 };
 
 
 enum t_RateType {
-    RateCheckOff,
-    AbsoluteChange,
-    RateChange
+    rtRateOff,
+    rtRatePerMin,
+    rtRatePerProcessing
  };
 
 
 struct NumberPost {
-    float MaxRateValue;
-    bool useMaxRateValue;
-    t_RateType RateType;
-    bool ErrorMessage;
-    bool PreValueOkay;
-    bool AllowNegativeRates;
-    bool checkDigitIncreaseConsistency;
-    time_t lastvalue;
-    std::string timeStamp;
-    double FlowRateAct; // m3 / min
-    double PreValue; // last value that was read out well
-    double Value; // last value read out, incl. corrections
-    std::string ReturnRateValue; // return value rate
-    std::string ReturnChangeAbsolute; // return value rate
-    std::string ReturnRawValue; // Raw value (with N & leading 0)    
-    std::string ReturnValue; // corrected return value, if necessary with error message
-    std::string ReturnPreValue; // corrected return value without error message
-    std::string ErrorMessageText; // Error message for consistency check
-    int AnzahlAnalog;
-    int AnzahlDigital;
-    int DecimalShift;
-    int DecimalShiftInitial;
-    int AnalogDigitalTransitionStart; // When is the digit > x.1, i.e. when does it start to tilt?
-    int Nachkomma;
+    bool useMaxRateValue;           // Rate too high check evaluation
+    bool allowNegativeRates;        // Rate negative check evaluation
+    bool checkDigitIncreaseConsistency; // Plausibility check for class11 models
+    bool isExtendedResolution;      // Extended Resolution activated
+    bool isFallbackValueValid;      // Fallback value is valid in terms of not being outdated
+    bool isActualValueANumber;      // Actual value is valid number (further processing possible)
+    bool isActualValueConfirmed;    // Actual value is without any deviation (fully processed by post-processing without deviation)
 
-    std::string FieldV1; // Fieldname in InfluxDBv1  
-    std::string MeasurementV1;   // Measurement in InfluxDBv1
+    int decimalShift;               // Shift the decimal point by defined value to archieve a value conversion (e.g. m3 -> liter)
+    int analogDigitalTransitionStart; // When is the digit > x.1, i.e. when does it start to tilt?
+    int decimalPlaceCount;          // No of decimal places
 
-    std::string FieldV2;         // Fieldname in InfluxDBv2  
-    std::string MeasurementV2;   // Measurement in InfluxDBv2
+    int analogCount;                // Number of analog pointers
+    int digitCount;                 // Number of digit numbers
 
-    bool isExtendedResolution;
+    time_t timeProcessed;           // Time of actual source image was taken (== actual result time)
+    time_t timeFallbackValue;       // Time of FallbackValue in seconds
 
-    general *digit_roi;
-    general *analog_roi;
+    t_RateType rateType;            // Parameter: Select Rate Checking Procedure
+    float maxRateValue;             // Parameter: Max allowed rate
+    double ratePerMin;              // Rate per minute (e.g. m3/min)
+    double ratePerProcessing;       // Rate per processinig interval (e.g. m3/processing interval)
 
-    std::string name;
+    double fallbackValue;           // Fallback value, equal the last successful processed value (legacy name: prevalue)
+    double actualValue;             // Actual result value
+
+    std::string sTimeProcessed;     // Processed timestamp -> Time of last processing
+    std::string sTimeFallbackValue; // FallbackValue timestamp -> Time of last valid value
+    std::string sRatePerMin;        // Rate per minute, based on time between last valid and actual reading
+    std::string sRatePerProcessing; // Rate per processing interval, based on the absolute difference between last and actual reading
+    std::string sRawValue;          // Raw value (possibly incl. N & leading 0)    
+    std::string sActualValue;       // Value of actual valid reading, incl. post-processing corrections
+    std::string sFallbackValue;     // Fallback value, equal to last valid reading (legacy name: prevalue)
+    std::string sValueStatus;       // Value status
+
+    std::string FieldV1;            // Fieldname in InfluxDBv1  
+    std::string MeasurementV1;      // Measurement in InfluxDBv1
+
+    std::string FieldV2;            // Fieldname in InfluxDBv2  
+    std::string MeasurementV2;      // Measurement in InfluxDBv2
+
+    general *digit_roi;             // Pointer to digit ROI struct
+    general *analog_roi;            // Pointer to analog ROI struct
+
+    std::string name;               // Name of number sequence
 };
 
 #endif

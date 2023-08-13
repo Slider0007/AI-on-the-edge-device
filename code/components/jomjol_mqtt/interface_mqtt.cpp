@@ -352,7 +352,7 @@ bool mqtt_handler_flow_start(std::string _topic, char* _data, int _data_len)
 }
 
 
-bool mqtt_handler_set_prevalue(std::string _topic, char* _data, int _data_len) 
+bool mqtt_handler_set_fallbackvalue(std::string _topic, char* _data, int _data_len) 
 {
     //ESP_LOGD(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
     //example: {"numbersname": "main", "value": 12345.1234567}
@@ -364,24 +364,24 @@ bool mqtt_handler_set_prevalue(std::string _topic, char* _data, int _data_len)
 
         if (cJSON_IsString(numbersname) && (numbersname->valuestring != NULL)) {    // Check if numbersname is valid
             if (cJSON_IsNumber(value)) {   // Check if value is a number
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handler_set_prevalue called: numbersname: " + std::string(numbersname->valuestring) + 
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handler_set_fallbackvalue called: numbersname: " + std::string(numbersname->valuestring) + 
                                                                                          ", value: " + std::to_string(value->valuedouble));
-                if (flowctrl.UpdatePrevalue(std::to_string(value->valuedouble), std::string(numbersname->valuestring), true)) {
+                if (flowctrl.UpdateFallbackValue(std::to_string(value->valuedouble), std::string(numbersname->valuestring))) {
                     cJSON_Delete(jsonData);
                     return ESP_OK;
                 }
             }
             else {
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "handler_set_prevalue: value not a valid number (\"value\": 12345.12345)");
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "handler_set_fallbackvalue: value not a valid number (\"value\": 12345.12345)");
             }
         }
         else {
-            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "handler_set_prevalue: numbersname not a valid string (\"numbersname\": \"main\")");
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "handler_set_fallbackvalue: numbersname not a valid string (\"numbersname\": \"main\")");
         }
         cJSON_Delete(jsonData);
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "handler_set_prevalue: handler called, but no data received");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "handler_set_fallbackvalue: handler called, but no data received");
     }
 
     return ESP_FAIL;
@@ -405,8 +405,8 @@ void MQTTconnected(){
         std::function<bool(std::string topic, char* data, int data_len)> subHandler1 = mqtt_handler_flow_start;     
         MQTTregisterSubscribeFunction(maintopic + "/ctrl/flow_start", subHandler1);        // subcribe to maintopic/ctrl/flow_start
 
-        std::function<bool(std::string topic, char* data, int data_len)> subHandler2 = mqtt_handler_set_prevalue;     
-        MQTTregisterSubscribeFunction(maintopic + "/ctrl/set_prevalue", subHandler2);      // subcribe to maintopic/ctrl/set_prevalue
+        std::function<bool(std::string topic, char* data, int data_len)> subHandler2 = mqtt_handler_set_fallbackvalue;     
+        MQTTregisterSubscribeFunction(maintopic + "/ctrl/set_fallbackvalue", subHandler2);      // subcribe to maintopic/ctrl/set_fallbackvalue
 
        if (subscribeFunktionMap != NULL) {
             for(std::map<std::string, std::function<bool(std::string, char*, int)>>::iterator it = subscribeFunktionMap->begin(); it != subscribeFunktionMap->end(); ++it) {

@@ -16,7 +16,6 @@ class ClassFlowMQTT : public ClassFlow
 protected:
 	ClassFlowPostProcessing* flowpostprocessing; 
     std::string uri, topic, topicError, clientname, topicRate, topicTimeStamp, topicUptime, topicFreeMem;
-    std::string OldValue;
     std::string user, password;
     std::string maintopic; 
     float roundInterval; // Minutes

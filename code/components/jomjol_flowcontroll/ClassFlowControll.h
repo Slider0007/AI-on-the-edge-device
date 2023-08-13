@@ -77,8 +77,8 @@ public:
 	std::string getReadoutAll(int _type);
 	std::string getReadout(bool _rawvalue, bool _noerror, int _number);
 
-	bool UpdatePrevalue(std::string _newvalue, std::string _numbers, bool _extern);
-	std::string GetPrevalue(std::string _number = "");	
+	bool UpdateFallbackValue(std::string _newvalue, std::string _numbers);
+	std::string GetFallbackValue(std::string _number = "");	
 
 	std::string getJSON();
 

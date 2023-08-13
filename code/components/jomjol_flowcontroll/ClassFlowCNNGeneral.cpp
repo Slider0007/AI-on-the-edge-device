@@ -411,18 +411,18 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         
         if (splitted.size() >= 5) {
             general* _analog = GetGENERAL(splitted[0], true);
-            roi* neuroi = _analog->ROI[_analog->ROI.size()-1];
-            neuroi->posx = std::stoi(splitted[1]);
-            neuroi->posy = std::stoi(splitted[2]);
-            neuroi->deltax = std::stoi(splitted[3]);
-            neuroi->deltay = std::stoi(splitted[4]);
-            neuroi->CCW = false;
+            t_ROI* newROI = _analog->ROI[_analog->ROI.size()-1];
+            newROI->posx = std::stoi(splitted[1]);
+            newROI->posy = std::stoi(splitted[2]);
+            newROI->deltax = std::stoi(splitted[3]);
+            newROI->deltay = std::stoi(splitted[4]);
+            newROI->CCW = false;
             if (splitted.size() >= 6) {
-                neuroi->CCW = toUpper(splitted[5]) == "TRUE";
+                newROI->CCW = toUpper(splitted[5]) == "TRUE";
             }
-            neuroi->CNNResult = -1;
-            neuroi->image = NULL;
-            neuroi->image_org = NULL;
+            newROI->CNNResult = -1;
+            newROI->image = NULL;
+            newROI->image_org = NULL;
         }
     }
 
@@ -479,12 +479,12 @@ general* ClassFlowCNNGeneral::GetGENERAL(std::string _name, bool _create = true)
         GENERAL.push_back(_ret);
     }
 
-    roi* neuroi = new roi;
-    neuroi->name = roiname;
+    t_ROI* newROI = new t_ROI;
+    newROI->name = roiname;
 
-    _ret->ROI.push_back(neuroi);
+    _ret->ROI.push_back(newROI);
 
-    ESP_LOGD(TAG, "GetGENERAL - GENERAL %s - roi %s - CCW: %d", numbername.c_str(), roiname.c_str(), neuroi->CCW);
+    ESP_LOGD(TAG, "GetGENERAL - GENERAL %s - roi %s - CCW: %d", numbername.c_str(), roiname.c_str(), newROI->CCW);
 
     return _ret;
 }
@@ -919,12 +919,12 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
 }
 
 
-bool ClassFlowCNNGeneral::isExtendedResolution(int _number)
+bool ClassFlowCNNGeneral::CNNTypeWithExtendedResolution()
 {
-    if (!(CNNType == Digital))
-        return true;
+    if (CNNType == Digital)
+        return false;
 
-    return false;
+    return true;
 }
 
 

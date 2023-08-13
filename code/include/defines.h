@@ -129,10 +129,14 @@
 
 
     //ClassFlowControll
-    #define READOUT_TYPE_VALUE 0
-    #define READOUT_TYPE_PREVALUE 1
-    #define READOUT_TYPE_RAWVALUE 2
-    #define READOUT_TYPE_ERROR 3
+    #define READOUT_TYPE_TIMESTAMP_PROCESSED     0
+    #define READOUT_TYPE_TIMESTAMP_FALLBACKVALUE 1
+    #define READOUT_TYPE_VALUE                   2
+    #define READOUT_TYPE_FALLBACKVALUE           3
+    #define READOUT_TYPE_RAWVALUE                4
+    #define READOUT_TYPE_VALUE_STATUS            5
+    #define READOUT_TYPE_RATE_PER_MIN            6
+    #define READOUT_TYPE_RATE_PER_PROCESSING     7
 
     //ClassFlowMQTT
     #define LWT_TOPIC        "connection"
@@ -140,9 +144,9 @@
     #define LWT_DISCONNECTED "connection lost"
 
 
-    //ClassFlowPostProcessing
-    #define PREVALUE_TIME_FORMAT_OUTPUT "%Y-%m-%dT%H:%M:%S%z"
-    #define PREVALUE_TIME_FORMAT_INPUT "%d-%d-%dT%d:%d:%d"
+    //ClassFlowPostProcessing + Influxdb + Influxdbv2
+    #define TIME_FORMAT_OUTPUT "%Y-%m-%dT%H:%M:%S%z"
+    #define FALLBACKVALUE_TIME_FORMAT_INPUT "%d-%d-%dT%d:%d:%d"
 
 
     //CImageBasis
@@ -229,6 +233,13 @@
 
     // Process state misc
     #define FLOWSTATE_ERRORS_IN_ROW_LIMIT 3
+
+    // ClassFlowPostProcessing.cpp: Post-Processing result value status
+    #define VALUE_STATUS_000_VALID              "000 Valid"
+    #define VALUE_STATUS_001_NO_DATA_N_SUBST    "E90 No data to substitute N"
+    #define VALUE_STATUS_002_RATE_NEGATIVE      "E91 Rate negative"
+    #define VALUE_STATUS_003_RATE_TOO_HIGH_NEG  "E92 Rate too high (<)"
+    #define VALUE_STATUS_004_RATE_TOO_HIGH_POS  "E93 Rate too high (>)"
 
 
 /////////////////////////////////////////////
