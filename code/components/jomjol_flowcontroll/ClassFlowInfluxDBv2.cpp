@@ -20,7 +20,7 @@ static const char* TAG = "INFLUXDBV2";
 
 void ClassFlowInfluxDBv2::SetInitialParameter(void)
 {
-    PresetFlowStateHandler(true);
+    presetFlowStateHandler(true);
     flowpostprocessing = NULL;  
     previousElement = NULL;
     ListFlowControll = NULL;
@@ -147,7 +147,7 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
     if (!InfluxDBenable)
         return true;
 
-    PresetFlowStateHandler(false, zwtime);
+    presetFlowStateHandler(false, zwtime);
 
     if (flowpostprocessing != NULL) {
         std::vector<NumberPost*>* NUMBERS = flowpostprocessing->GetNumbers();
@@ -179,9 +179,9 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
 }
 
 
-void ClassFlowInfluxDBv2::doAutoErrorHandling()
+void ClassFlowInfluxDBv2::doPostProcessEventHandling()
 {
-    // Error handling can be included here. Function is called after processing cycle is completed.
+    // Post cycle process handling can be included here. Function is called after processing cycle is completed
     
 }
 

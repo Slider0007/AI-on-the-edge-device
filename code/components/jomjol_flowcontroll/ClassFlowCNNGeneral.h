@@ -42,7 +42,7 @@ public:
 
     bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
     bool doFlow(std::string time);
-    void doAutoErrorHandling();
+    void doPostProcessEventHandling();
 
     std::string getHTMLSingleStep(std::string host);
     std::string getReadout(int _seqNo = 0, bool _extendedResolution = false, int _valuePreviousNumber = -1, 

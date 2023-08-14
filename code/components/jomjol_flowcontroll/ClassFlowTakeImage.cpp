@@ -18,7 +18,7 @@ static const char* TAG = "TAKEIMAGE";
 
 void ClassFlowTakeImage::SetInitialParameter(void)
 {
-    PresetFlowStateHandler(true);
+    presetFlowStateHandler(true);
     waitbeforepicture = 5.0; // Flash duration in s
     flash_duration = (int)(waitbeforepicture * 1000);   // Flash duration in ms
     isImageSize = false;
@@ -165,7 +165,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
 bool ClassFlowTakeImage::doFlow(std::string zwtime)
 {
-    PresetFlowStateHandler(false, zwtime);
+    presetFlowStateHandler(false, zwtime);
     std::string logPath = CreateLogFolder(zwtime);
  
     #ifdef DEBUG_DETAIL_ON  
@@ -173,7 +173,7 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
     #endif
 
     if (!takePictureWithFlash(flash_duration)) {
-        FlowStateHandlerSetError(-1); // Set error code for post cycle error handler 'doAutoErrorHandling' (error level)
+        setFlowStateHandlerEvent(-1); // Set error code for post cycle error handler 'doPostProcessEventHandling' (error level)
         return false;
     }
 
@@ -193,15 +193,16 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
 }
 
 
-void ClassFlowTakeImage::doAutoErrorHandling()
+void ClassFlowTakeImage::doPostProcessEventHandling()
 {
-    // Error handling can be included here. Function is called after processing cycle is completed.
-
-    if (getFlowState()->ErrorCode == -1) {  // Camera framebuffer failure
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Camera framebuffer failed, reset camera");
-        Camera.PowerResetCamera();
-        Camera.InitCam();
-        Camera.LightOnOff(false);
+    // Post cycle process handling can be included here. Function is called after processing cycle is completed
+    for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
+        if (getFlowState()->EventCode[i] == -1) {  // Camera framebuffer failure
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doPostProcessEventHandling: Camera framebuffer failed, reset camera");
+            Camera.PowerResetCamera();
+            Camera.InitCam();
+            Camera.LightOnOff(false);
+        }
     }
 }
 

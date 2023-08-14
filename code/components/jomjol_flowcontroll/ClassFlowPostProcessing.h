@@ -48,7 +48,7 @@ public:
     virtual ~ClassFlowPostProcessing();
     bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
     bool doFlow(std::string time);
-    void doAutoErrorHandling();
+    void doPostProcessEventHandling();
 
     std::vector<NumberPost*>* GetNumbers() {return &NUMBERS;};
     std::string getNumbersName();

@@ -28,7 +28,7 @@ protected:
     void SetInitialParameter(void);
     bool LoadReferenceAlignmentValues(void);
     bool SaveReferenceAlignmentValues(void);
-    void doAutoErrorHandling();
+    void doPostProcessEventHandling();
 
 public:
     CImageBasis *ImageBasis;

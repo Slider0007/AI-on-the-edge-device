@@ -21,7 +21,7 @@ static const char* TAG = "CNN";
 
 ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, std::string _cnnname, t_CNNType _cnntype) : ClassFlowImage(NULL, TAG)
 {
-    PresetFlowStateHandler(true);
+    presetFlowStateHandler(true);
     tflite = new CTfLiteClass;
     cnnname = _cnnname;
     CNNType = _cnntype;
@@ -522,7 +522,7 @@ bool ClassFlowCNNGeneral::doFlow(std::string time)
         ESP_ERROR_CHECK( heap_trace_start(HEAP_TRACE_LEAKS) );
     #endif
 
-    PresetFlowStateHandler(false, time);
+    presetFlowStateHandler(false, time);
 
     if (disabled)
         return true;
@@ -548,9 +548,9 @@ bool ClassFlowCNNGeneral::doFlow(std::string time)
 }
 
 
-void ClassFlowCNNGeneral::doAutoErrorHandling()
+void ClassFlowCNNGeneral::doPostProcessEventHandling()
 {
-    // Error handling can be included here. Function is called after processing cycle is completed.
+    // Post cycle process handling can be included here. Function is called after processing cycle is completed
     
 }
 

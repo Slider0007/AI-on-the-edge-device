@@ -55,34 +55,38 @@ ClassFlow::ClassFlow(std::vector<ClassFlow*> * lfc, ClassFlow *_prev)
 }
 
 
-void ClassFlow::PresetFlowStateHandler(bool _init, std::string _time)
+void ClassFlow::presetFlowStateHandler(bool _init, std::string _time)
 {
     FlowState.ClassName = name();
 	FlowState.ExecutionTime = _time;
     FlowState.isSuccessful = true;
-	FlowState.onlyWarning = false;
-    FlowState.ErrorCode = 0;
+	FlowState.EventCode.clear();
 
-	if (_init) {
+	if (_init)
 	    FlowState.getExecuted = false;
-	}
-	else {
+	else
     	FlowState.getExecuted = true;
-	}
 }
 
 
-void ClassFlow::FlowStateHandlerSetError(int8_t _errorCode, bool _onlyWarning)
+void ClassFlow::setFlowStateHandlerEvent(int _eventCode)
 {	
 	FlowState.isSuccessful = false;
-	FlowState.onlyWarning = _onlyWarning;
-	FlowState.ErrorCode = _errorCode;
+
+	// Note: A negative event code is signaling an aborting error event -> prvide proper error feedback to calling function
+	FlowState.EventCode.push_back(_eventCode);
 }
 
 
 struct strFlowState* ClassFlow::getFlowState()
 {
 	return &FlowState;
+}
+
+
+void ClassFlow::doPostProcessEventHandling()
+{
+	// Handled in derived classes
 }
 
 
@@ -95,12 +99,6 @@ bool ClassFlow::ReadParameter(FILE* pfile, std::string &aktparamgraph)
 bool ClassFlow::doFlow(std::string time)
 {
 	return false;
-}
-
-
-void ClassFlow::doAutoErrorHandling()
-{
-	// Handled in derived classes
 }
 
 

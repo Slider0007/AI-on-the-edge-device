@@ -1270,6 +1270,36 @@ void task_autodoFlow(void *pvParameter)
         // Process further tasks after image is fully processed and results are published
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) {
+            // Post process handling (if neccessary)
+            // ********************************************
+            if (flowctrl.FlowStateEventOccured()) {
+
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_POST_EVENT_HANDLING));
+                flowctrl.setActStatus(std::string(FLOW_POST_EVENT_HANDLING));
+                #ifdef ENABLE_MQTT
+                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
+                #endif
+
+                #ifdef ENABLE_MQTT
+                    // Provide flow error indicator to MQTT interface (error occured 3 times in a row)
+                    FlowStateErrorsInRow++;
+                    if (FlowStateErrorsInRow >= FLOWSTATE_ERRORS_IN_ROW_LIMIT) {
+                        MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "true", 1, false);
+                    }
+                #endif //ENABLE_MQTT
+            
+                flowctrl.PostProcessEventHandler();
+                LogFile.RemoveOldDebugFiles();
+            }
+            else {
+                #ifdef ENABLE_MQTT
+                    FlowStateErrorsInRow = 0;
+                    MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "false", 1, false);
+                #endif //ENABLE_MQTT
+            }
+
+            // Additional tasks
+            // ********************************************
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_ADDITIONAL_TASKS));
             flowctrl.setActStatus(std::string(FLOW_ADDITIONAL_TASKS));
             #ifdef ENABLE_MQTT
@@ -1286,33 +1316,6 @@ void task_autodoFlow(void *pvParameter)
             // WIFI Signal Strength (RSSI) -> Logfile
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "WIFI Signal (RSSI): " + std::to_string(get_WIFI_RSSI()) + "dBm");
 
-            // Automatic error handling (if neccessary)
-            // ********************************************
-            if (flowctrl.FlowStateErrorsOccured()) {
-
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_AUTO_ERROR_HANDLING));
-                flowctrl.setActStatus(std::string(FLOW_AUTO_ERROR_HANDLING));
-                #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
-                #endif
-
-                #ifdef ENABLE_MQTT
-                    // Provide flow error indicator to MQTT interface (error occured 3 times in a row)
-                    FlowStateErrorsInRow++;
-                    if (FlowStateErrorsInRow >= FLOWSTATE_ERRORS_IN_ROW_LIMIT) {
-                        MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "true", 1, false);
-                    }
-                #endif //ENABLE_MQTT
-            
-                flowctrl.AutomaticFlowErrorHandler();
-                LogFile.RemoveOldDebugFiles();
-            }
-            else {
-                #ifdef ENABLE_MQTT
-                    FlowStateErrorsInRow = 0;
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "false", 1, false);
-                #endif //ENABLE_MQTT
-            }
 
             // Round finished -> Logfile
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Round #" + std::to_string(countRounds) + 

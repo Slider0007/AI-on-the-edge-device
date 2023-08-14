@@ -40,7 +40,7 @@ public:
     std::string getHTMLSingleStep(std::string host);
     time_t getTimeImageTaken();
     std::string getFileNameRawImage();
-    void doAutoErrorHandling();
+    void doPostProcessEventHandling();
     std::string name() {return "ClassFlowTakeImage";};
 
     ImageData* SendRawImage();

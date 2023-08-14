@@ -26,8 +26,8 @@ class ClassFlowControll : public ClassFlow
 protected:
 	std::vector<ClassFlow*> FlowControll;
 	std::vector<ClassFlow*> FlowControlPublish;
-	std::vector<strFlowState*> FlowStateErrorsEvaluation;
-	std::vector<strFlowState*> FlowStateErrorsPublish;
+	std::vector<strFlowState*> FlowStateEvaluationEvent;
+	std::vector<strFlowState*> FlowStatePublishEvent;
 
 	ClassFlowTakeImage* flowtakeimage;
 	ClassFlowAlignment* flowalignment;	
@@ -102,8 +102,8 @@ public:
 	void setActStatus(std::string _aktstatus);
 	void setActFlowError(bool _aktflowerror);
 	bool getActFlowError();
-	bool FlowStateErrorsOccured();
-	void AutomaticFlowErrorHandler();
+	bool FlowStateEventOccured();
+	void PostProcessEventHandler();
 
 	std::vector<HTMLInfo*> GetAllDigital();
 	std::vector<HTMLInfo*> GetAllAnalog();	

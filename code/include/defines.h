@@ -228,7 +228,7 @@
     #define FLOW_PUBLISH_INFLUXDB2      "Publish to InfluxDBv2"
 
     #define FLOW_ADDITIONAL_TASKS       "Additional Tasks"
-    #define FLOW_AUTO_ERROR_HANDLING    "Automatic Error Handling"
+    #define FLOW_POST_EVENT_HANDLING    "Post Process Event Handling"
     #define FLOW_INVALID_STATE          "Invalid State"
 
     // Process state misc
@@ -241,6 +241,14 @@
     #define VALUE_STATUS_003_RATE_TOO_HIGH_NEG  "E92 Rate too high (<)"
     #define VALUE_STATUS_004_RATE_TOO_HIGH_POS  "E93 Rate too high (>)"
 
+    // ClassLogFile.cpp
+    #define LOG_ROOT_FOLDER                 "/sdcard/log"
+    #define LOG_IMAGE_RAW_ROOT_FOLDER       "/sdcard/log/source"
+    #define LOG_IMAGE_DIGIT_ROOT_FOLDER     "/sdcard/log/digit"
+    #define LOG_IMAGE_ANALOG_ROOT_FOLDER    "/sdcard/log/analog"
+    #define LOG_LOGS_ROOT_FOLDER            "/sdcard/log/message"
+    #define LOG_DATA_ROOT_FOLDER            "/sdcard/log/data"
+    #define LOG_DEBUG_ROOT_FOLDER           "/sdcard/log/debug"
 
 /////////////////////////////////////////////
 ////      Conditionnal definitions       ////

@@ -480,13 +480,13 @@ void ClassLogFile::RemoveOldDebugFiles()
 bool ClassLogFile::CreateLogDirectories()
 {
     bool bRetval = false;
-    bRetval = MakeDir("/sdcard/log");
-    bRetval = MakeDir("/sdcard/log/source");
-    bRetval = MakeDir("/sdcard/log/digit");
-    bRetval = MakeDir("/sdcard/log/analog");
-    bRetval = MakeDir("/sdcard/log/message");
-    bRetval = MakeDir("/sdcard/log/data");
-    bRetval = MakeDir("/sdcard/log/debug");
+    bRetval = MakeDir(LOG_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_IMAGE_RAW_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_IMAGE_DIGIT_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_IMAGE_ANALOG_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_LOGS_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_DATA_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_DEBUG_ROOT_FOLDER);
 
     return bRetval;
 }
