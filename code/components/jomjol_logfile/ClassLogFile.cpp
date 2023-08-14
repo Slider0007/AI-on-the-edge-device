@@ -415,7 +415,7 @@ void ClassLogFile::RemoveOldDebugFiles()
         return;
     }
     
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete data files older than retention setting");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete debug files older than retention setting");
 
     time_t rawtime;
     struct tm timeinfo;
@@ -473,7 +473,7 @@ void ClassLogFile::RemoveOldDebugFiles()
 
     closedir(dir);
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Files deleted: " + std::to_string(deleted) + " | Files kept: " + std::to_string(notDeleted));
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Folder deleted: " + std::to_string(deleted) + " | Folder kept: " + std::to_string(notDeleted));
 }
 
 

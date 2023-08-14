@@ -932,10 +932,10 @@ esp_err_t handler_statusflow(httpd_req_t *req)
 }
 
 
-esp_err_t handler_flowerror(httpd_req_t *req)
+esp_err_t handler_processerror(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_flowerror - Start");       
+        LogFile.WriteHeapInfo("handler_processerror - Start");       
     #endif
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -943,24 +943,24 @@ esp_err_t handler_flowerror(httpd_req_t *req)
     if (bTaskAutoFlowCreated) 
     {
         #ifdef DEBUG_DETAIL_ON       
-            ESP_LOGD(TAG, "handler_flowerror: %s", req->uri);
+            ESP_LOGD(TAG, "handler_processerror: %s", req->uri);
         #endif
 
         if (flowctrl.getActFlowError())
             if (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT)
-                httpd_resp_send(req, "001: Flowerror: Single error occured", HTTPD_RESP_USE_STRLEN);
+                httpd_resp_send(req, "E90: Process error occured", HTTPD_RESP_USE_STRLEN);
             else
-                httpd_resp_send(req, "002: Flowerror: Multiple errors in row", HTTPD_RESP_USE_STRLEN);
+                httpd_resp_send(req, "E91: Multiple process errors in row", HTTPD_RESP_USE_STRLEN);
         else
-            httpd_resp_send(req, "000: Flowerror: Flow process OK - No error", HTTPD_RESP_USE_STRLEN);
+            httpd_resp_send(req, "000: No process error", HTTPD_RESP_USE_STRLEN);
     }
     else 
     {
-        httpd_resp_send(req, "E90: Flowerror: Request not possible. No flow task running. Check logs.", HTTPD_RESP_USE_STRLEN);  
+        httpd_resp_send(req, "E92: Request not possible. Flow task not running. Check logs.", HTTPD_RESP_USE_STRLEN);  
     }
 
     #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_flowerror - Done");       
+        LogFile.WriteHeapInfo("handler_processerror - Done");       
     #endif
 
     return ESP_OK;
@@ -1470,7 +1470,7 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/process_error";
-    camuri.handler   = handler_flowerror;
+    camuri.handler   = handler_processerror;
     camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 

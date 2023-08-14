@@ -72,9 +72,7 @@ void ClassFlow::presetFlowStateHandler(bool _init, std::string _time)
 void ClassFlow::setFlowStateHandlerEvent(int _eventCode)
 {	
 	FlowState.isSuccessful = false;
-
-	// Note: A negative event code is signaling an aborting error event -> prvide proper error feedback to calling function
-	FlowState.EventCode.push_back(_eventCode);
+	FlowState.EventCode.push_back(_eventCode); // negative event code -> error; positive event code -> warning
 }
 
 

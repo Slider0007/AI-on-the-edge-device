@@ -575,6 +575,9 @@ bool ClassFlowControll::doFlowImageEvaluation(std::string time)
                     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
                 }
             }
+
+            if (!result) // If an error occured, stop processing of further tasks
+                break;
         }
     }
     return result;
@@ -611,6 +614,9 @@ bool ClassFlowControll::doFlowPublishData(std::string time)
                     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
                 }
             }
+
+            if (!result) // If an error occured, stop processing of further tasks
+                break;
         }
     }
     return result;
@@ -644,6 +650,9 @@ bool ClassFlowControll::doFlowTakeImageOnly(std::string time)
                         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
                     }
                 }
+
+                if (!result) // If an error occured, stop processing of further tasks
+                    break;
             }
         }
     }
@@ -667,6 +676,7 @@ void ClassFlowControll::PostProcessEventHandler()
             if (FlowStateEvaluationEvent[i]->ClassName.compare(FlowControll[j]->name()) == 0) {
                 LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateEvaluationEvent[i]->ClassName + "-> doPostProcessEventHandling"); 
                 FlowControll[j]->doPostProcessEventHandling();
+                FlowControll[j]->presetFlowStateHandler(true); // Reinit after processing
             }
         }
     }
@@ -678,6 +688,7 @@ void ClassFlowControll::PostProcessEventHandler()
             if (FlowStatePublishEvent[i]->ClassName.compare(FlowControlPublish[j]->name()) == 0) {
                 LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateEvaluationEvent[i]->ClassName + "-> doPostProcessEventHandling"); 
                 FlowControlPublish[j]->doPostProcessEventHandling();
+                FlowControll[j]->presetFlowStateHandler(true); // Reinit after processing
             }
         }
     }

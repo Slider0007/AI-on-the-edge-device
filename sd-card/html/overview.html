@@ -71,10 +71,8 @@
 				<div id="timestamp" ></div>	
 				<div id="cputemp" ></div>	
 				<div id="rssi" ></div>
-				<div>
-					<span id="uptime" ></span>
-					<span id="round" ></span>
-				</div>
+				<div id="uptime" ></div>
+				<div id="round" ></div>
 			</td>
 		</tr>
 	</table>
@@ -195,7 +193,7 @@
 
 	function loadProcessError(_value)
 	{
-		if (_value.substring(0,3) == "001" || _value.substring(0,3) == "002") {
+		if (_value === "1") {
 			$('#processerror').html("!!! Process error detected. Check logs !!!");
 		}
 		else {
@@ -240,7 +238,7 @@
 				$('#cputemp').html("CPU Temperature: " + _jsonData.temperature + "°C");
 				loadRSSI(_jsonData.rssi);
 				$('#uptime').html("Uptime: " + _jsonData.uptime);
-				$('#round').html("(Round: " + _jsonData.round_counter + ")");
+				$('#round').html("Rounds Processed: " + _jsonData.round_counter);
 			}
 		}
 		xhttp.open("GET", url, true);
