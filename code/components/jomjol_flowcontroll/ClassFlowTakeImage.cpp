@@ -25,7 +25,6 @@ void ClassFlowTakeImage::SetInitialParameter(void)
     ImageSize = FRAMESIZE_VGA;
     TimeImageTaken = 0;
     ImageQuality = 12;
-    SaveDebugInfo = false;
     SaveAllFiles = false;
     disabled = false;
     FixedExposure = false;
@@ -41,9 +40,9 @@ ClassFlowTakeImage::ClassFlowTakeImage(std::vector<ClassFlow*>* lfc) : ClassFlow
 }
 
 
-bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
+bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
     int _brightness = 0;
     int _contrast = 0;
     int _saturation = 0;
@@ -91,8 +90,8 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
             ledintensity = stoi(splitted[1]);
             //checkMinMax(&ledintensity, 0, 100);
             //ESP_LOGI(TAG, "ledintensity: %d", ledintensity);
-            ledintensity = min(100, ledintensity);
-            ledintensity = max(0, ledintensity);
+            ledintensity = std::min(100, ledintensity);
+            ledintensity = std::max(0, ledintensity);
             //Camera.SetLEDIntensity(ledintensity);
         }
 
@@ -125,14 +124,6 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
                 Camera.EnableDemoMode();
             else
                 Camera.DisableDemoMode();
-        }
-
-        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
-        {
-            if (toUpper(splitted[1]) == "TRUE")
-                SaveDebugInfo = true;
-            else
-                SaveDebugInfo = false;
         }
 
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
@@ -172,7 +163,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, string& aktparamgraph)
 }
 
 
-bool ClassFlowTakeImage::doFlow(string zwtime)
+bool ClassFlowTakeImage::doFlow(std::string zwtime)
 {
     PresetFlowStateHandler(false, zwtime);
     std::string logPath = CreateLogFolder(zwtime);
@@ -182,7 +173,7 @@ bool ClassFlowTakeImage::doFlow(string zwtime)
     #endif
 
     if (!takePictureWithFlash(flash_duration)) {
-        FlowStateHandlerSetError(-1);       // Error cluster: -1
+        FlowStateHandlerSetError(-1); // Set error code for post cycle error handler 'doAutoErrorHandling' (error level)
         return false;
     }
 
@@ -190,7 +181,7 @@ bool ClassFlowTakeImage::doFlow(string zwtime)
         LogFile.WriteHeapInfo("ClassFlowTakeImage::doFlow - After takePictureWithFlash");
     #endif
 
-    LogImage(logPath, "raw", NULL, NULL, zwtime, rawImage);
+    LogImage(logPath, "raw", None, -1, zwtime, rawImage);
 
     RemoveOldLogs();
 
@@ -204,7 +195,7 @@ bool ClassFlowTakeImage::doFlow(string zwtime)
 
 void ClassFlowTakeImage::doAutoErrorHandling()
 {
-    // Error handling can be included here. Function is called after round is completed.
+    // Error handling can be included here. Function is called after processing cycle is completed.
 
     if (getFlowState()->ErrorCode == -1) {  // Camera framebuffer failure
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Camera framebuffer failed, reset camera");
@@ -212,13 +203,12 @@ void ClassFlowTakeImage::doAutoErrorHandling()
         Camera.InitCam();
         Camera.LightOnOff(false);
     }
-
 }
 
 
-string ClassFlowTakeImage::getHTMLSingleStep(string host)
+std::string ClassFlowTakeImage::getHTMLSingleStep(std::string host)
 {
-    string result = "Raw Image: <br>\n<img src=\"" + host + "/img_tmp/raw.jpg\">\n";
+    std::string result = "Raw Image: <br>\n<img src=\"" + host + "/img_tmp/raw.jpg\">\n";
     return result;
 }
 
@@ -231,7 +221,6 @@ esp_err_t ClassFlowTakeImage::camera_capture()
         return ESP_FAIL;
 
     time(&TimeImageTaken);
-    localtime(&TimeImageTaken);
 
     return ESP_OK;
 }
@@ -253,7 +242,6 @@ bool ClassFlowTakeImage::takePictureWithFlash(int _flash_duration)
         return false;
 
     time(&TimeImageTaken);
-    localtime(&TimeImageTaken);
 
     if (SaveAllFiles)
         rawImage->SaveToFile(namerawimage);
@@ -265,7 +253,6 @@ bool ClassFlowTakeImage::takePictureWithFlash(int _flash_duration)
 esp_err_t ClassFlowTakeImage::SendRawJPG(httpd_req_t *req)
 {
     time(&TimeImageTaken);
-    localtime(&TimeImageTaken);
 
     return Camera.CaptureToHTTP(req, flash_duration);
 }
@@ -280,7 +267,6 @@ ImageData* ClassFlowTakeImage::SendRawImage()
         return NULL;
 
     time(&TimeImageTaken);
-    localtime(&TimeImageTaken);
 
     id = zw->writeToMemoryAsJPG();    
     delete zw;

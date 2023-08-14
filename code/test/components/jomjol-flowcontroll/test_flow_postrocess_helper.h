@@ -77,9 +77,9 @@ void setConsitencyCheck(UnderTestPost* _UnderTestPost, bool _checkConsistency);
  * @brief Set the Pre Value on testobject
  * 
  * @param _UnderTestPost the testobject
- * @param _preValue the previous value
+ * @param _fallbackValue the last valid reading value
  */
-void setPreValue(UnderTestPost* _UnderTestPost, double _preValue);
+void SetFallbackValue(UnderTestPost* _UnderTestPost, double _fallbackValue);
 
 /**
  * @brief Set the Extended Resolution on undertest

@@ -1,7 +1,7 @@
 #include "ClassLogFile.h"
 #include "time_sntp.h"
 #include "esp_log.h"
-#include <string.h>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <algorithm>
@@ -52,18 +52,15 @@ void ClassLogFile::WriteHeapInfo(std::string _id)
 }
 
 
-void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::string  _ReturnRawValue, std::string  _ReturnValue, std::string  _ReturnPreValue, std::string  _ReturnRateValue, std::string  _ReturnChangeAbsolute, std::string  _ErrorMessageText, std::string  _digital, std::string  _analog)
+void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::string  _sRawValue, std::string _sValue, 
+                               std::string _sFallbackValue, std::string  _sRatePerMin, std::string  _sRatePerProcessing, 
+                               std::string _sValueStatus, std::string _digital, std::string _analog)
 {
     ESP_LOGD(TAG, "Start WriteToData");
     time_t rawtime;
-    struct tm* timeinfo;
-    char buffer[30];
 
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
-
-    strftime(buffer, 30, datafile.c_str(), timeinfo);
-    std::string logpath = dataFileRootFolder + "/" + buffer; 
+    std::string logpath = dataFileRootFolder + "/" + ConvertTimeToString(rawtime, datafile.c_str()); 
     
     FILE* pFile;
     std::string zwtime;
@@ -76,17 +73,17 @@ void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::s
         fputs(",", pFile);
         fputs(_name.c_str(), pFile);
         fputs(",", pFile);
-        fputs(_ReturnRawValue.c_str(), pFile);
+        fputs(_sRawValue.c_str(), pFile);
         fputs(",", pFile);
-        fputs(_ReturnValue.c_str(), pFile);
+        fputs(_sValue.c_str(), pFile);
         fputs(",", pFile);
-        fputs(_ReturnPreValue.c_str(), pFile);
+        fputs(_sFallbackValue.c_str(), pFile);
         fputs(",", pFile);
-        fputs(_ReturnRateValue.c_str(), pFile);
+        fputs(_sRatePerMin.c_str(), pFile);
         fputs(",", pFile);
-        fputs(_ReturnChangeAbsolute.c_str(), pFile);
+        fputs(_sRatePerProcessing.c_str(), pFile);
         fputs(",", pFile);
-        fputs(_ErrorMessageText.c_str(), pFile);
+        fputs(_sValueStatus.c_str(), pFile);
         fputs(_digital.c_str(), pFile);
         fputs(_analog.c_str(), pFile);
         fputs("\n", pFile);
@@ -171,19 +168,14 @@ std::string fileNameDate;
 
 void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::string message, bool _time)
 {
-    time_t rawtime;
-    struct tm* timeinfo;
     std::string fileNameDateNew;
-
     std::string zwtime;
     std::string ntpTime = "";
 
+    time_t rawtime;
 
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    char buf[30];
-    strftime(buf, sizeof(buf), logfile.c_str(), timeinfo);
-    fileNameDateNew = std::string(buf);
+    fileNameDateNew = ConvertTimeToString(rawtime, logfile.c_str());
 
     std::replace(message.begin(), message.end(), '\n', ' '); // Replace all newline characters
 
@@ -195,17 +187,12 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
         ESP_LOG_LEVEL(level, "", "%s", message.c_str());
     }
     
-
     if (level > loglevel) {// Only write to file if loglevel is below threshold
         return;
     }
 
-
-    if (_time)
-    {
-        char logLineDate[30];
-        strftime(logLineDate, sizeof(logLineDate), "%Y-%m-%dT%H:%M:%S", timeinfo);
-        ntpTime = std::string(logLineDate);
+    if (_time) {
+        ntpTime = ConvertTimeToString(rawtime, "%Y-%m-%dT%H:%M:%S");
     }
 
     std::string loglevelString; 
@@ -232,7 +219,6 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
     }
 
     std::string formatedUptime = getFormatedUptime(true);
-
     std::string fullmessage = "[" + formatedUptime + "] "  + ntpTime + "\t<" + loglevelString + ">\t" + message + "\n";
 
 
@@ -290,14 +276,9 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
 std::string ClassLogFile::GetCurrentFileNameData()
 {
     time_t rawtime;
-    struct tm* timeinfo;
-    char buffer[60];
 
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
-
-    strftime(buffer, 60, datafile.c_str(), timeinfo);
-    std::string logpath = dataFileRootFolder + "/" + buffer; 
+    std::string logpath = dataFileRootFolder + "/" + ConvertTimeToString(rawtime, datafile.c_str());
 
     return logpath;
 }
@@ -306,14 +287,9 @@ std::string ClassLogFile::GetCurrentFileNameData()
 std::string ClassLogFile::GetCurrentFileName()
 {
     time_t rawtime;
-    struct tm* timeinfo;
-    char buffer[60];
 
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
-
-    strftime(buffer, 60, logfile.c_str(), timeinfo);
-    std::string logpath = logFileRootFolder + "/" + buffer; 
+    std::string logpath = logFileRootFolder + "/" + ConvertTimeToString(rawtime, logfile.c_str()); 
 
     return logpath;
 }
@@ -325,19 +301,17 @@ void ClassLogFile::RemoveOldLogFile()
         return;
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Remove old log files");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete log files older than retention setting");
 
     time_t rawtime;
-    struct tm* timeinfo;
+    struct tm timeinfo;
     char cmpfilename[30];
 
     time(&rawtime);
-    rawtime = addDays(rawtime, -logFileRetentionInDays + 1);
-    timeinfo = localtime(&rawtime);
+    rawtime = addDays(rawtime, -logFileRetentionInDays + 1);   
+    localtime_r(&rawtime, &timeinfo);
     //ESP_LOGD(TAG, "logFileRetentionInDays: %d", logFileRetentionInDays);
-
-
-    strftime(cmpfilename, 30, logfile.c_str(), timeinfo);
+    strftime(cmpfilename, sizeof(cmpfilename), logfile.c_str(), &timeinfo);
     //ESP_LOGD(TAG, "log file name to compare: %s", cmpfilename);
 
     DIR *dir = opendir(logFileRootFolder.c_str());
@@ -375,8 +349,10 @@ void ClassLogFile::RemoveOldLogFile()
             }
         }
     }
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Log files deleted: " + std::to_string(deleted) + ", Log files not deleted: " + std::to_string(notDeleted));
+
     closedir(dir);
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Files deleted: " + std::to_string(deleted) + " | Files kept: " + std::to_string(notDeleted));
 }
 
 
@@ -386,18 +362,17 @@ void ClassLogFile::RemoveOldDataLog()
         return;
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Remove old data files");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete data files older than retention setting");
 
     time_t rawtime;
-    struct tm* timeinfo;
+    struct tm timeinfo;
     char cmpfilename[30];
 
     time(&rawtime);
     rawtime = addDays(rawtime, -dataLogRetentionInDays + 1);
-    timeinfo = localtime(&rawtime);
+    localtime_r(&rawtime, &timeinfo);
     //ESP_LOGD(TAG, "dataLogRetentionInDays: %d", dataLogRetentionInDays);
-
-    strftime(cmpfilename, 30, datafile.c_str(), timeinfo);
+    strftime(cmpfilename, sizeof(cmpfilename), datafile.c_str(), &timeinfo);
     //ESP_LOGD(TAG, "data file name to compare: %s", cmpfilename);
 
     DIR *dir = opendir(dataFileRootFolder.c_str());
@@ -427,8 +402,10 @@ void ClassLogFile::RemoveOldDataLog()
             }
         }
     }
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Data files deleted: " + std::to_string(deleted) + ", Data files not deleted: " + std::to_string(notDeleted));
+
     closedir(dir);
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Files deleted: " + std::to_string(deleted) + " | Files kept: " + std::to_string(notDeleted));
 }
 
 
@@ -438,18 +415,18 @@ void ClassLogFile::RemoveOldDebugFiles()
         return;
     }
     
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Remove old debug files");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete data files older than retention setting");
 
     time_t rawtime;
-    struct tm* timeinfo;
+    struct tm timeinfo;
     char cmpfolderame[30];
 
     time(&rawtime);
     rawtime = addDays(rawtime, -debugFilesRetentionInDays + 1);
-    timeinfo = localtime(&rawtime);
+    localtime_r(&rawtime, &timeinfo);
     //ESP_LOGI(TAG, "debugFilesRetentionInDays: %d", debugFilesRetentionInDays);
 
-    strftime(cmpfolderame, 30, debugfolder.c_str(), timeinfo);
+    strftime(cmpfolderame, 30, debugfolder.c_str(), &timeinfo);
     //ESP_LOGI(TAG, "delete folder and older than this: %s", cmpfolderame);
 
     DIR *dir = opendir(debugFileRootFolder.c_str());
@@ -493,8 +470,10 @@ void ClassLogFile::RemoveOldDebugFiles()
             }
         }
     }
+
     closedir(dir);
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Debug files deleted: " + std::to_string(deleted) + ", Debug files not deleted: " + std::to_string(notDeleted));
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Files deleted: " + std::to_string(deleted) + " | Files kept: " + std::to_string(notDeleted));
 }
 
 

@@ -1,7 +1,6 @@
 #include "server_help.h"
 
 #include <stdio.h>
-#include <string.h>
 #include <sys/param.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>

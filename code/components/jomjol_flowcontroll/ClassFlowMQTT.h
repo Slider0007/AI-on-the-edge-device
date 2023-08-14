@@ -16,13 +16,11 @@ class ClassFlowMQTT : public ClassFlow
 protected:
 	ClassFlowPostProcessing* flowpostprocessing; 
     std::string uri, topic, topicError, clientname, topicRate, topicTimeStamp, topicUptime, topicFreeMem;
-    std::string OldValue;
     std::string user, password;
     std::string maintopic; 
     float roundInterval; // Minutes
     int keepAlive; // Seconds
     bool SetRetainFlag;
-    bool SaveDebugInfo;
 
 	void SetInitialParameter(void);        
 
@@ -33,10 +31,10 @@ public:
     virtual ~ClassFlowMQTT();
     bool Start(float AutoInterval);
 
-    bool ReadParameter(FILE* pfile, string& aktparamgraph);
-    bool doFlow(string time);
+    bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
+    bool doFlow(std::string time);
     void doAutoErrorHandling();
-    string name(){return "ClassFlowMQTT";};
+    std::string name() {return "ClassFlowMQTT";};
 };
 #endif //CLASSFFLOWMQTT_H
 #endif //ENABLE_MQTT

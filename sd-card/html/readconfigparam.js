@@ -5,6 +5,7 @@ var category;
 var ref = new Array(2);
 var NUMBERS = new Array(0);
 var REFERENCES = new Array(0);
+var tflite_list = "";
 
 
 function getNUMBERSList() {
@@ -68,14 +69,14 @@ function getDATAList() {
 }
 
 
-function getTFLITEList() {
+function fetchTFLITEList() {
 	_domainname = getDomainname(); 
-     tflitelist = "";
+     var response = "";
 
 	var xhttp = new XMLHttpRequest();
 	xhttp.addEventListener('load', function(event) {
           if (xhttp.status >= 200 && xhttp.status < 300) {
-               tflitelist = xhttp.responseText;
+               response = xhttp.responseText;
           } else {
                console.warn(request.statusText, request.responseText);
           }
@@ -91,10 +92,15 @@ function getTFLITEList() {
 //               alert("Loading Hostname failed");
      }
 
-     tflitelist = tflitelist.split("\t").filter(element => element); // Split at tab position and remove empty elements
-     tflitelist.sort();  // Sort elements by name
+     response = response.split("\t").filter(element => element); // Split at tab position and remove empty elements
+     response.sort();  // Sort elements by name
 
-     return tflitelist;
+     tflite_list = response;
+}
+
+
+function getTFLITEList() {
+     return tflite_list;
 }
 
 
@@ -159,14 +165,13 @@ function ParseConfig() {
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddSingleValueWithPreset(param, catname, "PreValueUse", true, "true");
-     ParamAddSingleValueWithPreset(param, catname, "PreValueAgeStartup", true, "720");
-     ParamAddSingleValueWithPreset(param, catname, "ErrorMessage", true, "true");
+     ParamAddSingleValueWithPreset(param, catname, "FallbackValueUse", true, "true");
+     ParamAddSingleValueWithPreset(param, catname, "FallbackValueAgeStartup", true, "720");
      ParamAddSingleValueWithPreset(param, catname, "CheckDigitIncreaseConsistency", true, "false");
      ParamAddValue(param, catname, "AllowNegativeRates", 1, true, "true");
      ParamAddValue(param, catname, "DecimalShift", 1, true, "0");
      ParamAddValue(param, catname, "AnalogDigitalTransitionStart", 1, true, "9.2");
-     ParamAddValue(param, catname, "MaxRateType", 1, true, "AbsoluteChange");
+     ParamAddValue(param, catname, "MaxRateType", 1, true, "RatePerMin");
      ParamAddValue(param, catname, "MaxRateValue", 1, true, "0.1");
      ParamAddValue(param, catname, "ExtendedResolution", 1, true, "false");
      ParamAddValue(param, catname, "IgnoreLeadingNaN", 1, true, "false");
@@ -301,6 +306,54 @@ function ParseConfig() {
           param["DataLogging"]["DataFilesRetention"]["found"] = true;
           param["DataLogging"]["DataFilesRetention"]["enabled"] = true;
           param["DataLogging"]["DataFilesRetention"]["value1"] = "3";
+     }
+}
+
+
+function ParseConfigReduced() {
+     config_split = config_gesamt.split("\n");
+     var aktline = 0;
+
+     param = new Object();
+     category = new Object(); 
+
+     var catname = "TakeImage";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "ImageSize", true, "VGA");
+
+     var catname = "Alignment";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
+
+     var catname = "MQTT";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = false;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "HomeassistantDiscovery", true, "false");
+
+     while (aktline < config_split.length) {
+          for (var cat in category) {
+               zw = cat.toUpperCase();
+               zw1 = "[" + zw + "]";
+               zw2 = ";[" + zw + "]";
+               if ((config_split[aktline].trim().toUpperCase() == zw1) || (config_split[aktline].trim().toUpperCase() == zw2)) {
+                    if (config_split[aktline].trim().toUpperCase() == zw1) {
+                         category[cat]["enabled"] = true;
+                    }
+                    category[cat]["found"] = true;
+                    category[cat]["line"] = aktline;
+                    aktline = ParseConfigParamAll(aktline, cat);
+                    continue;
+               }
+          }
+          aktline++;
      }
 }
 
@@ -479,9 +532,6 @@ function ParamExtractValueAll(_param, _linesplit, _catname, _aktline, _iscom){
      }
 }
 
-function getConfigParameters() {
-     return param;
-}
 
 function WriteConfigININew()
 {
@@ -603,29 +653,14 @@ function isCommented(input)
           return [isComment, input];
      }    
 
-function SaveConfigToServer(_domainname){
-     // leere Zeilen am Ende löschen
-     var zw = config_split.length - 1;
-     while (config_split[zw] == "") {
-          config_split.pop();
-     }
 
-     var config_gesamt = "";
-     for (var i = 0; i < config_split.length; ++i)
-     {
-          config_gesamt = config_gesamt + config_split[i] + "\n";
-     } 
-
-     FileDeleteOnServer("/config/config.ini", _domainname);
-     FileSendContent(config_gesamt, "/config/config.ini", _domainname);          
-}
-	 
-function getConfig() {
-	return config_gesamt;
-     }
-
-function getConfigCategory() {
+     function getConfigCategory() {
      return category;
+}
+
+
+function getConfigParameters() {
+     return param;
 }
 
 

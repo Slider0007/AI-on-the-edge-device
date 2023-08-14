@@ -17,14 +17,12 @@ protected:
     ClassFlowPostProcessing* flowpostprocessing;
     std::string uri, database, measurement;
     std::string user, password;
-    std::string OldValue;
     bool InfluxDBenable;
-    bool SaveDebugInfo;
 
     void SetInitialParameter(void);    
     
-    void handleFieldname(string _decsep, string _value);   
-    void handleMeasurement(string _decsep, string _value);   
+    void handleFieldname(std::string _decsep, std::string _value);   
+    void handleMeasurement(std::string _decsep, std::string _value);   
 
 public:
     ClassFlowInfluxDB();
@@ -32,10 +30,10 @@ public:
     ClassFlowInfluxDB(std::vector<ClassFlow*>* lfc, ClassFlow *_prev);
     virtual ~ClassFlowInfluxDB();
 
-    bool ReadParameter(FILE* pfile, string& aktparamgraph);
-    bool doFlow(string time);
+    bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
+    bool doFlow(std::string time);
     void doAutoErrorHandling();
-    string name(){return "ClassFlowInfluxDB";};
+    std::string name() {return "ClassFlowInfluxDB";};
 };
 
 #endif //CLASSFINFLUXDB_H

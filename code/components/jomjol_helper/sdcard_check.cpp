@@ -1,5 +1,5 @@
 #include "sdcard_check.h"
-#include <string.h>
+#include <cstring>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -19,7 +19,7 @@ int SDCardCheckRW(void)
    
     pFile = fopen("/sdcard/sdcheck.txt","w");
     if (pFile == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Basic R/W check: (E1) No able to open file to write");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Basic R/W check: (E1) Not able to open file to write");
         return -1;
     } 
     else {

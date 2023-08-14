@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include "string.h"
 #include "esp_log.h"
 #include <esp_timer.h>
 
@@ -27,11 +26,13 @@
 #include "read_wlanini.h"
 #include "connect_wlan.h"
 #include "psram.h"
+#include "cJSON.h"
 
 #ifdef ENABLE_MQTT
     #include "interface_mqtt.h"
     #include "server_mqtt.h"
 #endif //ENABLE_MQTT
+
 
 // support IDF 5.x
 #ifndef portTICK_RATE_MS
@@ -371,6 +372,74 @@ esp_err_t handler_json(httpd_req_t *req)
 }
 
 
+esp_err_t handler_process_data(httpd_req_t *req)
+{
+    esp_err_t retVal = ESP_OK;
+    std::string sReturnMessage = "E90: Uninitialized";      // Default return error message when no return is programmed
+    
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_process_data - Start");    
+    #endif
+
+    cJSON *cJSONObject = cJSON_CreateObject();
+    
+    if (cJSONObject == NULL) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
+        return ESP_FAIL;
+    }
+    else {
+        if (cJSON_AddStringToObject(cJSONObject, "api_name", "handler_process_data") == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
+            retVal = ESP_FAIL; 
+        if (cJSON_AddStringToObject(cJSONObject, "timestamp_fallbackvalue", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "actual_value", flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "fallback_value", flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "raw_value", flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "value_status", flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "rate_per_min", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "rate_per_processing", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "process_error", std::to_string(flowctrl.getActFlowError()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "temperature", std::to_string((int)temperatureRead()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "rssi", std::to_string(get_WIFI_RSSI()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "uptime", getFormatedUptime(false).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "round_counter", std::to_string(getCountFlowRounds()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+
+        char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024, 1); // Print with predefined buffer of 1024 bytes, avoid dynamic allocations
+        sReturnMessage = std::string(jsonString);
+        cJSON_free(jsonString);  
+        cJSON_Delete(cJSONObject);
+    }
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+
+    if (retVal == ESP_OK)
+        httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
+    else
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
+
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_process_data - Done");    
+    #endif
+
+    return retVal;
+}
+
+
 esp_err_t handler_value(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON       
@@ -390,15 +459,15 @@ esp_err_t handler_value(httpd_req_t *req)
         const std::string RESTUsageInfo = 
             "00: Handler usage:<br>"
             "1. Return data from all number sequences:<br>"
-            " - Value:          /value?all=true&type=value<br>"
+            " - Actual Value:   /value?all=true&type=value<br>"
+            " - Fallback Value: /value?all=true&type=fallback<br>"
             " - Raw Value:      /value?all=true&type=raw<br>"
-            " - Previous Value: /value?all=true&type=prevalue<br>"
-            " - Value Status:   /value?all=true&type=error<br><br>"
+            " - Value Status:   /value?all=true&type=status<br><br>"
             "2. Return data from a specific number sequence with e.g. name \"main\":<br>"
-            " - Value:          /value?all=true&type=value&numbersname=main<br>"
+            " - Actual Value:   /value?all=true&type=value&numbersname=main<br>"
             " - Raw Value:      /value?all=true&type=raw&numbersname=main<br>"
-            " - Previous Value: /value?all=true&type=prevalue&numbersname=main<br>"
-            " - Value Status:   /value?all=true&type=error&numbersname=main<br><br>"
+            " - Fallback Value: /value?all=true&type=fallback&numbersname=main<br>"
+            " - Value Status:   /value?all=true&type=status&numbersname=main<br><br>"
             "3. Retrieve WebUI recognition page content, use /value?full=true<br>";
 
         // Default return error message when no return is programmed
@@ -455,12 +524,12 @@ esp_err_t handler_value(httpd_req_t *req)
             if (!_numberspecific) {
                 if (_type == "value")
                     zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE);
-                else if (_type == "prevalue")
-                    zw = flowctrl.getReadoutAll(READOUT_TYPE_PREVALUE);
+                else if (_type == "fallback")
+                    zw = flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE);
                 else if (_type == "raw")
                     zw = flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE);
-                else if (_type == "error")
-                    zw = flowctrl.getReadoutAll(READOUT_TYPE_ERROR);
+                else if (_type == "status")
+                    zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS);
                 else {
                     sReturnMessage = "E92: Type not found";
                     httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
@@ -478,12 +547,12 @@ esp_err_t handler_value(httpd_req_t *req)
 
                 if (_type == "value")
                     zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE);
-                else if (_type == "prevalue")
-                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_PREVALUE);
+                else if (_type == "fallback")
+                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_FALLBACKVALUE);
                 else if (_type == "raw")
                     zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_RAWVALUE);
-                else if (_type == "error")
-                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_ERROR);
+                else if (_type == "status")
+                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE_STATUS);
                 else {
                     sReturnMessage = "E92: Type not found";
                     httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
@@ -526,7 +595,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 txt += "<table style=\"width:500px;border-collapse: collapse;table-layout: fixed;\">";
                 txt += "<tr><td style=\"font-weight: bold;width: 50%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Number Sequence</td>"
                         "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Raw Value</td>"
-                        "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Value</td></tr>";
+                        "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Actual Value</td></tr>";
                 for (int i = 0; i < flowctrl.getNumbersSize(); ++i) {   
 					txt += "<tr><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
 						flowctrl.getNumbersName(i) + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" +
@@ -558,12 +627,10 @@ esp_err_t handler_value(httpd_req_t *req)
                     }
                     else {
                         if (htmlinfo[i]->val >= 10.0) {
-                            zw = "0.00";
+                            zw = "0.0";
                         }
                         else {
-                            std::stringstream stream;
-                            stream << std::fixed << std::setprecision(2) << htmlinfo[i]->val;
-                            zw = stream.str();
+                            zw = to_stringWithPrecision(htmlinfo[i]->val, 1);
                         }
                     }
 
@@ -600,12 +667,10 @@ esp_err_t handler_value(httpd_req_t *req)
                     }
 
                     if (htmlinfo[i]->val >= 10.0) {
-                            zw = "0.00";
+                            zw = "0.0";
                     }
                     else {
-                        std::stringstream stream;
-                        stream << std::fixed << std::setprecision(2) << htmlinfo[i]->val;
-                        zw = stream.str();
+                        zw = to_stringWithPrecision(htmlinfo[i]->val, 1);
                     }
 
                     if (htmlinfo[i]->val > -1) // Only show image if result is set, otherwise text "No Image"
@@ -667,7 +732,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
     char _query[200];
     char _valuechar[30];
-    string _task;
+    std::string _task;
 
     if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK)
     {
@@ -676,7 +741,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
             #ifdef DEBUG_DETAIL_ON       
                 ESP_LOGD(TAG, "task is found: %s", _valuechar);
             #endif
-            _task = string(_valuechar);
+            _task = std::string(_valuechar);
         }
     }  
 
@@ -700,12 +765,12 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
     if (_task.compare("copy") == 0)
     {
-        string in, out, zw;
+        std::string in, out, zw;
 
         httpd_query_key_value(_query, "in", _valuechar, 30);
-        in = string(_valuechar);
+        in = std::string(_valuechar);
         httpd_query_key_value(_query, "out", _valuechar, 30);         
-        out = string(_valuechar);  
+        out = std::string(_valuechar);  
 
         #ifdef DEBUG_DETAIL_ON       
             ESP_LOGD(TAG, "in: %s", in.c_str());
@@ -805,7 +870,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
 
 //        ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
-//        string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
+//        std::string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         Camera.SetBrightnessContrastSaturation(bri, con, sat);
         Camera.SetLEDIntensity(intens);
         ESP_LOGD(TAG, "test_take - vor TakeImage");
@@ -823,7 +888,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         }
 //        ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
 
-//        string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
+//        std::string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         std::string zw = flowctrl.doSingleStep("[Alignment]", _host);
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send(req, zw.c_str(), zw.length()); 
@@ -964,20 +1029,20 @@ esp_err_t handler_uptime(httpd_req_t *req)
 }
 
 
-esp_err_t handler_prevalue(httpd_req_t *req)
+esp_err_t handler_fallbackvalue(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_prevalue - Start");       
+        LogFile.WriteHeapInfo("handler_fallbackvalue - Start");       
     #endif
 
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
-        "- To retrieve actual PreValue, please provide only a numbersname, e.g. /setPreValue?numbers=main<br>"
-        "- To set PreValue to a new value, please provide a numbersname and a value, e.g. /setPreValue?numbers=main&value=1234.5678<br>"
+        "- To retrieve actual Fallback Value, please provide only a numbersname, e.g. /set_fallbackvalue?numbers=main<br>"
+        "- To set Fallback Value to a new value, please provide a numbersname and a value, e.g. /set_fallbackvalue?numbers=main&value=1234.5678<br>"
         "NOTE:<br>"
-        "value >= 0.0: Set PreValue to provided value<br>"
-        "value <  0.0: Set PreValue to actual RAW value (as long RAW value is a valid number, without N)";
+        "value >= 0.0: Set Fallback Value to provided value<br>"
+        "value <  0.0: Set Fallback Value to actual RAW value (as long RAW value is a valid number, without N)";
 
     // Default return error message when no return is programmed
     std::string sReturnMessage = "E90: Uninitialized";
@@ -995,7 +1060,7 @@ esp_err_t handler_prevalue(httpd_req_t *req)
 
         if (httpd_query_key_value(_query, "numbers", _numbersname, 50) != ESP_OK) { // If request is incomplete
             sReturnMessage = "E91: Query parameter incomplete or not valid!<br> "
-                             "Call /setPreValue to show REST API usage info and/or check documentation";
+                             "Call /set_fallbackvalue to show REST API usage info and/or check documentation";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
             return ESP_FAIL; 
         }
@@ -1011,8 +1076,8 @@ esp_err_t handler_prevalue(httpd_req_t *req)
         return ESP_OK; 
     }   
 
-    if (strlen(_value) == 0) { // If no value is povided --> return actual PreValue
-        sReturnMessage = flowctrl.GetPrevalue(std::string(_numbersname));
+    if (strlen(_value) == 0) { // If no value is povided --> return actual FallbackValue
+        sReturnMessage = flowctrl.GetFallbackValue(std::string(_numbersname));
 
         if (sReturnMessage.empty()) {
             sReturnMessage = "E92: Numbers name not found";
@@ -1021,17 +1086,17 @@ esp_err_t handler_prevalue(httpd_req_t *req)
         }
     }
     else {
-        // New value is positive: Set PreValue to provided value and return value
-        // New value is negative and actual RAW value is a valid number: Set PreValue to RAW value and return value
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "REST API handler_prevalue called: numbersname: " + std::string(_numbersname) + 
+        // New value is positive: Set FallbackValue to provided value and return value
+        // New value is negative and actual RAW value is a valid number: Set FallbackValue to RAW value and return value
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "REST API handler_fallbackvalue called: numbersname: " + std::string(_numbersname) + 
                                                 ", value: " + std::string(_value));
-        if (!flowctrl.UpdatePrevalue(_value, _numbersname, true)) {
+        if (!flowctrl.UpdateFallbackValue(_value, _numbersname)) {
             sReturnMessage = "E93: Update request rejected. Please check device logs for more details";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());  
             return ESP_FAIL;
         }
 
-        sReturnMessage = flowctrl.GetPrevalue(std::string(_numbersname));
+        sReturnMessage = flowctrl.GetFallbackValue(std::string(_numbersname));
 
         if (sReturnMessage.empty()) {
             sReturnMessage = "E94: Numbers name not found";
@@ -1043,7 +1108,7 @@ esp_err_t handler_prevalue(httpd_req_t *req)
     httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());  
 
     #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_prevalue - End");       
+        LogFile.WriteHeapInfo("handler_fallbackvalue - End");       
     #endif
 
     return ESP_OK;
@@ -1235,7 +1300,7 @@ void task_autodoFlow(void *pvParameter)
                     // Provide flow error indicator to MQTT interface (error occured 3 times in a row)
                     FlowStateErrorsInRow++;
                     if (FlowStateErrorsInRow >= FLOWSTATE_ERRORS_IN_ROW_LIMIT) {
-                        MQTTPublish(mqttServer_getMainTopic() + "/" + "flowerror", "true", 1, false);
+                        MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "true", 1, false);
                     }
                 #endif //ENABLE_MQTT
             
@@ -1245,7 +1310,7 @@ void task_autodoFlow(void *pvParameter)
             else {
                 #ifdef ENABLE_MQTT
                     FlowStateErrorsInRow = 0;
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "flowerror", "false", 1, false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "false", 1, false);
                 #endif //ENABLE_MQTT
             }
 
@@ -1378,90 +1443,72 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
 
     camuri.uri       = "/reload_config";
     camuri.handler   = handler_reload_config;
-    camuri.user_ctx  = (void*) "reload_config";    
+    camuri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &camuri);
 
-    // Legacy API => New: "/setPreValue"
-    camuri.uri       = "/setPreValue.html";
-    camuri.handler   = handler_prevalue;
-    camuri.user_ctx  = (void*) "Prevalue";    
+    camuri.uri       = "/process_data";
+    camuri.handler   = handler_process_data;
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
-    camuri.uri       = "/setPreValue";
-    camuri.handler   = handler_prevalue;
-    camuri.user_ctx  = (void*) "Prevalue";    
+    camuri.uri       = "/set_fallbackvalue";
+    camuri.handler   = handler_fallbackvalue;
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/flow_start";
     camuri.handler   = handler_flow_start;
-    camuri.user_ctx  = (void*) "Flow Start"; 
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/statusflow.html";
-    camuri.handler   = handler_statusflow;
-    camuri.user_ctx  = (void*) "statusflow.html"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/statusflow";
     camuri.handler   = handler_statusflow;
-    camuri.user_ctx  = (void*) "statusflow";
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
-    camuri.uri       = "/flowerror";
+    camuri.uri       = "/process_error";
     camuri.handler   = handler_flowerror;
-    camuri.user_ctx  = (void*) "flowerror";
-    httpd_register_uri_handler(server, &camuri);
-
-    // Legacy API => New: "/cpu_temperature"
-    camuri.uri       = "/cputemp.html";
-    camuri.handler   = handler_cputemp;
-    camuri.user_ctx  = (void*) "cputemp";
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/cpu_temperature";
     camuri.handler   = handler_cputemp;
-    camuri.user_ctx  = (void*) "cpu_temperature"; 
-    httpd_register_uri_handler(server, &camuri);
-
-    // Legacy API => New: "/rssi"
-    camuri.uri       = "/rssi.html";
-    camuri.handler   = handler_rssi;
-    camuri.user_ctx  = (void*) "Light Off"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/rssi";
     camuri.handler   = handler_rssi;
-    camuri.user_ctx  = (void*) "Light Off";
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/uptime";
     camuri.handler   = handler_uptime;
-    camuri.user_ctx  = (void*) "Light Off";
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/editflow";
     camuri.handler   = handler_editflow;
-    camuri.user_ctx  = (void*) "EditFlow"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);   
 
     camuri.uri       = "/value";
     camuri.handler   = handler_value;
-    camuri.user_ctx  = (void*) "Value"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/json";
     camuri.handler   = handler_json;
-    camuri.user_ctx  = (void*) "JSON"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/heap";
     camuri.handler   = handler_get_heap;
-    camuri.user_ctx  = (void*) "Heap"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/stream";
     camuri.handler   = handler_stream;
-    camuri.user_ctx  = (void*) "stream"; 
+    camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
 }

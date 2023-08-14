@@ -44,9 +44,16 @@ void ClassFlowControll::SetInitialParameter(void)
     flowdigit = NULL;
     flowanalog = NULL;
     flowpostprocessing = NULL;
+
+    #ifdef ENABLE_MQTT
     flowMQTT = NULL;
+    #endif //ENABLE_MQTT
+
+    #ifdef ENABLE_INFLUXDB
 	flowInfluxDB = NULL;
 	flowInfluxDBv2 = NULL;
+    #endif //ENABLE_INFLUXDB
+    
     AutoStart = false;
     AutoInterval = 5; // in Minutes
     SetupModeActive = false;
@@ -69,9 +76,9 @@ ClassFlowControll::~ClassFlowControll()
 }
 
 
-bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
+bool ClassFlowControll::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
 
     aktparamgraph = trim(aktparamgraph);
 
@@ -205,7 +212,7 @@ bool ClassFlowControll::ReadParameter(FILE* pfile, string& aktparamgraph)
             }
             else {
                 _RSSIThresholdTMP = atoi(splitted[1].c_str());
-                _RSSIThresholdTMP = min(0, max(-100, _RSSIThresholdTMP)); // Verify input limits (-100 - 0)
+                _RSSIThresholdTMP = std::min(0, std::max(-100, _RSSIThresholdTMP)); // Verify input limits (-100 - 0)
             }
             ChangeRSSIThreshold(WLAN_CONFIG_FILE, _RSSIThresholdTMP);
         }
@@ -491,11 +498,14 @@ void ClassFlowControll::DeinitFlow(void)
 
     gpio_handler_destroy();
     //LogFile.WriteHeapInfo("After GPIO");
-
+    
+    #ifdef ENABLE_MQTT
 	delete flowMQTT;
     flowMQTT = NULL;
     //LogFile.WriteHeapInfo("After MQTT");
+    #endif //ENABLE_MQTT
     
+    #ifdef ENABLE_INFLUXDB
     delete flowInfluxDB;
     flowInfluxDB = NULL;
     //LogFile.WriteHeapInfo("After INFLUX");
@@ -503,6 +513,7 @@ void ClassFlowControll::DeinitFlow(void)
     delete flowInfluxDBv2;
     flowInfluxDBv2 = NULL;
     //LogFile.WriteHeapInfo("After INFLUXv2");
+    #endif //ENABLE_INFLUXDB
 
     delete flowpostprocessing;
     flowpostprocessing = NULL;
@@ -534,7 +545,7 @@ void ClassFlowControll::DeinitFlow(void)
 }
 
 
-bool ClassFlowControll::doFlowImageEvaluation(string time)
+bool ClassFlowControll::doFlowImageEvaluation(std::string time)
 {
     bool result = true;
     FlowStateErrorsEvaluation.clear();
@@ -567,7 +578,7 @@ bool ClassFlowControll::doFlowImageEvaluation(string time)
 }
 
 
-bool ClassFlowControll::doFlowPublishData(string time)
+bool ClassFlowControll::doFlowPublishData(std::string time)
 {
     bool result = true;
     FlowStateErrorsPublish.clear();
@@ -599,7 +610,7 @@ bool ClassFlowControll::doFlowPublishData(string time)
 }
 
 
-bool ClassFlowControll::doFlowTakeImageOnly(string time)
+bool ClassFlowControll::doFlowTakeImageOnly(std::string time)
 {
     bool result = true;
     FlowStateErrorsEvaluation.clear();
@@ -777,7 +788,7 @@ bool ClassFlowControll::StartMQTTService()
 #endif //ENABLE_MQTT
 
 
-string ClassFlowControll::getJSON()
+std::string ClassFlowControll::getJSON()
 {
     return flowpostprocessing->GetJSON();
 }
@@ -851,16 +862,16 @@ std::string ClassFlowControll::getNumbersValue(std::string _name, int _type)
 
     switch (_type) {
         case READOUT_TYPE_VALUE:
-            return (*flowpostprocessing->GetNumbers())[pos]->ReturnValue;
+            return (*flowpostprocessing->GetNumbers())[pos]->sActualValue;
 
         case READOUT_TYPE_RAWVALUE:
-            return (*flowpostprocessing->GetNumbers())[pos]->ReturnRawValue;
+            return (*flowpostprocessing->GetNumbers())[pos]->sRawValue;
 
-        case READOUT_TYPE_PREVALUE:
-            return (*flowpostprocessing->GetNumbers())[pos]->ReturnPreValue;
+        case READOUT_TYPE_FALLBACKVALUE:
+            return (*flowpostprocessing->GetNumbers())[pos]->sFallbackValue;
 
-        case READOUT_TYPE_ERROR:
-            return (*flowpostprocessing->GetNumbers())[pos]->ErrorMessageText;
+        case READOUT_TYPE_VALUE_STATUS:
+            return (*flowpostprocessing->GetNumbers())[pos]->sValueStatus;
 
         default:
             return "";
@@ -884,16 +895,16 @@ std::string ClassFlowControll::getNumbersValue(int _position, int _type)
 
     switch (_type) {
         case READOUT_TYPE_VALUE:
-            return (*flowpostprocessing->GetNumbers())[_position]->ReturnValue;
+            return (*flowpostprocessing->GetNumbers())[_position]->sActualValue;
 
         case READOUT_TYPE_RAWVALUE:
-            return (*flowpostprocessing->GetNumbers())[_position]->ReturnRawValue;
+            return (*flowpostprocessing->GetNumbers())[_position]->sRawValue;
 
-        case READOUT_TYPE_PREVALUE:
-            return (*flowpostprocessing->GetNumbers())[_position]->ReturnPreValue;
+        case READOUT_TYPE_FALLBACKVALUE:
+            return (*flowpostprocessing->GetNumbers())[_position]->sFallbackValue;
 
-        case READOUT_TYPE_ERROR:
-            return (*flowpostprocessing->GetNumbers())[_position]->ErrorMessageText;
+        case READOUT_TYPE_VALUE_STATUS:
+            return (*flowpostprocessing->GetNumbers())[_position]->sValueStatus;
 
         default:
             return "";
@@ -915,25 +926,36 @@ std::string ClassFlowControll::getReadoutAll(int _type)
         {
             out = out + (*numbers)[i]->name + "\t";
             switch (_type) {
-                case READOUT_TYPE_VALUE:
-                    out = out + (*numbers)[i]->ReturnValue;
+                case READOUT_TYPE_TIMESTAMP_PROCESSED:
+                    out = out + (*numbers)[i]->sTimeProcessed;
                     break;
-                case READOUT_TYPE_PREVALUE:
-                    if (flowpostprocessing->PreValueUse)
-                    {
-                        if ((*numbers)[i]->PreValueOkay)
-                            out = out + (*numbers)[i]->ReturnPreValue;
+                case READOUT_TYPE_TIMESTAMP_FALLBACKVALUE:
+                    out = out + (*numbers)[i]->sTimeFallbackValue;
+                    break;
+                case READOUT_TYPE_VALUE:
+                    out = out + (*numbers)[i]->sActualValue;
+                    break;
+                case READOUT_TYPE_FALLBACKVALUE:
+                    if (flowpostprocessing->getUseFallbackValue()) {
+                        if ((*numbers)[i]->isFallbackValueValid)
+                            out = out + (*numbers)[i]->sFallbackValue;
                         else
-                            out = out + "PreValue too old";                
+                            out = out + "Outdated or age indeterminable";                
                     }
                     else
-                        out = out + "PreValue deactivated";
+                        out = out + "Deactivated";
                     break;
                 case READOUT_TYPE_RAWVALUE:
-                    out = out + (*numbers)[i]->ReturnRawValue;
+                    out = out + (*numbers)[i]->sRawValue;
                     break;
-                case READOUT_TYPE_ERROR:
-                    out = out + (*numbers)[i]->ErrorMessageText;
+                case READOUT_TYPE_VALUE_STATUS:
+                    out = out + (*numbers)[i]->sValueStatus;
+                    break;
+                case READOUT_TYPE_RATE_PER_MIN:
+                    out = out + (*numbers)[i]->sRatePerMin;
+                    break;
+                case READOUT_TYPE_RATE_PER_PROCESSING:
+                    out = out + (*numbers)[i]->sRatePerProcessing;
                     break;
             }
             if (i < (*numbers).size()-1)
@@ -952,8 +974,8 @@ std::string ClassFlowControll::getReadout(bool _rawvalue = false, bool _noerror 
     if (flowpostprocessing)
         return flowpostprocessing->getReadoutParam(_rawvalue, _noerror, _number);
 
-    string zw = "";
-    string result = "";
+    std::string zw = "";
+    std::string result = "";
 
     for (int i = 0; i < FlowControll.size(); ++i)
     {
@@ -971,24 +993,24 @@ std::string ClassFlowControll::getReadout(bool _rawvalue = false, bool _noerror 
 }
 
 
-string ClassFlowControll::GetPrevalue(std::string _number)	
+std::string ClassFlowControll::GetFallbackValue(std::string _number)	
 {
     if (flowpostprocessing)
     {
-        return flowpostprocessing->GetPreValue(_number);   
+        return flowpostprocessing->GetFallbackValue(_number);   
     }
 
     return std::string("");    
 }
 
 
-bool ClassFlowControll::UpdatePrevalue(std::string _newvalue, std::string _numbers, bool _extern)
+bool ClassFlowControll::UpdateFallbackValue(std::string _newvalue, std::string _numbers)
 {
     double newvalueAsDouble;
     char* p;
 
     _newvalue = trim(_newvalue);
-    //ESP_LOGD(TAG, "Input UpdatePreValue: %s", _newvalue.c_str());
+    //ESP_LOGD(TAG, "Input UpdateFallbackValue: %s", _newvalue.c_str());
 
     if (_newvalue.substr(0,8).compare("0.000000") == 0 || _newvalue.compare("0.0") == 0 || _newvalue.compare("0") == 0) {
         newvalueAsDouble = 0;   // preset to value = 0
@@ -996,19 +1018,19 @@ bool ClassFlowControll::UpdatePrevalue(std::string _newvalue, std::string _numbe
     else {
         newvalueAsDouble = strtod(_newvalue.c_str(), &p);
         if (newvalueAsDouble == 0) {
-            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "UpdatePrevalue: No valid value for processing: " + _newvalue);
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "UpdateFallbackValue: No valid value for processing: " + _newvalue);
             return false;
         }
     }
     
     if (flowpostprocessing) {
-        if (flowpostprocessing->SetPreValue(newvalueAsDouble, _numbers, _extern))
+        if (flowpostprocessing->SetFallbackValue(newvalueAsDouble, _numbers))
             return true;
         else
             return false;
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "UpdatePrevalue: ERROR - Class Post-Processing not initialized");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "UpdateFallbackValue: ERROR - Class Post-Processing not initialized");
         return false;
     }
 }
@@ -1027,7 +1049,7 @@ int ClassFlowControll::CleanTempFolder() {
     struct dirent *entry;
     int deleted = 0;
     while ((entry = readdir(dir)) != NULL) {
-        std::string path = string(folderPath) + "/" + entry->d_name;
+        std::string path = std::string(folderPath) + "/" + entry->d_name;
 		if (entry->d_type == DT_REG) {
 			if (unlink(path.c_str()) == 0) {
 				deleted ++;

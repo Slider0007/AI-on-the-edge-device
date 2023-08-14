@@ -2,6 +2,7 @@
 #include "ClassFlowTakeImage.h"
 #include "ClassFlow.h"
 #include "MainFlowControl.h"
+#include "time_sntp.h"
 
 #include "CRotateImage.h"
 #include "esp_log.h"
@@ -53,9 +54,9 @@ ClassFlowAlignment::ClassFlowAlignment(std::vector<ClassFlow*>* lfc)
 }
 
 
-bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
+bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
     int search_x = 20;  // target_x +/- search_x
     int search_y = 20;  // target_y +/- search_y
     int alg_algo = 0;   // 0= DEFAULT; 1 =HIGHACCURACY; 2= FAST; 3= OFF //add disable aligment algo |01.2023
@@ -184,9 +185,9 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, string& aktparamgraph)
 }
 
 
-string ClassFlowAlignment::getHTMLSingleStep(string host)
+std::string ClassFlowAlignment::getHTMLSingleStep(std::string host)
 {
-    string result;
+    std::string result;
 
     result =          "<p>Rotated Image: </p> <p><img src=\"" + host + "/img_tmp/rot.jpg\"></p>\n";
     result = result + "<p>Found Alignment: </p> <p><img src=\"" + host + "/img_tmp/rot_roi.jpg\"></p>\n";
@@ -195,7 +196,7 @@ string ClassFlowAlignment::getHTMLSingleStep(string host)
 }
 
 
-bool ClassFlowAlignment::doFlow(string time) 
+bool ClassFlowAlignment::doFlow(std::string time) 
 {
     PresetFlowStateHandler(false, time);
     if (AlgROI == NULL)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
@@ -279,7 +280,7 @@ bool ClassFlowAlignment::doFlow(string time)
         else if (AlignRetval == -1) {   // alignment failed         
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Alignment failed. Check initial rotation, alignment marker or "
                                                     "alignment parameter \"Search Field X, Y\"");
-            FlowStateHandlerSetError(-1);  
+            FlowStateHandlerSetError(-1, true); // Set warning code for post cycle error handler 'doAutoErrorHandling' (only warning level)
         }
     }
 
@@ -313,20 +314,24 @@ bool ClassFlowAlignment::doFlow(string time)
 
 void ClassFlowAlignment::doAutoErrorHandling()
 {
-    // Error handling can be included here. Function is called after round is completed.
+    // Error handling can be included here. Function is called after processing cycle is completed.
     
-    if (SaveDebugInfo && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and alignment failed
-        std::string destination = "/sdcard/log/debug/" + getFlowState()->ClassName + "/" + getDateString() + "/" + getFlowState()->ExecutionTime;
+    if (SaveDebugInfo && getFlowState()->ErrorCode == -1) {  // If saving error logs enabled and alignment failed event
+        time_t actualtime;
+        time(&actualtime);
+        std::string destination = "/sdcard/log/debug/" + getFlowState()->ClassName + "/" + 
+                                  ConvertTimeToString(actualtime, "%Y%m%d") + "/" + getFlowState()->ExecutionTime;
+        
         if (!MakeDir(destination)) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Failed to create folder " + destination);
             return;
         }
 
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doAutoErrorHandling: Alignment failed, save debug infos to " + destination);
-
-        // Draw alignment marker and save image#
+        // Draw alignment marker and save image
         DrawRef(AlignAndCutImage);
         AlignAndCutImage->SaveToFile(FormatFileName(destination + "/alg_misalign.jpg"));
+
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "doAutoErrorHandling: Alignment failed, debug infos saved: " + destination);
     }
 }
 

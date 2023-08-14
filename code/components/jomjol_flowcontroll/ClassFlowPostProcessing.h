@@ -10,66 +10,61 @@
 
 #include <string>
 
-
 class ClassFlowPostProcessing : public ClassFlow
 {
 protected:
-    bool UpdatePreValueINI;
-    int PreValueAgeStartup; 
-    bool ErrorMessage;
-    bool IgnoreLeadingNaN;          // SPECIAL CASE for User Gustl ???
+    std::vector<NumberPost*> NUMBERS;
+    bool UseFallbackValue;
+    bool UpdateFallbackValue;
+    int FallbackValueAgeStartup; 
+    bool IgnoreLeadingNaN;
     bool SaveDebugInfo;
 
     ClassFlowCNNGeneral* flowAnalog;
     ClassFlowCNNGeneral* flowDigit;    
     ClassFlowTakeImage *flowTakeImage;
 
-    bool LoadPreValue(void);
-    string ShiftDecimal(string in, int _decShift);
+    bool LoadFallbackValue(void);
+    bool SaveFallbackValue(void);
 
-    string ErsetzteN(string, double _prevalue);
-    float checkDigitConsistency(double input, int _decilamshift, bool _isanalog, double _preValue);
+    void setDecimalShift();
+    std::string ShiftDecimal(std::string in, int _decShift);
+    std::string SubstitudeN(std::string, double _fallbackValue);
+    float checkDigitConsistency(double _value, int _decimalshift, bool _isanalog, double _fallbackValue);
 
     void InitNUMBERS();
-    void handleDecimalSeparator(std::string _decsep, std::string _value);
+
+    void handleDecimalShift(std::string _decsep, std::string _value);
     void handleMaxRateValue(std::string _decsep, std::string _value);
     void handleDecimalExtendedResolution(std::string _decsep, std::string _value); 
     void handleMaxRateType(std::string _decsep, std::string _value);
     void handleAnalogDigitalTransitionStart(std::string _decsep, std::string _value);
     void handleAllowNegativeRate(std::string _decsep, std::string _value);
     
-    std::string GetStringReadouts(general);
-
     void WriteDataLog(int _index);
 
 public:
-    bool PreValueUse;
-    std::vector<NumberPost*> NUMBERS;
-
     ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, ClassFlowCNNGeneral *_analog, ClassFlowCNNGeneral *_digit);
     virtual ~ClassFlowPostProcessing();
-    bool ReadParameter(FILE* pfile, string& aktparamgraph);
-    bool doFlow(string time);
+    bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
+    bool doFlow(std::string time);
     void doAutoErrorHandling();
 
-    string getReadout(int _number);
-    string getReadoutParam(bool _rawValue, bool _noerror, int _number = 0);
-    string getReadoutError(int _number = 0);
-    string getReadoutRate(int _number = 0);
-    string getReadoutTimeStamp(int _number = 0);
-    bool SavePreValue(void);
-    string getJsonFromNumber(int i, std::string _lineend);
-    string GetPreValue(std::string _number = "");
-    bool SetPreValue(double zw, string _numbers, bool _extern = false);
-
-    std::string GetJSON(std::string _lineend = "\n");
+    std::vector<NumberPost*>* GetNumbers() {return &NUMBERS;};
     std::string getNumbersName();
+    std::string getReadout(int _number);
+    std::string getReadoutParam(bool _rawValue, bool _noerror, int _number = 0);
+    std::string getReadoutError(int _number = 0);
+    std::string getReadoutRate(int _number = 0);
+    std::string getReadoutTimeStamp(int _number = 0);
+    std::string getJsonFromNumber(int i, std::string _lineend);
+    std::string GetJSON(std::string _lineend = "\n");
+    std::string GetFallbackValue(std::string _number = "");
+    bool SetFallbackValue(double zw, std::string _numbers);
+    bool getUseFallbackValue(void);
+    void setUseFallbackValue(bool _value);
 
-    void UpdateNachkommaDecimalShift();
-
-    std::vector<NumberPost*>* GetNumbers(){return &NUMBERS;};
-
-    string name(){return "ClassFlowPostProcessing";};
+    std::string name() {return "ClassFlowPostProcessing";};
 };
 
 #endif //CLASSFFLOWPOSTPROCESSING_H

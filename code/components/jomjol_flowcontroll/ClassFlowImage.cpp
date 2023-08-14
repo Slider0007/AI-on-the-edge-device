@@ -1,6 +1,5 @@
 #include "ClassFlowImage.h"
 #include <string>
-#include <string.h>
 #include <sys/stat.h>
 
 #ifdef __cplusplus
@@ -50,12 +49,12 @@ ClassFlowImage::ClassFlowImage(std::vector<ClassFlow*> * lfc, ClassFlow *_prev, 
 }
 
 
-string ClassFlowImage::CreateLogFolder(string time) 
+std::string ClassFlowImage::CreateLogFolder(std::string time) 
 {
 	if (!isLogImage)
 		return "";
 
-	string logPath = imagesLocation + "/" + time.LOGFILE_TIME_FORMAT_DATE_EXTR + "/" + time.LOGFILE_TIME_FORMAT_HOUR_EXTR;
+	std::string logPath = imagesLocation + "/" + time.LOGFILE_TIME_FORMAT_DATE_EXTR + "/" + time.LOGFILE_TIME_FORMAT_HOUR_EXTR;
     isLogImage = mkdir_r(logPath.c_str(), S_IRWXU) == 0;
     if (!isLogImage) {
         LogFile.WriteToFile(ESP_LOG_ERROR, logTag, "Can't create log folder for analog images. Path " + logPath);
@@ -66,38 +65,31 @@ string ClassFlowImage::CreateLogFolder(string time)
 }
 
 
-void ClassFlowImage::LogImage(string logPath, string name, float *resultFloat, int *resultInt, string time, CImageBasis *_img) 
+void ClassFlowImage::LogImage(std::string _logPath, std::string _numbername, t_CNNType _type, int _value, std::string _time, CImageBasis *_img) 
 {
 	if (!isLogImage)
 		return;
 
-    if (logPath.empty()) {
+    if (_logPath.empty()) {
         LogFile.WriteToFile(ESP_LOG_ERROR, logTag, "LogImage: logPath empty");
         return;
     }
 	
 	char buf[10];
 
-	if (resultFloat != NULL) {
-        if (*resultFloat < 0)
-            sprintf(buf, "N.N_");
-        else {
-            sprintf(buf, "%.1f_", *resultFloat);
-            if (strcmp(buf, "10.0_") == 0)
-                sprintf(buf, "0.0_");
-        }
-            
-	} 
-    else if (resultInt != NULL) {
-		sprintf(buf, "%d_", *resultInt);
-	} 
-    else {
-		buf[0] = '\0';
-	}
+    if (_type == None) { // log with no label -> raw image
+        buf[0] = '\0';
+    }
+    else if (_type == Digital) { // dig-class10 (0-9 + NaN)
+        sprintf(buf, "%d_", _value);
+    }
+    else { // ana-class100, dig-class100, dig-cont
+        sprintf(buf, "%.1f_", _value/10.0);
+    }
 
-	string nm = logPath + "/" + buf + name + "_" + time + ".jpg";
+	std::string nm = _logPath + "/" + buf + _numbername + "_" + _time + ".jpg";
 	nm = FormatFileName(nm);
-	string output = "/sdcard/img_tmp/" + name + ".jpg";
+	std::string output = "/sdcard/img_tmp/" + _numbername + ".jpg";
 	output = FormatFileName(output);
 	ESP_LOGD(logTag, "save to file: %s", nm.c_str());
     if (_img == NULL) {
@@ -113,24 +105,18 @@ void ClassFlowImage::RemoveOldLogs()
 	if (!isLogImage)
 		return;
 	
-	ESP_LOGD(TAG, "remove old images");
     if (imagesRetention == 0) {
         LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "RemoveOldLogs: Retention deactivated");
         return;
     }
 
-    time_t rawtime;
-    struct tm* timeinfo;
-    char cmpfilename[30];
+    LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "Delete images older than retention setting (This might take a while)");
 
+    time_t rawtime;
+    
     time(&rawtime);
     rawtime = addDays(rawtime, -1 * imagesRetention + 1);
-    timeinfo = localtime(&rawtime);
-    //ESP_LOGD(TAG, "ImagefileRetentionInDays: %d", imagesRetention);
-    
-    strftime(cmpfilename, 30, LOGFILE_TIME_FORMAT, timeinfo);
-    //ESP_LOGD(TAG, "file name to compare: %s", cmpfilename);
-	string folderName = string(cmpfilename).LOGFILE_TIME_FORMAT_DATE_EXTR;
+	std::string folderName = ConvertTimeToString(rawtime, LOGFILE_TIME_FORMAT).LOGFILE_TIME_FORMAT_DATE_EXTR;
 
     DIR* dir = opendir(imagesLocation.c_str());
     if (!dir) {
@@ -142,7 +128,7 @@ void ClassFlowImage::RemoveOldLogs()
     int deleted = 0;
     int notDeleted = 0;
     while ((entry = readdir(dir)) != NULL) {
-        string folderPath = imagesLocation + "/" + entry->d_name;
+        std::string folderPath = imagesLocation + "/" + entry->d_name;
 		if (entry->d_type == DT_DIR) {
 			//ESP_LOGD(TAG, "Compare %s to %s", entry->d_name, folderName.c_str());	
 			if ((strlen(entry->d_name) == folderName.length()) && (strcmp(entry->d_name, folderName.c_str()) < 0)) {
@@ -153,9 +139,9 @@ void ClassFlowImage::RemoveOldLogs()
             }
 		}
     }
-    
-    LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "Folder deleted: " + std::to_string(deleted) + ", folder not deleted: " + std::to_string(notDeleted));
     closedir(dir);
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "Folders deleted: " + std::to_string(deleted) + " | Folders kept: " + std::to_string(notDeleted));
 }
 
 

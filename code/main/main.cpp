@@ -289,7 +289,7 @@ extern "C" void app_main(void)
  
     if (getHTMLcommit().substr(0, 7) != std::string(GIT_REV).substr(0, 7)) { // Compare the first 7 characters of both hashes
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Web UI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat installation using AI-on-the-edge-device__update__*.zip");    
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using AI-on-the-edge-device__update__*.zip");    
     }
 
     // Check reboot reason
@@ -589,11 +589,10 @@ void migrateConfiguration(void) {
         if (section == "[PostProcessing]") {
             migrated = migrated | replaceString(configLines[i], ";PreValueUse = true", ";PreValueUse = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";PreValueUse", "PreValueUse"); // Enable it
+            migrated = migrated | replaceString(configLines[i], "PreValueUse", "FallbackValueUse"); // Rename it
 
             migrated = migrated | replaceString(configLines[i], ";PreValueAgeStartup", "PreValueAgeStartup"); // Enable it
-
-            migrated = migrated | replaceString(configLines[i], ";ErrorMessage = true", ";ErrorMessage = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";ErrorMessage", "ErrorMessage"); // Enable it
+            migrated = migrated | replaceString(configLines[i], "PreValueAgeStartup", "FallbackValueAgeStartup");
 
             migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency = true", ";CheckDigitIncreaseConsistency = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency", "CheckDigitIncreaseConsistency"); // Enable it
@@ -740,7 +739,7 @@ void migrateConfiguration(void) {
         }
 
         if (section == "[System]") {
-            if ((isInString(configLines[i], "TimeServer = undefined") || isInString(configLines[i], "TimeServer = pool.ntp.org")) && isInString(configLines[i], ";")) 
+            if (isInString(configLines[i], "TimeServer = undefined") && isInString(configLines[i], ";")) 
             { // It is the parameter "TimeServer" and is it disabled
                 migrated = migrated | replaceString(configLines[i], "undefined", "pool.ntp.org");
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
@@ -781,7 +780,7 @@ void migrateConfiguration(void) {
             fwrite("\n" , 1, 1, pfile);
         }
         fclose(pfile);
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Config file migrated. Saved backup to " + string(CONFIG_FILE_BACKUP));
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Config file migrated. Saved backup to " + std::string(CONFIG_FILE_BACKUP));
     }
 }
 
@@ -830,7 +829,7 @@ std::vector<std::string> splitString(const std::string& str) {
 
 bool setCpuFrequency(void) {
     ConfigFile configFile = ConfigFile(CONFIG_FILE); 
-    string cpuFrequency = "160";
+    std::string cpuFrequency = "160";
     esp_pm_config_esp32_t  pm_config; 
 
     if (!configFile.ConfigFileExists()){
@@ -888,7 +887,7 @@ bool setCpuFrequency(void) {
     }
 
     if (esp_pm_get_configuration(&pm_config) == ESP_OK) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, string("CPU frequency: ") + to_string(pm_config.max_freq_mhz) + " MHz");
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, std::string("CPU frequency: ") + std::to_string(pm_config.max_freq_mhz) + " MHz");
     }
 
     return true;

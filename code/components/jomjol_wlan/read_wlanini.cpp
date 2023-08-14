@@ -9,7 +9,6 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
-#include <string.h>
 #include "esp_log.h"
 #include "ClassLogFile.h"
 #include "../../include/defines.h"
@@ -20,9 +19,9 @@ static const char *TAG = "WLANINI";
 struct wlan_config wlan_config = {};
 
 
-std::vector<string> ZerlegeZeileWLAN(std::string input, std::string _delimiter = "")
+std::vector<std::string> ZerlegeZeileWLAN(std::string input, std::string _delimiter = "")
 {
-	std::vector<string> Output;
+	std::vector<std::string> Output;
 	std::string delimiter = " =,";
     if (_delimiter.length() > 0){
         delimiter = _delimiter;
@@ -49,7 +48,7 @@ int LoadWlanFromFile(std::string fn)
 {
     std::string line = "";
     std::string tmp = "";
-    std::vector<string> splitted;
+    std::vector<std::string> splitted;
 
     fn = FormatFileName(fn);
     FILE* pFile = fopen(fn.c_str(), "r");
@@ -190,8 +189,8 @@ bool ChangeHostName(std::string fn, std::string _newhostname)
         return false;
 
     std::string line = "";
-    std::vector<string> splitted;
-    std::vector<string> neuesfile;
+    std::vector<std::string> splitted;
+    std::vector<std::string> neuesfile;
     bool found = false;
 
     FILE* pFile = NULL;
@@ -272,8 +271,8 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
         return false;
 
     std::string line = "";
-    std::vector<string> splitted;
-    std::vector<string> updatedFile;
+    std::vector<std::string> splitted;
+    std::vector<std::string> updatedFile;
     bool found = false;
 
     FILE* pFile = NULL;
@@ -318,7 +317,7 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
         }
 
         if ((splitted.size() > 1) && ((toUpper(splitted[0]) == "RSSITHRESHOLD") || (toUpper(splitted[0]) == ";RSSITHRESHOLD"))) {
-            line = "RSSIThreshold = " + to_string(_newrssithreshold) + "\n";
+            line = "RSSIThreshold = " + std::to_string(_newrssithreshold) + "\n";
             found = true;
         }
     
@@ -343,7 +342,7 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
         line += "; RSSI Threshold for client requested roaming query (RSSI < RSSIThreshold)\n";
         line += "; Note: This parameter can be configured via WebUI configuration\n";
         line += "; Default: 0 = Disable client requested roaming query\n\n";
-        line += "RSSIThreshold = " + to_string(_newrssithreshold) + "\n";
+        line += "RSSIThreshold = " + std::to_string(_newrssithreshold) + "\n";
         updatedFile.push_back(line);        
     }
 
