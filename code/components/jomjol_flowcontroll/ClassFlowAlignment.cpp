@@ -277,10 +277,9 @@ bool ClassFlowAlignment::doFlow(std::string time)
         if (AlignRetval >= 0) {
             SaveReferenceAlignmentValues();
         }
-        else if (AlignRetval == -1) {   // alignment failed         
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Alignment failed. Check initial rotation, alignment marker or "
-                                                    "alignment parameter \"Search Field X, Y\"");
-            setFlowStateHandlerEvent(1); // Set warning event code for post cycle error handler 'doPostProcessEventHandling' (only warning level)
+        else if (AlignRetval == -1) {   // Alignment failed         
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Alignment by algorithm failed. Verify image rotation and alignment marker");
+            setFlowStateHandlerEvent(-1); // Set error event code for post cycle error handler 'doPostProcessEventHandling'
         }
     }
 
@@ -316,7 +315,7 @@ void ClassFlowAlignment::doPostProcessEventHandling()
 {
     // Post cycle process handling can be included here. Function is called after processing cycle is completed
     for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
-        if (SaveDebugInfo && getFlowState()->EventCode[i] == 1) {  // If saving error logs enabled and alignment failed event
+        if (SaveDebugInfo && getFlowState()->EventCode[i] == -1) {  // If saving error logs enabled and alignment failed event
             time_t actualtime;
             time(&actualtime);
 
@@ -327,6 +326,12 @@ void ClassFlowAlignment::doPostProcessEventHandling()
             if (!MakeDir(destination))
                 return;
 
+            // Save algo results in file
+            std::string resultFileName = "/alignment_failed.txt";
+            FILE* fpResult = fopen((destination + resultFileName).c_str(), "w");
+            fwrite(References[0].error_details.c_str(), (References[0].error_details).length(), 1, fpResult);
+            fclose(fpResult);
+            
             // Draw alignment marker and save image
             DrawRef(AlignAndCutImage);
             AlignAndCutImage->SaveToFile(FormatFileName(destination + "/alg_misalign.jpg"));
