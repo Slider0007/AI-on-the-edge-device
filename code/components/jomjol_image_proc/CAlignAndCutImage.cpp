@@ -120,9 +120,9 @@ int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
         rt.Rotate(angle_deviation, width/2, height/2);
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Angle dev:" + to_stringWithPrecision(angle_deviation, 1) + 
-                                ", Ref0dx:" + std::to_string(dx1)+ ", Ref0dy:" + std::to_string(dy1) +
-                                ", Ref1dx:" + std::to_string(dx2)+ ", Ref1dy:" + std::to_string(dy2));
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Angle deviation: " + to_stringWithPrecision(angle_deviation, 1) + 
+                                ", Ref0_dx: " + std::to_string(dx1)+ ", Ref0_dy: " + std::to_string(dy1) +
+                                ", Ref1_dx: " + std::to_string(dx2)+ ", Ref1_dy: " + std::to_string(dy2));
 
     if (isSimilar1 && isSimilar2)   
         return 1; // FAST ALGO match
