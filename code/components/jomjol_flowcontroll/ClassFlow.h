@@ -21,12 +21,14 @@ struct HTMLInfo
 	int position;
 };
 
+
 struct strFlowState
 {
 	std::string ClassName = "";
-	bool getCalled = false;
+	std::string ExecutionTime = "";
+	bool getExecuted = false;
 	bool isSuccessful = true;
-	int8_t ErrorCode = 0;
+	std::vector<int> EventCode; // negative event code -> error; positive event code -> warning
 };
 
 
@@ -45,7 +47,6 @@ protected:
 	std::string GetParameterName(std::string _input);
 
 	bool disabled;
-
 	strFlowState FlowState;
 
 public:
@@ -53,10 +54,10 @@ public:
 	ClassFlow(std::vector<ClassFlow*> * lfc);
 	ClassFlow(std::vector<ClassFlow*> * lfc, ClassFlow *_prev);
 	
-    void PresetFlowStateHandler(bool _init = false);
-	void FlowStateHandlerSetError(int8_t _error);
+    void presetFlowStateHandler(bool _init = false, std::string _time = "");
+	void setFlowStateHandlerEvent(int _eventCode = 0);
 	struct strFlowState* getFlowState();
-	virtual void doAutoErrorHandling();
+	virtual void doPostProcessEventHandling();
 	
 	virtual bool ReadParameter(FILE* pfile, std::string &aktparamgraph);
 	virtual bool doFlow(std::string time);

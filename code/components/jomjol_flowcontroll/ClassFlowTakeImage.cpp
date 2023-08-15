@@ -18,7 +18,7 @@ static const char* TAG = "TAKEIMAGE";
 
 void ClassFlowTakeImage::SetInitialParameter(void)
 {
-    PresetFlowStateHandler(true);
+    presetFlowStateHandler(true);
     waitbeforepicture = 5.0; // Flash duration in s
     flash_duration = (int)(waitbeforepicture * 1000);   // Flash duration in ms
     isImageSize = false;
@@ -165,15 +165,15 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
 bool ClassFlowTakeImage::doFlow(std::string zwtime)
 {
-    PresetFlowStateHandler();
+    presetFlowStateHandler(false, zwtime);
     std::string logPath = CreateLogFolder(zwtime);
  
     #ifdef DEBUG_DETAIL_ON  
         LogFile.WriteHeapInfo("ClassFlowTakeImage::doFlow - Start");
     #endif
 
-    if (takePictureWithFlash(flash_duration)) {
-        FlowStateHandlerSetError(-1);       // Error cluster: -1
+    if (!takePictureWithFlash(flash_duration)) {
+        setFlowStateHandlerEvent(-1); // Set error code for post cycle error handler 'doPostProcessEventHandling' (error level)
         return false;
     }
 
@@ -193,10 +193,17 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
 }
 
 
-void ClassFlowTakeImage::doAutoErrorHandling()
+void ClassFlowTakeImage::doPostProcessEventHandling()
 {
-    // Error handling can be included here. Function is called after round is completed.
-    //ESP_LOGI(TAG, "ClassFlowTakeImage::doAutoErrorHandling() - TEST");
+    // Post cycle process handling can be included here. Function is called after processing cycle is completed
+    for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
+        if (getFlowState()->EventCode[i] == -1) {  // Camera framebuffer failure
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "doPostProcessEventHandling: Camera framebuffer failed, reset camera");
+            Camera.PowerResetCamera();
+            Camera.InitCam();
+            Camera.LightOnOff(false);
+        }
+    }
 }
 
 
@@ -211,7 +218,7 @@ esp_err_t ClassFlowTakeImage::camera_capture()
 {
     std::string nm =  namerawimage;
 
-    if (!Camera.CaptureToFile(nm))
+    if (Camera.CaptureToFile(nm) != ESP_OK)
         return ESP_FAIL;
 
     time(&TimeImageTaken);
@@ -232,7 +239,7 @@ bool ClassFlowTakeImage::takePictureWithFlash(int _flash_duration)
     rawImage->height = image_height;
 
     ESP_LOGD(TAG, "flash_duration: %d", _flash_duration);
-    if (!Camera.CaptureToBasisImage(rawImage, _flash_duration))
+    if (Camera.CaptureToBasisImage(rawImage, _flash_duration) != ESP_OK)
         return false;
 
     time(&TimeImageTaken);
@@ -257,7 +264,7 @@ ImageData* ClassFlowTakeImage::SendRawImage()
     CImageBasis *zw = new CImageBasis("SendRawImage", rawImage);
     ImageData *id;
 
-    if (!Camera.CaptureToBasisImage(rawImage, flash_duration))
+    if (Camera.CaptureToBasisImage(rawImage, flash_duration) != ESP_OK)
         return NULL;
 
     time(&TimeImageTaken);

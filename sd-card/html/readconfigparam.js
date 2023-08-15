@@ -139,6 +139,7 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "InitialRotate", true, "0.0");
      ParamAddSingleValueWithPreset(param, catname, "InitialMirror", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "SaveDebugInfo", true, "false");
 
      var catname = "Digits";
      category[catname] = new Object(); 
@@ -174,7 +175,7 @@ function ParseConfig() {
      ParamAddValue(param, catname, "MaxRateValue", 1, true, "0.1");
      ParamAddValue(param, catname, "ExtendedResolution", 1, true, "false");
      ParamAddValue(param, catname, "IgnoreLeadingNaN", 1, true, "false");
-
+     ParamAddSingleValueWithPreset(param, catname, "SaveDebugInfo", true, "false");
 
      var catname = "MQTT";
      category[catname] = new Object(); 
@@ -255,6 +256,7 @@ function ParseConfig() {
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "LogLevel", true, "2");
      ParamAddSingleValueWithPreset(param, catname, "LogfilesRetention", true, "5");
+     ParamAddSingleValueWithPreset(param, catname, "DebugFilesRetention", true, "5");
 
      var catname = "System";
      category[catname] = new Object(); 
@@ -428,7 +430,6 @@ function ParamAddModelWithPreset(param, _cat, _param, _enabled)
           }
      }
 }
-
 
 
 function ParseConfigParamAll(_aktline, _catname){

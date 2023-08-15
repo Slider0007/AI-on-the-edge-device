@@ -1,6 +1,7 @@
 #include "CAlignAndCutImage.h"
 #include "CRotateImage.h"
 #include "ClassLogFile.h"
+#include "Helper.h"
 
 #include <math.h>
 #include <algorithm>
@@ -51,14 +52,16 @@ int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
     //ESP_LOGD(TAG, "Before ft->FindTemplate(_temp1); %s", _temp1->image_file.c_str());
     isSimilar1 = ft->FindTemplate(_temp1, false);
     _temp1->width = ft->tpl_width;
-    _temp1->height = ft->tpl_height; 
+    _temp1->height = ft->tpl_height;
+    _temp1->error_details = "";
 
     r1_x = _temp2->target_x;
     r1_y = _temp2->target_y;
     //ESP_LOGD(TAG, "Before ft->FindTemplate(_temp2); %s", _temp2->image_file.c_str());
     isSimilar2 = ft->FindTemplate(_temp2, !isSimilar1); // disable FAST processing if first FAST ALGO result is -> no match
     _temp2->width = ft->tpl_width;
-    _temp2->height = ft->tpl_height; 
+    _temp2->height = ft->tpl_height;
+    _temp2->error_details = "";
 
     delete ft;
 
@@ -89,9 +92,11 @@ int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
     if (fabs(angle_deviation) > 45 || abs(dx1) >= _temp1->search_x || abs(dy1) >= _temp1->search_y  || 
                                       abs(dx2) >= _temp2->search_x || abs(dy2) >= _temp2->search_y) 
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Align results: Angle dev:" + std::to_string(angle_deviation) + 
-                            ", Ref0dx:" + std::to_string(dx1)+ ", Ref0dy:" + std::to_string(dy1) +
-                            ", Ref1dx:" + std::to_string(dx2)+ ", Ref1dy:" + std::to_string(dy2));
+        _temp1->error_details = _temp2->error_details = "Angle dev: " + to_stringWithPrecision(angle_deviation, 1) + 
+                            ", Ref0dx: " + std::to_string(dx1)+ ", Ref0dy: " + std::to_string(dy1) +
+                            ", Ref1dx: " + std::to_string(dx2)+ ", Ref1dy: " + std::to_string(dy2);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _temp1->error_details);
+        
         return -1; // ALIGNMENT FAILED
     }
 
@@ -115,9 +120,9 @@ int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
         rt.Rotate(angle_deviation, width/2, height/2);
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Align results: Angle dev:" + std::to_string(angle_deviation) + 
-                                ", Ref0dx:" + std::to_string(dx1)+ ", Ref0dy:" + std::to_string(dy1) +
-                                ", Ref1dx:" + std::to_string(dx2)+ ", Ref1dy:" + std::to_string(dy2));
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Angle dev: " + to_stringWithPrecision(angle_deviation, 1) + 
+                                ", Ref0dx: " + std::to_string(dx1)+ ", Ref0dy: " + std::to_string(dy1) +
+                                ", Ref1dx: " + std::to_string(dx2)+ ", Ref1dy: " + std::to_string(dy2));
 
     if (isSimilar1 && isSimilar2)   
         return 1; // FAST ALGO match

@@ -39,11 +39,13 @@ ClassFlow::ClassFlow(void)
 	SetInitialParameter();
 }
 
+
 ClassFlow::ClassFlow(std::vector<ClassFlow*> * lfc)
 {
 	SetInitialParameter();	
 	ListFlowControll = lfc;
 }
+
 
 ClassFlow::ClassFlow(std::vector<ClassFlow*> * lfc, ClassFlow *_prev)
 {
@@ -53,31 +55,34 @@ ClassFlow::ClassFlow(std::vector<ClassFlow*> * lfc, ClassFlow *_prev)
 }
 
 
-void ClassFlow::PresetFlowStateHandler(bool _init)
+void ClassFlow::presetFlowStateHandler(bool _init, std::string _time)
 {
     FlowState.ClassName = name();
+	FlowState.ExecutionTime = _time;
     FlowState.isSuccessful = true;
-    FlowState.ErrorCode = 0;
+	FlowState.EventCode.clear();
 
 	if (_init)
-	    FlowState.getCalled = false;
+	    FlowState.getExecuted = false;
 	else
-    	FlowState.getCalled = true;
+    	FlowState.getExecuted = true;
 }
 
 
-void ClassFlow::FlowStateHandlerSetError(int8_t _errorCode)
+void ClassFlow::setFlowStateHandlerEvent(int _eventCode)
 {	
 	FlowState.isSuccessful = false;
-	FlowState.ErrorCode = _errorCode;
+	FlowState.EventCode.push_back(_eventCode); // negative event code -> error; positive event code -> warning
 }
+
 
 struct strFlowState* ClassFlow::getFlowState()
 {
 	return &FlowState;
 }
 
-void ClassFlow::doAutoErrorHandling()
+
+void ClassFlow::doPostProcessEventHandling()
 {
 	// Handled in derived classes
 }
@@ -88,19 +93,24 @@ bool ClassFlow::ReadParameter(FILE* pfile, std::string &aktparamgraph)
 	return false;
 }
 
+
 bool ClassFlow::doFlow(std::string time)
 {
 	return false;
 }
 
-std::string ClassFlow::getHTMLSingleStep(std::string host){
+
+std::string ClassFlow::getHTMLSingleStep(std::string host)
+{
 	return "";
 }
+
 
 std::string ClassFlow::getReadout()
 {
 	return std::string();
 }
+
 
 std::string ClassFlow::GetParameterName(std::string _input)
 {

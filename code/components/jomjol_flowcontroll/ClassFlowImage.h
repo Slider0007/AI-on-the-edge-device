@@ -12,7 +12,7 @@ class ClassFlowImage : public ClassFlow
 protected:
 	std::string imagesLocation;
     bool isLogImage;
-    unsigned short imagesRetention;
+    int imagesRetention;
 	const char* logTag;
 
 	std::string CreateLogFolder(std::string time);

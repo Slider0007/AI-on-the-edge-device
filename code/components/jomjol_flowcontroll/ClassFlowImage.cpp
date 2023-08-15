@@ -54,7 +54,7 @@ std::string ClassFlowImage::CreateLogFolder(std::string time)
 	if (!isLogImage)
 		return "";
 
-	std::string logPath = imagesLocation + "/" + time.LOGFILE_TIME_FORMAT_DATE_EXTR + "/" + time.LOGFILE_TIME_FORMAT_HOUR_EXTR;
+	std::string logPath = imagesLocation + "/" + time.DEFAULT_TIME_FORMAT_DATE_EXTR + "/" + time.DEFAULT_TIME_FORMAT_HOUR_EXTR;
     isLogImage = mkdir_r(logPath.c_str(), S_IRWXU) == 0;
     if (!isLogImage) {
         LogFile.WriteToFile(ESP_LOG_ERROR, logTag, "Can't create log folder for analog images. Path " + logPath);
@@ -110,35 +110,45 @@ void ClassFlowImage::RemoveOldLogs()
         return;
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "Delete images older than retention setting (This might take a while)");
-
-    time_t rawtime;
-    
-    time(&rawtime);
-    rawtime = addDays(rawtime, -1 * imagesRetention + 1);
-	std::string folderName = ConvertTimeToString(rawtime, LOGFILE_TIME_FORMAT).LOGFILE_TIME_FORMAT_DATE_EXTR;
+    LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "Delete image folder older than retention setting (This might take a while)");
 
     DIR* dir = opendir(imagesLocation.c_str());
     if (!dir) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, logTag, "LogImage: Failed to open directory " + imagesLocation);
+        LogFile.WriteToFile(ESP_LOG_ERROR, logTag, "Failed to open directory " + imagesLocation);
         return;
     }
+
+    time_t rawtime;  
+    time(&rawtime);
+    rawtime = addDays(rawtime, -imagesRetention + 1);
+    //ESP_LOGI(TAG, "imagesRetention: %d", imagesRetention);
+	std::string cmpfolderame = ConvertTimeToString(rawtime, DEFAULT_TIME_FORMAT).DEFAULT_TIME_FORMAT_DATE_EXTR;
+    //ESP_LOGI(TAG, "Delete all folder older than %s", cmpfolderame.c_str());
 
     struct dirent *entry;
     int deleted = 0;
     int notDeleted = 0;
+
     while ((entry = readdir(dir)) != NULL) {
-        std::string folderPath = imagesLocation + "/" + entry->d_name;
 		if (entry->d_type == DT_DIR) {
-			//ESP_LOGD(TAG, "Compare %s to %s", entry->d_name, folderName.c_str());	
-			if ((strlen(entry->d_name) == folderName.length()) && (strcmp(entry->d_name, folderName.c_str()) < 0)) {
-                removeFolder(folderPath.c_str(), logTag);
-                deleted++;
-			} else {
+			//ESP_LOGD(TAG, "Compare folder %s to %s", entry->d_name, cmpfolderame.c_str());	
+			if ((strlen(entry->d_name) == cmpfolderame.length()) && (strcmp(entry->d_name, cmpfolderame.c_str()) < 0)) {
+                std::string folderpath = imagesLocation + "/" + entry->d_name;
+                //ESP_LOGI(TAG, "Delete folder %s", folderpath.c_str());
+                if (removeFolder(folderpath.c_str(), TAG) > 0) {
+                    deleted++;
+                } 
+                else {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete folder " + folderpath);
+                    notDeleted ++;
+                }
+			} 
+            else {
                 notDeleted ++;
             }
 		}
     }
+
     closedir(dir);
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "Folders deleted: " + std::to_string(deleted) + " | Folders kept: " + std::to_string(notDeleted));

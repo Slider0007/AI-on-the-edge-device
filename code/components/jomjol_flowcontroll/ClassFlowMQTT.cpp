@@ -27,7 +27,7 @@ extern const char* libfive_git_branch(void);
 
 void ClassFlowMQTT::SetInitialParameter(void)
 {
-    PresetFlowStateHandler(true);
+    presetFlowStateHandler(true);
     uri = "";
     topic = "";
     topicError = "";
@@ -217,7 +217,7 @@ bool ClassFlowMQTT::Start(float _processingInterval)
 
 bool ClassFlowMQTT::doFlow(std::string zwtime)
 {
-    PresetFlowStateHandler();
+    presetFlowStateHandler(false, zwtime);
     bool success;
     std::string namenumber = "";
     int qos = 1;
@@ -265,6 +265,13 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
     }
     
     return true;
+}
+
+
+void ClassFlowMQTT::doPostProcessEventHandling()
+{
+    // Post cycle process handling can be included here. Function is called after processing cycle is completed
+    
 }
 
 

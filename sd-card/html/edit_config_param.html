@@ -459,16 +459,16 @@
 		</tr>
 
 		<tr>
-            <td class="indent1">
-                <class id="Alignment_InitialRotate_text" style="color:black;">Image Rotation</class>
-            </td>
-            <td>
-                <input required type="number" name="name" id="Alignment_InitialRotate_value1" size="13" min="-360.0" max="360.0" step="0.1"
-                oninput="(!validity.rangeUnderflow||(value=-360.0)) && (!validity.rangeOverflow||(value=360.0)) && 
-                (!validity.stepMismatch||(value=parseInt(this.value)));">Degree
-            </td>
-            <td>$TOOLTIP_Alignment_InitialRotate</td>
-        </tr>
+			<td class="indent1">
+			    <class id="Alignment_InitialRotate_text" style="color:black;">Image Rotation</class>
+			</td>
+			<td>
+				<input required type="number" name="name" id="Alignment_InitialRotate_value1" size="13" min="-360.0" max="360.0" step="0.1"
+				oninput="(!validity.rangeUnderflow||(value=-360.0)) && (!validity.rangeOverflow||(value=360.0)) && 
+				(!validity.stepMismatch||(value=parseInt(this.value)));">Degree
+			</td>
+			<td>$TOOLTIP_Alignment_InitialRotate</td>
+		</tr>
 
 		<tr>
 			<td class="indent1">
@@ -481,6 +481,19 @@
 				</select>
 			</td>
 			<td>$TOOLTIP_Alignment_InitialMirror</td>
+		</tr>
+
+		<tr class="expert">
+			<td class="indent1">
+			    <class id="Alignment_SaveDebugInfo_text" style="color:black;">Save Debug Info</class>
+			</td>
+			<td>
+				<select id="Alignment_SaveDebugInfo_value1">
+					<option value="true">true</option>
+					<option value="false" selected>false</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_Alignment_SaveDebugInfo</td>
 		</tr>
 
 
@@ -717,6 +730,19 @@
 				</select>
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.IgnoreLeadingNaN</td>
+		</tr>
+
+		<tr class="expert"  id="ex13">
+			<td class="indent1">
+			    <class id="PostProcessing_SaveDebugInfo_text" style="color:black;">Save Debug Info</class>
+			</td>
+			<td>
+				<select id="PostProcessing_SaveDebugInfo_value1">
+					<option value="true">true</option>
+					<option value="false" selected>false</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_PostProcessing_SaveDebugInfo</td>
 		</tr>
 
 
@@ -1574,6 +1600,17 @@
 			<td>$TOOLTIP_Debug_LogfilesRetention</td>
 		</tr>
 
+		<tr class="expert">
+			<td class="indent1">
+				<class id="Debug_DebugFilesRetention_text" style="color:black;">Debug Files Retention</class>
+			</td>
+			<td>
+				<input required type="number" id="Debug_DebugFilesRetention_value1" size="13" min="0" step="1"
+					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
+			</td>
+			<td>$TOOLTIP_Debug_DebugFilesRetention</td>
+		</tr>
+
 		<!------------- System ------------------>
 		<tr style="border-bottom: 2px solid lightgray;">
 			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>System</h4></td>
@@ -2084,8 +2121,9 @@ function UpdateInput() {
     WriteParameter(param, category, "Alignment", "SearchFieldY", false);		
     WriteParameter(param, category, "Alignment", "AlignmentAlgo", false);
     WriteParameter(param, category, "Alignment", "FlipImageSize", false);
-	WriteParameter(param, category, "Alignment", "InitialRotate", false);
-    WriteParameter(param, category, "Alignment", "InitialMirror", false);
+    WriteParameter(param, category, "Alignment", "InitialRotate", false);
+	WriteParameter(param, category, "Alignment", "InitialMirror", false);
+	WriteParameter(param, category, "Alignment", "SaveDebugInfo", false);
 
     WriteParameter(param, category, "Digits", "CNNGoodThreshold", false);
     WriteParameter(param, category, "Digits", "ROIImagesLocation", true);		
@@ -2097,6 +2135,7 @@ function UpdateInput() {
     WriteParameter(param, category, "PostProcessing", "FallbackValueUse", false);		
     WriteParameter(param, category, "PostProcessing", "FallbackValueAgeStartup", false);		
     WriteParameter(param, category, "PostProcessing", "CheckDigitIncreaseConsistency", false);
+	WriteParameter(param, category, "PostProcessing", "SaveDebugInfo", false);	
 
     WriteParameter(param, category, "MQTT", "Uri", false);	
     WriteParameter(param, category, "MQTT", "MainTopic", false);	
@@ -2135,6 +2174,7 @@ function UpdateInput() {
 
     WriteParameter(param, category, "Debug", "LogLevel", false);
     WriteParameter(param, category, "Debug", "LogfilesRetention", false);
+	WriteParameter(param, category, "Debug", "DebugFilesRetention", false);
 
 	WriteParameter(param, category, "System", "TimeServer", true);
 	WriteParameter(param, category, "System", "TimeZone", false);
@@ -2214,6 +2254,7 @@ function ReadParameterAll()
     ReadParameter(param, "Alignment", "FlipImageSize", false);
 	ReadParameter(param, "Alignment", "InitialRotate", false);
     ReadParameter(param, "Alignment", "InitialMirror", false);
+	ReadParameter(param, "Alignment", "SaveDebugInfo", false);
 
     ReadParameter(param, "Digits", "Model", false);
     ReadParameter(param, "Digits", "CNNGoodThreshold", false);
@@ -2227,6 +2268,7 @@ function ReadParameterAll()
     ReadParameter(param, "PostProcessing", "FallbackValueUse", false);
     ReadParameter(param, "PostProcessing", "FallbackValueAgeStartup", false);
     ReadParameter(param, "PostProcessing", "CheckDigitIncreaseConsistency", false);
+	ReadParameter(param, "PostProcessing", "SaveDebugInfo", false);
 
     ReadParameter(param, "MQTT", "Uri", false);
     ReadParameter(param, "MQTT", "MainTopic", false);
@@ -2272,6 +2314,7 @@ function ReadParameterAll()
 
     ReadParameter(param, "Debug", "LogLevel", false);
     ReadParameter(param, "Debug", "LogfilesRetention", false);
+	ReadParameter(param, "Debug", "DebugFilesRetention", false);
 
 	ReadParameter(param, "System", "TimeServer", true);
 	ReadParameter(param, "System", "TimeZone", false);

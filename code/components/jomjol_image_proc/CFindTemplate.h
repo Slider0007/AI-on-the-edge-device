@@ -7,7 +7,8 @@
 
 struct strRefInfo {
     CImageBasis* refImage = NULL;
-    std::string image_file; 
+    std::string image_file;
+    std::string error_details = "";
     int alignment_algo = 0;             // 0 = "Default" (nur R-Kanal), 1 = "HighAccuracy" (RGB-Kanal), 2 = "Fast" (1.x RGB, dann isSimilar), 3= "only initial rotation", 4 = "off"
     int target_x = 0;
     int target_y = 0;

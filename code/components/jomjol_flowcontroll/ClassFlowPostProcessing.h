@@ -18,6 +18,7 @@ protected:
     bool UpdateFallbackValue;
     int FallbackValueAgeStartup; 
     bool IgnoreLeadingNaN;
+    bool SaveDebugInfo;
 
     ClassFlowCNNGeneral* flowAnalog;
     ClassFlowCNNGeneral* flowDigit;    
@@ -47,6 +48,7 @@ public:
     virtual ~ClassFlowPostProcessing();
     bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
     bool doFlow(std::string time);
+    void doPostProcessEventHandling();
 
     std::vector<NumberPost*>* GetNumbers() {return &NUMBERS;};
     std::string getNumbersName();

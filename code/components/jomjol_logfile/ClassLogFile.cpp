@@ -20,7 +20,27 @@ extern "C" {
 
 static const char *TAG = "LOGFILE";
 
-ClassLogFile LogFile("/sdcard/log/message", "log_%Y-%m-%d.txt", "/sdcard/log/data", "data_%Y-%m-%d.csv");
+ClassLogFile LogFile(LOG_LOGS_ROOT_FOLDER, LOG_FILE_TIME_FORMAT, 
+                     LOG_DATA_ROOT_FOLDER, DATA_FILE_TIME_FORMAT,
+                     LOG_DEBUG_ROOT_FOLDER, DEBUG_FOLDER_TIME_FORMAT);
+
+
+
+ClassLogFile::ClassLogFile(std::string _logFileRootFolder, std::string _logfile, std::string _dataFileRootFolder,
+                           std::string _datafile, std::string _debugFileRootFolder, std::string _debugfolder)
+{
+    logFileRootFolder = _logFileRootFolder;
+    logfile = _logfile;
+    dataFileRootFolder = _dataFileRootFolder;
+    datafile = _datafile;
+    debugFileRootFolder = _debugFileRootFolder;
+    debugfolder = _debugfolder;
+    logFileRetentionInDays = 5;
+    dataLogRetentionInDays = 5;
+    debugFilesRetentionInDays = 5;
+    doDataLogToSD = true;
+    loglevel = ESP_LOG_INFO;
+}
 
 
 void ClassLogFile::WriteHeapInfo(std::string _id)
@@ -40,7 +60,7 @@ void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::s
     time_t rawtime;
 
     time(&rawtime);
-    std::string logpath = dataroot + "/" + ConvertTimeToString(rawtime, datafile.c_str()); 
+    std::string logpath = dataFileRootFolder + "/" + ConvertTimeToString(rawtime, datafile.c_str()); 
     
     FILE* pFile;
     std::string zwtime;
@@ -118,22 +138,32 @@ void ClassLogFile::setLogLevel(esp_log_level_t _logLevel)
 }
 
 
-void ClassLogFile::SetLogFileRetention(unsigned short _LogFileRetentionInDays){
+void ClassLogFile::SetLogFileRetention(int _LogFileRetentionInDays)
+{
     logFileRetentionInDays = _LogFileRetentionInDays;
 }
 
 
-void ClassLogFile::SetDataLogRetention(unsigned short _DataLogRetentionInDays){
+void ClassLogFile::SetDataLogRetention(int _DataLogRetentionInDays)
+{
     dataLogRetentionInDays = _DataLogRetentionInDays;
 }
 
 
-void ClassLogFile::SetDataLogToSD(bool _doDataLogToSD){
+void ClassLogFile::SetDebugFilesRetention(int _DebugFilesRetentionInDays)
+{
+    debugFilesRetentionInDays = _DebugFilesRetentionInDays;
+}
+
+
+void ClassLogFile::SetDataLogToSD(bool _doDataLogToSD)
+{
     doDataLogToSD = _doDataLogToSD;
 }
 
 
-bool ClassLogFile::GetDataLogToSD(){
+bool ClassLogFile::GetDataLogToSD()
+{
     return doDataLogToSD;
 }
 
@@ -202,12 +232,12 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
             // Also we need to re-open it in case it needed to get closed for reading
             std::string logpath = logroot + "/" + fileNameDateNew; 
 
-            ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
-            logFileAppendHandle = fopen(logpath.c_str(), "a+");
-            if (logFileAppendHandle==NULL) {
-                ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
-                return;
-            }
+                ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
+                logFileAppendHandle = fopen(logpath.c_str(), "a+");
+                if (logFileAppendHandle==NULL) {
+                    ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
+                    return;
+                }
 
             fileNameDate = fileNameDateNew;
         }
@@ -220,10 +250,6 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
         }
     #endif
 
-    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(logFileAppendHandle, NULL, _IOFBF, 512);
-
     fputs(fullmessage.c_str(), logFileAppendHandle);
     
     #ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING
@@ -235,7 +261,8 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
 }
 
 
-void ClassLogFile::CloseLogFileAppendHandle() {
+void ClassLogFile::CloseLogFileAppendHandle()
+{
     if (logFileAppendHandle != NULL) {
         fclose(logFileAppendHandle);
         logFileAppendHandle = NULL;
@@ -244,7 +271,8 @@ void ClassLogFile::CloseLogFileAppendHandle() {
 }
 
 
-void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::string message) {
+void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::string message)
+{
     LogFile.WriteToFile(level, tag, message, true);
 }
 
@@ -254,7 +282,7 @@ std::string ClassLogFile::GetCurrentFileNameData()
     time_t rawtime;
 
     time(&rawtime);
-    std::string logpath = dataroot + "/" + ConvertTimeToString(rawtime, datafile.c_str());
+    std::string logpath = dataFileRootFolder + "/" + ConvertTimeToString(rawtime, datafile.c_str());
 
     return logpath;
 }
@@ -265,7 +293,7 @@ std::string ClassLogFile::GetCurrentFileName()
     time_t rawtime;
 
     time(&rawtime);
-    std::string logpath = logroot + "/" + ConvertTimeToString(rawtime, logfile.c_str()); 
+    std::string logpath = logFileRootFolder + "/" + ConvertTimeToString(rawtime, logfile.c_str()); 
 
     return logpath;
 }
@@ -279,34 +307,31 @@ void ClassLogFile::RemoveOldLogFile()
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete log files older than retention setting");
 
-    time_t rawtime;
-    struct tm timeinfo;
-    char cmpfilename[30];
-
-    time(&rawtime);
-    rawtime = addDays(rawtime, -logFileRetentionInDays + 1);   
-    localtime_r(&rawtime, &timeinfo);
-    //ESP_LOGD(TAG, "logFileRetentionInDays: %d", logFileRetentionInDays);
-    strftime(cmpfilename, sizeof(cmpfilename), logfile.c_str(), &timeinfo);
-    //ESP_LOGD(TAG, "log file name to compare: %s", cmpfilename);
-
-    DIR *dir = opendir(logroot.c_str());
+    DIR *dir = opendir(logFileRootFolder.c_str());
     if (!dir) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open directory: " + logroot);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open directory " + logFileRootFolder);
         return;
     }
+
+    time_t rawtime;
+    time(&rawtime);
+    rawtime = addDays(rawtime, -logFileRetentionInDays + 1);
+    //ESP_LOGI(TAG, "logFileRetentionInDays: %d", logFileRetentionInDays);
+    std::string cmpfilename = ConvertTimeToString(rawtime, logfile.c_str());
+    //ESP_LOGI(TAG, "log file name to compare: %s", cmpfilename.c_str());
 
     struct dirent *entry;
     int deleted = 0;
     int notDeleted = 0;
+
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {
-            //ESP_LOGD(TAG, "compare log file: %s to %s", entry->d_name, cmpfilename);
-            if ((strlen(entry->d_name) == strlen(cmpfilename)) && (strcmp(entry->d_name, cmpfilename) < 0)) {
-                //ESP_LOGD(TAG, "delete log file: %s", entry->d_name);
-                std::string filepath = logroot + "/" + entry->d_name;
+            //ESP_LOGI(TAG, "compare log file: %s to %s", entry->d_name, cmpfilename.c_str());
+            if ((strlen(entry->d_name) == cmpfilename.length()) && (strcmp(entry->d_name, cmpfilename.c_str()) < 0)) {
+                //ESP_LOGI(TAG, "delete log file: %s", entry->d_name);
+                std::string filepath = logFileRootFolder + "/" + entry->d_name;
                 if ((strcmp(entry->d_name, "log_1970-01-01.txt") == 0) && getTimeWasNotSetAtBoot()) { // keep logfile log_1970-01-01.txt if time was not set at boot (some boot logs are in there)
-                    //ESP_LOGD(TAG, "Skip deleting this file: %s", entry->d_name); 
+                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Time was not set at boot, keep log file \'log_1970-01-01.txt\'");
                     notDeleted++;
                 }
                 else {          
@@ -314,7 +339,7 @@ void ClassLogFile::RemoveOldLogFile()
                         deleted++;
                     } 
                     else {
-                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete file: " + filepath);
+                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete file " + filepath);
                         notDeleted++;
                     }
                 }
@@ -339,40 +364,37 @@ void ClassLogFile::RemoveOldDataLog()
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete data files older than retention setting");
 
-    time_t rawtime;
-    struct tm timeinfo;
-    char cmpfilename[30];
-
-    time(&rawtime);
-    rawtime = addDays(rawtime, -dataLogRetentionInDays + 1);
-    localtime_r(&rawtime, &timeinfo);
-    //ESP_LOGD(TAG, "dataLogRetentionInDays: %d", dataLogRetentionInDays);
-    strftime(cmpfilename, sizeof(cmpfilename), datafile.c_str(), &timeinfo);
-    //ESP_LOGD(TAG, "data file name to compare: %s", cmpfilename);
-
-    DIR *dir = opendir(dataroot.c_str());
+    DIR *dir = opendir(dataFileRootFolder.c_str());
     if (!dir) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open directory: " + dataroot);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open directory " + dataFileRootFolder);
         return;
     }
+
+    time_t rawtime;
+    time(&rawtime);
+    rawtime = addDays(rawtime, -dataLogRetentionInDays + 1);
+    //ESP_LOGI(TAG, "dataLogRetentionInDays: %d", dataLogRetentionInDays);
+    std::string cmpfilename = ConvertTimeToString(rawtime, datafile.c_str());
+    //ESP_LOGI(TAG, "data file name to compare: %s", cmpfilename.c_str());
 
     struct dirent *entry;
     int deleted = 0;
     int notDeleted = 0;
+
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) {
-            //ESP_LOGD(TAG, "Compare data file: %s to %s", entry->d_name, cmpfilename);
-            if ((strlen(entry->d_name) == strlen(cmpfilename)) && (strcmp(entry->d_name, cmpfilename) < 0)) {
-                //ESP_LOGD(TAG, "delete data file: %s", entry->d_name);
-                std::string filepath = dataroot + "/" + entry->d_name; 
+            //ESP_LOGI(TAG, "Compare data file: %s to %s", entry->d_name, cmpfilename.c_str());
+            if ((strlen(entry->d_name) == cmpfilename.length()) && (strcmp(entry->d_name, cmpfilename.c_str()) < 0)) {
+                //ESP_LOGI(TAG, "delete data file: %s", entry->d_name);
+                std::string filepath = dataFileRootFolder + "/" + entry->d_name; 
                 if (unlink(filepath.c_str()) == 0) {
                     deleted ++;
-                } 
+                }
                 else {
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete file: " + filepath);
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete file " + filepath);
                     notDeleted ++;
                 }
-            } 
+            }
             else {
                 notDeleted ++;
             }
@@ -385,28 +407,67 @@ void ClassLogFile::RemoveOldDataLog()
 }
 
 
-bool ClassLogFile::CreateLogDirectories()
+void ClassLogFile::RemoveOldDebugFiles()
 {
-    bool bRetval = false;
-    bRetval = MakeDir("/sdcard/log");
-    bRetval = MakeDir("/sdcard/log/data");
-    bRetval = MakeDir("/sdcard/log/analog");
-    bRetval = MakeDir("/sdcard/log/digit");
-    bRetval = MakeDir("/sdcard/log/message");
-    bRetval = MakeDir("/sdcard/log/source");
+    if (debugFilesRetentionInDays == 0) {
+        return;
+    }
+    
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete debug folder older than retention setting");
 
-    return bRetval;
+    DIR *dir = opendir(debugFileRootFolder.c_str());
+    if (!dir) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open directory " + debugFileRootFolder);
+        return;
+    }
+
+    time_t rawtime;
+    time(&rawtime);
+    rawtime = addDays(rawtime, -debugFilesRetentionInDays + 1);
+    //ESP_LOGI(TAG, "debugFilesRetentionInDays: %d", debugFilesRetentionInDays);
+    std::string cmpfolderame = ConvertTimeToString(rawtime, debugfolder.c_str());
+    //ESP_LOGI(TAG, "Delete all folder older than %s", cmpfolderame.c_str());
+
+    struct dirent *entry;
+    int deleted = 0;
+    int notDeleted = 0;
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_DIR) {
+            //ESP_LOGI(TAG, "Compare folder %s to %s", entry->d_name, cmpfolderame.c_str());
+            if ((strlen(entry->d_name) == cmpfolderame.length()) && (strcmp(entry->d_name, cmpfolderame.c_str()) < 0)) {
+                std::string folderpath = debugFileRootFolder + "/" + entry->d_name; 
+                //ESP_LOGI(TAG, "Delete folder %s", folderpath.c_str());
+                if (removeFolder(folderpath.c_str(), TAG) > 0) {
+                    deleted++;
+                } 
+                else {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete folder " + folderpath);
+                    notDeleted ++;
+                }
+            }
+            else {
+                notDeleted ++;
+            }
+        }
+    }
+
+    closedir(dir);
+
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Folders deleted: " + std::to_string(deleted) + " | Folders kept: " + std::to_string(notDeleted));
 }
 
 
-ClassLogFile::ClassLogFile(std::string _logroot, std::string _logfile, std::string _logdatapath, std::string _datafile)
+bool ClassLogFile::CreateLogDirectories()
 {
-    logroot = _logroot;
-    logfile =  _logfile;
-    datafile = _datafile;
-    dataroot = _logdatapath;
-    logFileRetentionInDays = 3;
-    dataLogRetentionInDays = 3;
-    doDataLogToSD = true;
-    loglevel = ESP_LOG_INFO;
+    bool bRetval = false;
+    bRetval = MakeDir(LOG_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_IMAGE_RAW_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_IMAGE_DIGIT_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_IMAGE_ANALOG_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_LOGS_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_DATA_ROOT_FOLDER);
+    bRetval = MakeDir(LOG_DEBUG_ROOT_FOLDER);
+
+    return bRetval;
 }

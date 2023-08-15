@@ -2,6 +2,7 @@
 #include "ClassFlowTakeImage.h"
 #include "ClassFlow.h"
 #include "MainFlowControl.h"
+#include "time_sntp.h"
 
 #include "CRotateImage.h"
 #include "esp_log.h"
@@ -21,13 +22,14 @@ static const char *TAG = "ALIGN";
 
 void ClassFlowAlignment::SetInitialParameter(void)
 {
-    PresetFlowStateHandler(true);
+    presetFlowStateHandler(true);
     initalrotate = 0.0;
     anz_ref = 0;
     AlignFAST_SADThreshold = 10;  // FAST ALIGN ALGO: SADNorm -> if smaller than threshold use same alignment values as last round
     initialmirror = false;
     use_antialiasing = false;
     initialflip = false;
+    SaveDebugInfo = false;
     SaveAllFiles = false;
     ListFlowControll = NULL;
     AlignAndCutImage = NULL;
@@ -130,6 +132,14 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
                 use_antialiasing = false;
         }
 
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveDebugInfo = true;
+            else
+                SaveDebugInfo = false;
+        }
+
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
@@ -188,7 +198,7 @@ std::string ClassFlowAlignment::getHTMLSingleStep(std::string host)
 
 bool ClassFlowAlignment::doFlow(std::string time) 
 {
-    PresetFlowStateHandler();
+    presetFlowStateHandler(false, time);
     if (AlgROI == NULL)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
     {
         AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
@@ -267,10 +277,9 @@ bool ClassFlowAlignment::doFlow(std::string time)
         if (AlignRetval >= 0) {
             SaveReferenceAlignmentValues();
         }
-        else if (AlignRetval == -1) {   // alignment failed         
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Misalignment too large. Check initial rotation, alignment marker or "
-                                                    "increase alignment expert parameter: Search Field X, Y");
-            FlowStateHandlerSetError(-1);  
+        else if (AlignRetval == -1) {   // Alignment failed         
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Alignment by algorithm failed. Verify image rotation and alignment marker");
+            setFlowStateHandlerEvent(-1); // Set error event code for post cycle error handler 'doPostProcessEventHandling'
         }
     }
 
@@ -278,8 +287,10 @@ bool ClassFlowAlignment::doFlow(std::string time)
         if(References[0].alignment_algo <= 2) { // Only if any additional alignment algo is used: "default", "highaccuracy" or "fast"
             DrawRef(ImageTMP);
         }
-        flowctrl.DigitalDrawROI(ImageTMP);
-        flowctrl.AnalogDrawROI(ImageTMP);
+        if (getFlowState()->isSuccessful) {
+            flowctrl.DigitalDrawROI(ImageTMP);
+            flowctrl.AnalogDrawROI(ImageTMP);
+        }
         ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
     }
     
@@ -297,6 +308,37 @@ bool ClassFlowAlignment::doFlow(std::string time)
         return false;
 
     return true;
+}
+
+
+void ClassFlowAlignment::doPostProcessEventHandling()
+{
+    // Post cycle process handling can be included here. Function is called after processing cycle is completed
+    for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
+        if (SaveDebugInfo && getFlowState()->EventCode[i] == -1) {  // If saving error logs enabled and alignment failed event
+            time_t actualtime;
+            time(&actualtime);
+
+            // Define path, e.g. /sdcard/log/debug/20230814/20230814-125528/ClassFlowAlignment
+            std::string destination = std::string(LOG_DEBUG_ROOT_FOLDER) + "/" + getFlowState()->ExecutionTime.DEFAULT_TIME_FORMAT_DATE_EXTR + "/" + 
+                                        getFlowState()->ExecutionTime + "/" + getFlowState()->ClassName;
+            
+            if (!MakeDir(destination))
+                return;
+
+            // Save algo results in file
+            std::string resultFileName = "/alignment_failed.txt";
+            FILE* fpResult = fopen((destination + resultFileName).c_str(), "w");
+            fwrite(References[0].error_details.c_str(), (References[0].error_details).length(), 1, fpResult);
+            fclose(fpResult);
+            
+            // Draw alignment marker and save image
+            DrawRef(AlignAndCutImage);
+            AlignAndCutImage->SaveToFile(FormatFileName(destination + "/alg_misalign.jpg"));
+
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Alignment failed, debug infos saved: " + destination);
+        }
+    }
 }
 
 

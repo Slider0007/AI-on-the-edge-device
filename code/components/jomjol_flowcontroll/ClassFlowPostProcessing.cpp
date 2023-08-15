@@ -23,11 +23,14 @@ static const char* TAG = "POSTPROC";
 
 ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, ClassFlowCNNGeneral *_analog, ClassFlowCNNGeneral *_digit)
 {
-    PresetFlowStateHandler(true);
+    presetFlowStateHandler(true);
+
     UseFallbackValue = true;
     UpdateFallbackValue = false;
     FallbackValueAgeStartup = 60;
     IgnoreLeadingNaN = false;
+    SaveDebugInfo = false;
+
     ListFlowControll = lfc;
     flowTakeImage = NULL;
     flowAnalog = _analog;
@@ -212,7 +215,6 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgr
         if (!this->GetNextParagraph(pfile, aktparamgraph))
             return false;
 
-
     if (aktparamgraph.compare("[PostProcessing]") != 0)       // Paragraph does not fit PostProcessing
         return false;
 
@@ -289,6 +291,14 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgr
             else {
                 IgnoreLeadingNaN = false;
             }
+        }
+
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                SaveDebugInfo = true;
+            else
+                SaveDebugInfo = false;
         }
     }
 
@@ -464,7 +474,7 @@ std::string ClassFlowPostProcessing::ShiftDecimal(std::string _value, int _decSh
 
 bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 {
-    PresetFlowStateHandler();
+    presetFlowStateHandler(false, zwtime);
     int resultPreviousNumberAnalog = -1;
 
     time_t _timeProcessed = flowTakeImage->getTimeImageTaken();
@@ -647,6 +657,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                          
                         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Sequence: " + NUMBERS[j]->name + ", Status: " + NUMBERS[j]->sValueStatus);           
                         NUMBERS[j]->isActualValueConfirmed = false;
+                        setFlowStateHandlerEvent(1); // Set warning event code for post cycle error handler 'doPostProcessEventHandling' (only warning level)
                     }
                 }
 
@@ -722,7 +733,56 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
     }
 
     SaveFallbackValue();
+
+    if (!FlowState.isSuccessful) // Return false if any error detected
+        return false;
+    
     return true;
+}
+
+
+void ClassFlowPostProcessing::doPostProcessEventHandling()
+{
+    // Post cycle process handling can be included here. Function is called after processing cycle is completed
+    for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
+        // If saving debug infos enabled and "rate to high" event
+        if (SaveDebugInfo && getFlowState()->EventCode[i] == 1) {
+            time_t actualtime;
+            time(&actualtime);
+
+            // Define path, e.g. /sdcard/log/debug/20230814/20230814-125528/ClassFlowPostProcessing
+            std::string destination = std::string(LOG_DEBUG_ROOT_FOLDER) + "/" + getFlowState()->ExecutionTime.DEFAULT_TIME_FORMAT_DATE_EXTR + "/" + 
+                                        getFlowState()->ExecutionTime + "/" + getFlowState()->ClassName;
+
+            if (!MakeDir(destination))
+                return;
+
+            for (int j = 0; j < NUMBERS.size(); ++j) {       
+                std::string resultFileName = "/" + NUMBERS[j]->name + "_rate_too_high.txt";
+
+                // Save result in file
+                FILE* fpResult = fopen((destination + resultFileName).c_str(), "w");
+                fwrite(NUMBERS[j]->sValueStatus.c_str(), (NUMBERS[j]->sValueStatus).length(), 1, fpResult);
+                fclose(fpResult);
+
+                // Save digit ROIs
+                if (NUMBERS[j]->digit_roi)
+                    for (int i = 0; i < NUMBERS[j]->digit_roi->ROI.size(); ++i)
+                        NUMBERS[j]->digit_roi->ROI[i]->image_org->SaveToFile(destination + "/" +
+                                    to_stringWithPrecision(NUMBERS[j]->digit_roi->ROI[i]->CNNResult/10.0, 1) + 
+                                    "_" + NUMBERS[j]->name + "_dig" + std::to_string(i+1) + ".jpg");
+
+                // Save analog ROIs
+                if (NUMBERS[j]->analog_roi)
+                    for (int i = 0; i < NUMBERS[j]->analog_roi->ROI.size(); ++i)
+                        NUMBERS[j]->analog_roi->ROI[i]->image_org->SaveToFile(destination + "/" +
+                                        to_stringWithPrecision(NUMBERS[j]->analog_roi->ROI[i]->CNNResult/10.0, 1) + 
+                                        "_" + NUMBERS[j]->name + "_ana" + std::to_string(i+1) + ".jpg");
+            }
+            
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Rate too high, debug infos saved: " + destination);
+        }
+    }
 }
 
 

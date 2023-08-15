@@ -150,9 +150,15 @@ bool ClassFlowControll::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC))
                 LogFile.setLogLevel(ESP_LOG_DEBUG);
         }
+        
         if ((toUpper(splitted[0]) == "LOGFILESRETENTION") && (splitted.size() > 1))
         {
             LogFile.SetLogFileRetention(std::stoi(splitted[1]));
+        }
+
+        if ((toUpper(splitted[0]) == "DEBUGFILESRETENTION") && (splitted.size() > 1))
+        {
+            LogFile.SetDebugFilesRetention(std::stoi(splitted[1]));
         }
 
         // Initial timeserver setup was already done during boot: see main.cpp -> setupTime()
@@ -531,8 +537,8 @@ void ClassFlowControll::DeinitFlow(void)
     
     FlowControll.clear();               // Clear vector to release allocated memory
     FlowControlPublish.clear();         // Clear vector to release allocated memory
-    FlowStateErrorsEvaluation.clear();  // Clear vector to release allocated memory
-    FlowStateErrorsPublish.clear();     // Clear vector to release allocated memory
+    FlowStateEvaluationEvent.clear();  // Clear vector to release allocated memory
+    FlowStatePublishEvent.clear();     // Clear vector to release allocated memory
     
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow completed"); 
     LogFile.WriteHeapInfo("DeinitFlow completed");
@@ -542,7 +548,7 @@ void ClassFlowControll::DeinitFlow(void)
 bool ClassFlowControll::doFlowImageEvaluation(std::string time)
 {
     bool result = true;
-    FlowStateErrorsEvaluation.clear();
+    FlowStateEvaluationEvent.clear();
 
     for (int i = 0; i < FlowControll.size(); ++i)
     {
@@ -557,13 +563,23 @@ bool ClassFlowControll::doFlowImageEvaluation(std::string time)
         #endif //ENABLE_MQTT
 
         if (!FlowControll[i]->doFlow(time)) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error during processing of state \"" + getActStatus() + "\"");
-            FlowStateErrorsEvaluation.push_back(FlowControll[i]->getFlowState());
-            result = false;
-            break;
+            FlowStateEvaluationEvent.push_back(FlowControll[i]->getFlowState());
+            
+            for (int j = 0; j < FlowControll[i]->getFlowState()->EventCode.size(); j++) {
+                if (FlowControll[i]->getFlowState()->EventCode[j] < 0) {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActStatus() + "\"");
+                    result = false;
+                    break;
+                }
+                else {
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
+                }
+            }
+
+            if (!result) // If an error occured, stop processing of further tasks
+                break;
         }
     }
-
     return result;
 }
 
@@ -571,7 +587,7 @@ bool ClassFlowControll::doFlowImageEvaluation(std::string time)
 bool ClassFlowControll::doFlowPublishData(std::string time)
 {
     bool result = true;
-    FlowStateErrorsPublish.clear();
+    FlowStatePublishEvent.clear();
 
     for (int i = 0; i < FlowControlPublish.size(); ++i)
     {
@@ -586,12 +602,23 @@ bool ClassFlowControll::doFlowPublishData(std::string time)
         #endif //ENABLE_MQTT
 
         if (!FlowControlPublish[i]->doFlow(time)) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error during processing of state \"" + getActStatus() + "\"");
-            FlowStateErrorsPublish.push_back(FlowControll[i]->getFlowState());
-            result = false;
+            FlowStatePublishEvent.push_back(FlowControlPublish[i]->getFlowState());
+
+            for (int j = 0; j < FlowControll[i]->getFlowState()->EventCode.size(); j++) {
+                if (FlowControll[i]->getFlowState()->EventCode[j] < 0) {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActStatus() + "\"");
+                    result = false;
+                    break;
+                }
+                else {
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
+                }
+            }
+
+            if (!result) // If an error occured, stop processing of further tasks
+                break;
         }
     }
-
     return result;
 }
 
@@ -599,7 +626,7 @@ bool ClassFlowControll::doFlowPublishData(std::string time)
 bool ClassFlowControll::doFlowTakeImageOnly(std::string time)
 {
     bool result = true;
-    FlowStateErrorsEvaluation.clear();
+    FlowStateEvaluationEvent.clear();
     
     for (int i = 0; i < FlowControll.size(); ++i)
     {
@@ -611,49 +638,62 @@ bool ClassFlowControll::doFlowTakeImageOnly(std::string time)
             #endif //ENABLE_MQTT
 
             if (!FlowControlPublish[i]->doFlow(time)) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error during processing of state \"" + getActStatus() + "\"");
-                FlowStateErrorsEvaluation.push_back(FlowControll[i]->getFlowState());
-                result = false;
+                FlowStateEvaluationEvent.push_back(FlowControll[i]->getFlowState());
+
+                for (int j = 0; j < FlowControll[i]->getFlowState()->EventCode.size(); j++) {
+                    if (FlowControll[i]->getFlowState()->EventCode[j] < 0) {
+                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActStatus() + "\"");
+                        result = false;
+                        break;
+                    }
+                    else {
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
+                    }
+                }
+
+                if (!result) // If an error occured, stop processing of further tasks
+                    break;
             }
         }
     }
-
     return result;
 }
 
 
-bool ClassFlowControll::FlowStateErrorsOccured()
+bool ClassFlowControll::FlowStateEventOccured()
 {
-    if (FlowStateErrorsEvaluation.size() != 0 || FlowStateErrorsPublish.size() != 0)
+    if (FlowStateEvaluationEvent.size() != 0 || FlowStatePublishEvent.size() != 0)
         return true;
     else
         return false;
 }
 
 
-void ClassFlowControll::AutomaticFlowErrorHandler()
+void ClassFlowControll::PostProcessEventHandler()
 {
-    for (int i = 0; i < FlowStateErrorsEvaluation.size(); ++i) {
+    for (int i = 0; i < FlowStateEvaluationEvent.size(); ++i) {
         for (int j = 0; j < FlowControll.size(); ++j) {
-            if (FlowStateErrorsEvaluation[i]->ClassName.compare(FlowControll[j]->name()) == 0) {
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateErrorsEvaluation[i]->ClassName + ": Call doAutoErrorHandling"); 
-                FlowControll[j]->doAutoErrorHandling();
+            if (FlowStateEvaluationEvent[i]->ClassName.compare(FlowControll[j]->name()) == 0) {
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateEvaluationEvent[i]->ClassName + "-> doPostProcessEventHandling"); 
+                FlowControll[j]->doPostProcessEventHandling();
+                FlowControll[j]->presetFlowStateHandler(true); // Reinit after processing
             }
         }
     }
     // Reset of errors will be peformed before next flow starts --> functions doFlowImageEvaluation, doFlowTakeImageOnly
-    // FlowStateErrorsEvaluation.clear();
+    // FlowStateEvaluationEvent.clear();
 
-    for (int i = 0; i < FlowStateErrorsPublish.size(); ++i) {
+    for (int i = 0; i < FlowStatePublishEvent.size(); ++i) {
         for (int j = 0; j < FlowControlPublish.size(); ++j) {
-            if (FlowStateErrorsPublish[i]->ClassName.compare(FlowControlPublish[j]->name()) == 0) {
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateErrorsEvaluation[i]->ClassName + ": Call doAutoErrorHandling"); 
-                FlowControlPublish[j]->doAutoErrorHandling();
+            if (FlowStatePublishEvent[i]->ClassName.compare(FlowControlPublish[j]->name()) == 0) {
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateEvaluationEvent[i]->ClassName + "-> doPostProcessEventHandling"); 
+                FlowControlPublish[j]->doPostProcessEventHandling();
+                FlowControll[j]->presetFlowStateHandler(true); // Reinit after processing
             }
         }
     }
     // Reset of errors will be peformed before next flow starts --> function doFlowPublishData
-    // FlowStateErrorsPublish.clear();
+    // FlowStatePublishEvent.clear();
 }
 
 
@@ -1177,8 +1217,8 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
             result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
             free(fileBuffer);
         }
-        else if ((!flowtakeimage->getFlowState()->getCalled && getActStatus().compare(std::string(FLOW_IDLE_NO_AUTOSTART)) == 0) ||
-                    (!isAutoStart() && FlowStateErrorsOccured() && getActStatus().compare(std::string(FLOW_TAKE_IMAGE)) == 0)) {   // Show only before first round started or error occured, otherwise result will be shown till next start
+        else if ((!flowtakeimage->getFlowState()->getExecuted && getActStatus().compare(std::string(FLOW_IDLE_NO_AUTOSTART)) == 0) ||
+                    (!isAutoStart() && FlowStateEventOccured() && getActStatus().compare(std::string(FLOW_TAKE_IMAGE)) == 0)) {   // Show only before first round started or error occured, otherwise result will be shown till next start
             FILE* file = fopen("/sdcard/html/Flowstate_idle_no_autostart.jpg", "rb"); 
 
             if (!file) {
@@ -1250,7 +1290,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 }
             }
         }
-        else if (isAutoStart() && FlowStateErrorsOccured() && (getActStatus().compare(std::string(FLOW_TAKE_IMAGE)) == 0)) {
+        else if (isAutoStart() && FlowStateEventOccured() && (getActStatus().compare(std::string(FLOW_TAKE_IMAGE)) == 0)) {
             FILE* file = fopen("/sdcard/html/Flowstate_idle_autostart.jpg", "rb"); 
 
             if (!file) {

@@ -21,7 +21,7 @@ static const char* TAG = "CNN";
 
 ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, std::string _cnnname, t_CNNType _cnntype) : ClassFlowImage(NULL, TAG)
 {
-    PresetFlowStateHandler(true);
+    presetFlowStateHandler(true);
     tflite = new CTfLiteClass;
     cnnname = _cnnname;
     CNNType = _cnntype;
@@ -32,7 +32,7 @@ ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalign, std::st
     CNNGoodThreshold = 0.0;
     ListFlowControll = NULL;
     previousElement = NULL;   
-    SaveAllFiles = false; 
+    SaveAllFiles = false;
     disabled = false;
     isLogImageSelect = false;
     flowpostalignment = _flowalign;
@@ -402,7 +402,8 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             isLogImageSelect = true;            
         }
 
-        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
+        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
+        {
             if (toUpper(splitted[1]) == "TRUE")
                 SaveAllFiles = true;
             else
@@ -521,7 +522,7 @@ bool ClassFlowCNNGeneral::doFlow(std::string time)
         ESP_ERROR_CHECK( heap_trace_start(HEAP_TRACE_LEAKS) );
     #endif
 
-    PresetFlowStateHandler();
+    presetFlowStateHandler(false, time);
 
     if (disabled)
         return true;
@@ -544,6 +545,13 @@ bool ClassFlowCNNGeneral::doFlow(std::string time)
     #endif   
 
     return true;
+}
+
+
+void ClassFlowCNNGeneral::doPostProcessEventHandling()
+{
+    // Post cycle process handling can be included here. Function is called after processing cycle is completed
+    
 }
 
 
