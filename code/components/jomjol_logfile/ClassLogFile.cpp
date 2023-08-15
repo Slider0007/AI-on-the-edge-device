@@ -230,7 +230,7 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
         if (fileNameDateNew != fileNameDate) { // Filename changed
             // Make sure each day gets its own logfile
             // Also we need to re-open it in case it needed to get closed for reading
-            std::string logpath = logroot + "/" + fileNameDateNew; 
+            std::string logpath = logFileRootFolder + "/" + fileNameDateNew; 
 
                 ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
                 logFileAppendHandle = fopen(logpath.c_str(), "a+");
@@ -242,13 +242,17 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
             fileNameDate = fileNameDateNew;
         }
     #else
-        std::string logpath = logroot + "/" + fileNameDateNew; 
+        std::string logpath = logFileRootFolder + "/" + fileNameDateNew; 
         logFileAppendHandle = fopen(logpath.c_str(), "a+");
         if (logFileAppendHandle==NULL) {
             ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
             return;
         }
     #endif
+
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(logFileAppendHandle, NULL, _IOFBF, 512);
 
     fputs(fullmessage.c_str(), logFileAppendHandle);
     
