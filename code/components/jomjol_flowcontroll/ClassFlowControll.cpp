@@ -1091,6 +1091,10 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 return ESP_FAIL;
             }
 
+            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+            setvbuf(file, NULL, _IOFBF, 512);
+
             fseek(file, 0, SEEK_END);
             long fileSize = ftell(file); /* how long is the file ? */
             fseek(file, 0, SEEK_SET); /* reset */
@@ -1119,6 +1123,10 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 return ESP_FAIL;
             }
 
+            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+            setvbuf(file, NULL, _IOFBF, 512);
+
             fseek(file, 0, SEEK_END);
             long fileSize = ftell(file); /* how long is the file ? */
             fseek(file, 0, SEEK_SET); /* reset */
@@ -1145,6 +1153,10 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_setup_mode.jpg not found");
                 return ESP_FAIL;
             }
+
+            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+            setvbuf(file, NULL, _IOFBF, 512);
 
             fseek(file, 0, SEEK_END);
             long fileSize = ftell(file); /* how long is the file ? */
@@ -1174,6 +1186,10 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 return ESP_FAIL;
             }
 
+            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+            setvbuf(file, NULL, _IOFBF, 512);
+
             fseek(file, 0, SEEK_END);
             long fileSize = ftell(file); /* how long is the file ? */
             fseek(file, 0, SEEK_SET); /* reset */
@@ -1201,6 +1217,10 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                     LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_take_image.jpg not found");
                     return ESP_FAIL;
                 }
+
+                /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+                // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+                setvbuf(file, NULL, _IOFBF, 512);
 
                 fseek(file, 0, SEEK_END);
                 flowalignment->AlgROI->size = ftell(file); /* how long is the file ? */
@@ -1237,6 +1257,10 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/Flowstate_idle_autostart.jpg not found");
                 return ESP_FAIL;
             }
+
+            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+            setvbuf(file, NULL, _IOFBF, 512);
 
             fseek(file, 0, SEEK_END);
             long fileSize = ftell(file); /* how long is the file ? */

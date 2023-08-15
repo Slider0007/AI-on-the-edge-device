@@ -46,6 +46,10 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
         return ESP_FAIL;
     }
 
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(fd, NULL, _IOFBF, 512);
+
     ESP_LOGD(TAG, "Sending file: %s", filename.c_str());
 //    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 

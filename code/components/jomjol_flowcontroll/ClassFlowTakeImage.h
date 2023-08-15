@@ -24,8 +24,6 @@ protected:
     bool FixedExposure;
 
     void SetInitialParameter(void);    
-    void CopyFile(std::string input, std::string output);
-
     esp_err_t camera_capture();
     bool takePictureWithFlash(int flash_duration);
 

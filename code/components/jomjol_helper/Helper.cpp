@@ -400,7 +400,16 @@ bool CopyFile(std::string input, std::string output)
 		return false;
 	}
 
+	/* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(fpSourceFile, NULL, _IOFBF, 512);
+
+
 	FILE* fpTargetFile = fopen(output.c_str(), "wb");
+
+	/* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(fpTargetFile, NULL, _IOFBF, 512);
 
 	// Code Section
 

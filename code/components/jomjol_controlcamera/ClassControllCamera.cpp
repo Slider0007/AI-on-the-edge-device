@@ -461,6 +461,10 @@ esp_err_t CCamera::CaptureToFile(std::string nm, int _flashduration)
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToFile: Failed to open file " + nm);
     }
     else {
+        /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+        // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+        setvbuf(fp, NULL, _IOFBF, 512);
+
         fwrite(buf, sizeof(uint8_t), buf_len, fp); 
         fclose(fp);
     }   
@@ -807,6 +811,10 @@ bool CCamera::loadNextDemoImage(camera_fb_t *fb) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read file: " + std::string(filename));
         return false;
     }
+
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(fp, NULL, _IOFBF, 512);
 
     fileSize = getFileSize(filename);
     if (fileSize > DEMO_IMAGE_SIZE) {

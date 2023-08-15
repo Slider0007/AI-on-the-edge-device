@@ -217,6 +217,11 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     /////////////////////////////////////////////////
     if (!readonly) {
         FILE *fd = fopen("/sdcard/html/file_server.html", "r");
+
+        /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+        // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+        setvbuf(fd, NULL, _IOFBF, 512);
+
         char *chunk = ((struct file_server_data *)req->user_ctx)->scratch;
         size_t chunksize;
         do {
@@ -362,6 +367,10 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
         return ESP_OK;
     }
 
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(fd, NULL, _IOFBF, 512);
+
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     //    ESP_LOGI(TAG, "Sending file: %s (%ld bytes)", &filename, file_stat.st_size);
@@ -450,6 +459,10 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
         httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
         return ESP_OK;
     }
+
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(fd, NULL, _IOFBF, 512);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
@@ -583,6 +596,10 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(fd, NULL, _IOFBF, 512);
+
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     ESP_LOGD(TAG, "Sending file: %s (%ld bytes)", filename, file_stat.st_size);
@@ -671,6 +688,10 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "upload_post_handler: Failed to create file");
         return ESP_FAIL;
     }
+
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(fd, NULL, _IOFBF, 512);
 
     ESP_LOGI(TAG, "Receiving file: %s", filename);
 

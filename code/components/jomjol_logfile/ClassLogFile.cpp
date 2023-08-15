@@ -36,7 +36,7 @@ void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::s
                                std::string _sFallbackValue, std::string  _sRatePerMin, std::string  _sRatePerProcessing, 
                                std::string _sValueStatus, std::string _digital, std::string _analog)
 {
-    ESP_LOGD(TAG, "Start WriteToData");
+    //ESP_LOGD(TAG, "Start WriteToData");
     time_t rawtime;
 
     time(&rawtime);
@@ -45,10 +45,14 @@ void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::s
     FILE* pFile;
     std::string zwtime;
 
-    ESP_LOGD(TAG, "Datalogfile: %s", logpath.c_str());
+    //ESP_LOGD(TAG, "Datalogfile: %s", logpath.c_str());
     pFile = fopen(logpath.c_str(), "a+");
 
-    if (pFile!=NULL) {
+    if (pFile != NULL) {
+        /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+        // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+        setvbuf(pFile, NULL, _IOFBF, 512);
+
         fputs(_timestamp.c_str(), pFile);
         fputs(",", pFile);
         fputs(_name.c_str(), pFile);
@@ -69,8 +73,9 @@ void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::s
         fputs("\n", pFile);
 
         fclose(pFile);    
-    } else {
-        ESP_LOGE(TAG, "Can't open data file %s", logpath.c_str());
+    } 
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open data file: " + logpath);
     }
 
 }
@@ -188,42 +193,45 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
             break;
     }
 
-    std::string formatedUptime = getFormatedUptime(true);
-    std::string fullmessage = "[" + formatedUptime + "] "  + ntpTime + "\t<" + loglevelString + ">\t" + message + "\n";
+    std::string fullmessage = "[" + getFormatedUptime(true) + "] "  + ntpTime + "\t<" + loglevelString + ">\t" + message + "\n";
 
 
-#ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING
-    if (fileNameDateNew != fileNameDate) { // Filename changed
-        // Make sure each day gets its own logfile
-        // Also we need to re-open it in case it needed to get closed for reading
+    #ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING
+        if (fileNameDateNew != fileNameDate) { // Filename changed
+            // Make sure each day gets its own logfile
+            // Also we need to re-open it in case it needed to get closed for reading
+            std::string logpath = logroot + "/" + fileNameDateNew; 
+
+            ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
+            logFileAppendHandle = fopen(logpath.c_str(), "a+");
+            if (logFileAppendHandle==NULL) {
+                ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
+                return;
+            }
+
+            fileNameDate = fileNameDateNew;
+        }
+    #else
         std::string logpath = logroot + "/" + fileNameDateNew; 
-
-        ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
         logFileAppendHandle = fopen(logpath.c_str(), "a+");
         if (logFileAppendHandle==NULL) {
             ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
             return;
         }
+    #endif
 
-        fileNameDate = fileNameDateNew;
-    }
-#else
-    std::string logpath = logroot + "/" + fileNameDateNew; 
-    logFileAppendHandle = fopen(logpath.c_str(), "a+");
-    if (logFileAppendHandle==NULL) {
-        ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
-        return;
-    }
-  #endif
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(logFileAppendHandle, NULL, _IOFBF, 512);
 
     fputs(fullmessage.c_str(), logFileAppendHandle);
     
-#ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING
-    fflush(logFileAppendHandle);
-    fsync(fileno(logFileAppendHandle));
-#else
-    CloseLogFileAppendHandle();
-#endif
+    #ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING
+        fflush(logFileAppendHandle);
+        fsync(fileno(logFileAppendHandle));
+    #else
+        CloseLogFileAppendHandle();
+    #endif
 }
 
 
@@ -284,7 +292,7 @@ void ClassLogFile::RemoveOldLogFile()
 
     DIR *dir = opendir(logroot.c_str());
     if (!dir) {
-        ESP_LOGE(TAG, "Failed to stat dir: %s", logroot.c_str());
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open directory: " + logroot);
         return;
     }
 
@@ -306,7 +314,7 @@ void ClassLogFile::RemoveOldLogFile()
                         deleted++;
                     } 
                     else {
-                        ESP_LOGE(TAG, "can't delete file: %s", entry->d_name);
+                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete file: " + filepath);
                         notDeleted++;
                     }
                 }
@@ -344,7 +352,7 @@ void ClassLogFile::RemoveOldDataLog()
 
     DIR *dir = opendir(dataroot.c_str());
     if (!dir) {
-        ESP_LOGE(TAG, "Failed to stat dir: %s", dataroot.c_str());
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open directory: " + dataroot);
         return;
     }
 
@@ -359,11 +367,13 @@ void ClassLogFile::RemoveOldDataLog()
                 std::string filepath = dataroot + "/" + entry->d_name; 
                 if (unlink(filepath.c_str()) == 0) {
                     deleted ++;
-                } else {
-                    ESP_LOGE(TAG, "can't delete file: %s", entry->d_name);
+                } 
+                else {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete file: " + filepath);
                     notDeleted ++;
                 }
-            } else {
+            } 
+            else {
                 notDeleted ++;
             }
         }

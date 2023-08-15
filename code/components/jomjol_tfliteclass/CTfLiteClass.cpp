@@ -285,6 +285,11 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
     }
 
     FILE* f = fopen(_fn.c_str(), "rb");     // previously only "r
+
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(f, NULL, _IOFBF, 512);
+
     if (fread(modelfile, 1, size, f) != size) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ReadFileToModel: Reading error: Size differs");
         free_psram_heap(std::string(TAG) + "->modelfile", modelfile);
