@@ -35,16 +35,16 @@
 
     <p>The following file types are supported:</p>
     <ul>
-        <li>*.zip </span> &rarr; Content gets extracted to the SD-card root folder</li>
+        <li>*.zip </span> &rarr; Content gets extracted to the SD card root folder</li>
         <li>*.bin </span> &rarr; Firmware gets flashed to the device program flash</li>
-        <li>*.tfl/tflite</span> &rarr; Tensorflow models gets copied to your <i>SD-card/config</i> folder</li>
+        <li>*.tfl/tflite</span> &rarr; Tensorflow models gets copied to your <i>SD card/config</i> folder</li>
     </ul>
 
     <br>
 
     <p><b>Recommended procedure to update the complete system:<br></p>
     Use the <i>AI-on-the-edge-device__update__*.zip</i> file from the github project repository</b><br>
-    Note: Using this, firmware + SD-card gets updated, configuration remains unchanged
+    Note: Using this, firmware + SD card gets updated, configuration remains unchanged
 
     <br>
     <br>
@@ -110,22 +110,25 @@
              *  - AI-on-the-edge-device__update__*.zip
              *  - firmware__*.bin
              *  - *.ftl
-             *  - *.tflite */
+             *  - *.tflite 
+             *  - firmware.bin */
             if ( /(^AI-on-the-edge-device__update__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename) || // OK
                ( /(^AI-on-the-edge-device__firmware)[a-zRC0-9()_\-.]*(\.bin$)/i.test(filename)) ||
                ( /[a-zRC0-9()_\-.]*(\.tfl$)/i.test(filename)) ||
-               ( /[a-zRC0-9()_\-.]*(\.tflite$)/i.test(filename))) {
-                firework.launch('Great, the filename matches our expectations. You can now press "Upload and install".', 'success', 5000);
+               ( /[a-zRC0-9()_\-.]*(\.tflite$)/i.test(filename)) ||
+                 filename == "firmware.bin")
+            {
+                firework.launch("The selected file matches the expected name pattern. Press 'Upload and Install' to continue.", "success", 5000);
             }
             /* Following filenames are acceptiod but not prefered:
              * - *.bin
              * - *.zip */
             else if (filename.endsWith(".zip") || filename.endsWith(".bin")) { // Warning but still accepted
-                firework.launch('The filename does not match the suggested filename pattern, but is nevertheless accepted. You can now press "Upload and install".', 'warning', 10000);
+                firework.launch("The selected file does not fully match the expected name pattern. Press 'Upload and Install' to continue anyway.", "warning", 10000);
             }
             /* Any other file name format is not accepted */
             else { // invalid
-                firework.launch('The filename does not match our expectations!', 'danger', 30000);
+                firework.launch("The selected file does not match the expected name pattern. 'Upload and Install' not possible.", "danger", 30000);
                 return;
             }
 
