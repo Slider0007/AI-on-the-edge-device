@@ -1242,15 +1242,15 @@ void task_autodoFlow(void *pvParameter)
         // ********************************************     
         else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {       
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "----------------------------------------------------------------"); // Clear separation between runs
-            std::string _zw = "Round #" + std::to_string(++countRounds) + " started";
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, _zw); 
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Round #" + std::to_string(++countRounds) + " started"); 
             roundStartTime = getUpTime();
             fr_start = esp_timer_get_time();
+
+            flowctrl.setActFlowError(false); // Reset process_error at prcoess start
                    
             if (flowctrl.doFlowImageEvaluation(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Image evaluation completed (" + 
                                     std::to_string(getUpTime() - roundStartTime) + "s)");
-                flowctrl.setActFlowError(false);
             }
             else {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image evaluation process error occured");
