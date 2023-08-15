@@ -93,8 +93,8 @@ int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
                                       abs(dx2) >= _temp2->search_x || abs(dy2) >= _temp2->search_y) 
     {
         _temp1->error_details = _temp2->error_details = "Angle dev: " + to_stringWithPrecision(angle_deviation, 1) + 
-                            ", Ref0_dx: " + std::to_string(dx1)+ ", Ref0_dy: " + std::to_string(dy1) +
-                            ", Ref1_dx: " + std::to_string(dx2)+ ", Ref1_dy: " + std::to_string(dy2);
+                            ", Ref0dx: " + std::to_string(dx1)+ ", Ref0dy: " + std::to_string(dy1) +
+                            ", Ref1dx: " + std::to_string(dx2)+ ", Ref1dy: " + std::to_string(dy2);
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _temp1->error_details);
         
         return -1; // ALIGNMENT FAILED
@@ -121,8 +121,8 @@ int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
     }
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Angle dev: " + to_stringWithPrecision(angle_deviation, 1) + 
-                                ", Ref0_dx: " + std::to_string(dx1)+ ", Ref0_dy: " + std::to_string(dy1) +
-                                ", Ref1_dx: " + std::to_string(dx2)+ ", Ref1_dy: " + std::to_string(dy2));
+                                ", Ref0dx: " + std::to_string(dx1)+ ", Ref0dy: " + std::to_string(dy1) +
+                                ", Ref1dx: " + std::to_string(dx2)+ ", Ref1dy: " + std::to_string(dy2));
 
     if (isSimilar1 && isSimilar2)   
         return 1; // FAST ALGO match
