@@ -375,11 +375,16 @@ esp_err_t handler_json(httpd_req_t *req)
 esp_err_t handler_process_data(httpd_req_t *req)
 {
     esp_err_t retVal = ESP_OK;
-    std::string sReturnMessage = "E90: Uninitialized";      // Default return error message when no return is programmed
+    std::string sReturnMessage = "E90: Flow task not yet created";      // Default return error message when no return is programmed
     
     #ifdef DEBUG_DETAIL_ON       
         LogFile.WriteHeapInfo("handler_process_data - Start");    
     #endif
+
+    if (!bTaskAutoFlowCreated) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, sReturnMessage.c_str());
+        return ESP_FAIL;
+    }
 
     cJSON *cJSONObject = cJSON_CreateObject();
     
@@ -1182,7 +1187,7 @@ void task_autodoFlow(void *pvParameter)
                     MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
                 #endif //ENABLE_MQTT
 
-                //std::string zw_time = getCurrentTimeString(LOGFILE_TIME_FORMAT);
+                //std::string zw_time = getCurrentTimeString(DEFAULT_TIME_FORMAT);
                 //flowctrl.doFlowTakeImageOnly(zw_time);    // Start only ClassFlowTakeImage to capture images
 
                 while (true) {                              // Waiting for a REQUEST
@@ -1242,7 +1247,7 @@ void task_autodoFlow(void *pvParameter)
             roundStartTime = getUpTime();
             fr_start = esp_timer_get_time();
                    
-            if (flowctrl.doFlowImageEvaluation(getCurrentTimeString(LOGFILE_TIME_FORMAT))) {
+            if (flowctrl.doFlowImageEvaluation(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Image evaluation completed (" + 
                                     std::to_string(getUpTime() - roundStartTime) + "s)");
                 flowctrl.setActFlowError(false);
@@ -1259,7 +1264,7 @@ void task_autodoFlow(void *pvParameter)
         // ******************************************** 
         else if (taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA) {  
 
-            if (!flowctrl.doFlowPublishData(getCurrentTimeString(LOGFILE_TIME_FORMAT))) {
+            if (!flowctrl.doFlowPublishData(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Publish data process error occured"); 
                 flowctrl.setActFlowError(true);
             }

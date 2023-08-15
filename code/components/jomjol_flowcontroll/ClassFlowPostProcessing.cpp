@@ -751,7 +751,7 @@ void ClassFlowPostProcessing::doPostProcessEventHandling()
             time(&actualtime);
 
             // Define path, e.g. /sdcard/log/debug/20230814/20230814-125528/ClassFlowPostProcessing
-            std::string destination = std::string(LOG_DEBUG_ROOT_FOLDER) + "/" + ConvertTimeToString(actualtime, "%Y%m%d") + "/" + 
+            std::string destination = std::string(LOG_DEBUG_ROOT_FOLDER) + "/" + getFlowState()->ExecutionTime.DEFAULT_TIME_FORMAT_DATE_EXTR + "/" + 
                                         getFlowState()->ExecutionTime + "/" + getFlowState()->ClassName;
 
             if (!MakeDir(destination))

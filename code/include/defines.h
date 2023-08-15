@@ -123,9 +123,28 @@
 
 
     //ClassFlow + ClassFlowImage + server_tflite
-    #define LOGFILE_TIME_FORMAT "%Y%m%d-%H%M%S"
-    #define LOGFILE_TIME_FORMAT_DATE_EXTR substr(0, 8)
-    #define LOGFILE_TIME_FORMAT_HOUR_EXTR substr(9, 2)
+    #define DEFAULT_TIME_FORMAT             "%Y%m%d-%H%M%S"
+    #define DEFAULT_TIME_FORMAT_DATE_EXTR   substr(0, 8)
+    #define DEFAULT_TIME_FORMAT_HOUR_EXTR   substr(9, 2)
+
+
+    //ClassLogFile.cpp
+    #define LOG_FILE_TIME_FORMAT            "log_%Y-%m-%d.txt"
+    #define DATA_FILE_TIME_FORMAT           "data_%Y-%m-%d.csv"
+    #define DEBUG_FOLDER_TIME_FORMAT        "%Y%m%d"
+
+    #define LOG_ROOT_FOLDER                 "/sdcard/log"
+    #define LOG_IMAGE_RAW_ROOT_FOLDER       "/sdcard/log/source"
+    #define LOG_IMAGE_DIGIT_ROOT_FOLDER     "/sdcard/log/digit"
+    #define LOG_IMAGE_ANALOG_ROOT_FOLDER    "/sdcard/log/analog"
+    #define LOG_LOGS_ROOT_FOLDER            "/sdcard/log/message"
+    #define LOG_DATA_ROOT_FOLDER            "/sdcard/log/data"
+    #define LOG_DEBUG_ROOT_FOLDER           "/sdcard/log/debug"
+
+
+    //ClassFlowPostProcessing + Influxdb + Influxdbv2
+    #define TIME_FORMAT_OUTPUT              "%Y-%m-%dT%H:%M:%S%z"
+    #define FALLBACKVALUE_TIME_FORMAT_INPUT "%d-%d-%dT%d:%d:%d"
 
 
     //ClassFlowControll
@@ -139,14 +158,9 @@
     #define READOUT_TYPE_RATE_PER_PROCESSING     7
 
     //ClassFlowMQTT
-    #define LWT_TOPIC        "connection"
-    #define LWT_CONNECTED    "connected"
-    #define LWT_DISCONNECTED "connection lost"
-
-
-    //ClassFlowPostProcessing + Influxdb + Influxdbv2
-    #define TIME_FORMAT_OUTPUT "%Y-%m-%dT%H:%M:%S%z"
-    #define FALLBACKVALUE_TIME_FORMAT_INPUT "%d-%d-%dT%d:%d:%d"
+    #define LWT_TOPIC           "connection"
+    #define LWT_CONNECTED       "connected"
+    #define LWT_DISCONNECTED    "connection lost"
 
 
     //CImageBasis
@@ -195,6 +209,14 @@
     #define Digital_Transition_Area_Forward     97 // 9.7 - Pre-run zero crossing only happens from approx. 9.7 onwards
 
 
+    // ClassFlowPostProcessing.cpp: Post-Processing result value status
+    #define VALUE_STATUS_000_VALID              "000 Valid"
+    #define VALUE_STATUS_001_NO_DATA_N_SUBST    "E90 No data to substitute N"
+    #define VALUE_STATUS_002_RATE_NEGATIVE      "E91 Rate negative"
+    #define VALUE_STATUS_003_RATE_TOO_HIGH_NEG  "E92 Rate too high (<)"
+    #define VALUE_STATUS_004_RATE_TOO_HIGH_POS  "E93 Rate too high (>)"
+
+
     /* MAIN FLOW CONTROL */
     /*********************/
     // Flow task states
@@ -232,23 +254,8 @@
     #define FLOW_INVALID_STATE          "Invalid State"
 
     // Process state misc
-    #define FLOWSTATE_ERRORS_IN_ROW_LIMIT 3
+    #define FLOWSTATE_ERRORS_IN_ROW_LIMIT   3
 
-    // ClassFlowPostProcessing.cpp: Post-Processing result value status
-    #define VALUE_STATUS_000_VALID              "000 Valid"
-    #define VALUE_STATUS_001_NO_DATA_N_SUBST    "E90 No data to substitute N"
-    #define VALUE_STATUS_002_RATE_NEGATIVE      "E91 Rate negative"
-    #define VALUE_STATUS_003_RATE_TOO_HIGH_NEG  "E92 Rate too high (<)"
-    #define VALUE_STATUS_004_RATE_TOO_HIGH_POS  "E93 Rate too high (>)"
-
-    // ClassLogFile.cpp
-    #define LOG_ROOT_FOLDER                 "/sdcard/log"
-    #define LOG_IMAGE_RAW_ROOT_FOLDER       "/sdcard/log/source"
-    #define LOG_IMAGE_DIGIT_ROOT_FOLDER     "/sdcard/log/digit"
-    #define LOG_IMAGE_ANALOG_ROOT_FOLDER    "/sdcard/log/analog"
-    #define LOG_LOGS_ROOT_FOLDER            "/sdcard/log/message"
-    #define LOG_DATA_ROOT_FOLDER            "/sdcard/log/data"
-    #define LOG_DEBUG_ROOT_FOLDER           "/sdcard/log/debug"
 
 /////////////////////////////////////////////
 ////      Conditionnal definitions       ////
