@@ -850,7 +850,7 @@ void setSystemStatusFlag(SystemStatusFlag_t flag)
 
 	char buf[20];
 	snprintf(buf, sizeof(buf), "0x%08X", getSystemStatus());
-    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "New System Status: " + std::string(buf));
+    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "System status code: " + std::string(buf));
 }
 
 
@@ -860,7 +860,7 @@ void clearSystemStatusFlag(SystemStatusFlag_t flag)
 
 	char buf[20];
 	snprintf(buf, sizeof(buf), "0x%08X", getSystemStatus());
-    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "New System Status: " + std::string(buf));
+    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "System status code: " + std::string(buf));
 }
 
 
@@ -1013,4 +1013,12 @@ bool isInString(std::string& s, std::string const& toFind)
         return false;
     }
     return true;
+}
+
+
+std::string intToHexString(int _valueInt)
+{
+	char valueHex[33];
+	sprintf(valueHex,"0x%02x", _valueInt);
+	return std::string(valueHex);
 }

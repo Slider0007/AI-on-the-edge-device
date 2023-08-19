@@ -97,5 +97,6 @@ std::string UrlDecode(const std::string& value);
 bool replaceString(std::string& s, std::string const& toReplace, std::string const& replaceWith);
 bool replaceString(std::string& s, std::string const& toReplace, std::string const& replaceWith, bool logIt);
 bool isInString(std::string& s, std::string const& toFind);
+std::string intToHexString(int _valueInt);
 
 #endif //HELPER_H

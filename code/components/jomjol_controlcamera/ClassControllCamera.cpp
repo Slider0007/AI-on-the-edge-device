@@ -131,7 +131,8 @@ CCamera::CCamera()
     isFixedExposure = false;
     flashduration = 5000;
     led_intensity = 4095;
-    demoImage = NULL;
+    demoMode = false;
+    CameraInitSuccessful = false;
 
     #ifdef USE_PWM_LEDFLASH
         ledc_init();   
@@ -139,7 +140,8 @@ CCamera::CCamera()
 }
 
 
-void CCamera::PowerResetCamera(){
+void CCamera::PowerResetCamera()
+{
 
         ESP_LOGD(TAG, "Resetting camera by power down line");
         gpio_config_t conf;
@@ -160,18 +162,29 @@ void CCamera::PowerResetCamera(){
 
 esp_err_t CCamera::InitCam()
 {
-    ESP_LOGD(TAG, "Init Camera");
-    ActualQuality = camera_config.jpeg_quality;
-    ActualResolution = camera_config.frame_size;
-    //initialize the camera
-    esp_camera_deinit(); // De-init in case it was already initialized
+    if (CameraInitSuccessful)
+        DeinitCam(); // De-init in case it was already initialized
+    
     esp_err_t err = esp_camera_init(&camera_config);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Camera Init Failed");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Camera init failed: " + intToHexString(err));
         return err;
     }
 
+    ActualQuality = camera_config.jpeg_quality;
+    ActualResolution = camera_config.frame_size;
+
     CameraInitSuccessful = true;
+    return ESP_OK;
+}
+
+
+esp_err_t CCamera::DeinitCam()
+{
+    CameraInitSuccessful = false;
+    esp_camera_deinit(); // De-init in case it was already initialized (returns ESP_FAIL if deinit is already done)
+    PowerResetCamera();
+
     return ESP_OK;
 }
 
@@ -180,11 +193,12 @@ bool CCamera::testCamera(void)
 {
     bool success;
     camera_fb_t *fb = esp_camera_fb_get();
-    if (fb)  {
+    if (fb) {
         success = true;
     }
     else {
         success = false;
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Camera framebuffer check failed");
     }  
     esp_camera_fb_return(fb);
 
@@ -192,8 +206,22 @@ bool CCamera::testCamera(void)
 }
 
 
+void CCamera::printCamInfo(void)
+{
+    // Print camera infos
+    // ********************************************
+    char caminfo[50];
+    sensor_t * s = esp_camera_sensor_get();
+    sprintf(caminfo, "PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x", s->id.PID, s->id.VER, s->id.MIDH, s->id.MIDL);
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera info: " + std::string(caminfo));
+}
+
+
 bool CCamera::SetBrightnessContrastSaturation(int _brightness, int _contrast, int _saturation)
 {
+    if (!getCameraInitSuccessful())
+        return false;
+    
     _brightness = std::min(2, std::max(-2, _brightness));
     _contrast = std::min(2, std::max(-2, _contrast));
     _saturation = std::min(2, std::max(-2, _saturation));
@@ -254,6 +282,9 @@ bool CCamera::SetBrightnessContrastSaturation(int _brightness, int _contrast, in
 
 void CCamera::SetQualitySize(int qual, framesize_t resol)
 {
+    if (!getCameraInitSuccessful())
+        return;
+    
     qual = std::min(63, std::max(8, qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
     
     sensor_t * s = esp_camera_sensor_get();
@@ -292,6 +323,9 @@ void CCamera::SetLEDIntensity(int _intensity)
 
 bool CCamera::EnableAutoExposure(int _flashduration)
 {
+    if (!getCameraInitSuccessful())
+        return false;
+    
     flashduration = _flashduration; // save last flashduration internally
     ESP_LOGD(TAG, "EnableAutoExposure");
     
@@ -337,6 +371,9 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int _flashduration)
 	#ifdef DEBUG_DETAIL_ON
 	    LogFile.WriteHeapInfo("CaptureToBasisImage - Start");
 	#endif
+
+    if (!getCameraInitSuccessful())
+        return ESP_FAIL;
 
     flashduration = _flashduration; // save last flashduration internally
 
@@ -392,6 +429,9 @@ esp_err_t CCamera::CaptureToBasisImage(CImageBasis *_Image, int _flashduration)
 
 esp_err_t CCamera::CaptureToFile(std::string nm, int _flashduration)
 {
+    if (!getCameraInitSuccessful())
+        return ESP_FAIL;
+    
     std::string ftype;
     flashduration = _flashduration; // save last flashduration internally
 
@@ -496,6 +536,9 @@ static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size
 
 esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int _flashduration)
 {
+    if (!getCameraInitSuccessful())
+        return ESP_FAIL;
+    
     esp_err_t res = ESP_OK;
     size_t fb_len = 0;
     int64_t fr_start = esp_timer_get_time();
@@ -523,11 +566,11 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int _flashduration)
     }
   
     res = httpd_resp_set_type(req, "image/jpeg");
-    if(res == ESP_OK){
+    if(res == ESP_OK) {
         res = httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=raw.jpg");
     }
 
-    if(res == ESP_OK){
+    if(res == ESP_OK) {
         if (demoMode) { // Use images stored on SD-Card instead of camera image
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Demo mode active");
             /* Replace Framebuffer with image from SD-Card */
@@ -536,10 +579,11 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int _flashduration)
             res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
         }
         else {
-            if(fb->format == PIXFORMAT_JPEG){
+            if(fb->format == PIXFORMAT_JPEG) {
                 fb_len = fb->len;
                 res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
-            } else {
+            } 
+            else {
                 jpg_chunking_t jchunk = {req, 0};
                 res = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk)?ESP_OK:ESP_FAIL;
                 httpd_resp_send_chunk(req, NULL, 0);
@@ -558,6 +602,9 @@ esp_err_t CCamera::CaptureToHTTP(httpd_req_t *req, int _flashduration)
 
 esp_err_t CCamera::CaptureToStream(httpd_req_t *req, bool FlashlightOn)
 {
+    if (!getCameraInitSuccessful())
+        return ESP_FAIL;
+    
     esp_err_t res = ESP_OK;
     size_t fb_len = 0;
     int64_t fr_start;
@@ -587,14 +634,14 @@ esp_err_t CCamera::CaptureToStream(httpd_req_t *req, bool FlashlightOn)
         }
         fb_len = fb->len;
    
-        if (res == ESP_OK){
+        if (res == ESP_OK) {
             size_t hlen = snprintf((char *)part_buf, sizeof(part_buf), _STREAM_PART, fb_len);
             res = httpd_resp_send_chunk(req, (const char *)part_buf, hlen);
         }
-        if (res == ESP_OK){
+        if (res == ESP_OK) {
             res = httpd_resp_send_chunk(req, (const char *)fb->buf, fb_len);
         }
-        if (res == ESP_OK){
+        if (res == ESP_OK) {
             res = httpd_resp_send_chunk(req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
         }
         
@@ -747,12 +794,9 @@ bool CCamera::getCameraInitSuccessful()
 }
 
 
-std::vector<std::string> demoFiles;
-
 void CCamera::EnableDemoMode()
 {
     demoFiles.clear();
-    free(demoImage);
 
     char line[50];
 
@@ -760,12 +804,6 @@ void CCamera::EnableDemoMode()
     if (!fd) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can not start Demo mode, the folder '/sdcard/demo/' does not contain the needed files");
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "See details on https://jomjol.github.io/AI-on-the-edge-device-docs/Demo-Mode");
-        return;
-    }
-
-    demoImage = (uint8_t*)malloc(DEMO_IMAGE_SIZE);
-    if (demoImage == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Unable to acquire required memory for demo image");
         return;
     }
 
@@ -791,13 +829,11 @@ void CCamera::DisableDemoMode()
 {
     demoMode = false;
     demoFiles.clear();
-    free(demoImage);
 }
 
 
 bool CCamera::loadNextDemoImage(camera_fb_t *fb) {
     char filename[50];
-    int readBytes;
     long fileSize;
 
     snprintf(filename, sizeof(filename), "/sdcard/demo/%s", demoFiles[getCountFlowRounds() % demoFiles.size()].c_str());
@@ -805,6 +841,15 @@ bool CCamera::loadNextDemoImage(camera_fb_t *fb) {
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Using " + std::string(filename) + " as demo image");
 
     /* Inject saved image */
+
+    fileSize = getFileSize(filename);
+    if (fileSize > DEMO_IMAGE_SIZE) {
+        char buf[100];
+        snprintf(buf, sizeof(buf), "Demo image (%d bytes) is larger than provided buffer (%d bytes)",
+                (int)fileSize, DEMO_IMAGE_SIZE);
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, std::string(buf));
+        return false;
+    }
 
     FILE * fp = fopen(filename, "rb");
     if (!fp) {
@@ -816,29 +861,24 @@ bool CCamera::loadNextDemoImage(camera_fb_t *fb) {
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(fp, NULL, _IOFBF, 512);
 
-    fileSize = getFileSize(filename);
-    if (fileSize > DEMO_IMAGE_SIZE) {
-        char buf[100];
-        snprintf(buf, sizeof(buf), "Demo Image (%d bytes) is larger than provided buffer (%d bytes)",
-                (int)fileSize, DEMO_IMAGE_SIZE);
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, std::string(buf));
-        return false;
-    }
-
-    readBytes = fread(demoImage, 1, DEMO_IMAGE_SIZE, fp);
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "read " + std::to_string(readBytes) + " bytes");
+    fb->len = fread(fb->buf, 1, fileSize, fp);
     fclose(fp);
 
-    fb->buf = demoImage; // Update pointer
-    fb->len = readBytes;
-    // ToDo do we also need to set height, width, format and timestamp?
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "read " + std::to_string(fb->len) + " bytes");
 
     return true;
 }
 
 
-CCamera::~CCamera()
+/* Free only user allocated memory without deinit of cam driver */
+void CCamera::FreeMemoryOnly()
 {
     demoFiles.clear();
-    free(demoImage);
+}
+
+
+CCamera::~CCamera()
+{
+    DeinitCam();
+    demoFiles.clear();
 }

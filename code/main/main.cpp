@@ -189,17 +189,7 @@ extern "C" void app_main(void)
     // Highlight start of app_main 
     // ********************************************
     ESP_LOGI(TAG, "\n\n\n\n================ Start app_main =================");
- 
-    // Init camera
-    // ********************************************
-    Camera.PowerResetCamera();
-    esp_err_t camStatus = Camera.InitCam();
-    Camera.LightOnOff(false);
-
-    xDelay = 2000 / portTICK_PERIOD_MS;
-    ESP_LOGD(TAG, "After camera initialization: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
-    vTaskDelay( xDelay );
-
+    
     // Init SD card
     // ********************************************
     if (!Init_NVS_SDCard())
@@ -343,9 +333,7 @@ extern "C" void app_main(void)
     // manual reset the time
     // ********************************************
     if (!time_manual_reset_sync())
-    {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Manual Time Sync failed during startup" );
-    }
 
     // Set log level for wifi component to WARN level (default: INFO; only relevant for serial console)
     // ********************************************
@@ -355,13 +343,6 @@ extern "C" void app_main(void)
         ESP_ERROR_CHECK( heap_trace_stop() );
         heap_trace_dump(); 
     #endif   
-
-    #ifdef DEBUG_ENABLE_SYSINFO
-        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL( 4, 0, 0 )
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device Info : " + get_device_info() );
-            ESP_LOGD(TAG, "Device infos %s", get_device_info().c_str());
-        #endif
-    #endif //DEBUG_ENABLE_SYSINFO
 
     #ifdef USE_HIMEM_IF_AVAILABLE
         #ifdef DEBUG_HIMEM_MEMORY_CHECK
@@ -401,49 +382,20 @@ extern "C" void app_main(void)
                 setSystemStatusFlag(SYSTEM_STATUS_HEAP_TOO_SMALL);
                 StatusLED(PSRAM_INIT, 3, true);
             }
-            else { // HEAP size OK --> continue to check camera init
+            else { // HEAP size OK --> continue to camera init
+                // Init camera
+                // ********************************************
+                esp_err_t camStatus = Camera.InitCam();
+                Camera.LightOnOff(false);
+
                 // Check camera init
                 // ********************************************
-                if (camStatus != ESP_OK) { // Camera init failed, retry to init
-                    char camStatusHex[33];
-                    sprintf(camStatusHex,"0x%02x", camStatus);
-                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Camera init failed (" + std::string(camStatusHex) + "), retrying");
-
-                    Camera.PowerResetCamera();
-                    camStatus = Camera.InitCam();
-                    Camera.LightOnOff(false);
-
-                    xDelay = 2000 / portTICK_PERIOD_MS;
-                    ESP_LOGD(TAG, "After camera initialization: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
-                    vTaskDelay( xDelay ); 
-
-                    if (camStatus != ESP_OK) { // Camera init failed again
-                        sprintf(camStatusHex,"0x%02x", camStatus);
-                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Camera init failed (" + std::string(camStatusHex) +
-                                                                ")! Check camera module and/or proper electrical connection");
-                        setSystemStatusFlag(SYSTEM_STATUS_CAM_BAD);
-                        StatusLED(CAM_INIT, 1, true);
-                    }
+                if (camStatus != ESP_OK) { // Camera init failed, try to reinit during flow init (MainFlowControl.cpp -> doInit())
+                    StatusLED(CAM_INIT, 1, false);
                 }
-                else { // ESP_OK -> Camera init OK --> continue to perform camera framebuffer check
-                    // Camera framebuffer check
-                    // ********************************************
-                    if (!Camera.testCamera()) {
-                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Camera framebuffer check failed");
-                        // Easiest would be to simply restart here and try again,
-                        // how ever there seem to be systems where it fails at startup but still work correctly later.
-                        // Therefore we treat it still as successed! */
-                        setSystemStatusFlag(SYSTEM_STATUS_CAM_FB_BAD);
-                        StatusLED(CAM_INIT, 2, false);
-                    }
-                    Camera.LightOnOff(false);   // make sure flashlight is off before start of flow
-
-                    // Print camera infos
-                    // ********************************************
-                    char caminfo[50];
-                    sensor_t * s = esp_camera_sensor_get();
-                    sprintf(caminfo, "PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x", s->id.PID, s->id.VER, s->id.MIDH, s->id.MIDL);
-                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera info: " + std::string(caminfo));
+                else { // ESP_OK -> Camera init OK
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Init camera successful");
+                    Camera.printCamInfo();
                 }
             }
         }
@@ -451,25 +403,28 @@ extern "C" void app_main(void)
 
     // Print Device info
     // ********************************************
-    esp_chip_info_t chipInfo;
-    esp_chip_info(&chipInfo);
-    
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device info: CPU cores: " + std::to_string(chipInfo.cores) + 
-                                           ", Chip revision: " + std::to_string(chipInfo.revision/100));
+    #ifdef DEBUG_ENABLE_SYSINFO
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL( 4, 0, 0 )
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device Info : " + get_device_info() );
+            ESP_LOGD(TAG, "Device infos %s", get_device_info().c_str());
+        #endif
+    #else 
+        esp_chip_info_t chipInfo;
+        esp_chip_info(&chipInfo);
+        
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device info: CPU cores: " + std::to_string(chipInfo.cores) + 
+                                            ", Chip revision: " + std::to_string(chipInfo.revision/100));
+    #endif //DEBUG_ENABLE_SYSINFO
     
     // Print SD-Card info
     // ********************************************
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "SD card info: Name: " + getSDCardName() + ", Capacity: " + 
                         getSDCardCapacity() + "MB, Free: " + getSDCardFreePartitionSpace() + "MB");
 
-    xDelay = 2000 / portTICK_PERIOD_MS;
-    ESP_LOGD(TAG, "main: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
-    vTaskDelay( xDelay ); 
 
     // Start webserver + register handler
     // ********************************************
     ESP_LOGD(TAG, "starting servers");
-
     server = start_webserver();   
     register_server_camera_uri(server); 
     register_server_main_flow_task_uri(server);
@@ -484,23 +439,16 @@ extern "C" void app_main(void)
     ESP_LOGD(TAG, "Before reg server main");
     register_server_main_uri(server, "/sdcard");
 
-    // Only for testing purpose
-    //setSystemStatusFlag(SYSTEM_STATUS_CAM_FB_BAD);
-    //setSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD);
-
-    // Check main init + start TFlite task
+    // Check basic device init status
     // ********************************************
-    if (getSystemStatus() == 0) { // No error flag is set
+    if (getSystemStatus() == 0) { // Continue with regular boot sequence
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Basic device initialization completed");
-        StartMainFlowTask();
+        CreateMainFlowTask(); // Create main flow task
     }
-    else if (isSetSystemStatusFlag(SYSTEM_STATUS_CAM_FB_BAD) || // Non critical errors occured, we try to continue
-             isSetSystemStatusFlag(SYSTEM_STATUS_NTP_BAD)) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Basic device initialization completed with errors");
-        StartMainFlowTask();
-    }
-    else { // Any other error is critical and makes running the flow impossible. Init is going to abort.
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed. Flow task start aborted. Loading reduced web interface");
+    // Critical error(s) occured which do not allow to continue with regular boot sequence.
+    // Provding only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: server_main.cpp -> hello_main_handler()
+    else { 
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed");
     }
 }
 

@@ -640,7 +640,7 @@ void doRebootOTA()
 
     Camera.LightOnOff(false);
     StatusLEDOff();
-    esp_camera_deinit();
+    Camera.DeinitCam();
 
     vTaskDelay(5000 / portTICK_PERIOD_MS);
     esp_restart();      // Reset type: CPU reset (Reset both CPUs)

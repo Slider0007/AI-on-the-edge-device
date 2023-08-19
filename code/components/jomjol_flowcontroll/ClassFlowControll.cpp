@@ -419,9 +419,7 @@ ClassFlow* ClassFlowControll::CreateClassFlow(std::string _type)
 
 
 bool ClassFlowControll::InitFlow(std::string config)
-{
-    DeinitFlow();
-    
+{   
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init flow");
 
     bool bRetVal = true;
@@ -496,6 +494,7 @@ void ClassFlowControll::DeinitFlow(void)
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow");
     //LogFile.WriteHeapInfo("DeinitFlow start");
 
+    Camera.FreeMemoryOnly(); // ClassControlCamera: Free any additional user allocated memory, but no cam driver deinit
     Camera.LightOnOff(false);
     StatusLEDOff();
     //LogFile.WriteHeapInfo("After camera");

@@ -176,9 +176,9 @@ esp_err_t starttime_get_handler(httpd_req_t *req)
 
 esp_err_t hello_main_handler(httpd_req_t *req)
 {
-#ifdef DEBUG_DETAIL_ON      
-    LogFile.WriteHeapInfo("hello_main_handler - Start");
-#endif
+    #ifdef DEBUG_DETAIL_ON      
+        LogFile.WriteHeapInfo("hello_main_handler - Start");
+    #endif
 
     char filepath[50];
     ESP_LOGD(TAG, "uri: %s\n", req->uri);
@@ -208,15 +208,17 @@ esp_err_t hello_main_handler(httpd_req_t *req)
     }
 
     if (filetosend == "/sdcard/html/index.html") {
-        if (isSetSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD) || // Initialization failed with crritical errors!
-            isSetSystemStatusFlag(SYSTEM_STATUS_CAM_BAD) ||
+        // Check basic device initialization status:
+        // If critical error(s) occured which do not allow to start regular process and web interface, redirect to a reduced web interface
+        if (isSetSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD) ||
+            isSetSystemStatusFlag(SYSTEM_STATUS_HEAP_TOO_SMALL) ||
             isSetSystemStatusFlag(SYSTEM_STATUS_SDCARD_CHECK_BAD) ||
             isSetSystemStatusFlag(SYSTEM_STATUS_FOLDER_CHECK_BAD)) 
         {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Critical error(s) occured, not serving main page");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Critical error(s) occured, redirect to reduced web interface");
 
             char buf[20];
-            std::string message = "<h1>AI on the Edge Device</h1><b>We have one or more critical errors:</b><br>";
+            std::string message = "<h1>AI on the Edge</h1><b>Critical error(s) occured, which do not allow to start regular process and web interface:</b><br>";
 
             for (int i = 0; i < 32; i++) {
                 if (isSetSystemStatusFlag((SystemStatusFlag_t)(1<<i))) {
@@ -225,7 +227,7 @@ esp_err_t hello_main_handler(httpd_req_t *req)
                 }
             }
 
-            message += "<br>Please check logs with log viewer and/or <a href=\"https://jomjol.github.io/AI-on-the-edge-device-docs/Error-Codes\" target=_blank>jomjol.github.io/AI-on-the-edge-device-docs/Error-Codes</a> for more information.";
+            message += "<br>Please check logs with \'Log Viewer\' and/or <a href=\"https://jomjol.github.io/AI-on-the-edge-device-docs/Error-Codes\" target=_blank>jomjol.github.io/AI-on-the-edge-device-docs/Error-Codes</a> for more information.";
             message += "<br><br><button onclick=\"window.location.href='/reboot';\">Reboot</button>";
             message += "&nbsp;<button onclick=\"window.open('/ota_page.html');\">OTA Update</button>";
             message += "&nbsp;<button onclick=\"window.open('/log.html');\">Log Viewer</button>";
@@ -257,13 +259,9 @@ esp_err_t hello_main_handler(httpd_req_t *req)
     if (res != ESP_OK)
         return res;
 
-    /* Respond with an empty chunk to signal HTTP response completion */
-//    httpd_resp_sendstr(req, "");
-//    httpd_resp_send_chunk(req, NULL, 0);
-
-#ifdef DEBUG_DETAIL_ON      
-    LogFile.WriteHeapInfo("hello_main_handler - Stop");   
-#endif
+    #ifdef DEBUG_DETAIL_ON      
+        LogFile.WriteHeapInfo("hello_main_handler - Stop");   
+    #endif
 
     return ESP_OK;
 }

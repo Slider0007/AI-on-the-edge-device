@@ -4,6 +4,7 @@
 #define CLASSCONTROLLCAMERA_H
 
 #include <string>
+#include <vector>
 //#include "freertos/FreeRTOS.h"
 //#include "freertos/task.h"
 
@@ -29,40 +30,43 @@ class CCamera {
         int flashduration;
         int led_intensity;
 
-        bool CameraInitSuccessful = false;
-        bool demoMode = false;
+        bool CameraInitSuccessful;
+        bool demoMode;
+        std::vector<std::string> demoFiles;
 
+        void LEDOnOff(bool status);
         bool loadNextDemoImage(camera_fb_t *fb);
-        long GetFileSize(std::string filename);
 
     public:
         int image_height, image_width;
         
         CCamera();
         ~CCamera();
+        void FreeMemoryOnly();
         void PowerResetCamera();
         esp_err_t InitCam();
+        esp_err_t DeinitCam();
+        bool testCamera(void);
+        void printCamInfo(void);
 
-        void LightOnOff(bool status);
-        void LEDOnOff(bool status);
+        esp_err_t CaptureToBasisImage(CImageBasis *_Image, int delay = 0);
+        esp_err_t CaptureToFile(std::string nm, int delay = 0);
         esp_err_t CaptureToHTTP(httpd_req_t *req, int delay = 0);
         esp_err_t CaptureToStream(httpd_req_t *req, bool FlashlightOn);
+
+        void ledc_init(void);
         void SetQualitySize(int qual, framesize_t resol);
+        framesize_t TextToFramesize(const char * text);
         bool SetBrightnessContrastSaturation(int _brightness, int _contrast, int _saturation);
         void GetCameraParameter(httpd_req_t *req, int &qual, framesize_t &resol);
         void SetLEDIntensity(int _intrel);
-        bool testCamera(void);
+
         bool EnableAutoExposure(int flash_duration);
         bool getCameraInitSuccessful();
+        void LightOnOff(bool status);
+
         void EnableDemoMode(void);
         void DisableDemoMode(void);
-        void ledc_init(void);
-       
-
-        framesize_t TextToFramesize(const char * text);
-
-        esp_err_t CaptureToFile(std::string nm, int delay = 0);
-        esp_err_t CaptureToBasisImage(CImageBasis *_Image, int delay = 0);
 };
 
 
