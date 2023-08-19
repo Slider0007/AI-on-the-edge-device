@@ -57,6 +57,10 @@ int LoadWlanFromFile(std::string fn)
         return -1;
     }
 
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(pFile, NULL, _IOFBF, 512);
+
     ESP_LOGD(TAG, "LoadWlanFromFile: wlan.ini opened");
 
     char zw[256];
@@ -202,6 +206,10 @@ bool ChangeHostName(std::string fn, std::string _newhostname)
         return false;
     }
 
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(pFile, NULL, _IOFBF, 512);
+
     ESP_LOGD(TAG, "ChangeHostName: wlan.ini opened");
 
     char zw[256];
@@ -254,6 +262,10 @@ bool ChangeHostName(std::string fn, std::string _newhostname)
         return false;
     }
 
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(pFile, NULL, _IOFBF, 512);
+
     for (int i = 0; i < neuesfile.size(); ++i)
     {
         //ESP_LOGD(TAG, "%s", neuesfile[i].c_str());
@@ -283,6 +295,10 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeRSSIThreshold: Unable to open file wlan.ini (read)"); 
         return false;
     }
+
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(pFile, NULL, _IOFBF, 512);
 
     ESP_LOGD(TAG, "ChangeRSSIThreshold: wlan.ini opened");
 
@@ -353,6 +369,10 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeRSSIThreshold: Unable to open file wlan.ini (write)"); 
         return false;
     }
+
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(pFile, NULL, _IOFBF, 512);
 
     for (int i = 0; i < updatedFile.size(); ++i)
     {
