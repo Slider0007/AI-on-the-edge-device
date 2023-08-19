@@ -18,7 +18,7 @@ void register_server_main_flow_task_uri(httpd_handle_t server);
 void CheckIsPlannedReboot();
 bool getIsPlannedReboot();
 
-void StartMainFlowTask();
+void CreateMainFlowTask();
 void DeleteMainFlowTask();
 bool isSetupModusActive();
 void setTaskAutoFlowState(uint8_t _value);

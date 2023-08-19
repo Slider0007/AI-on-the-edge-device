@@ -128,12 +128,39 @@ bool doInit(void)
 {
     bool bRetVal = true;
 
-    if (!flowctrl.InitFlow(CONFIG_FILE))
+    // Deinit main flow components before init all ressources again
+    // ********************************************   
+    flowctrl.DeinitFlow();
+    //heap_caps_dump(MALLOC_CAP_SPIRAM);
+
+    // Init cam if init not yet done.
+    // Make sure this is called between deinit and init of flow components (avoid SPIRAM fragmentation)
+    // ********************************************   
+    if (!Camera.getCameraInitSuccessful()) { 
+        Camera.PowerResetCamera();
+        esp_err_t camStatus = Camera.InitCam(); 
+
+        if (camStatus != ESP_OK) // Camera init failed
+            return false;
+        
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Init camera successful");
+        Camera.printCamInfo();
+    }
+
+    //  // Init main flow components
+    // ********************************************   
+    if (!flowctrl.InitFlow(CONFIG_FILE)) {
+        flowctrl.DeinitFlow();
         bRetVal = false;
+    }
     
-    /* GPIO handler has to be initialized before MQTT init to ensure proper topic subscription */
+    // Init GPIO handler
+    // Note: GPIO handler has to be initialized before MQTT init to ensure proper topic subscription
+    // ********************************************   
     gpio_handler_init();
 
+    // Init MQTT service
+    // ********************************************   
     #ifdef ENABLE_MQTT
         flowctrl.StartMQTTService();
     #endif //ENABLE_MQTT
@@ -271,7 +298,8 @@ esp_err_t handler_flow_start(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART || 
-        taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART) 
+        taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART || 
+        flowctrl.getActStatus() == FLOW_INIT_FAILED) // Possibility to manual retrigger a cycle when init is already failed
     {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Flow start triggered by REST API");
         const std::string zw = "001: Flow start triggered by REST API (" + getCurrentTimeString("%H:%M:%S") + ")";
@@ -1161,9 +1189,16 @@ void task_autodoFlow(void *pvParameter)
 
                 while (true) {                                      // Waiting for a REQUEST
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
-                    if (reloadConfig) {
+                    if (reloadConfig) { // Possibility to manual retrigger a cycle with parameter reload when init is already failed
                         reloadConfig = false;
+                        manualFlowStart = false; // parameter reload has higher prio
                         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration");
+                        taskAutoFlowState = FLOW_TASK_STATE_INIT;   // Repeat FLOW INIT
+                        break;
+                    }
+                    else if (manualFlowStart) { // Possibility to manual retrigger a cycle with manual start when init is already failed
+                        manualFlowStart = false;
+                        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger: Start process (manual trigger)");
                         taskAutoFlowState = FLOW_TASK_STATE_INIT;   // Repeat FLOW INIT
                         break;
                     }
@@ -1347,10 +1382,15 @@ void task_autodoFlow(void *pvParameter)
 
             // Check if triggerd reload config or manually triggered single round
             // ********************************************    
-            if (reloadConfig) {
+            if (taskAutoFlowState == FLOW_TASK_STATE_INIT) {
+                reloadConfig = false; // reload by post process event handler has higher prio
+                manualFlowStart = false; // Reload config has higher prio
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "PostProcessEventHandler trigger: Reload configuration");
+            }
+            else if (reloadConfig) {
                 reloadConfig = false;
                 manualFlowStart = false; // Reload config has higher prio
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration");
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Manual trigger: Reload configuration");
                 taskAutoFlowState = FLOW_TASK_STATE_INIT;                   // Return to state "FLOW INIT"
             }
             else if (manualFlowStart) {
@@ -1419,14 +1459,14 @@ void task_autodoFlow(void *pvParameter)
 }
 
 
-void StartMainFlowTask()
+void CreateMainFlowTask()
 {
     #ifdef DEBUG_DETAIL_ON      
             LogFile.WriteHeapInfo("CreateFlowTask: start");
     #endif
 
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_START_FLOW_TASK));
-    flowctrl.setActStatus(std::string(FLOW_START_FLOW_TASK));
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_CREATE_FLOW_TASK));
+    flowctrl.setActStatus(std::string(FLOW_CREATE_FLOW_TASK));
 
     BaseType_t xReturned = xTaskCreatePinnedToCore(&task_autodoFlow, "task_autodoFlow", 12 * 1024, NULL, tskIDLE_PRIORITY+2, &xHandletask_autodoFlow, 0);
     if( xReturned != pdPASS ) {
