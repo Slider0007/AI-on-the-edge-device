@@ -230,9 +230,9 @@
     #define FLOW_TASK_STATE_IDLE_AUTOSTART      7
 
     // Process state names
-    #define FLOW_NO_TASK                "No Flow Task"
-    #define FLOW_START_FLOW_TASK        "Start Flow Task"
-    #define FLOW_FLOW_TASK_FAILED       "Flow Creation Failed"
+    #define FLOW_NO_TASK                "No Main Flow Task"
+    #define FLOW_CREATE_FLOW_TASK       "Main Flow Task Creation"
+    #define FLOW_FLOW_TASK_FAILED       "Flow Task Creation Failed"
     #define FLOW_INIT_DELAYED           "Initialization - Delayed"
     #define FLOW_INIT                   "Initialization"
     #define FLOW_INIT_FAILED            "Initialization Failed"
