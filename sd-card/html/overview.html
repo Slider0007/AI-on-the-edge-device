@@ -238,7 +238,7 @@
 				$('#cputemp').html("CPU Temperature: " + _jsonData.temperature + "°C");
 				loadRSSI(_jsonData.rssi);
 				$('#uptime').html("Uptime: " + _jsonData.uptime);
-				$('#round').html("Rounds Processed: " + _jsonData.round_counter);
+				$('#round').html("Round Counter: " + _jsonData.round_counter);
 			}
 		}
 		xhttp.open("GET", url, true);
