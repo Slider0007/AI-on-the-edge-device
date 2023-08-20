@@ -168,6 +168,12 @@ esp_err_t CCamera::InitCam()
     esp_err_t err = esp_camera_init(&camera_config);
     if (err != ESP_OK) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Camera init failed: " + intToHexString(err));
+
+            if (err == ESP_ERR_NOT_FOUND)
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Camera module not found, check camera module and electrical connection");
+            else if (err == ESP_ERR_NOT_SUPPORTED)
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Camera module or feature not supported");
+        
         return err;
     }
 

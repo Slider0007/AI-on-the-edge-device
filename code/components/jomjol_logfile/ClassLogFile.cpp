@@ -232,12 +232,12 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
             // Also we need to re-open it in case it needed to get closed for reading
             std::string logpath = logFileRootFolder + "/" + fileNameDateNew; 
 
-                ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
-                logFileAppendHandle = fopen(logpath.c_str(), "a+");
-                if (logFileAppendHandle==NULL) {
-                    ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
-                    return;
-                }
+            ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
+            logFileAppendHandle = fopen(logpath.c_str(), "a+");
+            if (logFileAppendHandle==NULL) {
+                ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
+                return;
+            }
 
             fileNameDate = fileNameDateNew;
         }
