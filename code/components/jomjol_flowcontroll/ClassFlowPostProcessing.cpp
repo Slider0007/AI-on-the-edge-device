@@ -406,14 +406,14 @@ void ClassFlowPostProcessing::setDecimalShift()
             if (NUMBERS[j]->isExtendedResolution && flowDigit->CNNTypeWithExtendedResolution())
                 NUMBERS[j]->decimalShift -= 1;
 
-            NUMBERS[j]->decimalPlaceCount = -(NUMBERS[j]->decimalShift);
+            NUMBERS[j]->decimalPlaceCount = -1*(NUMBERS[j]->decimalShift);
         }
         // Only analog pointers
         else if (!NUMBERS[j]->digit_roi && NUMBERS[j]->analog_roi) {
             if (NUMBERS[j]->isExtendedResolution && flowAnalog->CNNTypeWithExtendedResolution())
                 NUMBERS[j]->decimalShift -= 1;
             
-            NUMBERS[j]->decimalPlaceCount = -NUMBERS[j]->decimalShift;
+            NUMBERS[j]->decimalPlaceCount = -1*(NUMBERS[j]->decimalShift);
         }
         // Digit numbers & analog pointer available 
         else if (NUMBERS[j]->digit_roi && NUMBERS[j]->analog_roi) {

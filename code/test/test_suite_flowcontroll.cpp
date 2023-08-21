@@ -1,5 +1,5 @@
 #include <unity.h>
-#include <math.h>
+#include <cmath>
 
 #include "components/jomjol_fileserver_ota/server_ota.h"
 #include "components/jomjol-flowcontroll/test_flow_postrocess_helper.cpp"
@@ -106,19 +106,20 @@ void initGPIO()
 void task_UnityTesting(void *pvParameter)
 {
     UNITY_BEGIN();
+        RUN_TEST(test_getReadoutRawString);
+        
         RUN_TEST(testNegative_Issues);
         RUN_TEST(testNegative);
 
         RUN_TEST(test_analogToDigit_Standard);
         RUN_TEST(test_analogToDigit_Transition);
+
         RUN_TEST(test_doFlowPP);
         RUN_TEST(test_doFlowPP1);
         RUN_TEST(test_doFlowPP2);
         RUN_TEST(test_doFlowPP3);
         RUN_TEST(test_doFlowPP4);
-
-        // getReadoutRawString test
-        RUN_TEST(test_getReadoutRawString);
+        RUN_TEST(test_doFlowPP5);
     UNITY_END();
 
     while(1);

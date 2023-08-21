@@ -1,6 +1,7 @@
 #pragma once
 #ifndef TEST_FLOW_H
 #define TEST_FLOW_H
+#include <cmath> // needs to be included before unity.h -> provide isnan and isinf defines
 #include <unity.h>
 #include <ClassFlowPostProcessing.h>
 #include <ClassFlowCNNGeneral.h>
@@ -14,6 +15,7 @@ class UnderTestPost : public ClassFlowPostProcessing {
             : ClassFlowPostProcessing::ClassFlowPostProcessing(lfc, _analog, _digit) {}
         
         using ClassFlowPostProcessing::InitNUMBERS;
+        using ClassFlowPostProcessing::setDecimalShift;
         using ClassFlowPostProcessing::flowAnalog;
         using ClassFlowPostProcessing::flowDigit;    
 
@@ -112,5 +114,14 @@ void setAnalogdigitTransistionStart(UnderTestPost* _underTestPost, float _analog
  * @param _allowNegatives if should be set true or false
  */
 void setAllowNegatives(UnderTestPost* _underTestPost, bool _allowNegatives);
+
+/**
+ * @brief Get the count of decimal places 
+ * 
+ * @param _underTestPost the testobject
+ * @return Number of decimal places
+ * 
+ */
+int getDecimalPlaceCount(UnderTestPost* _underTestPost);
 
 #endif // TEST_FLOW_H

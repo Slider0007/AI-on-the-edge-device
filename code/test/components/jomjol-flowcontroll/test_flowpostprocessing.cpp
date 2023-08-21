@@ -533,9 +533,9 @@ void test_doFlowPP4() {
 
         // Fehler  V13.0.4 
         // https://github.com/jomjol/AI-on-the-edge-device/issues/1503#issuecomment-1343335855
-         std::vector<float> digits = {  0.0, 0.0, 6.9, 1.0, 6.6};  // 716.0199 als falsches Ergebnis. 
+        std::vector<float> digits = {  0.0, 0.0, 6.9, 1.0, 6.6};  // 716.0199 als falsches Ergebnis. 
         // Test ist nur erfolgreich mit Veränderung des AnalogdigitTransistionStart
-         std::vector<float> analogs = {9.9, 1.8, 6.6, 5.8};
+        std::vector<float> analogs = {9.9, 1.8, 6.6, 5.8};
         const char* expected = "717.0165";
         const char* expected_extended= "717.01658";
         
@@ -546,7 +546,62 @@ void test_doFlowPP4() {
         // checkConsistency=false und extendResolution=true
         result = process_doFlow(analogs, digits, Digital100, false, true);
         TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
-
 }
 
 
+void test_doFlowPP5() {
+
+        // Real case 2023-08-19 -> Transistion issue from 99.99 to 100.00
+        std::vector<float> digits = {1.0, 0.0, 9.8};  // wrong result: 199.994
+        std::vector<float> analogs = {9.9, 9.4};
+        const char* expected = "99.99";
+        const char* expected_extended= "99.994";
+        
+        // extendResolution=false
+        std::string result = process_doFlow(analogs, digits, Digital100, false, false);
+        TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
+
+        // checkConsistency=false und extendResolution=true
+        result = process_doFlow(analogs, digits, Digital100, false, true);
+        TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
+
+        
+        digits = {1.0, 9.9, 9.8};  // wrong result: 199.994
+        analogs = {9.9, 9.4};
+        expected = "99.99";
+        expected_extended= "99.994";
+        
+        // extendResolution=false
+        result = process_doFlow(analogs, digits, Digital100, false, false);
+        TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
+
+        // checkConsistency=false und extendResolution=true
+        result = process_doFlow(analogs, digits, Digital100, false, true);
+        TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
+
+        digits = {0.9, 0.0, 9.8};  // wrong result: 199.994
+        analogs = {9.9, 9.4};
+        expected = "99.99";
+        expected_extended= "99.994";
+        
+        // extendResolution=false
+        result = process_doFlow(analogs, digits, Digital100, false, false);
+        TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
+
+        // checkConsistency=false und extendResolution=true
+        result = process_doFlow(analogs, digits, Digital100, false, true);
+        TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
+
+        digits = {1.0, 0.0, 9.9};  // wrong result: 199.994
+        analogs = {9.9, 0.1};
+        expected = "100.00";
+        expected_extended= "100.001";
+        
+        // extendResolution=false
+        result = process_doFlow(analogs, digits, Digital100, false, false);
+        TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
+
+        // checkConsistency=false und extendResolution=true
+        result = process_doFlow(analogs, digits, Digital100, false, true);
+        TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
+}

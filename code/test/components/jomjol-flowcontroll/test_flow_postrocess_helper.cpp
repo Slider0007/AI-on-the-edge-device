@@ -40,7 +40,7 @@ std::string process_doFlow(std::vector<float> analog, std::vector<float> digits,
     UnderTestPost* _undertestPost = init_do_flow(analog, digits, digType, checkConsistency, extendedResolution, decimal_shift);
     ESP_LOGD(TAG, "SetupClassFlowPostprocessing completed.");
 
-    std:: time;
+    std::string time;
     // run test
     TEST_ASSERT_TRUE(_undertestPost->doFlow(time));
 
@@ -95,6 +95,7 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
     setConsitencyCheck(_undertestPost, checkConsistency);
     setExtendedResolution(_undertestPost, extendedResolution);
     setDecimalShift(_undertestPost, decimal_shift);
+    _undertestPost->setDecimalShift(); // decimal shift correction depending on extended resolution setting + decimal place count setting
 
     return _undertestPost;
 
@@ -159,4 +160,11 @@ void setAnalogdigitTransistionStart(UnderTestPost* _underTestPost, float _analog
             (*NUMBERS)[_n]->analogDigitalTransitionStart = _analogdigitTransistionStart; 
         }       
     }
+}
+
+
+int getDecimalPlaceCount(UnderTestPost* _underTestPost)
+{
+    std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
+    return (*NUMBERS)[0]->decimalPlaceCount;
 }

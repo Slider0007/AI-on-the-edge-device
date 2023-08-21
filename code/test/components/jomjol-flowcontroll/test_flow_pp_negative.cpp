@@ -24,7 +24,7 @@ void testNegative() {
         setAllowNegatives(underTestPost, false);
         SetFallbackValue(underTestPost, fallbackValue);
         std::string result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("no error", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("000 Valid", underTestPost->getReadoutError().c_str());
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
         delete underTestPost;
 
@@ -35,8 +35,8 @@ void testNegative() {
         setAllowNegatives(underTestPost, false);
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("no error", underTestPost->getReadoutError().c_str());
-        //TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, analogs.size()+1).c_str(), result.c_str());
+        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
         // extendResolution=true
@@ -46,8 +46,8 @@ void testNegative() {
         setAllowNegatives(underTestPost, false);
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("Neg. Rate: Read: 16.984, Pre: 16.988", underTestPost->getReadoutError().c_str());
-        TEST_ASSERT_EQUAL_STRING("", result.c_str());
+        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
         // extendResolution=false
@@ -57,8 +57,8 @@ void testNegative() {
         setAllowNegatives(underTestPost, false);
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("Neg. Rate: Read: 16.98, Pre: 16.99", underTestPost->getReadoutError().c_str());
-        TEST_ASSERT_EQUAL_STRING("", result.c_str());
+        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
 
@@ -70,7 +70,7 @@ void testNegative() {
         setAllowNegatives(underTestPost, true);
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("no error", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("000 Valid", underTestPost->getReadoutError().c_str());
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
         delete underTestPost;
 
@@ -93,13 +93,13 @@ void testNegative_Issues() {
         // extendResolution=false
         // value < fallbackValue
         // Prüfung eingeschaltet => Fehler
-        fallbackValue = 22018.08; // zu groß
+        fallbackValue = 22018.08; // zu groß 
         UnderTestPost* underTestPost = init_do_flow(analogs, digits, Digital100, false, false, -2);
         setAllowNegatives(underTestPost, false);
-        SetFallbackValue(underTestPost, fallbackValue_extended);
+        SetFallbackValue(underTestPost, fallbackValue);
         std::string result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("Neg. Rate: Read: 22017.98, Pre: 22018.08", underTestPost->getReadoutError().c_str());
-        TEST_ASSERT_EQUAL_STRING("", result.c_str());
+        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
 }
