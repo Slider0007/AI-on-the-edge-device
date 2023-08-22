@@ -32,7 +32,7 @@
             if (streamPopup)   // Ensure that stream popup is closed because it's blocking web interface
                 streamPopup.close();
 
-            console.log("loadPage(" + page + ")");
+            //console.log("loadPage(" + page + ")");
             document.cookie = "page="+page + "; path=/";
             document.getElementById('maincontent').src = page;
 
@@ -147,7 +147,7 @@
     if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH") {
     document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/";
     }
-    console.log("Loading page: " + getCookie("page"));
+    //console.log("Loading page: " + getCookie("page"));
     document.getElementById('maincontent').src = getCookie("page");
 
     

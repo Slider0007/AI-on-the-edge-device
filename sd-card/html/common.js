@@ -77,7 +77,7 @@ function LoadFwVersion() {
         if (xhttp.status >= 200 && xhttp.status < 300) {
             fwVersion = xhttp.responseText;
             document.getElementById("Version").innerHTML  = "Slider0007 Fork | " + fwVersion;
-            console.log(fwVersion);
+            //console.log(fwVersion);
             compareVersions();
         } 
         else {
@@ -104,7 +104,7 @@ function LoadWebUiVersion() {
     xhttp.addEventListener('load', function(event) {
         if (xhttp.status >= 200 && xhttp.status < 300) {
             webUiVersion = xhttp.responseText;
-            console.log("Web UI Version: " + webUiVersion);
+            //console.log("Web UI Version: " + webUiVersion);
             compareVersions();
         } 
         else {
@@ -115,7 +115,7 @@ function LoadWebUiVersion() {
 
     try {
         url = _domainname + '/info?type=HTMLVersion';     
-        console.log("url");
+        //console.log("url: " + url);
         xhttp.open("GET", url, true);
         xhttp.send();
     }
@@ -134,7 +134,7 @@ function compareVersions() {
     fWGitHash = arr[arr.length - 1].substring(0, 7);
     arr = webUiVersion.split(" ");
     webUiHash = arr[arr.length - 1].substring(0, 7);
-    console.log("FW Hash: " + fWGitHash + ", Web UI Hash: " + webUiHash);
+    //console.log("FW Hash: " + fWGitHash + ", Web UI Hash: " + webUiHash);
     
     if (fWGitHash != webUiHash) {
         firework.launch("The version of the web interface (" + webUiHash + 
