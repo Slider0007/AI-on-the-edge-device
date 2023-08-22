@@ -5,13 +5,44 @@
 <meta charset="UTF-8" />
 
 <style>
-.tg  {border-collapse:collapse;border-spacing:0;width:100%;min-width:600px;height:100%;color:darkslategray;}
-.tg th{min-width:325px;width:325px;height:20px;font-size:18px;text-align:left;font-weight:bold;padding:5px 10px 5px 10px;;overflow:hidden;word-break:normal;background-color:lightgrey;}
-.tg td{font-size:15px;padding:5px 10px 5px 10px;overflow:hidden;word-break:normal;}
-.tg .tg-1{font-size:15px;vertical-align: top; font-family:Arial, Helvetica, sans-serif !important;}
-.tg .tg-2{height:52px;font-size:15px;padding:3px 0px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
-.tg .tg-3{height:45px;font-size:15px;padding:3px 10px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
-.tg .tg-4{height:fit-content;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
+	.tg  {border-collapse:collapse;border-spacing:0;width:100%;min-width:600px;height:100%;color:darkslategray;}
+	.tg th{min-width:325px;width:325px;height:20px;font-size:medium;text-align:left;font-weight:bold;padding:5px 10px 5px 10px;
+				overflow:hidden;word-break:normal;background-color:lightgrey;}
+	.tg td{font-size:15px;padding:5px 10px 5px 10px;overflow:hidden;word-break:normal;}
+	.tg .tg-1{font-size:15px;vertical-align: top; padding-top:0px; font-family:Arial, Helvetica, sans-serif !important;}
+	.tg .tg-2{height:52px;font-size:15px;padding:3px 0px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
+	.tg .tg-3{height:45px;font-size:15px;padding:3px 10px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
+	.tg .tg-4{height:70px;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
+	.tg .tg-5{height:fit-content;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
+
+	input[type=number] {
+        width: 60px;
+        min-width: 40px;
+        max-width: 40px;
+        margin-right: 0px;
+        padding: 3px 5px;
+        display: inline-block;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        vertical-align: middle;
+    }
+
+	.button {
+            padding: 5px 10px;
+            width: 90px;
+            font-size: 16px;
+        }
+
+		input:out-of-range {
+        background-color: rgba(255, 0, 0, 0.25);
+        border: 1px solid red;
+    }
+
+    input:invalid {
+        background-color: rgba(255, 0, 0, 0.25);
+        border: 1px solid red;
+    }
+
 </style>
 
 </head>
@@ -20,11 +51,31 @@
 
 	<table class="tg">
 		<tr>
-			<th class="th">Actual Value</th>
-			<td class="tg-1" rowspan="13">
+			<td style="padding:0px">
+				<table>
+					<tr>
+						<td rowspan="2" style="padding-left:8px; padding-right:20px; padding-top:0px; padding-bottom:10px">
+							<button id="RefreshButton" class="button" onclick="ManualRefreshContent();">Refresh</button>
+						</td>
+						<td style="padding-top:0px">
+							<input type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
+							<label for=AutoRefreshEnabled><class id="AutoRefreshEnabled" style="color:black;">Auto Refresh</class></label>
+							<input required style="margin-left:10px;" type="number" name="AutoRefreshTime" id="AutoRefreshTime" size="13" min="1" step="1" value="10" 
+									oninput="(!validity.rangeUnderflow||(value=2));" onchange="AutoRefreshContent();"> s
+						</td>
+					</tr>
+					<tr>
+						<td style="padding-left:35px;padding-bottom:10px; padding-top: 0px">Last Refresh<output style="margin-left:12px" id="timestamp"></output></td>
+					</tr>
+				</table>
+			</td>
+			<td class="tg-1" rowspan="14">
 				<img style="padding-left: 5px; padding-top: 0px; max-width: 100%; width: auto; height: auto;" id="img" src="">
 			</td>
-		</tr>	 
+		</tr>
+		<tr>
+			<th class="th">Actual Value</th>
+		</tr> 
 		<tr>	
 			<td class="tg-2">
 				<div id="value"></div>
@@ -67,12 +118,13 @@
 			<th class="th">System Info</th>
 		</tr>	
 		<tr>	
-			<td class="tg-4">
-				<div id="timestamp" ></div>	
-				<div id="cputemp" ></div>	
-				<div id="rssi" ></div>
-				<div id="uptime" ></div>
-				<div id="round" ></div>
+			<td>
+				<table>
+					<tr><td style="padding: 0px;">Uptime</td><td style="padding: 0px 20px"><output id="uptime"></output></td></tr>
+					<tr><td style="padding: 0px;">Round Counter</td><td style="padding: 0px 20px"><output id="round"></output></td></tr>
+					<tr><td style="padding: 0px;">WIFI Signal</td><td style="padding: 0px 20px"><output id="rssi"></output></td></tr>
+					<tr><td style="padding: 0px;">CPU Temp</td><td style="padding: 0px 20px"><output id="cputemp"></output></td></tr>
+				</table>
 			</td>
 		</tr>
 	</table>
@@ -99,6 +151,30 @@
 	});
 
 
+	function LoadProcessData()
+	{
+		url = domainname + '/process_data';     
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				const _jsonData = JSON.parse(xhttp.responseText);			
+				loadValue(_jsonData.actual_value, "value", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.fallback_value, "fallback", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.raw_value, "raw", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.value_status, "status", "border-collapse: collapse; width: 100%");
+				$('#statusflow').html(_jsonData.process_state);
+				loadProcessError(_jsonData.process_error);
+				$('#uptime').html(_jsonData.uptime);
+				$('#round').html(_jsonData.round_counter);
+				loadRSSI(_jsonData.rssi);
+				$('#cputemp').html(_jsonData.temperature + "°C");
+			}
+		}
+		xhttp.open("GET", url, true);
+		xhttp.send();
+	}
+
+
 	function LoadROIImage()
 	{
 		var d = new Date();
@@ -107,17 +183,7 @@
 		var m = addZero(d.getMinutes());
 		var s = addZero(d.getSeconds());
 		document.getElementById("img").src = getDomainname() + '/img_tmp/alg_roi.jpg?timestamp=' + timestamp;
-		$('#timestamp').html("Last Page Refresh: " + (h + ":" + m + ":" + s));
-	}
-
-
-	function Refresh()
-	{
-		setTimeout (function() {
-			LoadProcessData();
-			LoadROIImage();
-			Refresh();
-		}, 300000);
+		$('#timestamp').html(h + ":" + m + ":" + s);
 	}
 
 
@@ -205,51 +271,66 @@
 	function loadRSSI(_value)
 	{		
 		if (_value >= -55) {
-			$('#rssi').html("WIFI Signal: Excellent (" + _value + "dBm)");
+			$('#rssi').html("Excellent (" + _value + "dBm)");
 		}
 		else if (_value < -55 && _value >= -67) {
-			$('#rssi').html("WIFI Signal: Good (" + _value + "dBm)");
+			$('#rssi').html("Good (" + _value + "dBm)");
 		}
 		else if (_value < -67 && _value >= -78) {
-			$('#rssi').html("WIFI Signal: Fair (" + _value + "dBm)");
+			$('#rssi').html("Fair (" + _value + "dBm)");
 		}
 		else if (_value < -78 && _value >= -85) {
-			$('#rssi').html("WIFI Signal: Weak (" + _value + "dBm)");
+			$('#rssi').html("Weak (" + _value + "dBm)");
 		}
 		else {
-			$('#rssi').html("WIFI Signal: Unreliable (" + _value + "dBm)");
+			$('#rssi').html("Unreliable (" + _value + "dBm)");
 		}
 	}
 
 
-	function LoadProcessData()
-	{
-		url = domainname + '/process_data';     
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				const _jsonData = JSON.parse(xhttp.responseText);			
-				loadValue(_jsonData.actual_value, "value", "border-collapse: collapse; width: 100%");
-				loadValue(_jsonData.fallback_value, "fallback", "border-collapse: collapse; width: 100%");
-				loadValue(_jsonData.raw_value, "raw", "border-collapse: collapse; width: 100%");
-				loadValue(_jsonData.value_status, "status", "border-collapse: collapse; width: 100%");
-				$('#statusflow').html(_jsonData.process_state);
-				loadProcessError(_jsonData.process_error);
-				$('#cputemp').html("CPU Temperature: " + _jsonData.temperature + "°C");
-				loadRSSI(_jsonData.rssi);
-				$('#uptime').html("Uptime: " + _jsonData.uptime);
-				$('#round').html("Round Counter: " + _jsonData.round_counter);
+	function ManualRefreshContent()
+	{	
+		LoadProcessData();
+		LoadROIImage();
+	}
+
+
+	function AutoRefreshContent()
+	{	
+		if (document.getElementById("AutoRefreshEnabled").checked == true) { // Activated -> Set timeout
+
+			if (autoRefreshTimeoutHandle) { // Clear actual timeout handle
+				clearTimeout(autoRefreshTimeoutHandle);
+				autoRefreshTimeoutHandle = null;
+			}
+
+			var autoRefreshTime = document.getElementById("AutoRefreshTime").value * 1000;
+
+			if (autoRefreshTime == null || autoRefreshTime == 0) { // If no value is set or value is zero, reset checkbox
+				document.getElementById("AutoRefreshEnabled").checked = false;
+			}
+			else {
+				autoRefreshTimeoutHandle = setTimeout(function() {
+					LoadProcessData();
+					LoadROIImage();
+					AutoRefreshContent();
+				}, autoRefreshTime);
 			}
 		}
-		xhttp.open("GET", url, true);
-		xhttp.send();
+		else { // Deactivated -> Reset running timeout
+			if (autoRefreshTimeoutHandle) {
+				clearTimeout(autoRefreshTimeoutHandle);
+				autoRefreshTimeout = null;
+			}
+		}
 	}
 
 
 	function init()
 	{
 		domainname = getDomainname();
-		Refresh();
+		autoRefreshTimeoutHandle = null; // Init auto refresh handle
+		document.getElementById("AutoRefreshEnabled").checked = false; // Reset auto refresh checkbox at page init
 	}
 
 	
