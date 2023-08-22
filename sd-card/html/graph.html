@@ -45,6 +45,16 @@
             width: 160px;
             font-size: 16px;
         }
+
+        input:out-of-range {
+            background-color: rgba(255, 0, 0, 0.25);
+            border: 1px solid red;
+        }
+
+        input:invalid {
+            background-color: rgba(255, 0, 0, 0.25);
+            border: 1px solid red;
+        }
     </style>
 
     <script>
@@ -297,10 +307,15 @@
 
 			var autoRefreshTime = document.getElementById("AutoRefreshTime").value * 1000;
 
-			autoRefreshTimeoutHandle = setTimeout(function() {
-                run();
-				AutoRefreshContent();
-			}, autoRefreshTime);
+            if (autoRefreshTime == null || autoRefreshTime == 0) { // If no value is set or value is zero, reset checkbox
+				document.getElementById("AutoRefreshEnabled").checked = false;
+			}
+			else {
+                autoRefreshTimeoutHandle = setTimeout(function() {
+                    run();
+                    AutoRefreshContent();
+                }, autoRefreshTime);
+            }
 		}
 		else { // Deactivated -> Reset running timeout
 			if (autoRefreshTimeoutHandle) {
