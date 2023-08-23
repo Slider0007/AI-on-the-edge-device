@@ -343,7 +343,7 @@
 	function init()
 	{
 		domainname = getDomainname();
-		document.getElementById("img").src = domainname + '/loading.gif?v=$COMMIT_HASH'; // preset img element with loading indicator
+		document.getElementById("img").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // preset img element with loading indicator
 		autoRefreshTimeoutHandle = null; // Init auto refresh handle
 		document.getElementById("AutoRefreshEnabled").checked = false; // Reset auto refresh checkbox at page init
 	}
