@@ -63,8 +63,10 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
         endsWith(filename, ".jpg") ||
         endsWith(filename, ".jpeg") ||
         endsWith(filename, ".ico") ||
-        endsWith(filename, ".png")) {
-
+        endsWith(filename, ".gif") ||
+        endsWith(filename, ".svg") ||
+        endsWith(filename, ".png"))
+    {
     	if (filename == "/sdcard/html/setup.html") {    
             httpd_resp_set_hdr(req, "Clear-Site-Data", "\"*\"");
         }
