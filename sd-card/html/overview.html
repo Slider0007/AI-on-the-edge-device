@@ -70,7 +70,7 @@
 				</table>
 			</td>
 			<td class="tg-1" rowspan="14">
-				<img style="padding-left: 5px; padding-top: 0px; max-width: 100%; width: auto; height: auto;" id="img" src="">
+				<img style="padding-left: 5px; padding-top: 0px; max-width: 100%; width: auto; height: auto;" id="img">
 			</td>
 		</tr>
 		<tr>
@@ -197,7 +197,7 @@
 		};
 
  		// Load image to temp image container
-		loadImage.src = getDomainname() + '/img_tmp/alg_roi.jpg?timestamp=' + d.getTime(); // Load image with additional timestamp to avoid loading outdated cached image
+		loadImage.src = domainname + '/img_tmp/alg_roi.jpg?timestamp=' + d.getTime(); // Load image with additional timestamp to avoid loading outdated cached image
 	}
 
 
@@ -343,6 +343,7 @@
 	function init()
 	{
 		domainname = getDomainname();
+		document.getElementById("img").src = domainname + '/loading.gif?v=$COMMIT_HASH'; // preset img element with loading indicator
 		autoRefreshTimeoutHandle = null; // Init auto refresh handle
 		document.getElementById("AutoRefreshEnabled").checked = false; // Reset auto refresh checkbox at page init
 	}
