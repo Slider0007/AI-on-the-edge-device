@@ -52,20 +52,22 @@
 	<table class="tg">
 		<tr>
 			<td style="padding:0px">
-				<table>
+				<table style="table-layout: fixed;border-collapse: collapse;">
 					<tr>
-						<td rowspan="2" style="padding-left:8px; padding-right:20px; padding-top:0px; padding-bottom:10px">
+						<td rowspan="2" style="width:115px; padding-bottom:10px">
 							<button id="RefreshButton" class="button" onclick="ManualRefreshContent();">Refresh</button>
+							<img style="display:none; width:16px; height:16px;" id="manual_refresh_img_loading">
 						</td>
-						<td style="padding-top:0px">
-							<input type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
+						<td style="padding:0px;">
+							<input style="margin-left:15px" type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
 							<label for=AutoRefreshEnabled><class id="AutoRefreshEnabled" style="color:black;">Auto Refresh</class></label>
 							<input required style="margin-left:10px;" type="number" name="AutoRefreshTime" id="AutoRefreshTime" size="13" min="1" step="1" value="10" 
 									oninput="(!validity.rangeUnderflow||(value=2));" onchange="AutoRefreshContent();"> s
 						</td>
 					</tr>
 					<tr>
-						<td style="padding-left:35px;padding-bottom:10px; padding-top: 0px">Last Refresh<output style="margin-left:12px" id="timestamp"></output></td>
+						<td style="padding-left:35px; padding-bottom:5px; padding-top:5px; padding-right:0px">Last Refresh
+								<output style="margin-left:10px" id="timestamp"></output></td>
 					</tr>
 				</table>
 			</td>
@@ -143,12 +145,6 @@
 	  }
 	  return i;
 	}
-
-
-	$(document).ready(function(){
-		LoadProcessData();
-		LoadROIImage();
-	});
 
 
 	function LoadProcessData()
@@ -304,8 +300,14 @@
 
 	function ManualRefreshContent()
 	{	
+		document.getElementById("manual_refresh_img_loading").style.display=""; // Display loading spinner as visual feedback
+
 		LoadProcessData();
 		LoadROIImage();
+		
+		setTimeout(function() { // Show loading spinner at least for 200ms
+			document.getElementById("manual_refresh_img_loading").style.display="none";
+		}, 200);
 	}
 
 
@@ -340,10 +342,17 @@
 	}
 
 
+	$(document).ready(function(){
+		LoadProcessData();
+		LoadROIImage();
+	});
+
+
 	function init()
 	{
 		domainname = getDomainname();
-		document.getElementById("img").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // preset img element with loading indicator
+		document.getElementById("img").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // Preset with loading indicator
+		document.getElementById("manual_refresh_img_loading").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // Preset with loading indicator
 		autoRefreshTimeoutHandle = null; // Init auto refresh handle
 		document.getElementById("AutoRefreshEnabled").checked = false; // Reset auto refresh checkbox at page init
 	}
