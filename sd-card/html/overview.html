@@ -16,9 +16,10 @@
 	.tg .tg-5{height:fit-content;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
 
 	input[type=number] {
-        width: 60px;
-        min-width: 40px;
-        max-width: 40px;
+        width: 45px;
+        min-width: 45px;
+        max-width: 45px;
+		margin-left:10px;
         margin-right: 0px;
         padding: 3px 5px;
         display: inline-block;
@@ -54,20 +55,23 @@
 			<td style="padding:0px">
 				<table style="table-layout: fixed;border-collapse: collapse;">
 					<tr>
-						<td rowspan="2" style="width:115px; padding-bottom:10px">
+						<td rowspan="2" style="width:120px; padding-bottom:10px">
 							<button id="RefreshButton" class="button" onclick="ManualRefreshContent();">Refresh</button>
 							<img style="display:none; width:16px; height:16px;" id="manual_refresh_img_loading">
 						</td>
 						<td style="padding:0px;">
-							<input style="margin-left:15px" type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
+							<input type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
 							<label for=AutoRefreshEnabled><class id="AutoRefreshEnabled" style="color:black;">Auto Refresh</class></label>
-							<input required style="margin-left:10px;" type="number" name="AutoRefreshTime" id="AutoRefreshTime" size="13" min="1" step="1" value="10" 
-									oninput="(!validity.rangeUnderflow||(value=2));" onchange="AutoRefreshContent();"> s
+
+						</td>
+						<td style="padding:0px;">
+							<input required type="number" name="AutoRefreshTime" id="AutoRefreshTime" size="13" min="1" step="1" value="10" 
+							oninput="(!validity.rangeUnderflow||(value=2));" onchange="AutoRefreshContent();"> s
 						</td>
 					</tr>
 					<tr>
-						<td style="padding-left:35px; padding-bottom:5px; padding-top:5px; padding-right:0px">Last Refresh
-								<output style="margin-left:10px" id="timestamp"></output></td>
+						<td style="float:right;padding-right:0px">Last Refresh</td>
+						<td><output id="timestamp"></output></td>
 					</tr>
 				</table>
 			</td>
