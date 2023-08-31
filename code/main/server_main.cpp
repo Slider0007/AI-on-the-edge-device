@@ -93,14 +93,14 @@ esp_err_t info_get_handler(httpd_req_t *req)
     {
         std::string zw;
         zw = getIPAddress();
-        httpd_resp_sendstr(req, zw->c_str());
+        httpd_resp_sendstr(req, zw.c_str());
         return ESP_OK;        
     }
     else if (_task.compare("SSID") == 0)
     {
         std::string zw;
         zw = getSSID();
-        httpd_resp_sendstr(req, zw->c_str());
+        httpd_resp_sendstr(req, zw.c_str());
         return ESP_OK;        
     }
     else if (_task.compare("Round") == 0)
