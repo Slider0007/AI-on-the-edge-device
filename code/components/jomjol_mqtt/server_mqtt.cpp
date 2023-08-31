@@ -134,7 +134,7 @@ bool sendHomeAssistantDiscoveryTopic(std::string group, std::string field, std::
         "\"model\": \"Meter Digitizer\","  +
         "\"manufacturer\": \"AI on the Edge Device\","  +
         "\"sw_version\": \"" + version + "\","  +
-        "\"configuration_url\": \"http://" + *getIPAddress() + "\""  +
+        "\"configuration_url\": \"http://" + getIPAddress() + "\""  +
     "}"  +
     "}";
 
@@ -254,7 +254,7 @@ bool publishStaticData(int qos)
 	//int aFreeInternalHeapSizeBefore = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + "MAC", getMac(), qos, retainFlag);
-    allSendsSuccessed |= MQTTPublish(maintopic + "/" + "IP", *getIPAddress(), qos, retainFlag);
+    allSendsSuccessed |= MQTTPublish(maintopic + "/" + "IP", getIPAddress(), qos, retainFlag);
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + "hostname", wlan_config.hostname, qos, retainFlag);
 
     std::stringstream stream;

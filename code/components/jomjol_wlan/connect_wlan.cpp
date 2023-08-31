@@ -423,15 +423,15 @@ void wifiRoamByScanning(void)
 #endif // WLAN_USE_ROAMING_BY_SCANNING
 
 
-std::string* getIPAddress()
+std::string getIPAddress()
 {
-    return &wlan_config.ipaddress;
+    return wlan_config.ipaddress;
 }
 
 
-std::string* getSSID()
+std::string getSSID()
 {
-    return &wlan_config.ssid;
+    return wlan_config.ssid;
 }
 
 
@@ -672,17 +672,8 @@ int get_WIFI_RSSI()
 }
 
 
-/*std::string getIp() {
-	esp_netif_ip_info_t ip_info;
-	ESP_ERROR_CHECK(esp_netif_get_ip_info(my_sta, ip_info));
-	char ipFormated[4*3+3+1];
-    sprintf(ipFormated, IPSTR, IP2STR(&ip_info.ip));
-	return std::string(ipFormated);
-}*/
-
-
-std::string* getHostname() {
-	return &wlan_config.hostname;
+std::string getHostname() {
+	return wlan_config.hostname;
 }
 
 

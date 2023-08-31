@@ -6,10 +6,10 @@
 #include <string>
 
 int wifi_init_sta(void);
-std::string* getIPAddress();
-std::string* getSSID();
+std::string getIPAddress();
+std::string getSSID();
 int get_WIFI_RSSI();
-std::string* getHostname();
+std::string getHostname();
 
 bool getWIFIisConnected();
 void WIFIDestroy();
