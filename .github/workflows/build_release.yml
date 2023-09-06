@@ -335,7 +335,7 @@ jobs:
         with:
           release-type: simple
           package-name: release-please-action
-          draft-pull-request: false
+          draft-pull-request: true
           pull-request-header: ':robot: Gather changes for upcoming release'
           changelog-path: CHANGELOG.md
           changelog-types: '[
