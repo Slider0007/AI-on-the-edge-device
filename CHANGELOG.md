@@ -1,6 +1,6 @@
 # Changelog
 
-## [16.0.0](https://github.com/Slider0007/AI-on-the-edge-device/compare/v15.1.0...v16.0.0) (2023-09-07)
+## [16.0.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v15.1.1...v16.0.0-SLFork) (2023-09-07)
 
 
 ### ⚠ BREAKING CHANGES
