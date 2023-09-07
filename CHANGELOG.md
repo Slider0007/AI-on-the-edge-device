@@ -1,5 +1,44 @@
 # Changelog
 
+## [16.0.0](https://github.com/Slider0007/AI-on-the-edge-device/compare/v15.1.0...v16.0.0) (2023-09-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* Reload configuration without device reboot
+
+### Features
+
+* Dedicated state names for digit/analog processing ([47b37eb](https://github.com/Slider0007/AI-on-the-edge-device/commit/47b37eb31e52280f158a55bc9ac450cba716a2d6))
+* Fully reworked main flow state machine (+ more error handling) ([751e42d](https://github.com/Slider0007/AI-on-the-edge-device/commit/751e42d083ddc6089e3c4320d5069ab85e457cd2))
+* Keep tflite models file loaded after cycle init ([6a3d1df](https://github.com/Slider0007/AI-on-the-edge-device/commit/6a3d1df0bfac1cb0d222c4c861a503625587256c))
+* Reload configuration without device reboot ([751e42d](https://github.com/Slider0007/AI-on-the-edge-device/commit/751e42d083ddc6089e3c4320d5069ab85e457cd2))
+* Updated WebUI to match new flow states ([751e42d](https://github.com/Slider0007/AI-on-the-edge-device/commit/751e42d083ddc6089e3c4320d5069ab85e457cd2))
+
+
+### Bug Fixes
+
+* **fileserver:** avoid sending *two* "last-chunk" sequences ([#2532](https://github.com/Slider0007/AI-on-the-edge-device/issues/2532)) ([#53](https://github.com/Slider0007/AI-on-the-edge-device/issues/53)) ([db467c0](https://github.com/Slider0007/AI-on-the-edge-device/commit/db467c0a034a1e9acbe3d02cb892eec15c4272ba))
+* **fileserver:** Enhanced file deletion routine (Thanks to caco3) ([783b7ea](https://github.com/Slider0007/AI-on-the-edge-device/commit/783b7eaba6fcbe7c6cf65419039785cd5a34f975))
+* Small fixes ([751e42d](https://github.com/Slider0007/AI-on-the-edge-device/commit/751e42d083ddc6089e3c4320d5069ab85e457cd2))
+* Update SmartLeds driver (avoid build warnings) ([b641a92](https://github.com/Slider0007/AI-on-the-edge-device/commit/b641a92d6b52911409cfa9a44db78007eaf272bc))
+
+
+### Refactor / Style Changes
+
+* ClassControllCamera ([751e42d](https://github.com/Slider0007/AI-on-the-edge-device/commit/751e42d083ddc6089e3c4320d5069ab85e457cd2))
+* ClassTakeImage ([751e42d](https://github.com/Slider0007/AI-on-the-edge-device/commit/751e42d083ddc6089e3c4320d5069ab85e457cd2))
+
+
+### Other Changes
+
+* Rework build workflow (add release-please action) ([#64](https://github.com/Slider0007/AI-on-the-edge-device/issues/64)) ([113a7f3](https://github.com/Slider0007/AI-on-the-edge-device/commit/113a7f38abeaa9fb91cf05560671bcac414be303))
+* **tflite:** New tflite models (Thanks to haverland) ([6dc06bd](https://github.com/Slider0007/AI-on-the-edge-device/commit/6dc06bd4980417e9dee55adaee049397c800ea9a))
+* Update submodule esp-camera v2.04 ([cc9e03b](https://github.com/Slider0007/AI-on-the-edge-device/commit/cc9e03bad42dd49015170f735bb2fa6396d91528))
+* Update submodule esp-nn v1.0-rc1 ([cc9e03b](https://github.com/Slider0007/AI-on-the-edge-device/commit/cc9e03bad42dd49015170f735bb2fa6396d91528))
+* Update submodule tflite (master, 2023-05-08) ([cc9e03b](https://github.com/Slider0007/AI-on-the-edge-device/commit/cc9e03bad42dd49015170f735bb2fa6396d91528))
+* Update to platformio 6.2.0 ([751e42d](https://github.com/Slider0007/AI-on-the-edge-device/commit/751e42d083ddc6089e3c4320d5069ab85e457cd2))
+
 ## [15.1.1] - 2023-03-23
 
 ### Update Procedure
