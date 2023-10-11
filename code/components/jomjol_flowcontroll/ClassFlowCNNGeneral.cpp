@@ -281,7 +281,9 @@ int ClassFlowCNNGeneral::EvalDigitNumber(int _value, int _valuePreviousNumber, i
     // everything >=x.4 can be considered as current number in transition. With 9.x predecessor the current
     // number can still be x.6 - x.7. 
     // Preceding (else - branch) does not already happen from 9.
-    if (Digital_Transition_Area_Forward >= _valuePreviousNumber || resultDecimalPlace >= 4) {
+    if (((_valuePreviousNumber <= Digital_Transition_Area_Forward) && (_resultPreviousNumber == (int)(_valuePreviousNumber/10.0))) || 
+        resultDecimalPlace >= 4)
+    {
         result =  resultIntergerPart; // The current digit, like the previous digit, does not yet have a zero crossing. 
     }
     else {
