@@ -1,6 +1,9 @@
 # Changelog
 
-## [16.0.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v15.1.0...v16.0.0-SLFork) (2023-10-13)
+## [16.0.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v15.1.1...v16.0.0-SLFork) (2023-10-13)
+
+The following changes are implemented on the the base of jomjol's v15.1.1 release.
+--> https://github.com/jomjol/AI-on-the-edge-device/tree/2a7f3b33a30985b43a8db123a1f5f6e5f264f486
 
 
 ### ⚠ BREAKING CHANGES
@@ -20,10 +23,12 @@
 ### Features
 
 * Add a post process event handler to perform error/debug handling) ([932d538](https://github.com/Slider0007/AI-on-the-edge-device/commit/932d538d7f0aca67268832d379f7cf987b482868))
-* Dedicated state names for digit/analog processing ([47b37eb](https://github.com/Slider0007/AI-on-the-edge-device/commit/47b37eb31e52280f158a55bc9ac450cba716a2d6))
+* Dedicated state names for digit/analog processing (inspired by caco3) ([47b37eb](https://github.com/Slider0007/AI-on-the-edge-device/commit/47b37eb31e52280f158a55bc9ac450cba716a2d6))
 * Enhance alignment algo + Add error handling ([de17472](https://github.com/Slider0007/AI-on-the-edge-device/commit/de174727ced04461fcac849a39b4302a0f9ddc8a))
-* **fileserver:** Enhanced file deletion routine (Thanks to caco3) ([783b7ea](https://github.com/Slider0007/AI-on-the-edge-device/commit/783b7eaba6fcbe7c6cf65419039785cd5a34f975))
+* **fileserver:** Enhanced file deletion routine (cherry picked, implemented by caco3) ([783b7ea](https://github.com/Slider0007/AI-on-the-edge-device/commit/783b7eaba6fcbe7c6cf65419039785cd5a34f975))
+* Extend InfluxDBv1 with individual topic names (implemented by jomjol) (#2319)
 * Fully reworked main flow state machine (new state names) ([751e42d](https://github.com/Slider0007/AI-on-the-edge-device/commit/751e42d083ddc6089e3c4320d5069ab85e457cd2))
+* Implement a camera livestream handler (#2286)
 * Keep alignment marker in RAM to reduce SD read cycles ([3f68cc4](https://github.com/Slider0007/AI-on-the-edge-device/commit/3f68cc40f0d6bd2537796701fb9d2f799c68e0c6))
 * Keep tflite models file loaded after cycle init ([6a3d1df](https://github.com/Slider0007/AI-on-the-edge-device/commit/6a3d1df0bfac1cb0d222c4c861a503625587256c))
 * Move bss segment to SPIRAM -&gt; more free internal RAM ([7c7a63c](https://github.com/Slider0007/AI-on-the-edge-device/commit/7c7a63c9245e0f324628d65677468d836c6ec22a))
@@ -35,6 +40,7 @@
 * ROI images not saving to sd card by default to reduce write cycles ([be023b4](https://github.com/Slider0007/AI-on-the-edge-device/commit/be023b47cebbfc04aa1ecd52a1ba9b2ae41d29ed))
 * Save prevalue (fallbackvalue) to NVS instead of file ([a39bc52](https://github.com/Slider0007/AI-on-the-edge-device/commit/a39bc5226023ffa79e5c6620b15929665ded5c23))
 * Update REST API handler_value + Refactor WebUI recognition page ([020d9ec](https://github.com/Slider0007/AI-on-the-edge-device/commit/020d9ec32d3cf321e94ff9252cf558e7dd76ec6f))
+* Set prevalue using MQTT + set prevalue to RAW value (REST+MQTT) (#2252)
 * **webui:** Add initial rotate to WebUI config page ([5767e93](https://github.com/Slider0007/AI-on-the-edge-device/commit/5767e93ab77bd92514af135dd39ed208bd869558))
 * **webui:** Alignment: Add option to switch off rotation ([da2e900](https://github.com/Slider0007/AI-on-the-edge-device/commit/da2e900670596acde8d7d9b274b21047f1785804))
 * **webui:** Allow firmware.bin as valid file name ([932d538](https://github.com/Slider0007/AI-on-the-edge-device/commit/932d538d7f0aca67268832d379f7cf987b482868))
@@ -53,6 +59,9 @@
 * Digit no zero crossing issue ([#74](https://github.com/Slider0007/AI-on-the-edge-device/issues/74)) ([9c1a35d](https://github.com/Slider0007/AI-on-the-edge-device/commit/9c1a35da36c6c2168e5135d3f705797c0503143e))
 * **fileserver:** avoid sending *two* "last-chunk" sequences ([#2532](https://github.com/Slider0007/AI-on-the-edge-device/issues/2532)) ([#53](https://github.com/Slider0007/AI-on-the-edge-device/issues/53)) ([db467c0](https://github.com/Slider0007/AI-on-the-edge-device/commit/db467c0a034a1e9acbe3d02cb892eec15c4272ba))
 * Fix first digit when extended resolution off ([#2466](https://github.com/Slider0007/AI-on-the-edge-device/issues/2466)) ([733e58d](https://github.com/Slider0007/AI-on-the-edge-device/commit/733e58d075fd8d3223e33c5237bb4d0070eee0c2))
+* Fix last element missing in digit model drop down (#2282)
+* Fix leading NaN (#2310)
+* Fix broken sysinfo (implemented by caco3) (#2381)
 * **mqtt:** mqtt_handler_set_prevalue: fix memory leak ([0b99624](https://github.com/Slider0007/AI-on-the-edge-device/commit/0b99624d9ecb45269f806fc1242faea194a2bcba))
 * Update SmartLeds driver (avoid build warnings) ([b641a92](https://github.com/Slider0007/AI-on-the-edge-device/commit/b641a92d6b52911409cfa9a44db78007eaf272bc))
 * **webui:** Analog ROI: Fix wrong multiplier view ([575f504](https://github.com/Slider0007/AI-on-the-edge-device/commit/575f504a0298ab81f864b9632733f29bf1303710))
@@ -81,6 +90,7 @@
 * Refactor string usage ([2632887](https://github.com/Slider0007/AI-on-the-edge-device/commit/2632887fb94f84062f23799a99e7b7cfbc05263f))
 * Rename of `preValue` name variants to `fallbackValue` in code and WebUI ([d07b86f](https://github.com/Slider0007/AI-on-the-edge-device/commit/d07b86fa76a07b6ee278a3ea0a7bebc2cdaa3c48))
 * Renamed REST API /value option: error -&gt; status ([d07b86f](https://github.com/Slider0007/AI-on-the-edge-device/commit/d07b86fa76a07b6ee278a3ea0a7bebc2cdaa3c48))
+* Renaming & cleanup of some modules / functions in source code (#2265)
 * **sdkconfig:** Adapt structure and headline namings to sdkconfig.esp32cam ([7922855](https://github.com/Slider0007/AI-on-the-edge-device/commit/79228559a38ad9069651cae04117e1aa1181549a))
 * **webui:** Adapt some parameter name & visibility (regular / expert) ([597373c](https://github.com/Slider0007/AI-on-the-edge-device/commit/597373ce3a3d4d24510d98546c8ce9a839ecf9b1))
 * **webui:** Overview: Show round counter in separate line ([d07b86f](https://github.com/Slider0007/AI-on-the-edge-device/commit/d07b86fa76a07b6ee278a3ea0a7bebc2cdaa3c48))
@@ -95,10 +105,13 @@
 * **build:** Add platformIO env to local build firmware + parameter tooltips ([f59cd63](https://github.com/Slider0007/AI-on-the-edge-device/commit/f59cd63fa27e23089fae28d8950fa1c7fee1af46))
 * **build:** Optimize caching ([027b89e](https://github.com/Slider0007/AI-on-the-edge-device/commit/027b89e0bcc53d3ff85083442bcba9c773af7bf6))
 * **build:** Rework build workflow (add release-please action) ([113a7f3](https://github.com/Slider0007/AI-on-the-edge-device/commit/113a7f38abeaa9fb91cf05560671bcac414be303))
+* **platformio:** Migration of PlatformIO 5.2.0 to 6.1.0 (resp. ESP IDF from 4.4.2 to 5.0.1) (#2305)
 * **platformio:** Update platformIO to 6.3.2 ([7c0b2e5](https://github.com/Slider0007/AI-on-the-edge-device/commit/7c0b2e581d359776fa3cfaaf9f3eda446ec30d95))
-* release 16.0.0-SLFork ([93896aa](https://github.com/Slider0007/AI-on-the-edge-device/commit/93896aa49ec5fb91334864274acb2a4b2e218fe4))
 * Remove miniz examples ([1ad5f69](https://github.com/Slider0007/AI-on-the-edge-device/commit/1ad5f6930152dcdd95b67e36bb0a98c5883c654e))
+* Removed the stb_image files and re-add them as a submodule. (#2223)
+* Remove obsolete ClassFlowWriteList (#2264)
 * Remove redundant 'getFileSize()' function ([55ac7c1](https://github.com/Slider0007/AI-on-the-edge-device/commit/55ac7c1fb000adcbcb60b0f6baf504a4b2e60e4e))
+* Remove webupdater
 * **sdcard:** Buffered SD card R/W: Increase buffer from 128 to 512 byte ([4141e4d](https://github.com/Slider0007/AI-on-the-edge-device/commit/4141e4db308e1b0d4cc27b2dd55bcb64c42113c4))
 * **sdkconfig:** Disable IPv6 ([7922855](https://github.com/Slider0007/AI-on-the-edge-device/commit/79228559a38ad9069651cae04117e1aa1181549a))
 * **submodule:** Update esp-camera v2.04 ([cc9e03b](https://github.com/Slider0007/AI-on-the-edge-device/commit/cc9e03bad42dd49015170f735bb2fa6396d91528))
@@ -106,11 +119,12 @@
 * **submodule:** Update tflite (master, 2023-05-08) ([cc9e03b](https://github.com/Slider0007/AI-on-the-edge-device/commit/cc9e03bad42dd49015170f735bb2fa6396d91528))
 * **submodule:** Update TFLite related submodules -&gt; Reduced flash/RAM usage ([e70db93](https://github.com/Slider0007/AI-on-the-edge-device/commit/e70db939e2f787304b59d9009fd6485f3bb93e51))
 * **testcases:** Adapt test cases to new naming + add test cases ([194f87c](https://github.com/Slider0007/AI-on-the-edge-device/commit/194f87ce999a170bc51e7d97923ecdf68630f537))
-* **tflite:** New dig-class100 model ([9cff3e5](https://github.com/Slider0007/AI-on-the-edge-device/commit/9cff3e5bda258ea75f77a613e2b25234dd46f514))
-* **tflite:** New digit/analog models ([a11e0f6](https://github.com/Slider0007/AI-on-the-edge-device/commit/a11e0f6930dff8debda670792efdf5da15f0b918))
-* **tflite:** New tflite models ([6dc06bd](https://github.com/Slider0007/AI-on-the-edge-device/commit/6dc06bd4980417e9dee55adaee049397c800ea9a))
+* **tflite:** New dig-class100 model (provided by haverland) ([9cff3e5](https://github.com/Slider0007/AI-on-the-edge-device/commit/9cff3e5bda258ea75f77a613e2b25234dd46f514))
+* **tflite:** New digit/analog models (provided by haverland) ([a11e0f6](https://github.com/Slider0007/AI-on-the-edge-device/commit/a11e0f6930dff8debda670792efdf5da15f0b918))
+* **tflite:** New tflite models (provided by haverland) ([6dc06bd](https://github.com/Slider0007/AI-on-the-edge-device/commit/6dc06bd4980417e9dee55adaee049397c800ea9a))
 * **webui:** Config: Parameter `Use FallbackValue` delcare as expert parameter ([d07b86f](https://github.com/Slider0007/AI-on-the-edge-device/commit/d07b86fa76a07b6ee278a3ea0a7bebc2cdaa3c48))
 * **webui:** Update image files for flowstates ([e68789a](https://github.com/Slider0007/AI-on-the-edge-device/commit/e68789af671539c0f68bc6c89a44da3a10781b69))
+* **webui:** Update copyright year
 
 ## [15.1.1] - 2023-03-23
 
