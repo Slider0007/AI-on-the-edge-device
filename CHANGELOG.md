@@ -1,5 +1,12 @@
 # Changelog
 
+## [16.0.1-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.0.0-SLFork...v16.0.1-SLFork) (2023-10-18)
+
+
+### Other Changes
+
+* **build:** Fix build workflow (correct artifacts & release version string) ([#75](https://github.com/Slider0007/AI-on-the-edge-device/issues/75)) ([e8c8c00](https://github.com/Slider0007/AI-on-the-edge-device/commit/e8c8c00e6bc362e24ece924b51a4b6025f93d9d6))
+
 ## [16.0.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v15.1.1...v16.0.0-SLFork) (2023-10-13)
 
 The following changes are implemented on the the base of jomjol's v15.1.1 release.
