@@ -58,6 +58,11 @@ jobs:
         ref: ${{ needs.prepare-release.outputs.tag_name }}
         submodules: recursive
 
+    - name: Set variables
+      id: vars
+      run: |
+        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
     - name: Cache pip & platformIO cache files
       uses: actions/cache@v3
       with:
