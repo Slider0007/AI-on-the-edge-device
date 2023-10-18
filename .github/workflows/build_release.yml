@@ -13,7 +13,6 @@ jobs:
 #########################################################################################
   prepare-release:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop' # Process only for specific branch
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       upload_url: ${{ steps.release.outputs.upload_url }}
@@ -23,6 +22,7 @@ jobs:
       - uses: google-github-actions/release-please-action@v3
         id: release
         with:
+          default-branch: develop
           release-type: simple
           package-name: release-please-action
           draft-pull-request: false
