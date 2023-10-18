@@ -1,5 +1,12 @@
 # Changelog
 
+## [16.0.2-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.0.1-SLFork...v16.0.2-SLFork) (2023-10-18)
+
+
+### Other Changes
+
+* **build:** Fix build workflow (commit hash) ([#77](https://github.com/Slider0007/AI-on-the-edge-device/issues/77)) ([d7f9991](https://github.com/Slider0007/AI-on-the-edge-device/commit/d7f9991f763c202e63672dcdb6f651d1973bad4a))
+
 ## [16.0.1-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.0.0-SLFork...v16.0.1-SLFork) (2023-10-18)
 
 
