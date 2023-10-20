@@ -18,6 +18,7 @@ protected:
     int flash_duration;
     framesize_t ImageSize;
     bool isImageSize;
+    int CameraFrequency;
     int ImageQuality;
     int brightness;
     int contrast;

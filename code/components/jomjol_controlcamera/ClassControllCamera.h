@@ -55,9 +55,10 @@ class CCamera {
         esp_err_t CaptureToStream(httpd_req_t *req, bool FlashlightOn);
 
         void ledc_init(void);
+        void SetCameraFrequency(int _frequency);
         void SetQualitySize(int qual, framesize_t resol);
-        framesize_t TextToFramesize(const char * text);
         bool SetBrightnessContrastSaturation(int _brightness, int _contrast, int _saturation);
+        framesize_t TextToFramesize(const char * text);
         void GetCameraParameter(httpd_req_t *req, int &qual, framesize_t &resol);
         void SetLEDIntensity(int _intrel);
 

@@ -29,6 +29,7 @@ void ClassFlowTakeImage::SetInitialParameter(void)
     isImageSize = false;
     ImageSize = FRAMESIZE_VGA;
     TimeImageTaken = 0;
+    CameraFrequency = 20; // Mhz
     ImageQuality = 12;
     brightness = 0;
     contrast = 0;
@@ -61,72 +62,66 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
     {
         splitted = ZerlegeZeile(aktparamgraph);
-        if ((toUpper(splitted[0]) ==  "RAWIMAGESLOCATION") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) ==  "RAWIMAGESLOCATION") && (splitted.size() > 1)) {
             imagesLocation = "/sdcard" + splitted[1];
             isLogImage = true;
         }
 
-        if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION") && (splitted.size() > 1)) {
             this->imagesRetention = std::stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "WAITBEFORETAKINGPICTURE") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "WAITBEFORETAKINGPICTURE") && (splitted.size() > 1)) {
             waitbeforepicture = stof(splitted[1]);
             flash_duration = (int)(waitbeforepicture * 1000);
         }
 
-        if ((toUpper(splitted[0]) == "IMAGEQUALITY") && (splitted.size() > 1))
-            ImageQuality = std::stod(splitted[1]);
+        if ((toUpper(splitted[0]) == "CAMERAFREQUENCY") && (splitted.size() > 1)) {
+            CameraFrequency = std::stoi(splitted[1]);
+        }
 
-        if ((toUpper(splitted[0]) == "IMAGESIZE") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "IMAGEQUALITY") && (splitted.size() > 1)) {
+            ImageQuality = std::stod(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "IMAGESIZE") && (splitted.size() > 1)) {
             ImageSize = Camera.TextToFramesize(splitted[1].c_str());
             isImageSize = true;
         }
 
-        if ((toUpper(splitted[0]) == "LEDINTENSITY") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "LEDINTENSITY") && (splitted.size() > 1)) {
             ledintensity = stoi(splitted[1]);
             ledintensity = std::min(100, ledintensity);
             ledintensity = std::max(0, ledintensity);
         }
 
-        if ((toUpper(splitted[0]) == "BRIGHTNESS") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "BRIGHTNESS") && (splitted.size() > 1)) {
             brightness = stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "CONTRAST") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "CONTRAST") && (splitted.size() > 1)) {
             contrast = stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "SATURATION") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SATURATION") && (splitted.size() > 1)) {
             saturation = stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "FIXEDEXPOSURE") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "FIXEDEXPOSURE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 FixedExposure = true;
             else
                 FixedExposure = false;
         }
 
-        if ((toUpper(splitted[0]) == "DEMO") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "DEMO") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 Camera.EnableDemoMode();
             else
                 Camera.DisableDemoMode();
         }
 
-        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 SaveAllFiles = true;
             else
@@ -136,8 +131,9 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
     Camera.ledc_init(); // PWM init needs to be done here due to parameter reload (camera class not to be deleted completely)
     Camera.SetLEDIntensity(ledintensity);
-    Camera.SetBrightnessContrastSaturation(brightness, contrast, saturation);
+    Camera.SetCameraFrequency(CameraFrequency);
     Camera.SetQualitySize(ImageQuality, ImageSize);
+    Camera.SetBrightnessContrastSaturation(brightness, contrast, saturation);
 
     image_width = Camera.image_width;
     image_height = Camera.image_height;

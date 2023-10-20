@@ -77,13 +77,11 @@ static camera_config_t camera_config = {
 
     //XCLK 20MHz or 10MHz for OV2640 double FPS (Experimental)
     .xclk_freq_hz = 20000000,             // Orginal value
-//    .xclk_freq_hz =    5000000,         // Test to get rid of the image errors !!!! Hangs in version 9.2 !!!!
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0,
 
     .pixel_format = PIXFORMAT_JPEG, //YUV422,GRAYSCALE,RGB565,JPEG
     .frame_size = FRAMESIZE_VGA,    //QQVGA-UXGA Do not use sizes above QVGA when not JPEG
-//    .frame_size = FRAMESIZE_UXGA,    //QQVGA-UXGA Do not use sizes above QVGA when not JPEG
     .jpeg_quality = 12, //0-63 lower number means higher quality
     .fb_count = 1,       //if more than one, i2s runs in continuous mode. Use only with JPEG
     .fb_location = CAMERA_FB_IN_PSRAM, /*!< The location where the frame buffer will be allocated */
@@ -216,10 +214,60 @@ void CCamera::printCamInfo(void)
 {
     // Print camera infos
     // ********************************************
-    char caminfo[50];
+    char caminfo[64];
     sensor_t * s = esp_camera_sensor_get();
-    sprintf(caminfo, "PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x", s->id.PID, s->id.VER, s->id.MIDH, s->id.MIDL);
+    sprintf(caminfo, "PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x, FREQ: %dMhz", s->id.PID, 
+                s->id.VER, s->id.MIDH, s->id.MIDL, s->xclk_freq_hz/1000000);
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera info: " + std::string(caminfo));
+}
+
+
+void CCamera::SetCameraFrequency(int _frequency)
+{
+    if (camera_config.xclk_freq_hz == (_frequency * 1000000)) // If frequency is matching, return without any action
+        return;
+    
+    if (_frequency >= 8 && _frequency <= 20)
+        camera_config.xclk_freq_hz = _frequency * 1000000;
+    else
+        camera_config.xclk_freq_hz = 2000000;
+
+    InitCam();
+    printCamInfo();
+    
+    ESP_LOGD(TAG, "Set camera frequency: %d", camera_config.xclk_freq_hz);
+}
+
+
+void CCamera::SetQualitySize(int qual, framesize_t resol)
+{
+    if (!getCameraInitSuccessful())
+        return;
+    
+    qual = std::min(63, std::max(8, qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
+    
+    sensor_t * s = esp_camera_sensor_get();
+    if (s) {
+        s->set_quality(s, qual);    
+        s->set_framesize(s, resol);
+    }
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SetQualitySize: Failed to get control structure");
+    }
+
+    ActualResolution = resol;
+    ActualQuality = qual;
+
+    if (resol == FRAMESIZE_QVGA)
+    {
+        image_height = 240;
+        image_width = 320;             
+    }
+    else if (resol == FRAMESIZE_VGA)
+    {
+        image_height = 480;
+        image_width = 640;             
+    }
 }
 
 
@@ -283,38 +331,6 @@ bool CCamera::SetBrightnessContrastSaturation(int _brightness, int _contrast, in
     ESP_LOGD(TAG, "brightness %d, contrast: %d, saturation %d", brightness, contrast, saturation);
 
     return true;
-}
-
-
-void CCamera::SetQualitySize(int qual, framesize_t resol)
-{
-    if (!getCameraInitSuccessful())
-        return;
-    
-    qual = std::min(63, std::max(8, qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
-    
-    sensor_t * s = esp_camera_sensor_get();
-    if (s) {
-        s->set_quality(s, qual);    
-        s->set_framesize(s, resol);
-    }
-    else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SetQualitySize: Failed to get control structure");
-    }
-
-    ActualResolution = resol;
-    ActualQuality = qual;
-
-    if (resol == FRAMESIZE_QVGA)
-    {
-        image_height = 240;
-        image_width = 320;             
-    }
-    else if (resol == FRAMESIZE_VGA)
-    {
-        image_height = 480;
-        image_width = 640;             
-    }
 }
 
 

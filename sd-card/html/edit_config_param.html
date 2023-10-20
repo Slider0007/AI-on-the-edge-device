@@ -304,6 +304,21 @@
 
 		<tr class="expert">
 			<td class="indent1">
+				<class id="TakeImage_CameraFrequency_text" style="color:black;">Camera Frequency</class>
+			</td>
+			<td>
+				<select id="TakeImage_CameraFrequency_value1">
+					<option value="20" selected>20 Mhz</option>
+					<option value="16" >16 Mhz</option>
+					<option value="10" >10 Mhz</option>
+					<option value="8" >8 Mhz</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_TakeImage_CameraFrequency</td>
+		</tr>
+
+		<tr class="expert">
+			<td class="indent1">
 				<class id="TakeImage_ImageQuality_text" style="color:black;">Image Quality</class>
 			</td>
 			<td>
@@ -2109,6 +2124,7 @@ function UpdateInput() {
     WriteParameter(param, category, "TakeImage", "RawImagesRetention", true);
     WriteParameter(param, category, "TakeImage", "Demo", false);
     WriteParameter(param, category, "TakeImage", "WaitBeforeTakingPicture", false);
+	WriteParameter(param, category, "TakeImage", "CameraFrequency", false);
     WriteParameter(param, category, "TakeImage", "ImageQuality", false);
     WriteParameter(param, category, "TakeImage", "Brightness", false);
     WriteParameter(param, category, "TakeImage", "Contrast", false);
@@ -2240,6 +2256,7 @@ function ReadParameterAll()
     ReadParameter(param, "TakeImage", "RawImagesRetention", true);
     ReadParameter(param, "TakeImage", "Demo", false);
     ReadParameter(param, "TakeImage", "WaitBeforeTakingPicture", false);
+	ReadParameter(param, "TakeImage", "CameraFrequency", false);
     ReadParameter(param, "TakeImage", "ImageQuality", false);
     ReadParameter(param, "TakeImage", "Brightness", false);
     ReadParameter(param, "TakeImage", "Contrast", false);
