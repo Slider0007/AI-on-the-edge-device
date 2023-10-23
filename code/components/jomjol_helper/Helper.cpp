@@ -23,155 +23,16 @@ extern "C" {
 
 #include <cstring>
 #include <esp_log.h>
-#include <esp_mac.h>
 #include <esp_timer.h>
 #include "../../include/defines.h"
-
-
 #include "ClassLogFile.h"
 
-#include "esp_vfs_fat.h"
 
 static const char* TAG = "HELPER";
-
-unsigned int systemStatus = 0;
-
-sdmmc_cid_t SDCardCid;
-sdmmc_csd_t SDCardCsd;
 
 
 // #define DEBUG_DETAIL_ON
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-std::string getESPHeapInfo(){
-	std::string espInfoResultStr = "";
-	char aMsgBuf[80];
-
-	size_t aFreeHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT);
-
-	size_t aFreeSPIHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-	size_t aFreeInternalHeapSize  = heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-
-	size_t aHeapLargestFreeBlockSize = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-	size_t aHeapIntLargestFreeBlockSize = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-
-	size_t aMinFreeHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-	size_t aMinFreeInternalHeapSize =  heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
-
-
-	sprintf(aMsgBuf,"Heap Total: %ld", (long) aFreeHeapSize);
-	espInfoResultStr += std::string(aMsgBuf);
-
-	sprintf(aMsgBuf," | SPI Free: %ld", (long) aFreeSPIHeapSize);
-	espInfoResultStr += std::string(aMsgBuf);
-	sprintf(aMsgBuf," | SPI Large Block:  %ld", (long) aHeapLargestFreeBlockSize);
-	espInfoResultStr += std::string(aMsgBuf);
-	sprintf(aMsgBuf," | SPI Min Free: %ld", (long) aMinFreeHeapSize);
-	espInfoResultStr += std::string(aMsgBuf);
-
-	sprintf(aMsgBuf," | Int Free: %ld", (long) (aFreeInternalHeapSize));
-	espInfoResultStr += std::string(aMsgBuf);
-	sprintf(aMsgBuf," | Int Large Block:  %ld", (long) aHeapIntLargestFreeBlockSize);
-	espInfoResultStr += std::string(aMsgBuf);
-	sprintf(aMsgBuf," | Int Min Free: %ld", (long) (aMinFreeInternalHeapSize));
-	espInfoResultStr += std::string(aMsgBuf);
-	
-	return 	espInfoResultStr;
-}
-
-
-size_t getESPHeapSize()
-{
-   return heap_caps_get_free_size(MALLOC_CAP_8BIT);
-}
-
-
-size_t getInternalESPHeapSize() 
-{
-	return heap_caps_get_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_INTERNAL);
-}
-
-
-std::string getSDCardPartitionSize(){
-	FATFS *fs;
-    uint32_t fre_clust, tot_sect;
-
-    /* Get volume information and free clusters of drive 0 */
-    f_getfree("0:", (DWORD *)&fre_clust, &fs);
-    tot_sect = ((fs->n_fatent - 2) * fs->csize) /1024 /(1024/SDCardCsd.sector_size);	//corrected by SD Card sector size (usually 512 bytes) and convert to MB
-
-	//ESP_LOGD(TAG, "%d MB total drive space (Sector size [bytes]: %d)", (int)tot_sect, (int)fs->ssize);
-
-	return std::to_string(tot_sect);
-}
-
-
-std::string getSDCardFreePartitionSpace(){
-	FATFS *fs;
-    uint32_t fre_clust, fre_sect;
-  
-    /* Get volume information and free clusters of drive 0 */
-    f_getfree("0:", (DWORD *)&fre_clust, &fs);
-    fre_sect = (fre_clust * fs->csize) / 1024 /(1024/SDCardCsd.sector_size);	//corrected by SD Card sector size (usually 512 bytes) and convert to MB
-
-    //ESP_LOGD(TAG, "%d MB free drive space (Sector size [bytes]: %d)", (int)fre_sect, (int)fs->ssize);
-
-	return std::to_string(fre_sect);
-}
-
-
-std::string getSDCardPartitionAllocationSize(){
-	FATFS *fs;
-    uint32_t fre_clust, allocation_size;
-  
-    /* Get volume information and free clusters of drive 0 */
-    f_getfree("0:", (DWORD *)&fre_clust, &fs);
-    allocation_size = fs->ssize;
-
-    //ESP_LOGD(TAG, "SD Card Partition Allocation Size: %d bytes", allocation_size);
-
-	return std::to_string(allocation_size);
-}
-
-
-void SaveSDCardInfo(sdmmc_card_t* card) {
-	SDCardCid = card->cid;
-    SDCardCsd = card->csd;
-}
-
-
-std::string getSDCardManufacturer(){
-	std::string SDCardManufacturer = SDCardParseManufacturerIDs(SDCardCid.mfg_id);
-	//ESP_LOGD(TAG, "SD Card Manufacturer: %s", SDCardManufacturer.c_str());
-	
-	return (SDCardManufacturer + " (ID: " + std::to_string(SDCardCid.mfg_id) + ")");
-}
-
-
-std::string getSDCardName(){
-	char *SDCardName = SDCardCid.name;
-	//ESP_LOGD(TAG, "SD Card Name: %s", SDCardName); 
-
-	return std::string(SDCardName);
-}
-
-
-std::string getSDCardCapacity(){
-	int SDCardCapacity = SDCardCsd.capacity / (1024/SDCardCsd.sector_size) / 1024;  // total sectors * sector size  --> Byte to MB (1024*1024)
-	//ESP_LOGD(TAG, "SD Card Capacity: %s", std::to_string(SDCardCapacity).c_str()); 
-
-	return std::to_string(SDCardCapacity);
-}
-
-
-std::string getSDCardSectorSize(){
-	int SDCardSectorSize = SDCardCsd.sector_size;
-	//ESP_LOGD(TAG, "SD Card Sector Size: %s bytes", std::to_string(SDCardSectorSize).c_str()); 
-
-	return std::to_string(SDCardSectorSize);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////
 
 void memCopyGen(uint8_t* _source, uint8_t* _target, int _size)
 {
@@ -487,7 +348,6 @@ long getFileSize(std::string filename)
 }
 
 
-
 /* recursive mkdir */
 int mkdir_r(const char *dir, const mode_t mode) {
     char tmp[FILE_PATH_MAX];
@@ -561,14 +421,6 @@ std::string toLower(std::string in)
 		in[i] = tolower(in[i]);
 	
 	return in;
-}
-
-
-// CPU Temp
-extern "C" uint8_t temprature_sens_read();
-float temperatureRead()
-{
-    return (temprature_sens_read() - 32) / 1.8;
 }
 
 
@@ -681,144 +533,6 @@ std::string ReplaceString(std::string subject, const std::string& search,
 }
 
 
-/* Source: https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/tree/lsmmc.c */
-/* SD Card Manufacturer Database */
-struct SDCard_Manufacturer_database {
-	std::string type;
-	int id;
-	std::string manufacturer;
-};
-
-
-/* Source: https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/tree/lsmmc.c */
-/* SD Card Manufacturer Database */
-struct SDCard_Manufacturer_database database[] = {
-	{
-		.type = "sd",
-		.id = 0x01,
-		.manufacturer = "Panasonic",
-	},
-	{
-		.type = "sd",
-		.id = 0x02,
-		.manufacturer = "Toshiba/Kingston/Viking",
-	},
-	{
-		.type = "sd",
-		.id = 0x03,
-		.manufacturer = "SanDisk",
-	},
-	{
-		.type = "sd",
-		.id = 0x08,
-		.manufacturer = "Silicon Power",
-	},
-	{
-		.type = "sd",
-		.id = 0x18,
-		.manufacturer = "Infineon",
-	},
-	{
-		.type = "sd",
-		.id = 0x1b,
-		.manufacturer = "Transcend/Samsung",
-	},
-	{
-		.type = "sd",
-		.id = 0x1c,
-		.manufacturer = "Transcend",
-	},
-	{
-		.type = "sd",
-		.id = 0x1d,
-		.manufacturer = "Corsair/AData",
-	},
-	{
-		.type = "sd",
-		.id = 0x1e,
-		.manufacturer = "Transcend",
-	},
-	{
-		.type = "sd",
-		.id = 0x1f,
-		.manufacturer = "Kingston",
-	},
-	{
-		.type = "sd",
-		.id = 0x27,
-		.manufacturer = "Delkin/Phison",
-	},
-	{
-		.type = "sd",
-		.id = 0x28,
-		.manufacturer = "Lexar",
-	},
-	{
-		.type = "sd",
-		.id = 0x30,
-		.manufacturer = "SanDisk",
-	},
-	{
-		.type = "sd",
-		.id = 0x31,
-		.manufacturer = "Silicon Power",
-	},
-	{
-		.type = "sd",
-		.id = 0x33,
-		.manufacturer = "STMicroelectronics",
-	},
-	{
-		.type = "sd",
-		.id = 0x41,
-		.manufacturer = "Kingston",
-	},
-	{
-		.type = "sd",
-		.id = 0x6f,
-		.manufacturer = "STMicroelectronics",
-	},
-	{
-		.type = "sd",
-		.id = 0x74,
-		.manufacturer = "Transcend",
-	},
-	{
-		.type = "sd",
-		.id = 0x76,
-		.manufacturer = "Patriot",
-	},
-	{
-		.type = "sd",
-		.id = 0x82,
-		.manufacturer = "Gobe/Sony",
-	},
-	{
-		.type = "sd",
-		.id = 0x89,
-		.manufacturer = "Unknown",
-	}
-};
-
-
-/* Parse SD Card Manufacturer Database */
-std::string SDCardParseManufacturerIDs(int id) 
-{
-	unsigned int id_cnt = sizeof(database) / sizeof(struct SDCard_Manufacturer_database);
-	std::string ret_val = "";
-
-	for (int i = 0; i < id_cnt; i++) {
-		if (database[i].id == id) {
-			return database[i].manufacturer;
-		}
-		else {
-			ret_val = "ID unknown (not in DB)";
-		}
-	}
-	return ret_val;
-}
-
-
 std::string to_stringWithPrecision(const double _value, int _decPlace = 6)
 {
 	std::ostringstream out;
@@ -832,90 +546,13 @@ std::string to_stringWithPrecision(const double _value, int _decPlace = 6)
 }
 
 
-std::string getMac(void)
-{
-    uint8_t macInt[6];
-    char macFormated[6*2 + 5 + 1]; // AA:BB:CC:DD:EE:FF
-
-    esp_read_mac(macInt, ESP_MAC_WIFI_STA);
-    sprintf(macFormated, "%02X:%02X:%02X:%02X:%02X:%02X", macInt[0], macInt[1], macInt[2], macInt[3], macInt[4], macInt[5]); 
-
-    return macFormated;
-}
-
-
-void setSystemStatusFlag(SystemStatusFlag_t flag)
-{
-	systemStatus = systemStatus | flag; // set bit
-
-	char buf[20];
-	snprintf(buf, sizeof(buf), "0x%08X", getSystemStatus());
-    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "System status code: " + std::string(buf));
-}
-
-
-void clearSystemStatusFlag(SystemStatusFlag_t flag)
-{
-	systemStatus = systemStatus | ~flag; // clear bit
-
-	char buf[20];
-	snprintf(buf, sizeof(buf), "0x%08X", getSystemStatus());
-    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "System status code: " + std::string(buf));
-}
-
-
-int getSystemStatus(void)
-{
-    return systemStatus;
-}
-
-
-bool isSetSystemStatusFlag(SystemStatusFlag_t flag)
-{
-	//ESP_LOGE(TAG, "Flag (0x%08X) is set (0x%08X): %d", flag, systemStatus , ((systemStatus & flag) == flag));
-
-	if ((systemStatus & flag) == flag) {
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-
 time_t getUpTime(void)
 {
     return (uint32_t)(esp_timer_get_time()/1000/1000); // in seconds
 }
 
 
-std::string getResetReason(void)
-{
-	std::string reasonText;
-
-	switch(esp_reset_reason()) {
-		case ESP_RST_POWERON: reasonText = "Power-on event (or reset button)"; break;    //!< Reset due to power-on event
-		case ESP_RST_EXT: reasonText = "External pin"; break;        //!< Reset by external pin (not applicable for ESP32)
-		case ESP_RST_SW: reasonText = "Via esp_restart"; break;         //!< Software reset via esp_restart
-		case ESP_RST_PANIC: reasonText = "Exception/panic"; break;      //!< Software reset due to exception/panic
-		case ESP_RST_INT_WDT: reasonText = "Interrupt watchdog"; break;    //!< Reset (software or hardware) due to interrupt watchdog
-		case ESP_RST_TASK_WDT: reasonText = "Task watchdog"; break;   //!< Reset due to task watchdog
-		case ESP_RST_WDT: reasonText = "Other watchdogs"; break;        //!< Reset due to other watchdogs
-		case ESP_RST_DEEPSLEEP: reasonText = "Exiting deep sleep mode"; break;  //!< Reset after exiting deep sleep mode
-		case ESP_RST_BROWNOUT: reasonText = "Brownout"; break;   //!< Brownout reset (software or hardware)
-		case ESP_RST_SDIO: reasonText = "SDIO"; break;       //!< Reset over SDIO
-
-		case ESP_RST_UNKNOWN:   //!< Reset reason can not be determined
-		default: 
-			reasonText = "Unknown";
-	}
-    return reasonText;
-}
-
-
-/**
- * Returns the current uptime  formated ad xxf xxh xxm [xxs]
- */
+// Returns the current uptime  formated ad xxf xxh xxm [xxs]
 std::string getFormatedUptime(bool compact)
 {
 	char buf[20];

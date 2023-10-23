@@ -11,7 +11,6 @@
 //#include "sdkconfig.h"
 #include "esp_psram.h"
 #include "esp_pm.h"
-#include "esp_chip_info.h"
 
 
 // SD-Card ////////////////////
@@ -41,6 +40,7 @@
     #include "server_mqtt.h"
 #endif //ENABLE_MQTT
 #include "Helper.h"
+#include "system_info.h"
 #include "statusled.h"
 #include "sdcard_check.h"
 
@@ -372,7 +372,7 @@ extern "C" void app_main(void)
             StatusLED(PSRAM_INIT, 2, true);
         }
         else { // PSRAM size OK --> continue to check heap size
-            size_t _hsize = getESPHeapSize();
+            size_t _hsize = getESPHeapSizeTotal();
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Total heap: " + std::to_string(_hsize) + " byte");
 
             // Check heap memory
@@ -403,18 +403,7 @@ extern "C" void app_main(void)
 
     // Print Device info
     // ********************************************
-    #ifdef DEBUG_ENABLE_SYSINFO
-        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL( 4, 0, 0 )
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device Info : " + get_device_info() );
-            ESP_LOGD(TAG, "Device infos %s", get_device_info().c_str());
-        #endif
-    #else 
-        esp_chip_info_t chipInfo;
-        esp_chip_info(&chipInfo);
-        
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device info: CPU cores: " + std::to_string(chipInfo.cores) + 
-                                            ", Chip revision: " + std::to_string(chipInfo.revision/100));
-    #endif //DEBUG_ENABLE_SYSINFO
+    printDeviceInfo();
     
     // Print SD-Card info
     // ********************************************

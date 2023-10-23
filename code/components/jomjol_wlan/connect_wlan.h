@@ -6,6 +6,7 @@
 #include <string>
 
 int wifi_init_sta(void);
+std::string getMac(void);
 std::string getIPAddress();
 std::string getSSID();
 int get_WIFI_RSSI();

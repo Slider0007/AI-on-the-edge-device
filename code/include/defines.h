@@ -12,7 +12,6 @@
 
     //#define DEBUG_DETAIL_ON 
     //#define DEBUG_DISABLE_BROWNOUT_DETECTOR
-    //#define DEBUG_ENABLE_SYSINFO
     //#define DEBUG_ENABLE_PERFMON
     //#define DEBUG_HIMEM_MEMORY_CHECK
     // need [env:esp32cam-dev-himem]

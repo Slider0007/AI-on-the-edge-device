@@ -12,6 +12,7 @@
 #include "interface_mqtt.h"
 #include "time_sntp.h"
 #include "Helper.h"
+#include "system_info.h"
 #include "../../include/defines.h"
 
 
@@ -218,7 +219,7 @@ bool publishSystemData(int qos)
     sprintf(tmp_char, "%ld", (long)getUpTime());
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + "uptime", std::string(tmp_char), qos, retainFlag);
     
-    sprintf(tmp_char, "%lu", (long) getESPHeapSize());
+    sprintf(tmp_char, "%lu", (long) getESPHeapSizeTotal());
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + "freeMem", std::string(tmp_char), qos, retainFlag);
 
     sprintf(tmp_char, "%d", get_WIFI_RSSI());

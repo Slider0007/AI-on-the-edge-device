@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include "Helper.h"
+#include "system_info.h"
 
 httpd_handle_t server = NULL;   
 std::string starttime = "";
@@ -340,7 +341,7 @@ esp_err_t sysinfo_handler(httpd_req_t *req)
     std::string gitrevision = libfive_git_revision();
     std::string htmlversion = getHTMLversion();
     char freeheapmem[11];
-    sprintf(freeheapmem, "%lu", (long) getESPHeapSize());
+    sprintf(freeheapmem, "%lu", (long) getESPHeapSizeTotal());
     
     zw = std::string("[{") + 
         "\"firmware\": \"" + gitversion + "\"," +
