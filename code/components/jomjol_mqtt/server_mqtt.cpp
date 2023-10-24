@@ -29,7 +29,7 @@ std::string meterType = "";
 std::string valueUnit = "";
 std::string timeUnit = "";
 std::string rateUnit = "Unit/Minute";
-float roundInterval; // Minutes
+float processingInterval; // Minutes
 int keepAlive = 0; // Seconds
 bool retainFlag;
 static std::string maintopic;
@@ -37,11 +37,11 @@ static bool sendingOf_DiscoveryAndStaticTopics_scheduled;
 
 
 
-void mqttServer_setParameter(std::vector<NumberPost*>* _NUMBERS, int _keepAlive, float _roundInterval)
+void mqttServer_setParameter(std::vector<NumberPost*>* _NUMBERS, int _keepAlive, float _processingInterval)
 {
     NUMBERS = _NUMBERS;
     keepAlive = _keepAlive;
-    roundInterval = _roundInterval; 
+    processingInterval = _processingInterval; 
 }
 
 
@@ -259,7 +259,7 @@ bool publishStaticData(int qos)
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + "hostname", wlan_config.hostname, qos, retainFlag);
 
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(1) << roundInterval; // minutes
+    stream << std::fixed << std::setprecision(1) << processingInterval; // minutes
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + "interval", stream.str(), qos, retainFlag);
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Successfully published static topics");

@@ -25,10 +25,10 @@ function reload_config() {
                     firework.launch('Configuration updated and applied', 'success', 5000);
                }
                else if (xhttp.responseText.substring(0,3) == "004") {
-                    firework.launch('Configuration updated and get applied after round is completed', 'success', 5000);
+                    firework.launch('Configuration updated and get applied after actual cycle is completed', 'success', 5000);
                }
                else if (xhttp.responseText.substring(0,3) == "099") {
-                    firework.launch('Configuration updated, but cannot get applied (no flow task running)', 'danger', 5000);
+                    firework.launch('Configuration updated, but cannot get applied (no main flow task running)', 'danger', 5000);
                }
           }
      }

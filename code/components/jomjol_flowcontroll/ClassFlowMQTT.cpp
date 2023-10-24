@@ -195,7 +195,7 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
 bool ClassFlowMQTT::Start(float _processingInterval) 
 {
-    keepAlive = _processingInterval * 60 * 2.5; // Seconds, make sure it is greater thatn 2 rounds!
+    keepAlive = _processingInterval * 60 * 2.5; // Seconds, make sure it is greater than 2 processing cycles!
 
     std::stringstream stream;
     stream << std::fixed << std::setprecision(1) << "Processing interval: " << _processingInterval <<

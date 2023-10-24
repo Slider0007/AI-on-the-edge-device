@@ -18,7 +18,6 @@ protected:
     std::string uri, topic, topicError, clientname, topicRate, topicTimeStamp, topicUptime, topicFreeMem;
     std::string user, password;
     std::string maintopic; 
-    float roundInterval; // Minutes
     int keepAlive; // Seconds
     bool SetRetainFlag;
 

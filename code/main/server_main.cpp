@@ -103,10 +103,10 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, zw.c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("Round") == 0)
+    else if (_task.compare("CycleCounter") == 0)
     {
         char formated[10] = "";    
-        snprintf(formated, sizeof(formated), "%d", getCountFlowRounds());
+        snprintf(formated, sizeof(formated), "%d", getFlowCycleCounter());
         httpd_resp_sendstr(req, formated);
         return ESP_OK;        
     }

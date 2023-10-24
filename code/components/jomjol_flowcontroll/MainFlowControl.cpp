@@ -49,7 +49,7 @@ static int taskAutoFlowState = FLOW_TASK_STATE_INIT;
 static bool reloadConfig = false;
 static bool manualFlowStart = false;
 static long auto_interval = 0;
-static int countRounds = 0;
+static int cycleCounter = 0;
 static int FlowStateErrorsInRow = 0;
 
 static const char *TAG = "MAINCTRL";
@@ -79,9 +79,9 @@ bool getIsPlannedReboot()
 }
 
 
-int getCountFlowRounds() 
+int getFlowCycleCounter() 
 {
-    return countRounds;
+    return cycleCounter;
 }
 
 
@@ -375,7 +375,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(cJSONObject, "uptime", getFormatedUptime(false).c_str()) == NULL)
         retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "round_counter", std::to_string(getCountFlowRounds()).c_str()) == NULL)
+    if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
         retVal = ESP_FAIL;
 
     char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024, 1); // Print with predefined buffer of 1024 bytes, avoid dynamic allocations
@@ -534,7 +534,7 @@ esp_err_t handler_value(httpd_req_t *req)
             txt += "<details id=\"desc_details\" style=\"font-size: 16px;\">\n";
             txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
             txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
-                   "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitalization round.</strong></p>";
+                   "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitalization cycle.</strong></p>";
             txt += "<p>\"Raw Value\" represents the value which gets extracted and combined from all the single image results but without "
                    "correction of any of the post-processing checks / alogrithms. The result after post-processing validation is represented with "
                    "\"Value\". In the sections \"Digit ROI\" and \"Analog ROI\" all single \"raw results\" of the respective ROI images (digit styled ROI and "
@@ -1016,7 +1016,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 void task_autodoFlow(void *pvParameter)
 {
     int64_t fr_start = 0;
-    time_t roundStartTime = 0;
+    time_t cycleStartTime = 0;
     bTaskAutoFlowCreated = true;
 
     while (true)
@@ -1127,7 +1127,7 @@ void task_autodoFlow(void *pvParameter)
                     }
                     else if (manualFlowStart) { 
                         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Start process (manual trigger)");
-                        taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING; // Start manual triggered single round of "FLOW PROCESSING"  
+                        taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING; // Start manual triggered single cycle of "FLOW PROCESSING"  
                         break;
                     }
                 }   
@@ -1142,15 +1142,15 @@ void task_autodoFlow(void *pvParameter)
         // ********************************************     
         else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {       
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "----------------------------------------------------------------"); // Clear separation between runs
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Round #" + std::to_string(++countRounds) + " started"); 
-            roundStartTime = getUpTime();
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(++cycleCounter) + " started"); 
+            cycleStartTime = getUpTime();
             fr_start = esp_timer_get_time();
 
             flowctrl.setActFlowError(false); // Reset process_error at prcoess start
                    
             if (flowctrl.doFlowImageEvaluation(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Image evaluation completed (" + 
-                                    std::to_string(getUpTime() - roundStartTime) + "s)");
+                                    std::to_string(getUpTime() - cycleStartTime) + "s)");
             }
             else {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image evaluation process error occured");
@@ -1222,9 +1222,9 @@ void task_autodoFlow(void *pvParameter)
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "WIFI Signal (RSSI): " + std::to_string(get_WIFI_RSSI()) + "dBm");
 
 
-            // Round finished -> Logfile
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Round #" + std::to_string(countRounds) + 
-                    " completed (" + std::to_string(getUpTime() - roundStartTime) + "s)");
+            // Cycle finished -> Logfile
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(cycleCounter) + 
+                    " completed (" + std::to_string(getUpTime() - cycleStartTime) + "s)");
            
             // Check if time is synchronized (if NTP is configured)
             if (getUseNtp() && !getTimeIsSet()) {
@@ -1245,7 +1245,7 @@ void task_autodoFlow(void *pvParameter)
                 wifiRoamByScanning();
             #endif
 
-            // Check if triggerd reload config or manually triggered single round
+            // Check if triggerd reload config or manually triggered single cycle
             // ********************************************    
             if (taskAutoFlowState == FLOW_TASK_STATE_INIT) {
                 reloadConfig = false; // reload by post process event handler has higher prio
@@ -1262,7 +1262,7 @@ void task_autodoFlow(void *pvParameter)
                 manualFlowStart = false;
                 if (flowctrl.isAutoStart()) {
                     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Start process (manual trigger)");
-                    taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING;         // Continue with next "FLOW PROCESSING" round"
+                    taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING;         // Continue with next "FLOW PROCESSING" cycle"
                 }
                 else {
                     taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART;      // Return to state "Idle (NO AUTOSTART)"
@@ -1274,7 +1274,7 @@ void task_autodoFlow(void *pvParameter)
         }
 
         // IDLE / WAIT STATE
-        // "Wait state" until autotimer is elapsed to restart next round
+        // "Wait state" until autotimer is elapsed to restart next cycle
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART) {
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_AUTOSTART));
@@ -1302,10 +1302,10 @@ void task_autodoFlow(void *pvParameter)
             else if (manualFlowStart) {
                 manualFlowStart = false;
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Start process (manual trigger)");
-                taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING;     // Continue with next "FLOW PROCESSING" round"
+                taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING;     // Continue with next "FLOW PROCESSING" cycle"
             }
             else {
-                taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING;     // Continue with next "FLOW PROCESSING" round
+                taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING;     // Continue with next "FLOW PROCESSING" cycle
             }
         }
 

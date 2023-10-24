@@ -858,7 +858,7 @@ bool CCamera::loadNextDemoImage(camera_fb_t *fb) {
     char filename[50];
     long fileSize;
 
-    snprintf(filename, sizeof(filename), "/sdcard/demo/%s", demoFiles[getCountFlowRounds() % demoFiles.size()].c_str());
+    snprintf(filename, sizeof(filename), "/sdcard/demo/%s", demoFiles[getFlowCycleCounter() % demoFiles.size()].c_str());
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Using " + std::string(filename) + " as demo image");
 

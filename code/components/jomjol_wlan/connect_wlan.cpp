@@ -333,7 +333,7 @@ void wifiRoamingQuery(void)
 	if (WIFIConnected && (esp_rrm_is_rrm_supported_connection() || esp_wnm_is_btm_supported_connection())) {
 		/* Client is allowed to send query to AP for roaming request if RSSI is lower than threshold */
 		/* Note 1: Set RSSI threshold funtion needs to be called to trigger WIFI_EVENT_STA_BSS_RSSI_LOW */
-		/* Note 2: Additional querys will be sent after flow round is finshed --> server_tflite.cpp - function "task_autodoFlow" */
+		/* Note 2: Additional querys will be sent after flow cycle is finshed --> server_tflite.cpp - function "task_autodoFlow" */
 		/* Note 3: RSSI_Threshold = 0 --> Disable client query by application (WebUI parameter) */
 		
 		if (wlan_config.rssi_threshold != 0 && get_WIFI_RSSI() != -127 && (get_WIFI_RSSI() < wlan_config.rssi_threshold))
@@ -503,7 +503,7 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 			printRoamingFeatureSupport();
 
 			#ifdef WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES
-			// wifiRoamingQuery();	// Avoid client triggered query during processing flow (reduce risk of heap shortage). Request will be triggered at the end of every round anyway
+			// wifiRoamingQuery();	// Avoid client triggered query during processing flow (reduce risk of heap shortage). Request will be triggered at the end of every cycle anyway
 			#endif //WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES
 			
 		#endif //WLAN_USE_MESH_ROAMING

@@ -128,7 +128,7 @@
 
     <li><a>Manual Control <i class="arrow down"></i></a>
         <ul class="submenu">
-            <li><a href="#" onclick="flow_start()">Start Round</a></li>
+            <li><a href="#" onclick="flow_start()">Start Cycle</a></li>
             <li id="HASendDiscovery" style="display:none;"><a href="#" onclick="HA_send_discovery()">Resend HA Discovery</a></li>
         </ul>
     </li>
@@ -158,14 +158,14 @@
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				if (xhttp.responseText.substring(0,3) == "001") {
-					firework.launch('Flow start triggered', 'success', 5000);
+					firework.launch('Cycle start triggered', 'success', 5000);
                     window.location.reload();
 				}
 				else if (xhttp.responseText.substring(0,3) == "002") {
-					firework.launch('Flow start scheduled. Start after round is completed', 'success', 5000);
+					firework.launch('Cycle start scheduled. Start new cycle after actual cycle is completed', 'success', 5000);
 				}
 				else if (xhttp.responseText.substring(0,3) == "099") {
-					firework.launch('Flow start triggered, but start not possible (no flow task available)', 'danger', 5000);
+					firework.launch('Cycle start triggered, but cycle start not possible (no main flow task available)', 'danger', 5000);
 				}
 			}
 		}

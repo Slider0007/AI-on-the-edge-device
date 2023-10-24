@@ -25,7 +25,7 @@ void ClassFlowAlignment::SetInitialParameter(void)
     presetFlowStateHandler(true);
     initalrotate = 0.0;
     anz_ref = 0;
-    AlignFAST_SADThreshold = 10;  // FAST ALIGN ALGO: SADNorm -> if smaller than threshold use same alignment values as last round
+    AlignFAST_SADThreshold = 10;  // FAST ALIGN ALGO: SADNorm -> if smaller than threshold use same alignment values as last cycle
     initialmirror = false;
     use_antialiasing = false;
     initialflip = false;

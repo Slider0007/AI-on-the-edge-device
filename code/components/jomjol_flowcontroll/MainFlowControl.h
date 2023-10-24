@@ -23,7 +23,7 @@ void DeleteMainFlowTask();
 bool isSetupModusActive();
 void setTaskAutoFlowState(uint8_t _value);
 
-int getCountFlowRounds();
+int getFlowCycleCounter();
 
 #ifdef ENABLE_MQTT
 esp_err_t MQTTCtrlFlowStart(std::string _topic);

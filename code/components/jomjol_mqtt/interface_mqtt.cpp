@@ -14,7 +14,7 @@ static const char *TAG = "MQTT IF";
 std::map<std::string, std::function<void()>>* connectFunktionMap = NULL;  
 std::map<std::string, std::function<bool(std::string, char*, int)>>* subscribeFunktionMap = NULL;
 
-int failedOnRound = -1;
+int failedOnCycle = -1;
 int MQTTReconnectCnt = 0;
  
 esp_mqtt_event_id_t esp_mqtt_ID = MQTT_EVENT_ANY;
@@ -38,7 +38,7 @@ bool MQTTPublish(std::string _key, std::string _content, int qos, bool retained_
         return false;
     }
 
-    if (failedOnRound == getCountFlowRounds()) {    // we already failed in this round, do not retry until the next round
+    if (failedOnCycle == getFlowCycleCounter()) {    // we already failed in this cycle, do not retry until the next cycle
         return true; // Fail quietly
     }
 
@@ -66,8 +66,8 @@ bool MQTTPublish(std::string _key, std::string _content, int qos, bool retained_
                 ESP_LOGD(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime)/1000);
             #endif
             if (msg_id == -1) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to publish topic '" + _key + "', skipping all MQTT publishings in this round");
-                failedOnRound = getCountFlowRounds();
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to publish topic '" + _key + "', skipping all MQTT publishings in this cycle");
+                failedOnCycle = getFlowCycleCounter();
                 return false;
             }
         }
