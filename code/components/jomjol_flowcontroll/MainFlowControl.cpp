@@ -173,86 +173,10 @@ bool doInit(void)
 }
 
 
-esp_err_t handler_get_heap(httpd_req_t *req)
-{
-    #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("handler_get_heap - Start");       
-        ESP_LOGD(TAG, "handler_get_heap uri: %s", req->uri);
-    #endif
-
-    //heap_caps_dump(MALLOC_CAP_SPIRAM);
-
-    std::string zw = "Heap info:<br>" + getESPHeapInfo();
-
-    #ifdef TASK_ANALYSIS_ON
-        char* pcTaskList = (char*) calloc_psram_heap(std::string(TAG) + "->pcTaskList", 1, sizeof(char) * 768, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-        if (pcTaskList) {
-            vTaskList(pcTaskList);
-            zw = zw + "<br><br>Task info:<br><pre>Name | State | Prio | Lowest stacksize | Creation order | CPU (-1=NoAffinity)<br>"
-                    + std::string(pcTaskList) + "</pre>";
-            free_psram_heap(std::string(TAG) + "->pcTaskList", pcTaskList);
-        }
-        else {
-            zw = zw + "<br><br>Task info:<br>ERROR - Allocation of TaskList buffer in PSRAM failed";
-        }
-    #endif 
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
-    if (zw.length() > 0) 
-    {
-        httpd_resp_send(req, zw.c_str(), zw.length());
-    }
-    else 
-    {
-        httpd_resp_send(req, NULL, 0);
-    }
-
-    #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("handler_get_heap - Done");       
-    #endif
-
-    return ESP_OK;
-}
-
-
-esp_err_t handler_stream(httpd_req_t *req)
-{
-    #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("handler_stream - Start");       
-        ESP_LOGD(TAG, "handler_stream uri: %s", req->uri);
-    #endif
-
-    char _query[50];
-    char _value[10];
-    bool flashlightOn = false;
-
-    if (httpd_req_get_url_query_str(req, _query, 50) == ESP_OK)
-    {
-//        ESP_LOGD(TAG, "Query: %s", _query);
-        if (httpd_query_key_value(_query, "flashlight", _value, 10) == ESP_OK)
-        {
-            #ifdef DEBUG_DETAIL_ON       
-                ESP_LOGD(TAG, "flashlight is found: %s", _value);
-            #endif
-            if (strlen(_value) > 0)
-                flashlightOn = true;
-        }
-    }
-
-    Camera.CaptureToStream(req, flashlightOn);
-
-    #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("handler_stream - Done");       
-    #endif
-
-    return ESP_OK;
-}
-
-
 esp_err_t handler_reload_config(httpd_req_t *req)
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
 
     if (taskAutoFlowState == FLOW_TASK_STATE_INIT ||
         taskAutoFlowState == FLOW_TASK_STATE_SETUPMODE ||
@@ -287,7 +211,7 @@ esp_err_t handler_reload_config(httpd_req_t *req)
     else 
     {
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Reload configuration not possible. No flow task. Request rejected");
-        const std::string zw = "099: Reload config not possible. No flow task. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
+        const std::string zw = "E90: Reload config not possible. No flow task. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
     }
     return ESP_OK;
@@ -297,6 +221,7 @@ esp_err_t handler_reload_config(httpd_req_t *req)
 esp_err_t handler_flow_start(httpd_req_t *req) 
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
 
     if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART || 
         taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART || 
@@ -328,7 +253,7 @@ esp_err_t handler_flow_start(httpd_req_t *req)
     }
     else {
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Flow start triggered by REST API. Flow not initialized. Request rejected");
-        const std::string zw = "099: Flow start triggered by REST API. Flow not initialized. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
+        const std::string zw = "E90: Flow start triggered by REST API. Flow not initialized. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
     }
 
@@ -421,45 +346,45 @@ esp_err_t handler_process_data(httpd_req_t *req)
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
         return ESP_FAIL;
     }
-    else {
-        if (cJSON_AddStringToObject(cJSONObject, "api_name", "handler_process_data") == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
-            retVal = ESP_FAIL; 
-        if (cJSON_AddStringToObject(cJSONObject, "timestamp_fallbackvalue", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "actual_value", flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "fallback_value", flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "raw_value", flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "value_status", flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "rate_per_min", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "rate_per_processing", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_error", std::to_string(flowctrl.getActFlowError()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "temperature", std::to_string((int)temperatureRead()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "rssi", std::to_string(get_WIFI_RSSI()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "uptime", getFormatedUptime(false).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "round_counter", std::to_string(getCountFlowRounds()).c_str()) == NULL)
-            retVal = ESP_FAIL;
 
-        char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024, 1); // Print with predefined buffer of 1024 bytes, avoid dynamic allocations
-        sReturnMessage = std::string(jsonString);
-        cJSON_free(jsonString);  
-        cJSON_Delete(cJSONObject);
-    }
+    if (cJSON_AddStringToObject(cJSONObject, "api_name", "process_data") == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
+        retVal = ESP_FAIL; 
+    if (cJSON_AddStringToObject(cJSONObject, "timestamp_fallbackvalue", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "actual_value", flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "fallback_value", flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "raw_value", flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "value_status", flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "rate_per_min", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "rate_per_processing", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "process_error", std::to_string(flowctrl.getActFlowError()).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "temperature", std::to_string((int)temperatureRead()).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "rssi", std::to_string(get_WIFI_RSSI()).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "uptime", getFormatedUptime(false).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "round_counter", std::to_string(getCountFlowRounds()).c_str()) == NULL)
+        retVal = ESP_FAIL;
+
+    char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024, 1); // Print with predefined buffer of 1024 bytes, avoid dynamic allocations
+    sReturnMessage = std::string(jsonString);
+    cJSON_free(jsonString);  
+    cJSON_Delete(cJSONObject);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "application/json");
 
     if (retVal == ESP_OK)
         httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
@@ -903,8 +828,8 @@ esp_err_t handler_editflow(httpd_req_t *req)
         }
 
 
-//        ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
-//        std::string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
+        //ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
+        //std::string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         Camera.SetBrightnessContrastSaturation(bri, con, sat);
         Camera.SetLEDIntensity(intens);
         ESP_LOGD(TAG, "test_take - vor TakeImage");
@@ -920,9 +845,8 @@ esp_err_t handler_editflow(httpd_req_t *req)
         if (httpd_query_key_value(_query, "host", _valuechar, 30) == ESP_OK) {
             _host = std::string(_valuechar);
         }
-//        ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
-
-//        std::string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
+        //ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
+        //std::string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         std::string zw = flowctrl.doSingleStep("[Alignment]", _host);
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send(req, zw.c_str(), zw.length()); 
@@ -943,6 +867,7 @@ esp_err_t handler_statusflow(httpd_req_t *req)
     #endif
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
 
     if (bTaskAutoFlowCreated) 
     {
@@ -955,7 +880,7 @@ esp_err_t handler_statusflow(httpd_req_t *req)
     }
     else 
     {
-        httpd_resp_send(req, "Flow task not yet created", HTTPD_RESP_USE_STRLEN);  
+        httpd_resp_send(req, "E90: Flow task not yet created", HTTPD_RESP_USE_STRLEN);  
     }
 
     #ifdef DEBUG_DETAIL_ON       
@@ -973,6 +898,7 @@ esp_err_t handler_processerror(httpd_req_t *req)
     #endif
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
 
     if (bTaskAutoFlowCreated) 
     {
@@ -995,68 +921,6 @@ esp_err_t handler_processerror(httpd_req_t *req)
 
     #ifdef DEBUG_DETAIL_ON       
         LogFile.WriteHeapInfo("handler_processerror - Done");       
-    #endif
-
-    return ESP_OK;
-}
-
-
-esp_err_t handler_cputemp(httpd_req_t *req)
-{
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_cputemp - Start");       
-    #endif
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_send(req, std::to_string((int)temperatureRead()).c_str(), HTTPD_RESP_USE_STRLEN);
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_cputemp - End");       
-    #endif
-
-    return ESP_OK;
-}
-
-
-esp_err_t handler_rssi(httpd_req_t *req)
-{
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_rssi - Start");       
-    #endif
-
-    if (getWIFIisConnected()) 
-    {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_send(req, std::to_string(get_WIFI_RSSI()).c_str(), HTTPD_RESP_USE_STRLEN);
-    }
-    else 
-    {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "WIFI not (yet) connected: REST API /rssi not available");
-        return ESP_ERR_NOT_FOUND;
-    }      
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_rssi - End");       
-    #endif
-
-    return ESP_OK;
-}
-
-
-esp_err_t handler_uptime(httpd_req_t *req)
-{
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_uptime - Start");       
-    #endif
-    
-    std::string formatedUptime = getFormatedUptime(false);
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_send(req, formatedUptime.c_str(), formatedUptime.length());  
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_uptime - End");       
     #endif
 
     return ESP_OK;
@@ -1485,7 +1349,7 @@ void CreateMainFlowTask()
 
 void register_server_main_flow_task_uri(httpd_handle_t server)
 {
-    ESP_LOGI(TAG, "server_main_flow_task - Registering URI handlers");
+    ESP_LOGI(TAG, "Registering URI handlers");
     
     httpd_uri_t camuri = { };
     camuri.method    = HTTP_GET;
@@ -1520,21 +1384,6 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
     camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
-    camuri.uri       = "/cpu_temperature";
-    camuri.handler   = handler_cputemp;
-    camuri.user_ctx  = NULL; 
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/rssi";
-    camuri.handler   = handler_rssi;
-    camuri.user_ctx  = NULL;
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/uptime";
-    camuri.handler   = handler_uptime;
-    camuri.user_ctx  = NULL;
-    httpd_register_uri_handler(server, &camuri);
-
     camuri.uri       = "/editflow";
     camuri.handler   = handler_editflow;
     camuri.user_ctx  = NULL; 
@@ -1549,15 +1398,4 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
     camuri.handler   = handler_json;
     camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/heap";
-    camuri.handler   = handler_get_heap;
-    camuri.user_ctx  = NULL; 
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/stream";
-    camuri.handler   = handler_stream;
-    camuri.user_ctx  = NULL; 
-    httpd_register_uri_handler(server, &camuri);
-
 }

@@ -28,8 +28,8 @@ std::string starttime = "";
 
 static const char *TAG = "MAIN SERVER";
 
-/* An HTTP GET handler */
-esp_err_t info_get_handler(httpd_req_t *req)
+
+esp_err_t handler_get_info(httpd_req_t *req)
 {
 #ifdef DEBUG_DETAIL_ON      
     LogFile.WriteHeapInfo("info_get_handler - Start");    
@@ -40,18 +40,17 @@ esp_err_t info_get_handler(httpd_req_t *req)
     char _valuechar[30];    
     std::string _task;
 
-    if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK)
-    {
-        ESP_LOGD(TAG, "Query: %s", _query);
+    if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK) {
+        //ESP_LOGD(TAG, "Query: %s", _query);
         
-        if (httpd_query_key_value(_query, "type", _valuechar, 30) == ESP_OK)
-        {
-            ESP_LOGD(TAG, "type is found: %s", _valuechar);
+        if (httpd_query_key_value(_query, "type", _valuechar, 30) == ESP_OK) {
+            //ESP_LOGD(TAG, "type is found: %s", _valuechar);
             _task = std::string(_valuechar);
         }
     }
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
 
     if (_task.compare("GitBranch") == 0)
     {
@@ -165,7 +164,85 @@ esp_err_t info_get_handler(httpd_req_t *req)
 }
 
 
-esp_err_t starttime_get_handler(httpd_req_t *req)
+esp_err_t handler_get_heap(httpd_req_t *req)
+{
+    #ifdef DEBUG_DETAIL_ON      
+        LogFile.WriteHeapInfo("handler_get_heap - Start");       
+        ESP_LOGD(TAG, "handler_get_heap uri: %s", req->uri);
+    #endif
+
+    //heap_caps_dump(MALLOC_CAP_SPIRAM);
+
+    std::string zw = "Heap info:<br>" + getESPHeapInfo();
+
+    #ifdef TASK_ANALYSIS_ON
+        char* pcTaskList = (char*) calloc_psram_heap(std::string(TAG) + "->pcTaskList", 1, sizeof(char) * 768, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        if (pcTaskList) {
+            vTaskList(pcTaskList);
+            zw = zw + "<br><br>Task info:<br><pre>Name | State | Prio | Lowest stacksize | Creation order | CPU (-1=NoAffinity)<br>"
+                    + std::string(pcTaskList) + "</pre>";
+            free_psram_heap(std::string(TAG) + "->pcTaskList", pcTaskList);
+        }
+        else {
+            zw = zw + "<br><br>Task info:<br>ERROR - Allocation of TaskList buffer in PSRAM failed";
+        }
+    #endif 
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
+
+    if (zw.length() > 0) 
+    {
+        httpd_resp_send(req, zw.c_str(), zw.length());
+    }
+    else 
+    {
+        httpd_resp_send(req, NULL, 0);
+    }
+
+    #ifdef DEBUG_DETAIL_ON      
+        LogFile.WriteHeapInfo("handler_get_heap - Done");       
+    #endif
+
+    return ESP_OK;
+}
+
+
+esp_err_t handler_get_stream(httpd_req_t *req)
+{
+    #ifdef DEBUG_DETAIL_ON      
+        LogFile.WriteHeapInfo("handler_get_stream - Start");       
+        ESP_LOGD(TAG, "handler_get_stream uri: %s", req->uri);
+    #endif
+
+    char _query[50];
+    char _value[10];
+    bool flashlightOn = false;
+
+    if (httpd_req_get_url_query_str(req, _query, 50) == ESP_OK)
+    {
+        //ESP_LOGD(TAG, "Query: %s", _query);
+        if (httpd_query_key_value(_query, "flashlight", _value, 10) == ESP_OK)
+        {
+            #ifdef DEBUG_DETAIL_ON       
+                ESP_LOGD(TAG, "flashlight is found: %s", _value);
+            #endif
+            if (strlen(_value) > 0)
+                flashlightOn = true;
+        }
+    }
+
+    Camera.CaptureToStream(req, flashlightOn);
+
+    #ifdef DEBUG_DETAIL_ON      
+        LogFile.WriteHeapInfo("handler_get_stream - Done");       
+    #endif
+
+    return ESP_OK;
+}
+
+
+esp_err_t handler_get_starttime(httpd_req_t *req)
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     
@@ -175,10 +252,75 @@ esp_err_t starttime_get_handler(httpd_req_t *req)
 }
 
 
-esp_err_t hello_main_handler(httpd_req_t *req)
+
+esp_err_t handler_cputemp(httpd_req_t *req)
+{
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_cputemp - Start");       
+    #endif
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
+    httpd_resp_send(req, std::to_string((int)temperatureRead()).c_str(), HTTPD_RESP_USE_STRLEN);
+
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_cputemp - End");       
+    #endif
+
+    return ESP_OK;
+}
+
+
+esp_err_t handler_rssi(httpd_req_t *req)
+{
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_rssi - Start");       
+    #endif
+
+    if (getWIFIisConnected()) 
+    {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_send(req, std::to_string(get_WIFI_RSSI()).c_str(), HTTPD_RESP_USE_STRLEN);
+    }
+    else 
+    {
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "WIFI not (yet) connected: REST API /rssi not available");
+        return ESP_ERR_NOT_FOUND;
+    }      
+
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_rssi - End");       
+    #endif
+
+    return ESP_OK;
+}
+
+
+esp_err_t handler_uptime(httpd_req_t *req)
+{
+
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_uptime - Start");       
+    #endif
+    
+    std::string formatedUptime = getFormatedUptime(false);
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
+    httpd_resp_send(req, formatedUptime.c_str(), formatedUptime.length());  
+
+    #ifdef DEBUG_DETAIL_ON       
+        LogFile.WriteHeapInfo("handler_uptime - End");       
+    #endif
+
+    return ESP_OK;
+}
+
+esp_err_t handler_main(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("hello_main_handler - Start");
+        LogFile.WriteHeapInfo("handler_main - Start");
     #endif
 
     char filepath[50];
@@ -261,14 +403,14 @@ esp_err_t hello_main_handler(httpd_req_t *req)
         return res;
 
     #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("hello_main_handler - Stop");   
+        LogFile.WriteHeapInfo("handler_main - Stop");   
     #endif
 
     return ESP_OK;
 }
 
 
-esp_err_t img_tmp_handler(httpd_req_t *req)
+esp_err_t handler_img_tmp(httpd_req_t *req)
 {
     char filepath[50];
     ESP_LOGD(TAG, "uri: %s", req->uri);
@@ -293,10 +435,10 @@ esp_err_t img_tmp_handler(httpd_req_t *req)
 }
 
 
-esp_err_t img_tmp_virtual_handler(httpd_req_t *req)
+esp_err_t handler_img_tmp_virtual(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("img_tmp_virtual_handler - Start");  
+        LogFile.WriteHeapInfo("handler_img_tmp_virtual - Start");  
     #endif
 
     char filepath[50];
@@ -322,15 +464,15 @@ esp_err_t img_tmp_virtual_handler(httpd_req_t *req)
         return ESP_OK;
 
     #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("img_tmp_virtual_handler - Done");   
+        LogFile.WriteHeapInfo("handler_img_tmp_virtual - Done");   
     #endif
 
     // File was not served already --> serve with img_tmp_handler
-    return img_tmp_handler(req);
+    return handler_img_tmp(req);
 }
 
 
-esp_err_t sysinfo_handler(httpd_req_t *req)
+esp_err_t handler_sysinfo(httpd_req_t *req)
 {
     std::string zw;
     std::string cputemp = std::to_string((int)temperatureRead());
@@ -356,55 +498,11 @@ esp_err_t sysinfo_handler(httpd_req_t *req)
         "\"freeHeapMem\": \"" + freeheapmem + "\"" +
         "}]";
 
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, zw.c_str(), zw.length());
 
     return ESP_OK;
-}
-
-
-void register_server_main_uri(httpd_handle_t server, const char *base_path)
-{
-    httpd_uri_t info_get_handle = {
-        .uri       = "/info",  // Match all URIs of type /path/to/file
-        .method    = HTTP_GET,
-        .handler   = info_get_handler,
-        .user_ctx  = (void*) base_path    // Pass server data as context
-    };
-    httpd_register_uri_handler(server, &info_get_handle);
-
-    httpd_uri_t sysinfo_handle = {
-        .uri       = "/sysinfo",  // Match all URIs of type /path/to/file
-        .method    = HTTP_GET,
-        .handler   = sysinfo_handler,
-        .user_ctx  = (void*) base_path    // Pass server data as context
-    };
-    httpd_register_uri_handler(server, &sysinfo_handle);
-
-    httpd_uri_t starttime_tmp_handle = {
-        .uri       = "/starttime",  // Match all URIs of type /path/to/file
-        .method    = HTTP_GET,
-        .handler   = starttime_get_handler,
-        .user_ctx  = NULL    // Pass server data as context
-    };
-    httpd_register_uri_handler(server, &starttime_tmp_handle);
-
-    httpd_uri_t img_tmp_handle = {
-        .uri       = "/img_tmp/*",  // Match all URIs of type /path/to/file
-        .method    = HTTP_GET,
-        .handler   = img_tmp_virtual_handler,
-        .user_ctx  = (void*) base_path    // Pass server data as context
-    };
-    httpd_register_uri_handler(server, &img_tmp_handle);
-
-    httpd_uri_t main_rest_handle = {
-        .uri       = "/*",  // Match all URIs of type /path/to/file
-        .method    = HTTP_GET,
-        .handler   = hello_main_handler,
-        .user_ctx  = (void*) base_path    // Pass server data as context
-    };
-    httpd_register_uri_handler(server, &main_rest_handle);
-
 }
 
 
@@ -444,7 +542,7 @@ httpd_handle_t start_webserver(void)
         return server;
     }
 
-    ESP_LOGI(TAG, "Failed to start webserver");
+    ESP_LOGE(TAG, "Failed to start webserver");
     return NULL;
 }
 
@@ -475,4 +573,63 @@ void connect_handler(void* arg, esp_event_base_t event_base,
         ESP_LOGI(TAG, "Starting webserver");
         *server = start_webserver();
     }
+}
+
+
+void register_server_main_uri(httpd_handle_t server, const char *base_path)
+{ 
+    ESP_LOGI(TAG, "Registering URI handlers");
+    
+    httpd_uri_t camuri = { };
+    camuri.method    = HTTP_GET;
+    
+    camuri.uri       = "/info";
+    camuri.handler   = handler_get_info;
+    camuri.user_ctx  = (void*) base_path;   // Pass server data as context
+    httpd_register_uri_handler(server, &camuri);
+
+    camuri.uri       = "/sysinfo";
+    camuri.handler   = handler_sysinfo;
+    camuri.user_ctx  = (void*) base_path;   // Pass server data as context
+    httpd_register_uri_handler(server, &camuri);
+    
+    camuri.uri       = "/starttime";
+    camuri.handler   = handler_get_starttime;
+    camuri.user_ctx  = (void*) base_path;   // Pass server data as context
+    httpd_register_uri_handler(server, &camuri);
+
+    camuri.uri       = "/heap";
+    camuri.handler   = handler_get_heap;
+    camuri.user_ctx  = NULL;   // Pass server data as context
+    httpd_register_uri_handler(server, &camuri);
+
+    camuri.uri       = "/stream";
+    camuri.handler   = handler_get_stream;
+    camuri.user_ctx  = NULL;   // Pass server data as context
+    httpd_register_uri_handler(server, &camuri);
+    
+    camuri.uri       = "/cpu_temperature";
+    camuri.handler   = handler_cputemp;
+    camuri.user_ctx  = NULL; 
+    httpd_register_uri_handler(server, &camuri);
+
+    camuri.uri       = "/rssi";
+    camuri.handler   = handler_rssi;
+    camuri.user_ctx  = NULL;
+    httpd_register_uri_handler(server, &camuri);
+
+    camuri.uri       = "/uptime";
+    camuri.handler   = handler_uptime;
+    camuri.user_ctx  = NULL;
+    httpd_register_uri_handler(server, &camuri);
+
+    camuri.uri       = "/img_tmp/*";
+    camuri.handler   = handler_img_tmp_virtual;
+    camuri.user_ctx  = (void*) base_path;    // Pass server data as context
+    httpd_register_uri_handler(server, &camuri);
+
+    camuri.uri       = "/*";
+    camuri.handler   = handler_main;
+    camuri.user_ctx  = (void*) base_path;    // Pass server data as context
+    httpd_register_uri_handler(server, &camuri);
 }

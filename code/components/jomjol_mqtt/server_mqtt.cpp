@@ -275,10 +275,14 @@ bool publishStaticData(int qos)
 }
 
 
-esp_err_t scheduleSendingDiscovery_and_static_Topics(httpd_req_t *req)
+esp_err_t handler_scheduleSendingDiscoveryAndStaticTopics(httpd_req_t *req)
 {
     sendingOf_DiscoveryAndStaticTopics_scheduled = true;
     char msg[] = "Publishing of HA Discovery and static topics scheduled";
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
+    
     httpd_resp_send(req, msg, strlen(msg));  
     return ESP_OK;
 }
@@ -323,7 +327,7 @@ void register_server_mqtt_uri(httpd_handle_t server)
     uri.method    = HTTP_GET;
 
     uri.uri       = "/mqtt_publish_discovery";
-    uri.handler   = scheduleSendingDiscovery_and_static_Topics;
+    uri.handler   = handler_scheduleSendingDiscoveryAndStaticTopics;
     uri.user_ctx  = NULL;    
     httpd_register_uri_handler(server, &uri); 
 }
