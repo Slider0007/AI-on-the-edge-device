@@ -9,33 +9,33 @@
 
 #include "connect_wlan.h"
 #include "read_wlanini.h"
+#include "interface_mqtt.h"
 
 #include "version.h"
 
 #include "esp_wifi.h"
+#include "esp_private/esp_clk.h"
 #include <netdb.h>
 
 #include "MainFlowControl.h"
-#include "esp_log.h"
+#include "ClassFlowInfluxDB.h"
+#include "ClassFlowInfluxDBv2.h"
+#include "ClassControllCamera.h"
 
 #include <stdio.h>
 
 #include "Helper.h"
 #include "system_info.h"
+#include "cJSON.h"
 
-httpd_handle_t server = NULL;   
-std::string starttime = "";
+httpd_handle_t server = NULL;
+extern std::string deviceStartTimestamp;
 
 static const char *TAG = "MAIN SERVER";
 
 
 esp_err_t handler_get_info(httpd_req_t *req)
 {
-#ifdef DEBUG_DETAIL_ON      
-    LogFile.WriteHeapInfo("info_get_handler - Start");    
-#endif
-
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "info_get_handler");    
     char _query[200];
     char _valuechar[30];    
     std::string _task;
@@ -48,11 +48,329 @@ esp_err_t handler_get_info(httpd_req_t *req)
             _task = std::string(_valuechar);
         }
     }
+    else { // default - no parameter set: send data as JSON
+        esp_err_t retVal = ESP_OK;
+        std::string sReturnMessage;
+        cJSON *cJSONObject = cJSON_CreateObject();
+            
+        if (cJSONObject == NULL) {
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Error, JSON object cannot be created");
+            return ESP_FAIL;
+        }
 
+        if (cJSON_AddStringToObject(cJSONObject, "api_name", "info") == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "process_status", getProcessStatus().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
+            retVal = ESP_FAIL;      
+        if (cJSON_AddStringToObject(cJSONObject, "wlan_status", getWIFIisConnected() ? "Connected" : "Disconnected") == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "wlan_ssid", getSSID().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "wlan_rssi", std::to_string(get_WIFI_RSSI()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "mac_address", getMac().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "network_config", getDHCPUsage() ? "DHCP" : "Manual") == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "ip_address", getIPAddress().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "netmask_address", getNetmaskAddress().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "gateway_address", getGatewayAddress().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "dns_address", getDNSAddress().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        
+        #ifdef ENABLE_MQTT
+        if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", getMQTTisEnabled() ? (getMQTTisConnected() ? "Connected" : "Disconnected") : "Disabled") == NULL)
+            retVal = ESP_FAIL;
+        #else
+        if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", "E01: Service not compiled (#define ENABLE_MQTT)") == NULL)
+            retVal = ESP_FAIL;
+        #endif
+
+        #ifdef ENABLE_INFLUXDB
+        ClassFlowInfluxDB* influxdb = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDB"));
+        if (cJSON_AddStringToObject(cJSONObject, "influxdbv1_status", influxdb ? "Enabled" : "Disabled") == NULL)
+            retVal = ESP_FAIL;
+        
+        ClassFlowInfluxDBv2* influxdbv2 = (ClassFlowInfluxDBv2*)(flowctrl.getFlowClass("ClassFlowInfluxDBv2"));
+        if (cJSON_AddStringToObject(cJSONObject, "influxdbv2_status", influxdbv2 ? "Enabled" : "Disabled") == NULL)
+            retVal = ESP_FAIL;
+        #else
+        if (cJSON_AddStringToObject(cJSONObject, "influxdbv1_status", "E02: Service not compiled (#define ENABLE_INFLUXDB)") == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "influxdbv2_status", "E02: Service not compiled (#define ENABLE_INFLUXDB)") == NULL)
+            retVal = ESP_FAIL;
+        #endif
+
+        if (cJSON_AddStringToObject(cJSONObject, "ntp_syncstatus", 
+                                        getUseNtp() ? (getTimeWasSetOnce() ? "Synchronized" : "Sync In Progress") : "Disabled") == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "current_time", getCurrentTimeString(TIME_FORMAT_OUTPUT).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "device_start_time", deviceStartTimestamp.c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "device_uptime", getFormatedUptime(false).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "hostname", getHostname().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "chip_model", getChipModel().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "chip_cores", std::to_string(getChipCoreCount()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "chip_revision", getChipRevision().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "chip_frequency", std::to_string(esp_clk_cpu_freq()/1000000).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "chip_temp", std::to_string((int)temperatureRead()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "camera_type", Camera.getCamType().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "camera_frequency", std::to_string(Camera.getCamFrequencyMhz()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "sd_name", getSDCardName().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "sd_manufacturer", getSDCardManufacturer().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "sd_capacity", getSDCardCapacity().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "sd_sector_size", getSDCardSectorSize().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "sd_partition_alloc_size", getSDCardPartitionAllocationSize().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "sd_partition_size", getSDCardPartitionSize().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "sd_partition_free", getSDCardFreePartitionSpace().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "git_branch", libfive_git_branch()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "git_tag", libfive_git_version()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "git_revision", libfive_git_revision()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "firmware_version", getFwVersion().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "html_version", getHTMLversion().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "build_time", build_time()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "idf_version", getIDFVersion().c_str()) == NULL)
+            retVal = ESP_FAIL;
+
+        char *jsonString = cJSON_PrintBuffered(cJSONObject, 1280, 1); // Print to predefined buffer, avoid dynamic allocations
+        sReturnMessage = std::string(jsonString);
+        cJSON_free(jsonString);  
+        cJSON_Delete(cJSONObject);
+
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "application/json");
+
+        if (retVal == ESP_OK) {
+            httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
+            return ESP_OK;
+        }
+        else {
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error while adding JSON elements");
+            return ESP_FAIL;
+        }
+    }
+
+    /* Legacy: Provide single data as text response */
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
-    if (_task.compare("GitBranch") == 0)
+    if (_task.compare("ProcessStatus") == 0)
+    {
+        httpd_resp_sendstr(req, getProcessStatus().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("CycleCounter") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string(getFlowCycleCounter()).c_str());
+        return ESP_OK;        
+    }
+    
+    #ifdef ENABLE_MQTT
+    else if (_task.compare("MQTTStatus") == 0)
+    {
+        httpd_resp_sendstr(req, getMQTTisEnabled() ? (getMQTTisConnected() ? "Connected" : "Disconnected") : "Disabled");
+        return ESP_OK;        
+    }
+    #else
+    else if (_task.compare("MQTTStatus") == 0)
+    {
+        httpd_resp_sendstr(req, "E01: Service not compiled (#define ENABLE_MQTT)");
+        return ESP_OK;        
+    }
+    #endif
+
+    #ifdef ENABLE_INFLUXDB
+    else if (_task.compare("InfluxDBv1Status") == 0)
+    {
+        ClassFlowInfluxDB* influxdb = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDB"));
+        httpd_resp_sendstr(req, influxdb ? "Enabled" : "Disabled");
+        return ESP_OK;        
+    }
+    else if (_task.compare("InfluxDBv2Status") == 0)
+    {
+        ClassFlowInfluxDB* influxdbv2 = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDBv2"));
+        httpd_resp_sendstr(req, influxdbv2 ? "Enabled" : "Disabled");
+        return ESP_OK;        
+    }
+    #else
+    else if (_task.compare("InfluxDBv1Status") == 0)
+    {
+        ClassFlowInfluxDB* influxdb = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDB"));
+        httpd_resp_sendstr(req, "E02: Service not compiled (#define ENABLE_INFLUXDB)");
+        return ESP_OK;        
+    }
+    else if (_task.compare("InfluxDBv2Status") == 0)
+    {
+        ClassFlowInfluxDB* influxdbv2 = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDBv2"));
+        httpd_resp_sendstr(req, "E02: Service not compiled (#define ENABLE_INFLUXDB)");
+        return ESP_OK;        
+    }
+    #endif
+
+    else if (_task.compare("TimeSyncStatus") == 0)
+    {
+        httpd_resp_sendstr(req, getUseNtp() ? (getTimeWasSetOnce() ? "Synchronized" : "In Progress") : "Disabled");
+        return ESP_OK;        
+    }
+    else if (_task.compare("DeviceStartTime") == 0)
+    {
+        httpd_resp_sendstr(req, deviceStartTimestamp.c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("Uptime") == 0)
+    {
+        httpd_resp_sendstr(req, getFormatedUptime(false).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("Hostname") == 0)
+    {
+        httpd_resp_sendstr(req, getHostname().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("ChipModel") == 0)
+    {
+        httpd_resp_sendstr(req, getChipModel().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("ChipCores") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string(getChipCoreCount()).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("ChipRevision") == 0)
+    {
+        httpd_resp_sendstr(req, getChipRevision().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("ChipFrequency") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string(esp_clk_cpu_freq()/1000000).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("ChipTemp") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string((int)temperatureRead()).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("CameraType") == 0)
+    {
+        httpd_resp_sendstr(req, Camera.getCamType().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("CameraFrequency") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string(Camera.getCamFrequencyMhz()).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("WLANStatus") == 0)
+    {
+        httpd_resp_sendstr(req, getWIFIisConnected() ? "Connected" : "Disconnected");
+        return ESP_OK;        
+    }
+    else if (_task.compare("SSID") == 0)
+    {
+        httpd_resp_sendstr(req, getSSID().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("WlanRSSI") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string(get_WIFI_RSSI()).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("MAC") == 0)
+    {
+        httpd_resp_sendstr(req, getMac().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("NetworkConfig") == 0)
+    {
+        httpd_resp_sendstr(req, getDHCPUsage() ? "DHCP" : "Manual");
+        return ESP_OK;        
+    }
+    else if (_task.compare("IP") == 0)
+    {
+        httpd_resp_sendstr(req, getIPAddress().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("Netmask") == 0)
+    {
+        httpd_resp_sendstr(req, getNetmaskAddress().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("Gateway") == 0)
+    {
+        httpd_resp_sendstr(req, getGatewayAddress().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("DNS") == 0)
+    {
+        httpd_resp_sendstr(req, getDNSAddress().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("SDCardName") == 0)
+    {
+        httpd_resp_sendstr(req, getSDCardName().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("SDCardManufacturer") == 0)
+    {
+        httpd_resp_sendstr(req, getSDCardManufacturer().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("SDCardCapacity") == 0)
+    {
+        httpd_resp_sendstr(req, getSDCardCapacity().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("SDCardSectorSize") == 0)
+    {
+        httpd_resp_sendstr(req, getSDCardSectorSize().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("SDCardPartitionAllocationSize") == 0)
+    {
+        httpd_resp_sendstr(req, getSDCardPartitionAllocationSize().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("SDCardPartitionSize") == 0)
+    {
+        httpd_resp_sendstr(req, getSDCardPartitionSize().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("SDCardFreePartitionSpace") == 0)
+    {
+        httpd_resp_sendstr(req, getSDCardFreePartitionSpace().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("GitBranch") == 0)
     {
         httpd_resp_sendstr(req, libfive_git_branch());
         return ESP_OK;        
@@ -67,11 +385,6 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, libfive_git_revision());
         return ESP_OK;        
     }
-    else if (_task.compare("BuildTime") == 0)
-    {
-        httpd_resp_sendstr(req, build_time());
-        return ESP_OK;        
-    }
     else if (_task.compare("FirmwareVersion") == 0)
     {
         httpd_resp_sendstr(req, getFwVersion().c_str());
@@ -82,129 +395,152 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, getHTMLversion().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("Hostname") == 0)
+    else if (_task.compare("BuildTime") == 0)
     {
-        std::string zw;
-        zw = std::string(wlan_config.hostname);
-        httpd_resp_sendstr(req, zw.c_str());
+        httpd_resp_sendstr(req, build_time());
         return ESP_OK;        
     }
-    else if (_task.compare("IP") == 0)
+    else if (_task.compare("IDFVersion") == 0)
     {
-        std::string zw;
-        zw = getIPAddress();
-        httpd_resp_sendstr(req, zw.c_str());
+        httpd_resp_sendstr(req, getIDFVersion().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("SSID") == 0)
-    {
-        std::string zw;
-        zw = getSSID();
-        httpd_resp_sendstr(req, zw.c_str());
-        return ESP_OK;        
+    else {
+        httpd_resp_sendstr(req, "E92: Parameter not found");
+        return ESP_OK;    
     }
-    else if (_task.compare("CycleCounter") == 0)
-    {
-        char formated[10] = "";    
-        snprintf(formated, sizeof(formated), "%d", getFlowCycleCounter());
-        httpd_resp_sendstr(req, formated);
-        return ESP_OK;        
-    }
-    else if (_task.compare("SDCardPartitionSize") == 0)
-    {
-        std::string zw;
-        zw = getSDCardPartitionSize();
-        httpd_resp_sendstr(req, zw.c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("SDCardFreePartitionSpace") == 0)
-    {
-        std::string zw;
-        zw = getSDCardFreePartitionSpace();
-        httpd_resp_sendstr(req, zw.c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("SDCardPartitionAllocationSize") == 0)
-    {
-        std::string zw;
-        zw = getSDCardPartitionAllocationSize();
-        httpd_resp_sendstr(req, zw.c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("SDCardManufacturer") == 0)
-    {
-        std::string zw;
-        zw = getSDCardManufacturer(); 
-        httpd_resp_sendstr(req, zw.c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("SDCardName") == 0)
-    {
-        std::string zw;
-        zw = getSDCardName(); 
-        httpd_resp_sendstr(req, zw.c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("SDCardCapacity") == 0)
-    {
-        std::string zw;
-        zw = getSDCardCapacity();
-        httpd_resp_sendstr(req, zw.c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("SDCardSectorSize") == 0)
-    {
-        std::string zw;
-        zw = getSDCardSectorSize();
-        httpd_resp_sendstr(req, zw.c_str());
-        return ESP_OK;        
-    }
-
-    return ESP_OK;
 }
 
 
 esp_err_t handler_get_heap(httpd_req_t *req)
 {
-    #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("handler_get_heap - Start");       
-        ESP_LOGD(TAG, "handler_get_heap uri: %s", req->uri);
-    #endif
+    char _query[200];
+    char _valuechar[30];    
+    std::string _task;
 
     //heap_caps_dump(MALLOC_CAP_SPIRAM);
 
-    std::string zw = "Heap info:<br>" + getESPHeapInfo();
+    if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK) {
+        //ESP_LOGD(TAG, "Query: %s", _query);
+        
+        if (httpd_query_key_value(_query, "type", _valuechar, 30) == ESP_OK) {
+            //ESP_LOGD(TAG, "type is found: %s", _valuechar);
+            _task = std::string(_valuechar);
+        }
+    }
+    else { // default - no parameter set: send data as JSON 
+        esp_err_t retVal = ESP_OK;
+        std::string sReturnMessage;
+        cJSON *cJSONObject = cJSON_CreateObject();
+            
+        if (cJSONObject == NULL) {
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Error, JSON object cannot be created");
+            return ESP_FAIL;
+        }
 
-    #ifdef TASK_ANALYSIS_ON
-        char* pcTaskList = (char*) calloc_psram_heap(std::string(TAG) + "->pcTaskList", 1, sizeof(char) * 768, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-        if (pcTaskList) {
-            vTaskList(pcTaskList);
-            zw = zw + "<br><br>Task info:<br><pre>Name | State | Prio | Lowest stacksize | Creation order | CPU (-1=NoAffinity)<br>"
-                    + std::string(pcTaskList) + "</pre>";
-            free_psram_heap(std::string(TAG) + "->pcTaskList", pcTaskList);
+        if (cJSON_AddStringToObject(cJSONObject, "api_name", "heap") == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_total_free", std::to_string(getESPHeapSizeTotalFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_free", std::to_string(getESPHeapSizeInternalFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_largest_free", std::to_string(getESPHeapSizeInternalLargestFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_min_free", std::to_string(getESPHeapSizeInternalMinFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_free", std::to_string(getESPHeapSizeSPIRAMFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_largest_free", std::to_string(getESPHeapSizeSPIRAMLargestFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_min_free", std::to_string(getESPHeapSizeSPIRAMMinFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+
+        char *jsonString = cJSON_PrintBuffered(cJSONObject, 320, 1); // Print to predefined buffer, avoid dynamic allocations
+        sReturnMessage = std::string(jsonString);
+        cJSON_free(jsonString);  
+        cJSON_Delete(cJSONObject);
+
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "application/json");
+
+        if (retVal == ESP_OK) {
+            httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
+            return ESP_OK;
         }
         else {
-            zw = zw + "<br><br>Task info:<br>ERROR - Allocation of TaskList buffer in PSRAM failed";
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error while adding JSON elements");
+            return ESP_FAIL;
         }
-    #endif 
+    }
 
+    /* Legacy: Provide single data as text response */
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
-    if (zw.length() > 0) 
+    if (_task.compare("HeapTotalFree") == 0)
     {
-        httpd_resp_send(req, zw.c_str(), zw.length());
+        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeTotalFree())).c_str());
+        return ESP_OK;        
     }
-    else 
+    else if (_task.compare("HeapInternalFree") == 0)
     {
-        httpd_resp_send(req, NULL, 0);
+        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeInternalFree())).c_str());
+        return ESP_OK;        
     }
-
-    #ifdef DEBUG_DETAIL_ON      
-        LogFile.WriteHeapInfo("handler_get_heap - Done");       
+    else if (_task.compare("HeapInternalLargestFree") == 0)
+    {
+        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeInternalLargestFree())).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("HeapInternalMinFree") == 0)
+    {
+        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeInternalMinFree())).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("HeapSPIRAMFree") == 0)
+    {
+        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeSPIRAMFree())).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("HeapSPIRAMLargestFree") == 0)
+    {
+        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeSPIRAMLargestFree())).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("HeapSPIRAMMinFree") == 0)
+    {
+        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeSPIRAMMinFree())).c_str());
+        return ESP_OK;        
+    }
+    #ifdef TASK_ANALYSIS_ON
+    else if (_task.compare("TaskInfo") == 0)
+    {
+        char* pcTaskList = (char*) calloc_psram_heap(std::string(TAG) + "->pcTaskList", 1, sizeof(char) * 768, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+        if (pcTaskList) {
+            vTaskList(pcTaskList);
+            std::string zw = "Task info:<br><pre>Name | State | Prio | Lowest stacksize | Creation order | CPU (-1=NoAffinity)<br>"
+                                + std::string(pcTaskList) + "</pre>";
+            free_psram_heap(std::string(TAG) + "->pcTaskList", pcTaskList);
+        }
+        else {
+            zw += "Task info:<br>E93: Allocation of TaskList buffer in PSRAM failed";
+        }
+        
+        httpd_resp_set_type(req, "text/html");
+        httpd_resp_sendstr(req, zw.c_str());
+        return ESP_OK;        
+    }
+    #else
+    else if (_task.compare("TaskInfo") == 0)
+    {
+        httpd_resp_sendstr(req, "E93: Service not compiled (#define TASK_ANALYSIS_ON)");
+        return ESP_OK;        
+    }
     #endif
-
-    return ESP_OK;
+    else {
+        httpd_resp_sendstr(req, "E92: Parameter not found");
+        return ESP_OK;    
+    }
 }
 
 
@@ -241,81 +577,6 @@ esp_err_t handler_get_stream(httpd_req_t *req)
     return ESP_OK;
 }
 
-
-esp_err_t handler_get_starttime(httpd_req_t *req)
-{
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_send(req, starttime.c_str(), starttime.length()); 
-
-    return ESP_OK;
-}
-
-
-
-esp_err_t handler_cputemp(httpd_req_t *req)
-{
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_cputemp - Start");       
-    #endif
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_send(req, std::to_string((int)temperatureRead()).c_str(), HTTPD_RESP_USE_STRLEN);
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_cputemp - End");       
-    #endif
-
-    return ESP_OK;
-}
-
-
-esp_err_t handler_rssi(httpd_req_t *req)
-{
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_rssi - Start");       
-    #endif
-
-    if (getWIFIisConnected()) 
-    {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_send(req, std::to_string(get_WIFI_RSSI()).c_str(), HTTPD_RESP_USE_STRLEN);
-    }
-    else 
-    {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "WIFI not (yet) connected: REST API /rssi not available");
-        return ESP_ERR_NOT_FOUND;
-    }      
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_rssi - End");       
-    #endif
-
-    return ESP_OK;
-}
-
-
-esp_err_t handler_uptime(httpd_req_t *req)
-{
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_uptime - Start");       
-    #endif
-    
-    std::string formatedUptime = getFormatedUptime(false);
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_send(req, formatedUptime.c_str(), formatedUptime.length());  
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_uptime - End");       
-    #endif
-
-    return ESP_OK;
-}
 
 esp_err_t handler_main(httpd_req_t *req)
 {
@@ -472,40 +733,6 @@ esp_err_t handler_img_tmp_virtual(httpd_req_t *req)
 }
 
 
-esp_err_t handler_sysinfo(httpd_req_t *req)
-{
-    std::string zw;
-    std::string cputemp = std::to_string((int)temperatureRead());
-    std::string gitversion = libfive_git_version();
-    std::string buildtime = build_time();
-    std::string gitbranch = libfive_git_branch();
-    std::string gittag = libfive_git_version();
-    std::string gitrevision = libfive_git_revision();
-    std::string htmlversion = getHTMLversion();
-    char freeheapmem[11];
-    sprintf(freeheapmem, "%lu", (long) getESPHeapSizeTotal());
-    
-    zw = std::string("[{") + 
-        "\"firmware\": \"" + gitversion + "\"," +
-        "\"buildtime\": \"" + buildtime + "\"," +
-        "\"gitbranch\": \"" + gitbranch + "\"," +
-        "\"gittag\": \"" + gittag + "\"," +
-        "\"gitrevision\": \"" + gitrevision + "\"," +
-        "\"html\": \"" + htmlversion + "\"," +
-        "\"cputemp\": \"" + cputemp + "\"," +
-        "\"hostname\": \"" + getHostname() + "\"," +
-        "\"IPv4\": \"" + getIPAddress() + "\"," +
-        "\"freeHeapMem\": \"" + freeheapmem + "\"" +
-        "}]";
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "application/json");
-    httpd_resp_send(req, zw.c_str(), zw.length());
-
-    return ESP_OK;
-}
-
-
 httpd_handle_t start_webserver(void)
 {
     httpd_handle_t server = NULL;
@@ -517,7 +744,7 @@ httpd_handle_t start_webserver(void)
     config.server_port = 80;
     config.ctrl_port = 32768;
     config.max_open_sockets = 5; //20210921 --> previously 7   
-    config.max_uri_handlers = 42; // previously 24, 20220511: 35, 20221220: 37, 2023-01-02: 38   , 2023-03-12: 40          
+    config.max_uri_handlers = 32; // previously 24, 20220511: 35, 20221220: 37, 2023-01-02: 38   , 2023-03-12: 40          
     config.max_resp_headers = 8;                        
     config.backlog_conn = 5;                        
     config.lru_purge_enable = true; // this cuts old connections if new ones are needed.               
@@ -531,8 +758,6 @@ httpd_handle_t start_webserver(void)
     config.close_fn = NULL;     
 //    config.uri_match_fn = NULL;                            
     config.uri_match_fn = httpd_uri_match_wildcard;
-
-    starttime = getCurrentTimeString("%Y%m%d-%H%M%S");
 
     // Start the httpd server
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
@@ -588,16 +813,6 @@ void register_server_main_uri(httpd_handle_t server, const char *base_path)
     camuri.user_ctx  = (void*) base_path;   // Pass server data as context
     httpd_register_uri_handler(server, &camuri);
 
-    camuri.uri       = "/sysinfo";
-    camuri.handler   = handler_sysinfo;
-    camuri.user_ctx  = (void*) base_path;   // Pass server data as context
-    httpd_register_uri_handler(server, &camuri);
-    
-    camuri.uri       = "/starttime";
-    camuri.handler   = handler_get_starttime;
-    camuri.user_ctx  = (void*) base_path;   // Pass server data as context
-    httpd_register_uri_handler(server, &camuri);
-
     camuri.uri       = "/heap";
     camuri.handler   = handler_get_heap;
     camuri.user_ctx  = NULL;   // Pass server data as context
@@ -606,21 +821,6 @@ void register_server_main_uri(httpd_handle_t server, const char *base_path)
     camuri.uri       = "/stream";
     camuri.handler   = handler_get_stream;
     camuri.user_ctx  = NULL;   // Pass server data as context
-    httpd_register_uri_handler(server, &camuri);
-    
-    camuri.uri       = "/cpu_temperature";
-    camuri.handler   = handler_cputemp;
-    camuri.user_ctx  = NULL; 
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/rssi";
-    camuri.handler   = handler_rssi;
-    camuri.user_ctx  = NULL;
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/uptime";
-    camuri.handler   = handler_uptime;
-    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/img_tmp/*";

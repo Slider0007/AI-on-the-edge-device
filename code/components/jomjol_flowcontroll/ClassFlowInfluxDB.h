@@ -33,6 +33,7 @@ public:
     bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
     bool doFlow(std::string time);
     void doPostProcessEventHandling();
+    bool isInfluxDBEnabled();
     std::string name() {return "ClassFlowInfluxDB";};
 };
 

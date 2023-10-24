@@ -85,9 +85,26 @@ int getFlowCycleCounter()
 }
 
 
-void setTaskAutoFlowState(uint8_t _value) 
+void setTaskAutoFlowState(int _value) 
 {
     taskAutoFlowState = _value;
+}
+
+
+std::string getProcessStatus(void)
+{
+    std::string process_status;
+    
+    if (taskAutoFlowState >=4 && taskAutoFlowState <= 7) 
+        process_status = "Processing (Automatic)";
+    else if (taskAutoFlowState == 3) 
+        process_status = "Processing (Triggered Only)";
+    else if (taskAutoFlowState < 3) 
+        process_status = "Not Processing / Not Ready";
+    else
+        process_status = "Status unknown: " + taskAutoFlowState;
+
+    return process_status;
 }
 
 

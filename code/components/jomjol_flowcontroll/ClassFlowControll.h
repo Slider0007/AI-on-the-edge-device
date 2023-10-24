@@ -59,6 +59,7 @@ public:
 	virtual ~ClassFlowControll();
 	bool InitFlow(std::string config);
 	void DeinitFlow(void);
+	ClassFlow* getFlowClass(std::string _classname);
 
 	bool ReadParameter(FILE* pfile, std::string& aktparamgraph);	
 	bool doFlowImageEvaluation(std::string time);

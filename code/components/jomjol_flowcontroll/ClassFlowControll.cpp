@@ -76,6 +76,22 @@ ClassFlowControll::~ClassFlowControll()
 }
 
 
+ClassFlow* ClassFlowControll::getFlowClass(std::string _classname)
+{
+    for (int i = 0; i < FlowControll.size(); ++i) {
+        if (FlowControll[i]->name().compare(_classname) == 0)
+            return FlowControll[i];
+    }
+
+    for (int i = 0; i < FlowControlPublish.size(); ++i) {
+        if (FlowControlPublish[i]->name().compare(_classname) == 0)
+            return FlowControlPublish[i];
+    }
+
+    return NULL;
+}
+
+
 bool ClassFlowControll::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
     std::vector<std::string> splitted;
@@ -268,14 +284,14 @@ std::string ClassFlowControll::doSingleStep(std::string _stepname, std::string _
     #endif //ENABLE_INFLUXDB
 
     for (int i = 0; i < FlowControll.size(); ++i)
-        if (FlowControll[i]->name().compare(_classname) == 0){
+        if (FlowControll[i]->name().compare(_classname) == 0) {
             if (!(FlowControll[i]->name().compare("ClassFlowTakeImage") == 0))      // if it is a TakeImage, the image does not need to be included, this happens automatically with the html query.
                 FlowControll[i]->doFlow("");
             result = FlowControll[i]->getHTMLSingleStep(_host);
         }
 
     for (int i = 0; i < FlowControlPublish.size(); ++i)
-        if (FlowControlPublish[i]->name().compare(_classname) == 0){
+        if (FlowControlPublish[i]->name().compare(_classname) == 0) {
             FlowControlPublish[i]->doFlow("");
             result = FlowControlPublish[i]->getHTMLSingleStep(_host);
         }

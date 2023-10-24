@@ -13,6 +13,7 @@ struct wlan_config {
     std::string gateway = "";
     std::string netmask = "";
     std::string dns = "";
+    bool dhcp = true;                       // Default: DHCP active
     int rssi_threshold = 0;                 // Default: 0 -> ROAMING disabled
 };
 extern struct wlan_config wlan_config;

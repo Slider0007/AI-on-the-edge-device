@@ -9,6 +9,10 @@
 #include "cJSON.h"
 #include "../../include/defines.h"
 
+#if DEBUG_DETAIL_ON
+#include "esp_timer.h"
+#endif
+
 static const char *TAG = "MQTT IF";
 
 std::map<std::string, std::function<void()>>* connectFunktionMap = NULL;  
@@ -320,6 +324,7 @@ void MQTTdestroy_client(bool _disable = false) {
         esp_mqtt_client_destroy(client);
         client = NULL;
         mqtt_initialized = false;
+        mqtt_enabled = false;
     }
 
     if (_disable) // Disable MQTT service, avoid restart with MQTTPublish

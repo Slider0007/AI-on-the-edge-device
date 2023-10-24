@@ -95,6 +95,8 @@ std::vector<std::string> splitString(const std::string& str);
 void migrateConfiguration(void);
 bool setCpuFrequency(void);
 
+std::string deviceStartTimestamp = "";
+
 static const char *TAG = "MAIN";
 
 
@@ -175,7 +177,7 @@ extern "C" void app_main(void)
         ESP_ERROR_CHECK( heap_trace_init_standalone(trace_record, NUM_RECORDS) );
     #endif
         
-    TickType_t xDelay;
+    deviceStartTimestamp = getCurrentTimeString(TIME_FORMAT_OUTPUT);
         
     #ifdef DISABLE_BROWNOUT_DETECTOR
         WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
@@ -266,13 +268,8 @@ extern "C" void app_main(void)
 
     // Check version information
     // ********************************************
-    std::string versionFormated = getFwVersion() + ", Date/Time: " + std::string(BUILD_TIME) + \
-        ", Web UI: " + getHTMLversion();
-
-    if (std::string(GIT_TAG) != "") { // We are on a tag, add it as prefix
-        versionFormated = "Tag: '" + std::string(GIT_TAG) + "', " + versionFormated;
-    }
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, versionFormated);
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Firmware version: " + getFwVersion() + ", Build Time: " + std::string(BUILD_TIME) + 
+                                           " | Web UI version: " + getHTMLversion());
 
     if (getHTMLcommit().substr(0, 7) == "?")
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse Web UI version"));
@@ -326,7 +323,7 @@ extern "C" void app_main(void)
         return; // No way to continue with empty SSID
     }
 
-    xDelay = 2000 / portTICK_PERIOD_MS;
+    TickType_t xDelay = 2000 / portTICK_PERIOD_MS;
     ESP_LOGD(TAG, "main: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
     vTaskDelay( xDelay );
 
@@ -360,7 +357,7 @@ extern "C" void app_main(void)
         StatusLED(PSRAM_INIT, 1, true);
     }
     else { // ESP_OK -> PSRAM init OK --> continue to check PSRAM size
-        size_t psram_size = esp_psram_get_size(); // size_t psram_size = esp_psram_get_size(); // comming in IDF 5.0
+        size_t psram_size = esp_psram_get_size();
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "PSRAM size: " + std::to_string(psram_size) + " byte (" + std::to_string(psram_size/1024/1024) + 
                                                "MB / " + std::to_string(psram_size/1024/1024*8) + "MBit)");
 
@@ -372,7 +369,7 @@ extern "C" void app_main(void)
             StatusLED(PSRAM_INIT, 2, true);
         }
         else { // PSRAM size OK --> continue to check heap size
-            size_t _hsize = getESPHeapSizeTotal();
+            size_t _hsize = getESPHeapSizeTotalFree();
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Total heap: " + std::to_string(_hsize) + " byte");
 
             // Check heap memory

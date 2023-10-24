@@ -47,7 +47,12 @@ class CCamera {
         esp_err_t InitCam();
         esp_err_t DeinitCam();
         bool testCamera(void);
+
         void printCamInfo(void);
+        std::string getCamType(void);
+        std::string getCamPID(void);
+        std::string getCamVersion(void);
+        int getCamFrequencyMhz(void);
 
         esp_err_t CaptureToBasisImage(CImageBasis *_Image, int delay = 0);
         esp_err_t CaptureToFile(std::string nm, int delay = 0);

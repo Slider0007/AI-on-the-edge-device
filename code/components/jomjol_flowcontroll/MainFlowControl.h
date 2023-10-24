@@ -21,7 +21,9 @@ bool getIsPlannedReboot();
 void CreateMainFlowTask();
 void DeleteMainFlowTask();
 bool isSetupModusActive();
-void setTaskAutoFlowState(uint8_t _value);
+
+void setTaskAutoFlowState(int _value);
+std::string getProcessStatus();
 
 int getFlowCycleCounter();
 

@@ -1,6 +1,6 @@
 #include "ClassControllCamera.h"
-#include "ClassLogFile.h"
 
+#include <sstream>
 #include <stdio.h>
 #include "driver/gpio.h"
 #include "esp_timer.h"
@@ -29,6 +29,7 @@
 
 #include "driver/ledc.h"
 #include "MainFlowControl.h"
+#include "ClassLogFile.h"
 
 #if (ESP_IDF_VERSION_MAJOR >= 5)
 #include "soc/periph_defs.h"
@@ -212,13 +213,48 @@ bool CCamera::testCamera(void)
 
 void CCamera::printCamInfo(void)
 {
-    // Print camera infos
-    // ********************************************
-    char caminfo[64];
+    char caminfo[96];
     sensor_t * s = esp_camera_sensor_get();
-    sprintf(caminfo, "PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x, FREQ: %dMhz", s->id.PID, 
+    camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
+    sprintf(caminfo, "TYPE: %s, PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x, FREQ: %dMhz", info->name, s->id.PID, 
                 s->id.VER, s->id.MIDH, s->id.MIDL, s->xclk_freq_hz/1000000);
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera info: " + std::string(caminfo));
+}
+
+
+std::string CCamera::getCamType(void)
+{
+    sensor_t * s = esp_camera_sensor_get();
+    camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
+    return std::string(info->name);
+}
+
+
+std::string CCamera::getCamPID(void)
+{
+    sensor_t * s = esp_camera_sensor_get();
+    camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
+    std::stringstream camPID;
+    camPID << std::hex << s->id.PID;
+    return camPID.str();
+}
+
+
+std::string CCamera::getCamVersion(void)
+{
+    sensor_t * s = esp_camera_sensor_get();
+    camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
+    std::stringstream camVersion;
+    camVersion << std::hex << s->id.VER;
+    return camVersion.str();
+}
+
+
+int CCamera::getCamFrequencyMhz(void)
+{
+    sensor_t * s = esp_camera_sensor_get();
+    camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
+    return s->xclk_freq_hz/1000000;;
 }
 
 

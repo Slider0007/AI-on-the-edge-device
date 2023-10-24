@@ -133,6 +133,15 @@ bool getTimeWasNotSetAtBoot(void)
 }
 
 
+bool getTimeWasSetOnce(void)
+{
+    if (timeWasNotSetAtBoot)
+        return !timeWasNotSetAtBoot_PrintStartBlock;
+    else
+        return !timeWasNotSetAtBoot;
+}
+
+
 std::string getServerName(void)
 {
     char buf[100];

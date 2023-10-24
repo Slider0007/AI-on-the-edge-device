@@ -171,13 +171,13 @@ std::string getESPHeapInfo(){
 }
 
 
-size_t getESPHeapSizeTotal()
+size_t getESPHeapSizeTotalFree()
 {
    return heap_caps_get_free_size(MALLOC_CAP_8BIT);
 }
 
 
-size_t getESPHeapSizeInternal() 
+size_t getESPHeapSizeInternalFree() 
 {
 	return heap_caps_get_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_INTERNAL);
 }
@@ -195,7 +195,7 @@ size_t getESPHeapSizeInternalMinFree()
 }
 
 
-size_t getESPHeapSizeSPIRAM()
+size_t getESPHeapSizeSPIRAMFree()
 {
 	return heap_caps_get_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_SPIRAM);
 }

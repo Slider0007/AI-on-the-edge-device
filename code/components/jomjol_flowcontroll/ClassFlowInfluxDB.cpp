@@ -222,6 +222,12 @@ void ClassFlowInfluxDB::handleFieldname(std::string _decsep, std::string _value)
 }
 
 
+bool ClassFlowInfluxDB::isInfluxDBEnabled(void)
+{
+    return InfluxDBenable;
+}
+
+
 ClassFlowInfluxDB::~ClassFlowInfluxDB()
 {
     // nothing to do
