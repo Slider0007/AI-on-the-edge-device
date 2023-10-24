@@ -160,7 +160,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "idf_version", getIDFVersion().c_str()) == NULL)
             retVal = ESP_FAIL;
 
-        char *jsonString = cJSON_PrintBuffered(cJSONObject, 1280, 1); // Print to predefined buffer, avoid dynamic allocations
+        char *jsonString = cJSON_PrintBuffered(cJSONObject, 1536, 1); // Print to predefined buffer, avoid dynamic allocations
         sReturnMessage = std::string(jsonString);
         cJSON_free(jsonString);  
         cJSON_Delete(cJSONObject);
@@ -235,7 +235,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
     }
     #endif
 
-    else if (_task.compare("TimeSyncStatus") == 0)
+    else if (_task.compare("NTPSyncStatus") == 0)
     {
         httpd_resp_sendstr(req, getUseNtp() ? (getTimeWasSetOnce() ? "Synchronized" : "In Progress") : "Disabled");
         return ESP_OK;        
@@ -245,7 +245,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, deviceStartTimestamp.c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("Uptime") == 0)
+    else if (_task.compare("DeviceUptime") == 0)
     {
         httpd_resp_sendstr(req, getFormatedUptime(false).c_str());
         return ESP_OK;        
@@ -295,7 +295,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, getWIFIisConnected() ? "Connected" : "Disconnected");
         return ESP_OK;        
     }
-    else if (_task.compare("SSID") == 0)
+    else if (_task.compare("WlanSSID") == 0)
     {
         httpd_resp_sendstr(req, getSSID().c_str());
         return ESP_OK;        
