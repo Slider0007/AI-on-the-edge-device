@@ -716,6 +716,12 @@ void ClassFlowControll::PostProcessEventHandler()
 }
 
 
+float ClassFlowControll::getProcessingInterval(void)
+{
+    return AutoInterval;
+}
+
+
 bool ClassFlowControll::isAutoStart()
 {
     return AutoStart;

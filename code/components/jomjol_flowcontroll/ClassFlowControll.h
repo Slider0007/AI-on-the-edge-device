@@ -95,6 +95,7 @@ public:
 
 	std::string doSingleStep(std::string _stepname, std::string _host);
 
+	float getProcessingInterval();
 	bool isAutoStart();
 	bool isAutoStart(long &_interval);
 

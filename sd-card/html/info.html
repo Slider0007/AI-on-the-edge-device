@@ -86,6 +86,12 @@ table {
 			</td>
 		</tr>
 		<tr>
+			<td>Processing Interval</td>
+			<td>
+				<output id="process_interval"></output>
+			</td>
+		</tr>
+		<tr>
 			<td>Processed Cycle Counter</td>
 			<td>
 				<output id="cycle_counter"></output>
@@ -99,7 +105,13 @@ table {
 			<col span="1" style="width: 65%;">
 		</colgroup>
 		<tr>			
-			<h3>Publish Services</h3>
+			<h3>Services</h3>
+		</tr>
+		<tr>
+			<td>Data Logging (SD Card) </td>	
+			<td class="td-badge">
+				<output class="badge" id="datalogging_sdcard_status"></output>
+			</td>
 		</tr>
 		<tr>
 			<td>MQTT</td>	
@@ -453,7 +465,18 @@ table {
 				else
 					addClassToElement("process_status", "badge-error");
 
+				document.getElementById("process_interval").value = _jsonData.process_interval + " Minutes";
 				document.getElementById("cycle_counter").value = _jsonData.cycle_counter;
+				
+				document.getElementById("datalogging_sdcard_status").value = _jsonData.datalogging_sdcard_status;
+				if (_jsonData.datalogging_sdcard_status == "Enabled")
+					addClassToElement("datalogging_sdcard_status", "badge-success");
+				else if (_jsonData.datalogging_sdcard_status == "Disabled")
+					addClassToElement("datalogging_sdcard_status", "badge-disabled");
+				else {
+					document.getElementById("datalogging_sdcard_status").value += " (Unknown Status)"
+					addClassToElement("datalogging_sdcard_status", "badge-error");
+				}
 
 				document.getElementById("mqtt_status").value = _jsonData.mqtt_status;
 				if (_jsonData.mqtt_status == "Connected")
@@ -473,6 +496,7 @@ table {
 				else if (_jsonData.influxdbv1_status == "Disabled")
 					addClassToElement("influxdbv1_status", "badge-disabled");
 				else {
+					document.getElementById("influxdbv1_status").value += " (Unknown Status)"
 					addClassToElement("influxdbv1_status", "badge-error");
 				}
 				
@@ -482,6 +506,7 @@ table {
 				else if (_jsonData.influxdbv2_status == "Disabled")
 					addClassToElement("influxdbv2_status", "badge-disabled");
 				else {
+					document.getElementById("influxdbv2_status").value += " (Unknown Status)"
 					addClassToElement("influxdbv2_status", "badge-error");
 				}
 
@@ -493,7 +518,7 @@ table {
 				else if (_jsonData.ntp_syncstatus == "Disabled")
 					addClassToElement("ntp_syncstatus", "badge-disabled");
 				else {
-					document.getElementById("ntp_syncstatus").value += " - Unknown Status"
+					document.getElementById("ntp_syncstatus").value += " (Unknown Status)"
 					addClassToElement("ntp_syncstatus", "badge-error");
 				}
 
