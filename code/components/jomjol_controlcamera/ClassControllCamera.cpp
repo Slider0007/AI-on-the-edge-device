@@ -218,7 +218,7 @@ void CCamera::printCamInfo(void)
     camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
     sprintf(caminfo, "TYPE: %s, PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x, FREQ: %dMhz", info->name, s->id.PID, 
                 s->id.VER, s->id.MIDH, s->id.MIDL, s->xclk_freq_hz/1000000);
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera info: " + std::string(caminfo));
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Info: " + std::string(caminfo));
 }
 
 
