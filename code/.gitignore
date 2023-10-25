@@ -6,8 +6,6 @@
 .vscode/ipch
 version.cpp
 sdkconfig.esp32cam
-sdkconfig.esp32cam-localbuild
 sdkconfig.esp32cam-debug
-sdkconfig.esp32cam-board-rev3
 sdkconfig.esp32cam-himem
 sdkconfig.esp32cam-task-analysis
