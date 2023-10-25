@@ -74,7 +74,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "network_config", getDHCPUsage() ? "DHCP" : "Manual") == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "ip_address", getIPAddress().c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "ipv4_address", getIPAddress().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "netmask_address", getNetmaskAddress().c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -250,6 +250,51 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, getFormatedUptime(false).c_str());
         return ESP_OK;        
     }
+    else if (_task.compare("WLANStatus") == 0)
+    {
+        httpd_resp_sendstr(req, getWIFIisConnected() ? "Connected" : "Disconnected");
+        return ESP_OK;        
+    }
+    else if (_task.compare("WlanSSID") == 0)
+    {
+        httpd_resp_sendstr(req, getSSID().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("WlanRSSI") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string(get_WIFI_RSSI()).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("MAC") == 0)
+    {
+        httpd_resp_sendstr(req, getMac().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("NetworkConfig") == 0)
+    {
+        httpd_resp_sendstr(req, getDHCPUsage() ? "DHCP" : "Manual");
+        return ESP_OK;        
+    }
+    else if (_task.compare("IPv4") == 0)
+    {
+        httpd_resp_sendstr(req, getIPAddress().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("Netmask") == 0)
+    {
+        httpd_resp_sendstr(req, getNetmaskAddress().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("Gateway") == 0)
+    {
+        httpd_resp_sendstr(req, getGatewayAddress().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("DNS") == 0)
+    {
+        httpd_resp_sendstr(req, getDNSAddress().c_str());
+        return ESP_OK;        
+    }
     else if (_task.compare("Hostname") == 0)
     {
         httpd_resp_sendstr(req, getHostname().c_str());
@@ -288,51 +333,6 @@ esp_err_t handler_get_info(httpd_req_t *req)
     else if (_task.compare("CameraFrequency") == 0)
     {
         httpd_resp_sendstr(req, std::to_string(Camera.getCamFrequencyMhz()).c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("WLANStatus") == 0)
-    {
-        httpd_resp_sendstr(req, getWIFIisConnected() ? "Connected" : "Disconnected");
-        return ESP_OK;        
-    }
-    else if (_task.compare("WlanSSID") == 0)
-    {
-        httpd_resp_sendstr(req, getSSID().c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("WlanRSSI") == 0)
-    {
-        httpd_resp_sendstr(req, std::to_string(get_WIFI_RSSI()).c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("MAC") == 0)
-    {
-        httpd_resp_sendstr(req, getMac().c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("NetworkConfig") == 0)
-    {
-        httpd_resp_sendstr(req, getDHCPUsage() ? "DHCP" : "Manual");
-        return ESP_OK;        
-    }
-    else if (_task.compare("IP") == 0)
-    {
-        httpd_resp_sendstr(req, getIPAddress().c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("Netmask") == 0)
-    {
-        httpd_resp_sendstr(req, getNetmaskAddress().c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("Gateway") == 0)
-    {
-        httpd_resp_sendstr(req, getGatewayAddress().c_str());
-        return ESP_OK;        
-    }
-    else if (_task.compare("DNS") == 0)
-    {
-        httpd_resp_sendstr(req, getDNSAddress().c_str());
         return ESP_OK;        
     }
     else if (_task.compare("SDCardName") == 0)
