@@ -265,7 +265,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, std::to_string(get_WIFI_RSSI()).c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("MAC") == 0)
+    else if (_task.compare("MACAddress") == 0)
     {
         httpd_resp_sendstr(req, getMac().c_str());
         return ESP_OK;        
@@ -275,22 +275,22 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, getDHCPUsage() ? "DHCP" : "Manual");
         return ESP_OK;        
     }
-    else if (_task.compare("IPv4") == 0)
+    else if (_task.compare("IPv4Address") == 0)
     {
         httpd_resp_sendstr(req, getIPAddress().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("Netmask") == 0)
+    else if (_task.compare("NetmaskAddress") == 0)
     {
         httpd_resp_sendstr(req, getNetmaskAddress().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("Gateway") == 0)
+    else if (_task.compare("GatewayAddress") == 0)
     {
         httpd_resp_sendstr(req, getGatewayAddress().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("DNS") == 0)
+    else if (_task.compare("DNSAddress") == 0)
     {
         httpd_resp_sendstr(req, getDNSAddress().c_str());
         return ESP_OK;        
@@ -335,37 +335,37 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, std::to_string(Camera.getCamFrequencyMhz()).c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("SDCardName") == 0)
+    else if (_task.compare("SDName") == 0)
     {
         httpd_resp_sendstr(req, getSDCardName().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("SDCardManufacturer") == 0)
+    else if (_task.compare("SDManufacturer") == 0)
     {
         httpd_resp_sendstr(req, getSDCardManufacturer().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("SDCardCapacity") == 0)
+    else if (_task.compare("SDCapacity") == 0)
     {
         httpd_resp_sendstr(req, getSDCardCapacity().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("SDCardSectorSize") == 0)
+    else if (_task.compare("SDSectorSize") == 0)
     {
         httpd_resp_sendstr(req, getSDCardSectorSize().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("SDCardPartitionAllocationSize") == 0)
+    else if (_task.compare("SDPartitionAllocSize") == 0)
     {
         httpd_resp_sendstr(req, getSDCardPartitionAllocationSize().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("SDCardPartitionSize") == 0)
+    else if (_task.compare("SDPartitionSize") == 0)
     {
         httpd_resp_sendstr(req, getSDCardPartitionSize().c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("SDCardFreePartitionSpace") == 0)
+    else if (_task.compare("SDPartitionFree") == 0)
     {
         httpd_resp_sendstr(req, getSDCardFreePartitionSpace().c_str());
         return ESP_OK;        
