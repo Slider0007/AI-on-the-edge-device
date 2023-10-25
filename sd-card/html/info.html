@@ -7,7 +7,7 @@
 <style>
 h1 {font-size: 2em;}
 h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-h3 {font-size: medium; background-color: lightgray; padding: 5px; width:660px; min-width:660px; max-width:660px}
+h3 {font-size: medium; background-color: lightgray; padding: 5px; width:640px; min-width:640px; max-width:640px}
 p {font-size: 1em;}
 
 th, td {
@@ -59,7 +59,7 @@ output {
 }
 
 table {
-    width: 660px;
+    width: 640px;
 	padding: 5px;
 	border-collapse:collapse;
 }
@@ -194,9 +194,9 @@ table {
 			</td>
 		</tr>
 		<tr>
-			<td>IP Address</td>	
+			<td>IPv4 Address</td>	
 			<td>
-				<output id="ip_address"></output>
+				<output id="ipv4_address"></output>
 			</td>
 		</tr>
 		<tr>
@@ -455,21 +455,6 @@ table {
 
 				document.getElementById("cycle_counter").value = _jsonData.cycle_counter;
 
-				document.getElementById("wlan_status").value = _jsonData.wlan_status;
-				if (_jsonData.wlan_status == "Connected")
-					addClassToElement("wlan_status", "badge-success");
-				else
-					addClassToElement("wlan_status", "badge-error");
-
-				document.getElementById("wlan_ssid").value = _jsonData.wlan_ssid;
-				document.getElementById("wlan_rssi").value = _jsonData.wlan_rssi + " dBm";
-				document.getElementById("mac_address").value = _jsonData.mac_address;
-				document.getElementById("network_config").value = _jsonData.network_config;
-				document.getElementById("ip_address").value = _jsonData.ip_address;
-				document.getElementById("netmask_address").value = _jsonData.netmask_address;
-				document.getElementById("gateway_address").value = _jsonData.gateway_address;
-				document.getElementById("dns_address").value = _jsonData.dns_address;
-
 				document.getElementById("mqtt_status").value = _jsonData.mqtt_status;
 				if (_jsonData.mqtt_status == "Connected")
 					addClassToElement("mqtt_status", "badge-success");
@@ -513,17 +498,31 @@ table {
 				}
 
 				//Input format (ISO): 2023-10-23T14:26:34+0200
-				document.getElementById("current_time").value = _jsonData.current_time.substr(0,10) + " " +
-																_jsonData.current_time.substr(11,8) + " (UTC" +	
-																_jsonData.current_time.substr(19,5) + ")";
-
-				//Input format (ISO): 2023-10-23T14:26:34+0200
 				document.getElementById("device_start_time").value = _jsonData.device_start_time.substr(0,10) + " " +
 																	 _jsonData.device_start_time.substr(11,8) + " (UTC" +	
 																	 _jsonData.device_start_time.substr(19,5) + ")";
-					
-				document.getElementById("device_uptime").value = _jsonData.device_uptime;
 				
+				//Input format (ISO): 2023-10-23T14:26:34+0200
+				document.getElementById("current_time").value = _jsonData.current_time.substr(0,10) + " " +
+												_jsonData.current_time.substr(11,8) + " (UTC" +	
+												_jsonData.current_time.substr(19,5) + ")";	
+																	
+				document.getElementById("device_uptime").value = _jsonData.device_uptime;
+	
+				document.getElementById("wlan_status").value = _jsonData.wlan_status;
+				if (_jsonData.wlan_status == "Connected")
+					addClassToElement("wlan_status", "badge-success");
+				else
+					addClassToElement("wlan_status", "badge-error");
+
+				document.getElementById("wlan_ssid").value = _jsonData.wlan_ssid;
+				document.getElementById("wlan_rssi").value = _jsonData.wlan_rssi + " dBm";
+				document.getElementById("mac_address").value = _jsonData.mac_address;
+				document.getElementById("network_config").value = _jsonData.network_config;
+				document.getElementById("ipv4_address").value = _jsonData.ipv4_address;
+				document.getElementById("netmask_address").value = _jsonData.netmask_address;
+				document.getElementById("gateway_address").value = _jsonData.gateway_address;
+				document.getElementById("dns_address").value = _jsonData.dns_address;
 				
 				document.getElementById("hostname").value =_jsonData.hostname;
 				document.getElementById("chip_model").value = _jsonData.chip_model;
