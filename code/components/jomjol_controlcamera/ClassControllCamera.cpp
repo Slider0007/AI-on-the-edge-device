@@ -234,9 +234,7 @@ std::string CCamera::getCamPID(void)
 {
     sensor_t * s = esp_camera_sensor_get();
     camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
-    std::stringstream camPID;
-    camPID << std::hex << s->id.PID;
-    return camPID.str();
+    return intToHexString(s->id.PID);
 }
 
 
@@ -244,9 +242,7 @@ std::string CCamera::getCamVersion(void)
 {
     sensor_t * s = esp_camera_sensor_get();
     camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
-    std::stringstream camVersion;
-    camVersion << std::hex << s->id.VER;
-    return camVersion.str();
+    return intToHexString(s->id.VER);
 }
 
 
