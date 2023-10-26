@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef ESP_SYSTEM_INFO_H
-#define ESP_SYSTEM_INFO_H
+#ifndef ESP_SYSTEM_H
+#define ESP_SYSTEM_H
 
 #include "sdmmc_cmd.h"
 
@@ -15,6 +15,10 @@ void printDeviceInfo(void);
 //std::string get_device_info(void);
 
 std::string getIDFVersion(void);
+
+float temperatureRead();
+
+bool setCPUFrequency(void);
 
 std::string getESPHeapInfo(void);
 size_t getESPHeapSizeTotal(void);
@@ -64,4 +68,4 @@ std::string getSDCardName(void);
 std::string getSDCardCapacity(void);
 std::string getSDCardSectorSize(void);
 
-#endif //ESP_SYSTEM_INFO_H
+#endif //ESP_SYSTEM_H

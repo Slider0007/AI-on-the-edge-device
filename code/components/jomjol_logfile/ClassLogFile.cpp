@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 #include "Helper.h"
-#include "system_info.h"
+#include "system.h"
 #include "time_sntp.h"
 #include "../../include/defines.h"
 

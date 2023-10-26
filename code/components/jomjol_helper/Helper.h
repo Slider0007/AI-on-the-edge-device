@@ -34,8 +34,6 @@ int removeFolder(const char* folderPath, const char* logTag);
 std::string toLower(std::string in);
 std::string toUpper(std::string in);
 
-float temperatureRead();
-
 time_t addDays(time_t startTime, int days);
 
 void memCopyGen(uint8_t* _source, uint8_t* _target, int _size);
@@ -53,6 +51,7 @@ std::string UrlDecode(const std::string& value);
 bool replaceString(std::string& s, std::string const& toReplace, std::string const& replaceWith);
 bool replaceString(std::string& s, std::string const& toReplace, std::string const& replaceWith, bool logIt);
 bool isInString(std::string& s, std::string const& toFind);
+std::vector<std::string> splitString(const std::string& str);
 std::string intToHexString(int _valueInt);
 
 #endif //HELPER_H
