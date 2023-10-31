@@ -35,7 +35,6 @@ void InfluxDB_V2_Init(std::string _uri, std::string _database, std::string _org,
 
 void InfluxDB_V2_Publish(std::string _measurement, std::string _key, std::string _content, std::string _timestamp) 
 {
-    //char response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
     char* response_buffer = (char*) calloc_psram_heap(std::string(TAG) + "->response_buffer", 1, sizeof(char) * MAX_HTTP_OUTPUT_BUFFER, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     esp_http_client_config_t http_config = {
        .user_agent = "ESP32 Meter reader",
@@ -50,10 +49,9 @@ void InfluxDB_V2_Publish(std::string _measurement, std::string _key, std::string
     std::string payload;
     char nowTimestamp[21];
 
-    if (_timestamp.length() > 0)
-    {
+    if (_timestamp.length() > 0) {
         struct tm tm;
-
+        
         time_t t;
         time(&t);
         localtime_r(&t, &tm); // Extract DST setting from actual time to consider it for timestamp evaluation
@@ -65,8 +63,7 @@ void InfluxDB_V2_Publish(std::string _measurement, std::string _key, std::string
         sprintf(nowTimestamp,"%ld000000000", (long) t);           // UTC
         payload = _measurement + " " + _key + "=" + _content + " " + nowTimestamp;
     }
-    else
-    {
+    else {
         payload = _measurement + " " + _key + "=" + _content;
     }
 
@@ -97,12 +94,12 @@ void InfluxDB_V2_Publish(std::string _measurement, std::string _key, std::string
     esp_err_t err = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(http_client));
 
     if( err == ESP_OK ) {
-      LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP request completed");
-      int status_code = esp_http_client_get_status_code(http_client);
-      LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP client status code: " + std::to_string(status_code));
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP request completed");
+        int status_code = esp_http_client_get_status_code(http_client);
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP client status code: " + std::to_string(status_code));
     }
     else {
-      LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "HTTP request failed");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "HTTP request failed");
     }
     esp_http_client_cleanup(http_client);
     free_psram_heap(std::string(TAG) + "->response_buffer", response_buffer);
@@ -145,7 +142,6 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 
 void InfluxDBPublish(std::string _measurement, std::string _key, std::string _content, std::string _timestamp)
 {
-    //char response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
     char* response_buffer = (char*) calloc_psram_heap(std::string(TAG) + "->response_buffer", 1, sizeof(char) * MAX_HTTP_OUTPUT_BUFFER, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
     esp_http_client_config_t http_config = {
        .user_agent = "ESP32 Meter reader",
@@ -155,7 +151,7 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
        .user_data = response_buffer
     };
 
-    if (_influxDBUser.length() && _influxDBPassword.length()){
+    if (_influxDBUser.length() && _influxDBPassword.length()) {
        http_config.username = _influxDBUser.c_str();
        http_config.password = _influxDBPassword.c_str();
        http_config.auth_type = HTTP_AUTH_TYPE_BASIC;
@@ -166,8 +162,7 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDBPublish - Key: " + _key + ", Content: " + _content + ", Timestamp: " + _timestamp);
 
-    if (_timestamp.length() > 0)
-    {
+    if (_timestamp.length() > 0) {
         struct tm tm;
 
         time_t t;
@@ -181,8 +176,7 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
         sprintf(nowTimestamp,"%ld000000000", (long) t);           // UTC
         payload = _measurement + " " + _key + "=" + _content + " " + nowTimestamp;
     }
-    else
-    {
+    else {
         payload = _measurement + " " + _key + "=" + _content;
     }
 
@@ -193,7 +187,7 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
 
     // use the default retention policy of the database
     std::string apiURI = _influxDBURI + "/write?db=" + _influxDBDatabase;
-//    std::string apiURI = _influxDBURI + "/api/v2/write?bucket=" + _influxDBDatabase + "/";
+    //std::string apiURI = _influxDBURI + "/api/v2/write?bucket=" + _influxDBDatabase + "/";
 
     apiURI.shrink_to_fit();
     http_config.url = apiURI.c_str();
@@ -212,11 +206,11 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
     esp_err_t err = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(http_client));
 
     if( err == ESP_OK ) {
-      LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP request performed");
-      int status_code = esp_http_client_get_status_code(http_client);
-      LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP client status code" + std::to_string(status_code));
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP request performed");
+        int status_code = esp_http_client_get_status_code(http_client);
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP client status code" + std::to_string(status_code));
     } else {
-      LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "HTTP request failed");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "HTTP request failed");
     }
     esp_http_client_cleanup(http_client);
     free_psram_heap(std::string(TAG) + "->response_buffer", response_buffer);
