@@ -260,7 +260,7 @@ extern "C" void app_main(void)
     std::string versionFormated = getFwVersion() + ", Date/Time: " + std::string(BUILD_TIME) + \
         ", Web UI: " + getHTMLversion();
 
-    if (std::string(GIT_TAG) != "") { // We are on a tag, add it as prefix
+     if (std::string(GIT_TAG) != "" && std::string(GIT_TAG) != "N/A") { // We are on a tag, add it as prefix
         versionFormated = "Tag: '" + std::string(GIT_TAG) + "', " + versionFormated;
     }
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, versionFormated);
