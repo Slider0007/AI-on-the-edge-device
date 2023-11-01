@@ -541,10 +541,10 @@ void migrateConfiguration(void)
             }
 
             /* MaxRateType has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "MaxRateType") && isInString(configLines[i], ";")) { // It is the parameter "MaxRateType" and it is commented out
-                migrated = migrated | replaceString(configLines[i], "Off", "RatePerMin"); // Set it to its default value and enable it
-                migrated = migrated | replaceString(configLines[i], "RateChange", "RatePerMin"); // Set it to its default value and enable it
-                migrated = migrated | replaceString(configLines[i], "AbsoluteChange", "RatePerMin"); // Set it to its default value and enable it
+            if (isInString(configLines[i], "MaxRateType")) { // It is the parameter "MaxRateType" and it is commented out
+                migrated = migrated | replaceString(configLines[i], "Off", "RatePerMin"); // Set it to its default value
+                migrated = migrated | replaceString(configLines[i], "RateChange", "RatePerMin"); // Set it to its default value
+                migrated = migrated | replaceString(configLines[i], "AbsoluteChange", "RatePerMin"); // Set it to its default value
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
 
