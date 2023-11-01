@@ -1,4 +1,4 @@
-function SaveConfigToServer(_domainname){
+function SaveConfigToServer(_domainname) {
      // leere Zeilen am Ende löschen
      var zw = config_split.length - 1;
      while (config_split[zw] == "") {
@@ -11,8 +11,9 @@ function SaveConfigToServer(_domainname){
           _config_gesamt = _config_gesamt + config_split[i] + "\n";
      } 
 
-     FileDeleteOnServer("/config/config.ini", _domainname);
-     FileSendContent(_config_gesamt, "/config/config.ini", _domainname);          
+     // Save to temporary file and then promote to config.ini on firmware level (server_file.cpp)
+     // -> Reduce data loss risk (e.g. network connection got interrupted during data transfer)
+     FileSendContent(_config_gesamt, "/config/config.tmp", _domainname);       
 }
 
 

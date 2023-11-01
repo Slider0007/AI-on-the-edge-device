@@ -664,13 +664,6 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    if (stat(filepath, &file_stat) == 0) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File already exists: " + std::string(filepath));
-        /* Respond with 400 Bad Request */
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File already exists");
-        return ESP_FAIL;
-    }
-
     /* File cannot be larger than a limit */
     if (req->content_len > MAX_FILE_SIZE) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File too large: " + std::to_string(req->content_len) + " bytes");
@@ -678,6 +671,20 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File size must be less than " MAX_FILE_SIZE_STR);
         /* Return failure to close underlying connection else the
          * incoming file content will keep the socket busy */
+        return ESP_FAIL;
+    }
+
+    // +++++++++++++++++++++++
+    // Special case config.ini: Use config.tmp to save posted chunked web server data. 
+    // Update config.ini only if data reception is successful -> Reduce data loss risk (e.g. network interruption during transfer)
+    if (strcmp(filename, "/config/config.tmp") == 0 && stat(filepath, &file_stat) == 0) // Delete config.tmp if existing
+        unlink(filepath);
+    // +++++++++++++++++++++++
+
+    if (stat(filepath, &file_stat) == 0) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File already exists: " + std::string(filepath));
+        /* Respond with 400 Bad Request */
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File already exists");
         return ESP_FAIL;
     }
 
@@ -747,6 +754,15 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "upload_post_handler: File saved: " + std::string(filename));
     ESP_LOGI(TAG, "File reception completed");
 
+    // +++++++++++++++++++++++
+    // Special case config.ini: Use config.tmp to save posted chunked web server data. 
+    // Update config.ini only if data reception is successful -> Reduce data loss risk (e.g. network interruption during transfer)
+    if (strcmp(filename, "/config/config.tmp") == 0) {
+        unlink(CONFIG_FILE); // Delete config.ini
+        RenameFile("/sdcard/config/config.tmp", CONFIG_FILE); // Promote config.tmp file to new config.ini file
+    }
+    // +++++++++++++++++++++++
+
     std::string directory = std::string(filepath);
 	size_t zw = directory.find("/");
 	size_t found = zw;
@@ -765,6 +781,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     /* Redirect onto root to see the updated file list */
     if (strcmp(filename, "/config/config.ini") == 0 ||
+        strcmp(filename, "/config/config.tmp") == 0 ||
         strcmp(filename, "/config/ref0.jpg") == 0 ||
         strcmp(filename, "/config/ref1.jpg") == 0 ||
         strcmp(filename, "/config/reference.jpg") == 0 ||
