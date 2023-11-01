@@ -748,7 +748,6 @@ function CopyReferenceToImgTmp(_domainname)
      {
           _filenamevon = REFERENCES[index]["name"];
           _filenamenach = _filenamevon.replace("/config/", "/img_tmp/");
-          FileDeleteOnServer(_filenamenach, _domainname);
           FileCopyOnServer(_filenamevon, _filenamenach, _domainname);
      }
 }
@@ -763,7 +762,6 @@ function UpdateConfigReference(_domainname){
      {
           _filenamenach = REFERENCES[index]["name"];
           _filenamevon = _filenamenach.replace("/config/", "/img_tmp/");
-          FileDeleteOnServer(_filenamenach, _domainname);
           FileCopyOnServer(_filenamevon, _filenamenach, _domainname);
      }
 }
