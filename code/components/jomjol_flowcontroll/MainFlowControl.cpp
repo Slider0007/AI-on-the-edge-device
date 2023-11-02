@@ -345,6 +345,7 @@ esp_err_t handler_json(httpd_req_t *req)
 
 esp_err_t handler_process_data(httpd_req_t *req)
 {
+    const char* APIName = "process_data:v1"; // API name and version
     esp_err_t retVal = ESP_OK;
     std::string sReturnMessage = "E90: Flow task not yet created";      // Default return error message when no return is programmed
     
@@ -364,7 +365,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    if (cJSON_AddStringToObject(cJSONObject, "api_name", "process_data") == NULL)
+    if (cJSON_AddStringToObject(cJSONObject, "api_name", APIName) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
         retVal = ESP_FAIL; 

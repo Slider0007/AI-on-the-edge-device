@@ -36,6 +36,7 @@ static const char *TAG = "MAIN SERVER";
 
 esp_err_t handler_get_info(httpd_req_t *req)
 {
+    const char* APIName = "info:v2"; // API name and version
     char _query[200];
     char _valuechar[30];    
     std::string _task;
@@ -58,7 +59,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             return ESP_FAIL;
         }
 
-        if (cJSON_AddStringToObject(cJSONObject, "api_name", "info") == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "api_name", APIName) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_status", getProcessStatus().c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -186,7 +187,12 @@ esp_err_t handler_get_info(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
-    if (_task.compare("ProcessStatus") == 0)
+    if (_task.compare("APIName") == 0)
+    {
+        httpd_resp_sendstr(req, APIName);
+        return ESP_OK;        
+    }
+    else if (_task.compare("ProcessStatus") == 0)
     {
         httpd_resp_sendstr(req, getProcessStatus().c_str());
         return ESP_OK;        
@@ -237,13 +243,11 @@ esp_err_t handler_get_info(httpd_req_t *req)
     #else
     else if (_task.compare("InfluxDBv1Status") == 0)
     {
-        ClassFlowInfluxDB* influxdb = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDB"));
         httpd_resp_sendstr(req, "E02: Service not compiled (#define ENABLE_INFLUXDB)");
         return ESP_OK;        
     }
     else if (_task.compare("InfluxDBv2Status") == 0)
     {
-        ClassFlowInfluxDB* influxdbv2 = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDBv2"));
         httpd_resp_sendstr(req, "E02: Service not compiled (#define ENABLE_INFLUXDB)");
         return ESP_OK;        
     }
@@ -428,6 +432,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
 
 esp_err_t handler_get_heap(httpd_req_t *req)
 {
+    const char* APIName = "heap:v2"; // API name and version
     char _query[200];
     char _valuechar[30];    
     std::string _task;
@@ -452,7 +457,7 @@ esp_err_t handler_get_heap(httpd_req_t *req)
             return ESP_FAIL;
         }
 
-        if (cJSON_AddStringToObject(cJSONObject, "api_name", "heap") == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "api_name", APIName) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "heap_total_free", std::to_string(getESPHeapSizeTotalFree()).c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -490,8 +495,13 @@ esp_err_t handler_get_heap(httpd_req_t *req)
     /* Legacy: Provide single data as text response */
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
-
-    if (_task.compare("HeapTotalFree") == 0)
+    
+    if (_task.compare("APIName") == 0)
+    {
+        httpd_resp_sendstr(req, APIName);
+        return ESP_OK;        
+    }
+    else if (_task.compare("HeapTotalFree") == 0)
     {
         httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeTotalFree())).c_str());
         return ESP_OK;        

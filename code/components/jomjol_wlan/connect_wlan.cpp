@@ -22,8 +22,6 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 
-#include "lwip/ip4.h"
-
 #ifdef ENABLE_MQTT
     #include "interface_mqtt.h"
 #endif //ENABLE_MQTT
@@ -55,14 +53,6 @@ static bool WIFIConnected = false;
 static int WIFIReconnectCnt = 0;
 
 esp_netif_t *my_sta;
-
-
-void strinttoip4(const char *ip, int &a, int &b, int &c, int &d) {
-    std::string zw = std::string(ip);
-    std::stringstream s(zw);
-    char ch; //to temporarily store the '.'
-    s >> a >> ch >> b >> ch >> c >> ch >> d;
-}
 
 
 std::string BssidToString(const char* c) {
@@ -559,9 +549,9 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 		WIFIReconnectCnt = 0;
 
 		ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        wlan_config.ipaddress = std::string(ip4addr_ntoa((const ip4_addr*) &event->ip_info.ip));
-		wlan_config.netmask = std::string(ip4addr_ntoa((const ip4_addr*) &event->ip_info.netmask));
-		wlan_config.gateway = std::string(ip4addr_ntoa((const ip4_addr*) &event->ip_info.gw));
+        esp_ip4addr_ntoa(&event->ip_info.ip, &wlan_config.ipaddress[0], IP4ADDR_STRLEN_MAX);
+		esp_ip4addr_ntoa(&event->ip_info.netmask, &wlan_config.netmask[0], IP4ADDR_STRLEN_MAX);
+		esp_ip4addr_ntoa(&event->ip_info.gw, &wlan_config.gateway[0], IP4ADDR_STRLEN_MAX);
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Assigned IP: " + wlan_config.ipaddress);
 
 		#ifdef ENABLE_MQTT
@@ -604,9 +594,9 @@ esp_err_t wifi_init_sta(void)
 
         esp_netif_ip_info_t ip_info;
 	    memset(&ip_info, 0 , sizeof(esp_netif_ip_info_t));
-    	ip_info.ip.addr = ipaddr_addr(wlan_config.ipaddress.c_str());
-    	ip_info.netmask.addr = ipaddr_addr(wlan_config.netmask.c_str());
-		ip_info.gw.addr = ipaddr_addr(wlan_config.gateway.c_str());
+    	ip_info.ip.addr = esp_ip4addr_aton(wlan_config.ipaddress.c_str());
+    	ip_info.netmask.addr = esp_ip4addr_aton(wlan_config.netmask.c_str());
+		ip_info.gw.addr = esp_ip4addr_aton(wlan_config.gateway.c_str());
 		retval = esp_netif_set_ip_info(my_sta, &ip_info);
 		if (retval != ESP_OK) {
 			LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "esp_netif_set_ip_info: Error: "  + std::to_string(retval));
@@ -619,8 +609,6 @@ esp_err_t wifi_init_sta(void)
 		}
      
         dns_info.ip.u_addr.ip4.addr = esp_ip4addr_aton(wlan_config.dns.c_str());
-		dns_info.ip.type = IPADDR_TYPE_V4;
-
 
         retval = esp_netif_set_dns_info(my_sta, ESP_NETIF_DNS_MAIN, &dns_info);
 		if (retval != ESP_OK) {
@@ -628,7 +616,7 @@ esp_err_t wifi_init_sta(void)
 			return retval;
 		}
 
-		wlan_config.dns = std::string(ip4addr_ntoa((const ip4_addr*) &dns_info.ip));
+		esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, &wlan_config.dns[0], IP4ADDR_STRLEN_MAX);
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Manual interface config | IP: " + wlan_config.ipaddress + 
 													", Netmask: " + wlan_config.netmask + 
 													", Gateway: " + wlan_config.gateway +
@@ -636,7 +624,7 @@ esp_err_t wifi_init_sta(void)
     }
 	else {
 		wlan_config.dhcp = true;
-		wlan_config.dns = std::string(ip4addr_ntoa((const ip4_addr*) &dns_info.ip));
+		esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, &wlan_config.dns[0], IP4ADDR_STRLEN_MAX);
 		
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Automatic interface config | Use DHCP service");
 	}
