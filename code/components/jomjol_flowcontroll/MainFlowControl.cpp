@@ -974,37 +974,6 @@ esp_err_t handler_editflow(httpd_req_t *req)
 }
 
 
-esp_err_t handler_statusflow(httpd_req_t *req)
-{
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_statusflow - Start");       
-    #endif
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
-
-    if (bTaskAutoFlowCreated) 
-    {
-        #ifdef DEBUG_DETAIL_ON       
-            ESP_LOGD(TAG, "handler_statusflow: %s", req->uri);
-        #endif
-
-        std::string zw = flowctrl.getActStatusWithTime();
-        httpd_resp_send(req, zw.c_str(), zw.length());   
-    }
-    else 
-    {
-        httpd_resp_send(req, "E90: Flow task not yet created", HTTPD_RESP_USE_STRLEN);  
-    }
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_statusflow - Done");       
-    #endif
-
-    return ESP_OK;
-}
-
-
 esp_err_t handler_processerror(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON       
@@ -1486,11 +1455,6 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
     camuri.uri       = "/flow_start";
     camuri.handler   = handler_flow_start;
     camuri.user_ctx  = NULL; 
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/statusflow";
-    camuri.handler   = handler_statusflow;
-    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/process_error";
