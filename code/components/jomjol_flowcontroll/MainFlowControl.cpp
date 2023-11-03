@@ -387,7 +387,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "value_status", flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "rate_per_min", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "rate_per_minute", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "rate_per_processing", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -457,7 +457,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
         httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str());
         return ESP_OK;        
     }
-    else if (_task.compare("RatePerMin") == 0)
+    else if (_task.compare("RatePerMinute") == 0)
     {
         httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str());
         return ESP_OK;        
