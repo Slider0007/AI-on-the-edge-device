@@ -126,10 +126,9 @@
 		<tr>	
 			<td>
 				<table>
-					<tr><td style="padding: 0px;">Uptime</td><td style="padding: 0px 20px"><output id="uptime"></output></td></tr>
+					<tr><td style="padding: 0px;">Device Uptime</td><td style="padding: 0px 20px"><output id="device_uptime"></output></td></tr>
 					<tr><td style="padding: 0px;">Cycle Counter</td><td style="padding: 0px 20px"><output id="cycle_counter"></output></td></tr>
-					<tr><td style="padding: 0px;">WIFI Signal</td><td style="padding: 0px 20px"><output id="rssi"></output></td></tr>
-					<tr><td style="padding: 0px;">CPU Temp</td><td style="padding: 0px 20px"><output id="cputemp"></output></td></tr>
+					<tr><td style="padding: 0px;">WLAN Signal</td><td style="padding: 0px 20px"><output id="wlan_rssi"></output></td></tr>
 				</table>
 			</td>
 		</tr>
@@ -164,10 +163,9 @@
 				loadValue(_jsonData.value_status, "status", "border-collapse: collapse; width: 100%");
 				$('#statusflow').html(_jsonData.process_state);
 				loadProcessError(_jsonData.process_error);
-				$('#uptime').html(_jsonData.uptime);
+				$('#device_uptime').html(_jsonData.device_uptime);
 				$('#cycle_counter').html(_jsonData.cycle_counter);
-				loadRSSI(_jsonData.rssi);
-				$('#cputemp').html(_jsonData.temperature + "°C");
+				loadWLANRSSI(_jsonData.wlan_rssi);
 			}
 		}
 		xhttp.open("GET", url, true);
@@ -282,22 +280,22 @@
 	}
 
 
-	function loadRSSI(_value)
+	function loadWLANRSSI(_value)
 	{		
 		if (_value >= -55) {
-			$('#rssi').html("Excellent (" + _value + "dBm)");
+			$('#wlan_rssi').html("Excellent (" + _value + "dBm)");
 		}
 		else if (_value < -55 && _value >= -67) {
-			$('#rssi').html("Good (" + _value + "dBm)");
+			$('#wlan_rssi').html("Good (" + _value + "dBm)");
 		}
 		else if (_value < -67 && _value >= -78) {
-			$('#rssi').html("Fair (" + _value + "dBm)");
+			$('#wlan_rssi').html("Fair (" + _value + "dBm)");
 		}
 		else if (_value < -78 && _value >= -85) {
-			$('#rssi').html("Weak (" + _value + "dBm)");
+			$('#wlan_rssi').html("Weak (" + _value + "dBm)");
 		}
 		else {
-			$('#rssi').html("Unreliable (" + _value + "dBm)");
+			$('#wlan_rssi').html("Unreliable (" + _value + "dBm)");
 		}
 	}
 

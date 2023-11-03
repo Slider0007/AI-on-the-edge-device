@@ -345,75 +345,157 @@ esp_err_t handler_json(httpd_req_t *req)
 
 esp_err_t handler_process_data(httpd_req_t *req)
 {
-    const char* APIName = "process_data:v1"; // API name and version
-    esp_err_t retVal = ESP_OK;
-    std::string sReturnMessage = "E90: Flow task not yet created";      // Default return error message when no return is programmed
-    
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_process_data - Start");    
-    #endif
-
     if (!bTaskAutoFlowCreated) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, sReturnMessage.c_str());
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Flow task not yet created");
         return ESP_FAIL;
     }
 
-    cJSON *cJSONObject = cJSON_CreateObject();
-    
-    if (cJSONObject == NULL) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
-        return ESP_FAIL;
+    const char* APIName = "process_data:v2"; // API name and version
+    char _query[200];
+    char _valuechar[30];    
+    std::string _task;
+
+    if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK) {
+        //ESP_LOGD(TAG, "Query: %s", _query);
+        
+        if (httpd_query_key_value(_query, "type", _valuechar, 30) == ESP_OK) {
+            //ESP_LOGD(TAG, "type is found: %s", _valuechar);
+            _task = std::string(_valuechar);
+        }
+    }
+    else { // default - no parameter set: send data as JSON
+        esp_err_t retVal = ESP_OK;
+        std::string sReturnMessage;
+        cJSON *cJSONObject = cJSON_CreateObject();
+        
+        if (cJSONObject == NULL) {
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
+            return ESP_FAIL;
+        }
+
+        if (cJSON_AddStringToObject(cJSONObject, "api_name", APIName) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
+            retVal = ESP_FAIL; 
+        if (cJSON_AddStringToObject(cJSONObject, "timestamp_fallbackvalue", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "actual_value", flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "fallback_value", flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "raw_value", flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "value_status", flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "rate_per_min", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "rate_per_processing", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "process_error", std::to_string(flowctrl.getActFlowError()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "device_uptime", getFormatedUptime(false).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "wlan_rssi", std::to_string(get_WIFI_RSSI()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+
+        char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024, 1); // Print with predefined buffer bytes, avoid dynamic allocations
+        sReturnMessage = std::string(jsonString);
+        cJSON_free(jsonString);  
+        cJSON_Delete(cJSONObject);
+
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "application/json");
+
+        if (retVal == ESP_OK)
+            httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
+        else
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
+
+        return retVal;
     }
 
-    if (cJSON_AddStringToObject(cJSONObject, "api_name", APIName) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
-        retVal = ESP_FAIL; 
-    if (cJSON_AddStringToObject(cJSONObject, "timestamp_fallbackvalue", flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "actual_value", flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "fallback_value", flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "raw_value", flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "value_status", flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "rate_per_min", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "rate_per_processing", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "process_error", std::to_string(flowctrl.getActFlowError()).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "temperature", std::to_string((int)temperatureRead()).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "rssi", std::to_string(get_WIFI_RSSI()).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "uptime", getFormatedUptime(false).c_str()) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
-        retVal = ESP_FAIL;
-
-    char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024, 1); // Print with predefined buffer of 1024 bytes, avoid dynamic allocations
-    sReturnMessage = std::string(jsonString);
-    cJSON_free(jsonString);  
-    cJSON_Delete(cJSONObject);
-
+    /* Legacy: Provide single data as text response */
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "application/json");
+    httpd_resp_set_type(req, "text/plain");
 
-    if (retVal == ESP_OK)
-        httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
-    else
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_process_data - Done");    
-    #endif
-
-    return retVal;
+    if (_task.compare("APIName") == 0)
+    {
+        httpd_resp_sendstr(req, APIName);
+        return ESP_OK;        
+    }
+    else if (_task.compare("TimestampPocessed") == 0)
+    {
+        httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("TimestampFallbackValue") == 0)
+    {
+        httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("ActualValue") == 0)
+    {
+        httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("FallbackValue") == 0)
+    {
+        httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("RawValue") == 0)
+    {
+        httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("ValueStatus") == 0)
+    {
+        httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("RatePerMin") == 0)
+    {
+        httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("RatePerProcessing") == 0)
+    {
+        httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("ProcessState") == 0)
+    {
+        httpd_resp_sendstr(req, flowctrl.getActStatusWithTime().c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("ProcessError") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string(flowctrl.getActFlowError()).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("DeviceUptime") == 0)
+    {
+        httpd_resp_sendstr(req, getFormatedUptime(false).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("CycleCounter") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string(getFlowCycleCounter()).c_str());
+        return ESP_OK;        
+    }
+    else if (_task.compare("WlanRSSI") == 0)
+    {
+        httpd_resp_sendstr(req, std::to_string(get_WIFI_RSSI()).c_str());
+        return ESP_OK;        
+    }
+    else {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E93: Parameter not found");
+        return ESP_FAIL;  
+    }
 }
 
 
