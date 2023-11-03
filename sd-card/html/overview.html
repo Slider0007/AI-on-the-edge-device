@@ -271,7 +271,7 @@
 
 	function loadProcessError(_value)
 	{
-		if (_value === "1") {
+		if (_value !== "000: No process error") {
 			$('#processerror').html("!!! Process error detected. Check logs !!!");
 		}
 		else {

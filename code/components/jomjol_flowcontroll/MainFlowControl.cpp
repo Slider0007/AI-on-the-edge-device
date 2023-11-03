@@ -397,7 +397,8 @@ esp_err_t handler_process_data(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_error", std::to_string(flowctrl.getActFlowError()).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "process_error", flowctrl.getActFlowError() ? (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT ? 
+                "E01: Process error occured" : "E02: Multiple process errors in row") : "000: No process error") == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "device_uptime", getFormatedUptime(false).c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -974,42 +975,6 @@ esp_err_t handler_editflow(httpd_req_t *req)
 }
 
 
-esp_err_t handler_processerror(httpd_req_t *req)
-{
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_processerror - Start");       
-    #endif
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
-
-    if (bTaskAutoFlowCreated) 
-    {
-        #ifdef DEBUG_DETAIL_ON       
-            ESP_LOGD(TAG, "handler_processerror: %s", req->uri);
-        #endif
-
-        if (flowctrl.getActFlowError())
-            if (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT)
-                httpd_resp_send(req, "E90: Process error occured", HTTPD_RESP_USE_STRLEN);
-            else
-                httpd_resp_send(req, "E91: Multiple process errors in row", HTTPD_RESP_USE_STRLEN);
-        else
-            httpd_resp_send(req, "000: No process error", HTTPD_RESP_USE_STRLEN);
-    }
-    else 
-    {
-        httpd_resp_send(req, "E92: Request not possible. Flow task not running. Check logs.", HTTPD_RESP_USE_STRLEN);  
-    }
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_processerror - Done");       
-    #endif
-
-    return ESP_OK;
-}
-
-
 esp_err_t handler_fallbackvalue(httpd_req_t *req)
 {
     #ifdef DEBUG_DETAIL_ON       
@@ -1455,11 +1420,6 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
     camuri.uri       = "/flow_start";
     camuri.handler   = handler_flow_start;
     camuri.user_ctx  = NULL; 
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/process_error";
-    camuri.handler   = handler_processerror;
-    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/editflow";
