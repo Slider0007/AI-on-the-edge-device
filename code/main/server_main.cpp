@@ -55,7 +55,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         cJSON *cJSONObject = cJSON_CreateObject();
             
         if (cJSONObject == NULL) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Error, JSON object cannot be created");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
             return ESP_FAIL;
         }
 
@@ -178,7 +178,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             return ESP_OK;
         }
         else {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error while adding JSON elements");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
             return ESP_FAIL;
         }
     }
@@ -222,8 +222,8 @@ esp_err_t handler_get_info(httpd_req_t *req)
     #else
     else if (_task.compare("MQTTStatus") == 0)
     {
-        httpd_resp_sendstr(req, "E01: Service not compiled (#define ENABLE_MQTT)");
-        return ESP_OK;        
+        httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED, "E01: Service not compiled (#define ENABLE_MQTT)");
+        return ESP_FAIL;          
     }
     #endif
 
@@ -243,13 +243,13 @@ esp_err_t handler_get_info(httpd_req_t *req)
     #else
     else if (_task.compare("InfluxDBv1Status") == 0)
     {
-        httpd_resp_sendstr(req, "E02: Service not compiled (#define ENABLE_INFLUXDB)");
-        return ESP_OK;        
+        httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED, "E02: Service not compiled (#define ENABLE_INFLUXDB)");
+        return ESP_FAIL;          
     }
     else if (_task.compare("InfluxDBv2Status") == 0)
     {
-        httpd_resp_sendstr(req, "E02: Service not compiled (#define ENABLE_INFLUXDB)");
-        return ESP_OK;        
+        httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED, "E02: Service not compiled (#define ENABLE_INFLUXDB)");
+        return ESP_FAIL;        
     }
     #endif
 
@@ -424,8 +424,8 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;        
     }
     else {
-        httpd_resp_sendstr(req, "E92: Parameter not found");
-        return ESP_OK;    
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E93: Parameter not found");
+        return ESP_FAIL;  
     }
 }
 
@@ -453,7 +453,7 @@ esp_err_t handler_get_heap(httpd_req_t *req)
         cJSON *cJSONObject = cJSON_CreateObject();
             
         if (cJSONObject == NULL) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Error, JSON object cannot be created");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
             return ESP_FAIL;
         }
 
@@ -487,7 +487,7 @@ esp_err_t handler_get_heap(httpd_req_t *req)
             return ESP_OK;
         }
         else {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error while adding JSON elements");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
             return ESP_FAIL;
         }
     }
@@ -557,13 +557,13 @@ esp_err_t handler_get_heap(httpd_req_t *req)
     #else
     else if (_task.compare("TaskInfo") == 0)
     {
-        httpd_resp_sendstr(req, "E93: Service not compiled (#define TASK_ANALYSIS_ON)");
-        return ESP_OK;        
+        httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED, "E01: Service not compiled (#define TASK_ANALYSIS_ON)");
+        return ESP_FAIL;        
     }
     #endif
     else {
-        httpd_resp_sendstr(req, "E92: Parameter not found");
-        return ESP_OK;    
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E93: Parameter not found");
+        return ESP_FAIL;    
     }
 }
 
