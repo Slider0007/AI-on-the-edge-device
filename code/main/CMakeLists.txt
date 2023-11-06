@@ -2,6 +2,7 @@
 # without default 'CMakeLists.txt' file.
 
 ##################################################################
+# Extract GIT infos and set variables in version.cpp
 ##################################################################
 execute_process(COMMAND git log --pretty=format:'%h' -n 1
                 OUTPUT_VARIABLE GIT_REV
@@ -22,17 +23,23 @@ else()
         COMMAND bash -c "git diff --quiet --exit-code || echo +"
         OUTPUT_VARIABLE GIT_DIFF)
     execute_process(
-        COMMAND git describe --exact-match --tags
-        OUTPUT_VARIABLE GIT_TAG ERROR_QUIET)
-    execute_process(
         COMMAND git rev-parse --abbrev-ref HEAD
         OUTPUT_VARIABLE GIT_BRANCH)
+    execute_process(
+        COMMAND git describe --exact-match --tags
+        OUTPUT_VARIABLE GIT_TAG ERROR_QUIET)
 
     string(STRIP "${GIT_REV}" GIT_REV)
     string(SUBSTRING "${GIT_REV}" 1 7 GIT_REV)
     string(STRIP "${GIT_DIFF}" GIT_DIFF)
-    string(STRIP "${GIT_TAG}" GIT_TAG)
     string(STRIP "${GIT_BRANCH}" GIT_BRANCH)
+
+    string(COMPARE NOTEQUAL "${GIT_TAG}" "" GitTagNotEmpty)
+    if(GitTagNotEmpty)
+        string(STRIP "${GIT_TAG}" GIT_TAG)
+    else()
+        set(GIT_TAG "N/A") # Set N/A if no tag was found
+    endif()
 endif()
 
 set(VERSION "const char* GIT_REV=\"${GIT_REV}${GIT_DIFF}\";
@@ -40,7 +47,7 @@ const char* GIT_TAG=\"${GIT_TAG}\";
 const char* GIT_BRANCH=\"${GIT_BRANCH}\";
 const char* BUILD_TIME=\"${BUILD_TIME}\";")
 
-if ("${GIT_TAG}" STREQUAL "") # Tag not set, show branch
+if ("${GIT_TAG}" STREQUAL "N/A" OR "${GIT_TAG}" STREQUAL "") # Tag not set, show branch
     set(VERSION_HTML "Develop: ${GIT_BRANCH} (Commit: ${GIT_REV}${GIT_DIFF})\n${GIT_REV}")
 else() # Tag is set, ignore branch
     set(VERSION_HTML "Release: ${GIT_TAG} (Commit: ${GIT_REV}${GIT_DIFF})\n${GIT_REV}")

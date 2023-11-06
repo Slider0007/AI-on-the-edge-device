@@ -653,6 +653,20 @@ bool isInString(std::string& s, std::string const& toFind)
 }
 
 
+std::vector<std::string> splitString(const std::string& str) {
+    std::vector<std::string> tokens;
+ 
+    std::stringstream ss(str);
+    std::string token;
+
+    while (std::getline(ss, token, '\n')) {
+        tokens.push_back(token);
+    }
+ 
+    return tokens;
+}
+
+
 std::string intToHexString(int _valueInt)
 {
 	char valueHex[33];

@@ -1,12 +1,15 @@
-#include "system_info.h"
+#include "system.h"
 
+#include "esp_pm.h"
 #include "esp_chip_info.h"
 #include "esp_vfs_fat.h"
 
+#include "configFile.h"
 #include "Helper.h"
 #include "ClassLogFile.h"
+#include "../../include/defines.h"
 
-static const char* TAG = "SYSINFO";
+static const char* TAG = "SYSTEM";
 
 unsigned int systemStatus = 0;
 
@@ -130,6 +133,73 @@ extern "C" uint8_t temprature_sens_read();
 float temperatureRead()
 {
     return (temprature_sens_read() - 32) / 1.8;
+}
+
+
+bool setCPUFrequency(void)
+{
+    ConfigFile configFile = ConfigFile(CONFIG_FILE); 
+    std::string cpuFrequency = "160";
+    esp_pm_config_esp32_t pm_config; 
+
+    if (!configFile.ConfigFileExists()){
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file - exit setCpuFrequency");
+        return false;
+    }
+
+    std::vector<std::string> splitted;
+    std::string line = "";
+    bool disabledLine = false;
+    bool eof = false;
+
+
+    /* Load config from config file */
+    while ((!configFile.GetNextParagraph(line, disabledLine, eof) || 
+            (line.compare("[System]") != 0)) && !eof) {}
+    if (eof) {
+        return false;
+    }
+
+    if (disabledLine) {
+        return false;
+    }
+
+    while (configFile.getNextLine(&line, disabledLine, eof) && 
+            !configFile.isNewParagraph(line)) {
+        splitted = ZerlegeZeile(line);
+
+        if (toUpper(splitted[0]) == "CPUFREQUENCY") {
+            cpuFrequency = splitted[1];
+            break;
+        }
+    }
+
+    if (esp_pm_get_configuration(&pm_config) != ESP_OK) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setCpuFrequency: Failed to read CPU frequency");
+        return false;
+    }
+
+    if (cpuFrequency == "160") { // 160 is the default
+        // No change needed
+    }
+    else if (cpuFrequency == "240") {
+        pm_config.max_freq_mhz = 240;
+        pm_config.min_freq_mhz = pm_config.max_freq_mhz;
+        if (esp_pm_configure(&pm_config) != ESP_OK) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setCpuFrequency: Failed to set requested CPU frequency");
+            return false;
+        }
+    }
+    else {
+		LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setCpuFrequency: CPU frequency not supported: " + cpuFrequency);
+        return false;
+    }
+
+    if (esp_pm_get_configuration(&pm_config) == ESP_OK) {
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "CPU frequency: " + std::to_string(pm_config.max_freq_mhz) + " MHz");
+    }
+
+    return true;
 }
 
 
