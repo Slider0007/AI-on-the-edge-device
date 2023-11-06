@@ -54,7 +54,7 @@ function LoadHostname() {
 
 //     var xhttp = new XMLHttpRequest();
     try {
-            url = _domainname + '/info?type=Hostname';     
+            url = _domainname + '/info?type=hostname';     
             xhttp.open("GET", url, true);
             xhttp.send();
 
@@ -87,7 +87,7 @@ function LoadFwVersion() {
     });
 
     try {
-        url = _domainname + '/info?type=FirmwareVersion';     
+        url = _domainname + '/info?type=firmware_version';     
         xhttp.open("GET", url, true);
         xhttp.send();
     }
@@ -114,7 +114,7 @@ function LoadWebUiVersion() {
     });
 
     try {
-        url = _domainname + '/info?type=HTMLVersion';     
+        url = _domainname + '/info?type=html_version';     
         //console.log("url: " + url);
         xhttp.open("GET", url, true);
         xhttp.send();

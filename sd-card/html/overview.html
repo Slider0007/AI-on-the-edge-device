@@ -157,10 +157,10 @@
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				const _jsonData = JSON.parse(xhttp.responseText);			
-				loadValue(_jsonData.actual_value, "value", "border-collapse: collapse; width: 100%");
-				loadValue(_jsonData.fallback_value, "fallback", "border-collapse: collapse; width: 100%");
-				loadValue(_jsonData.raw_value, "raw", "border-collapse: collapse; width: 100%");
-				loadValue(_jsonData.value_status, "status", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.actual_value.inline, "value", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.fallback_value.inline, "fallback", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.raw_value.inline, "raw", "border-collapse: collapse; width: 100%");
+				loadValue(_jsonData.value_status.inline, "status", "border-collapse: collapse; width: 100%");
 				$('#statusflow').html(_jsonData.process_state);
 				loadProcessError(_jsonData.process_error);
 				$('#device_uptime').html(_jsonData.device_uptime);

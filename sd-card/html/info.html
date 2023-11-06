@@ -150,7 +150,7 @@ table {
 		<tr>
 			<td>Start Time</td>
 			<td>
-				<output id="device_start_time"></output>
+				<output id="device_starttime"></output>
 			</td>
 		</tr>
 		<tr>
@@ -523,9 +523,9 @@ table {
 				}
 
 				//Input format (ISO): 2023-10-23T14:26:34+0200
-				document.getElementById("device_start_time").value = _jsonData.device_start_time.substr(0,10) + " " +
-																	 _jsonData.device_start_time.substr(11,8) + " (UTC" +	
-																	 _jsonData.device_start_time.substr(19,5) + ")";
+				document.getElementById("device_starttime").value = _jsonData.device_starttime.substr(0,10) + " " +
+																	 _jsonData.device_starttime.substr(11,8) + " (UTC" +	
+																	 _jsonData.device_starttime.substr(19,5) + ")";
 				
 				//Input format (ISO): 2023-10-23T14:26:34+0200
 				document.getElementById("current_time").value = _jsonData.current_time.substr(0,10) + " " +

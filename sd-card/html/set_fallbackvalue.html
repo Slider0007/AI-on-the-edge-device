@@ -190,7 +190,7 @@ function loadFallbackValue(_domainname) {
 
     var xhttp = new XMLHttpRequest();
     try {
-        url = _domainname + '/value?all=true&type=raw';
+        url = _domainname + '/process_data?type=raw_value';
         xhttp.open("GET", url, false);
         xhttp.send();
         response = xhttp.responseText;
