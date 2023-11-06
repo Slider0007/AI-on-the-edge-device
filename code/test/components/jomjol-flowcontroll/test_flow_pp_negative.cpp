@@ -24,7 +24,7 @@ void testNegative() {
         setAllowNegatives(underTestPost, false);
         SetFallbackValue(underTestPost, fallbackValue);
         std::string result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("000 Valid", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("000 Valid", underTestPost->getReadoutStatus().c_str());
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
         delete underTestPost;
 
@@ -35,7 +35,7 @@ void testNegative() {
         setAllowNegatives(underTestPost, false);
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutStatus().c_str());
         TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
@@ -46,7 +46,7 @@ void testNegative() {
         setAllowNegatives(underTestPost, false);
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutStatus().c_str());
         TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
@@ -57,7 +57,7 @@ void testNegative() {
         setAllowNegatives(underTestPost, false);
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutStatus().c_str());
         TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
@@ -70,7 +70,7 @@ void testNegative() {
         setAllowNegatives(underTestPost, true);
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("000 Valid", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("000 Valid", underTestPost->getReadoutStatus().c_str());
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
         delete underTestPost;
 
@@ -98,7 +98,7 @@ void testNegative_Issues() {
         setAllowNegatives(underTestPost, false);
         SetFallbackValue(underTestPost, fallbackValue);
         std::string result = process_doFlow(underTestPost);
-        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
+        TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutStatus().c_str());
         TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 

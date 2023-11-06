@@ -54,7 +54,7 @@ public:
     std::string getNumbersName();
     std::string getReadout(int _number);
     std::string getReadoutParam(bool _rawValue, bool _noerror, int _number = 0);
-    std::string getReadoutError(int _number = 0);
+    std::string getReadoutStatus(int _number = 0);
     std::string getReadoutRate(int _number = 0);
     std::string getReadoutTimeStamp(int _number = 0);
     std::string getJsonFromNumber(int i, std::string _lineend);
