@@ -85,6 +85,9 @@ extern std::string getHTMLcommit(void);
 
 void migrateConfiguration(void);
 
+std::string deviceStartTimestamp;
+
+
 static const char *TAG = "MAIN";
 
 
