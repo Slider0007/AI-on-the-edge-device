@@ -485,7 +485,8 @@ esp_err_t CCamera::CaptureToFile(std::string nm, int _flashduration)
 {
     if (!getCameraInitSuccessful())
         return ESP_FAIL;
-    
+
+    esp_err_t retVal = ESP_OK;
     std::string ftype;
     flashduration = _flashduration; // save last flashduration internally
 
@@ -553,6 +554,7 @@ esp_err_t CCamera::CaptureToFile(std::string nm, int _flashduration)
     FILE * fp = fopen(nm.c_str(), "wb");
     if (fp == NULL) { // If an error occurs during the file creation
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CaptureToFile: Failed to open file " + nm);
+        retVal = ESP_FAIL;
     }
     else {
         /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
@@ -566,7 +568,7 @@ esp_err_t CCamera::CaptureToFile(std::string nm, int _flashduration)
     if (converted)
         free(buf);
 
-    return ESP_OK;    
+    return retVal;    
 }
 
 
@@ -786,10 +788,10 @@ void CCamera::GetCameraParameter(httpd_req_t *req, int &qual, framesize_t &resol
     qual = ActualQuality;
 
 
-    if (httpd_req_get_url_query_str(req, _query, 100) == ESP_OK)
+    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK)
     {
         ESP_LOGD(TAG, "Query: %s", _query);
-        if (httpd_query_key_value(_query, "size", _size, 10) == ESP_OK)
+        if (httpd_query_key_value(_query, "size", _size, sizeof(_size)) == ESP_OK)
         {
             #ifdef DEBUG_DETAIL_ON   
             ESP_LOGD(TAG, "Size: %s", _size);
@@ -807,7 +809,7 @@ void CCamera::GetCameraParameter(httpd_req_t *req, int &qual, framesize_t &resol
             else if (strcmp(_size, "UXGA") == 0)
                  resol = FRAMESIZE_UXGA;     // 1600x1200   
         }
-        if (httpd_query_key_value(_query, "quality", _qual, 10) == ESP_OK)
+        if (httpd_query_key_value(_query, "quality", _qual, sizeof(_qual)) == ESP_OK)
         {
             #ifdef DEBUG_DETAIL_ON   
             ESP_LOGD(TAG, "Quality: %s", _qual);
