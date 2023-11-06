@@ -197,11 +197,9 @@ void taskGpioHandler(void *pvParameter)
 
 GpioHandler::GpioHandler(std::string configFile, httpd_handle_t httpServer) 
 {
-    ESP_LOGI(TAG,"start GpioHandler");
+    ESP_LOGD(TAG,"start GpioHandler");
     _configFile = configFile;
     _httpServer = httpServer;
-
-    ESP_LOGI(TAG, "register GPIO Uri");
     registerGpioUri();
 }
 
@@ -453,7 +451,7 @@ void GpioHandler::clear()
  
 void GpioHandler::registerGpioUri() 
 {
-    ESP_LOGI(TAG, "server_GPIO - Registering URI handlers");
+    ESP_LOGI(TAG, "Registering URI handlers");
     
     httpd_uri_t camuri = { };
     camuri.method    = HTTP_GET;
@@ -483,10 +481,10 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
     char _valueStatus[30];    
     std::string gpio, status;
 
-    if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK) {
+    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         ESP_LOGD(TAG, "Query: %s", _query);
         
-        if (httpd_query_key_value(_query, "GPIO", _valueGPIO, 30) == ESP_OK)
+        if (httpd_query_key_value(_query, "GPIO", _valueGPIO, sizeof(_valueGPIO)) == ESP_OK)
         {
             ESP_LOGD(TAG, "GPIO is found %s", _valueGPIO); 
             gpio = std::string(_valueGPIO);
@@ -495,7 +493,7 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
             httpd_resp_send(req, resp_str.c_str(), resp_str.length());    
             return ESP_OK;
         }
-        if (httpd_query_key_value(_query, "Status", _valueStatus, 30) == ESP_OK)
+        if (httpd_query_key_value(_query, "Status", _valueStatus, sizeof(_valueStatus)) == ESP_OK)
         {
             ESP_LOGD(TAG, "Status is found %s", _valueStatus); 
             status = std::string(_valueStatus);

@@ -323,6 +323,8 @@ void GotConnected(std::string maintopic, bool retainFlag)
 
 void register_server_mqtt_uri(httpd_handle_t server)
 {
+    ESP_LOGI(TAG, "Registering URI handlers");
+    
     httpd_uri_t uri = { };
     uri.method    = HTTP_GET;
 
