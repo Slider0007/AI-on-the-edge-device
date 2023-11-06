@@ -894,40 +894,6 @@ int ClassFlowControll::getNumbersNamePosition(std::string _name)
 }
 
 
-/* Return value for a given numbers name (number sequence) and value type */
-std::string ClassFlowControll::getNumbersValue(std::string _name, int _type)
-{
-    if (flowpostprocessing == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
-        return "";
-    }
-
-    int pos = getNumbersNamePosition(_name); // Search numbers name array position
-    if (pos < 0) {
-        return "";
-    }
-
-    switch (_type) {
-        case READOUT_TYPE_VALUE:
-            return (*flowpostprocessing->GetNumbers())[pos]->sActualValue;
-
-        case READOUT_TYPE_RAWVALUE:
-            return (*flowpostprocessing->GetNumbers())[pos]->sRawValue;
-
-        case READOUT_TYPE_FALLBACKVALUE:
-            return (*flowpostprocessing->GetNumbers())[pos]->sFallbackValue;
-
-        case READOUT_TYPE_VALUE_STATUS:
-            return (*flowpostprocessing->GetNumbers())[pos]->sValueStatus;
-
-        default:
-            return "";
-    }
-
-    return "";
-}
-
-
 /* Return value for a given numbers name array position and value type */
 std::string ClassFlowControll::getNumbersValue(int _position, int _type)
 {
@@ -941,6 +907,12 @@ std::string ClassFlowControll::getNumbersValue(int _position, int _type)
     }
 
     switch (_type) {
+        case READOUT_TYPE_TIMESTAMP_PROCESSED:
+            return (*flowpostprocessing->GetNumbers())[_position]->sTimeProcessed;
+        
+        case READOUT_TYPE_TIMESTAMP_FALLBACKVALUE:
+            return (*flowpostprocessing->GetNumbers())[_position]->sTimeFallbackValue;
+        
         case READOUT_TYPE_VALUE:
             return (*flowpostprocessing->GetNumbers())[_position]->sActualValue;
 
@@ -952,13 +924,37 @@ std::string ClassFlowControll::getNumbersValue(int _position, int _type)
 
         case READOUT_TYPE_VALUE_STATUS:
             return (*flowpostprocessing->GetNumbers())[_position]->sValueStatus;
-
+        
+        case READOUT_TYPE_RATE_PER_MIN:
+            return (*flowpostprocessing->GetNumbers())[_position]->sRatePerMin;
+        
+        case READOUT_TYPE_RATE_PER_PROCESSING:
+            return (*flowpostprocessing->GetNumbers())[_position]->sRatePerProcessing;
+        
         default:
             return "";
     }
 
     return "";
 }
+
+
+/* Return value for a given numbers name (number sequence) and value type */
+std::string ClassFlowControll::getNumbersValue(std::string _name, int _type)
+{
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        return "";
+    }
+
+    int pos = getNumbersNamePosition(_name); // Search numbers name array position
+    if (pos < 0) {
+        return "";
+    }
+
+    return getNumbersValue(pos, _type);
+}
+
 
 
 /* Return values for all numbers names (number sequences) and a given value type */
