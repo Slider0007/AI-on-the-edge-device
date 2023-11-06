@@ -552,14 +552,14 @@ esp_err_t handler_process_data(httpd_req_t *req)
     const char* APIName = "process_data:v2"; // API name and version
     char _query[200];
     char _valuechar[30];    
-    std::string type, sequence_name;
+    std::string type, number_sequence;
 
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
         if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             type = std::string(_valuechar);
         }
-        if (httpd_query_key_value(_query, "sequencename", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            sequence_name = std::string(_valuechar);
+        if (httpd_query_key_value(_query, "sequence", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            number_sequence = std::string(_valuechar);
         }
     }
     else { // default - no parameter set: send data as JSON
@@ -782,12 +782,12 @@ esp_err_t handler_process_data(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("timestamp_processed") == 0) {
-        if (sequence_name.empty()) {
+        if (number_sequence.empty()) {
             httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_PROCESSED).c_str());
             return ESP_OK;
         }
         else {
-            int positon = flowctrl.getNumbersNamePosition(sequence_name);
+            int positon = flowctrl.getNumbersNamePosition(number_sequence);
 
             if (positon < 0) {
                 httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Number sequence not found");
@@ -798,12 +798,12 @@ esp_err_t handler_process_data(httpd_req_t *req)
         }    
     }
     else if (type.compare("timestamp_fallbackvalue") == 0) {
-        if (sequence_name.empty()) {
+        if (number_sequence.empty()) {
             httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str());
             return ESP_OK;
         }
         else {
-            int positon = flowctrl.getNumbersNamePosition(sequence_name);
+            int positon = flowctrl.getNumbersNamePosition(number_sequence);
 
             if (positon < 0) {
                 httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Number sequence not found");
@@ -814,12 +814,12 @@ esp_err_t handler_process_data(httpd_req_t *req)
         }  
     }
     else if (type.compare("actual_value") == 0) {
-        if (sequence_name.empty()) {
+        if (number_sequence.empty()) {
             httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_VALUE).c_str());
             return ESP_OK;
         }
         else {
-            int positon = flowctrl.getNumbersNamePosition(sequence_name);
+            int positon = flowctrl.getNumbersNamePosition(number_sequence);
 
             if (positon < 0) {
                 httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Number sequence not found");
@@ -830,12 +830,12 @@ esp_err_t handler_process_data(httpd_req_t *req)
         }
     }
     else if (type.compare("fallback_value") == 0) {
-        if (sequence_name.empty()) {
+        if (number_sequence.empty()) {
             httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE).c_str());
             return ESP_OK;
         }
         else {
-            int positon = flowctrl.getNumbersNamePosition(sequence_name);
+            int positon = flowctrl.getNumbersNamePosition(number_sequence);
 
             if (positon < 0) {
                 httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Number sequence not found");
@@ -846,12 +846,12 @@ esp_err_t handler_process_data(httpd_req_t *req)
         }   
     }
     else if (type.compare("raw_value") == 0) {
-        if (sequence_name.empty()) {
+        if (number_sequence.empty()) {
             httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE).c_str());
             return ESP_OK;
         }
         else {
-            int positon = flowctrl.getNumbersNamePosition(sequence_name);
+            int positon = flowctrl.getNumbersNamePosition(number_sequence);
 
             if (positon < 0) {
                 httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Number sequence not found");
@@ -862,12 +862,12 @@ esp_err_t handler_process_data(httpd_req_t *req)
         }  
     }
     else if (type.compare("value_status") == 0) {
-        if (sequence_name.empty()) {
+        if (number_sequence.empty()) {
             httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS).c_str());
             return ESP_OK;
         }
         else {
-            int positon = flowctrl.getNumbersNamePosition(sequence_name);
+            int positon = flowctrl.getNumbersNamePosition(number_sequence);
 
             if (positon < 0) {
                 httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Number sequence not found");
@@ -878,12 +878,12 @@ esp_err_t handler_process_data(httpd_req_t *req)
         }   
     }
     else if (type.compare("rate_per_minute") == 0) {
-        if (sequence_name.empty()) {
+        if (number_sequence.empty()) {
             httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_MIN).c_str());
             return ESP_OK;
         }
         else {
-            int positon = flowctrl.getNumbersNamePosition(sequence_name);
+            int positon = flowctrl.getNumbersNamePosition(number_sequence);
 
             if (positon < 0) {
                 httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Number sequence not found");
@@ -894,12 +894,12 @@ esp_err_t handler_process_data(httpd_req_t *req)
         }
     }
     else if (type.compare("rate_per_processing") == 0) {
-        if (sequence_name.empty()) {
+        if (number_sequence.empty()) {
             httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str());
             return ESP_OK;
         }
         else {
-            int positon = flowctrl.getNumbersNamePosition(sequence_name);
+            int positon = flowctrl.getNumbersNamePosition(number_sequence);
 
             if (positon < 0) {
                 httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Number sequence not found");

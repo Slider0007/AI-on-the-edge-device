@@ -80,7 +80,7 @@ esp_err_t handler_capture(httpd_req_t *req)
         "- '/capture?type=api_name : Return API name and version<br>"
         "- '/capture?type=capture' : Capture without flashlight<br>"
         "- '/capture?type=capture_with_flashlight&flashduration=1000' : Capture with flashlight (flashduration in ms)<br>"
-        "- '/capture?type=capture_to_file&flashduration=1000&filename=/img/tmp/filename.jpg' : \
+        "- '/capture?type=capture_to_file&flashduration=1000&filename=/img-tmp/filename.jpg' : \
             Capture with flashlight (flashduration in ms) and save to file on SD<br>";
     char _query[100];
     char _valuechar[30], _flashduration[30], _filename[100];   
