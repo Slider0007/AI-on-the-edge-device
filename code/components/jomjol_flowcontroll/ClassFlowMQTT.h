@@ -15,12 +15,13 @@ class ClassFlowMQTT : public ClassFlow
 {
 protected:
 	ClassFlowPostProcessing* flowpostprocessing; 
-    std::string uri, topic, topicError, clientname, topicRate, topicTimeStamp, topicUptime, topicFreeMem;
+    std::string uri, maintopic, clientname; 
     std::string user, password;
-    std::string maintopic; 
-    int keepAlive; // Seconds
+    bool TLSEncryption;
+    std::string TLSCACertFilename, TLSClientCertFilename, TLSClientKeyFilename;
     bool SetRetainFlag;
-
+    int keepAlive; // Seconds
+    
 	void SetInitialParameter(void);        
 
 public:

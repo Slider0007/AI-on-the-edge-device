@@ -233,8 +233,9 @@ extern "C" void app_main(void)
     // Correct creation of these folders will be checked with function "SDCardCheckFolderFilePresence"
     // ********************************************
     MakeDir("/sdcard/firmware");         // mandatory for OTA firmware update
-    MakeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marks
+    MakeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marker
     MakeDir("/sdcard/demo");             // mandatory for demo mode
+    MakeDir("/sdcard/config/certs");     // mandatory for TLS encryption
 
     // Check for updates
     // ********************************************

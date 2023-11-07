@@ -892,6 +892,49 @@
 			<td>$TOOLTIP_MQTT_password</td>
 		</tr>
 
+		<tr class="MQTTItem expert">
+			<td class="indent1">
+				<span id="MQTT_TLSEncryption_text" style="color:black;">TLS Encryption</span>
+			</td>
+			<td>
+				<select id="MQTT_TLSEncryption_value1" onchange='setEnabled("MQTT_TLSEncryption_parameter", this.value == "true" ? true : false);'>
+					<option value="true">true</option>
+					<option value="false" selected>false</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_MQTT_TLSEncryption</td>
+		</tr>
+
+		<tr class="MQTTItem MQTT_TLSEncryption_parameter expert">
+			<td class="indent2">
+				<span id="MQTT_TLSCACert_text">CA Certificate</span>
+			</td>
+			<td>
+				<input type="text" id="MQTT_TLSCACert_value1">
+			</td>
+			<td>$TOOLTIP_MQTT_TLSCACert</td>
+		</tr>
+
+		<tr class="MQTTItem MQTT_TLSEncryption_parameter expert">
+			<td class="indent2">
+				<span id="MQTT_TLSClientCert_text">Client Certificate</span>
+			</td>
+			<td>
+				<input type="text" id="MQTT_TLSClientCert_value1">
+			</td>
+			<td>$TOOLTIP_MQTT_TLSClientCert</td>
+		</tr>
+
+		<tr class="MQTTItem MQTT_TLSEncryption_parameter expert">
+			<td class="indent2">
+				<span id="MQTT_TLSClientKey_text">Client Key</span>
+			</td>
+			<td>
+				<input type="text" id="MQTT_TLSClientKey_value1">
+			</td>
+			<td>$TOOLTIP_MQTT_TLSClientKey</td>
+		</tr>
+
 		<tr class="MQTTItem">
 			<td class="indent1">
 				<span id="MQTT_RetainMessages_text" style="color:black;">Retain Messages</span>
@@ -2282,6 +2325,10 @@
 		WriteParameter(param, category, "MQTT", "ClientID", false);	
 		WriteParameter(param, category, "MQTT", "user", true);	
 		WriteParameter(param, category, "MQTT", "password", true);
+		WriteParameter(param, category, "MQTT", "TLSEncryption", false);
+		WriteParameter(param, category, "MQTT", "TLSCACert", false);
+		WriteParameter(param, category, "MQTT", "TLSClientCert", false);
+		WriteParameter(param, category, "MQTT", "TLSClientKey", false);
 		WriteParameter(param, category, "MQTT", "RetainMessages", false);
 		WriteParameter(param, category, "MQTT", "HomeassistantDiscovery", false);
 		WriteParameter(param, category, "MQTT", "MeterType", false);
@@ -2323,6 +2370,9 @@
 		WriteParameter(param, category, "System", "CPUFrequency", false);
 
 		WriteModelFiles();
+
+		// Visualize subparameter of a parameter
+		setEnabled("MQTT_TLSEncryption_parameter", document.getElementById("MQTT_TLSEncryption_value1").value == "true" ? true : false);
 	}
 
 
@@ -2416,6 +2466,10 @@
 		ReadParameter(param, "MQTT", "ClientID", false);
 		ReadParameter(param, "MQTT", "user", true);
 		ReadParameter(param, "MQTT", "password", true);
+		ReadParameter(param, "MQTT", "TLSEncryption", false);
+		ReadParameter(param, "MQTT", "TLSCACert", false);
+		ReadParameter(param, "MQTT", "TLSClientCert", false);
+		ReadParameter(param, "MQTT", "TLSClientKey", false);
 		ReadParameter(param, "MQTT", "RetainMessages", false);
 		ReadParameter(param, "MQTT", "HomeassistantDiscovery", false);
 		ReadParameter(param, "MQTT", "MeterType", false);
