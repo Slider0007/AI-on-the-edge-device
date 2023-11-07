@@ -592,7 +592,7 @@ void task_reboot(void *DeleteMainFlow)
     vTaskDelay(3000 / portTICK_PERIOD_MS);
 
     if ((bool)DeleteMainFlow) {
-        DeleteMainFlowTask();  // Kill autoflow task if executed in extra task, if not don't kill parent task
+        DeleteMainFlowTask();  // Kill main task if executed in extra task, if not don't kill parent task
     }
 
     /* Stop service tasks */

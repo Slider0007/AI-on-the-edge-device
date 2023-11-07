@@ -425,7 +425,7 @@ extern "C" void app_main(void)
     // ********************************************
     if (getSystemStatus() == 0) { // Continue with regular boot sequence
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Basic device initialization completed");
-        CreateMainFlowTask(); // Create main flow task
+        CreateMainFlowTask(); // Create main task
     }
     // Critical error(s) occured which do not allow to continue with regular boot sequence.
     // Provding only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: server_main.cpp -> hello_main_handler()
