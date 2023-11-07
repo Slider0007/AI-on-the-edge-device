@@ -128,7 +128,7 @@
 
     <li><a>Manual Control <i class="arrow down"></i></a>
         <ul class="submenu">
-            <li><a href="#" onclick="flow_start()">Start Cycle</a></li>
+            <li><a href="#" onclick="manual_cycle_start()">Start Cycle</a></li>
             <li id="HASendDiscovery" style="display:none;"><a href="#" onclick="HA_send_discovery()">Resend HA Discovery</a></li>
         </ul>
     </li>
@@ -152,8 +152,8 @@
     document.getElementById('maincontent').src = getCookie("page");
 
     
-    function flow_start() {
-    var url = getDomainname() + '/flow_start'; 
+    function manual_cycle_start() {
+    var url = getDomainname() + '/cycle_start'; 
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -165,7 +165,7 @@
 					firework.launch('Cycle start scheduled. Start new cycle after actual cycle is completed', 'success', 5000);
 				}
 				else if (xhttp.responseText.substring(0,3) == "099") {
-					firework.launch('Cycle start triggered, but cycle start not possible (no main flow task available)', 'danger', 5000);
+					firework.launch('Cycle start triggered, but cycle start not possible (Main task not running)', 'danger', 5000);
 				}
 			}
 		}

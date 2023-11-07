@@ -218,7 +218,7 @@ esp_err_t MQTTCtrlFlowStart(std::string _topic)
 #endif //ENABLE_MQTT
 
 
-esp_err_t handler_flow_start(httpd_req_t *req) 
+esp_err_t handler_cycle_start(httpd_req_t *req) 
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
@@ -227,8 +227,8 @@ esp_err_t handler_flow_start(httpd_req_t *req)
         taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART || 
         flowctrl.getActStatus() == FLOW_INIT_FAILED) // Possibility to manual retrigger a cycle when init is already failed
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Flow start triggered by REST API");
-        const std::string zw = "001: Flow start triggered by REST API (" + getCurrentTimeString("%H:%M:%S") + ")";
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by REST API");
+        const std::string zw = "001: Cycle start triggered by REST API (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
         manualFlowStart = true;
 
@@ -239,21 +239,21 @@ esp_err_t handler_flow_start(httpd_req_t *req)
              taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
              taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) 
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Flow start triggered by REST API got scheduled");
-        const std::string zw = "002: Flow start triggered by REST API got scheduled (" + getCurrentTimeString("%H:%M:%S") + ")";
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by REST API got scheduled");
+        const std::string zw = "002: Cycle start triggered by REST API got scheduled (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
 
         manualFlowStart = true;
     }
     else if (taskAutoFlowState == FLOW_TASK_STATE_INIT_DELAYED) {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Flow start triggered by REST API (abort Initialization (delayed)");
-        const std::string zw = "003: Flow start triggered by REST API abort initialization delay (" + getCurrentTimeString("%H:%M:%S") + ")";
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by REST API (abort state 'Initialization (delayed)'");
+        const std::string zw = "003: Cycle start triggered by REST API abort initialization delay (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
         xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Flow start triggered by REST API. Flow not initialized. Request rejected");
-        const std::string zw = "E90: Flow start triggered by REST API. Flow not initialized. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Cycle start triggered by REST API. Main task not initialized. Request rejected");
+        const std::string zw = "E90: Cycle start triggered by REST API. Main task not initialized. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
     }
 
@@ -275,12 +275,12 @@ esp_err_t handler_reload_config(httpd_req_t *req)
         reloadConfig = true;
     }
     else if (taskAutoFlowState == FLOW_TASK_STATE_INIT_DELAYED) {
-        const std::string zw = "002: Abort waiting delay and continue with flow initialization (" + getCurrentTimeString("%H:%M:%S") + ")";
+        const std::string zw = "002: Abort waiting delay and continue with process initialization (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
         xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state.      
     }
     else if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART) {
-        const std::string zw = "003: Abort waiting delay, reload config and redo flow initialization (" + getCurrentTimeString("%H:%M:%S") + ")";
+        const std::string zw = "003: Abort waiting delay, reload config and reinitialize process(" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
         reloadConfig = true;
         xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state.
@@ -289,14 +289,14 @@ esp_err_t handler_reload_config(httpd_req_t *req)
              taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
              taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) 
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Reload config and redo flow initialization got scheduled ");
-        const std::string zw = "004: Reload config and redo flow initialization got scheduled (" + getCurrentTimeString("%H:%M:%S") + ")";
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Reload config and schedule process reinitialization");
+        const std::string zw = "004: Reload config and reinitialization got scheduled (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
         reloadConfig = true;
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Reload configuration not possible. No flow task. Request rejected");
-        const std::string zw = "E90: Reload config not possible. No flow task. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Reload configuration not possible. No main task. Request rejected");
+        const std::string zw = "E90: Reload config not possible. No main task. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
     }
     return ESP_OK;
@@ -385,7 +385,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 esp_err_t handler_editflow(httpd_req_t *req)
 {
     if (!bTaskAutoFlowCreated) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Flow task not yet created");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Main task not yet created");
         return ESP_FAIL;
     }
     
@@ -545,7 +545,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
 esp_err_t handler_process_data(httpd_req_t *req)
 {
     if (!bTaskAutoFlowCreated) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Flow task not yet created");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Main task not yet created");
         return ESP_FAIL;
     }
 
@@ -947,7 +947,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
 esp_err_t handler_recognition_details(httpd_req_t *req)
 {
     if (!bTaskAutoFlowCreated) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Flow task not yet created");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Main task not yet created");
         return ESP_FAIL;
     }
 
@@ -1448,8 +1448,8 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
     httpd_uri_t camuri = { };
     camuri.method    = HTTP_GET;
 
-    camuri.uri       = "/flow_start";
-    camuri.handler   = handler_flow_start;
+    camuri.uri       = "/cycle_start";
+    camuri.handler   = handler_cycle_start;
     camuri.user_ctx  = NULL; 
     httpd_register_uri_handler(server, &camuri);
 
