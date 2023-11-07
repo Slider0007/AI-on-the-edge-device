@@ -147,6 +147,20 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "sd_partition_free", getSDCardFreePartitionSpace().c_str()) == NULL)
             retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_total_free", std::to_string(getESPHeapSizeTotalFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_free", std::to_string(getESPHeapSizeInternalFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_largest_free", std::to_string(getESPHeapSizeInternalLargestFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_min_free", std::to_string(getESPHeapSizeInternalMinFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_free", std::to_string(getESPHeapSizeSPIRAMFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_largest_free", std::to_string(getESPHeapSizeSPIRAMLargestFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_min_free", std::to_string(getESPHeapSizeSPIRAMMinFree()).c_str()) == NULL)
+            retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "git_branch", libfive_git_branch()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "git_tag", libfive_git_version()) == NULL)
@@ -162,7 +176,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "idf_version", getIDFVersion().c_str()) == NULL)
             retVal = ESP_FAIL;
 
-        char *jsonString = cJSON_PrintBuffered(cJSONObject, 1536, 1); // Print to predefined buffer, avoid dynamic allocations
+        char *jsonString = cJSON_PrintBuffered(cJSONObject, 2048, 1); // Print to predefined buffer, avoid dynamic allocations
         sReturnMessage = std::string(jsonString);
         cJSON_free(jsonString);  
         cJSON_Delete(cJSONObject);
@@ -347,108 +361,6 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, getSDCardFreePartitionSpace().c_str());
         return ESP_OK;        
     }
-    else if (type.compare("git_branch") == 0) {
-        httpd_resp_sendstr(req, libfive_git_branch());
-        return ESP_OK;        
-    }
-    else if (type.compare("git_tag") == 0) {
-        httpd_resp_sendstr(req, libfive_git_version());
-        return ESP_OK;        
-    }
-    else if (type.compare("git_revision") == 0) {
-        httpd_resp_sendstr(req, libfive_git_revision());
-        return ESP_OK;        
-    }
-    else if (type.compare("firmware_version") == 0) {
-        httpd_resp_sendstr(req, getFwVersion().c_str());
-        return ESP_OK;        
-    }
-    else if (type.compare("html_version") == 0) {
-        httpd_resp_sendstr(req, getHTMLversion().c_str());
-        return ESP_OK;        
-    }
-    else if (type.compare("build_time") == 0) {
-        httpd_resp_sendstr(req, build_time());
-        return ESP_OK;        
-    }
-    else if (type.compare("idf_version") == 0) {
-        httpd_resp_sendstr(req, getIDFVersion().c_str());
-        return ESP_OK;        
-    }
-    else {
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E93: Parameter not found");
-        return ESP_FAIL;  
-    }
-}
-
-
-esp_err_t handler_get_heap(httpd_req_t *req)
-{
-    const char* APIName = "heap:v2"; // API name and version
-    char _query[200];
-    char _valuechar[30];    
-    std::string type;
-
-    //heap_caps_dump(MALLOC_CAP_SPIRAM);
-
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            type = std::string(_valuechar);
-        }
-    }
-    else { // default - no parameter set: send data as JSON 
-        esp_err_t retVal = ESP_OK;
-        std::string sReturnMessage;
-        cJSON *cJSONObject = cJSON_CreateObject();
-            
-        if (cJSONObject == NULL) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
-            return ESP_FAIL;
-        }
-
-        if (cJSON_AddStringToObject(cJSONObject, "api_name", APIName) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_total_free", std::to_string(getESPHeapSizeTotalFree()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_free", std::to_string(getESPHeapSizeInternalFree()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_largest_free", std::to_string(getESPHeapSizeInternalLargestFree()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_min_free", std::to_string(getESPHeapSizeInternalMinFree()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_free", std::to_string(getESPHeapSizeSPIRAMFree()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_largest_free", std::to_string(getESPHeapSizeSPIRAMLargestFree()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_min_free", std::to_string(getESPHeapSizeSPIRAMMinFree()).c_str()) == NULL)
-            retVal = ESP_FAIL;
-
-        char *jsonString = cJSON_PrintBuffered(cJSONObject, 320, 1); // Print to predefined buffer, avoid dynamic allocations
-        sReturnMessage = std::string(jsonString);
-        cJSON_free(jsonString);  
-        cJSON_Delete(cJSONObject);
-
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_set_type(req, "application/json");
-
-        if (retVal == ESP_OK) {
-            httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
-            return ESP_OK;
-        }
-        else {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
-            return ESP_FAIL;
-        }
-    }
-
-    /* Legacy: Provide single data as text response */
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
-    
-    if (type.compare("api_name") == 0) {
-        httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
-    }
     else if (type.compare("heap_total_free") == 0) {
         httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeTotalFree())).c_str());
         return ESP_OK;        
@@ -500,9 +412,37 @@ esp_err_t handler_get_heap(httpd_req_t *req)
         return ESP_FAIL;        
     }
     #endif
+    else if (type.compare("git_branch") == 0) {
+        httpd_resp_sendstr(req, libfive_git_branch());
+        return ESP_OK;        
+    }
+    else if (type.compare("git_tag") == 0) {
+        httpd_resp_sendstr(req, libfive_git_version());
+        return ESP_OK;        
+    }
+    else if (type.compare("git_revision") == 0) {
+        httpd_resp_sendstr(req, libfive_git_revision());
+        return ESP_OK;        
+    }
+    else if (type.compare("firmware_version") == 0) {
+        httpd_resp_sendstr(req, getFwVersion().c_str());
+        return ESP_OK;        
+    }
+    else if (type.compare("html_version") == 0) {
+        httpd_resp_sendstr(req, getHTMLversion().c_str());
+        return ESP_OK;        
+    }
+    else if (type.compare("build_time") == 0) {
+        httpd_resp_sendstr(req, build_time());
+        return ESP_OK;        
+    }
+    else if (type.compare("idf_version") == 0) {
+        httpd_resp_sendstr(req, getIDFVersion().c_str());
+        return ESP_OK;        
+    }
     else {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E93: Parameter not found");
-        return ESP_FAIL;    
+        return ESP_FAIL;  
     }
 }
 
@@ -675,7 +615,7 @@ httpd_handle_t start_webserver(void)
     config.server_port = 80;
     config.ctrl_port = 32768;
     config.max_open_sockets = 5; //20210921 --> previously 7   
-    config.max_uri_handlers = 22; // previously 24, 20220511: 35, 20221220: 37, 2023-01-02: 38   , 2023-03-12: 40          
+    config.max_uri_handlers = 21; // previously 42  
     config.max_resp_headers = 8;                        
     config.backlog_conn = 5;                        
     config.lru_purge_enable = true; // this cuts old connections if new ones are needed.               
@@ -739,11 +679,6 @@ void register_server_main_uri(httpd_handle_t server, const char *base_path)
     camuri.uri       = "/info";
     camuri.handler   = handler_get_info;
     camuri.user_ctx  = (void*) base_path;   // Pass server data as context
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/heap";
-    camuri.handler   = handler_get_heap;
-    camuri.user_ctx  = NULL;   // Pass server data as context
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/stream";

@@ -415,7 +415,7 @@ table {
 		<tr>
 			<td>Firmware Version</td>
 			<td>
-				<output id="firmware"></output>
+				<output id="firmware_version"></output>
 			</td>
 		</tr>
 		<tr>
@@ -427,7 +427,7 @@ table {
 		<tr>
 			<td>Web Interface Version</td>
 			<td>
-				<output id="web_ui"></output>
+				<output id="html_version"></output>
 			</td>
 		</tr>
 		<tr>
@@ -450,6 +450,7 @@ table {
 		</tr>
 </body>
 </html>
+
 
 <script type="text/javascript">
 	function loadInfoData() 
@@ -567,14 +568,22 @@ table {
 				document.getElementById("sd_partition_size").value = _jsonData.sd_partition_size + " MB";
 				document.getElementById("sd_partition_free").value = _jsonData.sd_partition_free + " MB";
 
-				document.getElementById("firmware").value = _jsonData.firmware_version;
+				document.getElementById("heap_total_free").value = _jsonData.heap_total_free + " byte";
+				document.getElementById("heap_internal_free").value = _jsonData.heap_internal_free + " byte";
+				document.getElementById("heap_internal_largest_free").value = _jsonData.heap_internal_largest_free + " byte";
+				document.getElementById("heap_internal_min_free").value = _jsonData.heap_internal_min_free + " byte";
+				document.getElementById("heap_spiram_free").value = _jsonData.heap_spiram_free + " byte";
+				document.getElementById("heap_spiram_largest_free").value = _jsonData.heap_spiram_largest_free + " byte";
+				document.getElementById("heap_spiram_min_free").value = _jsonData.heap_spiram_min_free + " byte";
+
+				document.getElementById("firmware_version").value = _jsonData.firmware_version;
 				
 				//Input format (ISO): 2023-10-23T14:26:34+0000
 				document.getElementById("build_time").value = _jsonData.build_time.substr(0,10) + " " +
 												 _jsonData.build_time.substr(11,8) + " (UTC" +	
 												 _jsonData.build_time.substr(19,5) + ")";
 				
-				document.getElementById("web_ui").value = _jsonData.html_version;
+				document.getElementById("html_version").value = _jsonData.html_version;
 				document.getElementById("idf_version").value = _jsonData.idf_version;
 			}
 		}
@@ -583,36 +592,16 @@ table {
 	}
 
 
-	function loadMemoryData() 
-	{
-		url = getDomainname() + '/heap';     
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				const _jsonData = JSON.parse(xhttp.responseText);		
- 				document.getElementById("heap_total_free").value = _jsonData.heap_total_free + " byte";
-				document.getElementById("heap_internal_free").value = _jsonData.heap_internal_free + " byte";
-				document.getElementById("heap_internal_largest_free").value = _jsonData.heap_internal_largest_free + " byte";
-				document.getElementById("heap_internal_min_free").value = _jsonData.heap_internal_min_free + " byte";
-				document.getElementById("heap_spiram_free").value = _jsonData.heap_spiram_free + " byte";
-				document.getElementById("heap_spiram_largest_free").value = _jsonData.heap_spiram_largest_free + " byte";
-				document.getElementById("heap_spiram_min_free").value = _jsonData.heap_spiram_min_free + " byte";
-			}
-		}
-		xhttp.open("GET", url, true);
-		xhttp.send();
-	}
-
 	function addClassToElement(_element, _class)
 	{
 		var element = document.getElementById(_element);
 		element.classList.add(_class);
 	}
 
+
 	function init()
 	{
 		loadInfoData();
-		loadMemoryData()
 	}
 
 	init();
