@@ -152,7 +152,7 @@ function setFallbackValue() {
 	inputVal = inputVal.replace(",", ".");
   	var xhttp = new XMLHttpRequest();
     try {
-        url = domainname + "/set_fallbackvalue?value=" + inputVal + "&numbers=" + _number;     
+        url = domainname + "/set_fallbackvalue?sequence=" + _number + "&value=" + inputVal;     
         xhttp.open("GET", url, false);
         xhttp.send();
         response = xhttp.responseText;
@@ -173,7 +173,7 @@ function loadFallbackValue(_domainname) {
 
     var xhttp = new XMLHttpRequest();
     try {
-        url = _domainname + '/set_fallbackvalue?numbers=' + _number;
+        url = _domainname + '/set_fallbackvalue?sequence=' + _number;
         xhttp.open("GET", url, false);
         xhttp.send();
         response = xhttp.responseText;
