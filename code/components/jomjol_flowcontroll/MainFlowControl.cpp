@@ -308,8 +308,8 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
-        "- To retrieve actual Fallback Value, please provide only a numbersname, e.g. /set_fallbackvalue?numbers=main<br>"
-        "- To set Fallback Value to a new value, please provide a numbersname and a value, e.g. /set_fallbackvalue?numbers=main&value=1234.5678<br>"
+        "- To retrieve actual Fallback Value, please provide a number sequence name only, e.g. /set_fallbackvalue?sequence=main<br>"
+        "- To set Fallback Value to a new value, please provide a number sequence name and a value, e.g. /set_fallbackvalue?seqeunce=main&value=1234.5678<br>"
         "NOTE:<br>"
         "value >= 0.0: Set Fallback Value to provided value<br>"
         "value <  0.0: Set Fallback Value to actual RAW value (as long RAW value is a valid number, without N)";
@@ -318,8 +318,8 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     std::string sReturnMessage = "E90: Uninitialized";
 
     char _query[100];
-    char _numbersname[50] = "default";
-    char _value[20] = "";
+    char number_sequence[50] = "default";
+    char value[20] = "";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
@@ -329,16 +329,16 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
             ESP_LOGD(TAG, "Query: %s", _query);
         #endif
 
-        if (httpd_query_key_value(_query, "numbers", _numbersname, 50) != ESP_OK) { // If request is incomplete
+        if (httpd_query_key_value(_query, "sequence", number_sequence, sizeof(number_sequence)) != ESP_OK) { // If request is incomplete
             sReturnMessage = "E91: Query parameter incomplete or not valid!<br> "
                              "Call /set_fallbackvalue to show REST API usage info and/or check documentation";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
             return ESP_FAIL; 
         }
 
-        if (httpd_query_key_value(_query, "value", _value, 20) == ESP_OK) {
+        if (httpd_query_key_value(_query, "value", value, sizeof(value) == ESP_OK) {
             #ifdef DEBUG_DETAIL_ON       
-                ESP_LOGD(TAG, "Value: %s", _value);
+                ESP_LOGD(TAG, "Value: %s", value);
             #endif
         }
     }
@@ -347,11 +347,11 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
         return ESP_FAIL; 
     }   
 
-    if (strlen(_value) == 0) { // If no value is povided --> return actual FallbackValue
-        sReturnMessage = flowctrl.GetFallbackValue(std::string(_numbersname));
+    if (strlen(value) == 0) { // If no value is povided --> return actual FallbackValue
+        sReturnMessage = flowctrl.GetFallbackValue(std::string(number_sequence));
 
         if (sReturnMessage.empty()) {
-            sReturnMessage = "E92: Numbers name not found";
+            sReturnMessage = "E92: Number sequence not found";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
             return ESP_FAIL;
         }
@@ -359,15 +359,15 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     else {
         // New value is positive: Set FallbackValue to provided value and return value
         // New value is negative and actual RAW value is a valid number: Set FallbackValue to RAW value and return value
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "REST API handler_fallbackvalue called: numbersname: " + std::string(_numbersname) + 
-                                                ", value: " + std::string(_value));
-        if (!flowctrl.UpdateFallbackValue(_value, _numbersname)) {
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "REST API handler_fallbackvalue called: numbersname: " + std::string(number_sequence) + 
+                                                ", value: " + std::string(value));
+        if (!flowctrl.UpdateFallbackValue(value, number_sequence)) {
             sReturnMessage = "E93: Update request rejected. Please check device logs for more details";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());  
             return ESP_FAIL;
         }
 
-        sReturnMessage = flowctrl.GetFallbackValue(std::string(_numbersname));
+        sReturnMessage = flowctrl.GetFallbackValue(std::string(number_sequence));
 
         if (sReturnMessage.empty()) {
             sReturnMessage = "E94: Numbers name not found";
