@@ -309,7 +309,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
         "- To retrieve actual Fallback Value, please provide a number sequence name only, e.g. /set_fallbackvalue?sequence=main<br>"
-        "- To set Fallback Value to a new value, please provide a number sequence name and a value, e.g. /set_fallbackvalue?seqeunce=main&value=1234.5678<br>"
+        "- To set Fallback Value to a new value, please provide a number sequence name and a value, e.g. /set_fallbackvalue?sequence=main&value=1234.5678<br>"
         "NOTE:<br>"
         "value >= 0.0: Set Fallback Value to provided value<br>"
         "value <  0.0: Set Fallback Value to actual RAW value (as long RAW value is a valid number, without N)";
