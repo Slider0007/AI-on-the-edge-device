@@ -845,7 +845,7 @@ std::string ClassFlowControll::getJSON()
 std::string ClassFlowControll::getNumbersName()
 {
     if (flowpostprocessing == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getNumbersName: Request rejected. Postprocessing class not yet created"); 
         return "";
     }
     
@@ -857,7 +857,7 @@ std::string ClassFlowControll::getNumbersName()
 std::string ClassFlowControll::getNumbersName(int _number)
 {
     if (flowpostprocessing == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getNumbersName: Request rejected. Postprocessing class not yet created"); 
         return "";
     }
     
@@ -869,7 +869,7 @@ std::string ClassFlowControll::getNumbersName(int _number)
 int ClassFlowControll::getNumbersSize()
 {
     if (flowpostprocessing == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getNumbersSize: Request rejected. Postprocessing class not yet created"); 
         return -1;
     }
     
@@ -881,7 +881,7 @@ int ClassFlowControll::getNumbersSize()
 int ClassFlowControll::getNumbersNamePosition(std::string _name)
 {
     if (flowpostprocessing == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getNumbersNamePosition: Request rejected. Postprocessing class not yet created"); 
         return -1;
     }
     
@@ -898,11 +898,12 @@ int ClassFlowControll::getNumbersNamePosition(std::string _name)
 std::string ClassFlowControll::getNumbersValue(int _position, int _type)
 {
     if (flowpostprocessing == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "getNumbersValue: Request rejected. Postprocessing class not yet created"); 
         return "";
     }
 
     if (_position < 0 || _position > getNumbersSize()) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "getNumbersValue: Array position out of range"); 
         return "";
     }
 
