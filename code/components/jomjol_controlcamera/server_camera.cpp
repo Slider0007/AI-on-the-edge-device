@@ -24,7 +24,7 @@ esp_err_t handler_flashlight(httpd_req_t *req)
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
-        "- '/flashlight?type=api_name : Return API name and version<br>"
+        "- '/flashlight?type=api_name : Print API name and version<br>"
         "- '/flashlight?type=on' : Flashlight on<br>"
         "- '/flashlight?type=off' : Flashlight off<br>";
     char _query[100];
@@ -77,11 +77,11 @@ esp_err_t handler_capture(httpd_req_t *req)
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
-        "- '/capture?type=api_name : Return API name and version<br>"
+        "- '/capture?type=api_name : Print API name and version<br>"
         "- '/capture?type=capture' : Capture without flashlight<br>"
         "- '/capture?type=capture_with_flashlight&flashduration=1000' : Capture with flashlight (flashduration in ms)<br>"
-        "- '/capture?type=capture_to_file&flashduration=1000&filename=/img-tmp/filename.jpg' : \
-            Capture with flashlight (flashduration in ms) and save to file on SD<br>";
+        "- '/capture?type=capture_to_file&flashduration=1000&filename=/img_tmp/filename.jpg' : \
+            Capture image with flashlight (flashduration in ms) and save '/img_tmp/filename.jpg' onto SD-card<br>";
     char _query[100];
     char _valuechar[30], _flashduration[30], _filename[100];   
     std::string type;
