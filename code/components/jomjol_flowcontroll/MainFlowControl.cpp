@@ -336,7 +336,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
             return ESP_FAIL; 
         }
 
-        if (httpd_query_key_value(_query, "value", value, sizeof(value) == ESP_OK) {
+        if (httpd_query_key_value(_query, "value", value, sizeof(value)) == ESP_OK) {
             #ifdef DEBUG_DETAIL_ON       
                 ESP_LOGD(TAG, "Value: %s", value);
             #endif
