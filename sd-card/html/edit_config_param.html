@@ -5,10 +5,10 @@
 <meta charset="UTF-8" />
 
 <style>
-    h1 {font-size: 2em;}
+    h1 {font-size: 1.8.em;}
     h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
     h3 {font-size: 1.2em;}
-    h4 {font-size: 1.05em; margin-bottom: 0;}
+    h4 {font-size: 16px; background-color: lightgray; padding: 5px; margin: 10px 0px 3px 0px;}
     h5 {font-size: 0.83em; margin-top: 0.2em; margin-bottom: 0;}
     p {font-size: 1em;}
 
@@ -17,6 +17,12 @@
         border-collapse: collapse;
         table-layout: fixed;
         width:100%;
+    }
+
+	th {
+        padding: 0px;
+        vertical-align: middle;
+		text-align: left;
     }
 
     td {
@@ -202,6 +208,10 @@
         height: calc(100% - 2px);
         padding: 1px;
     }
+
+	details {
+		text-align: justify;
+	}
 </style>
 
 <link rel="stylesheet" href="mkdocs_theme.css?v=$COMMIT_HASH" />
@@ -212,11 +222,11 @@
 <script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
-<body style="font-family: arial; padding: 0px 10px;">
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
 	<h2>Configuration</h2>
 
 	<details id="desc_details">
-        <summary><b>CLICK HERE</b> for usage description. More infos in documentation: 
+        <summary><b>CLICK HERE</b> for usage description. Further documenation: 
             <a href="https://github.com/Slider0007/AI-on-the-edge-device-docs/tree/parameter-description/param-docs/parameter-pages" target="_blank">Parameter</a>
         </summary>
 		<p>
@@ -250,8 +260,9 @@
             <col span="1">
         </colgroup>
 
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Configuration View</h4></td>
+		<!------------- Configuration View ------------------>
+		<tr>
+            <th colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Configuration View</h4></th>
 		</tr> 
 		<tr>
 			<td class="indent1">
@@ -264,8 +275,8 @@
 		</tr>
 
 		<!------------- Take Image ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Take Image</h4></td>
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Take Image</h4></th>
 		</tr> 
 
 		<tr class="expert">
@@ -418,8 +429,8 @@
 
 
 		<!------------- Alignment ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Alignment</h4></td>
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Alignment</h4></th>
 		</tr>
 
 		<tr>
@@ -513,11 +524,11 @@
 
 
 		<!------------- Digit ROIs ------------------>
-		<tr style="border-bottom: 2px solid lightgray;" id="Category_Digits_ex4">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
+		<tr id="Category_Digits_ex4">
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
 				<h4><input type="checkbox" id="Category_Digits_enabled" value="1"  onclick ='UpdateAfterCategoryCheck()' unchecked >
 				<label for=Category_Digits_enabled>Digit ROI Processing</label></h4>
-			</td>
+			</th>
 		</tr>
 
 		<tr class="DigitItem">
@@ -568,11 +579,11 @@
 
 
 		<!------------- Ananlog ROIs ------------------>
-		<tr style="border-bottom: 2px solid lightgray;" id="Category_Analog_ex4">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
+		<tr id="Category_Analog_ex4">
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
 				<h4><input type="checkbox" id="Category_Analog_enabled" value="1"  onclick = 'UpdateAfterCategoryCheck()' unchecked >
 				<label for=Category_Analog_enabled>Analog ROI Processing</label></h4>
-			</td>
+			</th>
 		</tr>
 
 		<tr class="AnalogItem">
@@ -609,8 +620,8 @@
 
 
 		<!------------- Post-Processing ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Post-Processing</h4></td>
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Post-Processing</h4></th>
 		</tr>
 
 		<tr class="expert">
@@ -762,13 +773,13 @@
 
 
 		<!------------- MQTT ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
 			    <h4>
 				<input type="checkbox" id="Category_MQTT_enabled" value="1"  onclick = 'UpdateAfterCategoryCheck()' unchecked >
 				<label for=Category_MQTT_enabled>MQTT</label>
 			    </h4>
-			</td>
+			</th>
 		</tr>
 
 		<tr class="MQTTItem">
@@ -879,12 +890,12 @@
 
 		
 		<!------------- INFLUXDB v1 ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
 			    <h4>
 				<input type="checkbox" id="Category_InfluxDB_enabled" value="1"  onclick = 'UpdateAfterCategoryCheck()' unchecked >
 				<label for=Category_InfluxDB_enabled>InfluxDB v1.x</label></h4>
-			</td>
+			</th>
 		</tr>
 		
 		<tr class="InfluxDBv1Item">
@@ -960,12 +971,12 @@
 
 
 		<!------------- INFLUXDB v2 ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
 			    <h4>
 				<input type="checkbox" id="Category_InfluxDBv2_enabled" value="1"  onclick = 'UpdateAfterCategoryCheck()' unchecked >
 				<label for=Category_InfluxDBv2_enabled>InfluxDB v2.x</label></h4>		
-			</td>
+			</th>
 		</tr>
 
 		<tr class="InfluxDBv2Item">
@@ -1041,11 +1052,11 @@
 
 
 		<!------------- GPIO ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;">
 				<h4><input type="checkbox" id="Category_GPIO_enabled" value="1"  onclick='UpdateAfterCategoryCheck()' unchecked > 
 				    <label for=Category_GPIO_enabled>GPIO (General Purpose Input / Output)</label></h4>
-			</td>
+			</th>
 		</tr>
 
 		<!------------- GPIO0 begin ------------------>
@@ -1440,13 +1451,13 @@
 				<span class="GPIO_item" id="GPIO_LEDColor_text">LED Color</span>
 			</td>
 			<td class="GPIO_item">
-				R <input required style="min-width:35px;width:35px;" type="number" class="GPIO_item" id="GPIO_LEDColor_value1"
+				R <input required style="min-width:45px;width:45px;" type="number" class="GPIO_item" id="GPIO_LEDColor_value1"
 						size="12" min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
-				G <input required style="min-width:35px;width:35px" type="number" class="GPIO_item" id="GPIO_LEDColor_value2"
+				G <input required style="min-width:45px;width:45px" type="number" class="GPIO_item" id="GPIO_LEDColor_value2"
 						size="12" min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
-				B <input required style="min-width:35px;width:35px" type="number" class="GPIO_item" id="GPIO_LEDColor_value3"
+				B <input required style="min-width:45px;width:45px" type="number" class="GPIO_item" id="GPIO_LEDColor_value3"
 						size="12" min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
@@ -1525,8 +1536,8 @@
 
 
 		<!------------- Autotimer ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Auto Timer</h4></td>
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Auto Timer</h4></th>
 		</tr>
 
 		<tr class="expert">
@@ -1555,8 +1566,8 @@
 
 
 		<!------------- Data Logging ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Data Logging</h4></td>
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Data Logging</h4></th>
 		</tr>
 
 		<tr>
@@ -1585,8 +1596,8 @@
 
 
 		<!------------- Debug Logging ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Debug</h4></td>
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>Debug</h4></th>
 		</tr>
 
 		<tr>
@@ -1627,8 +1638,8 @@
 		</tr>
 
 		<!------------- System ------------------>
-		<tr style="border-bottom: 2px solid lightgray;">
-			<td colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>System</h4></td>
+		<tr>
+			<th colspan="3" style="padding-left: 0px; padding-bottom: 3px;"><h4>System</h4></th>
 		</tr>
 
 		<tr>
@@ -2452,26 +2463,6 @@ function numberChanged()
     var sel = document.getElementById("Numbers_value1");
     _neu = sel.selectedIndex;
     UpdateInputIndividual(sel);
-
-    var _selInflux = document.getElementById("NumbersInfluxDBv2_value1");
-    if (_selInflux.selectedIndex != _neu)
-        _selInflux.selectedIndex = _neu
-}
-
-    
-function numberInfluxDBv2Changed()
-{
-    var sel = document.getElementById("NumbersInfluxDBv2_value1");
-    _neu = sel.selectedIndex;
-    UpdateInputIndividual(sel);
-
-    var _sel2 = document.getElementById("Numbers_value1");
-    if (_sel2.selectedIndex != _neu)
-        _sel2.selectedIndex = _neu
-
-    var _sel3 = document.getElementById("NumbersInfluxDB_value1");
-    if (_sel3.selectedIndex != _neu)
-        _sel3.selectedIndex = _neu
 }
 
 
@@ -2480,17 +2471,18 @@ function numberInfluxDBChanged()
     var sel = document.getElementById("NumbersInfluxDB_value1");
     _neu = sel.selectedIndex;
     UpdateInputIndividual(sel);
-    
-    var _sel2 = document.getElementById("Numbers_value1");
-    if (_sel2.selectedIndex != _neu)
-        _sel2.selectedIndex = _neu
-
-    var _sel3 = document.getElementById("NumbersInfluxDBv2_value1");
-    if (_sel3.selectedIndex != _neu)
-        _sel3.selectedIndex = _neu
 }
 
-    /* hash #description open the details part of the page */
+
+function numberInfluxDBv2Changed()
+{
+    var sel = document.getElementById("NumbersInfluxDBv2_value1");
+    _neu = sel.selectedIndex;
+    UpdateInputIndividual(sel);
+}
+
+
+/* hash #description open the details part of the page */
 function openDescription() 
 {
     if(window.location.hash) {

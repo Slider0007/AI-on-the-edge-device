@@ -5,15 +5,14 @@
 <meta charset="UTF-8" />
 
 <style>
-h1 {font-size: 2em;}
-h2 {font-size: 1.5em;}
-h3 {font-size: 1.2em;}
+h1 {font-size: 1.8.em;}
+h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+h3 {font-size: 16px; background-color: lightgray; padding: 5px; margin: 10px 0px 3px 0px;}
 p {font-size: 1em;}
 
 th, td {
   padding: 5px 5px 5px 5px;
   border-width: 1px;
-  border-style: solid;
   border-color: rgb(240, 240, 240);
 }
 
@@ -31,7 +30,8 @@ table {
 <script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
 </head>
 
-<body style="font-family: arial; padding: 0px 10px;">
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
+	<h2>System Info</h2>
 	<table>
 		<colgroup>
 			<col span="1" style="width: 35%;">
@@ -41,11 +41,11 @@ table {
 			<h3>Runtime Information</h3>
 		</tr>
 		<tr>
-			<td>Start time:</td>
+			<td>Start time</td>
 			<td><output id="starttime"></output></td>
 		</tr>
 		<tr>
-			<td>Uptime:</td>
+			<td>Uptime</td>
 			<td><output id="uptime"></output></td>
 		</tr>
 	</table>
@@ -59,20 +59,20 @@ table {
 			<h3>Build Info</h3>
 		</tr>
 		<tr>
-			<td>Firmware version:</td>
+			<td>Firmware version</td>
 			<td>
 				<output id="firmware"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Firmware build time:</td>
+			<td>Firmware build time</td>
 			<td>
 				<output id="build-time"></output>
 			</td>
 		</tr>
 
 		<tr>
-			<td>Web interface version:</td>
+			<td>Web interface version</td>
 			<td>
 				<output id="web-ui"></output>
 			</td>
@@ -89,19 +89,19 @@ table {
 			<h3>Host Info</h3>
 		</tr>
 		<tr>
-			<td>Hostname:</td>
+			<td>Hostname</td>
 			<td>
 				<output id="hostname"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>IP Address:</td>	
+			<td>IP Address</td>	
 			<td>
 				<output id="IP-address"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>WLAN SSID:</td>	
+			<td>WLAN SSID</td>	
 			<td>
 				<output id="wlan-ssid"></output>
 			</td>
@@ -117,43 +117,43 @@ table {
 			<h3>SD Card Info</h3>
 		</tr>
 		<tr>
-			<td>SD card manufacturer:</td>
+			<td>SD card manufacturer</td>
 			<td>
 				<output id="SDCardManufacturer"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>SD card name:</td>
+			<td>SD card name</td>
 			<td>
 				<output id="SDCardName"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>SD card size:</td>
+			<td>SD card size</td>
 			<td>
 				<output id="SDCardCapacity"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>SD card sector size:</td>
+			<td>SD card sector size</td>
 			<td>
 				<output id="SDCardSectorSize"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Partition size:</td>
+			<td>Partition size</td>
 			<td>
 				<output id="SDCardPartitionSize"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Partition free space:</td>	
+			<td>Partition free space</td>	
 			<td>
 				<output id="SDCardFreePartitionSpace"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Partition allocation size:</td>	
+			<td>Partition allocation size</td>	
 			<td>
 				<output id="SDCardPartitionAllocationSize"></output>
 			</td>
@@ -169,43 +169,43 @@ table {
 			<h3>Memory Info</h3>
 		</tr>
 		<tr>
-			<td>Total Free (Int + Ext):</td>	
+			<td>Total Free (Int + Ext)</td>	
 			<td>
 				<output id="RAMTotalFree"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Ext. RAM - Free:</td>	
+			<td>Ext. RAM - Free</td>	
 			<td>
 				<output id="ExtRAMFree"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Ext. RAM - Largest Free Block:</td>	
+			<td>Ext. RAM - Largest Free Block</td>	
 			<td>
 				<output id="ExtRAMLargestFree"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Ext. RAM - Min Free:</td>	
+			<td>Ext. RAM - Min Free</td>	
 			<td>
 				<output id="ExtRAMMinFree"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Int. RAM - Free:</td>	
+			<td>Int. RAM - Free</td>	
 			<td>
 				<output id="IntRAMFree"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Int. RAM - Largest Free Block:</td>	
+			<td>Int. RAM - Largest Free Block</td>	
 			<td>
 				<output id="IntRAMLargestFree"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Int. RAM - Min Free:</td>	
+			<td>Int. RAM - Min Free</td>	
 			<td>
 				<output id="IntRAMMinFree"></output>
 			</td>

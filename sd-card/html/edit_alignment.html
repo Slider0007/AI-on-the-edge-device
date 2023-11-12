@@ -3,9 +3,9 @@
 <head>
     <title>Alignment marker</title>
     <meta charset="UTF-8" />
-        
+
     <style>
-        h1 {font-size: 2em;}
+        h1 {font-size: 1.8.em;}
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
         p {font-size: 1em;}
@@ -55,17 +55,21 @@
             width: 660px;
             padding: 5px;
         }
+
+        details {
+            text-align: justify;
+        }
     </style>	
     <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
     <script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
     <script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
-<body style="font-family: arial; padding: 0px 10px;">
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
 	
 	<h2>Alignment Marker</h2>
     <details id="desc_details" style="font-size:16px">
-        <summary><b>CLICK HERE</b> for usage description. More infos in documentation:   
+        <summary><b>CLICK HERE</b> for usage description. Further documenation:   
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/Alignment/ target=_blank>Alignment</a>
         </summary>
         <p>
@@ -112,7 +116,7 @@
             
         </tr>
         <tr>
-            <td style="vertical-align:bottom;"><b>Reference Image:</b></td>
+            <td style="vertical-align:bottom;"><b>Reference Image</b></td>
             <td><input disabled class="button" type="button" id="updatemarker" value="Update Marker" onclick="CutOutReference()"></td>	
             <td ><input disabled style="font-weight:bold;" class="button" type="submit" name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
             </td>

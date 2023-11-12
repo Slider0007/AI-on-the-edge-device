@@ -5,7 +5,7 @@
     <meta charset="utf-8"/>
         
     <style>
-        h1 {font-size: 2em;}
+        h1 {font-size: 1.8.em;}
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
         p {font-size: 1em;}
@@ -44,6 +44,10 @@
             width: 660px;
             padding: 5px;
         }
+
+        details {
+            text-align: justify;
+        }
     </style>
 
     <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
@@ -51,10 +55,10 @@
     <script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
-<body style="font-family: arial; padding: 0px 10px;">
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
     <h2>Reference Image</h2>
     <details id="desc_details" style="font-size:16px">
-        <summary><b>CLICK HERE</b> for usage description. More infos in documentation: 
+        <summary><b>CLICK HERE</b> for usage description. Further documenation: 
                 <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/Reference-Image/ target=_blank>Reference Image</a>
         </summary>
         <p>
@@ -159,7 +163,7 @@
             <col span="1" style="width: 33.3%;">
         </colgroup>
         <tr>
-            <td style="vertical-align: bottom;"><b>Reference Image:</b></td>
+            <td style="vertical-align: bottom;"><b>Reference Image</b></td>
             <td></td>
             <td>
                 <input style="font-weight:bold;" class="button" type="button" id="updatereferenceimage" value="Save And Apply" onclick="SaveReference()">

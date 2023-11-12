@@ -5,9 +5,10 @@
     <title>Analog ROI</title>
 
     <style>
-        h1 {font-size: 2em;}
+        h1 {font-size: 1.8.em;}
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
+        h4 {font-size: 16px; background-color: lightgray; padding: 5px; margin: 5px 0px 3px 0px;}
         p {font-size: 1em;}
 
         input[type=number] {
@@ -58,20 +59,13 @@
         padding: 5px 5px 5px 0px;
         }
 
-        #div2{
-        background-color:#777;
-        margin-bottom:20px;
-        }
-
-        .disabledDiv {
-            pointer-events: none;
-            opacity: 0.4;
-        }
-
         table {
             width: 660px;
             padding: 5px;
             table-layout: fixed;
+        }
+        details {
+            text-align: justify;
         }
     </style>
 
@@ -81,11 +75,11 @@
 
 </head>
 
-<body style="font-family: arial; padding: 0px 10px;">
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
 
     <h2>Analog ROI</h2>
     <details id="desc_details" style="font-size:16px">
-        <summary><b>CLICK HERE</b> for usage description. More infos in documentation: 
+        <summary><b>CLICK HERE</b> for usage description. Further documenation: 
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/ROI-Configuration/ target=_blank>ROI Configuration</a>
         </summary>
         <p>
@@ -117,14 +111,6 @@
     </details>
     <hr />
 
-    <p>   
-        <input type="checkbox" id="Category_Analog_enabled" value="1"  onclick = 'EnDisableAnalog()' checked >
-            <label style="font-weight: bold; font-size: larger;" for="Category_Analog_enabled">Analog ROI Processing</label>
-    </p>
-
-
-<div id="div1">
-
     <table>
         <colgroup>
             <col span="1" style="width: 22%;">
@@ -133,20 +119,34 @@
             <col span="1" style="width: 26%;">
         </colgroup>
         <tr>
-            <td colspan="4" style="padding: 0px"><class id="Numbers_text" style="color:black;">Number Sequence:</class></td>
+            <td colspan="4" style="padding-bottom: 0px">
+                <input type="checkbox" id="Category_Analog_enabled" value="1"  onclick = 'EnDisableAnalog()' checked >
+                <label style="font-weight: bold; font-size: larger;" for="Category_Analog_enabled">Analog ROI Processing</label>
+            </td>
+        </tr>
+    </table>
+
+<div id="div1">
+    <table>
+        <colgroup>
+            <col span="1" style="width: 22%;">
+            <col span="1" style="width: 26%;">
+            <col span="1" style="width: 26%;">
+            <col span="1" style="width: 26%;">
+        </colgroup>
+        <tr>
+            <td colspan="4" style="padding: 0px"><class id="Numbers_text" style="color:black;"><h4>Number Sequence</h4></class></td>
         </tr>
         <tr>
             <td>
                 <select id="Numbers_value1" onchange="numberChanged()">
                 </select>
             </td>
-            <td><input class="button" type="submit" id="newNumber" name="newNumber" onclick="newNumber()" value="New Sequence"></td>
-            <td><input class="button" type="submit" id="renameNumber" name="renameNumber" onclick="renameNumber()" value="Rename Sequence"></td> 
-            <td><input class="button" type="submit" id="removeNumber" name="removeNumber" onclick="removeNumber()" value="Delete Sequence"></td>
+            <td><input class="button" type="submit" id="newNumber" name="newNumber" onclick="newNumber()" value="New"></td>
+            <td><input class="button" type="submit" id="renameNumber" name="renameNumber" onclick="renameNumber()" value="Rename"></td> 
+            <td><input class="button" type="submit" id="removeNumber" name="removeNumber" onclick="removeNumber()" value="Delete"></td>
         </tr>
     </table>
-
-    <hr />
 
     <table>
         <colgroup>
@@ -156,13 +156,13 @@
             <col span="1" style="width: 26%;">
         </colgroup>
         <tr>
-            <td style="padding: 0px">ROI:</td>
+            <td colspan="4" style="padding: 0px"><h4>Region Of Interest (ROI)</h4></td>
         </tr>
         <tr>
             <td><select id="index" name="index" onchange="ChangeSelection()" tabindex=1></select></td>
-            <td><input class="button" type="submit" id="newROI" name="newROI" onclick="newROI()" value="New ROI"></td>
-            <td><input class="button" type="submit" id="renameROI" name="renameROI" onclick="renameROI()" value="Rename ROI"></td>	  
-            <td><input class="button" type="submit" id="deleteROI" name="deleteROI" onclick="deleteROI()" value="Delete ROI"></td>
+            <td><input class="button" type="submit" id="newROI" name="newROI" onclick="newROI()" value="New"></td>
+            <td><input class="button" type="submit" id="renameROI" name="renameROI" onclick="renameROI()" value="Rename"></td>	  
+            <td><input class="button" type="submit" id="deleteROI" name="deleteROI" onclick="deleteROI()" value="Delete"></td>
         </tr>
         <tr>       
             <td class="multiplier">Multiplier: <output type="text" id="multiplier" name="multiplier"></output><br>
@@ -171,8 +171,8 @@
             <td class="multiplier">Multiplier: <output type="text" id="multiplier_decshift" name="multiplier_decshift"></output><br>
                 (order + decimal shift: <output type="text" id="decimalShift" name="decimalShift"></output>)
             </td>
-            <td><input class="button" type="submit" id="movePrevious" onclick="movePrevious()" value="Move ROI Higher"></td> 
-            <td><input class="button" type="submit" id="moveNext" onclick="moveNext()" value="Move ROI Lower"></td>
+            <td><input class="button" type="submit" id="movePrevious" onclick="movePrevious()" value="Move Higher"></td> 
+            <td><input class="button" type="submit" id="moveNext" onclick="moveNext()" value="Move Lower"></td>
         </tr>
     </table>
 
@@ -207,7 +207,7 @@
             <col span="1" style="width: 26%;">
         </colgroup>
         <tr>
-            <td colspan="3" style="vertical-align: bottom;"><b>Reference Image:</b></td>
+            <td colspan="3" style="vertical-align: bottom;"><b>Reference Image</b></td>
             <!---<td><button class="button" id="reboot" type="button" onclick="doReboot()">Reboot device</button></td>-->
             <td><input style="font-weight:bold;" class="button" type="submit" id="saveroi" name="saveroi" onclick="SaveToConfig()" value="Save And Apply" tabindex=10></td>
         </tr>
@@ -248,26 +248,13 @@
     
 function EnDisableAnalog() {
         isEnabled = document.getElementById("Category_Analog_enabled").checked;
-
-		$("#div2").attr("disabled", "disabled").off('click');
-        var x1=$("#div2").hasClass("disabledDiv");
-        
-        if (isEnabled)
-        {
-            $("#div2").removeClass("disabledDiv");
-        }
-        else
-        {
-            $("#div2").addClass("disabledDiv");
-        }
 		
         sah1(document.getElementById("div1"), !isEnabled);
 
         cofcat["Analog"]["enabled"] = isEnabled;
         document.getElementById("saveroi").disabled = false;
                 
-        if (isEnabled)
-        {
+        if (isEnabled) {
             UpdateROIs();
         }
 }

@@ -2,12 +2,19 @@
 <html lang="en" xml:lang="en"> 
     <head>
         <title>Log Viewer</title>
-        
+        <meta charset="UTF-8" />
+
         <style>
+            h1 {font-size: 1.8.em;}
+            h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.5em;}
+            h3 {font-size: 1.2em;}
+            p {font-size: 1em;}
+
             html,
             body {
                 height: 100%;
                 margin: 1px;
+                font-family: Arial;
             }
 
             .box {
@@ -42,6 +49,7 @@
         <script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
     </head>
     <body>
+        <h2>Log Viewer</h2>
         <div class="box">
             <div class="row header">
                 <button class="button" onClick="reload();">Refresh</button>
