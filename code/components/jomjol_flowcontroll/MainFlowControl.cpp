@@ -784,8 +784,11 @@ esp_err_t handler_editflow(httpd_req_t *req)
         in = "/sdcard" + in;    // --> img_tmp/reference.jpg
         out = "/sdcard" + out;  // --> img_tmp/refX.jpg
 
+        // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp)
         STBIObjectPSRAM.name="rawImage";
-        STBIObjectPSRAM.usePreallocated = true; // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp) 
+        STBIObjectPSRAM.usePreallocated = true;
+        STBIObjectPSRAM.PreallocatedMemory = flowctrl.getRawImage()->RGBImageGet();
+        STBIObjectPSRAM.PreallocatedMemorySize = flowctrl.getRawImage()->getMemsize();
         CAlignAndCutImage* caic = new CAlignAndCutImage("cutref1", in, true);  // CImageBasis of reference.jpg will be created first (921kB RAM needed)
         caic->CutAndSave(out, x, y, dx, dy);
         delete caic;

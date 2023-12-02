@@ -113,6 +113,8 @@ public:
 
 	int CleanTempFolder();
 
+	CImageBasis* getRawImage();
+
 	std::string name() {return "ClassFlowControll";};
 };
 

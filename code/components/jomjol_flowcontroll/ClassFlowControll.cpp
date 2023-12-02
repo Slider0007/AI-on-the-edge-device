@@ -1092,6 +1092,12 @@ int ClassFlowControll::CleanTempFolder() {
 }
 
 
+CImageBasis* ClassFlowControll::getRawImage()
+{
+    return flowtakeimage->rawImage;
+}
+
+
 esp_err_t ClassFlowControll::SendRawJPG(httpd_req_t *req)
 {
     if (flowtakeimage) {
