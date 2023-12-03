@@ -855,6 +855,25 @@ int ClassFlowControll::getNumbersSize()
 }
 
 
+/* Return number of ROIs (sum, digit or analog) */
+int ClassFlowControll::getNumbersROISize(int _seqNo = 0, int _filter = 0)
+{
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        return -1;
+    }
+    
+    if (_filter == 0)
+        return (*flowpostprocessing->GetNumbers())[_seqNo]->digitCount + (*flowpostprocessing->GetNumbers())[_seqNo]->analogCount;
+    else if (_filter == 1)
+        return (*flowpostprocessing->GetNumbers())[_seqNo]->digitCount;
+    else if (_filter == 2)
+        return (*flowpostprocessing->GetNumbers())[_seqNo]->analogCount;
+    else 
+        return -1;
+}
+
+
 /* Return array postion of a given numbers name (number sequence) */
 int ClassFlowControll::getNumbersNamePosition(std::string _name)
 {

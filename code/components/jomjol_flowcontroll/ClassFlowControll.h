@@ -71,6 +71,7 @@ public:
 	std::string getNumbersName();
 	std::string getNumbersName(int _number);
 	int getNumbersSize();
+	int getNumbersROISize(int _seqNo, int _filter);
 	int getNumbersNamePosition(std::string _name);
 	std::string getNumbersValue(std::string _name, int _type);
 	std::string getNumbersValue(int _position, int _type);

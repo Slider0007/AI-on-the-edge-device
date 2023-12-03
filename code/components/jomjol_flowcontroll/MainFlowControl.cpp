@@ -573,10 +573,12 @@ esp_err_t handler_value(httpd_req_t *req)
                 std::vector<HTMLInfo*> htmlinfo;
                 htmlinfo = flowctrl.GetAllDigital(); 
 
+                int sequence = -1;
                 for (int i = 0; i < htmlinfo.size(); ++i) {
                     if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
                         txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " + htmlinfo[i]->name + "</td></tr>\n";
                         txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
+                        sequence++;
                     }
 
                     if (flowctrl.GetTypeDigital() == Digital) {
@@ -597,7 +599,7 @@ esp_err_t handler_value(httpd_req_t *req)
                     if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
                         txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
                                 zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
-                                "style=\"max-width:" + to_stringWithPrecision(632/(htmlinfo.size() + 1), 0) + "px\" src=\"/img_tmp/" + 
+                                "style=\"max-width:" + to_stringWithPrecision(632/(flowctrl.getNumbersROISize(sequence, 1) + 1), 0) + "px\" src=\"/img_tmp/" + 
                                 htmlinfo[i]->filename_org + "\"></p></td>\n";
                     else
                         txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
@@ -619,12 +621,14 @@ esp_err_t handler_value(httpd_req_t *req)
                 txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Analog ROI</h4>\n";
                 txt += "<table style=\"border-spacing:5px;\">\n";
                 
+                sequence = -1;
                 htmlinfo = flowctrl.GetAllAnalog();
                 for (int i = 0; i < htmlinfo.size(); ++i) {
                     if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
                         txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " + 
                                 htmlinfo[i]->name + "</td></tr>\n";
                         txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
+                        sequence++;
                     }
 
                     if (htmlinfo[i]->val >= 10.0) {
@@ -637,7 +641,7 @@ esp_err_t handler_value(httpd_req_t *req)
                     if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
                         txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
                                 zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
-                                "style=\"max-width:" + to_stringWithPrecision(632/(htmlinfo.size() + 1), 0) + "px\" src=\"/img_tmp/" + 
+                                "style=\"max-width:" + to_stringWithPrecision(632/(flowctrl.getNumbersROISize(sequence, 2) + 1), 0) + "px\" src=\"/img_tmp/" + 
                                 htmlinfo[i]->filename_org + "\"></p></td>\n";
                     else
                         txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
