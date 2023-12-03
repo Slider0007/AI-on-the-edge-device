@@ -530,8 +530,8 @@ esp_err_t handler_value(httpd_req_t *req)
         else if (_fullInfo) {
             /*++++++++++++++++++++++++++++++++++++++++*/
             /* Page details */
-            std::string txt = "<body style=\"width:650px;max-width:650px;font-family:arial;padding:0px 10px;\">\n<h2 style=\"margin-block-end:0.2em;\">Recognition Details</h2>";
-            txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;\">\n";
+            std::string txt = "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px;\">\n<h2 style=\"margin-block-end:0.2em;\">Recognition Details</h2>";
+            txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;margin-right:10px;\">\n";
             txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
             txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
                    "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitalization cycle.</strong></p>";
@@ -552,7 +552,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 /*++++++++++++++++++++++++++++++++++++++++*/
                 /* Result */
                 txt += "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;margin-top:40px;\">Result</h4>\n";
-                txt += "<table style=\"width:650px;border-collapse:collapse;table-layout:fixed;\">";
+                txt += "<table style=\"width:660px;border-collapse:collapse;table-layout:fixed;\">";
                 txt += "<tr><td style=\"font-weight:bold;width:40%;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Number Sequence</td>"
                         "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Raw Value</td>"
                         "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Actual Value</td></tr>";

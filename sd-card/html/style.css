@@ -1,6 +1,6 @@
 body, html {
     max-width: 1022px;
-    min-width: 688px;
+    min-width: 690px;
     height: 100vh;
     min-height: 100vh;
     margin: 0px 0px 0px 2px; 
@@ -8,9 +8,9 @@ body, html {
     font-family: arial;
 }
 
-@media screen and (max-width:687px) {
+@media screen and (max-width:690px) {
   body, html {
-    max-width: 687px;
+    max-width: 690px;
     height: 150vh;
     min-height: 100vh;
     margin: 0px 0px 0px 2px; 
