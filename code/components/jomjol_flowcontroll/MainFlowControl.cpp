@@ -530,7 +530,7 @@ esp_err_t handler_value(httpd_req_t *req)
         else if (_fullInfo) {
             /*++++++++++++++++++++++++++++++++++++++++*/
             /* Page details */
-            std::string txt = "<body style=\"width:640px;max-width:640px;font-family:arial;padding:0px 10px;\">\n<h2 style=\"margin-block-end:0.2em;\">Recognition Details</h2>";
+            std::string txt = "<body style=\"width:650px;max-width:650px;font-family:arial;padding:0px 10px;\">\n<h2 style=\"margin-block-end:0.2em;\">Recognition Details</h2>";
             txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;\">\n";
             txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
             txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
@@ -552,7 +552,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 /*++++++++++++++++++++++++++++++++++++++++*/
                 /* Result */
                 txt += "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;margin-top:40px;\">Result</h4>\n";
-                txt += "<table style=\"width:640px;border-collapse:collapse;table-layout:fixed;\">";
+                txt += "<table style=\"width:650px;border-collapse:collapse;table-layout:fixed;\">";
                 txt += "<tr><td style=\"font-weight:bold;width:40%;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Number Sequence</td>"
                         "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Raw Value</td>"
                         "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Actual Value</td></tr>";
@@ -599,7 +599,7 @@ esp_err_t handler_value(httpd_req_t *req)
                     if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
                         txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
                                 zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
-                                "style=\"max-width:" + to_stringWithPrecision(632/(flowctrl.getNumbersROISize(sequence, 1) + 1), 0) + "px\" src=\"/img_tmp/" + 
+                                "style=\"max-width:" + to_stringWithPrecision(640/(flowctrl.getNumbersROISize(sequence, 1) + 1), 0) + "px\" src=\"/img_tmp/" + 
                                 htmlinfo[i]->filename_org + "\"></p></td>\n";
                     else
                         txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
@@ -641,7 +641,7 @@ esp_err_t handler_value(httpd_req_t *req)
                     if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
                         txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
                                 zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
-                                "style=\"max-width:" + to_stringWithPrecision(632/(flowctrl.getNumbersROISize(sequence, 2) + 1), 0) + "px\" src=\"/img_tmp/" + 
+                                "style=\"max-width:" + to_stringWithPrecision(640/(flowctrl.getNumbersROISize(sequence, 2) + 1), 0) + "px\" src=\"/img_tmp/" + 
                                 htmlinfo[i]->filename_org + "\"></p></td>\n";
                     else
                         txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
