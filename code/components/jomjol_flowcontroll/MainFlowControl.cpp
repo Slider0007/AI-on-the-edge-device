@@ -530,7 +530,9 @@ esp_err_t handler_value(httpd_req_t *req)
         else if (_fullInfo) {
             /*++++++++++++++++++++++++++++++++++++++++*/
             /* Page details */
-            std::string txt = "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px;\">\n<h2 style=\"margin-block-end:0.2em;\">Recognition Details</h2>";
+            std::string txt = "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px; \
+                                font-size:100%; text-size-adjust:100%;-webkit-text-size-adjust: 100%;\">\n \
+                                <h2 style=\"margin-block-end:0.2em;\">Recognition Details</h2>";
             txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;margin-right:10px;\">\n";
             txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
             txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
