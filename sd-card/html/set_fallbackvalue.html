@@ -10,6 +10,12 @@
         h3 {font-size: 1.2em;}
         p {font-size: 1em;}
 
+        body, html {
+            font-size: 100%;
+            text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+
         div {
             padding: 3px 5px;
             display: inline-block;
@@ -66,9 +72,9 @@
         }
     </style>
 
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet"></link>
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
     <script src="firework.js?v=$COMMIT_HASH"></script>
-    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>     
 </head>
 
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">

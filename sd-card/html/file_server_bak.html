@@ -9,13 +9,7 @@
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
         p {font-size: 1em;}
-
-        body, html {
-            font-size: 100%;
-            text-size-adjust: 100%;
-            -webkit-text-size-adjust: 100%;
-        }
-
+        
         #files_table {
             font-family: Arial, Helvetica, sans-serif;
             border-collapse: collapse;
@@ -24,7 +18,7 @@
 
         #files_table td, #files_table th {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 10px;
         }
 
         #files_table tr:nth-child(even){
@@ -36,8 +30,7 @@
         }
 
         #files_table th {
-            padding-top: 12px;
-            padding-bottom: 12px;
+
             text-align: left;
             background-color:lightgrey;
             color: black;
@@ -69,13 +62,13 @@
 </head>
 
 <body>
-    <table style="width:100%; border: 0pt; font-family: arial;">
+    <table class="fixed" border="0" width=100% style="font-family: arial">
         <tr>
-            <td style="vertical-align: top;width: 300px;font-size: 1.5em; margin-block-start: 0.0em; 
-                margin-block-end: 0.2em;font-weight: bold;padding-left: 10px;">Fileserver
+            <td style="vertical-align: top;width: 300px;">
+                Fileserver
             </td>
-            <td>
-                <table style="width:100%; border: 0pt;">
+            <td rowspan="2">
+                <table border="0" style="width:100%">
                     <tr>
                         <td style="width:80px">
                             <label for="newfile">Source</label>
@@ -83,7 +76,8 @@
                         <td colspan="2">
                             <input id="newfile" type="file" onchange="setpath()" style="width:100%;">
                         </td>
-                    </tr>  
+                    </tr>
+                    
                     <tr>
                         <td>
                             <label for="filepath">Destination</label>
@@ -99,7 +93,7 @@
             </td>
         </tr>
         <tr>
-            <td colspan="2">
+            <td>
                 <button style="font-size:16px; padding: 5px 10px" id="dirup" type="button" onclick="dirup()" disabled>&#129145; Directory up</button>
                 <span style="padding-left:15px" id="currentpath"></span>
             </td>
