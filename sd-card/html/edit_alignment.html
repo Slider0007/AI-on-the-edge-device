@@ -2,13 +2,19 @@
 <html lang="en" xml:lang="en"> 
 <head>
     <title>Alignment marker</title>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
 
     <style>
-        h1 {font-size: 1.8.em;}
+        h1 {font-size: 1.8em;}
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
         p {font-size: 1em;}
+
+        body, html {
+            font-size: 100%;
+            text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
 
         input[type=number] {
             width: 60px;
@@ -62,10 +68,11 @@
             font-size: 16px;
             margin-right: 10px;
         }
-    </style>	
+    </style>
+    
     <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
-    <script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
-    <script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
+    <script src="firework.js?v=$COMMIT_HASH"></script>
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
 </head>
 
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
@@ -90,7 +97,7 @@
             The new configuration get automatically applied. No reboot is required.
         </p>
     </details>
-    <hr />
+    <hr>
 
 	<table>
     <colgroup>
@@ -105,8 +112,8 @@
                 <option value="1" >Marker 2</option>
                 </select>
             </td>
-            <td style="padding-left: 22px; color: grey;">File: <output type="text" name="name" id="name"></td>
-            <td rowspan="3" style="vertical-align:top; height:140px"><img id="img_ref" src = ""></td>
+            <td style="padding-left: 22px; color: grey;">File: <output name="name" id="name"></output></td>
+            <td rowspan="3" style="vertical-align:top; height:140px"><img id="img_ref" src=""></td>
         </tr>
         <tr>
             <td style="height:20px;padding-top: 10px; vertical-align: top;">x: <input type="number" name="refx" id="refx" step=1 onchange="valuemanualchanged()"></td>
@@ -125,16 +132,15 @@
             </td>
         </tr> 
         <tr>
-            <td style="padding-right:0px; margin-right:0px" colspan="3"><canvas id="canvas" crossorigin></canvas></td>
+            <td style="padding-right:0px; margin-right:0px" colspan="3"><canvas id="canvas"></canvas></td>
         </tr>
     </table>
 
 
-<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
-<script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-<script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>  
-
-<script language="JavaScript">
+<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
+<script>
         var canvas = document.getElementById('canvas'),
             ctx = canvas.getContext('2d'),
             imageObj = new Image(),
@@ -453,5 +459,6 @@ function dataURLtoBlob(dataurl) {
     
     init();
     </script>
+
 </body>
 </html>

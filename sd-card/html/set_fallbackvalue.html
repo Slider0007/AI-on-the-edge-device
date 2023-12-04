@@ -2,70 +2,73 @@
 <html lang="en" xml:lang="en">
 <head>
     <title>Set Fallback Value</title>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
 
     <style>
-    h1 {font-size: 1.8.em;}
-    h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-    h3 {font-size: 1.2em;}
-    p {font-size: 1em;}
+        h1 {font-size: 1.8em;}
+        h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+        h3 {font-size: 1.2em;}
+        p {font-size: 1em;}
 
-    div {
-        padding: 3px 5px;
-        display: inline-block;
-        border: 1px solid #ccc;
-        font-size: 16px;
-        height: 20px;
-        width: 130px;
-        vertical-align: middle;
-    }
-
-    input[type=number] {
-        width: 130px;
-        margin-right: 10px;
-        padding: 3px 5px;
-        display: inline-block;
-        border: 1px solid #ccc;
-        font-size: 16px; 
-    }
-
-    .invalid-input {
-		background-color: #FFAA00;
-	}
-
-    th, td {
-    padding: 5px 5px 5px 0px;
-    }
-
-    select {
-        padding: 3px 5px;
-        display: inline-block;
-        border: 1px solid #ccc;
-        font-size: 16px; 
-        margin-right: 10px;
-        min-width: 100px;
-        vertical-align: middle;
-    }
-
-    .button {
-        padding: 5px 10px;
-        width: 205px;
-        font-size: 16px;	
-    }
-
-    table {
-        width: 660px;
-        padding: 5px 5px 5px 0px;
-        table-layout: fixed;
-    }
-
-    details {
-            text-align: justify;
+        div {
+            padding: 3px 5px;
+            display: inline-block;
+            border: 1px solid #ccc;
             font-size: 16px;
+            height: 20px;
+            width: 130px;
+            vertical-align: middle;
+        }
+
+        input[type=number] {
+            width: 130px;
             margin-right: 10px;
-    }
+            padding: 3px 5px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            font-size: 16px; 
+        }
+
+        .invalid-input {
+            background-color: #FFAA00;
+        }
+
+        th, td {
+            padding: 5px 5px 5px 0px;
+        }
+
+        select {
+            padding: 3px 5px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            font-size: 16px; 
+            margin-right: 10px;
+            min-width: 100px;
+            vertical-align: middle;
+        }
+
+        .button {
+            padding: 5px 10px;
+            width: 205px;
+            font-size: 16px;	
+        }
+
+        table {
+            width: 660px;
+            padding: 5px 5px 5px 0px;
+            table-layout: fixed;
+        }
+
+        details {
+                text-align: justify;
+                font-size: 16px;
+                margin-right: 10px;
+        }
     </style>
 
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet"></link>
+    <script src="firework.js?v=$COMMIT_HASH"></script>
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>     
 </head>
 
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
@@ -89,7 +92,7 @@
             positive value can be set as new "Fallback Value".
         </p>
     </details>
-    <hr />
+    <hr>
 
     <table>
         <colgroup>
@@ -134,131 +137,128 @@
         </tr>	 
     </table>
 
-</body>
-</html>
 
-<link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
-<script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
-<script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
-
-<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
-<script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
-<script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>  
-
-<script type="text/javascript">
+<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
+<script>
     var domainname = getDomainname(); 
     var	NUMBERS;
 
 
-function setFallbackValue() {
-	var inputVal = document.getElementById("myInput").value;
-	var sel = document.getElementById("Numbers_value1");
-	var _number = sel.options[sel.selectedIndex].text;  
-	inputVal = inputVal.replace(",", ".");
-  	var xhttp = new XMLHttpRequest();
-    try {
-        url = domainname + "/set_fallbackvalue?value=" + inputVal + "&numbers=" + _number;     
-        xhttp.open("GET", url, false);
-        xhttp.send();
-        response = xhttp.responseText;
-        document.getElementById("result").innerHTML=response;
-        firework.launch('New \"Fallback Value\" set', 'success', 5000);
-    }
-    catch (error)
-    {
-      firework.launch('Failed to get data from device!', 'danger', 30000);
-    }
-}
-
-
-function loadFallbackValue(_domainname) {
-    // Get current Fallback Value
-    var sel = document.getElementById("Numbers_value1");
-    var _number = sel.options[sel.selectedIndex].text;
-
-    var xhttp = new XMLHttpRequest();
-    try {
-        url = _domainname + '/set_fallbackvalue?numbers=' + _number;
-        xhttp.open("GET", url, false);
-        xhttp.send();
-        response = xhttp.responseText;
-        document.getElementById("fallbackvalue").innerHTML=response;
-    }
-    catch (error)
-    {
+    function setFallbackValue() {
+        var inputVal = document.getElementById("myInput").value;
+        var sel = document.getElementById("Numbers_value1");
+        var _number = sel.options[sel.selectedIndex].text;  
+        inputVal = inputVal.replace(",", ".");
+        var xhttp = new XMLHttpRequest();
+        try {
+            url = domainname + "/set_fallbackvalue?value=" + inputVal + "&numbers=" + _number;     
+            xhttp.open("GET", url, false);
+            xhttp.send();
+            response = xhttp.responseText;
+            document.getElementById("result").innerHTML=response;
+            firework.launch('New \"Fallback Value\" set', 'success', 5000);
+        }
+        catch (error)
+        {
         firework.launch('Failed to get data from device!', 'danger', 30000);
-    }
-
-    // Get current RAW Value
-    var sel = document.getElementById("Numbers_value1");
-    var _number = sel.options[sel.selectedIndex].text;
-
-    var xhttp = new XMLHttpRequest();
-    try {
-        url = _domainname + '/value?all=true&type=raw';
-        xhttp.open("GET", url, false);
-        xhttp.send();
-        response = xhttp.responseText;
-
-        lines = response.split(/\r?\n/);
-
-        lines.forEach(function(line) {
-            arr = line.split("\t");
-            if (_number == arr[0]) {
-                document.getElementById("myInput").value = Number(arr[1]);
-                return;
-            }
-        });
-    }
-    catch (error)
-    {
-        firework.launch('Failed to get data from device!', 'danger', 30000);
-    }
-
-    // Reset result
-    document.getElementById("result").innerHTML = "";
-}
-
-
-function numberChanged(){
-    loadFallbackValue(domainname);
-}
-
-
-function UpdateNUMBERS(_sel){
-    zw = getNUMBERInfo();
-
-    index = 0;
-
-    var _index = document.getElementById("Numbers_value1");
-    while (_index.length){
-        _index.remove(0);
-    }
-
-    for (var i = 0; i < zw.length; ++i){
-        var option = document.createElement("option");
-        option.text = zw[i]["name"];
-        option.value = i;
-        _index.add(option); 
-
-        if (typeof _sel !== 'undefined') {
-            if (zw[i]["name"] == _sel)
-                index = i
         }
     }
-    _index.selectedIndex = index;
-
-    loadFallbackValue(domainname);
-}
 
 
-function init() {
-    domainname = getDomainname();
-    loadConfig(domainname); 
-    ParseConfig();
-    UpdateNUMBERS();
-}
+    function loadFallbackValue(_domainname) {
+        // Get current Fallback Value
+        var sel = document.getElementById("Numbers_value1");
+        var _number = sel.options[sel.selectedIndex].text;
+
+        var xhttp = new XMLHttpRequest();
+        try {
+            url = _domainname + '/set_fallbackvalue?numbers=' + _number;
+            xhttp.open("GET", url, false);
+            xhttp.send();
+            response = xhttp.responseText;
+            document.getElementById("fallbackvalue").innerHTML=response;
+        }
+        catch (error)
+        {
+            firework.launch('Failed to get data from device!', 'danger', 30000);
+        }
+
+        // Get current RAW Value
+        var sel = document.getElementById("Numbers_value1");
+        var _number = sel.options[sel.selectedIndex].text;
+
+        var xhttp = new XMLHttpRequest();
+        try {
+            url = _domainname + '/value?all=true&type=raw';
+            xhttp.open("GET", url, false);
+            xhttp.send();
+            response = xhttp.responseText;
+
+            lines = response.split(/\r?\n/);
+
+            lines.forEach(function(line) {
+                arr = line.split("\t");
+                if (_number == arr[0]) {
+                    document.getElementById("myInput").value = Number(arr[1]);
+                    return;
+                }
+            });
+        }
+        catch (error)
+        {
+            firework.launch('Failed to get data from device!', 'danger', 30000);
+        }
+
+        // Reset result
+        document.getElementById("result").innerHTML = "";
+    }
 
 
-init();
+    function numberChanged(){
+        loadFallbackValue(domainname);
+    }
+
+
+    function UpdateNUMBERS(_sel){
+        zw = getNUMBERInfo();
+
+        index = 0;
+
+        var _index = document.getElementById("Numbers_value1");
+        while (_index.length){
+            _index.remove(0);
+        }
+
+        for (var i = 0; i < zw.length; ++i){
+            var option = document.createElement("option");
+            option.text = zw[i]["name"];
+            option.value = i;
+            _index.add(option); 
+
+            if (typeof _sel !== 'undefined') {
+                if (zw[i]["name"] == _sel)
+                    index = i
+            }
+        }
+        _index.selectedIndex = index;
+
+        loadFallbackValue(domainname);
+    }
+
+
+    function init() {
+        domainname = getDomainname();
+        loadConfig(domainname); 
+        ParseConfig();
+        UpdateNUMBERS();
+    }
+
+
+    init();
+
 </script>
+
+</body>
+</html>

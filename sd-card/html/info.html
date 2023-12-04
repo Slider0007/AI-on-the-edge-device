@@ -1,34 +1,48 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
-<title>Info</title>
-<meta charset="UTF-8" />
+	<title>Info</title>
+	<meta charset="UTF-8">
 
-<style>
-h1 {font-size: 1.8.em;}
-h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-h3 {font-size: 16px; background-color: lightgray; padding: 5px; margin: 10px 0px 3px 0px;}
-p {font-size: 1em;}
+	<style>
+		h1 {font-size: 1.8em;}
+		h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+		h3 {font-size: 16px; background-color: lightgray; padding: 5px; margin: 10px 0px 3px 0px;}
+		p {font-size: 1em;}
 
-th, td {
-  padding: 5px 5px 5px 5px;
-  border-width: 1px;
-  border-color: rgb(240, 240, 240);
-}
+		body, html {
+			font-size: 100%;
+			text-size-adjust: 100%;
+			-webkit-text-size-adjust: 100%;
+		}
 
-output {
-	padding-left:5px;
-}
+		th {
+			vertical-align: middle;
+			text-align: left;
+			font-size: 1em;
+			background-color: lightgray;
+			padding: 5px;
+		}
 
-table {
-    width: 660px;
-	padding: 5px 5px 5px 0px;
-	table-layout: fixed;
-	border-collapse:collapse;
-}
-</style>
+		td {
+			padding: 5px 5px 5px 5px;
+			border-width: 1px;
+			border-color: rgb(240, 240, 240);
+		}
 
-<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
+		output {
+			padding-left:5px;
+		}
+
+		table {
+			width: 660px;
+			table-layout: fixed;
+			border-collapse:collapse;
+			margin-block-start: 10px;
+		}
+	</style>
+
+	<script src="common.js?v=$COMMIT_HASH"></script> 
 </head>
 
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
@@ -39,7 +53,9 @@ table {
 			<col span="1" style="width: 65%;">
 		</colgroup>
 		<tr>
-			<h3>Runtime Information</h3>
+			<th colspan="2">
+				Runtime Information
+			</th>
 		</tr>
 		<tr>
 			<td>Start time</td>
@@ -57,7 +73,9 @@ table {
 			<col span="1" style="width: 65%;">
 		</colgroup>
 		<tr>
-			<h3>Build Info</h3>
+			<th colspan="2">
+				Build Info
+			</th>
 		</tr>
 		<tr>
 			<td>Firmware version</td>
@@ -86,8 +104,10 @@ table {
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
-			<h3>Host Info</h3>
+		<tr>
+			<th colspan="2">			
+				Host Info
+			</th>
 		</tr>
 		<tr>
 			<td>Hostname</td>
@@ -114,8 +134,10 @@ table {
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
-			<h3>SD Card Info</h3>
+		<tr>
+			<th colspan="2">		
+				SD Card Info
+			</th>
 		</tr>
 		<tr>
 			<td>SD card manufacturer</td>
@@ -166,8 +188,10 @@ table {
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
-			<h3>Memory Info</h3>
+		<tr>
+			<th colspan="2">			
+				Memory Info
+			</th>
 		</tr>
 		<tr>
 			<td>Total Free (Int + Ext)</td>	
@@ -213,16 +237,22 @@ table {
 		</tr>
 	</table>
 
+	<table>
+		<tr>
+			<th>		
+				Copyright
+			</th>
+		</tr>
+		<tr>
+			<td>Copyright &copy; 2020 - 2023 by <a href="https://github.com/jomjol/AI-on-the-edge-device" target=_blank>Jomjol</a> and others<br></td>
+		</tr>
+		<tr>
+			<td>Remark: This is a forked version by <a href="https://github.com/Slider0007/AI-on-the-edge-device" target=_blank>Slider0007</a></td>
+		</tr>
+	</table>
 
-<h3>Copyright</h3>
-Copyright &copy; 2020 - 2023 by <a href="https://github.com/jomjol/AI-on-the-edge-device" target=_blank>Jomjol</a> and others<br>
-Remark: This is a forked version by <a href="https://github.com/Slider0007/AI-on-the-edge-device" target=_blank>Slider0007</a>
 
-</body>
-</html>
-
-<script type="text/javascript">
-
+<script>
 	function loadLastRestart() 
 	{
 		url = getDomainname() + '/starttime';     
@@ -498,4 +528,8 @@ Remark: This is a forked version by <a href="https://github.com/Slider0007/AI-on
 	}
 
 	init();
+
 </script>
+
+</body>
+</html>

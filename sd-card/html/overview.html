@@ -1,51 +1,57 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
-<title>Overview</title>
-<meta charset="UTF-8" />
+	<title>Overview</title>
+	<meta charset="UTF-8">
 
-<style>
-	.tg  {border-collapse:collapse;border-spacing:0;width:100%;min-width:600px;height:100%;}
-	.tg th{min-width:325px;width:325px;height:20px;font-size:16px;text-align:left;font-weight:bold;padding:5px 10px 5px 10px;
-				overflow:hidden;word-break:normal;background-color:lightgrey;}
-	.tg td{font-size:15px;padding:5px 10px 5px 10px;overflow:hidden;word-break:normal;}
-	.tg .tg-1{font-size:15px;vertical-align: top; padding-top:0px; font-family:Arial, Helvetica, sans-serif !important;}
-	.tg .tg-2{height:52px;font-size:15px;padding:3px 0px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
-	.tg .tg-3{height:45px;font-size:15px;padding:3px 10px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
-	.tg .tg-4{height:70px;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
-	.tg .tg-5{height:fit-content;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
+	<style>
+		.tg  {border-collapse:collapse;border-spacing:0;width:100%;min-width:600px;height:100%;}
+		.tg th{min-width:325px;width:325px;height:20px;font-size:16px;text-align:left;font-weight:bold;padding:5px 10px 5px 10px;
+					overflow:hidden;word-break:normal;background-color:lightgrey;}
+		.tg td{font-size:15px;padding:5px 10px 5px 10px;overflow:hidden;word-break:normal;}
+		.tg .tg-1{font-size:15px;vertical-align: top; padding-top:0px; font-family:Arial, Helvetica, sans-serif !important;}
+		.tg .tg-2{height:52px;font-size:15px;padding:3px 0px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
+		.tg .tg-3{height:45px;font-size:15px;padding:3px 10px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
+		.tg .tg-4{height:70px;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
+		.tg .tg-5{height:fit-content;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
 
-	input[type=number] {
-        width: 45px;
-        min-width: 45px;
-        max-width: 45px;
-		margin-left:10px;
-        margin-right: 0px;
-        padding: 3px 5px;
-        display: inline-block;
-        border: 1px solid #ccc;
-        font-size: 16px;
-        vertical-align: middle;
-    }
+		body, html {
+				font-size: 100%;
+				text-size-adjust: 100%;
+				-webkit-text-size-adjust: 100%;
+		}
 
-	.button {
-		padding: 5px 10px;
-		width: 90px;
-		font-size: 16px;
-	}
+		input[type=number] {
+			width: 45px;
+			min-width: 45px;
+			max-width: 45px;
+			margin-left:10px;
+			margin-right: 0px;
+			padding: 3px 5px;
+			display: inline-block;
+			border: 1px solid #ccc;
+			font-size: 16px;
+			vertical-align: middle;
+		}
 
-	input:out-of-range {
-        background-color: rgba(255, 0, 0, 0.25);
-        border: 1px solid red;
-    }
+		.button {
+			padding: 5px 10px;
+			width: 90px;
+			font-size: 16px;
+		}
 
-    input:invalid {
-        background-color: rgba(255, 0, 0, 0.25);
-        border: 1px solid red;
-    }
+		input:out-of-range {
+			background-color: rgba(255, 0, 0, 0.25);
+			border: 1px solid red;
+		}
 
-</style>
-
+		input:invalid {
+			background-color: rgba(255, 0, 0, 0.25);
+			border: 1px solid red;
+		}
+	</style>
+	
+	<script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
 </head>
 
 <body style="font-family: arial">
@@ -57,15 +63,15 @@
 					<tr>
 						<td rowspan="2" style="width:120px; padding-bottom:10px">
 							<button id="RefreshButton" class="button" onclick="ManualRefreshContent();">Refresh</button>
-							<img style="display:none; width:16px; height:16px;" id="manual_refresh_img_loading">
+							<img style="display:none; width:16px; height:16px;" id="manual_refresh_img_loading" src="">
 						</td>
 						<td style="padding:0px;">
 							<input type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
-							<label for=AutoRefreshEnabled><class id="AutoRefreshEnabled" style="color:black;">Auto Refresh</class></label>
+							<label style="color:black;" for=AutoRefreshEnabled>Auto Refresh</label>
 
 						</td>
 						<td style="padding:0px;">
-							<input required type="number" name="AutoRefreshTime" id="AutoRefreshTime" size="13" min="1" step="1" value="10" 
+							<input required type="number" name="AutoRefreshTime" id="AutoRefreshTime" min="1" step="1" value="10" 
 							oninput="(!validity.rangeUnderflow||(value=2));" onchange="AutoRefreshContent();"> s
 						</td>
 					</tr>
@@ -75,8 +81,8 @@
 					</tr>
 				</table>
 			</td>
-			<td class="tg-1" rowspan="14">
-				<img style="padding-left: 5px; padding-top: 0px; max-width: 100%; width: auto; height: auto;" id="img">
+			<td class="tg-1" rowspan="13">
+				<img style="padding-left: 5px; padding-top: 0px; max-width: 100%; width: auto; height: auto;" id="img" src="">
 			</td>
 		</tr>
 		<tr>
@@ -117,7 +123,7 @@
 		<tr>	
 			<td class="tg-3">
 				<div id="statusflow" ></div>
-				<b><div id="processerror" style="color: rgb(255, 0, 0)"></div></b>
+				<div id="processerror" style="color: rgb(255, 0, 0); font-weight: bold;"></div>
 			</td>
 		</tr>  
 		<tr>
@@ -136,11 +142,10 @@
 	</table>
 
 
-	<script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
-	<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
-	<script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-	<script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>
-	<script type="text/javascript">
+<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
+<script>
 
 	function addZero(i)
 	{
@@ -365,5 +370,6 @@
 	init();
 
 </script>
+
 </body>
 </html>

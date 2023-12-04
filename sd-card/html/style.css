@@ -6,6 +6,9 @@ body, html {
     margin: 0px 0px 0px 2px; 
     padding: 0; 
     font-family: arial;
+    font-size: 100%;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
 }
 
 @media screen and (max-width:690px) {
@@ -16,6 +19,9 @@ body, html {
     margin: 0px 0px 0px 2px; 
     padding: 0; 
     font-family: arial;
+    font-size: 100%;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
   }
 }
 

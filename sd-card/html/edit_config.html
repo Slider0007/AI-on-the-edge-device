@@ -1,49 +1,60 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
-<title>Edit Config</title>
-<meta charset="UTF-8" />
+	<title>Edit Config</title>
+	<meta charset="UTF-8">
 
-<style>
-	h1 {font-size: 1.8.em;}
-	h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-	h3 {font-size: 1.2em;}
-	p {font-size: 1em;}
+	<style>
+		h1 {font-size: 1.8em;}
+		h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+		h3 {font-size: 1.2em;}
+		p {font-size: 1em;}
 
-	.button {
-		padding: 5px 10px;
-		width: 220px;
-		font-size: 16px;	
-	}
+		body, html {
+			font-size: 100%;
+			text-size-adjust: 100%;
+			-webkit-text-size-adjust: 100%;
+		}
 
-	textarea {
-		font-size: 15px;
-	}
-</style>
-<link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
-<script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
-<script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
+		.button {
+			padding: 5px 10px;
+			width: 220px;
+			font-size: 16px;	
+		}
+
+		textarea {
+			font-size: 15px;
+		}
+	</style>
+
+	<link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+	<script src="firework.js?v=$COMMIT_HASH"></script>
+	<script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
 </head>
 
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
- 
+	<h2>Configuration - "Config.ini" Editor</h2>
+
 	<table style="width:660px">
-		<h2>Configuration - "Config.ini" Editor</h2>
-		<td>
-			<textarea id="inputTextToSave" rows="30" style="width:100%"></textarea>
-		</td>
+		<tr>
+			<td>
+				<textarea id="inputTextToSave" rows="30" style="width:100%"></textarea>
+			</td>
+		</tr>
 	</table>
 
 	<table>
-		<td>
-			<button class="button" onclick="saveTextAsFile()">Save And Apply</button>
-		</td>
+		<tr>
+			<td>
+				<button class="button" onclick="saveTextAsFile()">Save And Apply</button>
+			</td>
+		</tr>
 	</table>
 
-	<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
-	<script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
-	
-	<script type="text/javascript">
+
+<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+<script>
 		var canvas = document.getElementById('canvas'),
 		domainname = getDomainname(); 
 
@@ -80,7 +91,7 @@
 	
 	LoadConfigNeu();
 	
-	</script>
+</script>
  
 </body>
 </html>
