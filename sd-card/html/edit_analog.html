@@ -61,8 +61,16 @@
             font-size: 12px;
         }
 
-        th, td {
-        padding: 5px 5px 5px 0px;
+        th {
+			vertical-align: middle;
+			text-align: left;
+			font-size: 1em;
+			background-color: lightgray;
+			padding: 5px;
+		}
+
+        td {
+            padding: 5px 5px 5px 0px;
         }
 
         table {
@@ -113,7 +121,7 @@
             the additionally corrected by decimal shift setting (configuration, expert parameter, default: 0). 
         </p>
         <p>
-            After definition of digit ROIs is completed don't forget to save with the <b>"Save And Apply"</b> button!<br>
+            After definition of digit ROIs is completed don't forget to save with the <b>"Save And Apply"</b> button! 
             The new configuration get automatically applied. No reboot is required.
         </p>
     </details>
@@ -143,7 +151,7 @@
             <col span="1" style="width: 26%;">
         </colgroup>
         <tr>
-            <td colspan="4" style="padding: 0px;">Number Sequence</td>
+            <th colspan="4">Number Sequence</th>
         </tr>
         <tr>
             <td>
@@ -164,7 +172,7 @@
             <col span="1" style="width: 26%;">
         </colgroup>
         <tr>
-            <td colspan="4" style="padding: 0px">Region Of Interest (ROI)</td>
+            <th colspan="4">Region Of Interest (ROI)</th>
         </tr>
         <tr>
             <td><select id="index" name="index" onchange="ChangeSelection()" tabindex=1></select></td>

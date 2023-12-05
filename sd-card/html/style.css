@@ -11,9 +11,9 @@ body, html {
     -webkit-text-size-adjust: 100%;
 }
 
-@media screen and (max-width:690px) {
+@media screen and (max-width:689px) {
   body, html {
-    max-width: 690px;
+    max-width: 689px;
     height: 150vh;
     min-height: 100vh;
     margin: 0px 0px 0px 2px; 

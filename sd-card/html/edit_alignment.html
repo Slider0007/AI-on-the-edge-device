@@ -84,16 +84,17 @@
         </summary>
         <p>
             Two alignment marker with clear contour and proper contrast are needed to identify unique "fix points" on the image. 
-            The marker area should be not be part of the variable area of ROI evaluation. Please find more information in documenation:
+            The marker area should be not be part of the variable area of ROI evaluation. Note: The smaller the marker the quicker
+            processing. Please find more information in documenation:
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/Alignment/ target=_blank>Alignment</a>
         </p>
         <p>
-            Select an alignment marker area using drag and dop feature by mouse operation or by manually entering the coordinates and sizes in the fields below the image.
-            After you selected a suitable first alignment marker area, push the <b>"Update Marker"</b> button. Switch to second alignment marker with <b>"Marker"</b>
-            and repeat the procedure.
+            Select an alignment marker area using drag and dop feature by mouse operation or by manually entering the coordinates 
+            and sizes in the fields below the image. After you selected a suitable first alignment marker area, push the <b>"Update Marker"</b>
+            button. Switch to second alignment marker with <b>"Marker"</b> and repeat the procedure.
         </p>
         <p>
-            After definition of both alignment marker is completed don't forget to save with the <b>"Save And Apply"</b> button!<br>
+            After definition of both alignment marker is completed don't forget to save with the <b>"Save And Apply"</b> button! 
             The new configuration get automatically applied. No reboot is required.
         </p>
     </details>
@@ -117,12 +118,12 @@
         </tr>
         <tr>
             <td style="height:20px;padding-top: 10px; vertical-align: top;">x: <input type="number" name="refx" id="refx" step=1 onchange="valuemanualchanged()"></td>
-            <td style="padding-top: 10px; vertical-align: top;">dx: <input type="number" name="refdx" id="refdx" step=1 onchange="valuemanualchanged()"></td>
+            <td style="padding-top: 10px; vertical-align: top;">Δx: <input type="number" name="refdx" id="refdx" step=1 onchange="valuemanualchanged()"></td>
 
         </tr>
         <tr>
             <td style="vertical-align: top;">y: <input type="number" name="refy" id="refy" step=1 onchange="valuemanualchanged()"></td>
-            <td style="vertical-align: top;">dy: <input type="number" name="refdy" id="refdy" step=1 onchange="valuemanualchanged()"></td>
+            <td style="vertical-align: top;">Δy: <input type="number" name="refdy" id="refdy" step=1 onchange="valuemanualchanged()"></td>
             
         </tr>
         <tr>
