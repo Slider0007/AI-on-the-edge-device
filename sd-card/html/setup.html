@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
-    <title>AI on the edge</title>
     <meta charset="UTF-8">
+    <title>AI on the edge</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -21,8 +21,8 @@
             width: -moz-fit-content;
             width: fit-content;
             font-size: 100%;
-            text-size-adjust: 100%;
             -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         .h_iframe_explain iframe {
@@ -155,7 +155,7 @@
       loadRSSI();
       switch (aktstep) {
         case 0: // Start page
-            document.getElementById('maincontent').src = 'edit_explain_0.html?v=$COMMIT_HASH';
+            document.getElementById('maincontent').src = 'setup_explain_0.html?v=$COMMIT_HASH';
             document.getElementById('maincontent').style.display = "";
 
             document.getElementById('h_iframe_explain').style.display = "none";
@@ -176,7 +176,7 @@
             document.getElementById('h_iframe_explain').style="height:155px;"
             document.getElementById('explaincontent').style="height:155px;"
             document.getElementById('explaincontent').scrolling="yes"
-            document.getElementById('explaincontent').src = 'explain_1.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_1.html?v=$COMMIT_HASH';
             
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -203,7 +203,7 @@
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_2.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_2.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -221,7 +221,7 @@
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_3.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_3.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -239,7 +239,7 @@
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_4.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_4.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -257,7 +257,7 @@
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_5.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_5.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -275,7 +275,7 @@
             document.getElementById('h_iframe_explain').style="height:100px;"
             document.getElementById('explaincontent').style="height:100px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_6.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_6.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -290,10 +290,10 @@
             document.getElementById('h_iframe').style="height:660px;"
             document.getElementById('maincontent').style="height:660px;"
             if (setupCompleted) {
-                document.getElementById('maincontent').src = 'edit_explain_7.html?v=$COMMIT_HASH';
+                document.getElementById('maincontent').src = 'setup_explain_7.html?v=$COMMIT_HASH';
             }
             else {
-                document.getElementById('maincontent').src = 'edit_explain_7_abort.html?v=$COMMIT_HASH';
+                document.getElementById('maincontent').src = 'setup_explain_7_abort.html?v=$COMMIT_HASH';
                 document.getElementById("previous").disabled = true; 
             }
 

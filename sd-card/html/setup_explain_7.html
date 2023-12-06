@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
-    <title>AI on the edge</title>
     <meta charset="UTF-8">
+    <title>AI on the edge</title>
 
     <style>
         h1 {font-size: 1.8em;}
@@ -12,8 +12,8 @@
 
         body, html {
             font-size: 100%;
-            text-size-adjust: 100%;
             -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         .button {
@@ -30,16 +30,18 @@
 
 <body style="font-family: arial">
 
-    <h4>Initial setup aborted!</h4>
-
-    <p>You have <b>aborted</b> the initial setup!</p>
-    <p>Once you push the button below, the setup mode will be ended and the device will be automatically switch to regular web interface. 
-       Please be aware: The configuration of the device is not or only parly adapted to your needs! <br><br>
-       Configuration can still be adapted / completed using regular web interface.
-    </p>
+    <h4>Step 7 / 7: Initial setup completed!</h4>
 
     <p>
-        <button class="button" onclick="reboot()">Abort Setup</button>
+        Congratulations! You have completed the initial setup and you are now ready to switch to the regular web interface!
+    </p>
+    <p>
+        Once you push the button below, the setup mode will be completed and the device will be automatically switch to 
+        regular web interface. If configuration is error free, the device will automatically start with first processing.
+        It will take some time until you get the first reading.
+    </p>
+    <p>
+        <button class="button" onclick="reboot()">Complete Setup</button>
     </p>
 
     <script src="common.js?v=$COMMIT_HASH"></script> 
@@ -47,9 +49,9 @@
     <script src="readconfigcommon.js?v=$COMMIT_HASH"></script> 
 
     <script>
-   
+    
     function reboot() {
-        if (confirm("Do you want to abort the setup mode and switch to regular web interface?")) {
+        if (confirm("Do you want to complete the setup mode and switch to regular web interface?")) {
             domainname = getDomainname(); 
             if (!loadConfig(domainname)) {
                 firework.launch('Setup mode could not be deactivated! Please try again!', 'danger', 30000);
@@ -61,9 +63,9 @@
             param["System"]["SetupMode"]["value1"] = "false";
 
             WriteConfigININew();
-            SaveConfigToServer(domainname);    
+            SaveConfigToServer(domainname);  
 
-            firework.launch('Initial setup aborted', 'warning', 5000);
+            firework.launch('Setup completed', 'success', 5000);
             setTimeout(function() {
                 reload_config();
             }, 500);
