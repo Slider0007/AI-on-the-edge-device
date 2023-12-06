@@ -532,7 +532,7 @@ esp_err_t handler_value(httpd_req_t *req)
             /* Page details */
             std::string txt = "<!DOCTYPE html><html lang=\"en\" xml:lang=\"en\"><head><meta charset=\"UTF-8\"><title>Recognition Details</title></head>\n";
             txt += "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px;font-size:100%;-webkit-text-size-adjust:100%; text-size-adjust:100%;\">";
-            txt += "<h2 style=\"margin-block-end:0.2em;\">Recognition Details</h2>\n";
+            txt += "<h2 style=\"font-size:1.5em;margin-block-start:0.0em;margin-block-end:0.2em;\">Recognition Details</h2>\n";
             txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;margin-right:10px;\">\n";
             txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
             txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
