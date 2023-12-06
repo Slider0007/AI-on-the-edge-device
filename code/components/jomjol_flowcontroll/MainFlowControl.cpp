@@ -530,9 +530,9 @@ esp_err_t handler_value(httpd_req_t *req)
         else if (_fullInfo) {
             /*++++++++++++++++++++++++++++++++++++++++*/
             /* Page details */
-            std::string txt = "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px; \
-                                font-size:100%; text-size-adjust:100%;-webkit-text-size-adjust: 100%;\">\n \
-                                <h2 style=\"margin-block-end:0.2em;\">Recognition Details</h2>";
+            std::string txt = "<!DOCTYPE html><html lang=\"en\" xml:lang=\"en\"><head><meta charset=\"UTF-8\"><title>Recognition Details</title></head>\n";
+            txt += "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px;font-size:100%;-webkit-text-size-adjust:100%; text-size-adjust:100%;\">";
+            txt += "<h2 style=\"margin-block-end:0.2em;\">Recognition Details</h2>\n";
             txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;margin-right:10px;\">\n";
             txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
             txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
@@ -542,7 +542,7 @@ esp_err_t handler_value(httpd_req_t *req)
                    "\"Value\". In the sections \"Digit ROI\" and \"Analog ROI\" all single \"raw results\" of the respective ROI images (digit styled ROI and "
                    "analog styled ROI) are visualized separated per number sequence. The taken image which was used for processing (including the overlays "
                    "to highlight the relevant areas) is visualized at the bottom of this page.</p>";
-            txt += "</details><hr />";
+            txt += "</details><hr>\n";
 
             if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) { // Display message if flow is not initialized or image processing active
                 txt += "<h4>"
@@ -564,7 +564,7 @@ esp_err_t handler_value(httpd_req_t *req)
                         flowctrl.getReadout(true, false, i) + "</td><td style=\"padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
                         flowctrl.getReadout(false, true, i) + "</td></tr>";
                 }
-                txt += "</table>";
+                txt += "</table>\n";
                 httpd_resp_sendstr_chunk(req, txt.c_str());
 
                 /*++++++++++++++++++++++++++++++++++++++++*/
@@ -615,7 +615,7 @@ esp_err_t handler_value(httpd_req_t *req)
                 
                 htmlinfo.clear();
             
-                txt += "</tr></table>";
+                txt += "</tr></table>\n";
                 httpd_resp_sendstr_chunk(req, txt.c_str()); 
 
                 /*++++++++++++++++++++++++++++++++++++++++*/
@@ -657,13 +657,14 @@ esp_err_t handler_value(httpd_req_t *req)
 
                 htmlinfo.clear();   
 
-                txt += "</tr></table>";
+                txt += "</tr></table>\n";
                 httpd_resp_sendstr_chunk(req, txt.c_str()); 
 
                 /*++++++++++++++++++++++++++++++++++++++++*/
                 /* Show ALG_ROI image */ 
                 txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Processed Image (incl. Overlays)</h4>\n";
-                txt += "<img src=\"/img_tmp/alg_roi.jpg\">\n";                
+                txt += "<img src=\"/img_tmp/alg_roi.jpg\">\n";
+                txt += "</body></html>\n";             
                 httpd_resp_sendstr_chunk(req, txt.c_str()); 
             }
         }
