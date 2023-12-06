@@ -187,7 +187,7 @@
     function checkAtRootLevel(res) {
         if (getPath() == "/fileserver/") { // Already at root level
             document.getElementById("dirup").disabled = true;
-            console.log("Already on SD card root level!");
+            //console.log("Already on SD card root level!");
             return true;
         }
 
@@ -202,12 +202,15 @@
 
     checkAtRootLevel();
 
-    console.log("Current path: " + getPath().replace("/fileserver", ""));
+    //console.log("Current path: " + getPath().replace("/fileserver", ""));
     document.getElementById("currentpath").innerHTML = "Current path: <b>" + getPath().replace("/fileserver", "") + "</b>";
 
     document.cookie = "page=" + getPath() + "; path=/";
 
 </script>
 
+<!-- This part is injected by firmware (server_file.cpp)
 </body>
 </html>
+-->
+

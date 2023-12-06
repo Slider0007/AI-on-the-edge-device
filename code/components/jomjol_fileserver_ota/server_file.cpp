@@ -212,7 +212,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     /* Send HTML file header */
-    httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>");
+    //httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>"); --> This is already part of 'file_server.html' file
 
     /////////////////////////////////////////////////
     if (!readonly) {
@@ -230,7 +230,12 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
             if (chunksize > 0){
                 if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
                     fclose(fd);
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: File sending failed -> directory table");
+                    std::string msg_txt = "http_resp_dir_html: File sending failed: /sdcard/html/file_server.html";
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
+                    /* Abort sending file */
+                    httpd_resp_sendstr_chunk(req, NULL);
+                    /* Respond with 500 Internal Server Error */
+                    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
                     return ESP_FAIL;
                 }
             }
@@ -248,7 +253,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     /* Send file-list table definition and column labels */
     httpd_resp_sendstr_chunk(req,
         "<table id=\"files_table\">"
-        "<col width=\"800px\" /><col width=\"300px\" /><col width=\"300px\" /><col width=\"100px\" />"
+        "<col style=\"width:800px\"><col style=\"width:300px\"><col style=\"width:300px\"><col style=\"width:100px\">"
         "<thead><tr><th>Name</th><th>Type</th><th>Size</th>");
     if (!readonly) {
         httpd_resp_sendstr_chunk(req, "<th>"
@@ -416,11 +421,12 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
         /* Send the buffer contents as HTTP response chunk */
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: File sending failed");
+            std::string msg_txt = "send_datafile: File sending failed: " + currentfilename;
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "send_datafile: File sending failed");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
             return ESP_FAIL;
         }
 
@@ -509,11 +515,12 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
         /* Send the buffer contents as HTTP response chunk */
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: File sending failed");
+            std::string msg_txt = "send_logfile: File sending failed: " + currentfilename;
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "send_logfile: Failed to send file");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
             return ESP_FAIL;
         }
 
@@ -617,11 +624,12 @@ static esp_err_t download_get_handler(httpd_req_t *req)
          * See RFC 2616, section 3.6.1 for details on Chunked Transfer Encoding. */
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "download_get_handler: File sending failed");
+            std::string msg_txt = "download_get_handler: File sending failed: " + std::string(filepath);
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "download_get_handler: Failed to send file");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
             return ESP_FAIL;
         }
 

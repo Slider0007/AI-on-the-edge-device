@@ -17,7 +17,7 @@ extern "C" {
 #include "esp_log.h"
 
 #include "Helper.h"
-
+#include "ClassLogFile.h"
 #include "esp_http_server.h"
 
 #include "../../include/defines.h"
@@ -40,8 +40,8 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
 {
     FILE *fd = fopen(filename.c_str(), "r");
     if (!fd) {
-        ESP_LOGE(TAG, "Failed to read file: %s", filename.c_str());
-        /* Respond with 404 Error */
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_file: Failed to read file: " + filename);
+        /* Respond with 404 Not Found */
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
         return ESP_FAIL;
     }
@@ -87,11 +87,12 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
         /* Send the buffer contents as HTTP response chunk */
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
-            ESP_LOGE(TAG, "File sending failed");
+            std::string msg_txt = "send_file: Failed to send file: " + filename;
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send file");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
             return ESP_FAIL;
         }
 
