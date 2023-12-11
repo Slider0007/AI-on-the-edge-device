@@ -541,11 +541,18 @@ void migrateConfiguration(void)
             }
 
             /* MaxRateType has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "MaxRateType")) { // It is the parameter "MaxRateType" and it is commented out
-                migrated = migrated | replaceString(configLines[i], "Off", "RatePerMin"); // Set it to its default value
-                migrated = migrated | replaceString(configLines[i], "RateChange", "RatePerMin"); // Set it to its default value
-                migrated = migrated | replaceString(configLines[i], "AbsoluteChange", "RatePerMin"); // Set it to its default value
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            if (isInString(configLines[i], "MaxRateType")) { // It is the parameter "MaxRateType"
+                if (isInString(configLines[i], ";")) { // if disabled
+                    migrated = migrated | replaceString(configLines[i], "= Off", "= RatePerMin"); // Convert it to its default value
+                    migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its default value
+                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerMin"); // Convert it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                }
+                else {
+                    migrated = migrated | replaceString(configLines[i], "= Off", "= RateOff"); // Convert it to its new name
+                    migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its new name
+                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerSequence"); // Convert it to its new name
+                }
             }
 
             if (isInString(configLines[i], "MaxRateValue") && isInString(configLines[i], ";")) { // It is the parameter "MaxRateValue" and it is commented out
