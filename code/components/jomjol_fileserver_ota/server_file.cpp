@@ -73,8 +73,6 @@ esp_err_t get_numbers_file_handler(httpd_req_t *req)
 {
     std::string ret = flowctrl.getNumbersName();
 
-//    ESP_LOGI(TAG, "Result get_numbers_file_handler: %s", ret.c_str());
-
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
@@ -93,7 +91,6 @@ esp_err_t get_data_file_handler(httpd_req_t *req)
     size_t pos = 0;
     
     const char verz_name[] = "/sdcard/log/data";
-    ESP_LOGD(TAG, "Suche data files in /sdcard/log/data");
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
@@ -137,7 +134,6 @@ esp_err_t get_tflite_file_handler(httpd_req_t *req)
     size_t pos = 0;
     
     const char verz_name[] = "/sdcard/config";
-    ESP_LOGD(TAG, "Suche TFLITE in /sdcard/config/");
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
@@ -226,12 +222,12 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
         size_t chunksize;
         do {
             chunksize = fread(chunk, 1, SERVER_FILER_SCRATCH_BUFSIZE, fd);
-            //        ESP_LOGD(TAG, "Chunksize %d", chunksize);
+            //ESP_LOGD(TAG, "Chunksize %d", chunksize);
             if (chunksize > 0){
                 if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
                     fclose(fd);
                     std::string msg_txt = "http_resp_dir_html: File sending failed: /sdcard/html/file_server.html";
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
+                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, msg_txt);
                     /* Abort sending file */
                     httpd_resp_sendstr_chunk(req, NULL);
                     /* Respond with 500 Internal Server Error */
@@ -274,7 +270,8 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
             strlcpy(entrypath + dirpath_len, entry->d_name, sizeof(entrypath) - dirpath_len);
             ESP_LOGD(TAG, "Entrypath: %s", entrypath);
             if (stat(entrypath, &entry_stat) == -1) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to read " + std::string(entrytype) + ": " + std::string(entry->d_name));
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to read " + 
+                                    std::string(entrytype) + ": " + std::string(entry->d_name));
                 continue;
             }
 
@@ -356,7 +353,7 @@ static esp_err_t datafileact_get_last_part_handler(httpd_req_t *req) {
 
 static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 {
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "send_datafile: data_get_last_part_handler");
+    //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "send_datafile: data_get_last_part_handler");
     FILE *fd = NULL;
     //struct stat file_stat;
     ESP_LOGD(TAG, "uri: %s", req->uri);
@@ -367,7 +364,7 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 
     fd = fopen(currentfilename.c_str(), "r");
     if (!fd) {
-        //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to read file: " + currentfilename);
+        //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
         httpd_resp_send(req, "No recent data entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no data available from today
         return ESP_OK;
     }
@@ -398,13 +395,15 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos); 
 
             if (fseek(fd, pos, SEEK_SET)) { // Go to start position
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to go back " + 
+                                    std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
                 return ESP_FAIL;
             }
         }
 
         /* Find end of line */
-        while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART" (skip if start is from beginning of file to ensure first line is included)
+        while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART" 
+                          // (skip if start is from beginning of file to ensure first line is included)
             if (fgetc(fd) == '\n') {
                 break;
             }
@@ -422,7 +421,7 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
             std::string msg_txt = "send_datafile: File sending failed: " + currentfilename;
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, msg_txt);
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */
@@ -445,7 +444,7 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 
 static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
 {
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "send_logfile: log_get_last_part_handler");
+    //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "send_logfile: log_get_last_part_handler");
     FILE *fd = NULL;
     //struct stat file_stat;
     ESP_LOGI(TAG, "uri: %s", req->uri);
@@ -461,7 +460,7 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
 
     fd = fopen(currentfilename.c_str(), "r");
     if (!fd) {
-        //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to read file: " + currentfilename);
+        //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
         httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
         return ESP_OK;
     }
@@ -492,13 +491,15 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos); 
 
             if (fseek(fd, pos, SEEK_SET)) { // Go to start position
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to go back " + 
+                                    std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
                 return ESP_FAIL;
             }
         }
 
         /* Find end of line */
-        while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART" (skip if start is from beginning of file to ensure first line is included)
+        while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART"
+                          // (skip if start is from beginning of file to ensure first line is included)
             if (fgetc(fd) == '\n') {
                 break;
             }
@@ -516,7 +517,7 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
             std::string msg_txt = "send_logfile: File sending failed: " + currentfilename;
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, msg_txt);
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */
@@ -540,7 +541,7 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
 /* Handler to download a file kept on the server */
 static esp_err_t download_get_handler(httpd_req_t *req)
 {
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "download_get_handler");
+    //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "download_get_handler");
     char filepath[FILE_PATH_MAX];
     FILE *fd = NULL;
     struct stat file_stat;
@@ -625,7 +626,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
             std::string msg_txt = "download_get_handler: File sending failed: " + std::string(filepath);
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, msg_txt);
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */
@@ -647,7 +648,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 /* Handler to upload a file onto the server */
 static esp_err_t upload_post_handler(httpd_req_t *req)
 {
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "upload_post_handler");
+    //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "upload_post_handler");
     char filepath[FILE_PATH_MAX];
     FILE *fd = NULL;
     struct stat file_stat;
@@ -813,7 +814,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 /* Handler to delete a file from the server */
 static esp_err_t delete_post_handler(httpd_req_t *req)
 {
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler");
+    //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler");
     char filepath[FILE_PATH_MAX];
     struct stat file_stat;
 
@@ -946,7 +947,7 @@ void delete_all_in_directory(std::string _directory)
         if (!(entry->d_type == DT_DIR)){
             if (strcmp("wlan.ini", entry->d_name) != 0){                    // auf wlan.ini soll nicht zugegriffen werden !!!
                 filename = _directory + "/" + std::string(entry->d_name);
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "delete_all_in_directory: Deleting file: " + filename);
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_all_in_directory: Deleting file: " + filename);
                 /* Delete file */
                 unlink(filename.c_str());    
             }

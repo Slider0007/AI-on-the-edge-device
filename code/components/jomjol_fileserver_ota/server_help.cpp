@@ -88,7 +88,7 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             fclose(fd);
             std::string msg_txt = "send_file: Failed to send file: " + filename;
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, msg_txt);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, msg_txt);
             /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
             /* Respond with 500 Internal Server Error */

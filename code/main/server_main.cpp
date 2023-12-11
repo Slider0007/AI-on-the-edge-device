@@ -35,7 +35,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
     LogFile.WriteHeapInfo("info_get_handler - Start");    
 #endif
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "info_get_handler");    
+    //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "info_get_handler");    
     char _query[200];
     char _valuechar[30];    
     std::string _task;
