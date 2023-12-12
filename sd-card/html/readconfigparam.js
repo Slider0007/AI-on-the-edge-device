@@ -655,7 +655,7 @@ function isCommented(input)
      }    
 
 
-     function getConfigCategory() {
+function getConfigCategory() {
      return category;
 }
 
@@ -663,7 +663,6 @@ function isCommented(input)
 function getConfigParameters() {
      return param;
 }
-
 
 
 function ExtractROIs(_aktline, _type){
@@ -740,9 +739,13 @@ function getNUMBERS(_name, _type, _create = true)
 
 }
 
- 
 
-function CopyReferenceToImgTmp(_domainname)
+function getAlignmentMarker(){
+     return REFERENCES;
+}
+
+ 
+function CopyAlignmentMarkerToImgTmp(_domainname)
 {
      for (index = 0; index < 2; ++index)
      {
@@ -752,12 +755,8 @@ function CopyReferenceToImgTmp(_domainname)
      }
 }
 
-function GetReferencesInfo(){
-     return REFERENCES;
-}
 
-
-function UpdateConfigReference(_domainname){
+function CopyAlignmentMarker(_domainname){
      for (var index = 0; index < 2; ++index)
      {
           _filenamenach = REFERENCES[index]["name"];
@@ -767,56 +766,15 @@ function UpdateConfigReference(_domainname){
 }
 
 
-function getNUMBERInfo(){
+function getNumberSequences(){
      return NUMBERS;
 }
 
-function RenameNUMBER(_alt, _neu){
-     if ((_neu.indexOf(".") >= 0) || (_neu.indexOf(",") >= 0) || 
-         (_neu.indexOf(" ") >= 0) || (_neu.indexOf("\"") >= 0))
-     {
-          return "Number sequence name must not contain , . \" or a space";
-     }
 
-     index = -1;
+function CreateNumberSequence(_sequence_name){
      found = false;
      for (i = 0; i < NUMBERS.length; ++i) {
-          if (NUMBERS[i]["name"] == _alt)
-               index = i;
-          if (NUMBERS[i]["name"] == _neu)
-               found = true;
-     }
-
-     if (found)
-          return "Number sequence name is already existing, please choose another name";
-
-     NUMBERS[index]["name"] = _neu;
-     
-     return "";
-}
-
-function DeleteNUMBER(_delete){
-     if (NUMBERS.length == 1)
-          return "One number sequence is mandatory. Therefore this cannot be deleted"
-     
-
-     index = -1;
-     for (i = 0; i < NUMBERS.length; ++i) {
-          if (NUMBERS[i]["name"] == _delete)
-               index = i;
-     }
-
-     if (index > -1) {
-          NUMBERS.splice(index, 1);
-     }
-
-     return "";
-}
-
-function CreateNUMBER(_numbernew){
-     found = false;
-     for (i = 0; i < NUMBERS.length; ++i) {
-          if (NUMBERS[i]["name"] == _numbernew)
+          if (NUMBERS[i]["name"] == _sequence_name)
                found = true;
      }
 
@@ -824,7 +782,7 @@ function CreateNUMBER(_numbernew){
           return "Number sequence name is already existing, please choose another name";
 
      _ret = new Object();
-     _ret["name"] = _numbernew;
+     _ret["name"] = _sequence_name;
      _ret['digit'] = new Array();
      _ret['analog'] = new Array();
 
@@ -858,6 +816,50 @@ function CreateNUMBER(_numbernew){
 }
 
 
+function RenameNumberSequence(_sequence_name_old, _sequence_name_new){
+     if ((_sequence_name_new.indexOf(".") >= 0) || (_sequence_name_new.indexOf(",") >= 0) || 
+         (_sequence_name_new.indexOf(" ") >= 0) || (_sequence_name_new.indexOf("\"") >= 0))
+     {
+          return "Number sequence name must not contain , . \" or a space";
+     }
+
+     index = -1;
+     found = false;
+     for (i = 0; i < NUMBERS.length; ++i) {
+          if (NUMBERS[i]["name"] == _sequence_name_old)
+               index = i;
+          if (NUMBERS[i]["name"] == _sequence_name_new)
+               found = true;
+     }
+
+     if (found)
+          return "Number sequence name is already existing, please choose another name";
+
+     NUMBERS[index]["name"] = _sequence_name_new;
+     
+     return "";
+}
+
+
+function DeleteNumberSequence(_sequence_name){
+     if (NUMBERS.length == 1)
+          return "One number sequence is mandatory. Therefore this cannot be deleted"
+     
+
+     index = -1;
+     for (i = 0; i < NUMBERS.length; ++i) {
+          if (NUMBERS[i]["name"] == _sequence_name)
+               index = i;
+     }
+
+     if (index > -1) {
+          NUMBERS.splice(index, 1);
+     }
+
+     return "";
+}
+
+
 function getROIInfo(_typeROI, _number){
      index = -1;
      for (var i = 0; i < NUMBERS.length; ++i)
@@ -871,62 +873,10 @@ function getROIInfo(_typeROI, _number){
 }
 
 
-function RenameROI(_number, _type, _alt, _neu){
-     if ((_neu.includes("=")) || (_neu.includes(".")) || (_neu.includes(":")) ||
-         (_neu.includes(",")) || (_neu.includes(";")) || (_neu.includes(" ")) || 
-         (_neu.includes("\""))) 
-     {
-          return "ROI name must not contain . : , ; = \" or space";
-     }
-
-     index = -1;
-     found = false;
+function CreateROI(_sequence_name, _type, _pos, _roinew, _x, _y, _dx, _dy, _CCW){
      _indexnumber = -1;
      for (j = 0; j < NUMBERS.length; ++j)
-          if (NUMBERS[j]["name"] == _number)
-               _indexnumber = j;
-
-     if (_indexnumber == -1)
-          return "Number sequence not existing. ROI cannot be renamed"  
-
-     for (i = 0; i < NUMBERS[_indexnumber][_type].length; ++i) {
-          if (NUMBERS[_indexnumber][_type][i]["name"] == _alt)
-               index = i;
-          if (NUMBERS[_indexnumber][_type][i]["name"] == _neu)
-               found = true;
-     }
-
-     if (found)
-          return "ROI name is already existing, please choose another name";
-
-     NUMBERS[_indexnumber][_type][index]["name"] = _neu;
-     
-     return "";
-}
-
-
-function DeleteNUMBER(_delte){
-     if (NUMBERS.length == 1)
-          return "The last number cannot be deleted"
-     
-     index = -1;
-     for (i = 0; i < NUMBERS.length; ++i) {
-          if (NUMBERS[i]["name"] == _delte)
-               index = i;
-     }
-
-     if (index > -1) {
-          NUMBERS.splice(index, 1);
-     }
-
-     return "";
-}
-
-
-function CreateROI(_number, _type, _pos, _roinew, _x, _y, _dx, _dy, _CCW){
-     _indexnumber = -1;
-     for (j = 0; j < NUMBERS.length; ++j)
-          if (NUMBERS[j]["name"] == _number)
+          if (NUMBERS[j]["name"] == _sequence_name)
                _indexnumber = j;
 
      if (_indexnumber == -1)
@@ -939,7 +889,7 @@ function CreateROI(_number, _type, _pos, _roinew, _x, _y, _dx, _dy, _CCW){
      }
 
      if (found)
-          return "ROI name is already existing, please choose another name";
+          return "ROI name is already existing";
 
      _ret = new Object();
      _ret["name"] = _roinew;
@@ -952,5 +902,39 @@ function CreateROI(_number, _type, _pos, _roinew, _x, _y, _dx, _dy, _CCW){
 
      NUMBERS[_indexnumber][_type].splice(_pos+1, 0, _ret);
 
+     return "";
+}
+
+
+function RenameROI(_sequence_name, _type, _roi_name_old, _roi_name_new){
+     if ((_roi_name_new.includes("=")) || (_roi_name_new.includes(".")) || (_roi_name_new.includes(":")) ||
+         (_roi_name_new.includes(",")) || (_roi_name_new.includes(";")) || (_roi_name_new.includes(" ")) || 
+         (_roi_name_new.includes("\""))) 
+     {
+          return "ROI name must not contain . : , ; = \" or space";
+     }
+
+     index = -1;
+     found = false;
+     _indexnumber = -1;
+     for (j = 0; j < NUMBERS.length; ++j)
+          if (NUMBERS[j]["name"] == _sequence_name)
+               _indexnumber = j;
+
+     if (_indexnumber == -1)
+          return "Number sequence not existing. ROI cannot be renamed"  
+
+     for (i = 0; i < NUMBERS[_indexnumber][_type].length; ++i) {
+          if (NUMBERS[_indexnumber][_type][i]["name"] == _roi_name_old)
+               index = i;
+          if (NUMBERS[_indexnumber][_type][i]["name"] == _roi_name_new)
+               found = true;
+     }
+
+     if (found)
+          return "ROI name is already existing";
+
+     NUMBERS[_indexnumber][_type][index]["name"] = _roi_name_new;
+     
      return "";
 }
