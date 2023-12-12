@@ -55,14 +55,16 @@
 <script src="common.js?v=$COMMIT_HASH"></script> 
 <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
 <script>
-		var canvas = document.getElementById('canvas'),
+	var canvas = document.getElementById('canvas'),
 		domainname = getDomainname(); 
 
 
-	function LoadConfigNeu() {
+	function LoadConfigNeu()
+	{
 		loadConfig(domainname); 	
 		document.getElementById("inputTextToSave").value = getConfig();
-		}
+	}
+
 
 	function saveTextAsFile()
 	{
@@ -79,15 +81,6 @@
 		}
 	}
 
-	function doReboot() {
-		if (confirm("Are you sure you want to reboot?")) {
-			var stringota = "/reboot";
-			window.location = stringota;
-			window.location.href = stringota;
-			window.location.assign(stringota);
-			window.location.replace(stringota);
-		}
-	}
 	
 	LoadConfigNeu();
 	

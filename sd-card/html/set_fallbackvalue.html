@@ -86,16 +86,17 @@
             Set the "Fallback Value" for consistency checks and substitution for N positions in number sequence.
         </p>
         <p>
-            The Fallback Value is the last successful valid reading of any processing cycle. The result of the the actual processing cycle, 
-            as long it's a vaild result, will be promoted to the new "Fallback Value". If the result is not usable (e.g. rate negative, rate too high) the 
-            "Fallback Value" will not be updated.
-            If activated in configuration, the "Fallback Value" will be used in the following processing cycle to identify negtive rates and 
-            too high rates (MaxRateValue / MaxRateType) as well as for the "Check Digit Increase Consistency" (configuration paramter, only for dig-class11 models)
-            and for possible substitution of any N positions in the "Raw Value" reading (only valid for dig-class11 models and dig-cont models). 
+            The Fallback Value is the last successful valid reading of any processing cycle. The result of the the 
+            actual processing cycle, as long it's a vaild result, will be promoted to the new "Fallback Value". If
+            the result is not usable (e.g. rate negative, rate too high) the "Fallback Value" will not be updated.
+            If activated in configuration, the "Fallback Value" will be used in the following processing cycle to 
+            identify negtive rates and too high rates (MaxRateValue / MaxRateType) as well as for the "Check Digit 
+            Increase Consistency" (configuration paramter, only for dig-class11 models) and for possible substitution
+            of any N positions in the "Raw Value" reading (only valid for dig-class11 models and dig-cont models). 
         </p>
         <p>
-            The field to enter new "Fallback Value" is prefilled with actual "Raw Value" because it's the most likely use case. Nevertheless every other
-            positive value can be set as new "Fallback Value".
+            The field to enter new "Fallback Value" is prefilled with actual "Raw Value" because it's the most likely 
+            use case. Nevertheless every other positive value can be set as new "Fallback Value".
         </p>
     </details>
     <hr>
@@ -228,7 +229,7 @@
 
 
     function UpdateNUMBERS(_sel){
-        zw = getNUMBERInfo();
+        NumberSequence = getNumberSequences();
 
         index = 0;
 
@@ -237,14 +238,14 @@
             _index.remove(0);
         }
 
-        for (var i = 0; i < zw.length; ++i){
+        for (var i = 0; i < NumberSequence.length; ++i){
             var option = document.createElement("option");
-            option.text = zw[i]["name"];
+            option.text = NumberSequence[i]["name"];
             option.value = i;
             _index.add(option); 
 
             if (typeof _sel !== 'undefined') {
-                if (zw[i]["name"] == _sel)
+                if (NumberSequence[i]["name"] == _sel)
                     index = i
             }
         }

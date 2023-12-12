@@ -202,7 +202,7 @@
 		};
 
  		// Load image to temp image container
-		loadImage.src = domainname + '/img_tmp/alg_roi.jpg?timestamp=' + d.getTime(); // Load image with additional timestamp to avoid loading outdated cached image
+		loadImage.src = domainname + '/img_tmp/alg_roi.jpg?' + Math.floor((Math.random() * 1000000) + 1); // Load image with additional timestamp to avoid loading outdated cached image
 	}
 
 
