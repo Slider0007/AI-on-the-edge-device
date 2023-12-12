@@ -424,12 +424,12 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
             if (newROI->posx < 1 || (newROI->posx > (Camera.image_width - 1 - newROI->deltax))) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more ROI out of image area (x). Check ROI config");
-                return false;
+                bRetVal = false;
             }
 
             if (newROI->posy < 1 || (newROI->posy > (Camera.image_height - 1 - newROI->deltay))) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more ROI out of image area (y). Check ROI config");
-                return false;
+                bRetVal = false;
             }
 
             newROI->CCW = false;

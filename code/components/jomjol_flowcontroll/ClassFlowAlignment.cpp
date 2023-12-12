@@ -171,12 +171,12 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             References[anz_ref].target_y = std::stoi(splitted[2]);
 
             if (References[anz_ref].target_x < 1 || (References[anz_ref].target_x > (Camera.image_width - 1 - References[anz_ref].refImage->width))) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (x). Check alignment marker config");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (x). Check alignment marker");
                 return false;
             }
 
             if (References[anz_ref].target_y < 1 || (References[anz_ref].target_y > (Camera.image_height - 1 - References[anz_ref].refImage->height))) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (y). Check alignment marker config");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (y). Check alignment marker");
                 return false;
             }
 
