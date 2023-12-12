@@ -299,6 +299,15 @@
             rect.w = this.width
             rect.h = this.height;
 
+            // Validate ROI position
+            ROIPositionValidation(MarkerROI[marker_selected]);
+            
+            // Update ROI coordinates
+            document.getElementById("refx").value = MarkerROI[marker_selected]["x"];
+            document.getElementById("refy").value = MarkerROI[marker_selected]["y"];
+            rect.startX = MarkerROI[marker_selected]["x"];
+            rect.startY = MarkerROI[marker_selected]["y"];
+
             RefreshDraw();
             HistogramUpdate();
         }
@@ -421,7 +430,8 @@
         document.getElementById("refdx").value = rect.w;
         document.getElementById("refdy").value = rect.h;
         document.getElementById("refx").value = rect.startX;
-        document.getElementById("refy").value = rect.startY;    
+        document.getElementById("refy").value = rect.startY;
+        onValueManualChanged(); 
     }
 
 
