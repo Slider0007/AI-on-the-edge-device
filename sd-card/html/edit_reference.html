@@ -383,6 +383,26 @@
     }
 
 
+    function ImageSizeValidation()
+    {
+        if (param["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
+            configuredWidth = 320;
+        }
+        else if (param["TakeImage"]["ImageSize"]["value1"] == "VGA") {
+            configuredWidth = 640;
+        }
+        else {
+            firework.launch('Unknown image size. No reference image size validation', 'danger', 30000);
+            return;
+        }
+
+        if (configuredWidth != canvas.width) {
+                firework.launch('Actual reference image size differs to configured image size. \
+                                Please create a new reference image and redo alignment marker and ROI configuration', 'warning', 10000);
+        }
+    }
+
+
     function drawRotated(_grid = true)
     {
         finerot= parseFloat(document.getElementById("finerotate").value);
@@ -473,6 +493,8 @@
         imageObj.onload = function() {
             canvas.width = this.width;
             canvas.height = this.height;
+            ImageSizeValidation();
+
             if (grid)
                 drawRotated(true);
             else
