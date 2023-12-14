@@ -576,14 +576,23 @@ table {
 				document.getElementById("heap_spiram_largest_free").value = _jsonData.heap_spiram_largest_free + " byte";
 				document.getElementById("heap_spiram_min_free").value = _jsonData.heap_spiram_min_free + " byte";
 
-				document.getElementById("firmware_version").value = _jsonData.firmware_version;
+				const FirmwareVersionSplit = _jsonData.firmware_version.split('Commit: ');
+				const FirmwareVersionCommit = FirmwareVersionSplit[1].substring(0, 7);
+				const FirmwareVersionString = FirmwareVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" + 
+										FirmwareVersionCommit + "\" target=\"_blank\">" + FirmwareVersionCommit + "</a>)";
+				document.getElementById("firmware_version").innerHTML = FirmwareVersionString;
 				
 				//Input format (ISO): 2023-10-23T14:26:34+0000
 				document.getElementById("build_time").value = _jsonData.build_time.substr(0,10) + " " +
 												 _jsonData.build_time.substr(11,8) + " (UTC" +	
 												 _jsonData.build_time.substr(19,5) + ")";
 				
-				document.getElementById("html_version").value = _jsonData.html_version;
+				const HTMLVersionSplit = _jsonData.html_version.split('Commit: ');
+				const HTMLVersionCommit = HTMLVersionSplit[1].substring(0, 7);
+				const HTMLVersionString = HTMLVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" + 
+									HTMLVersionCommit + "\" target=\"_blank\">" + HTMLVersionCommit + "</a>)";
+				document.getElementById("html_version").innerHTML = HTMLVersionString;
+
 				document.getElementById("idf_version").value = _jsonData.idf_version;
 			}
 		}
