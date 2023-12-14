@@ -628,6 +628,8 @@ void migrateConfiguration(void)
             if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
+            if (isInString(configLines[i], "Database")) { // It is the parameter "Database"
+                migrated = migrated | replaceString(configLines[i], "Database", "Bucket"); // Rename it to Bucket
 
             /* Measurement has a <NUMBER> as prefix! */
             if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled

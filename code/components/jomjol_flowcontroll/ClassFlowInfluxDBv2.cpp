@@ -26,7 +26,7 @@ void ClassFlowInfluxDBv2::SetInitialParameter(void)
     ListFlowControll = NULL;
 
     uri = "";
-    database = "";
+    bucket = "";
     dborg = "";  
     dbtoken = "";  
     //dbfield = "";
@@ -99,9 +99,9 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             this->uri = splitted[1];
         }
 
-        if (((toUpper(splitted[0]) == "DATABASE")) && (splitted.size() > 1))
+        if (((toUpper(splitted[0]) == "BUCKET")) && (splitted.size() > 1))
         {
-            this->database = splitted[1];
+            this->bucket = splitted[1];
         }
 
         if ((toUpper(_param) == "ORG") && (splitted.size() > 1))
@@ -125,12 +125,12 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         }
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init with URI: " + uri + ", Database: " + database + ", Org: " + dborg + ", Token: *****");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init with URI: " + uri + ", bucket: " + bucket + ", Org: " + dborg + ", Token: *****");
 
-    if ((uri.length() > 0 && (uri != "undefined")) && (database.length() > 0) && (database != "undefined") && 
+    if ((uri.length() > 0 && (uri != "undefined")) && (bucket.length() > 0) && (bucket != "undefined") && 
         (dborg.length() > 0) && (dborg != "undefined") && (dbtoken.length() > 0) && (dbtoken != "undefined")) 
     { 
-        InfluxDB_V2_Init(uri, database, dborg, dbtoken); 
+        InfluxDB_V2_Init(uri, bucket, dborg, dbtoken); 
         InfluxDBenable = true;
     }
     else {

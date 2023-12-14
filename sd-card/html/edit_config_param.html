@@ -1063,12 +1063,12 @@
 
         <tr class="InfluxDBv2Item">
 			<td class="indent1">
-				<span id="InfluxDBv2_Database_text" style="color:black;">Database</span>
+				<span id="InfluxDBv2_Bucket_text" style="color:black;">Bucket</span>
 			</td>
 			<td>
-				<input required type="text" id="InfluxDBv2_Database_value1">
+				<input required type="text" id="InfluxDBv2_Bucket_value1">
 			</td>
-			<td>$TOOLTIP_InfluxDBv2_Database</td>
+			<td>$TOOLTIP_InfluxDBv2_Bucket</td>
 		</tr>
 
 		<tr class="InfluxDBv2Item">
@@ -2292,7 +2292,7 @@
 		WriteParameter(param, category, "InfluxDB", "password", true);	
 
 		WriteParameter(param, category, "InfluxDBv2", "Uri", false);	
-		WriteParameter(param, category, "InfluxDBv2", "Database", false);	
+		WriteParameter(param, category, "InfluxDBv2", "Bucket", false);	
 		WriteParameter(param, category, "InfluxDBv2", "Org", true);	
 		WriteParameter(param, category, "InfluxDBv2", "Token", true);	
 
@@ -2426,7 +2426,7 @@
 		ReadParameter(param, "InfluxDB", "password", true);
 
 		ReadParameter(param, "InfluxDBv2", "Uri", false);
-		ReadParameter(param, "InfluxDBv2", "Database", false);
+		ReadParameter(param, "InfluxDBv2", "Bucket", false);
 		ReadParameter(param, "InfluxDBv2", "Org", true);
 		ReadParameter(param, "InfluxDBv2", "Token", true);
 

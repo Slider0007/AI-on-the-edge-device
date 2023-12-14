@@ -210,7 +210,7 @@ function ParseConfig() {
      category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "Uri", true, "http://IP-ADDRESS:PORT");
-     ParamAddSingleValueWithPreset(param, catname, "Database", true, "undefined");
+     ParamAddSingleValueWithPreset(param, catname, "Bucket", true, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "Org", false, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "Token", false, "undefined");
      ParamAddValue(param, catname, "Measurement", 1, true, "undefined");
