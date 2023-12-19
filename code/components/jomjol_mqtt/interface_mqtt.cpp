@@ -295,7 +295,7 @@ bool MQTT_Configure(std::string _mqttURI, std::string _clientid, std::string _us
 
     #ifdef __HIDE_PASSWORD
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + 
-                            ", password: ******, maintopic: " + maintopic + ", last-will-topic: " + lwt_topic + 
+                            ", password: *****, maintopic: " + maintopic + ", last-will-topic: " + lwt_topic + 
                             ", keepAlive: " + std::to_string(keepalive) + ", RetainFlag: " + std::to_string(SetRetainFlag)); 
     #else
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + 
