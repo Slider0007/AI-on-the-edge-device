@@ -20,6 +20,7 @@ bool MQTTPublish(std::string _key, std::string _content, int qos, bool retained_
 
 bool getMQTTisEnabled();
 bool getMQTTisConnected();
+bool getMQTTisEncrypted();
 
 void MQTTregisterConnectFunction(std::string name, std::function<void()> func);
 void MQTTunregisterConnectFunction(std::string name);

@@ -33,7 +33,7 @@ bool mqtt_connected = false;
 
 esp_mqtt_client_handle_t client = NULL;
 std::string uri, client_id, lwt_topic, lwt_connected, lwt_disconnected, user, password, maintopic;
-bool TLSEncryption;
+bool TLSEncryption = false;
 std::string TLSCACert, TLSClientCert, TLSClientKey;
 int keepalive;
 bool SetRetainFlag;
@@ -435,6 +435,12 @@ bool getMQTTisEnabled()
 bool getMQTTisConnected()
 {
     return mqtt_connected;
+}
+
+
+bool getMQTTisEncrypted()
+{
+    return TLSEncryption;
 }
 
 
