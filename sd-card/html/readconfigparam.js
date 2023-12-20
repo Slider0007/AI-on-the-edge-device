@@ -189,9 +189,9 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "user", false, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "password", false, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "TLSEncryption", false, "false");
-     ParamAddSingleValueWithPreset(param, catname, "TLSCACert", true, "/config/certs/mqtt_ca.crt");
-     ParamAddSingleValueWithPreset(param, catname, "TLSClientCert", true, "/config/certs/mqtt_client.crt");
-     ParamAddSingleValueWithPreset(param, catname, "TLSClientKey", true, "/config/certs/mqtt_client.key");
+     ParamAddSingleValueWithPreset(param, catname, "TLSCACert", true, "/config/certs/ca.crt");
+     ParamAddSingleValueWithPreset(param, catname, "TLSClientCert", true, "/config/certs/client.crt");
+     ParamAddSingleValueWithPreset(param, catname, "TLSClientKey", true, "/config/certs/client.key");
      ParamAddSingleValueWithPreset(param, catname, "RetainMessages", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "HomeassistantDiscovery", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "MeterType", true, "other");
