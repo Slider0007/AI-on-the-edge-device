@@ -1,12 +1,12 @@
-# Welcome to the AI-on-the-edge-device (SL Fork)
+# Welcome to the AI-on-the-Edge (SL Fork)
 <img src="images/icon/watermeter.svg" width="100px"> 
 
 Artificial intelligence based systems have become established in our everyday lives. Just think of speech or image recognition. Most of the systems rely on either powerful processors or a direct connection to the cloud for doing the calculations there. With the increasing power of modern processors, the AI systems are coming closer to the end user – which is usually called **edge computing**.
-Here, this edge computing is put into a practically oriented example, where an AI network is implemented on an ESP32 device so: **AI on the edge**.
+Here, this edge computing is put into a practically oriented example, where an AI network is implemented on an ESP32 device so: **AI on the Edge**.
 
 This project allows you to digitize your **analog** water, gas, power and other meters using cheap and easily available hardware.
 
-All you need is an [ESP32 board with a supported camera](https://jomjol.github.io/AI-on-the-edge-device-docs/Hardware-Compatibility/) and something of a practical hand.
+All you need is an [ESP32-CAM board](https://jomjol.github.io/AI-on-the-edge-device-docs/Hardware-Compatibility/) and something of a practical hand.
 
 <img src="images/esp32-cam.png" width="200px">
 
@@ -24,22 +24,20 @@ All you need is an [ESP32 board with a supported camera](https://jomjol.github.i
 
 
 ## Workflow
-The device takes a photo of your meter at a defined interval. It then extracts the Regions of Interest (ROIs) from the image and runs them through artificial intelligence. As a result, you get the digitized value of your meter.
+The device takes a photo of your meter at a defined interval. It then extracts the Regions of Interest (ROIs) from the image and runs them through artificial intelligence. 
+As a result, you get the digitized value of your meter. There are several options for what to do with that value. Either send it to an MQTT broker, write it to an InfluxDB 
+or simply provide access to it via a REST API (JSON / HTML).
 
-There are several options for what to do with that value. Either send it to an MQTT broker, write it to an InfluxDB or simply provide access to it via a REST API (JSON / HTML).
-
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/idea.jpg" width="600"> 
+<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/idea.jpg" width="800"> 
 
 
 ## Impressions
-### AI-on-the-edge-device on a Water Meter
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter_all.jpg" width="200"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/main.jpg" width="200"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/size.png" width="200"> 
+### Hardware
+<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter_all.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/main.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/size.png" width="266"> 
 
-### Web Interface (Water Meter)
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter.jpg" width="600"> 
 
-### AI-on-the-edge-device on a Electrical Power Meter
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/powermeter.jpg" width="600"> 
+### Software
+<img src="https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/07938912-7438-467c-80ca-f1538b37f98c" width="800"> 
 
 
 ## Device installation
@@ -57,7 +55,8 @@ Here a small selection:
 - [youtube.com/watch?v=MAHE_QyHZFQ](https://www.youtube.com/watch?v=MAHE_QyHZFQ)
 - [youtube.com/watch?v=Uap_6bwtILQ](https://www.youtube.com/watch?v=Uap_6bwtILQ)
 
-For further background information, head to [Neural Networks](https://www.heise.de/select/make/2021/6/2126410443385102621), [Training Neural Networks](https://www.heise.de/select/make/2022/1/2134114065999161585) and [Programming on the ESP32](https://www.heise.de/select/make/2022/2/2204010051597422030).
+For further background information, head to [Neural Networks](https://www.heise.de/select/make/2021/6/2126410443385102621), 
+[Training Neural Networks](https://www.heise.de/select/make/2022/1/2134114065999161585) and [Programming on the ESP32](https://www.heise.de/select/make/2022/2/2204010051597422030).
 
 ### 2. DOWNLAOD FIRMWARE
 Officially released firmware packages can be downloaded on [Releases Rage](https://github.com/slider0007/AI-on-the-edge-device/releases).<br>
@@ -75,8 +74,9 @@ There are different possibilities:
 See the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/) for more information.
 
 ### 4. INSTALL SD CARD
-The SD card can be setup using local WLAN hotspot after the MCU firmware got installed (`AI-on-the-edge-device__remote-setup__*.zip`). See the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#remote-setup-using-the-built-in-access-point) for details. For this to work, the SD card must be FAT formated (which is the default on a new SD card).<br>
-Alternatively the SD card still can be setup manually, see the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#3-sd-card) for details! (`AI-on-the-edge-device__manual-setup__*.zip`)
+The SD card can be setup using local WLAN hotspot after the MCU firmware got installed (`AI-on-the-edge-device__remote-setup__*.zip`). See the 
+[documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#remote-setup-using-the-built-in-access-point) for details. For this to work, the SD card must be FAT formated (which is the default on a new SD card).<br>
+Alternatively the SD card still can be setup manually, see the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#3-sd-card) for details (`AI-on-the-edge-device__manual-setup__*.zip`).
 
 :warning: !!! Do not separate download github source files, use only release related zip package. Otherwise full functionality cannot be guaranteed !!!
 
