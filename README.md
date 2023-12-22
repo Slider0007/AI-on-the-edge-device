@@ -92,4 +92,4 @@ See [Build Instructions](code/README.md)
 
 ## Additional Ideas & Community Support
 Features can be posted in jomjol repo [issues](https://github.com/jomjol/AI-on-the-edge-device/issues).<br>
-If you have any technical problems please search the [discussions](https://github.com/jomjol/AI-on-the-edge-device/discussions) and [open issues](https://github.com/jomjol/AI-on-the-edge-device/issues).
+If you have any technical problems please search the jomjol repo [discussions](https://github.com/jomjol/AI-on-the-edge-device/discussions) and jomjol repo [open issues](https://github.com/jomjol/AI-on-the-edge-device/issues).
