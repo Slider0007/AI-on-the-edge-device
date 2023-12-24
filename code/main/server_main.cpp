@@ -24,9 +24,14 @@
 
 #include <stdio.h>
 
+#ifdef TASK_ANALYSIS_ON
+#include "psram.h"
+#endif
+
 #include "Helper.h"
 #include "system.h"
 #include "cJSON.h"
+
 
 httpd_handle_t server = NULL;
 extern std::string deviceStartTimestamp;
