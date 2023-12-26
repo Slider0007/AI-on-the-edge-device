@@ -71,10 +71,10 @@ There are different ways to flash the microcontroller:
   ![image](https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/fb3d659f-3e21-49fd-9d84-7224994b7e28)
 - [ESPtool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
-See the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/) for more information.<br>
-Note: Installation using web installer is not supported by this fork.
+See [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/) for more information.<br>
+Note: Installation using web installer is not supported by this fork repo.
 
-### 4. Install SD Card
+### 4. Install SD Card Content
 The SD card can be setup using the device's local WLAN hotspot after the MCU firmware got successfully installed  (`AI-on-the-edge-device__remote-setup__*.zip`). See the 
 [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#remote-setup-using-the-built-in-access-point) for details. For this to work, the SD card must be FAT formated (which is the default on a new SD card).<br>
 Alternatively the SD card still can be setup manually without using hotspot, see the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#3-sd-card) for details (`AI-on-the-edge-device__manual-setup__*.zip`).
@@ -82,15 +82,10 @@ Alternatively the SD card still can be setup manually without using hotspot, see
 :warning: Do not use github source files in any case, use only release related zip package. Otherwise functionality cannot be fully guaranteed!
 
 
-## Changelog 
-[Changelog](CHANGELOG.md)<br>
-(Forked from https://github.com/jomjol/AI-on-the-edge-device)
-
-
 ## Build Firmware Yourself
 See [Build Instructions](code/README.md)
 
 
 ## Additional Ideas & Community Support
-Features can be posted in jomjol repo [issues](https://github.com/jomjol/AI-on-the-edge-device/issues).<br>
-If you have any technical problems please search the jomjol repo [discussions](https://github.com/jomjol/AI-on-the-edge-device/discussions) and jomjol repo [open issues](https://github.com/jomjol/AI-on-the-edge-device/issues).
+Features can be posted on jomjol repo [issues](https://github.com/jomjol/AI-on-the-edge-device/issues).<br>
+If you have any technical problems please search jomjol repo [discussions](https://github.com/jomjol/AI-on-the-edge-device/discussions) and jomjol repo [issues](https://github.com/jomjol/AI-on-the-edge-device/issues).
