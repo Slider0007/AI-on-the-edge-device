@@ -1,4 +1,4 @@
-# Welcome to the AI-on-the-Edge (SL Fork)
+# AI-on-the-Edge --- SL Fork
 <img src="images/icon/watermeter.svg" width="100px"> 
 
 Artificial intelligence based systems have become established in our everyday lives. Just think of speech or image recognition. Most of the systems rely on either powerful processors or a direct connection to the cloud for doing the calculations there. With the increasing power of modern processors, the AI systems are coming closer to the end user – which is usually called **edge computing**.
@@ -86,6 +86,5 @@ Alternatively the SD card still can be setup manually without using hotspot, see
 See [Build Instructions](code/README.md)
 
 
-## Additional Ideas & Community Support
-Features can be posted on jomjol repo [issues](https://github.com/jomjol/AI-on-the-edge-device/issues).<br>
-If you have any technical problems please search jomjol repo [discussions](https://github.com/jomjol/AI-on-the-edge-device/discussions) and jomjol repo [issues](https://github.com/jomjol/AI-on-the-edge-device/issues).
+## Support
+⚠️⚠️⚠️ This is a forked version of [jomjol](https://github.com/jomjol/AI-on-the-edge-device) great software which is intented to use for my personal purposes only! ⚠️⚠️⚠️
