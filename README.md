@@ -87,4 +87,4 @@ See [Build Instructions](code/README.md)
 
 
 ## Support
-⚠️⚠️⚠️ This is a forked version of [jomjol](https://github.com/jomjol/AI-on-the-edge-device) great software which is intented to use for my personal purposes only! ⚠️⚠️⚠️
+⚠️ This is a forked version of [jomjol](https://github.com/jomjol/AI-on-the-edge-device) great software which is intented to use for my personal purposes only. ⚠️
