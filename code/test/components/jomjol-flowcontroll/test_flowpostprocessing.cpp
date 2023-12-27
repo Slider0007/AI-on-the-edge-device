@@ -1,8 +1,6 @@
 #include "test_flow_postrocess_helper.h"
 
 
-
-
 /**
  * ACHTUNG! Die Test laufen aktuell nur mit ausgeschaltetem Debug in ClassFlowCNNGeneral 
  * 

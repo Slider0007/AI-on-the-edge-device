@@ -182,7 +182,7 @@ int ClassFlowCNNGeneral::EvalAnalogNumber(int _value, int _resultPreviousNumber)
         if (_resultPreviousNumber <= Analog_error)
         {
             result = valueMax / 10;
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "EvalAnalogNumber (Ambiguous, use value + corretion): Result = " + std::to_string(result) +
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "EvalAnalogNumber (Ambiguous, use value + corretion): Result: " + std::to_string(result) +
                                                         ", Value: " + to_stringWithPrecision(_value/10.0, 1) + 
                                                         ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
             return result;

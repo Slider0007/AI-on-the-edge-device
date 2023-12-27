@@ -1,12 +1,4 @@
 #include <unity.h>
-#include <cmath>
-
-#include "components/jomjol_fileserver_ota/server_ota.h"
-#include "components/jomjol-flowcontroll/test_flow_postrocess_helper.cpp"
-#include "components/jomjol-flowcontroll/test_flowpostprocessing.cpp"
-#include "components/jomjol-flowcontroll/test_flow_pp_negative.cpp"
-#include "components/jomjol-flowcontroll/test_PointerEvalAnalogToDigitNew.cpp"
-#include "components/jomjol-flowcontroll/test_getReadoutRawString.cpp"
 
 // SD-Card ////////////////////
 #include "nvs_flash.h"
@@ -14,9 +6,23 @@
 #include "sdmmc_cmd.h"
 #include "driver/sdmmc_host.h"
 #include "driver/sdmmc_defs.h"
-//static const char *TAG = "MAIN TEST";
 #define __SD_USE_ONE_LINE_MODE__
+// SD-Card ////////////////////
+
 #include "server_GPIO.h"
+#include "components/jomjol_fileserver_ota/server_ota.h"
+
+
+//*****************************************************************************
+// Include files with functions to test
+//*****************************************************************************
+#include "components/jomjol-flowcontroll/test_flow_postrocess_helper.cpp"
+#include "components/jomjol-flowcontroll/test_flowpostprocessing.cpp"
+#include "components/jomjol-flowcontroll/test_flow_pp_negative.cpp"
+#include "components/jomjol-flowcontroll/test_PointerEvalAnalogToDigitNew.cpp"
+#include "components/jomjol-flowcontroll/test_getReadoutRawString.cpp"
+#include "components/jomjol-flowcontroll/test_cnnflowcontroll.cpp"
+
 
 bool Init_NVS_SDCard()
 {
@@ -78,11 +84,8 @@ bool Init_NVS_SDCard()
         return false;
     }
 
-    sdmmc_card_print_info(stdout, card);
-    SaveSDCardInfo(card);
     return true;
 }
-
 
 
 void initGPIO()
@@ -91,7 +94,7 @@ void initGPIO()
     //set as output mode
     io_conf.mode = gpio_mode_t::GPIO_MODE_INPUT;
     //bit mask of the pins that you want to set,e.g.GPIO18/19
-     io_conf.pull_down_en =  gpio_pulldown_t::GPIO_PULLDOWN_ENABLE;
+    io_conf.pull_down_en =  gpio_pulldown_t::GPIO_PULLDOWN_ENABLE;
     //set pull-up mode
     io_conf.pull_up_en =  gpio_pullup_t::GPIO_PULLUP_DISABLE;
     //configure GPIO with the given settings
@@ -105,20 +108,37 @@ void initGPIO()
  */
 void task_UnityTesting(void *pvParameter)
 {
+    vTaskDelay( 3000 / portTICK_PERIOD_MS ); // 3s delay to ensure established serial connection
+    
     UNITY_BEGIN();
         RUN_TEST(test_getReadoutRawString);
+        printf("---------------------------------------------------------------------------\n");
+        
+        RUN_TEST(test_EvalAnalogNumber);
+        printf("---------------------------------------------------------------------------\n");
+        RUN_TEST(test_EvalDigitNumber);
+        printf("---------------------------------------------------------------------------\n");
         
         RUN_TEST(testNegative_Issues);
+        printf("---------------------------------------------------------------------------\n");
         RUN_TEST(testNegative);
+        printf("---------------------------------------------------------------------------\n");
 
         RUN_TEST(test_analogToDigit_Standard);
+        printf("---------------------------------------------------------------------------\n");
         RUN_TEST(test_analogToDigit_Transition);
+        printf("---------------------------------------------------------------------------\n");
 
         RUN_TEST(test_doFlowPP);
+        printf("---------------------------------------------------------------------------\n");
         RUN_TEST(test_doFlowPP1);
+        printf("---------------------------------------------------------------------------\n");
         RUN_TEST(test_doFlowPP2);
+        printf("---------------------------------------------------------------------------\n");
         RUN_TEST(test_doFlowPP3);
+        printf("---------------------------------------------------------------------------\n");
         RUN_TEST(test_doFlowPP4);
+        printf("---------------------------------------------------------------------------\n");
         RUN_TEST(test_doFlowPP5);
     UNITY_END();
 

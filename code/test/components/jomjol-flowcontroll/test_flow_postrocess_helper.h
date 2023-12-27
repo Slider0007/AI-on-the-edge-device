@@ -1,8 +1,7 @@
 #pragma once
 #ifndef TEST_FLOW_H
 #define TEST_FLOW_H
-#include <cmath> // needs to be included before unity.h -> provide isnan and isinf defines
-#include <unity.h>
+
 #include <ClassFlowPostProcessing.h>
 #include <ClassFlowCNNGeneral.h>
 #include <ClassFlowTakeImage.h>

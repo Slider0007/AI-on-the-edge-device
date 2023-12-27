@@ -1,8 +1,6 @@
 #include "test_flow_postrocess_helper.h"
 
 
-
-
 /**
  * @brief Testfall für Überprüfung allowNegatives
  * 
