@@ -1,15 +1,13 @@
-/* The WebUI can also be executed on a local webserver, e.g. XAMPP.
-* Switch on the test environment and configure the physical device IP which shall be used for communication
-* (NOTE: And you also might have to disable CORS in your webbrowser!)
-*
-* !!! Don't forget so switch this off again for regular operation !!!
+/* The WebUI can also be executed on a local webserver for development purposes, e.g. XAMPP.
+* Configure the physical device IP which shall be used for communication and call http://localhost
+* NOTE: And you also might have to disable CORS in your webbrowser.
+* IMPORTANT: For regular WebUI operation this IP parameter is not needed at all!
 */
-var activateTestEnvironment = false;    // Activate, if webserver shall be operated offloaded from ESP device (e.g. local webserver for testing purpose)
-var DeviceIP = "192.168.2.68";          // Set the IP of physical device (only needed if 'activateTestEnvironment=true')
+var DUTDeviceIP = "192.168.2.68";      // Set the IP of physical device under test
  
 
 /* Returns the domainname with prepended protocol.
-* Eg. http://watermeter.fritz.box or http://192.168.1.5
+* E.g. http://watermeter.fritz.box or http://192.168.1.5
 */
 function getDomainname()
 {
@@ -17,9 +15,9 @@ function getDomainname()
 
     // NOTE: The if condition cannot be used in this way: if (((host == "127.0.0.1") || (host == "localhost") || (host == ""))
     //       This breaks access through a forwarded port: https://github.com/jomjol/AI-on-the-edge-device/issues/2681 
-     if (activateTestEnvironment) {
-         console.log("Test environment active! Device IP: " + DeviceIP);
-         domainname = "http://" + DeviceIP
+    if (window.location.hostname == "localhost") {
+         console.log("Test environment active! Device IP: " + DUTDeviceIP);
+         domainname = "http://" + DUTDeviceIP
     }
     else {
         domainname = window.location.protocol + "//" + window.location.hostname;
