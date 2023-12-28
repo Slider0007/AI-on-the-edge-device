@@ -44,6 +44,7 @@ function UpdatePage(_dosession = true){
         
 function LoadHostname()
 {
+    var _domainname = getDomainname();
     var xhttp = new XMLHttpRequest();
     xhttp.addEventListener('load', function(event) {
         if (xhttp.status >= 200 && xhttp.status < 300) {
@@ -57,7 +58,7 @@ function LoadHostname()
     });
 
     try {
-            url = getDomainname() + '/info?type=hostname';     
+            url = getDomainname() + '/info?type=Hostname';     
             xhttp.open("GET", url, true);
             xhttp.send();
 
@@ -89,7 +90,7 @@ function LoadFwVersion()
     });
 
     try {
-        url = getDomainname() + '/info?type=firmware_version';     
+        url = getDomainname() + '/info?type=FirmwareVersion';     
         xhttp.open("GET", url, true);
         xhttp.send();
     }
@@ -115,7 +116,7 @@ function LoadWebUiVersion()
     });
 
     try {
-        url = getDomainname() + '/info?type=html_version';     
+        url = getDomainname() + '/info?type=HTMLVersion';     
         //console.log("url: " + url);
         xhttp.open("GET", url, true);
         xhttp.send();
