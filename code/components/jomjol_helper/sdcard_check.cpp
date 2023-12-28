@@ -81,6 +81,12 @@ bool SDCardCheckFolderFilePresence()
         bRetval = false;
     }
 
+    /* check if folder exists: config/certs */
+    if (stat("/sdcard/config/certs", &sb) != 0) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Folder/file check: Folder /config/certs not found");
+        bRetval = false;
+    }
+
     /* check if folder exists: html */
     if (stat("/sdcard/html", &sb) != 0) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Folder/file check: Folder /html not found");

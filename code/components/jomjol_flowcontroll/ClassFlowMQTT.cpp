@@ -28,26 +28,23 @@ extern const char* libfive_git_branch(void);
 void ClassFlowMQTT::SetInitialParameter(void)
 {
     presetFlowStateHandler(true);
-    uri = "";
-    topic = "";
-    topicError = "";
-    topicRate = "";
-    topicTimeStamp = "";
-    maintopic = wlan_config.hostname;
-
-    topicUptime = "";
-    topicFreeMem = "";
-
-    clientname = wlan_config.hostname;
-
-    flowpostprocessing = NULL;  
-    user = "";
-    password = ""; 
-    SetRetainFlag = false;
+    flowpostprocessing = NULL; 
     previousElement = NULL;
     ListFlowControll = NULL; 
     disabled = false;
-    keepAlive = 25*60;
+
+    uri = "";
+    maintopic = wlan_config.hostname;
+    clientname = wlan_config.hostname;
+    user = "";
+    password = "";
+    TLSEncryption = false;
+    TLSCACertFilename = "";
+    TLSClientCertFilename = "";
+    TLSClientKeyFilename = "";
+    SetRetainFlag = false;
+    
+    keepAlive = 25*60; 
 }       
 
 ClassFlowMQTT::ClassFlowMQTT()
@@ -93,18 +90,18 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     aktparamgraph = trim(aktparamgraph);
 
     if (aktparamgraph.size() == 0)
-        if (!this->GetNextParagraph(pfile, aktparamgraph))
+        if (!GetNextParagraph(pfile, aktparamgraph))
             return false;
 
     if (toUpper(aktparamgraph).compare("[MQTT]") != 0)       // Paragraph does not fit MQTT
         return false;
 
-    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
+    while (getNextLine(pfile, &aktparamgraph) && !isNewParagraph(aktparamgraph))
     {
         splitted = ZerlegeZeile(aktparamgraph);
         if ((toUpper(splitted[0]) == "URI") && (splitted.size() > 1))
         {
-            this->uri = splitted[1];
+            uri = splitted[1];
         }
 
         if (((toUpper(splitted[0]) == "TOPIC") || (toUpper(splitted[0]) == "MAINTOPIC")) && (splitted.size() > 1))
@@ -114,18 +111,41 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
         if ((toUpper(splitted[0]) == "CLIENTID") && (splitted.size() > 1))
         {
-            this->clientname = splitted[1];
+            clientname = splitted[1];
         }
 
         if ((toUpper(splitted[0]) == "USER") && (splitted.size() > 1))
         {
-            this->user = splitted[1];
+            user = splitted[1];
         }
 
         if ((toUpper(splitted[0]) == "PASSWORD") && (splitted.size() > 1))
         {
-            this->password = splitted[1];
-        }               
+            password = splitted[1];
+        }   
+
+        if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                TLSEncryption = true;  
+            else
+                TLSEncryption = false;
+        }
+
+        if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1))
+        {
+            TLSCACertFilename = "/sdcard" + splitted[1];
+        }
+        
+        if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1))
+        {
+            TLSClientCertFilename = "/sdcard" + splitted[1];
+        }
+
+        if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1))
+        {
+            TLSClientKeyFilename = "/sdcard" + splitted[1];
+        }      
 
         if ((toUpper(splitted[0]) == "RETAINMESSAGES") && (splitted.size() > 1))
         {
@@ -205,7 +225,8 @@ bool ClassFlowMQTT::Start(float _processingInterval)
     mqttServer_setParameter(flowpostprocessing->GetNumbers(), keepAlive, _processingInterval);
 
     bool MQTTConfigCheck = MQTT_Configure(uri, clientname, user, password, maintopic, LWT_TOPIC, LWT_CONNECTED,
-                                     LWT_DISCONNECTED, keepAlive, SetRetainFlag, (void *)&GotConnected);
+                                            LWT_DISCONNECTED, TLSEncryption, TLSCACertFilename, TLSClientCertFilename,
+                                            TLSClientKeyFilename, keepAlive, SetRetainFlag, (void *)&GotConnected);
 
     if (!MQTTConfigCheck) {
         return false;

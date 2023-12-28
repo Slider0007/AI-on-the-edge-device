@@ -163,7 +163,8 @@ bool doInit(void)
     // Init MQTT service
     // ********************************************   
     #ifdef ENABLE_MQTT
-        flowctrl.StartMQTTService();
+        if (!flowctrl.StartMQTTService())
+            bRetVal = false;
     #endif //ENABLE_MQTT
 
     //heap_caps_dump(MALLOC_CAP_INTERNAL);

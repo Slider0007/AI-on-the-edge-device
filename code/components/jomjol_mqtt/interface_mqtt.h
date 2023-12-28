@@ -11,6 +11,7 @@
 
 bool MQTT_Configure(std::string _mqttURI, std::string _clientid, std::string _user, std::string _password,
                     std::string _maintopic, std::string _lwt, std::string _lwt_connected, std::string _lwt_disconnected,
+                    bool _TLSEncryption, std::string _TLSCACertFilename, std::string _TLSClientCertFilename, std::string _TLSClientKeyFilename, 
                     int _keepalive, bool SetRetainFlag, void *callbackOnConnected);
 int MQTT_Init();
 void MQTTdestroy_client(bool _disable);
@@ -19,6 +20,7 @@ bool MQTTPublish(std::string _key, std::string _content, int qos, bool retained_
 
 bool getMQTTisEnabled();
 bool getMQTTisConnected();
+bool getMQTTisEncrypted();
 
 void MQTTregisterConnectFunction(std::string name, std::function<void()> func);
 void MQTTunregisterConnectFunction(std::string name);

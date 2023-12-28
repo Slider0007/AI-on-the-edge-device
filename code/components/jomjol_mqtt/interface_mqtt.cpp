@@ -9,7 +9,13 @@
 #include "cJSON.h"
 #include "../../include/defines.h"
 
-static const char *TAG = "MQTT IF";
+//#define DEBUG_DETAIL_ON
+
+#ifdef DEBUG_DETAIL_ON
+#include "esp_timer.h"
+#endif
+
+static const char *TAG = "MQTT_IF";
 
 std::map<std::string, std::function<void()>>* connectFunktionMap = NULL;  
 std::map<std::string, std::function<bool(std::string, char*, int)>>* subscribeFunktionMap = NULL;
@@ -27,6 +33,8 @@ bool mqtt_connected = false;
 
 esp_mqtt_client_handle_t client = NULL;
 std::string uri, client_id, lwt_topic, lwt_connected, lwt_disconnected, user, password, maintopic;
+bool TLSEncryption = false;
+std::string TLSCACert, TLSClientCert, TLSClientKey;
 int keepalive;
 bool SetRetainFlag;
 void (*callbackOnConnected)(std::string, bool) = NULL;
@@ -87,7 +95,8 @@ bool MQTTPublish(std::string _key, std::string _content, int qos, bool retained_
 }
 
 
-static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event) {
+static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
+{
     std::string topic = "";
     switch (event->event_id) {
         case MQTT_EVENT_BEFORE_CONNECT:
@@ -164,15 +173,22 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event) {
             else if (event->error_handle->connect_return_code == MQTT_CONNECTION_REFUSE_NOT_AUTHORIZED) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Connection refused, not authorized. Check username/password (0x05)");
             }
+            
+            // Log any ESP-TLS error: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html
+            if (TLSEncryption && (event->error_handle->esp_tls_last_esp_err != ESP_OK)) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Connection refused, TLS error code: " + 
+                        intToHexString(event->error_handle->esp_tls_last_esp_err) + 
+                        " (More infos: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html");
+            }
 
             #ifdef DEBUG_DETAIL_ON 
-                ESP_LOGD(TAG, "MQTT_EVENT_ERROR - esp_mqtt_error_codes:");
-                ESP_LOGD(TAG, "error_type:%d", event->error_handle->error_type);
-                ESP_LOGD(TAG, "connect_return_code:%d", event->error_handle->connect_return_code);
-                ESP_LOGD(TAG, "esp_transport_sock_errno:%d", event->error_handle->esp_transport_sock_errno);
-                ESP_LOGD(TAG, "esp_tls_last_esp_err:%d", event->error_handle->esp_tls_last_esp_err);
-                ESP_LOGD(TAG, "esp_tls_stack_err:%d", event->error_handle->esp_tls_stack_err);
-                ESP_LOGD(TAG, "esp_tls_cert_verify_flags:%d", event->error_handle->esp_tls_cert_verify_flags);
+                ESP_LOGI(TAG, "MQTT_EVENT_ERROR - esp_mqtt_error_codes:");
+                ESP_LOGI(TAG, "error_type:%d", event->error_handle->error_type);
+                ESP_LOGI(TAG, "connect_return_code:%d", event->error_handle->connect_return_code);
+                ESP_LOGI(TAG, "esp_transport_sock_errno:%d", event->error_handle->esp_transport_sock_errno);
+                ESP_LOGI(TAG, "esp_tls_last_esp_err:%d", event->error_handle->esp_tls_last_esp_err);
+                ESP_LOGI(TAG, "esp_tls_stack_err:%d", event->error_handle->esp_tls_stack_err);
+                ESP_LOGI(TAG, "esp_tls_cert_verify_flags:%d", event->error_handle->esp_tls_cert_verify_flags);
             #endif
 
             break;
@@ -185,17 +201,19 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event) {
 }
 
 
-static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
+static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
+{
     ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%d", base, (int)event_id);
     mqtt_event_handler_cb((esp_mqtt_event_handle_t) event_data);
 }
 
 
 bool MQTT_Configure(std::string _mqttURI, std::string _clientid, std::string _user, std::string _password,
-        std::string _maintopic, std::string _lwt, std::string _lwt_connected, std::string _lwt_disconnected,
-                    int _keepalive, bool _SetRetainFlag, void *_callbackOnConnected) {
-    if ((_mqttURI.length() == 0) || (_maintopic.length() == 0) || (_clientid.length() == 0)) 
-    {
+                    std::string _maintopic, std::string _lwt, std::string _lwt_connected, std::string _lwt_disconnected,
+                    bool _TLSEncryption, std::string _TLSCACertFilename, std::string _TLSClientCertFilename,
+                    std::string _TLSClientKeyFilename, int _keepalive, bool _SetRetainFlag, void *_callbackOnConnected)
+{
+    if ((_mqttURI.length() == 0) || (_maintopic.length() == 0) || (_clientid.length() == 0)) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init aborted! Config error (URI, MainTopic or ClientID missing)");
         return false;
     }
@@ -210,17 +228,79 @@ bool MQTT_Configure(std::string _mqttURI, std::string _clientid, std::string _us
     maintopic = _maintopic;
     callbackOnConnected = ( void (*)(std::string, bool) )(_callbackOnConnected);
 
-    if (_user.length() && _password.length()){
+    if (!_user.empty()) {
         user = _user;
+    }
+
+    if (!_password.empty()) {
         password = _password;
     }
 
+    // TLS Encryption parameter
+    TLSEncryption = _TLSEncryption;
+
+    if (TLSEncryption) {
+        if (uri.substr(0,8) != "mqtts://") {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: URI parameter needs to be configured with \'mqtts://\'");
+            return false;
+        }
+
+        if (uri.substr(uri.find_last_of(":")+1, 4) != "8883") {
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: URI parameter not using default MQTT TLS port \'8883\'");
+        }
+
+        if (!_TLSCACertFilename.empty()) { // TLS parameter activated and not empty
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: " + _TLSCACertFilename);
+            std::ifstream ifs(_TLSCACertFilename);
+            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+            TLSCACert = content;
+
+            if (TLSCACert.empty()) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load CA certificate");
+            }
+        }
+
+        if (!_TLSClientCertFilename.empty()) {
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: Client certificate file: " + _TLSClientCertFilename);
+            std::ifstream cert_ifs(_TLSClientCertFilename);
+            std::string cert_content((std::istreambuf_iterator<char>(cert_ifs)), (std::istreambuf_iterator<char>()));
+            TLSClientCert = cert_content;
+
+            if (TLSClientCert.empty()) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client certificate");
+            }
+        }
+
+        if (!_TLSClientKeyFilename.empty()) {
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: Client key file: " + _TLSClientKeyFilename);
+            std::ifstream key_ifs(_TLSClientKeyFilename);
+            std::string key_content((std::istreambuf_iterator<char>(key_ifs)), (std::istreambuf_iterator<char>()));
+            TLSClientKey = key_content;
+
+            if (TLSClientKey.empty()) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client key");
+            }
+        }
+    }
+    else {
+        if (uri.substr(0,7) != "mqtt://") {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "URI parameter needs to be configured with \'mqtt://\'");
+            return false;
+        }
+        
+        if (uri.substr(uri.find_last_of(":")+1, 4) != "1883") {
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI parameter not using default MQTT port \'1883\'");
+        }
+    }
+
     #ifdef __HIDE_PASSWORD
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + ", password: XXXXXXXX, maintopic: "
-                            + maintopic + ", last-will-topic: " + lwt_topic + ", keepAlive: " + std::to_string(keepalive) + ", RetainFlag: " + std::to_string(SetRetainFlag)); 
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + 
+                            ", password: *****, maintopic: " + maintopic + ", last-will-topic: " + lwt_topic + 
+                            ", keepAlive: " + std::to_string(keepalive) + ", RetainFlag: " + std::to_string(SetRetainFlag)); 
     #else
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + ", password: " + password  + ", maintopic: "
-                            + maintopic + ", last-will-topic: " + lwt_topic + ", keepAlive: " + std::to_string(keepalive)  + ", RetainFlag: " + std::to_string(SetRetainFlag)); 
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + 
+                            ", password: " + password  + ", maintopic: " + maintopic + ", last-will-topic: " + lwt_topic + 
+                            ", keepAlive: " + std::to_string(keepalive)  + ", RetainFlag: " + std::to_string(SetRetainFlag)); 
      #endif
 
     mqtt_configOK = true;
@@ -228,7 +308,8 @@ bool MQTT_Configure(std::string _mqttURI, std::string _clientid, std::string _us
 }
 
 
-int MQTT_Init() { 
+int MQTT_Init()
+{ 
     if (mqtt_initialized) {
         return 0;
     }
@@ -263,9 +344,30 @@ int MQTT_Init() {
     mqtt_cfg.session.keepalive = keepalive;
     mqtt_cfg.buffer.size = 2048;                         // size of MQTT send/receive buffer (Default: 1024)
 
-    if (user.length() && password.length()){
+    if (!user.empty()) {
         mqtt_cfg.credentials.username = user.c_str();
+    }
+
+    if (!password.empty()) {
         mqtt_cfg.credentials.authentication.password = password.c_str();
+    }
+
+    if (TLSEncryption) {
+        if (!TLSCACert.empty()) {
+            mqtt_cfg.broker.verification.certificate = TLSCACert.c_str();
+            mqtt_cfg.broker.verification.certificate_len = TLSCACert.length() + 1;  
+            mqtt_cfg.broker.verification.skip_cert_common_name_check = true;    // Skip any validation of server certificate CN field
+        }
+
+        if (!TLSClientCert.empty()) {
+            mqtt_cfg.credentials.authentication.certificate = TLSClientCert.c_str();
+            mqtt_cfg.credentials.authentication.certificate_len = TLSClientCert.length() + 1;
+        }
+
+        if (!TLSClientKey.empty()) {       
+            mqtt_cfg.credentials.authentication.key = TLSClientKey.c_str();
+            mqtt_cfg.credentials.authentication.key_len = TLSClientKey.length() + 1;
+        }
     }
 
     #ifdef DEBUG_DETAIL_ON  
@@ -273,8 +375,7 @@ int MQTT_Init() {
     #endif
 
     client = esp_mqtt_client_init(&mqtt_cfg);
-    if (client)
-    {
+    if (client) {
         esp_err_t ret = esp_mqtt_client_register_event(client, esp_mqtt_ID, mqtt_event_handler, client);
         if (ret != ESP_OK)
         {
@@ -287,8 +388,7 @@ int MQTT_Init() {
             LogFile.WriteHeapInfo("MQTT Client Start");
         #endif
         ret = esp_mqtt_client_start(client);
-        if (ret != ESP_OK)
-        {
+        if (ret != ESP_OK) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Client start failed (retval=" + std::to_string(ret) + ")");
             mqtt_initialized = false;
             return -1;
@@ -299,17 +399,16 @@ int MQTT_Init() {
             return 1;
         }
     }
-    else
-    {
+    else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, no handle created");
         mqtt_initialized = false;
         return -1;
     }
-
 }
 
 
-void MQTTdestroy_client(bool _disable = false) {
+void MQTTdestroy_client(bool _disable = false)
+{
     if (client) {
         if (mqtt_connected) {
             MQTTdestroySubscribeFunction();      
@@ -327,13 +426,21 @@ void MQTTdestroy_client(bool _disable = false) {
 }
 
 
-bool getMQTTisEnabled() {
+bool getMQTTisEnabled()
+{
     return mqtt_enabled;
 }
 
 
-bool getMQTTisConnected() {
+bool getMQTTisConnected()
+{
     return mqtt_connected;
+}
+
+
+bool getMQTTisEncrypted()
+{
+    return TLSEncryption;
 }
 
 
@@ -388,7 +495,8 @@ bool mqtt_handler_set_fallbackvalue(std::string _topic, char* _data, int _data_l
 }
 
 
-void MQTTconnected(){
+void MQTTconnected()
+{
     if (mqtt_connected) {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Connected to broker");
         
@@ -423,7 +531,8 @@ void MQTTconnected(){
 }
 
 
-void MQTTregisterConnectFunction(std::string name, std::function<void()> func){
+void MQTTregisterConnectFunction(std::string name, std::function<void()> func)
+{
     ESP_LOGD(TAG, "MQTTregisteronnectFunction %s\r\n", name.c_str());
     if (connectFunktionMap == NULL) {
         connectFunktionMap = new std::map<std::string, std::function<void()>>();
@@ -442,7 +551,8 @@ void MQTTregisterConnectFunction(std::string name, std::function<void()> func){
 }
 
 
-void MQTTunregisterConnectFunction(std::string name){
+void MQTTunregisterConnectFunction(std::string name)
+{
     ESP_LOGD(TAG, "unregisterConnnectFunction %s\r\n", name.c_str());
     if ((connectFunktionMap != NULL) && (connectFunktionMap->find(name) != connectFunktionMap->end())) {
         connectFunktionMap->erase(name);
@@ -450,7 +560,8 @@ void MQTTunregisterConnectFunction(std::string name){
 }
 
 
-void MQTTregisterSubscribeFunction(std::string topic, std::function<bool(std::string, char*, int)> func){
+void MQTTregisterSubscribeFunction(std::string topic, std::function<bool(std::string, char*, int)> func)
+{
     ESP_LOGD(TAG, "registerSubscribeFunction %s", topic.c_str());
     if (subscribeFunktionMap == NULL) {
         subscribeFunktionMap = new std::map<std::string, std::function<bool(std::string, char*, int)>>();
@@ -465,7 +576,8 @@ void MQTTregisterSubscribeFunction(std::string topic, std::function<bool(std::st
 }
 
 
-void MQTTdestroySubscribeFunction(){
+void MQTTdestroySubscribeFunction()
+{
     if (subscribeFunktionMap != NULL) {
         if (mqtt_connected) {
             for(std::map<std::string, std::function<bool(std::string, char*, int)>>::iterator it = subscribeFunktionMap->begin(); it != subscribeFunktionMap->end(); ++it) {

@@ -1,20 +1,26 @@
- /* The UI can also be run locally, but you have to set the IP of your devide accordingly.
- * And you also might have to disable CORS in your webbrowser! */
-var domainname_for_testing = "192.168.2.68";
-
+/* The WebUI can also be executed on a local webserver for development purposes, e.g. XAMPP.
+* Configure the physical device IP which shall be used for communication and call http://localhost
+* NOTE: And you also might have to disable CORS in your webbrowser.
+* IMPORTANT: For regular WebUI operation this IP parameter is not needed at all!
+*/
+var DUTDeviceIP = "192.168.2.68";      // Set the IP of physical device under test
+ 
 
 /* Returns the domainname with prepended protocol.
-Eg. http://watermeter.fritz.box or http://192.168.1.5 */
-function getDomainname(){
-    var host = window.location.hostname;
+* E.g. http://watermeter.fritz.box or http://192.168.1.5
+*/
+function getDomainname()
+{
     var domainname;
-    
-    if ((host == "127.0.0.1") || (host == "localhost") || (host == "")) {
-        console.log("Using pre-defined domainname for testing: " + domainname_for_testing);
-        domainname = "http://" + domainname_for_testing
+
+    // NOTE: The if condition cannot be used in this way: if (((host == "127.0.0.1") || (host == "localhost") || (host == ""))
+    //       This breaks access through a forwarded port: https://github.com/jomjol/AI-on-the-edge-device/issues/2681 
+    if (window.location.hostname == "localhost") {
+         console.log("Test environment active! Device IP: " + DUTDeviceIP);
+         domainname = "http://" + DUTDeviceIP
     }
     else {
-        domainname = window.location.protocol + "//" + host;
+        domainname = window.location.protocol + "//" + window.location.hostname;
         if (window.location.port != "") {
             domainname = domainname + ":" + window.location.port;
         }
@@ -26,9 +32,9 @@ function getDomainname(){
 
 function UpdatePage(_dosession = true){
     var zw = location.href;
-    zw = zw.substr(0, zw.indexOf("?"));
+    zw = zw.substring(0, zw.indexOf("?"));
     if (_dosession) {
-        window.location = zw + '?session=' + Math.floor((Math.random() * 1000000) + 1); 
+        window.location = zw + '?' + Math.floor((Math.random() * 1000000) + 1); 
     }
     else {
         window.location = zw; 
@@ -36,32 +42,29 @@ function UpdatePage(_dosession = true){
 }
 
         
-function LoadHostname() {
-    _domainname = getDomainname(); 
-
-
+function LoadHostname()
+{
     var xhttp = new XMLHttpRequest();
     xhttp.addEventListener('load', function(event) {
         if (xhttp.status >= 200 && xhttp.status < 300) {
             hostname = xhttp.responseText;
-                document.title = hostname + " | AI on the Edge";
-                document.getElementById("id_title").innerHTML  += hostname;
+            document.title = hostname + " | AI on the Edge";
+            document.getElementById("id_title").innerHTML  += hostname;
         } 
         else {
-                console.warn(request.statusText, request.responseText);
+            console.warn(request.statusText, request.responseText);
         }
     });
 
-//     var xhttp = new XMLHttpRequest();
     try {
-            url = _domainname + '/info?type=Hostname';     
+            url = getDomainname() + '/info?type=hostname';     
             xhttp.open("GET", url, true);
             xhttp.send();
 
     }
     catch (error)
     {
-//               alert("Loading Hostname failed");
+        //alert("Loading Hostname failed");
     }
 }
 
@@ -69,9 +72,8 @@ function LoadHostname() {
 var fwVersion = "";
 var webUiVersion = "";
 
-function LoadFwVersion() {
-    _domainname = getDomainname(); 
-
+function LoadFwVersion()
+{
     var xhttp = new XMLHttpRequest();
     xhttp.addEventListener('load', function(event) {
         if (xhttp.status >= 200 && xhttp.status < 300) {
@@ -87,7 +89,7 @@ function LoadFwVersion() {
     });
 
     try {
-        url = _domainname + '/info?type=FirmwareVersion';     
+        url = getDomainname() + '/info?type=firmware_version';     
         xhttp.open("GET", url, true);
         xhttp.send();
     }
@@ -97,9 +99,8 @@ function LoadFwVersion() {
 }
 
 
-function LoadWebUiVersion() {
-    _domainname = getDomainname(); 
-
+function LoadWebUiVersion()
+{
     var xhttp = new XMLHttpRequest();
     xhttp.addEventListener('load', function(event) {
         if (xhttp.status >= 200 && xhttp.status < 300) {
@@ -114,7 +115,7 @@ function LoadWebUiVersion() {
     });
 
     try {
-        url = _domainname + '/info?type=HTMLVersion';     
+        url = getDomainname() + '/info?type=html_version';     
         //console.log("url: " + url);
         xhttp.open("GET", url, true);
         xhttp.send();
@@ -125,7 +126,8 @@ function LoadWebUiVersion() {
 }
 
 
-function compareVersions() {
+function compareVersions()
+{
     if (fwVersion == "" || webUiVersion == "") {
         return;
     }

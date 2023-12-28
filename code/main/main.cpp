@@ -233,8 +233,9 @@ extern "C" void app_main(void)
     // Correct creation of these folders will be checked with function "SDCardCheckFolderFilePresence"
     // ********************************************
     MakeDir("/sdcard/firmware");         // mandatory for OTA firmware update
-    MakeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marks
+    MakeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marker
     MakeDir("/sdcard/demo");             // mandatory for demo mode
+    MakeDir("/sdcard/config/certs");     // mandatory for TLS encryption
 
     // Check for updates
     // ********************************************
@@ -551,7 +552,7 @@ void migrateConfiguration(void)
                 else {
                     migrated = migrated | replaceString(configLines[i], "= Off", "= RateOff"); // Convert it to its new name
                     migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its new name
-                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerSequence"); // Convert it to its new name
+                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerProcessing"); // Convert it to its new name
                 }
             }
 
@@ -576,6 +577,21 @@ void migrateConfiguration(void)
             migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
             migrated = migrated | replaceString(configLines[i], ";MainTopic", "MainTopic"); // Enable it
             migrated = migrated | replaceString(configLines[i], ";ClientID", "ClientID"); // Enable it
+
+            if (isInString(configLines[i], "CACert") && !isInString(configLines[i], "TLSCACert")) {
+                migrated = migrated | replaceString(configLines[i], "CACert =", "TLSCACert ="); // Rename it
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            if (isInString(configLines[i], "ClientCert") && !isInString(configLines[i], "TLSClientCert")) {
+                migrated = migrated | replaceString(configLines[i], "ClientCert =", "TLSClientCert ="); // Rename it
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            if (isInString(configLines[i], "ClientKey") && !isInString(configLines[i], "TLSClientKey")) {
+                migrated = migrated | replaceString(configLines[i], "ClientKey =", "TLSClientKey ="); // Rename it
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
 
             migrated = migrated | replaceString(configLines[i], "SetRetainFlag", "RetainMessages"); // First rename it, enable it with its default value
             migrated = migrated | replaceString(configLines[i], ";RetainMessages = true", ";RetainMessages = false"); // Set it to its default value
