@@ -44,7 +44,6 @@ function UpdatePage(_dosession = true){
         
 function LoadHostname()
 {
-    var _domainname = getDomainname();
     var xhttp = new XMLHttpRequest();
     xhttp.addEventListener('load', function(event) {
         if (xhttp.status >= 200 && xhttp.status < 300) {
