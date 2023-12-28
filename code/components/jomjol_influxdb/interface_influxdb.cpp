@@ -80,46 +80,46 @@ bool InfluxDBInit(std::string _uri, std::string _database, std::string _user, st
 
     if (influxDBTLSEncryption) {
         if (influxDBURI.substr(0,8) != "https://") {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: URI parameter needs to be configured with \'https://\'");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDB TLS: URI parameter needs to be configured with \'https://\'");
             return false;
         }
 
         if (!_TLSCACertFilename.empty()) { // TLS parameter activated and not empty
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: " + _TLSCACertFilename);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDB TLS: CA certificate file: " + _TLSCACertFilename);
             std::ifstream ifs(_TLSCACertFilename);
             std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
             influxDBTLSCACert = content;
 
             if (influxDBTLSCACert.empty()) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load CA certificate");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDB TLS: Failed to load CA certificate");
             }
         }
 
         if (!_TLSClientCertFilename.empty()) {
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: Client certificate file: " + _TLSClientCertFilename);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDB TLS: Client certificate file: " + _TLSClientCertFilename);
             std::ifstream cert_ifs(_TLSClientCertFilename);
             std::string cert_content((std::istreambuf_iterator<char>(cert_ifs)), (std::istreambuf_iterator<char>()));
             influxDBTLSClientCert = cert_content;
 
             if (influxDBTLSClientCert.empty()) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client certificate");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDB TLS: Failed to load client certificate");
             }
         }
 
         if (!_TLSClientKeyFilename.empty()) {
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: Client key file: " + _TLSClientKeyFilename);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDB TLS: Client key file: " + _TLSClientKeyFilename);
             std::ifstream key_ifs(_TLSClientKeyFilename);
             std::string key_content((std::istreambuf_iterator<char>(key_ifs)), (std::istreambuf_iterator<char>()));
             influxDBTLSClientKey = key_content;
 
             if (influxDBTLSClientKey.empty()) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client key");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDB TLS: Failed to load client key");
             }
         }
     }
     else {
         if (influxDBURI.substr(0,7) != "http://") {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "URI parameter needs to be configured with \'http://\'");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDB: URI parameter needs to be configured with \'http://\'");
             return false;
         }
     }
@@ -188,14 +188,14 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
     }
 
     payload.shrink_to_fit();
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDB: Payload: " + payload);
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Payload: " + payload);
 
 
     // use the default retention policy of the database
     std::string apiURI = influxDBURI + "/write?db=" + influxDBDatabase;
     apiURI.shrink_to_fit();
     http_config.url = apiURI.c_str();
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDB: URI: " + apiURI);
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + apiURI);
 
     esp_http_client_handle_t http_client = esp_http_client_init(&http_config);
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Initialized");
@@ -237,46 +237,46 @@ bool InfluxDBv2Init(std::string _uri, std::string _bucket, std::string _org, std
 
     if (influxDBv2TLSEncryption) {
         if (influxDBv2URI.substr(0,8) != "https://") {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: URI parameter needs to be configured with \'https://\'");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDBv2 TLS: URI parameter needs to be configured with \'https://\'");
             return false;
         }
 
         if (!_TLSCACertFilename.empty()) { // TLS parameter activated and not empty
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: " + _TLSCACertFilename);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv2 TLS: CA certificate file: " + _TLSCACertFilename);
             std::ifstream ifs(_TLSCACertFilename);
             std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
             influxDBv2TLSCACert = content;
 
             if (influxDBv2TLSCACert.empty()) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load CA certificate");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDBv2 TLS: Failed to load CA certificate");
             }
         }
 
         if (!_TLSClientCertFilename.empty()) {
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: Client certificate file: " + _TLSClientCertFilename);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv2 TLS: Client certificate file: " + _TLSClientCertFilename);
             std::ifstream cert_ifs(_TLSClientCertFilename);
             std::string cert_content((std::istreambuf_iterator<char>(cert_ifs)), (std::istreambuf_iterator<char>()));
             influxDBv2TLSClientCert = cert_content;
 
             if (influxDBv2TLSClientCert.empty()) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client certificate");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDBv2 TLS: Failed to load client certificate");
             }
         }
 
         if (!_TLSClientKeyFilename.empty()) {
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TLS: Client key file: " + _TLSClientKeyFilename);
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv2 TLS: Client key file: " + _TLSClientKeyFilename);
             std::ifstream key_ifs(_TLSClientKeyFilename);
             std::string key_content((std::istreambuf_iterator<char>(key_ifs)), (std::istreambuf_iterator<char>()));
             influxDBv2TLSClientKey = key_content;
 
             if (influxDBv2TLSClientKey.empty()) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client key");
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDBv2 TLS: Failed to load client key");
             }
         }
     }
     else {
         if (influxDBv2URI.substr(0,7) != "http://") {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "URI parameter needs to be configured with \'http://\'");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "InfluxDBv2: URI parameter needs to be configured with \'http://\'");
             return false;
         }
     }
@@ -339,12 +339,12 @@ void InfluxDBv2Publish(std::string _measurement, std::string _key, std::string _
     }
 
     payload.shrink_to_fit();
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv2: Payload: " + payload);
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Payload: " + payload);
 
     std::string apiURI = influxDBv2URI + "/api/v2/write?org=" + influxDBv2Org + "&bucket=" + influxDBv2Bucket;
     apiURI.shrink_to_fit();
     http_config.url = apiURI.c_str();
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "InfluxDBV2: URI: " + apiURI);
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + apiURI);
 
     esp_http_client_handle_t http_client = esp_http_client_init(&http_config);
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Initialized");

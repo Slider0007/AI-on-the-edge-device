@@ -5,8 +5,6 @@
 #define INTERFACE_INFLUXDB_H
 
 #include <string>
-//#include <map>
-//#include <functional>
 
 // Interface to InfluxDB v1.x
 bool InfluxDBInit(std::string _influxDBURI, std::string _database, std::string _user, std::string _password,
