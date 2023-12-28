@@ -201,6 +201,10 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "Database", true, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "user", false, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "password", false, "undefined");
+     ParamAddSingleValueWithPreset(param, catname, "TLSEncryption", false, "false");
+     ParamAddSingleValueWithPreset(param, catname, "TLSCACert", true, "/config/certs/ca.crt");
+     ParamAddSingleValueWithPreset(param, catname, "TLSClientCert", true, "/config/certs/client.crt");
+     ParamAddSingleValueWithPreset(param, catname, "TLSClientKey", true, "/config/certs/client.key");
      ParamAddValue(param, catname, "Measurement", 1, true, "undefined");
      ParamAddValue(param, catname, "Field", 1, true, "undefined");
 
@@ -213,6 +217,10 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "Bucket", true, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "Org", false, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "Token", false, "undefined");
+     ParamAddSingleValueWithPreset(param, catname, "TLSEncryption", false, "false");
+     ParamAddSingleValueWithPreset(param, catname, "TLSCACert", true, "/config/certs/ca.crt");
+     ParamAddSingleValueWithPreset(param, catname, "TLSClientCert", true, "/config/certs/client.crt");
+     ParamAddSingleValueWithPreset(param, catname, "TLSClientKey", true, "/config/certs/client.key");
      ParamAddValue(param, catname, "Measurement", 1, true, "undefined");
      ParamAddValue(param, catname, "Field", 1, true, "undefined");
 

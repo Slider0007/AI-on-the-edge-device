@@ -29,7 +29,10 @@ void ClassFlowInfluxDBv2::SetInitialParameter(void)
     bucket = "";
     dborg = "";  
     dbtoken = "";  
-    //dbfield = "";
+    TLSEncryption = false;
+    TLSCACertFilename = "";
+    TLSClientCertFilename = "";
+    TLSClientKeyFilename = "";
 
     disabled = false;
     InfluxDBenable = false;
@@ -114,6 +117,29 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             this->dbtoken = splitted[1];
         }
 
+        if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                TLSEncryption = true;  
+            else
+                TLSEncryption = false;
+        }
+
+        if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1))
+        {
+            TLSCACertFilename = "/sdcard" + splitted[1];
+        }
+        
+        if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1))
+        {
+            TLSClientCertFilename = "/sdcard" + splitted[1];
+        }
+
+        if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1))
+        {
+            TLSClientKeyFilename = "/sdcard" + splitted[1];
+        }
+
         if (((toUpper(_param) == "MEASUREMENT")) && (splitted.size() > 1))
         {
             handleMeasurement(splitted[0], splitted[1]);
@@ -125,20 +151,21 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         }
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init with URI: " + uri + ", bucket: " + bucket + ", Org: " + dborg + ", Token: *****");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init: URI: " + uri + ", Bucket: " + bucket + ", Org: " + dborg + 
+                        ", Token: *****, TLS Encryption: " + std::to_string(TLSEncryption));
 
     if ((uri.length() > 0 && (uri != "undefined")) && (bucket.length() > 0) && (bucket != "undefined") && 
         (dborg.length() > 0) && (dborg != "undefined") && (dbtoken.length() > 0) && (dbtoken != "undefined")) 
     { 
-        InfluxDB_V2_Init(uri, bucket, dborg, dbtoken); 
-        InfluxDBenable = true;
+        InfluxDBenable = InfluxDBv2Init(uri, bucket, dborg, dbtoken, TLSEncryption, TLSCACertFilename, 
+                                            TLSClientCertFilename, TLSClientKeyFilename);
     }
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or wrong parameter");
-        return false;
+        InfluxDBenable = false;
     }
    
-    return true;
+    return InfluxDBenable;
 }
 
 
@@ -166,7 +193,7 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
                         namenumber = namenumber + "/value";
                 }
 
-                InfluxDB_V2_Publish((*NUMBERS)[i]->MeasurementV2, namenumber, (*NUMBERS)[i]->sActualValue, (*NUMBERS)[i]->sTimeProcessed);
+                InfluxDBv2Publish((*NUMBERS)[i]->MeasurementV2, namenumber, (*NUMBERS)[i]->sActualValue, (*NUMBERS)[i]->sTimeProcessed);
             }
         }
     }

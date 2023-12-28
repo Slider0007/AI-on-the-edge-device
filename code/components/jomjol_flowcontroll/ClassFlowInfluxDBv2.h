@@ -6,7 +6,6 @@
 #define CLASSFINFLUXDBv2_H
 
 #include "ClassFlow.h"
-
 #include "ClassFlowPostProcessing.h"
 
 #include <string>
@@ -16,7 +15,9 @@ class ClassFlowInfluxDBv2 : public ClassFlow
 protected:
 	ClassFlowPostProcessing* flowpostprocessing;
     std::string uri, bucket;
-    std::string dborg, dbtoken, dbfield;
+    std::string dborg, dbtoken;
+    bool TLSEncryption;
+    std::string TLSCACertFilename, TLSClientCertFilename, TLSClientKeyFilename;
     bool InfluxDBenable;
 
     void SetInitialParameter(void);     

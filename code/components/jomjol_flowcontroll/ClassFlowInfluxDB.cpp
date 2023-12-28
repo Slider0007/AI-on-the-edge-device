@@ -30,6 +30,10 @@ void ClassFlowInfluxDB::SetInitialParameter(void)
     measurement = "";
     user = "";
     password = "";
+    TLSEncryption = false;
+    TLSCACertFilename = "";
+    TLSClientCertFilename = "";
+    TLSClientKeyFilename = "";
 
     disabled = false;
     InfluxDBenable = false;
@@ -112,7 +116,30 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if ((toUpper(_param) == "PASSWORD") && (splitted.size() > 1))
         {
             this->password = splitted[1];
-        }               
+        }
+
+        if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                TLSEncryption = true;  
+            else
+                TLSEncryption = false;
+        }
+
+        if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1))
+        {
+            TLSCACertFilename = "/sdcard" + splitted[1];
+        }
+        
+        if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1))
+        {
+            TLSClientCertFilename = "/sdcard" + splitted[1];
+        }
+
+        if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1))
+        {
+            TLSClientKeyFilename = "/sdcard" + splitted[1];
+        }
 
         if (((toUpper(_param) == "MEASUREMENT")) && (splitted.size() > 1))
         {
@@ -125,18 +152,19 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         }
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init with URI: " + uri + ", Database: " + database + ", User: " + user + ", Password: " + password);
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init: URI: " + uri + ", Database: " + database + ", User: " + user + 
+                        ", Password: *****, TLS Encryption: " + std::to_string(TLSEncryption));
 
     if ((uri.length() > 0) && (uri != "undefined") && (database.length() > 0) && (database != "undefined")) { 
-        InfluxDBInit(uri, database, user, password); 
-        InfluxDBenable = true;
+        InfluxDBenable = InfluxDBInit(uri, database, user, password, TLSEncryption, TLSCACertFilename, 
+                                        TLSClientCertFilename, TLSClientKeyFilename);
     } 
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or wrong parameter");
-        return false;
+        InfluxDBenable = false;
     }
    
-    return true;
+    return InfluxDBenable;
 }
 
 
