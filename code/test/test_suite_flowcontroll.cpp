@@ -108,7 +108,7 @@ void initGPIO()
  */
 void task_UnityTesting(void *pvParameter)
 {
-    vTaskDelay( 3000 / portTICK_PERIOD_MS ); // 3s delay to ensure established serial connection
+    vTaskDelay( 5000 / portTICK_PERIOD_MS ); // 5s delay to ensure established serial connection
     
     UNITY_BEGIN();
         RUN_TEST(test_getReadoutRawString);
