@@ -460,8 +460,7 @@ esp_err_t handler_img_tmp_virtual(httpd_req_t *req)
         return GetRawJPG(req); 
 
     // Serve alg.jpg, alg_roi.jpg or digital and analog ROIs
-    if (ESP_OK == GetJPG(filetosend, req))
-        return ESP_OK;
+    return GetJPG(filetosend, req));
 
     #ifdef DEBUG_DETAIL_ON      
         LogFile.WriteHeapInfo("handler_img_tmp_virtual - Done");   
