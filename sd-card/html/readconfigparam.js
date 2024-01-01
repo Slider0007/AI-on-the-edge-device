@@ -8,98 +8,92 @@ var REFERENCES = new Array(0);
 var tflite_list = "";
 
 
-function getNUMBERSList() {
-	_domainname = getDomainname(); 
+function getNUMBERSList()
+{
      var namenumberslist = "";
+     url = getDomainname() + '/editflow?task=namenumbers';
 
 	var xhttp = new XMLHttpRequest();
-	xhttp.addEventListener('load', function(event) {
-          if (xhttp.status >= 200 && xhttp.status < 300) {
-               namenumberslist = xhttp.responseText;
-          } else {
-               console.warn(request.statusText, request.responseText);
+     xhttp.onreadystatechange = function() {
+          if (this.readyState == 4) {
+              if (this.status >= 200 && this.status < 300) {
+                    namenumberslist = xhttp.responseText;
+                    namenumberslist = namenumberslist.split("\t");
+               }
+               else {
+                    firework.launch("Sequence names request failed (Response status: " + this.status + 
+                                   "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Sequence names request failed. Response status: " + this.status);  
+               }
           }
-     });
+     };
 
-     try {
-          url = _domainname + '/editflow?task=namenumbers';     
-          xhttp.open("GET", url, false);
-          xhttp.send();
-     }
-     catch (error)
-     {
-//               alert("Loading Hostname failed");
-     }
-
-     namenumberslist = namenumberslist.split("\t");
-//      namenumberslist.pop();
+     xhttp.open("GET", url, false);
+     xhttp.send();
 
      return namenumberslist;
 }
 
 
-function getDATAList() {
-	_domainname = getDomainname(); 
-     datalist = "";
+function getDATAList()
+{
+     var datalist = "";
+     url = getDomainname() + '/editflow?task=data';     
 
 	var xhttp = new XMLHttpRequest();
-	xhttp.addEventListener('load', function(event) {
-          if (xhttp.status >= 200 && xhttp.status < 300) {
-               datalist = xhttp.responseText;
-          } else {
-               console.warn(request.statusText, request.responseText);
+     xhttp.onreadystatechange = function() {
+          if (this.readyState == 4) {
+               if (this.status >= 200 && this.status < 300) {
+                    datalist = xhttp.responseText;
+                    datalist = datalist.split("\t");
+                    datalist.pop();
+                    datalist.sort();
+               }
+               else {
+                    firework.launch("Data files request failed (Response status: " + this.status + 
+                                   "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Data files request failed. Response status: " + this.status);  
+               }
           }
-     });
-
-     try {
-          url = _domainname + '/editflow?task=data';     
-          xhttp.open("GET", url, false);
-          xhttp.send();
-     }
-     catch (error)
-     {
-//               alert("Loading Hostname failed");
-     }
-
-     datalist = datalist.split("\t");
-     datalist.pop();
-     datalist.sort();
+     };
+ 
+     xhttp.open("GET", url, false);
+     xhttp.send();
 
      return datalist;
 }
 
 
-function fetchTFLITEList() {
-	_domainname = getDomainname(); 
+function fetchTFLITEList()
+{
      var response = "";
+     url = getDomainname() + '/editflow?task=tflite';
 
 	var xhttp = new XMLHttpRequest();
-	xhttp.addEventListener('load', function(event) {
-          if (xhttp.status >= 200 && xhttp.status < 300) {
-               response = xhttp.responseText;
-          } else {
-               console.warn(request.statusText, request.responseText);
+     xhttp.onreadystatechange = function() {
+          if (this.readyState == 4) {
+               if (this.status >= 200 && this.status < 300) {
+                    response = xhttp.responseText;
+                    response = response.split("\t").filter(element => element); // Split at tab position and remove empty elements
+                    response.sort();  // Sort elements by name
+               }
+               else {
+                    firework.launch("TFLite files request failed (Response status: " + this.status + 
+                                   "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("TFLite files request failed. Response status: " + this.status);  
+               }
           }
-     });
+     };
 
-     try {
-          url = _domainname + '/editflow?task=tflite';
-          xhttp.open("GET", url, false);
-          xhttp.send();
-     }
-     catch (error)
-     {
-//               alert("Loading Hostname failed");
-     }
+     xhttp.open("GET", url, false);
+     xhttp.send();
 
-     response = response.split("\t").filter(element => element); // Split at tab position and remove empty elements
-     response.sort();  // Sort elements by name
-
-     tflite_list = response;
+     tflite_list = response;  // Save to global variable
 }
 
 
-function getTFLITEList() {
+function getTFLITEList()
+{
      return tflite_list;
 }
 

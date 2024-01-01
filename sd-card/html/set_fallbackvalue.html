@@ -159,19 +159,30 @@
         var sel = document.getElementById("Numbers_value1");
         var _number = sel.options[sel.selectedIndex].text;  
         inputVal = inputVal.replace(",", ".");
+        url = domainname + "/set_fallbackvalue?value=" + inputVal + "&numbers=" + _number;     
+
         var xhttp = new XMLHttpRequest();
-        try {
-            url = domainname + "/set_fallbackvalue?value=" + inputVal + "&numbers=" + _number;     
-            xhttp.open("GET", url, false);
-            xhttp.send();
-            response = xhttp.responseText;
-            document.getElementById("result").innerHTML=response;
-            firework.launch('New \"Fallback Value\" set', 'success', 2000, true);
-        }
-        catch (error)
-        {
-        firework.launch('Failed to get data from device!', 'danger', 30000);
-        }
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {       
+                    document.getElementById("result").innerHTML=xhttp.responseText;
+                    firework.launch('New \"Fallback Value\" set', 'success', 2000, true);
+                }
+                else if (this.status == 403) {
+                    firework.launch("Setting new value rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
+                    console.error("Setting new value rejected. Process not (yet) initialized. Response status: " + this.status);  
+                }
+                else {
+                    firework.launch("Setting new value failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Setting new value failed. Response status: " + this.status);  
+                }
+            }
+        };
+
+        xhttp.timeout = 10000;  // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
     }
 
 
@@ -179,45 +190,64 @@
         // Get current Fallback Value
         var sel = document.getElementById("Numbers_value1");
         var _number = sel.options[sel.selectedIndex].text;
+        var url_sequence = _domainname + '/set_fallbackvalue?numbers=' + _number;
 
-        var xhttp = new XMLHttpRequest();
-        try {
-            url = _domainname + '/set_fallbackvalue?numbers=' + _number;
-            xhttp.open("GET", url, false);
-            xhttp.send();
-            response = xhttp.responseText;
-            document.getElementById("fallbackvalue").innerHTML=response;
+        var xhttp_sequence = new XMLHttpRequest();
+        xhttp_sequence.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    document.getElementById("fallbackvalue").innerHTML=xhttp_sequence.responseText;
+                }
+                else if (this.status == 403) {
+                    firework.launch("Sequence name request rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
+                    console.error("Sequence name request rejected. Process not (yet) initialized. Response status: " + this.status);  
+                }
+                else {
+                    firework.launch("Sequence name request failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Sequence name request failed. Response status: " + this.status);  
+                }
+            }
         }
-        catch (error)
-        {
-            firework.launch('Failed to get data from device!', 'danger', 30000);
-        }
+
+        xhttp_sequence.timeout = 10000;  // 10 seconds
+        xhttp_sequence.open("GET", url_sequence, true);
+        xhttp_sequence.send();
 
         // Get current RAW Value
         var sel = document.getElementById("Numbers_value1");
         var _number = sel.options[sel.selectedIndex].text;
 
-        var xhttp = new XMLHttpRequest();
-        try {
-            url = _domainname + '/value?all=true&type=raw';
-            xhttp.open("GET", url, false);
-            xhttp.send();
-            response = xhttp.responseText;
+        var url_rawvalue = _domainname + '/value?all=true&type=raw';
+        var xhttp_rawvalue = new XMLHttpRequest();
+        xhttp_rawvalue.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    lines = xhttp_rawvalue.responseText.split(/\r?\n/);
 
-            lines = response.split(/\r?\n/);
-
-            lines.forEach(function(line) {
-                arr = line.split("\t");
-                if (_number == arr[0]) {
-                    document.getElementById("myInput").value = Number(arr[1]);
-                    return;
+                    lines.forEach(function(line) {
+                        arr = line.split("\t");
+                        if (_number == arr[0]) {
+                            document.getElementById("myInput").value = Number(arr[1]);
+                            return;
+                        }
+                    });
                 }
-            });
+                else if (this.status == 403) {
+                    firework.launch("Raw value request rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
+                    console.error("Raw value request rejected. Process not (yet) initialized. Response status: " + this.status);  
+                }
+                else {
+                    firework.launch("Raw value request failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Raw value request failed. Response status: " + this.status);  
+                }
+            }
         }
-        catch (error)
-        {
-            firework.launch('Failed to get data from device!', 'danger', 30000);
-        }
+
+        xhttp_rawvalue.timeout = 10000;  // 10 seconds
+        xhttp_rawvalue.open("GET", url_rawvalue, true);
+        xhttp_rawvalue.send();
 
         // Reset result
         document.getElementById("result").innerHTML = "";

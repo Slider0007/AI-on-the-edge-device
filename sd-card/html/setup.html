@@ -115,7 +115,9 @@
     document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
     document.getElementById("progressBar").value = 0;
 
-    function clickStart() {
+    
+    function clickStart()
+    {
         aktstep = 0;
         setupCompleted = false;
         document.getElementById('stream').src = "";     
@@ -123,7 +125,9 @@
         LoadStep();
     }
 
-    function clickAbort() {
+
+    function clickAbort()
+    {
         setupCompleted = false;
         aktstep = 7;
         document.getElementById('stream').src = "";     
@@ -131,7 +135,9 @@
         LoadStep();
     }
 
-   function clickNext() {
+
+   function clickNext()
+   {
         aktstep++;
         if (aktstep > 7) {
             aktstep = 7;
@@ -141,7 +147,9 @@
         LoadStep();
     }
 
-   function clickPrevious() {
+
+   function clickPrevious()
+   {
         aktstep--;
         if (aktstep < 0) {
             aktstep = 0;
@@ -151,7 +159,8 @@
         LoadStep();
    }
 
-   function LoadStep(){
+   function LoadStep()
+   {
       loadRSSI();
       switch (aktstep) {
         case 0: // Start page
@@ -308,8 +317,11 @@
         }
    }
 
-   function loadRSSI() {
-		url = getDomainname() + '/rssi';     
+
+   function loadRSSI() 
+   {
+		var url = getDomainname() + '/rssi'; 
+
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -331,7 +343,9 @@
 					document.getElementById('rssi').value = ("WLAN Signal: Unreliable (" + _rsp + "dBm)");
 				}
 			}
-		}
+		};
+
+        xhttp.timeout = 10000;  // 10 seconds
 		xhttp.open("GET", url, true);
 		xhttp.send();		
 	}

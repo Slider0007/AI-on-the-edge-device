@@ -44,28 +44,22 @@ function UpdatePage(_dosession = true){
         
 function LoadHostname()
 {
+    var url = getDomainname() + '/info?type=Hostname';   
+
     var xhttp = new XMLHttpRequest();
-    xhttp.addEventListener('load', function(event) {
-        if (xhttp.status >= 200 && xhttp.status < 300) {
-            hostname = xhttp.responseText;
-            document.title = hostname + " | AI on the Edge";
-            document.getElementById("id_title").innerHTML  += hostname;
-        } 
-        else {
-            console.warn(request.statusText, request.responseText);
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status >= 200 && this.status < 300) {
+                hostname = xhttp.responseText;
+                document.title = hostname + " | AI on the Edge";
+                document.getElementById("id_title").innerHTML  += hostname;
+            }
         }
-    });
+    };
 
-    try {
-            url = getDomainname() + '/info?type=Hostname';     
-            xhttp.open("GET", url, true);
-            xhttp.send();
-
-    }
-    catch (error)
-    {
-        //alert("Loading Hostname failed");
-    }
+    xhttp.timeout = 10000;  // 10 seconds
+    xhttp.open("GET", url, true);
+    xhttp.send();
 }
 
 
@@ -74,55 +68,50 @@ var webUiVersion = "";
 
 function LoadFwVersion()
 {
+    var url = getDomainname() + '/info?type=FirmwareVersion';
+    
     var xhttp = new XMLHttpRequest();
-    xhttp.addEventListener('load', function(event) {
-        if (xhttp.status >= 200 && xhttp.status < 300) {
-            fwVersion = xhttp.responseText;
-            document.getElementById("Version").innerHTML  = "Slider0007 Fork | " + fwVersion;
-            //console.log(fwVersion);
-            compareVersions();
-        } 
-        else {
-            console.warn(request.statusText, request.responseText);
-            fwVersion = "NaN";
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status >= 200 && this.status < 300) {
+                fwVersion = xhttp.responseText;
+                document.getElementById("Version").innerHTML  = "Slider0007 Fork | " + fwVersion;
+                //console.log(fwVersion);
+                compareVersions();
+            }
+            else {
+                fwVersion = "";
+            }
         }
-    });
+    };
 
-    try {
-        url = getDomainname() + '/info?type=FirmwareVersion';     
-        xhttp.open("GET", url, true);
-        xhttp.send();
-    }
-    catch (error) {
-        fwVersion = "NaN";
-    }
+    xhttp.timeout = 10000;  // 10 seconds
+    xhttp.open("GET", url, true);
+    xhttp.send();
 }
 
 
 function LoadWebUiVersion()
 {
-    var xhttp = new XMLHttpRequest();
-    xhttp.addEventListener('load', function(event) {
-        if (xhttp.status >= 200 && xhttp.status < 300) {
-            webUiVersion = xhttp.responseText;
-            //console.log("Web UI Version: " + webUiVersion);
-            compareVersions();
-        } 
-        else {
-            console.warn(request.statusText, request.responseText);
-            webUiVersion = "NaN";
-        }
-    });
+    var url = getDomainname() + '/info?type=HTMLVersion';
 
-    try {
-        url = getDomainname() + '/info?type=HTMLVersion';     
-        //console.log("url: " + url);
-        xhttp.open("GET", url, true);
-        xhttp.send();
-    }
-    catch (error) {
-        webUiVersion = "NaN";
-    }
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status >= 200 && this.status < 300) {
+                webUiVersion = xhttp.responseText;
+                //console.log("Web UI Version: " + webUiVersion);
+                compareVersions();
+            }
+            else {
+                webUiVersion = "";
+            }
+        }
+    };
+
+    xhttp.timeout = 10000;  // 10 seconds
+    xhttp.open("GET", url, true);
+    xhttp.send();
 }
 
 
@@ -139,8 +128,8 @@ function compareVersions()
     //console.log("FW Hash: " + fWGitHash + ", Web UI Hash: " + webUiHash);
     
     if (fWGitHash != webUiHash) {
-        firework.launch("The version of the web interface (" + webUiHash + 
-            ") does not match the firmware version (" + 
-            fWGitHash + ")! It is suggested to keep them on the same version!", 'warning', 30000);
+        firework.launch("Web interface version does not match the firmware version. " + 
+                        "It's strongly advised to use matching version. Check logs for more details.", 
+                        'warning', 10000);
     }
 }

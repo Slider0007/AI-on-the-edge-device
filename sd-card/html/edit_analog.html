@@ -95,7 +95,7 @@
 
     <h2>Analog ROI</h2>
     <details id="desc_details">
-        <summary><b>CLICK HERE</b> for usage description. Further documenation: 
+        <summary><b>CLICK HERE</b> for usage description. Further documentation: 
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/ROI-Configuration/ target=_blank>ROI Configuration</a>
         </summary>
         <p>
@@ -242,7 +242,7 @@
                         onclick="SaveToConfig()" value="Save And Apply"></td>
         </tr>
         <tr>
-            <td colspan="4"><canvas id="canvas"></canvas></td>
+            <td colspan="4"><canvas style="max-width: 100%" id="canvas"></canvas></td>
         </tr>
     </table>
 
@@ -784,7 +784,7 @@
             RefreshDraw();
         };
 
-        imageObj.src = dataURL;
+        imageObj.src = loadImage(dataURL, 'img_not_available.png?v=$COMMIT_HASH').src;
     }
 
 
@@ -1013,7 +1013,7 @@
             firework.launch('Save and apply configuration...', 'success', 2000, true);
             setTimeout(function() {
                 reload_config();
-            }, 500);
+            }, 200);
         }
     }
 

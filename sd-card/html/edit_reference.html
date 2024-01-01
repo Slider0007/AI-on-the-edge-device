@@ -67,7 +67,7 @@
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
     <h2>Reference Image</h2>
     <details id="desc_details">
-        <summary><b>CLICK HERE</b> for usage description. Further documenation: 
+        <summary><b>CLICK HERE</b> for usage description. Further documentation: 
                 <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/Reference-Image/ target=_blank>Reference Image</a>
         </summary>
         <p>
@@ -181,7 +181,7 @@
             </td>
         </tr>
         <tr>
-            <td colspan="3"><canvas id="canvas"></canvas></td>
+            <td colspan="3"><canvas style="max-width: 100%" id="canvas"></canvas></td>
         </tr>	
     </table>
 
@@ -192,8 +192,7 @@
 <script>
     var canvas = document.getElementById('canvas'),
         context = canvas.getContext('2d'),
-        imageObj = new Image(),
-        domainname = getDomainname(),   
+        imageObj = new Image(),  
         isActReference = false,
         param;
 
@@ -201,6 +200,10 @@
     function doTake()
     { 
         firework.launch('Taking image...', 'success', 2000, true);
+
+        var domainname = getDomainname();
+        var url;
+
         var xhttp = new XMLHttpRequest();
         if (param["TakeImage"]["Brightness"].found && param["TakeImage"]["Brightness"].enabled)
         {
@@ -209,8 +212,8 @@
             _brightness = document.getElementById("TakeImage_Brightness_value1").value;
             _contrast = document.getElementById("TakeImage_Contrast_value1").value;
             _saturation = document.getElementById("TakeImage_Saturation_value1").value;
-            url = getDomainname() + "/editflow?task=test_take&bri=" + _brightness;
-            url = url + "&con=" + _contrast + "&sat=" + _saturation + "&int=" + _intensity;
+            url = domainname + "/editflow?task=test_take&bri=" + _brightness + "&con=" + _contrast + 
+                    "&sat=" + _saturation + "&int=" + _intensity;
         }
         else {
             url = domainname + "/editflow?task=test_take";
@@ -220,18 +223,40 @@
             url = url + "&host=" + domainname;
         }
 
-        xhttp.open("GET", url, false);
-        xhttp.send();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    loadRawImage(true);
+                }
+                else if (this.status == 403) {
+                    document.getElementById("startreference").disabled = false;
+                    firework.launch("Take reference image parameter setting rejected. Process not (yet) initialized. \
+                                        Repeat action or check logs.", 'warning', 5000);
+                    console.error("Take reference image parameter setting rejected. Process not (yet) initialized. \
+                                        Response status: " + this.status);
+                }
+                else {
+                    document.getElementById("startreference").disabled = false;
+                    firework.launch("Take reference image parameter setting failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Take reference image parameter setting failed. Response status: " + this.status);
+                }
+            }
+        };
 
-        loadRawImage(true);
+        xhttp.timeout = 10000;  // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
     }
     
 
     function loadRawImage(new_image)
     {
         if (new_image) {
-            url = getDomainname() + "/img_tmp/raw.jpg?" + Math.floor((Math.random() * 1000000) + 1);
             document.getElementById("updatereferenceimage").disabled = false;
+            var url = getDomainname() + "/img_tmp/raw.jpg?" + Math.floor((Math.random() * 1000000) + 1);
+            loadCanvas(url, true);     
+            isActReference = false;
         }
         else {
             document.getElementById("updatereferenceimage").disabled = true;
@@ -263,15 +288,12 @@
             document.getElementById("TakeImage_Brightness_value1").type = "hidden";
             document.getElementById("TakeImage_Brightness_text").style.visibility = "hidden";            
         }
-
-        isActReference = false;
-        loadCanvas(url, true);
     }
     
 
     function showReference(_param)
     {
-        url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);
+        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);
 
         if (_param["Alignment"]["InitialRotate"].value1 < 0) {
             document.getElementById("prerotateangle").value = Math.ceil(_param["Alignment"]["InitialRotate"].value1);
@@ -501,7 +523,7 @@
                 drawRotated(false);
         };
 
-        imageObj.src = dataURL;
+        imageObj.src = loadImage(dataURL, 'img_not_available.png?v=$COMMIT_HASH').src;
     }
 
 
@@ -581,7 +603,7 @@
             firework.launch('Save and apply configuration...', 'success', 2000, true);
             setTimeout(function() {
                 reload_config();
-            }, 500);
+            }, 200);
         }
     }
 

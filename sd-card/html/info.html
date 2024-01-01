@@ -255,7 +255,7 @@
 <script>
 	function loadLastRestart() 
 	{
-		url = getDomainname() + '/starttime';     
+		var url = getDomainname() + '/starttime';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -268,40 +268,43 @@
 						   xhttp.response.substr(13,2);
  				document.getElementById("starttime").value = timestamp;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadUptime() 
 	{
-		url = getDomainname() + '/uptime';     
+		var url = getDomainname() + '/uptime';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("uptime").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadFWVersion() 
 	{
-		url = getDomainname() + '/info?type=FirmwareVersion';     
+		var url = getDomainname() + '/info?type=FirmwareVersion';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("firmware").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadFWBuildTime() 
 	{
-		url = getDomainname() + '/info?type=BuildTime';     
+		var url = getDomainname() + '/info?type=BuildTime';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -313,183 +316,197 @@
 								xhttp.response.substr(14,2);
  				document.getElementById("build-time").value = timestamp;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadHTMLVersion() 
 	{
-		url = getDomainname() + '/info?type=HTMLVersion';     
+		var url = getDomainname() + '/info?type=HTMLVersion';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("web-ui").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadHostname() 
 	{
-		url = getDomainname() + '/info?type=Hostname';     
+		var url = getDomainname() + '/info?type=Hostname';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("hostname").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadIPAddress() 
 	{
-		url = getDomainname() + '/info?type=IP';     
+		var url = getDomainname() + '/info?type=IP';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("IP-address").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadWLANSSID() 
 	{
-		url = getDomainname() + '/info?type=SSID';     
+		var url = getDomainname() + '/info?type=SSID';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("WLAN-SSID").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadWLANSSID() 
 	{
-		url = getDomainname() + '/info?type=SSID';     
+		var url = getDomainname() + '/info?type=SSID';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("wlan-ssid").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadWLANSSID() 
 	{
-		url = getDomainname() + '/info?type=SSID';     
+		var url = getDomainname() + '/info?type=SSID';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("wlan-ssid").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadSDCardManufacturer() 
 	{
-		url = getDomainname() + '/info?type=SDCardManufacturer';     
+		var url = getDomainname() + '/info?type=SDCardManufacturer';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("SDCardManufacturer").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadSDCardName() 
 	{
-		url = getDomainname() + '/info?type=SDCardName';     
+		var url = getDomainname() + '/info?type=SDCardName';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("SDCardName").value = xhttp.response;
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadSDCardCapacity() 
 	{
-		url = getDomainname() + '/info?type=SDCardCapacity';     
+		var url = getDomainname() + '/info?type=SDCardCapacity';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("SDCardCapacity").value = xhttp.response + " MB";
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadSDCardSectorSize() 
 	{
-		url = getDomainname() + '/info?type=SDCardSectorSize';     
+		var url = getDomainname() + '/info?type=SDCardSectorSize';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("SDCardSectorSize").value = xhttp.response + " byte";
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadSDCardPartitionSize() 
 	{
-		url = getDomainname() + '/info?type=SDCardPartitionSize';     
+		var url = getDomainname() + '/info?type=SDCardPartitionSize';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("SDCardPartitionSize").value = xhttp.response + " MB";
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadSDCardFreePartitionSpace() 
 	{
-		url = getDomainname() + '/info?type=SDCardFreePartitionSpace';     
+		var url = getDomainname() + '/info?type=SDCardFreePartitionSpace';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("SDCardFreePartitionSpace").value = xhttp.response + " MB";
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadSDCardPartitionAllocationSize() 
 	{
-		url = getDomainname() + '/info?type=SDCardPartitionAllocationSize';     
+		var url = getDomainname() + '/info?type=SDCardPartitionAllocationSize';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
  				document.getElementById("SDCardPartitionAllocationSize").value = xhttp.response + " byte";
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
 	function loadMemoryInfo() 
 	{
-		url = getDomainname() + '/heap';     
+		var url = getDomainname() + '/heap';     
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -502,7 +519,8 @@
 				document.getElementById("ExtRAMLargestFree").value = data[2].split(":")[1] + " byte";
 				document.getElementById("ExtRAMMinFree").value = data[3].split(":")[1] + " byte";
 			}
-		}
+		};
+
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}

@@ -145,36 +145,55 @@
     LoadWebUiVersion();
     HA_send_discovery_visibililty();
 
-    if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH") {
-    document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/";
+    if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH")
+    {
+        document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/";
     }
+
     //console.log("Loading page: " + getCookie("page"));
     document.getElementById('maincontent').src = getCookie("page");
 
     
-    function flow_start() {
-    var url = getDomainname() + '/flow_start'; 
+    function flow_start()
+    {
+        var url = getDomainname() + '/flow_start';
+
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				if (xhttp.responseText.substring(0,3) == "001") {
-					firework.launch('Cycle start triggered', 'success', 2000, true);
-                    document.getElementById("maincontent").contentWindow.location.reload();
-				}
-				else if (xhttp.responseText.substring(0,3) == "002") {
-					firework.launch('Cycle start scheduled. Start new cycle after actual cycle is completed', 'success', 3000, true);
-				}
-				else if (xhttp.responseText.substring(0,3) == "099") {
-					firework.launch('Cycle start triggered, but cycle start not possible (no main flow task available)', 'danger', 30000);
-				}
-			}
-		}
+			if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    if (xhttp.responseText.substring(0,3) == "001") {
+                        firework.launch('Cycle start triggered', 'success', 2000);
+                        document.getElementById("maincontent").contentWindow.location.reload();
+                    }
+                    else if (xhttp.responseText.substring(0,3) == "002") {
+                        firework.launch('Cycle start scheduled. Start new cycle after actual cycle is completed', 'success', 3000);
+                        document.getElementById("maincontent").contentWindow.location.reload();
+                    }
+                    else if (xhttp.responseText.substring(0,3) == "099") {
+                        firework.launch('Cycle start triggered, but cycle start not possible (flow not initialized)', 'danger', 30000);
+                        document.getElementById("maincontent").contentWindow.location.reload();
+                    }
+                    else {
+                        firework.launch("Flow start request malformed. ResponseText: " + xhttp.responseText, 'danger', 30000);
+                    }
+                }
+                else {
+                    firework.launch("Flow start request failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Flow start request failed. Response status: " + this.status);  
+                }
+            }
+		};
+
+        xhttp.timeout = 10000;  // 10 seconds
 		xhttp.open("GET", url, true);
 		xhttp.send();
     }
 
 
-    function HA_send_discovery_visibililty() {
+    function HA_send_discovery_visibililty()
+    {
 		loadConfig(getDomainname());
 		ParseConfigReduced();
 		_category = getConfigCategory();
@@ -184,20 +203,32 @@
 	}
 
 
-    function HA_send_discovery() {
-        var url = getDomainname() + '/mqtt_publish_discovery'; 
+    function HA_send_discovery()
+    {
+        var url = getDomainname() + '/mqtt_publish_discovery';
+
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				firework.launch('Sending HA discovery topics scheduled. The sending will be processed in state "Publish to MQTT"', 'success', 5000);
-			}
-		}
+			if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+				    firework.launch('Sending HA discovery topics scheduled. The sending will be processed in state "Publish to MQTT"', 'success', 5000);
+			    }
+                else {
+                    firework.launch("HA send discovery topics request failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("HA send discovery topics request failed. Response status: " + this.status);  
+                }
+            }
+		};
+
+        xhttp.timeout = 10000;  // 10 seconds
 		xhttp.open("GET", url, true);
 		xhttp.send();
     }
 
 
-    function start_livestream(streamFlashlight) {
+    function start_livestream(streamFlashlight)
+    {
         if (streamPopup) 
             streamPopup.close();
 
@@ -208,6 +239,7 @@
 
         streamPopup.focus();
     }
+
 </script>
 
 </body>

@@ -1969,7 +1969,7 @@
 		if (!loadConfig(domainname)) {
 			firework.launch('Configuration could not be loaded! Please reload the page!', 'danger', 30000);
 			return;
-		} 
+		}
 		ParseConfig();	
 		param = getConfigParameters();
 		category = getConfigCategory();
@@ -1981,6 +1981,8 @@
 		UpdateExpertModus();
 		document.getElementById("divall").style.display = ''; 
 	}
+
+
 
 
 	function InitIndivParameter()
@@ -2118,7 +2120,6 @@
 						_zw_txt = "Section '" + _cat + "' / Parameter '" + _name + "': Invalid value: '" + textToFind + "'. Please correct before saving!";
 						firework.launch(_zw_txt, 'danger', 30000);
 					}
-
 				}
 				else if ((element.getAttribute("type") != null) && (element.getAttribute("type").toLowerCase() == "checkbox")) {
 					element.checked = _param[_cat][_name]["value"+j] == "true";
@@ -2702,7 +2703,7 @@
 			firework.launch('Save and apply configuration...', 'success', 2000, true);
 			setTimeout(function() {
 				reload_config();
-			}, 500);    
+			}, 200);    
 		}
 	}
 
@@ -2755,7 +2756,7 @@
 	openDescription();
 	fetchTFLITEList();
 	LoadConfigNeu();
-	
+
 </script>
 	
 </body>

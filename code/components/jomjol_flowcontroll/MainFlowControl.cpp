@@ -292,36 +292,22 @@ esp_err_t MQTTCtrlFlowStart(std::string _topic)
 
 esp_err_t handler_json(httpd_req_t *req)
 {
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_json - Start");    
-    #endif
-
-    ESP_LOGD(TAG, "handler_JSON uri: %s", req->uri);
-    
-    if (bTaskAutoFlowCreated) 
-    {
+    if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_set_type(req, "application/json");
-
-        std::string zw = flowctrl.getJSON();
-        if (zw.length() > 0) 
-        {
-            httpd_resp_send(req, zw.c_str(), zw.length());
-        }
-        else 
-        {
-            httpd_resp_send(req, NULL, 0);
-        }
-    }
-    else 
-    {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow task not (yet) started: REST API /json not yet available");
-        return ESP_ERR_NOT_FOUND;
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
+        return ESP_FAIL;
     }
 
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_JSON - Done");   
-    #endif
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "application/json");
+
+    std::string zw = flowctrl.getJSON();
+    if (zw.length() > 0) {
+        httpd_resp_send(req, zw.c_str(), zw.length());
+    }
+    else {
+        httpd_resp_send(req, NULL, 0);
+    }
 
     return ESP_OK;
 }
@@ -330,20 +316,17 @@ esp_err_t handler_json(httpd_req_t *req)
 esp_err_t handler_process_data(httpd_req_t *req)
 {
     esp_err_t retVal = ESP_OK;
-    std::string sReturnMessage = "E90: Flow task not yet created";      // Default return error message when no return is programmed
-    
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_process_data - Start");    
-    #endif
 
     if (!bTaskAutoFlowCreated) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, sReturnMessage.c_str());
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
         return ESP_FAIL;
     }
 
     cJSON *cJSONObject = cJSON_CreateObject();
     
     if (cJSONObject == NULL) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
         return ESP_FAIL;
     }
@@ -380,8 +363,8 @@ esp_err_t handler_process_data(httpd_req_t *req)
         retVal = ESP_FAIL;
 
     char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024, 1); // Print with predefined buffer of 1024 bytes, avoid dynamic allocations
-    sReturnMessage = std::string(jsonString);
-    cJSON_free(jsonString);  
+    std::string sReturnMessage = std::string(jsonString);
+    cJSON_free(jsonString);
     cJSON_Delete(cJSONObject);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -392,349 +375,313 @@ esp_err_t handler_process_data(httpd_req_t *req)
     else
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
 
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_process_data - Done");    
-    #endif
-
     return retVal;
 }
 
 
 esp_err_t handler_value(httpd_req_t *req)
 {
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_value - Start");    
-    #endif
+    bool _fullInfo = false;
+    bool _singleInfo = false;
+    bool _numberspecific = false;
+    std::string _type = "";
+    std::string zw;
 
-    if (bTaskAutoFlowCreated) {
-        bool _fullInfo = false;
-        bool _singleInfo = false;
-        bool _numberspecific = false;
-        std::string _type = "";
-        std::string zw;
+    // Default usage message when handler gets called without any parameter
+    const std::string RESTUsageInfo =
+        "00: Handler usage:<br>"
+        "1. Return data from all number sequences:<br>"
+        " - Actual Value:   /value?all=true&type=value<br>"
+        " - Fallback Value: /value?all=true&type=fallback<br>"
+        " - Raw Value:      /value?all=true&type=raw<br>"
+        " - Value Status:   /value?all=true&type=status<br><br>"
+        "2. Return data from a specific number sequence with e.g. name \"main\":<br>"
+        " - Actual Value:   /value?all=true&type=value&numbersname=main<br>"
+        " - Raw Value:      /value?all=true&type=raw&numbersname=main<br>"
+        " - Fallback Value: /value?all=true&type=fallback&numbersname=main<br>"
+        " - Value Status:   /value?all=true&type=status&numbersname=main<br><br>"
+        "3. Retrieve WebUI recognition page content, use /value?full=true<br>";
 
-        ESP_LOGD(TAG, "handler_value uri: %s", req->uri);														   
+    // Default return error message when no return is programmed
+    std::string sReturnMessage = "E90: Uninitialized";
 
-        // Default usage message when handler gets called without any parameter
-        const std::string RESTUsageInfo = 
-            "00: Handler usage:<br>"
-            "1. Return data from all number sequences:<br>"
-            " - Actual Value:   /value?all=true&type=value<br>"
-            " - Fallback Value: /value?all=true&type=fallback<br>"
-            " - Raw Value:      /value?all=true&type=raw<br>"
-            " - Value Status:   /value?all=true&type=status<br><br>"
-            "2. Return data from a specific number sequence with e.g. name \"main\":<br>"
-            " - Actual Value:   /value?all=true&type=value&numbersname=main<br>"
-            " - Raw Value:      /value?all=true&type=raw&numbersname=main<br>"
-            " - Fallback Value: /value?all=true&type=fallback&numbersname=main<br>"
-            " - Value Status:   /value?all=true&type=status&numbersname=main<br><br>"
-            "3. Retrieve WebUI recognition page content, use /value?full=true<br>";
+    char _query[100];
+    char _value[10];
+    char _numbersname[50];
 
-        // Default return error message when no return is programmed
-        std::string sReturnMessage = "E90: Uninitialized";
-
-        char _query[100];
-        char _value[10];
-        char _numbersname[50];
-
-        if (httpd_req_get_url_query_str(req, _query, 100) == ESP_OK) {
-            //ESP_LOGD(TAG, "Query: %s", _query);
-            if (httpd_query_key_value(_query, "all", _value, 10) == ESP_OK) {
-                #ifdef DEBUG_DETAIL_ON       
-                    ESP_LOGD(TAG, "all found: %s", _value);
-                #endif
-                _singleInfo = true;
-                _fullInfo = false;
-            }
-
-            if (httpd_query_key_value(_query, "type", _value, 10) == ESP_OK) {
-                #ifdef DEBUG_DETAIL_ON       
-                    ESP_LOGD(TAG, "type found: %s", _value);
-                #endif
-                _type = std::string(_value);
-            }
-
-            if (httpd_query_key_value(_query, "numbersname", _numbersname, 50) == ESP_OK) {
-                #ifdef DEBUG_DETAIL_ON       
-                    ESP_LOGD(TAG, "numbersname found: %s", _numbersname);
-                #endif
-                _numberspecific = true;
-            }
-
-            if (httpd_query_key_value(_query, "full", _value, 10) == ESP_OK) {
-                #ifdef DEBUG_DETAIL_ON       
-                    ESP_LOGD(TAG, "full found: %s", _value);
-                #endif
-                _fullInfo = true;
-                _singleInfo = false;
-            }     
+    if (httpd_req_get_url_query_str(req, _query, 100) == ESP_OK) {
+        //ESP_LOGD(TAG, "Query: %s", _query);
+        if (httpd_query_key_value(_query, "all", _value, 10) == ESP_OK) {
+            #ifdef DEBUG_DETAIL_ON
+                ESP_LOGD(TAG, "all found: %s", _value);
+            #endif
+            _singleInfo = true;
+            _fullInfo = false;
         }
-        else {  // if no parameter is provided, print handler usage
-            httpd_resp_send(req, RESTUsageInfo.c_str(), RESTUsageInfo.length());
-            return ESP_OK; 
-        }    
 
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        if (httpd_query_key_value(_query, "type", _value, 10) == ESP_OK) {
+            //ESP_LOGD(TAG, "type found: %s", _value);
+            _type = std::string(_value);
+        }
 
-        /* number sequence results */
-        /**********************************************/
-        if (_singleInfo) {
-            httpd_resp_set_type(req, "text/plain");
+        if (httpd_query_key_value(_query, "numbersname", _numbersname, 50) == ESP_OK) {
+            //ESP_LOGD(TAG, "numbersname found: %s", _numbersname);
+            _numberspecific = true;
+        }
 
-            if (!_numberspecific) {
-                if (_type == "value")
-                    zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE);
-                else if (_type == "fallback")
-                    zw = flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE);
-                else if (_type == "raw")
-                    zw = flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE);
-                else if (_type == "status")
-                    zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS);
-                else {
-                    sReturnMessage = "E92: Type not found";
-                    httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
-                    return ESP_ERR_NOT_FOUND;
-                }
-            }
+        if (httpd_query_key_value(_query, "full", _value, 10) == ESP_OK) {
+            //ESP_LOGD(TAG, "full found: %s", _value);
+            _fullInfo = true;
+            _singleInfo = false;
+        }
+    }
+    else {  // if no parameter is provided, print handler usage
+        httpd_resp_send(req, RESTUsageInfo.c_str(), RESTUsageInfo.length());
+        return ESP_OK;
+    }
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+
+    /* number sequence results */
+    /**********************************************/
+    if (_singleInfo) {
+        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E92: Request rejected, flow not initialized");
+            return ESP_FAIL;
+        }
+        httpd_resp_set_type(req, "text/plain");
+
+        if (!_numberspecific) {
+            if (_type == "value")
+                zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE);
+            else if (_type == "fallback")
+                zw = flowctrl.getReadoutAll(READOUT_TYPE_FALLBACKVALUE);
+            else if (_type == "raw")
+                zw = flowctrl.getReadoutAll(READOUT_TYPE_RAWVALUE);
+            else if (_type == "status")
+                zw = flowctrl.getReadoutAll(READOUT_TYPE_VALUE_STATUS);
             else {
-                int positon = flowctrl.getNumbersNamePosition(std::string(_numbersname));
+                sReturnMessage = "E92: Type not found";
+                httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
+                return ESP_ERR_NOT_FOUND;
+            }
+        }
+        else {
+            int positon = flowctrl.getNumbersNamePosition(std::string(_numbersname));
 
-                if (positon < 0) {
-                    sReturnMessage = "E93: Numbersname not found";
-                    httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
-                    return ESP_ERR_NOT_FOUND;
-                }
-
-                if (_type == "value")
-                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE);
-                else if (_type == "fallback")
-                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_FALLBACKVALUE);
-                else if (_type == "raw")
-                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_RAWVALUE);
-                else if (_type == "status")
-                    zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE_STATUS);
-                else {
-                    sReturnMessage = "E92: Type not found";
-                    httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
-                    return ESP_ERR_NOT_FOUND;
-                }
+            if (positon < 0) {
+                sReturnMessage = "E93: Numbersname not found";
+                httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
+                return ESP_ERR_NOT_FOUND;
             }
 
-            ESP_LOGD(TAG, "TYPE: %s, RESULT: %s", _type.c_str(), zw.c_str());
-
-            httpd_resp_send(req, zw.c_str(), zw.length());  
-            return ESP_OK;
+            if (_type == "value")
+                zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE);
+            else if (_type == "fallback")
+                zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_FALLBACKVALUE);
+            else if (_type == "raw")
+                zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_RAWVALUE);
+            else if (_type == "status")
+                zw = flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE_STATUS);
+            else {
+                sReturnMessage = "E92: Type not found";
+                httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
+                return ESP_ERR_NOT_FOUND;
+            }
         }
 
-        /* WebUI - Recognition page */
-        /**********************************************/
-        else if (_fullInfo) {
+        ESP_LOGD(TAG, "TYPE: %s, RESULT: %s", _type.c_str(), zw.c_str());
+
+        httpd_resp_send(req, zw.c_str(), zw.length());
+        return ESP_OK;
+    }
+
+    /* WebUI - Recognition page */
+    /**********************************************/
+    else if (_fullInfo) {
+        /*++++++++++++++++++++++++++++++++++++++++*/
+        /* Page details */
+        std::string txt = "<!DOCTYPE html><html lang=\"en\" xml:lang=\"en\"><head><meta charset=\"UTF-8\"><title>Recognition Details</title></head>\n";
+        txt += "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px;font-size:100%;-webkit-text-size-adjust:100%; text-size-adjust:100%;\">";
+        txt += "<h2 style=\"font-size:1.5em;margin-block-start:0.0em;margin-block-end:0.2em;\">Recognition Details</h2>\n";
+        txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;margin-right:10px;\">\n";
+        txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
+        txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
+                "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitalization cycle.</strong></p>";
+        txt += "<p>\"Raw Value\" represents the value which gets extracted and combined from all the single image results but without "
+                "correction of any of the post-processing checks / alogrithms. The result after post-processing validation is represented with "
+                "\"Value\". In the sections \"Digit ROI\" and \"Analog ROI\" all single \"raw results\" of the respective ROI images (digit styled ROI and "
+                "analog styled ROI) are visualized separated per number sequence. The taken image which was used for processing (including the overlays "
+                "to highlight the relevant areas) is visualized at the bottom of this page.</p>";
+        txt += "</details><hr>\n";
+
+        if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) { // Display message if flow is not initialized or image processing active
+            txt += "<h4>"
+                    "Image recognition details are only accessable if initialization is completed and no image evaluation is ongoing. "
+                    "Wait a few moments and refresh this page.</h4> Current state: " + flowctrl.getActStatus();
+            httpd_resp_sendstr_chunk(req, txt.c_str());
+        }
+        else {
             /*++++++++++++++++++++++++++++++++++++++++*/
-            /* Page details */
-            std::string txt = "<!DOCTYPE html><html lang=\"en\" xml:lang=\"en\"><head><meta charset=\"UTF-8\"><title>Recognition Details</title></head>\n";
-            txt += "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px;font-size:100%;-webkit-text-size-adjust:100%; text-size-adjust:100%;\">";
-            txt += "<h2 style=\"font-size:1.5em;margin-block-start:0.0em;margin-block-end:0.2em;\">Recognition Details</h2>\n";
-            txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;margin-right:10px;\">\n";
-            txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
-            txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
-                   "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitalization cycle.</strong></p>";
-            txt += "<p>\"Raw Value\" represents the value which gets extracted and combined from all the single image results but without "
-                   "correction of any of the post-processing checks / alogrithms. The result after post-processing validation is represented with "
-                   "\"Value\". In the sections \"Digit ROI\" and \"Analog ROI\" all single \"raw results\" of the respective ROI images (digit styled ROI and "
-                   "analog styled ROI) are visualized separated per number sequence. The taken image which was used for processing (including the overlays "
-                   "to highlight the relevant areas) is visualized at the bottom of this page.</p>";
-            txt += "</details><hr>\n";
-
-            if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) { // Display message if flow is not initialized or image processing active
-                txt += "<h4>"
-                       "Image recognition details are only accessable if initialization is completed and no image evaluation is ongoing. "
-                       "Wait a few moments and refresh this page.</h4> Current state: " + flowctrl.getActStatus();
-                httpd_resp_sendstr_chunk(req, txt.c_str());
+            /* Result */
+            txt += "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;margin-top:40px;\">Result</h4>\n";
+            txt += "<table style=\"width:660px;border-collapse:collapse;table-layout:fixed;\">";
+            txt += "<tr><td style=\"font-weight:bold;width:40%;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Number Sequence</td>"
+                    "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Raw Value</td>"
+                    "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Actual Value</td></tr>";
+            for (int i = 0; i < flowctrl.getNumbersSize(); ++i) {
+                txt += "<tr><td style=\"padding:3px 5px; text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
+                    flowctrl.getNumbersName(i) + "</td><td style=\"padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
+                    flowctrl.getReadout(true, false, i) + "</td><td style=\"padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
+                    flowctrl.getReadout(false, true, i) + "</td></tr>";
             }
-            else {
-                /*++++++++++++++++++++++++++++++++++++++++*/
-                /* Result */
-                txt += "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;margin-top:40px;\">Result</h4>\n";
-                txt += "<table style=\"width:660px;border-collapse:collapse;table-layout:fixed;\">";
-                txt += "<tr><td style=\"font-weight:bold;width:40%;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Number Sequence</td>"
-                        "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Raw Value</td>"
-                        "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Actual Value</td></tr>";
-                for (int i = 0; i < flowctrl.getNumbersSize(); ++i) {   
-					txt += "<tr><td style=\"padding:3px 5px; text-align:left;vertical-align:middle;border:1px solid lightgrey\">" + 
-						flowctrl.getNumbersName(i) + "</td><td style=\"padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
-                        flowctrl.getReadout(true, false, i) + "</td><td style=\"padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
-                        flowctrl.getReadout(false, true, i) + "</td></tr>";
+            txt += "</table>\n";
+            httpd_resp_sendstr_chunk(req, txt.c_str());
+
+            /*++++++++++++++++++++++++++++++++++++++++*/
+            /* Digital ROI */
+            txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Digit ROI</h4>\n";
+            txt += "<table style=\"border-spacing:5px;\">\n";
+
+            std::vector<HTMLInfo*> htmlinfo;
+            htmlinfo = flowctrl.GetAllDigital();
+
+            int sequence = -1;
+            for (int i = 0; i < htmlinfo.size(); ++i) {
+                if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
+                    txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " + htmlinfo[i]->name + "</td></tr>\n";
+                    txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
+                    sequence++;
                 }
-                txt += "</table>\n";
-                httpd_resp_sendstr_chunk(req, txt.c_str());
 
-                /*++++++++++++++++++++++++++++++++++++++++*/
-                /* Digital ROI */
-                txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Digit ROI</h4>\n";
-                txt += "<table style=\"border-spacing:5px;\">\n";
-
-                std::vector<HTMLInfo*> htmlinfo;
-                htmlinfo = flowctrl.GetAllDigital(); 
-
-                int sequence = -1;
-                for (int i = 0; i < htmlinfo.size(); ++i) {
-                    if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
-                        txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " + htmlinfo[i]->name + "</td></tr>\n";
-                        txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
-                        sequence++;
-                    }
-
-                    if (flowctrl.GetTypeDigital() == Digital) {
-                        if (htmlinfo[i]->val == 10)
-                            zw = "NaN";
-                        else
-                            zw = std::to_string((int) htmlinfo[i]->val);
-                    }
-                    else {
-                        if (htmlinfo[i]->val >= 10.0) {
-                            zw = "0.0";
-                        }
-                        else {
-                            zw = to_stringWithPrecision(htmlinfo[i]->val, 1);
-                        }
-                    }
-
-                    if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
-                        txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
-                                zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
-                                "style=\"max-width:" + to_stringWithPrecision(640/(flowctrl.getNumbersROISize(sequence, 1) + 1), 0) + "px\" src=\"/img_tmp/" + 
-                                htmlinfo[i]->filename_org + "\"></p></td>\n";
+                if (flowctrl.GetTypeDigital() == Digital) {
+                    if (htmlinfo[i]->val == 10)
+                        zw = "NaN";
                     else
-                        txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
-                                zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\">No Image</p></td>\n";
-                    
-                    delete htmlinfo[i];
+                        zw = std::to_string((int) htmlinfo[i]->val);
                 }
-
-                if (htmlinfo.size() == 0)
-                    txt += "<tr><td>Digit ROI processing deactivated</td>";
-                
-                htmlinfo.clear();
-            
-                txt += "</tr></table>\n";
-                httpd_resp_sendstr_chunk(req, txt.c_str()); 
-
-                /*++++++++++++++++++++++++++++++++++++++++*/
-                /* Analog ROI */
-                txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Analog ROI</h4>\n";
-                txt += "<table style=\"border-spacing:5px;\">\n";
-                
-                sequence = -1;
-                htmlinfo = flowctrl.GetAllAnalog();
-                for (int i = 0; i < htmlinfo.size(); ++i) {
-                    if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
-                        txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " + 
-                                htmlinfo[i]->name + "</td></tr>\n";
-                        txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
-                        sequence++;
-                    }
-
+                else {
                     if (htmlinfo[i]->val >= 10.0) {
-                            zw = "0.0";
+                        zw = "0.0";
                     }
                     else {
                         zw = to_stringWithPrecision(htmlinfo[i]->val, 1);
                     }
-
-                    if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
-                        txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
-                                zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
-                                "style=\"max-width:" + to_stringWithPrecision(640/(flowctrl.getNumbersROISize(sequence, 2) + 1), 0) + "px\" src=\"/img_tmp/" + 
-                                htmlinfo[i]->filename_org + "\"></p></td>\n";
-                    else
-                        txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" + 
-                                zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\">No Image</p></td>\n";
-                    
-                    delete htmlinfo[i];
                 }
 
-                if (htmlinfo.size() == 0)
-                    txt += "<tr><td>Analog ROI processing deactivated</td>";
+                if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
+                    txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
+                            zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
+                            "style=\"max-width:" + to_stringWithPrecision(640/(flowctrl.getNumbersROISize(sequence, 1) + 1), 0) + "px\" src=\"/img_tmp/" +
+                            htmlinfo[i]->filename_org + "\"></p></td>\n";
+                else
+                    txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
+                            zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\">No Image</p></td>\n";
 
-                htmlinfo.clear();   
-
-                txt += "</tr></table>\n";
-                httpd_resp_sendstr_chunk(req, txt.c_str()); 
-
-                /*++++++++++++++++++++++++++++++++++++++++*/
-                /* Show ALG_ROI image */ 
-                txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Processed Image (incl. Overlays)</h4>\n";
-                txt += "<img src=\"/img_tmp/alg_roi.jpg\">\n";
-                txt += "</body></html>\n";             
-                httpd_resp_sendstr_chunk(req, txt.c_str()); 
+                delete htmlinfo[i];
             }
-        }
-        else {
-            sReturnMessage = "E91: Request incomplete<br> "
-                             "Call /value to show REST API usage info and/or check documentation";
-            httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
-            return ESP_ERR_NOT_FOUND;
-        }
 
-        // Respond with an empty chunk to signal HTTP response completion
-        httpd_resp_sendstr_chunk(req, NULL);   
+            if (htmlinfo.size() == 0)
+                txt += "<tr><td>Digit ROI processing deactivated</td>";
+
+            htmlinfo.clear();
+
+            txt += "</tr></table>\n";
+            httpd_resp_sendstr_chunk(req, txt.c_str());
+
+            /*++++++++++++++++++++++++++++++++++++++++*/
+            /* Analog ROI */
+            txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Analog ROI</h4>\n";
+            txt += "<table style=\"border-spacing:5px;\">\n";
+
+            sequence = -1;
+            htmlinfo = flowctrl.GetAllAnalog();
+            for (int i = 0; i < htmlinfo.size(); ++i) {
+                if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
+                    txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " +
+                            htmlinfo[i]->name + "</td></tr>\n";
+                    txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
+                    sequence++;
+                }
+
+                if (htmlinfo[i]->val >= 10.0) {
+                        zw = "0.0";
+                }
+                else {
+                    zw = to_stringWithPrecision(htmlinfo[i]->val, 1);
+                }
+
+                if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
+                    txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
+                            zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
+                            "style=\"max-width:" + to_stringWithPrecision(640/(flowctrl.getNumbersROISize(sequence, 2) + 1), 0) + "px\" src=\"/img_tmp/" +
+                            htmlinfo[i]->filename_org + "\"></p></td>\n";
+                else
+                    txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
+                            zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\">No Image</p></td>\n";
+
+                delete htmlinfo[i];
+            }
+
+            if (htmlinfo.size() == 0)
+                txt += "<tr><td>Analog ROI processing deactivated</td>";
+
+            htmlinfo.clear();
+
+            txt += "</tr></table>\n";
+            httpd_resp_sendstr_chunk(req, txt.c_str());
+
+            /*++++++++++++++++++++++++++++++++++++++++*/
+            /* Show ALG_ROI image */
+            txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Processed Image (incl. Overlays)</h4>\n";
+            txt += "<img src=\"/img_tmp/alg_roi.jpg\">\n";
+            txt += "</body></html>\n";
+            httpd_resp_sendstr_chunk(req, txt.c_str());
+        }
     }
     else {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Flow task not (yet) started: REST API /value not available");
+        sReturnMessage = "E91: Request incomplete<br> "
+                            "Call /value to show REST API usage info and/or check documentation";
+        httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
         return ESP_ERR_NOT_FOUND;
     }
 
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_value - Done");   
-    #endif
-
+    // Respond with an empty chunk to signal HTTP response completion
+    httpd_resp_sendstr_chunk(req, NULL);
     return ESP_OK;
 }
 
 
 esp_err_t handler_editflow(httpd_req_t *req)
 {
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_editflow - Start");       
-    #endif
-
-    ESP_LOGD(TAG, "handler_editflow uri: %s", req->uri);
-
     char _query[200];
     char _valuechar[30];
     std::string _task;
 
-    if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK)
-    {
-        if (httpd_query_key_value(_query, "task", _valuechar, 30) == ESP_OK)
-        {
-            #ifdef DEBUG_DETAIL_ON       
-                ESP_LOGD(TAG, "task is found: %s", _valuechar);
-            #endif
+    if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK) {
+        if (httpd_query_key_value(_query, "task", _valuechar, 30) == ESP_OK) {
+            //ESP_LOGD(TAG, "task is found: %s", _valuechar);
             _task = std::string(_valuechar);
         }
     }  
 
-    if (_task.compare("namenumbers") == 0)
-    {
-        ESP_LOGD(TAG, "Get NUMBER list");
+    if (_task.compare("namenumbers") == 0) {
+        //ESP_LOGD(TAG, "Get NUMBER list");
         return get_numbers_file_handler(req);
     }
 
-    if (_task.compare("data") == 0)
-    {
-        ESP_LOGD(TAG, "Get data list");
+    if (_task.compare("data") == 0) {
+        //ESP_LOGD(TAG, "Get data list");
         return get_data_file_handler(req);
     }
 
-    if (_task.compare("tflite") == 0)
-    {
-        ESP_LOGD(TAG, "Get tflite list");
+    if (_task.compare("tflite") == 0) {
+        //ESP_LOGD(TAG, "Get tflite list");
         return get_tflite_file_handler(req);
     }
 
-    if (_task.compare("copy") == 0)
-    {
+    if (_task.compare("copy") == 0) {
         std::string in, out, zw;
 
         httpd_query_key_value(_query, "in", _valuechar, 30);
@@ -756,8 +703,13 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
 
-    if (_task.compare("cutref") == 0)
-    {
+    if (_task.compare("cutref") == 0) {
+        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
+            return ESP_FAIL;
+        }
+
         std::string in, out, zw;
         int x, y, dx, dy;
 
@@ -809,8 +761,13 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
 
-    if (_task.compare("test_take") == 0)
-    {
+    if (_task.compare("test_take") == 0) {
+        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
+            return ESP_FAIL;
+        }
+        
         std::string _host = "";
         std::string _bri = "";
         std::string _con = "";
@@ -853,8 +810,12 @@ esp_err_t handler_editflow(httpd_req_t *req)
     } 
 
 
-    if (_task.compare("test_align") == 0)
-    {
+    if (_task.compare("test_align") == 0) {
+        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
+            return ESP_FAIL;
+        }
         std::string _host = "";
         if (httpd_query_key_value(_query, "host", _valuechar, 30) == ESP_OK) {
             _host = std::string(_valuechar);
@@ -866,76 +827,48 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
 
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_editflow - Done");       
-    #endif
-
     return ESP_OK;
 }
 
 
 esp_err_t handler_statusflow(httpd_req_t *req)
 {
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_statusflow - Start");       
-    #endif
+    if (!bTaskAutoFlowCreated) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
+        return ESP_FAIL;
+    }
+
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
-    if (bTaskAutoFlowCreated) 
-    {
-        #ifdef DEBUG_DETAIL_ON       
-            ESP_LOGD(TAG, "handler_statusflow: %s", req->uri);
-        #endif
-
-        std::string zw = flowctrl.getActStatusWithTime();
-        httpd_resp_send(req, zw.c_str(), zw.length());   
-    }
-    else 
-    {
-        httpd_resp_send(req, "E90: Flow task not yet created", HTTPD_RESP_USE_STRLEN);  
-    }
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_statusflow - Done");       
-    #endif
-
+    std::string zw = flowctrl.getActStatusWithTime();
+    httpd_resp_send(req, zw.c_str(), zw.length());
     return ESP_OK;
 }
 
 
 esp_err_t handler_processerror(httpd_req_t *req)
 {
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_processerror - Start");       
-    #endif
+    if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E92: Request rejected, flow not initialized");
+        return ESP_FAIL;
+    }
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
-    if (bTaskAutoFlowCreated) 
-    {
-        #ifdef DEBUG_DETAIL_ON       
-            ESP_LOGD(TAG, "handler_processerror: %s", req->uri);
-        #endif
-
-        if (flowctrl.getActFlowError())
-            if (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT)
-                httpd_resp_send(req, "E90: Process error occured", HTTPD_RESP_USE_STRLEN);
-            else
-                httpd_resp_send(req, "E91: Multiple process errors in row", HTTPD_RESP_USE_STRLEN);
+    if (flowctrl.getActFlowError()) {
+        if (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT)
+            httpd_resp_send(req, "E90: Process error occured", HTTPD_RESP_USE_STRLEN);
         else
-            httpd_resp_send(req, "000: No process error", HTTPD_RESP_USE_STRLEN);
+            httpd_resp_send(req, "E91: Multiple process errors in row", HTTPD_RESP_USE_STRLEN);
     }
-    else 
-    {
-        httpd_resp_send(req, "E92: Request not possible. Flow task not running. Check logs.", HTTPD_RESP_USE_STRLEN);  
+    else {
+        httpd_resp_send(req, "000: No process error", HTTPD_RESP_USE_STRLEN);
     }
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_processerror - Done");       
-    #endif
 
     return ESP_OK;
 }
@@ -943,9 +876,11 @@ esp_err_t handler_processerror(httpd_req_t *req)
 
 esp_err_t handler_fallbackvalue(httpd_req_t *req)
 {
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_fallbackvalue - Start");       
-    #endif
+    if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E95: Request rejected, flow not initialized");
+        return ESP_FAIL;
+    }
 
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
@@ -965,10 +900,8 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
-    if (httpd_req_get_url_query_str(req, _query, 100) == ESP_OK) {
-        #ifdef DEBUG_DETAIL_ON       
-            ESP_LOGD(TAG, "Query: %s", _query);
-        #endif
+    if (httpd_req_get_url_query_str(req, _query, 100) == ESP_OK) {   
+        //ESP_LOGD(TAG, "Query: %s", _query);
 
         if (httpd_query_key_value(_query, "numbers", _numbersname, 50) != ESP_OK) { // If request is incomplete
             sReturnMessage = "E91: Query parameter incomplete or not valid!<br> "
@@ -977,10 +910,8 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
             return ESP_FAIL; 
         }
 
-        if (httpd_query_key_value(_query, "value", _value, 20) == ESP_OK) {
-            #ifdef DEBUG_DETAIL_ON       
-                ESP_LOGD(TAG, "Value: %s", _value);
-            #endif
+        if (httpd_query_key_value(_query, "value", _value, 20) == ESP_OK) { 
+            //ESP_LOGD(TAG, "Value: %s", _value);
         }
     }
     else {  // if no parameter is provided, print handler usage
@@ -1017,12 +948,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
         }
     }
 
-    httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());  
-
-    #ifdef DEBUG_DETAIL_ON       
-        LogFile.WriteHeapInfo("handler_fallbackvalue - End");       
-    #endif
-
+    httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
     return ESP_OK;
 }
 
@@ -1056,6 +982,8 @@ void task_autodoFlow(void *pvParameter)
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_INIT));
             flowctrl.setActStatus(std::string(FLOW_INIT));
             // Right now, it's not possible to provide state via MQTT because mqtt service is not yet started
+
+            flowctrl.setActFlowError(false); // Reset existing process_error
 
             if (!doInit()) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Process state: " + std::string(FLOW_INIT_FAILED));
@@ -1211,8 +1139,8 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.RemoveOldDebugFiles();
             }
             else {
+                FlowStateErrorsInRow = 0;
                 #ifdef ENABLE_MQTT
-                    FlowStateErrorsInRow = 0;
                     MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "false", 1, false);
                 #endif //ENABLE_MQTT
             }

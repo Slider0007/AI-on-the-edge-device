@@ -158,7 +158,8 @@
 
 	function LoadProcessData()
 	{
-		url = domainname + '/process_data';     
+		var url = domainname + '/process_data';
+
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -174,12 +175,14 @@
 				loadRSSI(_jsonData.rssi);
 				$('#cputemp').html(_jsonData.temperature + "°C");
 			}
-		}
+		};
+
+		xhttp.timeout = 10000;  // 10 seconds
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
 
-
+	
 	function LoadROIImage()
 	{
 		var d = new Date();
@@ -188,21 +191,8 @@
 		var s = addZero(d.getSeconds());
 		$('#timestamp').html(h + ":" + m + ":" + s);
 
-		// Create temporary image container
-		var loadImage = new Image();
-
-		// Prepare event handler
-		// If image is completely loaded, hand over image to html img (Be aware: If caching is deactivated, image going to be loaded again)
-		loadImage.onload = function() {
-    		document.getElementById("img").src = this.src;
-		};
- 		// Handler called, if image loading failed
-		loadImage.onerror = function() {
-			document.getElementById("img").src = "img_not_available.png?v=$COMMIT_HASH"
-		};
-
- 		// Load image to temp image container
-		loadImage.src = domainname + '/img_tmp/alg_roi.jpg?' + Math.floor((Math.random() * 1000000) + 1); // Load image with additional timestamp to avoid loading outdated cached image
+		document.getElementById("img").src = loadImage(domainname + '/img_tmp/alg_roi.jpg?' + Math.floor((Math.random() * 1000000) + 1), 
+														'img_not_available.png?v=$COMMIT_HASH').src;
 	}
 
 
@@ -364,6 +354,7 @@
 		document.getElementById("manual_refresh_img_loading").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // Preset with loading indicator
 		autoRefreshTimeoutHandle = null; // Init auto refresh handle
 		document.getElementById("AutoRefreshEnabled").checked = false; // Reset auto refresh checkbox at page init
+		AutoRefreshContent();
 	}
 
 	
