@@ -23,13 +23,13 @@ function reload_config() {
      xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
                if (xhttp.responseText.substring(0,3) == "001" || xhttp.responseText.substring(0,3) == "002" || xhttp.responseText.substring(0,3) == "003") {
-                    firework.launch('Configuration updated and applied', 'success', 5000);
+                    firework.launch('Configuration updated and applied', 'success', 3000);
                }
                else if (xhttp.responseText.substring(0,3) == "004") {
-                    firework.launch('Configuration updated and get applied after actual cycle is completed', 'success', 5000);
+                    firework.launch('Configuration updated and gets applied after actual cycle is completed', 'success', 3000);
                }
                else if (xhttp.responseText.substring(0,3) == "099") {
-                    firework.launch('Configuration updated, but cannot get applied (no main flow task running)', 'danger', 5000);
+                    firework.launch('Configuration updated, but cannot get applied (no main flow task running)', 'danger', 30000);
                }
           }
      }

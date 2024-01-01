@@ -200,6 +200,7 @@
 
     function doTake()
     { 
+        firework.launch('Taking image...', 'success', 2000, true);
         var xhttp = new XMLHttpRequest();
         if (param["TakeImage"]["Brightness"].found && param["TakeImage"]["Brightness"].enabled)
         {
@@ -222,7 +223,6 @@
         xhttp.open("GET", url, false);
         xhttp.send();
 
-        firework.launch('Taking image...', 'success', 2000);
         loadRawImage(true);
     }
     
@@ -578,7 +578,7 @@
             SaveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
             showReference(param);
 
-            firework.launch('Save and apply configuration...', 'success', 5000);
+            firework.launch('Save and apply configuration...', 'success', 2000, true);
             setTimeout(function() {
                 reload_config();
             }, 500);

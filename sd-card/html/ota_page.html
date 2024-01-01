@@ -144,7 +144,7 @@
 
         var file_name = document.getElementById("file_selector").value;
         document.getElementById("file_selector").disabled = true;
-        firework.launch('Do not reload this page or switch to another page while the update is in progress!', 'warning', 60000);
+        firework.launch('Do not reload this page or switch to another page while the update is in progress!', 'warning', 90000);
         file_name = file_name.split(/[\\\/]/).pop();
         document.getElementById("status").innerText = "Status: File selected";
 

@@ -615,14 +615,14 @@
         if (param_category["Analog"]["enabled"] == false) {
             document.getElementById("Category_Analog_enabled").checked = false;
             EnDisableAnalog();
-            firework.launch('Analog ROI processing is disabled. Activate with checkbox if needed', 'warning', 10000);
+            firework.launch('Analog ROI processing is disabled. Activate with checkbox if needed', 'warning', 5000);
             return;
         }
         
         var sel_roi = document.getElementById("ROISelect");
 
         if (ROIInfo.length == 0) {
-            firework.launch('No analog ROIs defined in selected number sequence', 'warning', 10000);
+            firework.launch('No analog ROIs defined in selected number sequence', 'warning', 5000);
             document.getElementById("newROI").disabled = false;
             document.getElementById("deleteROI").disabled = true;
             
@@ -1010,7 +1010,7 @@
             RefreshROI();
             document.getElementById("saveconfig").disabled = true;
 
-            firework.launch('Save and apply configuration...', 'success', 5000);
+            firework.launch('Save and apply configuration...', 'success', 2000, true);
             setTimeout(function() {
                 reload_config();
             }, 500);

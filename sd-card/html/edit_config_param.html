@@ -2660,7 +2660,7 @@
 			_style_pur = '';
 			_hidden = false;
 			document.getElementById("Edit_Config_Direct").style.display = "";
-			firework.launch("Expert view activated. Please use carefully", 'warning', 3000);
+			firework.launch("Expert view activated. Please use wisely", 'warning', 3000, true);
 		}
 		else
 		{
@@ -2699,7 +2699,7 @@
 			WriteConfigININew();
 			SaveConfigToServer(domainname);
 
-			firework.launch('Save and apply configuration...', 'success', 5000);
+			firework.launch('Save and apply configuration...', 'success', 2000, true);
 			setTimeout(function() {
 				reload_config();
 			}, 500);    

@@ -74,7 +74,7 @@
      		// -> Prevent against  data loss if network connection is interrupted
 			FileSendContent(textToSave, "/config/config.tmp", domainname);
 
-			firework.launch('Save and apply configuration...', 'success', 5000);
+			firework.launch('Save and apply configuration...', 'success', 2000, true);
 			setTimeout(function() {
 				reload_config();
 			}, 500);

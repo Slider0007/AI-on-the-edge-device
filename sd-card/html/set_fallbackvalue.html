@@ -154,6 +154,7 @@
 
 
     function setFallbackValue() {
+        firework.launch('Update \"Fallback Value\" ...', 'success', 2000, true);
         var inputVal = document.getElementById("myInput").value;
         var sel = document.getElementById("Numbers_value1");
         var _number = sel.options[sel.selectedIndex].text;  
@@ -165,7 +166,7 @@
             xhttp.send();
             response = xhttp.responseText;
             document.getElementById("result").innerHTML=response;
-            firework.launch('New \"Fallback Value\" set', 'success', 5000);
+            firework.launch('New \"Fallback Value\" set', 'success', 2000, true);
         }
         catch (error)
         {

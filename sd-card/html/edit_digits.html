@@ -467,7 +467,7 @@
         onValueManualChangedSpace();
 
         if (!lockSizes) {
-            firework.launch("In most cases it's advised to keep the y, Δx and Δy identical", 'warning', 10000);
+            firework.launch("In most cases it's advised to keep the y, Δx and Δy identical", 'warning', 5000);
         }
     }
 
@@ -619,14 +619,14 @@
         if (param_category["Digits"]["enabled"] == false) {
             document.getElementById("Category_Digits_enabled").checked = false;
             EnDisableDigits();
-            firework.launch('Digit ROI processing is disabled. Activate with checkbox if needed', 'warning', 10000);
+            firework.launch('Digit ROI processing is disabled. Activate with checkbox if needed', 'warning', 5000);
             return;
         }
         
         var sel_roi = document.getElementById("ROISelect");
 
         if (ROIInfo.length == 0) {
-            firework.launch('No digit ROIs defined in selected number sequence', 'warning', 10000);
+            firework.launch('No digit ROIs defined in selected number sequence', 'warning', 5000);
             document.getElementById("newROI").disabled = false;
             document.getElementById("deleteROI").disabled = true;
             
@@ -1075,7 +1075,7 @@
             RefreshROI();
             document.getElementById("saveconfig").disabled = true;
 
-            firework.launch('Save and apply configuration...', 'success', 5000);
+            firework.launch('Save and apply configuration...', 'success', 2000, true);
             setTimeout(function() {
                 reload_config();
             }, 500);

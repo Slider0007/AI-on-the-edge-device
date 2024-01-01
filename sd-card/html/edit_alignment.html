@@ -255,6 +255,7 @@
                     xhttp.responseText.split("] ")[1] == "Idle - No Autostart" ||
                     xhttp.responseText.split("] ")[1] == "Idle - Waiting for Autostart")
                 {
+                    firework.launch('Updating marker...', 'success', 2000, true);
                     MarkerROI[marker_selected]["x"] = document.getElementById("refx").value;
                     MarkerROI[marker_selected]["y"] = document.getElementById("refy").value; 
                     MarkerROI[marker_selected]["dx"] = document.getElementById("refdx").value;
@@ -262,12 +263,12 @@
                     RequestMarkerCut(MarkerROI[marker_selected], domainname);
                     RefreshMarker();
                     document.getElementById("savemarker").disabled = false;
-                    firework.launch("Marker updated", 'success', 3000);
+                    firework.launch("Marker successfully updated", 'success', 2000);
                 }
                 else {
-                    var str = "Marker update only possible in any IDLE state (Actual State: " + xhttp.responseText.split("] ")[1] + 
-                            "). Wait a few moments and redo action";
-                    firework.launch(str, 'warning', 10000);
+                    var str = "Marker update only possible in any IDLE state. Wait a few moments and repeat action. " +
+                                    "[Actual State: " + xhttp.responseText.split("] ")[1] + "]";
+                    firework.launch(str, 'warning', 3000, true);
                 }
             }
         }
@@ -595,7 +596,7 @@
             SaveConfigToServer(domainname);
             document.getElementById("savemarker").disabled = true;
             
-            firework.launch('Save and apply configuration...', 'success', 5000);
+            firework.launch('Save and apply configuration...', 'success', 2000, true);
             setTimeout(function() {
                 reload_config();
             }, 500);

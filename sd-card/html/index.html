@@ -158,8 +158,8 @@
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				if (xhttp.responseText.substring(0,3) == "001") {
-					firework.launch('Cycle start triggered', 'success', 5000);
-                    window.location.reload();
+					firework.launch('Cycle start triggered', 'success', 2000);
+                    document.getElementById("maincontent").contentWindow.location.reload();
 				}
 				else if (xhttp.responseText.substring(0,3) == "002") {
 					firework.launch('Cycle start scheduled. Start new cycle after actual cycle is completed', 'success', 5000);
