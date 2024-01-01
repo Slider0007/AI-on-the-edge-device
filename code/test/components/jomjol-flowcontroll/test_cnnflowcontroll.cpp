@@ -43,6 +43,19 @@ void test_EvalAnalogNumber()
 /**
  * @brief test if all combinations of digit 
  * evaluation are running correctly
+ * 
+ * -> Desciption for call undertest.EvalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, 
+ * bool isPreviousAnalog, float digitalAnalogTransitionStart)
+ * @param _value: is the current ROI as int value with one decimal digit (e.g. 10 -> 1.0)
+ * @param _valuePreviousNumber: is the last (lower) ROI as int with one decimal digit (e.g. 10 -> 1.0)
+ * @param _resultPreviousNumber: is the evaluated number. Sometimes a much lower value can change higer values
+ *                          example: 9.8, 9.9, 0.1
+ *                          0.1 => 0 (resultPreviousNumber)
+ *                          The 0 makes a 9.9 to 0 (resultPreviousNumber)
+ *                          The 0 makes a 9.8 to 0 
+ * @param isPreviousAnalog: false/true if the last ROI is an analog or digit ROI (default=false == digit)
+ *                              runs in special handling because analog is much less precise
+ * @param analogDigitalTransitionStart  start of the transitionlogic begins on valuePreviousNumber (default=9.2)
  */
 void test_EvalDigitNumber() {
     UnderTestCNN undertest = UnderTestCNN(nullptr, "digit", Digital100);
@@ -57,11 +70,11 @@ void test_EvalDigitNumber() {
 
     printf("EvalDigitNumber(5.7, 0, -1)\n");
     // the 5.7 and no previous should trunc to 5
-    TEST_ASSERT_EQUAL(5, undertest.EvalDigitNumber(FLOAT_AS_INT(5.7), 0, -1));
+    TEST_ASSERT_EQUAL(5, undertest.EvalDigitNumber(FLOAT_AS_INT(5.7), 0, -1, false, FLOAT_AS_INT(9.2)));
 
-    // the 5.8 and no previous should trunc to 5
-    printf("EvalDigitNumber(5.8, 0, -1)\n");
-    TEST_ASSERT_EQUAL(5, undertest.EvalDigitNumber(FLOAT_AS_INT(5.8), 0, -1));
+    // the 5.8 and no previous should round to 6 (already in transition)
+    printf("EvalDigitNumber(5.8, 8.0, 8, false, 8.0)\n");
+    TEST_ASSERT_EQUAL(6, undertest.EvalDigitNumber(FLOAT_AS_INT(5.8), FLOAT_AS_INT(8.0), 8, false, FLOAT_AS_INT(8.0)));
 
     // the 5.7 with previous and the previous between 0.3-0.7 should round up to 6
     TEST_ASSERT_EQUAL(6, undertest.EvalDigitNumber(FLOAT_AS_INT(5.7), FLOAT_AS_INT(0.4), 0));
@@ -72,8 +85,8 @@ void test_EvalDigitNumber() {
     // the 5.3 with previous and the previous <=0.7 should trunc to 5
     TEST_ASSERT_EQUAL(5, undertest.EvalDigitNumber(FLOAT_AS_INT(5.3), FLOAT_AS_INT(0.1), 0));
 
-    // the 5.3 with previous and the previous >9.7 (#define Digital_Transition_Area_Forward) should reduce to 4
-    TEST_ASSERT_EQUAL(4, undertest.EvalDigitNumber(FLOAT_AS_INT(5.3), FLOAT_AS_INT(9.8), 9));
+    // the 5.2 with previous and the previous >9.7 (#define Digital_Transition_Area_Forward) should reduce to 4
+    TEST_ASSERT_EQUAL(4, undertest.EvalDigitNumber(FLOAT_AS_INT(5.2), FLOAT_AS_INT(9.8), 9, false, FLOAT_AS_INT(9.0)));
 
     // the 5.7 with previous and the previous >9.7 (#define Digital_Transition_Area_Forward) should trunc to 5 (reason: decimal place >=4)
     TEST_ASSERT_EQUAL(5, undertest.EvalDigitNumber(FLOAT_AS_INT(5.7), FLOAT_AS_INT(9.8), 9));

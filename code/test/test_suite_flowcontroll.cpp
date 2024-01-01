@@ -146,7 +146,6 @@ void task_UnityTesting(void *pvParameter)
 }
 
 
-
 /**
  * @brief main task
  */
