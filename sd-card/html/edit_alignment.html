@@ -595,19 +595,25 @@
         }
     }
 
+
     function getImageData(el)
     {
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         const img = document.getElementById(el);
-        img.crossOrigin = "Anonymous"; // Avoid error in testing mode: The canvas has been tainted by cross-origin data.
+
+        if (getTestEnvironmentActive()) // Avoid error in testing mode: The canvas has been tainted by cross-origin data.
+            img.crossOrigin = "Anonymous"; 
+        
         canvas.width = img.width;
         canvas.height = img.height;
         context.drawImage(img, 0, 0);
         return context.getImageData(0, 0, img.width, img.height);
     }
 
-    function HistogramUpdate(e) {
+
+    function HistogramUpdate(e)
+    {
         processImageHistogram(getImageData('img_marker'));
     }
 

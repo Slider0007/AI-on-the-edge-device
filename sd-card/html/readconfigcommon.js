@@ -29,7 +29,7 @@ function reload_config()
                     if (xhttp.responseText.substring(0,3) == "001" || xhttp.responseText.substring(0,3) == "002" || 
                          xhttp.responseText.substring(0,3) == "003")
                     {
-                         firework.launch('Configuration updated and applied.', 'success', 2000);
+                         firework.launch('Configuration updated and applied', 'success', 2000);
                     }
                     else if (xhttp.responseText.substring(0,3) == "004") {
                          firework.launch('Configuration updated and get applied after actual cycle is completed', 'success', 3000);

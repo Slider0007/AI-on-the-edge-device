@@ -4,6 +4,7 @@
 * IMPORTANT: For regular WebUI operation this IP parameter is not needed at all!
 */
 var DUTDeviceIP = "192.168.2.68";      // Set the IP of physical device under test
+var TestEnvironmentActive = false;
  
 
 /* Returns the domainname with prepended protocol.
@@ -18,6 +19,7 @@ function getDomainname()
     if (window.location.hostname == "localhost") {
          console.log("Test environment active! Device IP: " + DUTDeviceIP);
          domainname = "http://" + DUTDeviceIP
+         TestEnvironmentActive = true;
     }
     else {
         domainname = window.location.protocol + "//" + window.location.hostname;
@@ -27,6 +29,12 @@ function getDomainname()
     }
 
     return domainname;
+}
+
+
+function getTestEnvironmentActive()
+{
+    return TestEnvironmentActive;
 }
 
 
