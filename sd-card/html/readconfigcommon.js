@@ -152,11 +152,11 @@ function findDelimiterPos(input, delimiter)
 
 function trim(istring, adddelimiter)
 {
-     while ((istring.length > 0) && (adddelimiter.indexOf(istring[0]) >= 0)){
+     while ((istring.length > 0) && (adddelimiter.indexOf(istring[0]) >= 0)) {
           istring = istring.substr(1, istring.length-1);
      }
      
-     while ((istring.length > 0) && (adddelimiter.indexOf(istring[istring.length-1]) >= 0)){
+     while ((istring.length > 0) && (adddelimiter.indexOf(istring[istring.length-1]) >= 0)) {
           istring = istring.substr(0, istring.length-1);
      }
 

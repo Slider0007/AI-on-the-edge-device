@@ -71,7 +71,7 @@
         var dateTime = new Date().toJSON().slice(0,10) + "_" + new Date().toJSON().slice(11,19).replaceAll(":", "-");
         
         zipFilename = hostname + "_" + dateTime + ".zip";
-        console.log(zipFilename);
+        //console.log(zipFilename);
 
         // Get files list
         setStatus("Fetching File List...");
@@ -158,7 +158,7 @@
         };
 
         xhr.onerror = (e) => { // XMLHttpRequest error loading
-            console.log("Error on fetching " + url + "!");
+            console.error("Error on fetching " + url);
             if (retry > 5) {
                 setStatus("<span style=\"color: red\">Backup failed, please restart the device and try again!</span>");
             }
@@ -168,7 +168,7 @@
         };
 
         xhr.ontimeout = (e) => { // XMLHttpRequest timed out
-            console.log("Timeout on fetching " + url + "!");
+            console.error("Timeout on fetching " + url);
             if (retry > 5) {
                 setStatus("<span style=\"color: red\">Backup failed, please restart the device and try again!</span>");
             }
@@ -208,7 +208,7 @@
             urls.pop();
         }*/
 
-        console.log(urls);
+        //console.log(urls);
 
         urlIndex = 0;
         setStatus("Fetching files...");
@@ -217,7 +217,7 @@
 
 
     function setStatus(status) {
-        console.log(status);
+        //console.log(status);
         document.getElementById("progress").innerHTML += status + "<br>\n";
     }
 
