@@ -377,7 +377,7 @@ void wifi_scan(void)
 	else {
     	if (esp_wifi_scan_get_ap_records(&max_number_of_ap_found, wifi_ap_records) != ESP_OK) { // Retrieve results (and free internal heap)
 			LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "wifi_scan: esp_wifi_scan_get_ap_records: Error retrieving datasets");
-			delete wifi_ap_records;
+			delete[] wifi_ap_records;
 			return;
 		}
 	}
@@ -400,7 +400,7 @@ void wifi_scan(void)
 			APWithBetterRSSI = true;
         }
 	}
-	delete wifi_ap_records;
+	delete[] wifi_ap_records;
 }
 
 
