@@ -77,8 +77,7 @@
             showRelativeValues = document.getElementById("showRelativeValues").checked;
             //alert("Auslesen: " + datefile + " " + numbername);
 
-            _domainname = getDomainname();
-            fetch(_domainname + '/fileserver/log/data/' + datefile)
+            fetch(getDomainname() + '/fileserver/log/data/' + datefile)
             .then(response => {
                 // handle the response
                 if (response.status == 404) {
@@ -299,9 +298,23 @@
     }
 
 
+    function initAutoRefreshContent()
+    {
+        loadConfig(getDomainname()); 
+        ParseConfigReduced();
+        param = getConfigParameters();
+        
+		document.getElementById("AutoRefreshEnabled").checked = param["WebUI"]["DataGraphAutoRefresh"]["value1"] == "true" ? true : false;
+		document.getElementById("AutoRefreshTime").value = param["WebUI"]["DataGraphAutoRefreshTime"]["value1"];   
+        
+        autoRefreshTimeoutHandle = null; // Init auto refresh handle
+        AutoRefreshContent();
+    }
+
+
 	function AutoRefreshContent()
-	{	
-		if (document.getElementById("AutoRefreshEnabled").checked == true) { // Activated -> Set timeout
+	{	   
+        if (document.getElementById("AutoRefreshEnabled").checked == true) { // Activated -> Set timeout
 
 			if (autoRefreshTimeoutHandle) { // Clear actual timeout handle
 				clearTimeout(autoRefreshTimeoutHandle);
@@ -331,8 +344,7 @@
 
     function init()
 	{
-        autoRefreshTimeoutHandle = null; // Init auto refresh handle
-		document.getElementById("AutoRefreshEnabled").checked = false; // Reset auto refresh checkbox at page init
+        initAutoRefreshContent();
         WriteDataFiles();
         WriteNumbers();
         run();

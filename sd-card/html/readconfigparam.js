@@ -275,14 +275,30 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "Hostname", true, "watermeter");   
      ParamAddSingleValueWithPreset(param, catname, "RSSIThreshold", false, "-75");   
      ParamAddSingleValueWithPreset(param, catname, "CPUFrequency", true, "160");
-     ParamAddSingleValueWithPreset(param, catname, "SetupMode", true, "true"); 
+     ParamAddSingleValueWithPreset(param, catname, "SetupMode", true, "true");
+
+     var catname = "WebUI";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "OverviewAutoRefresh", true, "true");
+     ParamAddSingleValueWithPreset(param, catname, "OverviewAutoRefreshTime", true, "10");
+     ParamAddSingleValueWithPreset(param, catname, "DataGraphAutoRefresh", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "DataGraphAutoRefreshTime", true, "60");
      
-     
-     while (aktline < config_split.length){
+
+     while (aktline < config_split.length) {
           for (var cat in category) {
+               if (typeof config_split[aktline] === 'undefined') {
+                    aktline++;
+                    continue;
+               }
+
                zw = cat.toUpperCase();
                zw1 = "[" + zw + "]";
                zw2 = ";[" + zw + "]";
+               
                if ((config_split[aktline].trim().toUpperCase() == zw1) || (config_split[aktline].trim().toUpperCase() == zw2)) {
                     if (config_split[aktline].trim().toUpperCase() == zw1) {
                          category[cat]["enabled"] = true;
@@ -293,6 +309,7 @@ function ParseConfig() {
                     continue;
                }
           }
+          
           aktline++;
      }
 
@@ -345,11 +362,28 @@ function ParseConfigReduced() {
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "HomeassistantDiscovery", true, "false");
 
+     var catname = "WebUI";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = false;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "OverviewAutoRefresh", true, "true");
+     ParamAddSingleValueWithPreset(param, catname, "OverviewAutoRefreshTime", true, "10");
+     ParamAddSingleValueWithPreset(param, catname, "DataGraphAutoRefresh", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "DataGraphAutoRefreshTime", true, "60");
+
+
      while (aktline < config_split.length) {
           for (var cat in category) {
+               if (typeof config_split[aktline] === 'undefined') {
+                    aktline++;
+                    continue;
+               }
+               
                zw = cat.toUpperCase();
                zw1 = "[" + zw + "]";
                zw2 = ";[" + zw + "]";
+
                if ((config_split[aktline].trim().toUpperCase() == zw1) || (config_split[aktline].trim().toUpperCase() == zw2)) {
                     if (config_split[aktline].trim().toUpperCase() == zw1) {
                          category[cat]["enabled"] = true;

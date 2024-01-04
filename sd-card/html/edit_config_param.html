@@ -1940,7 +1940,78 @@
 			</td>
 			<td>$TOOLTIP_System_CPUFrequency</td>
 		</tr>
+	</table>
 
+	<!-- WebUI -->
+	<table class="table">
+		<colgroup>
+			<col span="1" style="width:290px">
+			<col span="1" style="width:300px;">
+			<col span="1">
+		</colgroup>
+		<tr>
+			<th colspan="3">WebUI</th>
+		</tr>
+
+		<tr>
+			<td class="indent1" style="padding-top:25px" colspan="3">
+				<b>Overview</b>
+			</td>
+		</tr>
+
+		<tr>
+			<td class="indent2">
+				<span id="WebUI_OverviewAutoRefresh_text" style="color:black;">Auto Refresh</span>
+			</td>
+			<td>
+				<select id="WebUI_OverviewAutoRefresh_value1" onchange='setEnabled("WebUI_OverviewAutoRefresh_parameter", this.value == "true" ? true : false);'>
+					<option value="true" selected>true</option>
+					<option value="false" >false</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_WebUI_OverviewAutoRefresh</td>
+		</tr>
+
+		<tr class="WebUI_OverviewAutoRefresh_parameter">
+			<td class="indent2">
+				<span id="WebUI_OverviewAutoRefreshTime_text" style="color:black;">Auto Refresh Time</span>
+			</td>
+			<td>
+				<input required type="number" id="WebUI_OverviewAutoRefreshTime_value1"  min="2" step="1"
+					oninput="(!validity.rangeUnderflow||(value=2)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Seconds
+			</td>
+			<td>$TOOLTIP_WebUI_OverviewAutoRefreshTime</td>
+		</tr>
+
+		<tr>
+			<td class="indent1" style="padding-top:25px" colspan="3">
+				<b>Data Graph</b>
+			</td>
+		</tr>
+
+		<tr>
+			<td class="indent2">
+				<span id="WebUI_DataGraphAutoRefresh_text" style="color:black;">Auto Refresh</span>
+			</td>
+			<td>
+				<select id="WebUI_DataGraphAutoRefresh_value1" onchange='setEnabled("WebUI_DataGraphAutoRefresh_parameter", this.value == "true" ? true : false);'>
+					<option value="true">true</option>
+					<option value="false" selected>false</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_WebUI_DataGraphAutoRefresh</td>
+		</tr>
+
+		<tr class="WebUI_DataGraphAutoRefresh_parameter">
+			<td class="indent2">
+				<span id="WebUI_DataGraphAutoRefreshTime_text" style="color:black;">Auto Refresh Time</span>
+			</td>
+			<td>
+				<input required type="number" id="WebUI_DataGraphAutoRefreshTime_value1"  min="2" step="1"
+					oninput="(!validity.rangeUnderflow||(value=2)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Seconds
+			</td>
+			<td>$TOOLTIP_WebUI_DataGraphAutoRefreshTime</td>
+		</tr>
 	</table>
 
 	<table style="padding-top:10px">
@@ -2464,12 +2535,19 @@
 		WriteParameter(param, category, "System", "RSSIThreshold", true);
 		WriteParameter(param, category, "System", "CPUFrequency", false);
 
+		WriteParameter(param, category, "WebUI", "OverviewAutoRefresh", false);
+		WriteParameter(param, category, "WebUI", "OverviewAutoRefreshTime", false);
+		WriteParameter(param, category, "WebUI", "DataGraphAutoRefresh", false);
+		WriteParameter(param, category, "WebUI", "DataGraphAutoRefreshTime", false);
+
 		WriteModelFiles();
 
 		// Visualize subparameter of a parameter
 		setEnabled("MQTT_TLSEncryption_parameter", document.getElementById("MQTT_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("InfluxDB_TLSEncryption_parameter", document.getElementById("InfluxDB_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("InfluxDBv2_TLSEncryption_parameter", document.getElementById("InfluxDBv2_TLSEncryption_value1").value == "true" ? true : false);
+		setEnabled("WebUI_OverviewAutoRefresh_parameter", document.getElementById("WebUI_OverviewAutoRefresh_value1").value == "true" ? true : false);
+		setEnabled("WebUI_DataGraphAutoRefresh_parameter", document.getElementById("WebUI_DataGraphAutoRefresh_value1").value == "true" ? true : false);
 	}
 
 
@@ -2621,6 +2699,11 @@
 		ReadParameter(param, "System", "Hostname", false);
 		ReadParameter(param, "System", "RSSIThreshold", true);
 		ReadParameter(param, "System", "CPUFrequency", false);
+
+		ReadParameter(param, "WebUI", "OverviewAutoRefresh", false);
+		ReadParameter(param, "WebUI", "OverviewAutoRefreshTime", false);
+		ReadParameter(param, "WebUI", "DataGraphAutoRefresh", false);
+		ReadParameter(param, "WebUI", "DataGraphAutoRefreshTime", false);
 
 		var sel = document.getElementById("Numbers_value1");
 		UpdateInputIndividual(sel);

@@ -310,6 +310,21 @@
 	}
 
 
+	function initAutoRefreshContent()
+    {
+        loadConfig(getDomainname()); 
+        ParseConfigReduced();
+        param = getConfigParameters();
+        
+		document.getElementById("AutoRefreshEnabled").checked = param["WebUI"]["OverviewAutoRefresh"]["value1"] == "true" ? true : false;
+		document.getElementById("AutoRefreshTime").value = param["WebUI"]["OverviewAutoRefreshTime"]["value1"];   
+        
+        autoRefreshTimeoutHandle = null; // Init auto refresh handle
+        AutoRefreshContent();
+    }
+
+
+
 	function AutoRefreshContent()
 	{	
 		if (document.getElementById("AutoRefreshEnabled").checked == true) { // Activated -> Set timeout
@@ -352,9 +367,8 @@
 		domainname = getDomainname();
 		document.getElementById("img").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // Preset with loading indicator
 		document.getElementById("manual_refresh_img_loading").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // Preset with loading indicator
-		autoRefreshTimeoutHandle = null; // Init auto refresh handle
-		document.getElementById("AutoRefreshEnabled").checked = false; // Reset auto refresh checkbox at page init
-		AutoRefreshContent();
+
+		initAutoRefreshContent();
 	}
 
 	
