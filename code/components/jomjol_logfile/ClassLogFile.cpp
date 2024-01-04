@@ -174,6 +174,9 @@ std::string fileNameDate;
 
 void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::string message, bool _time)
 {
+    if (level > loglevel)// Skip logging if defined message loglevel is more verbose than configured threshold loglevel
+        return;
+
     std::string fileNameDateNew;
     std::string zwtime;
     std::string ntpTime = "";
@@ -191,10 +194,6 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
     }
     else {
         ESP_LOG_LEVEL(level, "", "%s", message.c_str());
-    }
-    
-    if (level > loglevel) {// Only write to file if loglevel is below threshold
-        return;
     }
 
     if (_time) {
@@ -234,9 +233,9 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
             std::string logpath = logFileRootFolder + "/" + fileNameDateNew; 
 
             ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
-            logFileAppendHandle = fopen(logpath.c_str(), "a+");
+            logFileAppendHandle = fopen(logpath.c_str(), "a");
             if (logFileAppendHandle==NULL) {
-                ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
+                ESP_LOGE(TAG, "WriteToFile: Failed to open logfile %s", logpath.c_str());
                 return;
             }
 
@@ -244,9 +243,9 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
         }
     #else
         std::string logpath = logFileRootFolder + "/" + fileNameDateNew; 
-        logFileAppendHandle = fopen(logpath.c_str(), "a+");
-        if (logFileAppendHandle==NULL) {
-            ESP_LOGE(TAG, "Can't open log file %s", logpath.c_str());
+        logFileAppendHandle = fopen(logpath.c_str(), "a");
+        if (logFileAppendHandle == NULL) {
+            ESP_LOGE(TAG, "WriteToFile: Failed to open logfile %s", logpath.c_str());
             return;
         }
     #endif

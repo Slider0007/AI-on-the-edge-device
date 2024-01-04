@@ -325,10 +325,6 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     httpd_resp_sendstr_chunk(req, NULL);
     return ESP_OK;
 }
-/*
-#define IS_FILE_EXT(filename, ext) \
-    (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
-*/
 
 
 static esp_err_t logfileact_get_full_handler(httpd_req_t *req) {
@@ -353,17 +349,13 @@ static esp_err_t datafileact_get_last_part_handler(httpd_req_t *req) {
 
 static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 {
-    //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "send_datafile: data_get_last_part_handler");
     FILE *fd = NULL;
-    //struct stat file_stat;
-    ESP_LOGD(TAG, "uri: %s", req->uri);
-
     std::string currentfilename = LogFile.GetCurrentFileNameData();
 
-    ESP_LOGD(TAG, "uri: %s, filename: %s, filepath: %s", req->uri, currentfilename.c_str(), currentfilename.c_str());
+    //ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
 
     fd = fopen(currentfilename.c_str(), "r");
-    if (!fd) {
+    if (fd == NULL) {
         //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
         httpd_resp_send(req, "No recent data entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no data available from today
         return ESP_OK;
@@ -374,9 +366,7 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
     setvbuf(fd, NULL, _IOFBF, 512);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
-    //    ESP_LOGI(TAG, "Sending file: %s (%ld bytes)", &filename, file_stat.st_size);
-    set_content_type_from_file(req, currentfilename.c_str());
+    httpd_resp_set_type(req, "text/plain");
 
     if (!send_full_file) { // Send only last part of file
         ESP_LOGD(TAG, "Sending last %d bytes of the actual datafile", LOGFILE_LAST_PART_BYTES);
@@ -444,22 +434,16 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 
 static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
 {
-    //LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "send_logfile: log_get_last_part_handler");
     FILE *fd = NULL;
-    //struct stat file_stat;
-    ESP_LOGI(TAG, "uri: %s", req->uri);
-
-    const char* filename = ""; 
-
     std::string currentfilename = LogFile.GetCurrentFileName();
 
-    ESP_LOGD(TAG, "uri: %s, filename: %s, filepath: %s", req->uri, filename, currentfilename.c_str());
+    //ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
 
-    // Since the log file is still could open for writing, we need to close it first
-    LogFile.CloseLogFileAppendHandle();
+    // !!! Do not close actual logfile to avoid software exception !!!
+    //LogFile.CloseLogFileAppendHandle();
 
     fd = fopen(currentfilename.c_str(), "r");
-    if (!fd) {
+    if (fd == NULL) {
         //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
         httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
         return ESP_OK;
@@ -470,9 +454,7 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
     setvbuf(fd, NULL, _IOFBF, 512);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
-    //    ESP_LOGI(TAG, "Sending file: %s (%ld bytes)", &filename, file_stat.st_size);
-    set_content_type_from_file(req, filename);
+    httpd_resp_set_type(req, "text/plain");
 
     if (!send_full_file) { // Send only last part of file
         ESP_LOGD(TAG, "Sending last %d bytes of the actual logfile", LOGFILE_LAST_PART_BYTES);

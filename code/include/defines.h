@@ -113,7 +113,7 @@
 
     //server_file + server_help
     #define IS_FILE_EXT(filename, ext) \
-    (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
+                (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
 
 
     //server_ota
