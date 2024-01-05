@@ -1,5 +1,56 @@
 # Changelog
 
+## [16.1.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.0.2-SLFork...v16.1.0-SLFork) (2024-01-05)
+
+
+### Features
+
+* **influxdb1+2:** Implement TLS encryption using certificates ([#105](https://github.com/Slider0007/AI-on-the-edge-device/issues/105)) ([4364427](https://github.com/Slider0007/AI-on-the-edge-device/commit/436442738c0d8b987130edfabd986b14c062ede6))
+* Make camera frequency adjustable ([#79](https://github.com/Slider0007/AI-on-the-edge-device/issues/79)) ([47f19c8](https://github.com/Slider0007/AI-on-the-edge-device/commit/47f19c887cdce38ef68872cac0a69baa0be3a599))
+* **mqtt:** Implement MQTT TLS encryption using certificates ([#102](https://github.com/Slider0007/AI-on-the-edge-device/issues/102)) ([7d53c1e](https://github.com/Slider0007/AI-on-the-edge-device/commit/7d53c1e5ad9f97aea834545af6cdab18d7de2c4f))
+* **webui:** 'Overview'+'Data Graph': Save auto page refresh config persistently ([#113](https://github.com/Slider0007/AI-on-the-edge-device/issues/113)) ([6a36d5a](https://github.com/Slider0007/AI-on-the-edge-device/commit/6a36d5a6e18e14f684763af1bdc1794821a25658))
+* **webui:** Automatic ROI naming + ROI/Alignment marker position validation ([#99](https://github.com/Slider0007/AI-on-the-edge-device/issues/99)) ([cd5b979](https://github.com/Slider0007/AI-on-the-edge-device/commit/cd5b979e8c76c3a1abe76bdf68200453285a30cd))
+
+
+### Bug Fixes
+
+* **alignment marker:** Fix usage of preallocated RAM ([#95](https://github.com/Slider0007/AI-on-the-edge-device/issues/95)) ([5676d59](https://github.com/Slider0007/AI-on-the-edge-device/commit/5676d591dee9c2c53a918f829d2cbc059a25c9e7))
+* Fix 'MaxRateType' parameter migration ([#91](https://github.com/Slider0007/AI-on-the-edge-device/issues/91)) ([5926bf8](https://github.com/Slider0007/AI-on-the-edge-device/commit/5926bf890668136f465ad594735942dd77ffc336))
+* **influxdb:** Consider DST for UTC time converison ([#89](https://github.com/Slider0007/AI-on-the-edge-device/issues/89)) ([d1f77ac](https://github.com/Slider0007/AI-on-the-edge-device/commit/d1f77acb540c679132e176bd020f429855ca723c))
+* **influxdbv2:** Rename parameter 'database' to 'bucket' ([#100](https://github.com/Slider0007/AI-on-the-edge-device/issues/100)) ([b2f9e11](https://github.com/Slider0007/AI-on-the-edge-device/commit/b2f9e1134f1fe1b8331a055bbeaa1679cf94b64e))
+* **parameter migration:** Fix 'MaxRateType' parameter (Handling 'RateOff') ([#97](https://github.com/Slider0007/AI-on-the-edge-device/issues/97)) ([6901c01](https://github.com/Slider0007/AI-on-the-edge-device/commit/6901c0164f5aa793ac7aea78087b1cd011596198))
+* **REST API:** Fix misleading REST API send_file error ([#107](https://github.com/Slider0007/AI-on-the-edge-device/issues/107)) ([5112ce4](https://github.com/Slider0007/AI-on-the-edge-device/commit/5112ce487c97c5fc8298aecc5c363f2f350cc848))
+* **REST API:** Fix rare exception for log file handling ([#112](https://github.com/Slider0007/AI-on-the-edge-device/issues/112)) ([21e61d1](https://github.com/Slider0007/AI-on-the-edge-device/commit/21e61d136f49cd5230c7cfed773c74857438a45a))
+* **webui:** Increase file handling robustness -&gt; handle config.ini update in firmware ([#90](https://github.com/Slider0007/AI-on-the-edge-device/issues/90)) ([c348cb3](https://github.com/Slider0007/AI-on-the-edge-device/commit/c348cb34502462f8cece141a23f9d77954e3942e))
+* **webui:** Make REST API calls more robust ([#109](https://github.com/Slider0007/AI-on-the-edge-device/issues/109)) ([2909471](https://github.com/Slider0007/AI-on-the-edge-device/commit/2909471294558a4053bfcf5096e5674fe45a5bbe))
+* **wlan.ini:** ChangeRSSIThreshold: Fix logging issue ([#111](https://github.com/Slider0007/AI-on-the-edge-device/issues/111)) ([4c75e4e](https://github.com/Slider0007/AI-on-the-edge-device/commit/4c75e4ec4dad2b4a291698d74283c42d27188d36))
+* **wlan:** Fix deletion of array object ([#110](https://github.com/Slider0007/AI-on-the-edge-device/issues/110)) ([2f0934e](https://github.com/Slider0007/AI-on-the-edge-device/commit/2f0934ea6a566228fcc50056ab4eeb25b1f16aeb))
+
+
+### Refactoring / Style Changes
+
+* **helper:** Move functions to system_info ([#82](https://github.com/Slider0007/AI-on-the-edge-device/issues/82)) ([40f95f8](https://github.com/Slider0007/AI-on-the-edge-device/commit/40f95f8f160f9935f1cc4cf9d31c7c5b3b0af309))
+* Relocate setCPUFrequency ([#88](https://github.com/Slider0007/AI-on-the-edge-device/issues/88)) ([d95c677](https://github.com/Slider0007/AI-on-the-edge-device/commit/d95c677ac78ebc4ddaca8e2b30b3cd6a74930807))
+* Rename 'round' to 'cycle' ([#84](https://github.com/Slider0007/AI-on-the-edge-device/issues/84)) ([ce61169](https://github.com/Slider0007/AI-on-the-edge-device/commit/ce611697e8f6260ecd1ff68f78f72a14776011a5))
+* **REST API:** Relocate REST API functions ([#83](https://github.com/Slider0007/AI-on-the-edge-device/issues/83)) ([285d8d7](https://github.com/Slider0007/AI-on-the-edge-device/commit/285d8d73e9396438ee2a082d387b02b5c53e2a41))
+* **webserver:** Adapt/Align some debug log level ([#98](https://github.com/Slider0007/AI-on-the-edge-device/issues/98)) ([7e1ee91](https://github.com/Slider0007/AI-on-the-edge-device/commit/7e1ee91b6e900b00178c9570fb0b3435716a52ce))
+* **webui:** Optimized mobile presenation ([#96](https://github.com/Slider0007/AI-on-the-edge-device/issues/96)) ([8cd041b](https://github.com/Slider0007/AI-on-the-edge-device/commit/8cd041b2461997652ce031537abc97a41456db97))
+* **webui:** Overlay notification box e.g. after user interaction ([#108](https://github.com/Slider0007/AI-on-the-edge-device/issues/108)) ([0902669](https://github.com/Slider0007/AI-on-the-edge-device/commit/09026696210c1c089303daeacc8bece9c9a3e558))
+
+
+### Other Changes
+
+* **build:** Create release-please PR as draft ([#87](https://github.com/Slider0007/AI-on-the-edge-device/issues/87)) ([b0e039c](https://github.com/Slider0007/AI-on-the-edge-device/commit/b0e039ce49a72aafe91607dd0c4319b7de273862))
+* **build:** Ensure GIT_TAG is never empty ([#86](https://github.com/Slider0007/AI-on-the-edge-device/issues/86)) ([be07db0](https://github.com/Slider0007/AI-on-the-edge-device/commit/be07db066ca28adc38a55d6e5942a31db2521a32))
+* **build:** Fix git tag in device log ([#92](https://github.com/Slider0007/AI-on-the-edge-device/issues/92)) ([fb83eb0](https://github.com/Slider0007/AI-on-the-edge-device/commit/fb83eb07ea6442496b44080df6b83186aa4fa60c))
+* **build:** Remove folder creation during build ([#93](https://github.com/Slider0007/AI-on-the-edge-device/issues/93)) ([2d3a3ec](https://github.com/Slider0007/AI-on-the-edge-device/commit/2d3a3ec175c067260644cb7779fbdade42861539))
+* **dependency:** Update esp-tflite-micro, esp-nn, esp32-camera, stb, miniz ([#94](https://github.com/Slider0007/AI-on-the-edge-device/issues/94)) ([7949c5d](https://github.com/Slider0007/AI-on-the-edge-device/commit/7949c5dbb8555b91ba2af4ccf67743fa9bba6d9e))
+* Modify test environment detection ([#101](https://github.com/Slider0007/AI-on-the-edge-device/issues/101)) ([2509ffe](https://github.com/Slider0007/AI-on-the-edge-device/commit/2509ffe10f235d1a38124c28ed1595be0102a597))
+* **repo:** Update readme ([#103](https://github.com/Slider0007/AI-on-the-edge-device/issues/103)) ([16697ad](https://github.com/Slider0007/AI-on-the-edge-device/commit/16697adb3273d09814e586d406db900010a313db))
+* **tflite:** Updated digit/analog models ([#114](https://github.com/Slider0007/AI-on-the-edge-device/issues/114)) ([9671208](https://github.com/Slider0007/AI-on-the-edge-device/commit/9671208dfa6af7ad6a836595b0b561a51b67a0b8))
+* **unity-test:** Fix some test cases ([#104](https://github.com/Slider0007/AI-on-the-edge-device/issues/104)) ([a83348a](https://github.com/Slider0007/AI-on-the-edge-device/commit/a83348a1fd19c092af3c293888c1ed5aa87124f5))
+* Update static part of firmware version string ([#80](https://github.com/Slider0007/AI-on-the-edge-device/issues/80)) ([c283977](https://github.com/Slider0007/AI-on-the-edge-device/commit/c283977beb5aab74f8240564d92ded2eeb6365d2))
+
 ## [16.0.2-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.0.1-SLFork...v16.0.2-SLFork) (2023-10-18)
 
 
