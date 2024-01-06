@@ -499,7 +499,7 @@ void ClassFlowControll::DeinitFlow(void)
     StatusLEDOff();
     //LogFile.WriteHeapInfo("After camera");
 
-    gpio_handler_destroy();
+    gpio_handler_deinit();
     //LogFile.WriteHeapInfo("After GPIO");
     
     #ifdef ENABLE_MQTT
