@@ -1,4 +1,5 @@
 #include "server_help.h"
+#include "../../include/defines.h"
 
 #include <stdio.h>
 #include <sys/param.h>
@@ -13,14 +14,12 @@ extern "C" {
 }
 #endif
 
+#include "esp_http_server.h"
 #include "esp_err.h"
 #include "esp_log.h"
 
 #include "Helper.h"
 #include "ClassLogFile.h"
-#include "esp_http_server.h"
-
-#include "../../include/defines.h"
 
 
 static const char *TAG = "SERVER_HELP";

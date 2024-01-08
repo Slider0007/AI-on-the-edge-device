@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CONNECT_WLAN_H
 #define CONNECT_WLAN_H
 

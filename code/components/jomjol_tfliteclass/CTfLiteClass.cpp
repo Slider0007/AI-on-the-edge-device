@@ -1,9 +1,9 @@
 #include "CTfLiteClass.h"
+#include "../../include/defines.h"
 
 #include "ClassLogFile.h"
 #include "Helper.h"
 #include "psram.h"
-#include "../../include/defines.h"
 
 
 static const char *TAG = "TFLITE";

@@ -5,7 +5,8 @@
  * @brief Testfall für Überprüfung allowNegatives
  * 
  */
-void testNegative() {
+void testNegative()
+{
 
 
         // Ohne decimal_shift
@@ -34,7 +35,8 @@ void testNegative() {
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
-        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
+        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, 
+                                        getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
         // extendResolution=true
@@ -45,7 +47,8 @@ void testNegative() {
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
-        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
+        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, 
+                                        getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
         // extendResolution=false
@@ -56,7 +59,8 @@ void testNegative() {
         SetFallbackValue(underTestPost, fallbackValue_extended);
         result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
-        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
+        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue, 
+                                        getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
 
@@ -78,7 +82,8 @@ void testNegative() {
  * @brief Fehlerberichte aus Issues
  * 
  */
-void testNegative_Issues() {
+void testNegative_Issues()
+{
         // Ohne decimal_shift
         std::vector<float> digits = { 2.0, 2.0, 0.0, 1.0, 7.2, 9.0, 8.0};
         std::vector<float> analogs = { };
@@ -97,7 +102,8 @@ void testNegative_Issues() {
         SetFallbackValue(underTestPost, fallbackValue);
         std::string result = process_doFlow(underTestPost);
         TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutError().c_str());
-        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue, getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
+        TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue,
+                                        getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
         delete underTestPost;
 
 }

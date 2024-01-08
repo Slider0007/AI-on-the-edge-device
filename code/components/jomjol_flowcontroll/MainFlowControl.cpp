@@ -1,44 +1,34 @@
 #include "MainFlowControl.h"
+#include "../../include/defines.h"
 
 #include <string>
 #include <vector>
-#include "esp_log.h"
-#include <esp_timer.h>
-
 #include <iomanip>
 #include <sstream>
 
-#include "../../include/defines.h"
+#include "esp_log.h"
+#include <esp_timer.h>
+#include "esp_camera.h"
+
+#include "cJSON.h"
+
 #include "Helper.h"
 #include "system.h"
 #include "statusled.h"
-
-#include "esp_camera.h"
 #include "time_sntp.h"
 #include "ClassControllCamera.h"
-
-#include "ClassFlowControll.h"
-
 #include "ClassLogFile.h"
 #include "server_GPIO.h"
-
 #include "server_file.h"
-
 #include "read_wlanini.h"
 #include "connect_wlan.h"
 #include "psram.h"
-#include "cJSON.h"
 
 #ifdef ENABLE_MQTT
     #include "interface_mqtt.h"
     #include "server_mqtt.h"
 #endif //ENABLE_MQTT
 
-
-// support IDF 5.x
-#ifndef portTICK_RATE_MS
-#define portTICK_RATE_MS portTICK_PERIOD_MS
-#endif
 
 ClassFlowControll flowctrl;
 

@@ -1,6 +1,5 @@
-#pragma once
-#ifndef defines_h
-#define defines_h
+#ifndef DEFINES_H
+#define DEFINES_H
 
 /////////////////////////////////////////////
 ////          Global definitions         ////
@@ -391,4 +390,4 @@
     #define EXAMPLE_MAX_STA_CONN       1
 #endif // ENABLE_SOFTAP
 
-#endif // ifndef defines_h
+#endif // ifndef DEFINES_H

@@ -1,6 +1,10 @@
-#include <string>
 #include "CRotateImage.h"
+
+#include <string>
+#include <math.h>
+
 #include "psram.h"
+
 
 static const char *TAG = "IMG_ROTATE";
 

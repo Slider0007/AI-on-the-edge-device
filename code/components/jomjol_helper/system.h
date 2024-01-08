@@ -1,11 +1,9 @@
-#pragma once
-
 #ifndef ESP_SYSTEM_H
 #define ESP_SYSTEM_H
 
-#include "sdmmc_cmd.h"
-
 #include <string>
+
+#include "sdmmc_cmd.h"
 
 
 std::string getChipModel(void);

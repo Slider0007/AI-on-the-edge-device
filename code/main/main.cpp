@@ -1,63 +1,18 @@
+#include "../../include/defines.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <regex>
 
-//#include "freertos/FreeRTOS.h"
-//#include "freertos/task.h"
-//#include "freertos/event_groups.h"
-
-//#include "driver/gpio.h"
-//#include "sdkconfig.h"
+#include "nvs_flash.h"
 #include "esp_psram.h"
-
-// SD-Card ////////////////////
-//#include "nvs_flash.h"
 #include "esp_vfs_fat.h"
-//#include "sdmmc_cmd.h"
 #include "driver/sdmmc_host.h"
-//#include "driver/sdmmc_defs.h"
-///////////////////////////////
-
-
-#include "ClassLogFile.h"
-
-#include "connect_wlan.h"
-#include "read_wlanini.h"
-
-#include "server_main.h"
-#include "MainFlowControl.h"
-#include "server_file.h"
-#include "server_ota.h"
-#include "time_sntp.h"
-#include "configFile.h"
-//#include "ClassControllCamera.h"
-#include "server_main.h"
-#include "server_camera.h"
-#ifdef ENABLE_MQTT
-    #include "server_mqtt.h"
-#endif //ENABLE_MQTT
-#include "Helper.h"
-#include "system.h"
-#include "statusled.h"
-#include "sdcard_check.h"
-
-#include "../../include/defines.h"
-//#include "server_GPIO.h"
-
-#ifdef ENABLE_SOFTAP
-    #include "softAP.h"
-#endif //ENABLE_SOFTAP
 
 #ifdef DISABLE_BROWNOUT_DETECTOR
     #include "soc/soc.h" 
     #include "soc/rtc_cntl_reg.h" 
-#endif
-
-// define `gpio_pad_select_gpip` for newer versions of IDF
-#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0))
-#include "esp_rom_gpio.h"
-#define gpio_pad_select_gpio esp_rom_gpio_pad_select_gpio
 #endif
 
 #ifdef USE_HIMEM_IF_AVAILABLE
@@ -74,6 +29,34 @@
     static heap_trace_record_t trace_record[NUM_RECORDS]; // This buffer must be in internal RAM
 #endif
 
+#include "ClassLogFile.h"
+#include "connect_wlan.h"
+#include "read_wlanini.h"
+#include "server_main.h"
+#include "MainFlowControl.h"
+#include "server_file.h"
+#include "server_ota.h"
+#include "time_sntp.h"
+#include "configFile.h"
+#include "server_GPIO.h"
+#include "server_camera.h"
+
+#ifdef ENABLE_MQTT
+#include "server_mqtt.h"
+#endif //ENABLE_MQTT
+
+#include "Helper.h"
+#include "system.h"
+#include "statusled.h"
+#include "sdcard_check.h"
+
+#ifdef ENABLE_SOFTAP
+    #include "softAP.h"
+#endif //ENABLE_SOFTAP
+
+
+static const char *TAG = "MAIN";
+
 extern const char* GIT_TAG;
 extern const char* GIT_REV;
 extern const char* GIT_BRANCH;
@@ -84,9 +67,6 @@ extern std::string getHTMLversion(void);
 extern std::string getHTMLcommit(void);
 
 void migrateConfiguration(void);
-
-
-static const char *TAG = "MAIN";
 
 
 bool Init_NVS_SDCard()

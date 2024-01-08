@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CFINDTEMPLATE_H
 #define CFINDTEMPLATE_H
 

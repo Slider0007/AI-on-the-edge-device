@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef SERVEROTA_H
 #define SERVEROTA_H
 

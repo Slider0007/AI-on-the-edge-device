@@ -1,6 +1,7 @@
-#ifdef ENABLE_INFLUXDB
 #include "interface_influxdb.h"
+#include "../../include/defines.h"
 
+#ifdef ENABLE_INFLUXDB
 #include <fstream>
 #include <time.h>
 
@@ -10,8 +11,6 @@
 #include "ClassLogFile.h"
 #include "psram.h"
 #include "Helper.h"
-
-#include "../../include/defines.h"
 
 
 static const char *TAG = "INFLUXDB_IF";

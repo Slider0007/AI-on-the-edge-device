@@ -1,6 +1,6 @@
 #include "ClassLogFile.h"
-#include "time_sntp.h"
-#include "esp_log.h"
+#include "../../include/defines.h"
+
 #include <cstring>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -17,7 +17,7 @@ extern "C" {
 #include "Helper.h"
 #include "system.h"
 #include "time_sntp.h"
-#include "../../include/defines.h"
+
 
 static const char *TAG = "LOGFILE";
 

@@ -1,47 +1,33 @@
-#ifdef ENABLE_SOFTAP
-//if ENABLE_SOFTAP = disabled, set CONFIG_ESP_WIFI_SOFTAP_SUPPORT=n in sdkconfig.defaults to save 28k of flash
-#include "../../include/defines.h"
-
-
 #include "softAP.h"
 
-/*  WiFi softAP Example
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
+#ifdef ENABLE_SOFTAP
 #include <string>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_mac.h"
-#include "esp_wifi.h"
-
-#include "esp_log.h"
-#include "nvs_flash.h"
-
+#include <sys/param.h>
 #include "stdio.h"
 
-#include "ClassLogFile.h"
-#include "server_help.h"
-#include "defines.h"
-#include "Helper.h"
-#include "statusled.h"
-#include "server_ota.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+#include "nvs_flash.h"
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
-/* The examples use WiFi configuration that you can set via project configuration menu.
-   If you'd rather not, just change the below entries to strings with
-   the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
-*/
+#include "esp_mac.h"
+#include "esp_wifi.h"
+#include "esp_log.h"
+
+#include "ClassLogFile.h"
+#include "server_help.h"
+#include "Helper.h"
+#include "statusled.h"
+#include "server_ota.h"
+
+
+static const char *TAG = "WIFI_AP";
 
 bool isConfigINI = false;
 bool isWlanINI = false;
-
-static const char *TAG = "WIFI AP";
 
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,

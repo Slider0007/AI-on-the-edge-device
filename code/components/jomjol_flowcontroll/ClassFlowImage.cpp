@@ -1,4 +1,6 @@
 #include "ClassFlowImage.h"
+#include "../../include/defines.h"
+
 #include <string>
 #include <sys/stat.h>
 
@@ -10,11 +12,12 @@ extern "C" {
 }
 #endif
 
+#include "esp_log.h"
+
 #include "time_sntp.h"
 #include "ClassLogFile.h"
 #include "CImageBasis.h"
-#include "esp_log.h"
-#include "../../include/defines.h"
+
 
 static const char* TAG = "FLOWIMAGE";
 

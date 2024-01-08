@@ -1,9 +1,8 @@
-#pragma once
-
 #ifndef CLASSFLOWDEFINETYPES_H
 #define CLASSFLOWDEFINETYPES_H
 
 #include <vector>
+
 #include "CImageBasis.h"
 
 

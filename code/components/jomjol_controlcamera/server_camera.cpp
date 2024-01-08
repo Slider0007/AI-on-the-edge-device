@@ -1,16 +1,16 @@
 #include "server_camera.h"
+#include "../../include/defines.h"
 
 #include <string>
 
-#include "esp_camera.h"
-#include "ClassControllCamera.h"
-
-#include "ClassLogFile.h"
 #include "esp_log.h"
+#include "esp_camera.h"
 
-#include "../../include/defines.h"
+#include "ClassControllCamera.h"
+#include "ClassLogFile.h"
 
-static const char *TAG = "server_cam";
+
+static const char *TAG = "CAM_SERVER";
 
 
 esp_err_t handler_lightOn(httpd_req_t *req)

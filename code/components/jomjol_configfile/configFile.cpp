@@ -1,14 +1,17 @@
+#include "configFile.h"
+#include "../../include/defines.h"
+
 #include <cstring>
+#include <esp_log.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "Helper.h"
-#include "configFile.h"
-#include <esp_log.h>
 
-#include "../../include/defines.h"
 
 static const char *TAG = "CONFIG";
+
 
 ConfigFile::ConfigFile(std::string filePath)
 {
@@ -20,10 +23,12 @@ ConfigFile::ConfigFile(std::string filePath)
     setvbuf(pFile, NULL, _IOFBF, 512);
 }
 
+
 ConfigFile::~ConfigFile()
 {
     fclose(pFile);
 }
+
 
 bool ConfigFile::isNewParagraph(std::string input)
 {
@@ -34,6 +39,7 @@ bool ConfigFile::isNewParagraph(std::string input)
 	return false;
 }
 
+
 bool ConfigFile::GetNextParagraph(std::string& aktparamgraph, bool &disabled, bool &eof)
 {
 	while (getNextLine(&aktparamgraph, disabled, eof) && !isNewParagraph(aktparamgraph));
@@ -42,6 +48,7 @@ bool ConfigFile::GetNextParagraph(std::string& aktparamgraph, bool &disabled, bo
 		return true;
 	return false;
 }
+
 
 bool ConfigFile::getNextLine(std::string *rt, bool &disabled, bool &eof)
 {

@@ -1,19 +1,21 @@
-#ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
 
+#ifdef ENABLE_MQTT
 #include "esp_log.h"
-#include "connect_wlan.h"
-#include "mqtt_client.h"
-#include "ClassLogFile.h"
-#include "MainFlowControl.h"
 #include "cJSON.h"
-#include "../../include/defines.h"
-
-//#define DEBUG_DETAIL_ON
 
 #ifdef DEBUG_DETAIL_ON
 #include "esp_timer.h"
 #endif
+
+#include "connect_wlan.h"
+#include "mqtt_client.h"
+#include "ClassLogFile.h"
+#include "MainFlowControl.h"
+
+
+//#define DEBUG_DETAIL_ON
+
 
 static const char *TAG = "MQTT_IF";
 

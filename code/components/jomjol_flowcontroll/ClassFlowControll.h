@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CLASSFLOWCONTROLL_H
 #define CLASSFLOWCONTROLL_H
 
@@ -11,112 +9,113 @@
 #include "ClassFlowAlignment.h"
 #include "ClassFlowCNNGeneral.h"
 #include "ClassFlowPostProcessing.h"
+
 #ifdef ENABLE_MQTT
-	#include "ClassFlowMQTT.h"
+#include "ClassFlowMQTT.h"
 #endif //ENABLE_MQTT
+
 #ifdef ENABLE_INFLUXDB
-	#include "ClassFlowInfluxDB.h"
-	#include "ClassFlowInfluxDBv2.h"
+#include "ClassFlowInfluxDB.h"
+#include "ClassFlowInfluxDBv2.h"
 #endif //ENABLE_INFLUXDB
-#include "ClassFlowCNNGeneral.h"
 
 
 class ClassFlowControll : public ClassFlow
 {
-protected:
-	std::vector<ClassFlow*> FlowControll;
-	std::vector<ClassFlow*> FlowControlPublish;
-	std::vector<strFlowState*> FlowStateEvaluationEvent;
-	std::vector<strFlowState*> FlowStatePublishEvent;
+	protected:
+		std::vector<ClassFlow*> FlowControll;
+		std::vector<ClassFlow*> FlowControlPublish;
+		std::vector<strFlowState*> FlowStateEvaluationEvent;
+		std::vector<strFlowState*> FlowStatePublishEvent;
 
-	ClassFlowTakeImage* flowtakeimage;
-	ClassFlowAlignment* flowalignment;	
-	ClassFlowCNNGeneral* flowanalog;
-	ClassFlowCNNGeneral* flowdigit;
-	ClassFlowPostProcessing* flowpostprocessing;
-	#ifdef ENABLE_MQTT
-	ClassFlowMQTT* flowMQTT;
-	#endif //ENABLE_MQTT
-	#ifdef ENABLE_INFLUXDB
-	ClassFlowInfluxDB* flowInfluxDB;
-	ClassFlowInfluxDBv2* flowInfluxDBv2;
-	#endif //ENABLE_INFLUXDB
-	
-	ClassFlow* CreateClassFlow(std::string _type);
-	void SetInitialParameter(void);	
+		ClassFlowTakeImage* flowtakeimage;
+		ClassFlowAlignment* flowalignment;	
+		ClassFlowCNNGeneral* flowanalog;
+		ClassFlowCNNGeneral* flowdigit;
+		ClassFlowPostProcessing* flowpostprocessing;
+		#ifdef ENABLE_MQTT
+		ClassFlowMQTT* flowMQTT;
+		#endif //ENABLE_MQTT
+		#ifdef ENABLE_INFLUXDB
+		ClassFlowInfluxDB* flowInfluxDB;
+		ClassFlowInfluxDBv2* flowInfluxDBv2;
+		#endif //ENABLE_INFLUXDB
+		
+		ClassFlow* CreateClassFlow(std::string _type);
+		void SetInitialParameter(void);	
 
-	float AutoInterval;
-	bool AutoStart;
-	bool SetupModeActive;
-	bool readParameterDone;
-	
-	bool aktflowerror;
-	std::string aktstatus;
-	std::string aktstatusWithTime;
+		float AutoInterval;
+		bool AutoStart;
+		bool SetupModeActive;
+		bool readParameterDone;
+		
+		bool aktflowerror;
+		std::string aktstatus;
+		std::string aktstatusWithTime;
 
-public:
-	ClassFlowControll();
-	virtual ~ClassFlowControll();
-	bool InitFlow(std::string config);
-	void DeinitFlow(void);
+	public:
+		ClassFlowControll();
+		virtual ~ClassFlowControll();
+		bool InitFlow(std::string config);
+		void DeinitFlow(void);
 
-	bool ReadParameter(FILE* pfile, std::string& aktparamgraph);	
-	bool doFlowImageEvaluation(std::string time);
-	bool doFlowPublishData(std::string time);
-	bool doFlowTakeImageOnly(std::string time);
-	
-	std::string TranslateAktstatus(std::string _input);
-	bool getStatusSetupModus(){return SetupModeActive;};
+		bool ReadParameter(FILE* pfile, std::string& aktparamgraph);	
+		bool doFlowImageEvaluation(std::string time);
+		bool doFlowPublishData(std::string time);
+		bool doFlowTakeImageOnly(std::string time);
+		
+		std::string TranslateAktstatus(std::string _input);
+		bool getStatusSetupModus(){return SetupModeActive;};
 
-	std::string getNumbersName();
-	std::string getNumbersName(int _number);
-	int getNumbersSize();
-	int getNumbersROISize(int _seqNo, int _filter);
-	int getNumbersNamePosition(std::string _name);
-	std::string getNumbersValue(std::string _name, int _type);
-	std::string getNumbersValue(int _position, int _type);
-	std::string getReadoutAll(int _type);
-	std::string getReadout(bool _rawvalue, bool _noerror, int _number);
+		std::string getNumbersName();
+		std::string getNumbersName(int _number);
+		int getNumbersSize();
+		int getNumbersROISize(int _seqNo, int _filter);
+		int getNumbersNamePosition(std::string _name);
+		std::string getNumbersValue(std::string _name, int _type);
+		std::string getNumbersValue(int _position, int _type);
+		std::string getReadoutAll(int _type);
+		std::string getReadout(bool _rawvalue, bool _noerror, int _number);
 
-	bool UpdateFallbackValue(std::string _newvalue, std::string _numbers);
-	std::string GetFallbackValue(std::string _number = "");	
+		bool UpdateFallbackValue(std::string _newvalue, std::string _numbers);
+		std::string GetFallbackValue(std::string _number = "");	
 
-	std::string getJSON();
+		std::string getJSON();
 
-	#ifdef ENABLE_MQTT
-	bool StartMQTTService();
-	#endif //ENABLE_MQTT
+		#ifdef ENABLE_MQTT
+		bool StartMQTTService();
+		#endif //ENABLE_MQTT
 
-	void DigitalDrawROI(CImageBasis *_zw);
-	void AnalogDrawROI(CImageBasis *_zw);
+		void DigitalDrawROI(CImageBasis *_zw);
+		void AnalogDrawROI(CImageBasis *_zw);
 
-	esp_err_t GetJPGStream(std::string _fn, httpd_req_t *req);
-	esp_err_t SendRawJPG(httpd_req_t *req);
+		esp_err_t GetJPGStream(std::string _fn, httpd_req_t *req);
+		esp_err_t SendRawJPG(httpd_req_t *req);
 
-	std::string doSingleStep(std::string _stepname, std::string _host);
+		std::string doSingleStep(std::string _stepname, std::string _host);
 
-	bool isAutoStart();
-	bool isAutoStart(long &_interval);
+		bool isAutoStart();
+		bool isAutoStart(long &_interval);
 
-	std::string getActStatusWithTime();
-	std::string getActStatus();
-	void setActStatus(std::string _aktstatus);
-	void setActFlowError(bool _aktflowerror);
-	bool getActFlowError();
-	bool FlowStateEventOccured();
-	void PostProcessEventHandler();
+		std::string getActStatusWithTime();
+		std::string getActStatus();
+		void setActStatus(std::string _aktstatus);
+		void setActFlowError(bool _aktflowerror);
+		bool getActFlowError();
+		bool FlowStateEventOccured();
+		void PostProcessEventHandler();
 
-	std::vector<HTMLInfo*> GetAllDigital();
-	std::vector<HTMLInfo*> GetAllAnalog();	
+		std::vector<HTMLInfo*> GetAllDigital();
+		std::vector<HTMLInfo*> GetAllAnalog();	
 
-	t_CNNType GetTypeDigital();
-	t_CNNType GetTypeAnalog();
+		t_CNNType GetTypeDigital();
+		t_CNNType GetTypeAnalog();
 
-	int CleanTempFolder();
+		int CleanTempFolder();
 
-	CImageBasis* getRawImage();
+		CImageBasis* getRawImage();
 
-	std::string name() {return "ClassFlowControll";};
+		std::string name() {return "ClassFlowControll";};
 };
 
 #endif //CLASSFLOWCONTROLL_H

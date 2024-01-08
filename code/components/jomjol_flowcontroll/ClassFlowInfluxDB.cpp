@@ -1,19 +1,18 @@
+#include "ClassFlowInfluxDB.h"
+
 #ifdef ENABLE_INFLUXDB
 #include <sstream>
-#include "ClassFlowInfluxDB.h"
-#include "Helper.h"
-#include "connect_wlan.h"
+#include <time.h>
+
+#include "esp_log.h"
 
 #include "time_sntp.h"
 #include "interface_influxdb.h"
-
 #include "ClassFlowPostProcessing.h"
-#include "esp_log.h"
-#include "../../include/defines.h"
-
 #include "ClassLogFile.h"
+#include "Helper.h"
+#include "connect_wlan.h"
 
-#include <time.h>
 
 static const char* TAG = "INFLUXDB";
 

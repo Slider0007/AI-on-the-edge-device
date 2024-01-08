@@ -1,18 +1,18 @@
 #include "ClassFlowAlignment.h"
-#include "ClassFlowTakeImage.h"
-#include "ClassFlow.h"
-#include "MainFlowControl.h"
-#include "time_sntp.h"
-
-#include "CRotateImage.h"
-#include "esp_log.h"
+#include "../../include/defines.h"
 
 #include "nvs_flash.h"
 #include "nvs.h"
 
+#include "esp_log.h"
+
+#include "ClassFlowTakeImage.h"
+#include "ClassFlow.h"
+#include "MainFlowControl.h"
+#include "time_sntp.h"
+#include "CRotateImage.h"
 #include "ClassLogFile.h"
 #include "psram.h"
-#include "../../include/defines.h"
 
 
 static const char *TAG = "ALIGN";

@@ -1,4 +1,6 @@
 #include "sdcard_check.h"
+#include "../../include/defines.h"
+
 #include <cstring>
 #include <stdio.h>
 #include <stdbool.h>
@@ -7,7 +9,9 @@
 #include <sys/stat.h>
 
 #include "esp_rom_crc.h" 
+
 #include "ClassLogFile.h"
+
 
 static const char *TAG = "SDCARD";
 

@@ -1,6 +1,5 @@
+#include "../../include/defines.h"
 #ifdef ENABLE_MQTT
-
-#pragma once
 
 #ifndef INTERFACE_MQTT_H
 #define INTERFACE_MQTT_H

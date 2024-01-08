@@ -1,51 +1,34 @@
 #include "ClassControllCamera.h"
-#include "ClassLogFile.h"
-
-#include <stdio.h>
-#include "driver/gpio.h"
-#include "esp_timer.h"
-#include "esp_log.h"
-#include "psram.h"
-
-#include "Helper.h"
-#include "statusled.h"
-#include "CImageBasis.h"
-
-#include "server_ota.h"
-#include "server_GPIO.h"
-
 #include "../../include/defines.h"
 
-#include <esp_event.h>
-#include <esp_log.h>
-#include <esp_system.h>
-#include <nvs_flash.h>
-#include <sys/param.h>
+#include <stdio.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include <nvs_flash.h>
+#include <sys/param.h>
+#include "driver/ledc.h"
+#include "driver/gpio.h"
+#include "esp_rom_gpio.h"
+#include <esp_event.h>
+#include <esp_log.h>
+#include <esp_system.h>
+#include "esp_timer.h"
+#include "esp_log.h"
 #include "esp_camera.h"
 
-#include "driver/ledc.h"
+#include "psram.h"
+#include "Helper.h"
+#include "statusled.h"
+#include "CImageBasis.h"
+#include "ClassLogFile.h"
+#include "server_ota.h"
+#include "server_GPIO.h"
 #include "MainFlowControl.h"
 
-#if (ESP_IDF_VERSION_MAJOR >= 5)
-#include "soc/periph_defs.h"
-#include "esp_private/periph_ctrl.h"
-#include "soc/gpio_sig_map.h"
-#include "soc/gpio_periph.h"
-#include "soc/io_mux_reg.h"
-#include "esp_rom_gpio.h"
-#define gpio_pad_select_gpio esp_rom_gpio_pad_select_gpio
-#define gpio_matrix_in(a,b,c) esp_rom_gpio_connect_in_signal(a,b,c)
-#define gpio_matrix_out(a,b,c,d) esp_rom_gpio_connect_out_signal(a,b,c,d)
-#define ets_delay_us(a) esp_rom_delay_us(a)
-#endif
 
-
-static const char *TAG = "CAM"; 
-
+static const char *TAG = "CAM_CTRL"; 
 
 CCamera Camera;
 
@@ -715,7 +698,7 @@ void CCamera::LightOnOff(bool status)
         }
     #else
         // Init the GPIO
-        gpio_pad_select_gpio(FLASH_GPIO);
+        esp_rom_gpio_pad_select_gpio(FLASH_GPIO);
         // Set the GPIO as a push/pull output 
         gpio_set_direction(FLASH_GPIO, GPIO_MODE_OUTPUT);  
 
@@ -732,7 +715,7 @@ void CCamera::LEDOnOff(bool status)
 {
 	if (xHandle_task_StatusLED == NULL) {
         // Init the GPIO
-        gpio_pad_select_gpio(BLINK_GPIO);
+        esp_rom_gpio_pad_select_gpio(BLINK_GPIO);
         /* Set the GPIO as a push/pull output */
         gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);  
 

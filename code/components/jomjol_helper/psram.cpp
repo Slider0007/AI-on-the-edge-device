@@ -1,6 +1,6 @@
 #include "psram.h"
 #include "ClassLogFile.h"
-#include "esp_heap_caps.h"
+
 
 static const char* TAG = "PSRAM";
 

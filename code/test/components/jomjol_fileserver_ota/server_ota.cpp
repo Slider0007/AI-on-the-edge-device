@@ -1,4 +1,5 @@
 #include "server_ota.h"
+#include "../../include/defines.h"
 
 #include <string>
 #include "string.h"
@@ -6,25 +7,18 @@
 /* TODO Rethink the usage of the int watchdog. It is no longer to be used, see
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/release-5.x/5.0/system.html?highlight=esp_int_wdt */
 #include "esp_private/esp_int_wdt.h"
-
 #include <esp_task_wdt.h>
 
-
-#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+#include <esp_ota_ops.h>
 #include "esp_system.h"
 #include "esp_log.h"
-#include <esp_ota_ops.h>
 #include "esp_http_client.h"
 #include "esp_flash_partitions.h"
 #include "esp_partition.h"
-#include <nvs.h>
 #include "esp_app_format.h"
-#include "nvs_flash.h"
-#include "driver/gpio.h"
-// #include "protocol_examples_common.h"
-#include "errno.h"
 
 #include <sys/stat.h>
 
@@ -32,17 +26,14 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/rel
 #include "server_file.h"
 #include "server_GPIO.h"
 #ifdef ENABLE_MQTT
-    #include "interface_mqtt.h"
+#include "interface_mqtt.h"
 #endif //ENABLE_MQTT
 #include "ClassControllCamera.h"
 #include "connect_wlan.h"
-
-
 #include "ClassLogFile.h"
-
 #include "Helper.h"
 #include "statusled.h"
-#include "../../include/defines.h"
+
 
 /*an ota data write buffer ready to write to the flash*/
 static char ota_write_data[SERVER_OTA_SCRATCH_BUFSIZE + 1] = { 0 };

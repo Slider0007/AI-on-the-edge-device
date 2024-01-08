@@ -1,13 +1,11 @@
+#include "../../include/defines.h"
+
 #include <unity.h>
 
-// SD-Card ////////////////////
 #include "nvs_flash.h"
 #include "esp_vfs_fat.h"
-#include "sdmmc_cmd.h"
 #include "driver/sdmmc_host.h"
-#include "driver/sdmmc_defs.h"
-#define __SD_USE_ONE_LINE_MODE__
-// SD-Card ////////////////////
+
 
 #include "server_GPIO.h"
 #include "components/jomjol_fileserver_ota/server_ota.h"

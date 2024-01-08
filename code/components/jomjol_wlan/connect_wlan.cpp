@@ -1,4 +1,5 @@
 #include "connect_wlan.h"
+#include "../../include/defines.h"
 
 #include <stdlib.h>
 #include <fstream>
@@ -10,7 +11,6 @@
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 
-#include "driver/gpio.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_wnm.h"
@@ -20,9 +20,6 @@
 #include "esp_netif.h"
 #include <netdb.h>
 #include "esp_log.h"
-#include "nvs_flash.h"
-
-#include "lwip/ip4.h"
 
 #ifdef ENABLE_MQTT
     #include "interface_mqtt.h"
@@ -33,20 +30,6 @@
 #include "Helper.h"
 #include "statusled.h"
 
-#include "../../include/defines.h"
-
-#if (ESP_IDF_VERSION_MAJOR >= 5)
-#include "soc/periph_defs.h"
-#include "esp_private/periph_ctrl.h"
-#include "soc/gpio_sig_map.h"
-#include "soc/gpio_periph.h"
-#include "soc/io_mux_reg.h"
-#include "esp_rom_gpio.h"
-#define gpio_pad_select_gpio esp_rom_gpio_pad_select_gpio
-#define gpio_matrix_in(a,b,c) esp_rom_gpio_connect_in_signal(a,b,c)
-#define gpio_matrix_out(a,b,c,d) esp_rom_gpio_connect_out_signal(a,b,c,d)
-#define ets_delay_us(a) esp_rom_delay_us(a)
-#endif
 
 static const char *TAG = "WIFI";
 

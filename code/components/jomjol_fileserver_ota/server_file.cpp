@@ -1,18 +1,10 @@
-/* HTTP File Server Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
-
 #include "server_file.h"
-
+#include "../../include/defines.h"
 
 #include <stdio.h>
 #include <cstring>
+#include <iostream>
+#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>
@@ -32,22 +24,21 @@ extern "C" {
 #include <esp_spiffs.h>
 #include "esp_http_server.h"
 
-#include "../../include/defines.h"
-#include "ClassLogFile.h"
-
-#include "MainFlowControl.h"
-
-#include "server_help.h"
-#ifdef ENABLE_MQTT
-    #include "interface_mqtt.h"
-#endif //ENABLE_MQTT
-#include "server_GPIO.h"
-
-#include "Helper.h"
 #include "miniz.h"
+#include "ClassLogFile.h"
+#include "MainFlowControl.h"
+#include "server_help.h"
+#include "server_GPIO.h"
+#include "Helper.h"
+
+#ifdef ENABLE_MQTT
+#include "interface_mqtt.h"
+#endif //ENABLE_MQTT
 
 
 static const char *TAG = "SERVER_FILE";
+
+std::string SUFFIX_ZW = "_0xge";
 
 struct file_server_data {
     /* Base path of file storage */
@@ -57,16 +48,6 @@ struct file_server_data {
     char scratch[SERVER_FILER_SCRATCH_BUFSIZE];
 };
 
-
-#include <iostream>
-#include <sys/types.h>
-#include <dirent.h>
-
-std::string SUFFIX_ZW = "_0xge";
-
-
-static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file);
-static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file);
 
 
 esp_err_t get_numbers_file_handler(httpd_req_t *req)
@@ -327,26 +308,6 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
 }
 
 
-static esp_err_t logfileact_get_full_handler(httpd_req_t *req) {
-    return send_logfile(req, true);
-}
-
-
-static esp_err_t logfileact_get_last_part_handler(httpd_req_t *req) {
-    return send_logfile(req, false);
-}
-
-
-static esp_err_t datafileact_get_full_handler(httpd_req_t *req) {
-    return send_datafile(req, true);
-}
-
-
-static esp_err_t datafileact_get_last_part_handler(httpd_req_t *req) {
-    return send_datafile(req, false);
-}
-
-
 static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 {
     FILE *fd = NULL;
@@ -517,6 +478,26 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
     /* Respond with an empty chunk to signal HTTP response completion */
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
+}
+
+
+static esp_err_t logfileact_get_full_handler(httpd_req_t *req) {
+    return send_logfile(req, true);
+}
+
+
+static esp_err_t logfileact_get_last_part_handler(httpd_req_t *req) {
+    return send_logfile(req, false);
+}
+
+
+static esp_err_t datafileact_get_full_handler(httpd_req_t *req) {
+    return send_datafile(req, true);
+}
+
+
+static esp_err_t datafileact_get_last_part_handler(httpd_req_t *req) {
+    return send_datafile(req, false);
 }
 
 

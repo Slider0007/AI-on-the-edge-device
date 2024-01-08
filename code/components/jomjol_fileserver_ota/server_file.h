@@ -1,10 +1,10 @@
-#pragma once
-
 #ifndef SERVERFILE_H
 #define SERVERFILE_H
 
-#include <esp_http_server.h>
 #include <string>
+
+#include <esp_http_server.h>
+
 
 void register_server_file_uri(httpd_handle_t server, const char *base_path);
 

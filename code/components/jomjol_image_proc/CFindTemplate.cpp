@@ -1,11 +1,12 @@
 #include "CFindTemplate.h"
+#include "../../include/defines.h"
+
+#include <esp_log.h>
 
 #include "ClassLogFile.h"
 #include "Helper.h"
 #include "psram.h"
-#include "../../include/defines.h"
 
-#include <esp_log.h>
 
 static const char* TAG = "IMG_FINDTEMPL";
 

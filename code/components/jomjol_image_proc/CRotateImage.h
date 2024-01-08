@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CROTATEIMAGE_H
 #define CROTATEIMAGE_H
 
@@ -8,7 +6,6 @@
 
 class CRotateImage: public CImageBasis
 {
-
     public:
         CImageBasis *ImageTMP, *ImageOrg;
         bool doflip;
