@@ -46,7 +46,6 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
                             bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
 
 
-
 /**
  * @brief creates a testobject an run do flow (including setup). AnalogType is Class100, because all analog types do the same.
  * 
@@ -60,7 +59,6 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
  */
 std::string process_doFlow(std::vector<float> analog, std::vector<float> digits, t_CNNType digType = Digital100, 
                             bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
-
 
 
 /**
