@@ -1,8 +1,8 @@
 #include "test_flow_postrocess_helper.h"
 
 
-void test_getReadoutRawString() {
-
+void test_getReadoutRawString()
+{
     // no ROIs setted up
     UnderTestPost* _undertestPost = setUpClassFlowPostprocessing(Digital100, Analogue100);
 

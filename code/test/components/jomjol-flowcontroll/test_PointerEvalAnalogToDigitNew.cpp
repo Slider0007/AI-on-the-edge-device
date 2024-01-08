@@ -1,7 +1,8 @@
 #include <ClassFlowCNNGeneral.h>
 
 
-class UnderTestCNNGeneral : public ClassFlowCNNGeneral {
+class UnderTestCNNGeneral : public ClassFlowCNNGeneral
+{
     public:
         UnderTestCNNGeneral( ClassFlowAlignment *_flowalign, t_CNNType _cnntype) :
             ClassFlowCNNGeneral(_flowalign, "name", _cnntype) {};
@@ -18,7 +19,8 @@ class UnderTestCNNGeneral : public ClassFlowCNNGeneral {
  * Transition = x.8 - x.2 here no transition in the test cases.
  * Offset = dig=x.n, ana= n.y: no offset, because both "n" are the same
  */
-void test_analogToDigit_Standard() {
+void test_analogToDigit_Standard()
+{
 
     UnderTestCNNGeneral* undertest = new UnderTestCNNGeneral(nullptr, Digital100);
 
@@ -58,7 +60,8 @@ void test_analogToDigit_Standard() {
 
 }
 
-void test_analogToDigit_Transition() {
+void test_analogToDigit_Transition()
+{
     UnderTestCNNGeneral* undertest = new UnderTestCNNGeneral(nullptr, Digital100);
     
     // https://github.com/jomjol/AI-on-the-edge-device/issues/921#issuecomment-1222672175

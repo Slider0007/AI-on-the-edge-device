@@ -1,6 +1,7 @@
 #include <ClassFlowCNNGeneral.h>
 
-class UnderTestCNN : public ClassFlowCNNGeneral {
+class UnderTestCNN : public ClassFlowCNNGeneral
+{
     public:
     using ClassFlowCNNGeneral::EvalAnalogNumber;
     using ClassFlowCNNGeneral::EvalDigitNumber;
@@ -40,6 +41,7 @@ void test_EvalAnalogNumber()
 
 }
 
+
 /**
  * @brief test if all combinations of digit 
  * evaluation are running correctly
@@ -57,7 +59,8 @@ void test_EvalAnalogNumber()
  *                              runs in special handling because analog is much less precise
  * @param analogDigitalTransitionStart  start of the transitionlogic begins on valuePreviousNumber (default=9.2)
  */
-void test_EvalDigitNumber() {
+void test_EvalDigitNumber()
+{
     UnderTestCNN undertest = UnderTestCNN(nullptr, "digit", Digital100);
 
     // the 5.2 and no previous should trunc to 5
@@ -114,4 +117,3 @@ void test_EvalDigitNumber() {
     // zahl = 4.6
     TEST_ASSERT_EQUAL(4, undertest.EvalDigitNumber(FLOAT_AS_INT(4.6), FLOAT_AS_INT(6.2), 6)); 
 }
-

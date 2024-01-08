@@ -2,16 +2,15 @@
 
 
 /**
- * ACHTUNG! Die Test laufen aktuell nur mit ausgeschaltetem Debug in ClassFlowCNNGeneral 
  * 
- *
  * @brief Testet die doFlow-Methode von ClassFlowPostprocessing
  * digits[] - enthält die liste der vom Model zurückgegebenen Ergebnisse (class100/cont) in der Reihenfolge von links nach rechts
  * analog[] - enthält die Liste der Zeiger vom Model, wie bei den digits
  * expected - enthält das erwartete Ergebnis, wobei der Dezimalpunkt genau zwischen digits und analog ist.
  * 
  */
-void test_doFlowPP() {
+void test_doFlowPP()
+{
         
         /*
          * 
@@ -108,7 +107,9 @@ void test_doFlowPP() {
        
 }
 
-void test_doFlowPP1() {
+
+void test_doFlowPP1()
+{
         // https://github.com/jomjol/AI-on-the-edge-device/issues/942#issuecomment-1226966346
         std::vector<float> digits = { 0.0, 2.9, 3.0, 2.9, 3.5, 9.5};
         std::vector<float>  analogs = {        };
@@ -177,7 +178,9 @@ void test_doFlowPP1() {
         TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
 }
 
-void test_doFlowPP2() {
+
+void test_doFlowPP2()
+{
         // Fehler bei V11.2.0 
         // https://github.com/jomjol/AI-on-the-edge-device/discussions/950#discussion-4338615
         std::vector<float> digits = { 1.0, 9.0, 9.0};  // Übergang wurde um 1 erhöht (200, statt 199)
@@ -342,7 +345,9 @@ void test_doFlowPP2() {
         TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 }
 
-void test_doFlowPP3() {
+
+void test_doFlowPP3()
+{
         // Fehler bei V12.0.1 
         // https://github.com/jomjol/AI-on-the-edge-device/issues/1110#issuecomment-1265523710
         std::vector<float> digits = { 2.0, 4.0, 6.8};  // 246.2045 als falsches Ergebnis
@@ -527,8 +532,9 @@ void test_doFlowPP3() {
         delete undertestPost;
 }
 
-void test_doFlowPP4() {
 
+void test_doFlowPP4()
+{
         // Fehler  V13.0.4 
         // https://github.com/jomjol/AI-on-the-edge-device/issues/1503#issuecomment-1343335855
         std::vector<float> digits = {  0.0, 0.0, 6.9, 1.0, 6.6};  // 716.0199 als falsches Ergebnis. 
@@ -547,8 +553,8 @@ void test_doFlowPP4() {
 }
 
 
-void test_doFlowPP5() {
-
+void test_doFlowPP5()
+{
         // Real case 2023-08-19 -> Transistion issue from 99.99 to 100.00
         std::vector<float> digits = {1.0, 0.0, 9.8};  // wrong result: 199.994
         std::vector<float> analogs = {9.9, 9.4};
