@@ -1,5 +1,17 @@
 # Changelog
 
+## [16.1.1-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.0-SLFork...v16.1.1-SLFork) (2024-01-08)
+
+
+### Bug Fixes
+
+* **gpio:** Fix init issue & wrong mode comparison ([#115](https://github.com/Slider0007/AI-on-the-edge-device/issues/115)) ([8da5982](https://github.com/Slider0007/AI-on-the-edge-device/commit/8da5982de5566f50355c6ad69dd9d5db83603e89))
+
+
+### Other Changes
+
+* **unity-test:** Fix compiler issue & code cleanup ([#118](https://github.com/Slider0007/AI-on-the-edge-device/issues/118)) ([9862696](https://github.com/Slider0007/AI-on-the-edge-device/commit/98626966a8973d20fdb3d06c3fd0aa7d8b429f00))
+
 ## [16.1.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.0.2-SLFork...v16.1.0-SLFork) (2024-01-05)
 
 
