@@ -43,7 +43,8 @@ UnderTestPost* setUpClassFlowPostprocessing(t_CNNType digType, t_CNNType anaType
  * @return UnderTestPost* the created testobject
  */
 UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits, t_CNNType digType = Digital100, 
-                bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
+                            bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
+
 
 
 /**
@@ -58,7 +59,8 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
  * @return std::string the return value of do_Flow is the Value as string
  */
 std::string process_doFlow(std::vector<float> analog, std::vector<float> digits, t_CNNType digType = Digital100, 
-                bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
+                            bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
+
 
 
 /**
