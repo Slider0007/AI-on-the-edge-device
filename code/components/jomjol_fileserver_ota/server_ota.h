@@ -1,9 +1,6 @@
-#pragma once
-
 #ifndef SERVEROTA_H
 #define SERVEROTA_H
 
-#include <esp_log.h>
 #include <esp_http_server.h>
 
 

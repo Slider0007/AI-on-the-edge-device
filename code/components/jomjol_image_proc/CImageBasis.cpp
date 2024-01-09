@@ -1,18 +1,18 @@
 #include "CImageBasis.h"
+
+#include <cstring>
+#include <stdint.h>
+#include <math.h>
+#include <algorithm>
+
+#include <esp_log.h>
+#include "esp_heap_caps.h"
+#include "esp_system.h"
+
 #include "Helper.h"
 #include "psram.h"
 #include "ClassLogFile.h"
 #include "server_ota.h"
-
-#include <esp_log.h>
-#include "../../include/defines.h"
-
-#include "esp_system.h"
-
-#include <cstring>
-
-#include <math.h>
-#include <algorithm>
 
 
 static const char *TAG = "IMG_BASIS";

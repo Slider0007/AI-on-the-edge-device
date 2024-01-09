@@ -1,17 +1,13 @@
-#pragma once
-
 #ifndef CLASSCONTROLLCAMERA_H
 #define CLASSCONTROLLCAMERA_H
 
 #include <string>
 #include <vector>
-//#include "freertos/FreeRTOS.h"
-//#include "freertos/task.h"
 
-#include "esp_camera.h"
 #include <esp_http_server.h>
+#include "esp_camera.h"
+
 #include "CImageBasis.h"
-#include "../../include/defines.h"
 
 
 typedef struct {
@@ -20,7 +16,8 @@ typedef struct {
 } jpg_chunking_t;
 
 
-class CCamera {
+class CCamera
+{
     protected:
         uint8_t *demoImage; // Buffer holding the demo image in bytes
         int ActualQuality;

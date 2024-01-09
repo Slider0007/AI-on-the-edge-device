@@ -1,17 +1,18 @@
 #include "read_wlanini.h"
-
-#include "Helper.h"
-
-#include "connect_wlan.h"
+#include "../../include/defines.h"
 
 #include <fstream>
 #include <string>
 #include <vector>
 #include <sstream>
 #include <iostream>
+
 #include "esp_log.h"
+
 #include "ClassLogFile.h"
-#include "../../include/defines.h"
+#include "Helper.h"
+#include "connect_wlan.h"
+
 
 static const char *TAG = "WLANINI";
 
@@ -23,15 +24,14 @@ std::vector<std::string> ZerlegeZeileWLAN(std::string input, std::string _delimi
 {
 	std::vector<std::string> Output;
 	std::string delimiter = " =,";
-    if (_delimiter.length() > 0){
+    if (_delimiter.length() > 0) {
         delimiter = _delimiter;
     }
 
 	input = trim(input, delimiter);
 	size_t pos = findDelimiterPos(input, delimiter);
 	std::string token;
-    if (pos != std::string::npos)           // splitted only up to first equal sign !!! Special case for WLAN.ini
-    {
+    if (pos != std::string::npos) { // splitted only up to first equal sign !!! Special case for WLAN.ini
 		token = input.substr(0, pos);
 		token = trim(token, delimiter);
 		Output.push_back(token);
@@ -74,26 +74,25 @@ int LoadWlanFromFile(std::string fn)
         line = std::string(zw);
     }
 
-    while ((line.size() > 0) || !(feof(pFile)))
-    {
+    while ((line.size() > 0) || !(feof(pFile))) {
         //ESP_LOGD(TAG, "line: %s", line.c_str());
         if (line[0] != ';') {   // Skip lines which starts with ';'
 
             splitted = ZerlegeZeileWLAN(line, "=");
             splitted[0] = trim(splitted[0], " ");
             
-            if ((splitted.size() > 1) && (toUpper(splitted[0]) == "SSID")){
+            if ((splitted.size() > 1) && (toUpper(splitted[0]) == "SSID")) {
                 tmp = trim(splitted[1]);
-                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')){
+                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')) {
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 wlan_config.ssid = tmp;
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "SSID: " + wlan_config.ssid);
             }
 
-            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "PASSWORD")){
+            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "PASSWORD")) {
                 tmp = splitted[1];
-                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')){
+                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')) {
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 wlan_config.password = tmp;
@@ -101,7 +100,7 @@ int LoadWlanFromFile(std::string fn)
                     #ifndef __HIDE_PASSWORD
                     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: " + wlan_config.password);
                     #else
-                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: XXXXXXXX");
+                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: *****");
                     #endif
                 }
                 else {
@@ -109,54 +108,54 @@ int LoadWlanFromFile(std::string fn)
                 }
             }   
 
-            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "HOSTNAME")){
+            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "HOSTNAME")) {
                 tmp = trim(splitted[1]);
-                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')){
+                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')) {
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 wlan_config.hostname = tmp;
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Hostname: " + wlan_config.hostname);
             }
 
-            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "IP")){
+            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "IP")) {
                 tmp = splitted[1];
-                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')){
+                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')) {
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 wlan_config.ipaddress = tmp;
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "IP-Address: " + wlan_config.ipaddress);
             }
 
-            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "GATEWAY")){
+            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "GATEWAY")) {
                 tmp = splitted[1];
-                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')){
+                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')) {
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 wlan_config.gateway = tmp;
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Gateway: " + wlan_config.gateway);
             }
 
-            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "NETMASK")){
+            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "NETMASK")) {
                 tmp = splitted[1];
-                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')){
+                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')) {
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 wlan_config.netmask = tmp;
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Netmask: " + wlan_config.netmask);
             }
 
-            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "DNS")){
+            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "DNS")) {
                 tmp = splitted[1];
-                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')){
+                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')) {
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 wlan_config.dns = tmp;
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "DNS: " + wlan_config.dns);
             }
             #if (defined WLAN_USE_ROAMING_BY_SCANNING || (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES))
-            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "RSSITHRESHOLD")){
+            else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "RSSITHRESHOLD")) {
                 tmp = trim(splitted[1]);
-                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')){
+                if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')) {
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 wlan_config.rssi_threshold = atoi(tmp.c_str());
@@ -194,15 +193,14 @@ bool ChangeHostName(std::string fn, std::string _newhostname)
 
     std::string line = "";
     std::vector<std::string> splitted;
-    std::vector<std::string> neuesfile;
+    std::vector<std::string> updatedContent;
     bool found = false;
-
     FILE* pFile = NULL;
 
     fn = FormatFileName(fn);
-    pFile = fopen(fn.c_str(), "r");
+    pFile = fopen(fn.c_str(), "r+");
     if (pFile == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeHostName: Unable to open file wlan.ini (read)"); 
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeHostName: Unable to open file wlan.ini");
         return false;
     }
 
@@ -210,71 +208,57 @@ bool ChangeHostName(std::string fn, std::string _newhostname)
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(pFile, NULL, _IOFBF, 512);
 
-    ESP_LOGD(TAG, "ChangeHostName: wlan.ini opened");
-
     char zw[256];
     if (fgets(zw, sizeof(zw), pFile) == NULL) {
-        line = "";
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeHostName: File opened, but empty or content not readable");
+        fclose(pFile);
         return false;
     }
     else {
         line = std::string(zw);
     }
 
-    while ((line.size() > 0) || !(feof(pFile)))
-    {
+    while ((line.size() > 0) || !(feof(pFile))) {
         //ESP_LOGD(TAG, "ChangeHostName: line: %s", line.c_str());
         splitted = ZerlegeZeileWLAN(line, "=");
         splitted[0] = trim(splitted[0], " ");
 
-        if ((splitted.size() > 1) && ((toUpper(splitted[0]) == "HOSTNAME") || (toUpper(splitted[0]) == ";HOSTNAME"))){
+        if ((splitted.size() > 1) && ((toUpper(splitted[0]) == "HOSTNAME") || (toUpper(splitted[0]) == ";HOSTNAME"))) {
             line = "hostname = \"" + _newhostname + "\"\n";
             found = true;
         }
 
-        neuesfile.push_back(line);
+        updatedContent.push_back(line);
 
         if (fgets(zw, sizeof(zw), pFile) == NULL)
-        {
             line = "";
-        }
         else
-        {
             line = std::string(zw);
-        }
     }
 
-    if (!found)
-    {
+    if (!found) {
         line  = "\n;++++++++++++++++++++++++++++++++++\n";
         line += "; Hostname: Name of device in network\n";
         line += "; This parameter can be configured via WebUI configuration\n";
         line += "; Default: \"watermeter\", if nothing is configured\n\n";
         line = "hostname = \"" + _newhostname + "\"\n";
-        neuesfile.push_back(line);        
-    }
-    fclose(pFile);
-
-    pFile = fopen(fn.c_str(), "w+");
-    if (pFile == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeHostName: Unable to open file wlan.ini (write)"); 
-        return false;
+        updatedContent.push_back(line);        
     }
 
-    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(pFile, NULL, _IOFBF, 512);
+    // Write updated content back to file
+    // ******************************************************************
+    rewind(pFile); // Put the file pointer back to the beginning of file
 
-    for (int i = 0; i < neuesfile.size(); ++i)
-    {
-        //ESP_LOGD(TAG, "%s", neuesfile[i].c_str());
-        fputs(neuesfile[i].c_str(), pFile);
+    for (int i = 0; i < updatedContent.size(); ++i) {
+        //ESP_LOGD(TAG, "%s", updatedContent[i].c_str());
+        fputs(updatedContent[i].c_str(), pFile);
     }
+
     fclose(pFile);
 
     return true;
 }
+
 
 #if (defined WLAN_USE_ROAMING_BY_SCANNING || (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES))
 bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
@@ -284,15 +268,14 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
 
     std::string line = "";
     std::vector<std::string> splitted;
-    std::vector<std::string> updatedFile;
+    std::vector<std::string> updatedContent;
     bool found = false;
-
     FILE* pFile = NULL;
 
     fn = FormatFileName(fn);
-    pFile = fopen(fn.c_str(), "r");
+    pFile = fopen(fn.c_str(), "r+");
     if (pFile == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeRSSIThreshold: Unable to open file wlan.ini (read)"); 
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeRSSIThreshold: Unable to open file wlan.ini"); 
         return false;
     }
 
@@ -300,20 +283,17 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(pFile, NULL, _IOFBF, 512);
 
-    ESP_LOGD(TAG, "ChangeRSSIThreshold: wlan.ini opened");
-
     char zw[256];
     if (fgets(zw, sizeof(zw), pFile) == NULL) {
-        line = "";
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeRSSIThreshold: File opened, but empty or content not readable");
+        fclose(pFile);
         return false;
     }
     else {
         line = std::string(zw);
     }
 
-    while ((line.size() > 0) || !(feof(pFile)))
-    {
+    while ((line.size() > 0) || !(feof(pFile))) {
         ESP_LOGD(TAG, "%s", line.c_str());
         splitted = ZerlegeZeileWLAN(line, "=");
         splitted[0] = trim(splitted[0], " ");
@@ -322,13 +302,13 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
         if (((splitted.size() > 1) && (toUpper(splitted[0]) == "RSSITHREASHOLD")) ||
             ((splitted.size() > 1) && (toUpper(splitted[0]) == ";RSSITHREASHOLD")) ||
             ((splitted.size() > 1) && (toUpper(splitted[0]) == "RSSI")) ||
-            ((splitted.size() > 1) && (toUpper(splitted[0]) == ";RSSI"))) {
-            if (fgets(zw, sizeof(zw), pFile) == NULL) {
+            ((splitted.size() > 1) && (toUpper(splitted[0]) == ";RSSI")))
+        {
+            if (fgets(zw, sizeof(zw), pFile) == NULL)
                 line = "";
-            }
-            else {
+            else
                 line = std::string(zw);
-            }
+            
             continue;
         }
 
@@ -337,18 +317,15 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
             found = true;
         }
     
-        updatedFile.push_back(line);
-        
-        if (fgets(zw, sizeof(zw), pFile) == NULL) {
+        updatedContent.push_back(line);
+    
+        if (fgets(zw, sizeof(zw), pFile) == NULL)
             line = "";
-        }
-        else {
+        else
             line = std::string(zw);
-        }
     }
 
-    if (!found)
-    {
+    if (!found) {
         line  = "\n;++++++++++++++++++++++++++++++++++\n";
         line += "; WIFI Roaming:\n";
         line += "; Network assisted roaming protocol is activated by default\n";
@@ -359,25 +336,16 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
         line += "; Note: This parameter can be configured via WebUI configuration\n";
         line += "; Default: 0 = Disable client requested roaming query\n\n";
         line += "RSSIThreshold = " + std::to_string(_newrssithreshold) + "\n";
-        updatedFile.push_back(line);        
+        updatedContent.push_back(line);        
     }
 
-    fclose(pFile);
+    // Write updated content back to file
+    // ******************************************************************
+    rewind(pFile); // Put the file pointer back to the beginning of file
 
-    pFile = fopen(fn.c_str(), "w+");
-    if (pFile == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeRSSIThreshold: Unable to open file wlan.ini (write)"); 
-        return false;
-    }
-
-    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(pFile, NULL, _IOFBF, 512);
-
-    for (int i = 0; i < updatedFile.size(); ++i)
-    {
-        //ESP_LOGD(TAG, "%s", updatedFile[i].c_str());
-        fputs(updatedFile[i].c_str(), pFile);
+    for (int i = 0; i < updatedContent.size(); ++i) {
+        //ESP_LOGD(TAG, "%s", updatedContent[i].c_str());
+        fputs(updatedContent[i].c_str(), pFile);
     }
 
     fclose(pFile);
@@ -385,7 +353,7 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
     wlan_config.rssi_threshold = _newrssithreshold;     // Can be set directly, no reboot necessary (TODO: Think about removing this parameter from WLAN.INI!?)
 
     if (_newrssithreshold != 0)
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "ChangeRSSIThreshold: RSSIThreshold set to " + wlan_config.rssi_threshold);
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "ChangeRSSIThreshold: RSSIThreshold set to " + std::to_string(wlan_config.rssi_threshold));
     else
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "WLAN roaming/channel scan (RSSIThreshold = 0) -> function disabled");
     

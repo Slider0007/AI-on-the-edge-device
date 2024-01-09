@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>AI on the Edge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link rel="icon" type="image/x-icon" href="favicon.ico?v=$COMMIT_HASH">
     <link rel="icon" type="image/x-icon" href="icon.svg?v=$COMMIT_HASH">
-    <link rel="apple-touch-icon" sizes="180x180" href="/icon-apple-touch-icon.png?v=$COMMIT_HASH">
-    <link rel="manifest" href="/site.webmanifest?v=$COMMIT_HASH">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-apple-touch.png?v=$COMMIT_HASH">
+    <link rel="manifest" type="application/manifest+json" href="/site.webmanifest?v=$COMMIT_HASH">
 
-    <title>AI on the Edge</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css?v=$COMMIT_HASH" type="text/css" >
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
     <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+    <script src="firework.js?v=$COMMIT_HASH"></script>
 
-    <script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script>
-    <script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-    <script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>
-
-    <script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
-    <script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
+    <script src="common.js?v=$COMMIT_HASH"></script>
+    <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+    <script src="readconfigparam.js?v=$COMMIT_HASH"></script>
 
     <script>
         var streamPopup;
@@ -62,119 +62,138 @@
             }
             return "";
         }
-
     </script>
 </head>
 
 <body>
-<div class="main">
+    <div class="main">
+    <table style="border: none; width:100%">
+        <tr>
+            <td style="padding: 10px; width: 64px; height: 64px"><img style="width:64px; height:64px" src="favicon.ico?v=$COMMIT_HASH"></td>
+            <td><h1 id="id_title" style="margin-block-start: 0.2em;margin-block-end: 0.1em;">AI on the Edge | </h1>
+                <h4 style="margin-top: 0px; margin-bottom: 10px">A Neural Network Recognition System For Meter Digitalization</h4>
+            </td>
+        </tr>
+    </table>
 
-<table style="border: none; width:100%">
-    <tr>
-        <td style="padding: 10px; width: 64px; height: 64px"><img style="width:64px; height:64px" src="favicon.ico?v=$COMMIT_HASH"></td>
-        <td><h1 id="id_title" style="margin-block-start: 0.2em;margin-block-end: 0.1em;">AI on the Edge | </h1>
-            <h3 style="margin-top: 0px; margin-bottom: 10px">A Neural Network Recognition System For Meter Digitalization</h3>
-        </td>
-    </tr>
-</table>
+    <div class="menu" onmouseover="resetMenu()">
+    <ul>
+        <li><a href="#" onclick="loadPage('overview.html?v=$COMMIT_HASH');">Overview</a></li>
 
-<div class="menu" onmouseover="resetMenu()">
-  <ul>
-    <li><a href="#" onclick="loadPage('overview.html?v=$COMMIT_HASH');">Overview</a></li>
+        <li><a>Data<i class="arrow down"></i></a>
+            <ul class="submenu">
+                <li><a href="#" onclick="loadPage(getDomainname() + '/recognition_details');">Recognition Details</a></li>
+                <li><a href="#" onclick="loadPage('graph.html?v=$COMMIT_HASH');">Data Graph</a></li>
+                <li><a href="#" onclick="loadPage('data.html?v=$COMMIT_HASH');">Data Viewer</a></li>
+                <li><a href="#" onclick="loadPage(getDomainname() + '/fileserver/log/data/');">Data Files</a></li>
+            </ul>
+        </li>
 
-    <li><a>Data<i class="arrow down"></i></a>
-        <ul class="submenu">
-            <li><a href="#" onclick="loadPage(getDomainname() + '/recognition_details');">Recognition Details</a></li>
-            <li><a href="#" onclick="loadPage('graph.html?v=$COMMIT_HASH');">Data Graph</a></li>
-            <li><a href="#" onclick="loadPage('data.html?v=$COMMIT_HASH');">Data Viewer</a></li>
-            <li><a href="#" onclick="loadPage(getDomainname() + '/fileserver/log/data/');">Data Files</a></li>
-        </ul>
-    </li>
-
-    <li><a>Settings <i class="arrow down"></i></a>
-        <ul class="submenu">
-          <li><a href="#" onclick="loadPage('set_fallbackvalue.html?v=$COMMIT_HASH');">Set "Fallback Value"</a></li>
-          <li><a href="#" onclick="loadPage('edit_config_param.html?v=$COMMIT_HASH');">Configuration</a></li>
-          <li><a>Alignment <i class="arrow right"></i></a>
-              <ul>
-                  <li><a href="#" onclick="loadPage('edit_reference.html?v=$COMMIT_HASH');">Reference Image</a></li>
-                  <li><a href="#" onclick="loadPage('edit_alignment.html?v=$COMMIT_HASH');">Alignment Marker</a></li>
-              </ul>
-          </li>
-          <li><a><strong>R</strong>egions <strong>O</strong>f <strong>I</strong>nterest <i class="arrow right"></i></a>
-              <ul>
-                  <li><a href="#" onclick="loadPage('edit_digits.html?v=$COMMIT_HASH');">Digit ROI</a></li>
-                  <li><a href="#" onclick="loadPage('edit_analog.html?v=$COMMIT_HASH');">Analog ROI</a></li>
-              </ul>
-          </li>
-        </ul>
-      </li>
-
-    <li><a>System <i class="arrow down"></i></a>
-        <ul class="submenu">
-            <li><a href="#" onclick="loadPage('backup.html?v=$COMMIT_HASH');">Backup/Restore</a></li>
-            <li><a href="#" onclick="loadPage('ota_page.html?v=$COMMIT_HASH');">OTA Update</a></li>
-            <li><a href="#" onclick="loadPage('log.html?v=$COMMIT_HASH');">Log Viewer</a></li>
-            <li><a href="#" onclick="loadPage(getDomainname() + '/fileserver/');">File Server</a></li>
-            <li><a>Livestream <i class="arrow right"></i></a>
+        <li><a>Settings <i class="arrow down"></i></a>
+            <ul class="submenu">
+            <li><a href="#" onclick="loadPage('set_fallbackvalue.html?v=$COMMIT_HASH');">Set "Fallback Value"</a></li>
+            <li><a href="#" onclick="loadPage('edit_config_param.html?v=$COMMIT_HASH');">Configuration</a></li>
+            <li><a>Alignment <i class="arrow right"></i></a>
                 <ul>
-                    <li><a href="#" onclick="start_livestream(false);">Live Stream (Light off)</a></li>
-                    <li><a href="#" onclick="start_livestream(true);">Live Stream (Light on)</a></li>
+                    <li><a href="#" onclick="loadPage('edit_reference.html?v=$COMMIT_HASH');">Reference Image</a></li>
+                    <li><a href="#" onclick="loadPage('edit_alignment.html?v=$COMMIT_HASH');">Alignment Marker</a></li>
                 </ul>
-            <li><a href="#" onclick="loadPage('reboot_page.html?v=$COMMIT_HASH');">Reboot</a></li>
-            <li><a href="#" onclick="loadPage('info.html?v=$COMMIT_HASH');">Info</a></li>
-        </ul>
-    </li>
+            </li>
+            <li><a><strong>R</strong>egions <strong>O</strong>f <strong>I</strong>nterest <i class="arrow right"></i></a>
+                <ul>
+                    <li><a href="#" onclick="loadPage('edit_digits.html?v=$COMMIT_HASH');">Digit ROI</a></li>
+                    <li><a href="#" onclick="loadPage('edit_analog.html?v=$COMMIT_HASH');">Analog ROI</a></li>
+                </ul>
+            </li>
+            </ul>
+        </li>
 
-    <li><a>Manual Control <i class="arrow down"></i></a>
-        <ul class="submenu">
-            <li><a href="#" onclick="manual_cycle_start()">Start Cycle</a></li>
-            <li id="HASendDiscovery" style="display:none;"><a href="#" onclick="HA_send_discovery()">Resend HA Discovery</a></li>
-        </ul>
-    </li>
-  </ul>
-</div>
+        <li><a>System <i class="arrow down"></i></a>
+            <ul class="submenu">
+                <li><a href="#" onclick="loadPage('backup.html?v=$COMMIT_HASH');">Backup/Restore</a></li>
+                <li><a href="#" onclick="loadPage('ota_page.html?v=$COMMIT_HASH');">OTA Update</a></li>
+                <li><a href="#" onclick="loadPage('log.html?v=$COMMIT_HASH');">Log Viewer</a></li>
+                <li><a href="#" onclick="loadPage(getDomainname() + '/fileserver/');">File Server</a></li>
+                <li><a>Livestream <i class="arrow right"></i></a>
+                    <ul>
+                        <li><a href="#" onclick="start_livestream(false);">Livestream (Flash off)</a></li>
+                        <li><a href="#" onclick="start_livestream(true);">Livestream (Flash on)</a></li>
+                    </ul>
+                <li><a href="#" onclick="loadPage('reboot_page.html?v=$COMMIT_HASH');">Reboot</a></li>
+                <li><a href="#" onclick="loadPage('info.html?v=$COMMIT_HASH');">Info</a></li>
+            </ul>
+        </li>
 
-<iframe title="maincontent" name="maincontent" class="iframe" id="maincontent"></iframe>
+        <li><a>Manual Control <i class="arrow down"></i></a>
+            <ul class="submenu">
+                <li><a href="#" onclick="manual_cycle_start()">Start Cycle</a></li>
+                <li id="HASendDiscovery" style="display:none;"><a href="#" onclick="HA_send_discovery()">Resend HA Discovery</a></li>
+            </ul>
+        </li>
+    </ul>
+    </div>
 
-<span id="Version" style="font-size: 10px; margin-top: -5px;padding-left: 10px;">Loading version...</span>
+    <iframe title="maincontent" name="maincontent" class="iframe" id="maincontent"></iframe>
 
-<script type="text/javascript">
+    <span id="Version" style="font-size: 10px; margin-top: -5px;padding-left: 10px;">Loading version...</span>
+    </div>
+
+
+<script>
     LoadHostname();
     LoadFwVersion();
     LoadWebUiVersion();
     HA_send_discovery_visibililty();
 
-    if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH") {
-    document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/";
+    if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH")
+    {
+        document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/";
     }
+
     //console.log("Loading page: " + getCookie("page"));
     document.getElementById('maincontent').src = getCookie("page");
 
     
-    function manual_cycle_start() {
-    var url = getDomainname() + '/cycle_start'; 
+    function manual_cycle_start()
+    {
+        var url = getDomainname() + '/cycle_start';
+
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				if (xhttp.responseText.substring(0,3) == "001") {
-					firework.launch('Cycle start triggered', 'success', 5000);
-                    window.location.reload();
-				}
-				else if (xhttp.responseText.substring(0,3) == "002") {
-					firework.launch('Cycle start scheduled. Start new cycle after actual cycle is completed', 'success', 5000);
-				}
-				else if (xhttp.responseText.substring(0,3) == "099") {
-					firework.launch('Cycle start triggered, but cycle start not possible (Main task not running)', 'danger', 5000);
-				}
-			}
-		}
+			if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    if (xhttp.responseText.substring(0,3) == "001") {
+                        firework.launch('Cycle start triggered', 'success', 2000);
+                        document.getElementById("maincontent").contentWindow.location.reload();
+                    }
+                    else if (xhttp.responseText.substring(0,3) == "002") {
+                        firework.launch('Cycle start scheduled. Start new cycle after actual cycle is completed', 'success', 3000);
+                        document.getElementById("maincontent").contentWindow.location.reload();
+                    }
+                    else if (xhttp.responseText.substring(0,3) == "099") {
+                        firework.launch('Cycle start triggered, but cycle start not possible (flow not initialized)', 'danger', 30000);
+                        document.getElementById("maincontent").contentWindow.location.reload();
+                    }
+                    else {
+                        firework.launch("Cycle start request malformed. ResponseText: " + xhttp.responseText, 'danger', 30000);
+                    }
+                }
+                else {
+                    firework.launch("Cycle start request failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Cycle start request failed. Response status: " + this.status);  
+                }
+            }
+		};
+
+        xhttp.timeout = 10000;  // 10 seconds
 		xhttp.open("GET", url, true);
 		xhttp.send();
     }
 
 
-    function HA_send_discovery_visibililty() {
+    function HA_send_discovery_visibililty()
+    {
 		loadConfig(getDomainname());
 		ParseConfigReduced();
 		_category = getConfigCategory();
@@ -184,20 +203,32 @@
 	}
 
 
-    function HA_send_discovery() {
-        var url = getDomainname() + '/mqtt_publish_discovery'; 
+    function HA_send_discovery()
+    {
+        var url = getDomainname() + '/mqtt_publish_discovery';
+
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				firework.launch('Sending HA discovery topics scheduled. The sending will be processed in state "Publish to MQTT"', 'success', 5000);
-			}
-		}
+			if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+				    firework.launch('Sending HA discovery topics scheduled. The sending will be processed in state "Publish to MQTT"', 'success', 5000);
+			    }
+                else {
+                    firework.launch("HA send discovery topics request failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("HA send discovery topics request failed. Response status: " + this.status);  
+                }
+            }
+		};
+
+        xhttp.timeout = 10000;  // 10 seconds
 		xhttp.open("GET", url, true);
 		xhttp.send();
     }
 
 
-    function start_livestream(streamFlashlight) {
+    function start_livestream(streamFlashlight)
+    {
         if (streamPopup) 
             streamPopup.close();
 
@@ -208,6 +239,7 @@
 
         streamPopup.focus();
     }
+
 </script>
 
 </body>

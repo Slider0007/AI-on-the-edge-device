@@ -1,19 +1,18 @@
+#include "ClassFlowInfluxDBv2.h"
+
 #ifdef ENABLE_INFLUXDB
 #include <sstream>
-#include "ClassFlowInfluxDBv2.h"
-#include "Helper.h"
-#include "connect_wlan.h"
+#include <time.h>
+
+#include "esp_log.h"
 
 #include "time_sntp.h"
 #include "interface_influxdb.h"
-
 #include "ClassFlowPostProcessing.h"
-#include "esp_log.h"
-#include "../../include/defines.h"
-
 #include "ClassLogFile.h"
+#include "Helper.h"
+#include "connect_wlan.h"
 
-#include <time.h>
 
 static const char* TAG = "INFLUXDBV2";
 
@@ -26,10 +25,13 @@ void ClassFlowInfluxDBv2::SetInitialParameter(void)
     ListFlowControll = NULL;
 
     uri = "";
-    database = "";
+    bucket = "";
     dborg = "";  
     dbtoken = "";  
-    //dbfield = "";
+    TLSEncryption = false;
+    TLSCACertFilename = "";
+    TLSClientCertFilename = "";
+    TLSClientKeyFilename = "";
 
     disabled = false;
     InfluxDBenable = false;
@@ -99,9 +101,9 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             this->uri = splitted[1];
         }
 
-        if (((toUpper(splitted[0]) == "DATABASE")) && (splitted.size() > 1))
+        if (((toUpper(splitted[0]) == "BUCKET")) && (splitted.size() > 1))
         {
-            this->database = splitted[1];
+            this->bucket = splitted[1];
         }
 
         if ((toUpper(_param) == "ORG") && (splitted.size() > 1))
@@ -112,6 +114,29 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if ((toUpper(_param) == "TOKEN") && (splitted.size() > 1))
         {
             this->dbtoken = splitted[1];
+        }
+
+        if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1))
+        {
+            if (toUpper(splitted[1]) == "TRUE")
+                TLSEncryption = true;  
+            else
+                TLSEncryption = false;
+        }
+
+        if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1))
+        {
+            TLSCACertFilename = "/sdcard" + splitted[1];
+        }
+        
+        if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1))
+        {
+            TLSClientCertFilename = "/sdcard" + splitted[1];
+        }
+
+        if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1))
+        {
+            TLSClientKeyFilename = "/sdcard" + splitted[1];
         }
 
         if (((toUpper(_param) == "MEASUREMENT")) && (splitted.size() > 1))
@@ -125,20 +150,21 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         }
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init with URI: " + uri + ", Database: " + database + ", Org: " + dborg + ", Token: *****");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init: URI: " + uri + ", Bucket: " + bucket + ", Org: " + dborg + 
+                        ", Token: *****, TLS Encryption: " + std::to_string(TLSEncryption));
 
-    if ((uri.length() > 0 && (uri != "undefined")) && (database.length() > 0) && (database != "undefined") && 
+    if ((uri.length() > 0 && (uri != "undefined")) && (bucket.length() > 0) && (bucket != "undefined") && 
         (dborg.length() > 0) && (dborg != "undefined") && (dbtoken.length() > 0) && (dbtoken != "undefined")) 
     { 
-        InfluxDB_V2_Init(uri, database, dborg, dbtoken); 
-        InfluxDBenable = true;
+        InfluxDBenable = InfluxDBv2Init(uri, bucket, dborg, dbtoken, TLSEncryption, TLSCACertFilename, 
+                                            TLSClientCertFilename, TLSClientKeyFilename);
     }
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or wrong parameter");
-        return false;
+        InfluxDBenable = false;
     }
    
-    return true;
+    return InfluxDBenable;
 }
 
 
@@ -166,7 +192,7 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
                         namenumber = namenumber + "/value";
                 }
 
-                InfluxDB_V2_Publish((*NUMBERS)[i]->MeasurementV2, namenumber, (*NUMBERS)[i]->sActualValue, (*NUMBERS)[i]->sTimeProcessed);
+                InfluxDBv2Publish((*NUMBERS)[i]->MeasurementV2, namenumber, (*NUMBERS)[i]->sActualValue, (*NUMBERS)[i]->sTimeProcessed);
             }
         }
     }

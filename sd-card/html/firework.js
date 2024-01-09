@@ -6,12 +6,13 @@
  * @param   m   string    message
  * @param   t   string    (optional) message type ('success', 'danger')
  * @param   l   number    (optional) length of time to display message in milliseconds
+ * @param   o   boolean   (optional) True: Firework gets overlayed with the next one
  */
  ;(function ($, window) {
   "use strict";
 
   window.firework = {
-    launch: function(m, t, l) {
+    launch: function(m, t, l, o) {
       if (typeof m != 'string') {
         console.error('Error: Call to firework() without a message');
         return false
@@ -24,9 +25,11 @@
         , fid = "firework-"+ s; // firework id
 
       if (typeof t !== 'undefined') c += ' '+ t; // add any user defined classes
+      if ((typeof o !== 'undefined') && Boolean(o)) c += ' ' + "overlay";  // Firework can be overlayed with next one
 
-      $('.firework').each(function(){ // account for existing fireworks and move new one below
-        p += parseInt($(this).height()) + 30
+      $('.firework').each(function(){ // account for existing fireworks and move new one below or overlay
+        if (!($(this).hasClass('overlay')))
+          p += parseInt($(this).height()) + 20
       });
 
       $('<div id="'+ fid +'" class="'+ c +'">'+ m +'<a onclick="firework.remove(\'#'+ fid +'\')"><img style="height:28px;" src=close.png></a></div>')

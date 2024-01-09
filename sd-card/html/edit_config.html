@@ -1,85 +1,90 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
-<title>Edit Config</title>
-<meta charset="UTF-8" />
+	<meta charset="UTF-8">
+	<title>Edit Config</title>
 
-<style>
-	h1 {font-size: 2em;}
-	h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-	h3 {font-size: 1.2em;}
-	p {font-size: 1em;}
+	<style>
+		h1 {font-size: 1.8em;}
+		h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+		h3 {font-size: 1.2em;}
+		p {font-size: 1em;}
 
-	.button {
-		padding: 5px 10px;
-		width: 220px;
-		font-size: 16px;	
-	}
+		body, html {
+			font-size: 100%;
+			text-size-adjust: 100%;
+			-webkit-text-size-adjust: 100%;
+		}
 
-	textarea {
-		font-size: 15px;
-	}
-</style>
-<link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
-<script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
-<script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
+		.button {
+			padding: 5px 10px;
+			width: 220px;
+			font-size: 16px;	
+		}
+
+		textarea {
+			font-size: 15px;
+		}
+	</style>
+
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+    <script src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
-<body style="font-family: arial; padding: 0px 10px;">
- 
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
+	<h2>Configuration - "Config.ini" Editor</h2>
+
 	<table style="width:660px">
-		<h2>Configuration - "Config.ini" Editor</h2>
-		<td>
-			<textarea id="inputTextToSave" rows="30" style="width:100%"></textarea>
-		</td>
+		<tr>
+			<td>
+				<textarea id="inputTextToSave" rows="30" style="width:100%"></textarea>
+			</td>
+		</tr>
 	</table>
 
 	<table>
-		<td>
-			<button class="button" onclick="saveTextAsFile()">Save And Apply</button>
-		</td>
+		<tr>
+			<td>
+				<button class="button" onclick="saveTextAsFile()">Save And Apply</button>
+			</td>
+		</tr>
 	</table>
 
-	<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
-	<script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
-	
-	<script type="text/javascript">
-		var canvas = document.getElementById('canvas'),
+
+<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+<script>
+	var canvas = document.getElementById('canvas'),
 		domainname = getDomainname(); 
 
 
-	function LoadConfigNeu() {
+	function LoadConfigNeu()
+	{
 		loadConfig(domainname); 	
 		document.getElementById("inputTextToSave").value = getConfig();
-		}
+	}
+
 
 	function saveTextAsFile()
 	{
 		if (confirm("Are you sure you want to save the configuration?")) {
-			FileDeleteOnServer("/config/config.ini", domainname);
 			var textToSave = document.getElementById("inputTextToSave").value;
-			FileSendContent(textToSave, "/config/config.ini", domainname);
+			// Save into temporary file and rename to config.ini on firmware level (server_file.cpp)
+     		// -> Prevent against  data loss if network connection is interrupted
+			FileSendContent(textToSave, "/config/config.tmp", domainname);
 
-			firework.launch('Save and apply configuration...', 'success', 5000);
+			firework.launch('Save and apply configuration...', 'success', 2000, true);
 			setTimeout(function() {
 				reload_config();
-			}, 500);
+			}, 200);
 		}
 	}
 
-	function doReboot() {
-		if (confirm("Are you sure you want to reboot?")) {
-			var stringota = "/reboot";
-			window.location = stringota;
-			window.location.href = stringota;
-			window.location.assign(stringota);
-			window.location.replace(stringota);
-		}
-	}
 	
 	LoadConfigNeu();
 	
-	</script>
+</script>
  
 </body>
 </html>

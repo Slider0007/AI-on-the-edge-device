@@ -1,102 +1,90 @@
-# Welcome to the AI-on-the-edge-device
-<img src="images/icon/watermeter.svg" width="100px">
+# AI-on-the-Edge --- SL Fork
+<img src="images/icon/watermeter.svg" width="100px"> 
 
-Artificial intelligence based systems have been established in our every days live. Just think of speech or image recognition. Most of the systems relay on either powerful processors or a direct connection to the cloud for doing the calculations up there. With the increasing power of modern processors the AI systems are coming closer to the end user - which is usually called **edge computing**.
-Here this edge computing is brought into a practical oriented example, where a AI network is implemented on a ESP32 device so: **AI on the edge**.
+Artificial intelligence based systems have become established in our everyday lives. Just think of speech or image recognition. Most of the systems rely on either powerful processors or a direct connection to the cloud for doing the calculations there. With the increasing power of modern processors, the AI systems are coming closer to the end user – which is usually called **edge computing**.
+Here, this edge computing is put into a practically oriented example, where an AI network is implemented on an ESP32 device so: **AI on the Edge**.
 
-This projects allows you to digitalize your **analoge** water, gas, power and other meters using cheap and easily available hardware.
+This project allows you to digitize your **analog** water, gas, power and other meters using cheap and easily available hardware.
 
-All you need is an [ESP32 board with a supported camera](https://jomjol.github.io/AI-on-the-edge-device-docs/Hardware-Compatibility/) and a bit of a practical hand.
+All you need is an [ESP32-CAM board](https://jomjol.github.io/AI-on-the-edge-device-docs/Hardware-Compatibility/) and something of a practical hand.
 
 <img src="images/esp32-cam.png" width="200px">
 
 ## Key features
-- Tensorflow Lite (TFlite) integration - including easy to use wrapper
-- Inline Image processing (feature detection, alignment, ROI extraction)
-- **Small** and **cheap** device (3x4.5x2 cm³, < 10 EUR)
-- camera and illumination integrated
-- Web surface to administrate and control
-- OTA-Interface to update directly through the web interface
-- Full integration into Homeassistant
-- Support for Influx DB 1
-- MQTT
+- Tensorflow Lite (TFLite) integration – including easy-to-use wrapper
+- Inline image processing (feature detection, alignment, ROI extraction)
+- **Small** and **cheap** device (3 x 4.5 x 2 cm³, < 10 EUR)
+- Integrated camera and illumination
+- Web interface for administration and control
+- OTA interface for updating directly via web interface
+- Full integration into Home Assistant
+- InfluxDB v1.x + v2.x
+- MQTT v3.x
 - REST API
 
+
 ## Workflow
-The device takes a photo of your meter at a defined interval. It then extracts the Regions of Interest (ROI's) out of it and runs them through an artificial inteligence. As a result, you get the digitalized value of your meter.
+The device takes an image of your meter at a defined interval. It extracts the Regions of Interest (ROIs) from the image and runs them through artificial intelligence. 
+As a result, you get the digitized value of your meter. There are several options for what to do with that value. Either send it to a MQTT broker, write it to an InfluxDB or simply provide access to it via a REST API (JSON / HTML).
 
-There are several options what to do with that value. Either send it to a MQTT broker, write it to an InfluxDb or simply provide it throug a REST API.
+<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/idea.jpg" width="800"> 
 
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/idea.jpg" width="600"> 
 
 ## Impressions
-### AI-on-the-edge-device on a Water Meter
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter_all.jpg" width="200"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/main.jpg" width="200"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/size.png" width="200"> 
-
-### Web Interface (Water Meter)
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter.jpg" width="600"> 
-
-### AI-on-the-edge-device on a Electrical Power Meter
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/powermeter.jpg" width="600"> 
+### Hardware
+<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter_all.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/main.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/size.png" width="266"> 
 
 
-## Setup
-There is a growing [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/) which provides you with a lot of information.
-Head there to get a start, set it up and configure it.
+### Software
+<img src="https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/07938912-7438-467c-80ca-f1538b37f98c" width="800"> 
 
-There are also a articles in the German Heise magazine "make:" about the setup and the technical background (behind a paywall) : [DIY - Setup](https://www.heise.de/select/make/2021/2/2103513300897420296)
 
-For further background information, head to [Neural Networks](https://www.heise.de/select/make/2021/6/2126410443385102621), [Training Neural Networks](https://www.heise.de/select/make/2022/1/2134114065999161585) and [Programming on the ESP32](https://www.heise.de/select/make/2022/2/2204010051597422030) 
+## Device Installation
+### 1. Inform Yourself
+There is growing [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/) which provides you with a lot of information. Head there to get a start, set it up and configure it.
 
-### Download
-The latest available version is available on the [Releases page](https://github.com/jomjol/AI-on-the-edge-device/releases).
+A lot of people created useful Youtube videos which might help you getting started.
 
-### Flashing of the ESP32
-Initially you will have to flash the ESP32 through an USB connection. Later an update is possible directly over the Air (OTA).
+Here is a small selection:
 
-There are different ways to flash your ESP32:
-- [Web Installer and Console](https://jomjol.github.io/AI-on-the-edge-device/index.html) (Webbrowser based tool to flash the ESP32 and extract the Log over USB)
-- Flash Tool from Espressif
-- ESPtool (Command Line Tool)
+- [youtube.com/watch?v=HKBofb1cnNc](https://www.youtube.com/watch?v=HKBofb1cnNc)
+- [youtube.com/watch?v=yyf0ORNLCk4](https://www.youtube.com/watch?v=yyf0ORNLCk4)
+- [youtube.com/watch?v=XxmTubGek6M](https://www.youtube.com/watch?v=XxmTubGek6M)
+- [youtube.com/watch?v=mDIJEyElkAU](https://www.youtube.com/watch?v=mDIJEyElkAU)
+- [youtube.com/watch?v=SssiPkyKVVs](https://www.youtube.com/watch?v=SssiPkyKVVs)
+- [youtube.com/watch?v=MAHE_QyHZFQ](https://www.youtube.com/watch?v=MAHE_QyHZFQ)
+- [youtube.com/watch?v=Uap_6bwtILQ](https://www.youtube.com/watch?v=Uap_6bwtILQ)
 
-See the [Docu](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/) for more information.
+For further background information, head to [Neural Networks](https://www.heise.de/select/make/2021/6/2126410443385102621), 
+[Training Neural Networks](https://www.heise.de/select/make/2022/1/2134114065999161585) and [Programming on the ESP32](https://www.heise.de/select/make/2022/2/2204010051597422030).
 
-### Flashing the SD-Card
-The SD-Card must be flashed separately, see the [Docu](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/) for details.
+### 2. Download Firmware Package
+Officially released firmware packages can be downloaded on [Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases).<br>
 
-## Casing
+### 3. Install MCU Part Of Firmware
+Initially the MCU of the device has to be flashed via a direct USB connection. Further updates can be performed directly over the air (OTA). <br>
+For initial installation, use content of `AI-on-the-edge-device__manual-setup__*.zip`.<br>
+NOTE: OTA updates will be performed with `AI-on-the-edge-device__update__*.zip` package.
 
-A 3d-printable housing can be found here:
-  - https://www.thingiverse.com/thing:4573481 (Water Meter)
-  - https://www.thingiverse.com/thing:5028229 (Power Meter)
-  - https://www.thingiverse.com/thing:5224101 (Gas Meter)
-  - https://www.thingiverse.com/thing:4571627 (ESP32-Cam housing only)
+There are different ways to flash the microcontroller:
+- [Espressif Flash Tool](https://www.espressif.com/sites/default/files/tools/flash_download_tool_3.9.5.zip)<br>
+  ![image](https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/fb3d659f-3e21-49fd-9d84-7224994b7e28)
+- [ESPtool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
-## Build it yourself
-See [Build Instructions](code/README.md).
+See [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/) for more information.<br>
+Note: Installation using web installer is not supported by this fork repo.
 
-## Donate
-If you would like to support the developer with a cup of coffee you can do that via [Paypal](https://www.paypal.com/donate?hosted_button_id=8TRSVYNYKDSWL).
+### 4. Install SD Card Content
+The SD card can be setup using the device's local WLAN hotspot after the MCU firmware got successfully installed  (`AI-on-the-edge-device__remote-setup__*.zip`). See the 
+[documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#remote-setup-using-the-built-in-access-point) for details. For this to work, the SD card must be FAT formated (which is the default on a new SD card).<br>
+Alternatively the SD card still can be setup manually without using hotspot, see the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#3-sd-card) for details (`AI-on-the-edge-device__manual-setup__*.zip`).
 
-<form action="https://www.paypal.com/donate" method="post" target="_top">
-<input type="hidden" name="hosted_button_id" value="8TRSVYNYKDSWL" />
-<input type="image" src="https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-<img alt="" border="0" src="https://www.paypal.com/en_DE/i/scr/pixel.gif" width="1" height="1" />
-</form>
-If you have any technical topics, you can create an [Issue](https://github.com/jomjol/AI-on-the-edge-device/issues). 
+:warning: Do not use github source files in any case, use only release related zip package. Otherwise functionality cannot be fully guaranteed!
 
-In other cases you can contact the developer via email: <img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/mail.jpg" height="25"> 
 
-## Changes and History 
-See [Changelog](Changelog.md)
+## Build Firmware Yourself
+See [Build Instructions](code/README.md)
 
-## Tools
 
-* Logfile downloader and combiner (Thx to [reserve85](https://github.com/reserve85))
-  * Files see ['/tools/logfile-tool'](tbd), How-to see [Docu](https://jomjol.github.io/AI-on-the-edge-device-docs/outdated--Gasmeter-Log-Downloader/)
-
-## Additional Ideas
-There are some ideas and feature requests which are not followed currently - mainly due to capacity reasons on side of the developer. They are collected here: [FeatureRequest.md](FeatureRequest.md)
-
-------
-
+## Support
+⚠️ This is a forked version of [jomjol](https://github.com/jomjol/AI-on-the-edge-device) great software which is intented to use for my personal purposes only. ⚠️

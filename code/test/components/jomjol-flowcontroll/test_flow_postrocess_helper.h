@@ -1,15 +1,14 @@
-#pragma once
 #ifndef TEST_FLOW_H
 #define TEST_FLOW_H
-#include <cmath> // needs to be included before unity.h -> provide isnan and isinf defines
-#include <unity.h>
+
 #include <ClassFlowPostProcessing.h>
 #include <ClassFlowCNNGeneral.h>
 #include <ClassFlowTakeImage.h>
 #include <Helper.h>
 
 
-class UnderTestPost : public ClassFlowPostProcessing {
+class UnderTestPost : public ClassFlowPostProcessing
+{
     public:
         UnderTestPost(std::vector<ClassFlow*>* lfc, ClassFlowCNNGeneral *_analog, ClassFlowCNNGeneral *_digit)
             : ClassFlowPostProcessing::ClassFlowPostProcessing(lfc, _analog, _digit) {}
@@ -21,6 +20,7 @@ class UnderTestPost : public ClassFlowPostProcessing {
 
 };
 
+
 /**
  * @brief Set the Up Class Flow Postprocessing object
  * 
@@ -29,6 +29,7 @@ class UnderTestPost : public ClassFlowPostProcessing {
  * @return UnderTestPost* a created, but not setted up testobject
  */
 UnderTestPost* setUpClassFlowPostprocessing(t_CNNType digType, t_CNNType anaType);
+
 
 /**
  * @brief creates a testobject (including setup). AnalogType is Class100, because all analog types do the same.
@@ -42,7 +43,9 @@ UnderTestPost* setUpClassFlowPostprocessing(t_CNNType digType, t_CNNType anaType
  * @return UnderTestPost* the created testobject
  */
 UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits, t_CNNType digType = Digital100, 
-                bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
+                            bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
+
+
 
 /**
  * @brief creates a testobject an run do flow (including setup). AnalogType is Class100, because all analog types do the same.
@@ -56,7 +59,9 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
  * @return std::string the return value of do_Flow is the Value as string
  */
 std::string process_doFlow(std::vector<float> analog, std::vector<float> digits, t_CNNType digType = Digital100, 
-                bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
+                            bool checkConsistency=false,  bool extendedResolution=false, int decimal_shift=0);
+
+
 
 /**
  * @brief run do_Flow on the testobject
@@ -75,6 +80,7 @@ std::string process_doFlow(UnderTestPost* _underTestPost);
  */
 void setConsitencyCheck(UnderTestPost* _UnderTestPost, bool _checkConsistency);
 
+
 /**
  * @brief Set the Pre Value on testobject
  * 
@@ -82,6 +88,7 @@ void setConsitencyCheck(UnderTestPost* _UnderTestPost, bool _checkConsistency);
  * @param _fallbackValue the last valid reading value
  */
 void SetFallbackValue(UnderTestPost* _UnderTestPost, double _fallbackValue);
+
 
 /**
  * @brief Set the Extended Resolution on undertest
@@ -91,6 +98,7 @@ void SetFallbackValue(UnderTestPost* _UnderTestPost, double _fallbackValue);
  */
 void setExtendedResolution(UnderTestPost* _UnderTestPost, bool _extendedResolution);
 
+
 /**
  * @brief Set the Decimal Shift (Nachkomma)
  * 
@@ -98,6 +106,7 @@ void setExtendedResolution(UnderTestPost* _UnderTestPost, bool _extendedResoluti
  * @param decimal_shift  count of nachkomma
  */
 void setDecimalShift(UnderTestPost* _UnderTestPost, int decimal_shift);
+
 
 /**
  * @brief Set the Analogdigit Transistion Start 
@@ -107,6 +116,7 @@ void setDecimalShift(UnderTestPost* _UnderTestPost, int decimal_shift);
  */
 void setAnalogdigitTransistionStart(UnderTestPost* _underTestPost, float _analogdigitTransistionStart);
 
+
 /**
  * @brief Set the allowNegatives in testobject 
  * 
@@ -114,6 +124,7 @@ void setAnalogdigitTransistionStart(UnderTestPost* _underTestPost, float _analog
  * @param _allowNegatives if should be set true or false
  */
 void setAllowNegatives(UnderTestPost* _underTestPost, bool _allowNegatives);
+
 
 /**
  * @brief Get the count of decimal places 

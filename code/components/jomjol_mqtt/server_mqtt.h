@@ -1,11 +1,11 @@
+#include "../../include/defines.h"
 #ifdef ENABLE_MQTT
-
-#pragma once
 
 #ifndef SERVERMQTT_H
 #define SERVERMQTT_H
 
 #include "ClassFlowDefineTypes.h"
+
 
 void SetHomeassistantDiscoveryEnabled(bool enabled);
 void mqttServer_setParameter(std::vector<NumberPost*>* _NUMBERS, int _interval, float _processingInterval);

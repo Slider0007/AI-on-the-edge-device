@@ -1,3 +1,5 @@
+#include "server_mqtt.h"
+
 #ifdef ENABLE_MQTT
 #include <string>
 #include <sstream>
@@ -5,19 +7,17 @@
 #include <vector>
 
 #include "esp_log.h"
+
 #include "ClassLogFile.h"
 #include "connect_wlan.h"
 #include "read_wlanini.h"
-#include "server_mqtt.h"
 #include "interface_mqtt.h"
 #include "time_sntp.h"
 #include "Helper.h"
 #include "system.h"
-#include "../../include/defines.h"
 
 
-static const char *TAG = "MQTT SERVER";
-
+static const char *TAG = "MQTT_SERVER";
 
 extern const char* libfive_git_version(void);
 extern const char* libfive_git_revision(void);

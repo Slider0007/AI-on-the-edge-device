@@ -1,120 +1,123 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
-<title>AI on the edge</title>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>AI on the edge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <style>
+        h1 {font-size: 1.8em;}
+        h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+        h3 {font-size: 1.2em;}
+        p {font-size: 1em;}
 
-<style>
-.h_iframe_explain iframe {
-    width:995px;
-    height:155px;
-    padding:5px;
-    padding-top:0px;
-    padding-bottom:0px;
-}
+        body, html {
+            width: 100%; 
+            height: 100%; 
+            min-height: 800px;
+            margin: 0px 0px 0px 2px; 
+            padding: 0; 
+            font-family: arial;
+            width: -moz-fit-content;
+            width: fit-content;
+            font-size: 100%;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
 
-.h_iframe iframe {
-    width:995px;
-    height:800px;
-    padding:5px;
-}
+        .h_iframe_explain iframe {
+            width: 690px;
+            height: 155px;
+            padding: 3px;
+            padding-top: 0px;
+            padding-bottom: 0px;
+            border: 0pt;
+        }
 
-h1 {font-size: 2em; margin-block-end: 0.3em;}
-h2 {font-size: 1.5em;margin-block-start: 0.3em;}
-h3 {font-size: 1.2em;}
-p {font-size: 1em;}
+        .h_iframe iframe {
+            width: 690px;
+            height: 800px;
+            padding: 3px;
+            border: 0pt;
+        }
 
-.button {
-	padding: 5px 10px;
-    width: 125px;
-	font-size: 16px;
-}
+        .button {
+            padding: 5px 0px;
+            width: 135px;
+            font-size: 16px;
+            margin: 0px;
+        }
 
-table {
-    width: 1015px;
-	padding: 0px;
-}
+        table {
+            width: 690px;
+            padding: 0px;
+        }
 
-.main {
-    display: flex; 
-    width: 100%; 
-    height: 100%; 
-    flex-direction: column; 
-    overflow: hidden;
-}
+        .main {
+            display: flex; 
+            width: 100%; 
+            height: 100%; 
+            flex-direction: column; 
+            overflow: hidden;
+        }
+    </style>
 
-body, html {
-    width: 100%; 
-    height: 100%; 
-    min-height: 800px;
-    margin: 0px 0px 0px 2px; 
-    padding: 0; 
-    font-family: arial;
-    width: -moz-fit-content;
-    width: fit-content;
-}
-
-</style>
-<script type="text/javascript">
-    function resizeIframe(obj) {
-        obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 20 + 'px';
-    }
-</script>
+    <script>
+        function resizeIframe(obj) {
+            obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 20 + 'px';
+        }
+    </script>
 </head>
 
 <body style="font-family: arial">
-
-    <table style="border: none">
+    <table style="border: none; width:100%">
         <tr>
-            <td style="padding-right: 10px;"><img src="favicon.ico?v=$COMMIT_HASH"></td>
-            <td>
-                <h1> Digitizer - AI on the edge - Initial setup</h1>
-                <h2>An ESP32 all inclusive neural network recognition system for meter digitalization</h2>
+            <td style="padding: 10px; width: 64px; height: 64px"><img style="width:64px; height:64px" src="favicon.ico?v=$COMMIT_HASH"></td>
+            <td><h1 id="id_title" style="margin-block-start: 0.2em;margin-block-end: 0.1em;">AI on the Edge | Initial Setup</h1>
+                <h4 style="margin-top: 0px; margin-bottom: 10px">A Neural Network Recognition System For Meter Digitalization</h4>
             </td>
         </tr>
     </table>
 
     <table>
-        <colgroup>
-            <col span="1" style="width: 45.0%;">
-            <col span="1" style="width: 15.0%;">
-            <col span="1" style="width: 25.0%;">
-        </colgroup>
+        <tr>
+            <td style="padding:10px">
+                <output id="rssi" name="rssi">WLAN Signal: </output>
+            </td>
+        </tr>
         <tr>
             <td>
                 <button class="button" id="restart" name="restart" onclick="clickStart()">Restart Setup</button>
                 <button class="button" id="previous" name="previous" onclick="clickPrevious()">Previous Step</button>
                 <button class="button" id="next" name="next" onclick="clickNext()">Next Step</button>
                 <button class="button" id="skip" name="skip" onclick="clickAbort()">Abort Setup</button>
-            </td>
-            <td style="padding-left:10px;">Setup Progress:<br><progress id="progressBar" value="0" max="7" style="width:120px;"></progress></td>
-            <td style="padding-left:10px; padding-top: 10px; padding-right: 5px; float:right;">
-                <output id="wlan_rssi" name="wlan_rssi"></output>
+                <span style="margin:0px; float:right;">Setup Progress:<br><progress id="progressBar" value="0" max="7" style="width:120px;"></progress></span>
             </td>
         </tr>
     </table>
 
+    <hr>
 
     <div class="h_iframe_explain" id="h_iframe_explain">
         <iframe name="explaincontent" id ="explaincontent" src="" allowfullscreen></iframe>
     </div>
 
     <div class="h_iframe" id="h_iframe">
-        <iframe name="maincontent" id ="maincontent" src="" onload="resizeIframe(this)" allowfullscreen></iframe>
-        <iframe name="stream" id ="stream" src="" display="none" allowfullscreen></iframe>
+        <iframe style="padding-right:0px" name="maincontent" id ="maincontent" src="" onload="resizeIframe(this)" allowfullscreen></iframe>
+        <iframe name="stream" id ="stream" src="" allowfullscreen></iframe>
     </div>
 
 
-<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
-<script type="text/javascript">
+<script src="common.js?v=$COMMIT_HASH"></script> 
+<script>
     var aktstep = 0;
     var setupCompleted = false;
     document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
     document.getElementById("progressBar").value = 0;
 
-    function clickStart() {
+    
+    function clickStart()
+    {
         aktstep = 0;
         setupCompleted = false;
         document.getElementById('stream').src = "";     
@@ -122,7 +125,9 @@ body, html {
         LoadStep();
     }
 
-    function clickAbort() {
+
+    function clickAbort()
+    {
         setupCompleted = false;
         aktstep = 7;
         document.getElementById('stream').src = "";     
@@ -130,7 +135,9 @@ body, html {
         LoadStep();
     }
 
-   function clickNext() {
+
+   function clickNext()
+   {
         aktstep++;
         if (aktstep > 7) {
             aktstep = 7;
@@ -140,7 +147,9 @@ body, html {
         LoadStep();
     }
 
-   function clickPrevious() {
+
+   function clickPrevious()
+   {
         aktstep--;
         if (aktstep < 0) {
             aktstep = 0;
@@ -150,11 +159,12 @@ body, html {
         LoadStep();
    }
 
-   function LoadStep(){
-      loadWLANRSSI();
+   function LoadStep()
+   {
+      loadRSSI();
       switch (aktstep) {
         case 0: // Start page
-            document.getElementById('maincontent').src = 'edit_explain_0.html?v=$COMMIT_HASH';
+            document.getElementById('maincontent').src = 'setup_explain_0.html?v=$COMMIT_HASH';
             document.getElementById('maincontent').style.display = "";
 
             document.getElementById('h_iframe_explain').style.display = "none";
@@ -175,7 +185,7 @@ body, html {
             document.getElementById('h_iframe_explain').style="height:155px;"
             document.getElementById('explaincontent').style="height:155px;"
             document.getElementById('explaincontent').scrolling="yes"
-            document.getElementById('explaincontent').src = 'explain_1.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_1.html?v=$COMMIT_HASH';
             
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -202,7 +212,7 @@ body, html {
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_2.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_2.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -220,7 +230,7 @@ body, html {
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_3.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_3.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -238,7 +248,7 @@ body, html {
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_4.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_4.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -256,7 +266,7 @@ body, html {
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_5.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_5.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -274,7 +284,7 @@ body, html {
             document.getElementById('h_iframe_explain').style="height:100px;"
             document.getElementById('explaincontent').style="height:100px;"
             document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'explain_6.html?v=$COMMIT_HASH';
+            document.getElementById('explaincontent').src = 'setup_explain_6.html?v=$COMMIT_HASH';
 
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -289,10 +299,10 @@ body, html {
             document.getElementById('h_iframe').style="height:660px;"
             document.getElementById('maincontent').style="height:660px;"
             if (setupCompleted) {
-                document.getElementById('maincontent').src = 'edit_explain_7.html?v=$COMMIT_HASH';
+                document.getElementById('maincontent').src = 'setup_explain_7.html?v=$COMMIT_HASH';
             }
             else {
-                document.getElementById('maincontent').src = 'edit_explain_7_abort.html?v=$COMMIT_HASH';
+                document.getElementById('maincontent').src = 'setup_explain_7_abort.html?v=$COMMIT_HASH';
                 document.getElementById("previous").disabled = true; 
             }
 
@@ -307,36 +317,41 @@ body, html {
         }
    }
 
-   function loadWLANRSSI() {
-		url = getDomainname() + '/info?type=wlan_rssi';     
+
+   function loadRSSI() 
+   {
+		var url = getDomainname() + '/info?type=wlan_rssi';
+
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				var _rsp = xhttp.responseText;
 				
 				if (_rsp >= -55) {
-					document.getElementById('wlan_rssi').value = ("WLAN Signal: Excellent (" + _rsp + "dBm)");
+					document.getElementById('rssi').value = ("WLAN Signal: Excellent (" + _rsp + "dBm)");
 				}
 				else if (_rsp < -55 && _rsp >= -67) {
-					document.getElementById('wlan_rssi').value = ("WLAN Signal: Good (" + _rsp + "dBm)");
+					document.getElementById('rssi').value = ("WLAN Signal: Good (" + _rsp + "dBm)");
 				}
 				else if (_rsp < -67 && _rsp >= -78) {
-					document.getElementById('wlan_rssi').value = ("WLAN Signal: Fair (" + _rsp + "dBm)");
+					document.getElementById('rssi').value = ("WLAN Signal: Fair (" + _rsp + "dBm)");
 				}
 				else if (_rsp < -78 && _rsp >= -85) {
-					document.getElementById('wlan_rssi').value = ("WLAN Signal: Weak (" + _rsp + "dBm)");
+					document.getElementById('rssi').value = ("WLAN Signal: Weak (" + _rsp + "dBm)");
 				}
 				else {
-					document.getElementById('wlan_rssi').value = ("WLAN Signal: Unreliable (" + _rsp + "dBm)");
+					document.getElementById('rssi').value = ("WLAN Signal: Unreliable (" + _rsp + "dBm)");
 				}
 			}
-		}
+		};
+
+        xhttp.timeout = 10000;  // 10 seconds
 		xhttp.open("GET", url, true);
 		xhttp.send();		
 	}
 
 
-   LoadStep();
+    LoadStep();
 
 </script>
 

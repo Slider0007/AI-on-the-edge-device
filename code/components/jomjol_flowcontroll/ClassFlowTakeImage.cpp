@@ -1,16 +1,15 @@
 #include "ClassFlowTakeImage.h"
-#include "Helper.h"
-#include "ClassLogFile.h"
-
-#include "CImageBasis.h"
-#include "ClassControllCamera.h"
-#include "MainFlowControl.h"
-
-#include "esp_wifi.h"
-#include "esp_log.h"
 #include "../../include/defines.h"
 
 #include <time.h>
+
+#include "esp_wifi.h"
+#include "esp_log.h"
+
+#include "Helper.h"
+#include "ClassLogFile.h"
+#include "CImageBasis.h"
+#include "MainFlowControl.h"
 
 // #define DEBUG_DETAIL_ON 
 

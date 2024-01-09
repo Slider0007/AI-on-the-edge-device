@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CLASSFLOWCONTROLL_H
 #define CLASSFLOWCONTROLL_H
 
@@ -11,48 +9,49 @@
 #include "ClassFlowAlignment.h"
 #include "ClassFlowCNNGeneral.h"
 #include "ClassFlowPostProcessing.h"
+
 #ifdef ENABLE_MQTT
-	#include "ClassFlowMQTT.h"
+#include "ClassFlowMQTT.h"
 #endif //ENABLE_MQTT
+
 #ifdef ENABLE_INFLUXDB
-	#include "ClassFlowInfluxDB.h"
-	#include "ClassFlowInfluxDBv2.h"
+#include "ClassFlowInfluxDB.h"
+#include "ClassFlowInfluxDBv2.h"
 #endif //ENABLE_INFLUXDB
-#include "ClassFlowCNNGeneral.h"
 
 
 class ClassFlowControll : public ClassFlow
 {
-protected:
-	std::vector<ClassFlow*> FlowControll;
-	std::vector<ClassFlow*> FlowControlPublish;
-	std::vector<strFlowState*> FlowStateEvaluationEvent;
-	std::vector<strFlowState*> FlowStatePublishEvent;
+	protected:
+		std::vector<ClassFlow*> FlowControll;
+		std::vector<ClassFlow*> FlowControlPublish;
+		std::vector<strFlowState*> FlowStateEvaluationEvent;
+		std::vector<strFlowState*> FlowStatePublishEvent;
 
-	ClassFlowTakeImage* flowtakeimage;
-	ClassFlowAlignment* flowalignment;	
-	ClassFlowCNNGeneral* flowanalog;
-	ClassFlowCNNGeneral* flowdigit;
-	ClassFlowPostProcessing* flowpostprocessing;
-	#ifdef ENABLE_MQTT
-	ClassFlowMQTT* flowMQTT;
-	#endif //ENABLE_MQTT
-	#ifdef ENABLE_INFLUXDB
-	ClassFlowInfluxDB* flowInfluxDB;
-	ClassFlowInfluxDBv2* flowInfluxDBv2;
-	#endif //ENABLE_INFLUXDB
-	
-	ClassFlow* CreateClassFlow(std::string _type);
-	void SetInitialParameter(void);	
+		ClassFlowTakeImage* flowtakeimage;
+		ClassFlowAlignment* flowalignment;	
+		ClassFlowCNNGeneral* flowanalog;
+		ClassFlowCNNGeneral* flowdigit;
+		ClassFlowPostProcessing* flowpostprocessing;
+		#ifdef ENABLE_MQTT
+		ClassFlowMQTT* flowMQTT;
+		#endif //ENABLE_MQTT
+		#ifdef ENABLE_INFLUXDB
+		ClassFlowInfluxDB* flowInfluxDB;
+		ClassFlowInfluxDBv2* flowInfluxDBv2;
+		#endif //ENABLE_INFLUXDB
+		
+		ClassFlow* CreateClassFlow(std::string _type);
+		void SetInitialParameter(void);	
 
-	float AutoInterval;
-	bool AutoStart;
-	bool SetupModeActive;
-	bool readParameterDone;
-	
-	bool aktflowerror;
-	std::string aktstatus;
-	std::string aktstatusWithTime;
+		float AutoInterval;
+		bool AutoStart;
+		bool SetupModeActive;
+		bool readParameterDone;
+		
+		bool aktflowerror;
+		std::string aktstatus;
+		std::string aktstatusWithTime;
 
 public:
 	ClassFlowControll();
@@ -72,6 +71,7 @@ public:
 	std::string getNumbersName();
 	std::string getNumbersName(int _number);
 	int getNumbersSize();
+	int getNumbersROISize(int _seqNo, int _filter);
 	int getNumbersNamePosition(std::string _name);
 	std::string getNumbersValue(std::string _name, int _type);
 	std::string getNumbersValue(int _position, int _type);
@@ -114,6 +114,8 @@ public:
 	t_CNNType GetTypeAnalog();
 
 	int CleanTempFolder();
+
+	CImageBasis* getRawImage();
 
 	std::string name() {return "ClassFlowControll";};
 };

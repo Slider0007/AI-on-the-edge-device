@@ -1,14 +1,13 @@
-#include <unity.h>
 #include <ClassFlowCNNGeneral.h>
 
-class UnderTestCNNGeneral : public ClassFlowCNNGeneral {
+
+class UnderTestCNNGeneral : public ClassFlowCNNGeneral
+{
     public:
         UnderTestCNNGeneral( ClassFlowAlignment *_flowalign, t_CNNType _cnntype) :
             ClassFlowCNNGeneral(_flowalign, "name", _cnntype) {};
         
         using ClassFlowCNNGeneral::EvalAnalogToDigitTransition;
-       
-
 };
 
 
@@ -18,8 +17,8 @@ class UnderTestCNNGeneral : public ClassFlowCNNGeneral {
  * Transition = x.8 - x.2 here no transition in the test cases.
  * Offset = dig=x.n, ana= n.y: no offset, because both "n" are the same
  */
-void test_analogToDigit_Standard() {
-
+void test_analogToDigit_Standard()
+{
     UnderTestCNNGeneral* undertest = new UnderTestCNNGeneral(nullptr, Digital100);
 
     // 4.8 is a "hanging" 5, i.e. it has not jumped over to 5.0.
@@ -54,11 +53,11 @@ void test_analogToDigit_Standard() {
     // Transition = no
     // Offset = no
     TEST_ASSERT_EQUAL_INT(7,  undertest->EvalAnalogToDigitTransition(68, 10, 1, 92));
-
-
 }
 
-void test_analogToDigit_Transition() {
+
+void test_analogToDigit_Transition()
+{
     UnderTestCNNGeneral* undertest = new UnderTestCNNGeneral(nullptr, Digital100);
     
     // https://github.com/jomjol/AI-on-the-edge-device/issues/921#issuecomment-1222672175
@@ -100,5 +99,4 @@ void test_analogToDigit_Transition() {
     // Offset = no
     // Special feature: Digit runs with analogue. Therefore 1.8 (vs. 7.8)
     TEST_ASSERT_EQUAL_INT(1,  undertest->EvalAnalogToDigitTransition(18, 78, 7, 7.7));
-
 }

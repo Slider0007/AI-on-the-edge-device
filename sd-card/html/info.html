@@ -1,76 +1,84 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
-<title>System Info</title>
-<meta charset="UTF-8" />
+	<meta charset="UTF-8">
+	<title>Info</title>
 
-<style>
-h1 {font-size: 2em;}
-h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-h3 {font-size: medium; background-color: lightgray; padding: 5px; width:640px; min-width:640px; max-width:640px}
-p {font-size: 1em;}
+	<style>
+		h1 {font-size: 1.8em;}
+		h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+		h3 {font-size: 16px; background-color: lightgray; padding: 5px; margin: 10px 0px 3px 0px;}
+		p {font-size: 1em;}
 
-th, td {
-  padding: 5px;
-  border-width: 1px;
-  border-style: none;
-  border-color: rgb(240, 240, 240);
-  font-size: 15px;
-}
+		body, html {
+			font-size: 100%;
+			text-size-adjust: 100%;
+			-webkit-text-size-adjust: 100%;
+		}
 
-.td-badge {
- padding: 3px 10px;
-}
+		th {
+			vertical-align: middle;
+			text-align: left;
+			font-size: 1em;
+			background-color: lightgray;
+			padding: 5px;
+		}
 
-output {
-	padding-left:5px;
-}
+		td {
+			padding: 5px 5px 5px 5px;
+			border-width: 1px;
+			border-color: rgb(240, 240, 240);
+		}
 
-.badge-success {
-  color: #fff;
-  background-color: #28a745;
-}
+		output {
+			padding-left:5px;
+		}
 
-.badge-warning {
-  color: #212529;
-  background-color: #ffc107;
-}
+		.badge-success {
+			color: #fff;
+			background-color: #28a745;
+		}
 
-.badge-error {
-  color: #fff;
-  background-color: #dc3545;
-}
+		.badge-warning {
+			color: #212529;
+			background-color: #ffc107;
+		}
 
-.badge-disabled {
-  color: #fff;
-  background-color: #646363;
-}
+		.badge-error {
+			color: #fff;
+			background-color: #dc3545;
+		}
 
-.badge {
-    display: inline-block;
-    padding: 3px 5px;
-    font-size: 85%;
-    font-weight: 700;
-    line-height: 1;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: .25rem;
-}
+		.badge-disabled {
+			color: #fff;
+			background-color: #646363;
+		}
 
-table {
-    width: 640px;
-	padding: 5px;
-	border-collapse:collapse;
-}
-</style>
+		.badge {
+			display: inline-block;
+			padding: 3px 5px;
+			font-size: 85%;
+			font-weight: 700;
+			line-height: 1;
+			text-align: center;
+			white-space: nowrap;
+			vertical-align: baseline;
+			border-radius: .25rem;
+		}
 
-<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
+		table {
+			width: 660px;
+			table-layout: fixed;
+			border-collapse:collapse;
+			margin-block-start: 10px;
+		}
+	</style>
+
+	<script src="common.js?v=$COMMIT_HASH"></script> 
 </head>
 
-<body style="font-family: arial; padding: 0px 10px;">
-    <h2>System Info</h2>
-
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
+	<h2>System Info</h2>
 	<table>
 		<colgroup>
 			<col span="1" style="width: 35%;">
@@ -332,7 +340,7 @@ table {
 			</td>
 		</tr>
 		<tr>
-			<td>Partition Allocation Size</td>	
+			<td>Partition Allocation Size</td>
 			<td>
 				<output id="sd_partition_alloc_size"></output>
 			</td>
@@ -595,7 +603,9 @@ table {
 
 				document.getElementById("idf_version").value = _jsonData.idf_version;
 			}
-		}
+		};
+
+		xhttp.timeout = 10000; // 10 Seconds
 		xhttp.open("GET", url, true);
 		xhttp.send();
 	}
@@ -614,4 +624,8 @@ table {
 	}
 
 	init();
+
 </script>
+
+</body>
+</html>

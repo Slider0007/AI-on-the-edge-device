@@ -1,10 +1,10 @@
-#pragma once
-
 #ifndef COMPONENTS_HELPER_PSRAM_H_
 #define COMPONENTS_HELPER_PSRAM_H_
 
-#include "esp_heap_caps.h"
 #include <string>
+
+#include "esp_heap_caps.h"
+
 
 /* SPIRAM profile in IDLE (date: 19.08.2023)*/
 /* Showing data for heap: 0x3f802fa8

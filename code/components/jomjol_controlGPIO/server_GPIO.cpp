@@ -1,18 +1,15 @@
+#include "server_GPIO.h"
+
 #include <string>
+#include <vector>
 #include <functional>
+#include <sys/stat.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
 #include "esp_system.h"
-
 #include "esp_log.h"
-
-#include <sys/stat.h>
-#include <vector>
-
-#include "../../include/defines.h"
-
-#include "server_GPIO.h"
 
 #include "ClassLogFile.h"
 #include "configFile.h"
@@ -25,7 +22,9 @@
 
 
 static const char *TAG = "GPIO";
+
 QueueHandle_t gpio_queue_handle = NULL;
+
 
 GpioPin::GpioPin(gpio_num_t gpio, const char* name, gpio_pin_mode_t mode, gpio_int_type_t interruptType, uint8_t dutyResolution, std::string mqttTopic, bool httpEnable) 
 {
@@ -105,7 +104,7 @@ void GpioPin::init()
     gpio_config(&io_conf);
 
 //    if (_interruptType != GPIO_INTR_DISABLE) {                // ohne GPIO_PIN_MODE_EXTERNAL_FLASH_WS281X, wenn das genutzt wird, dann soll auch der Handler hier nicht initialisiert werden, da das dann über SmartLED erfolgt.
-    if ((_interruptType != GPIO_INTR_DISABLE) && (_interruptType != GPIO_PIN_MODE_EXTERNAL_FLASH_WS281X)) {
+    if ((_interruptType != GPIO_INTR_DISABLE) && (_mode != GPIO_PIN_MODE_EXTERNAL_FLASH_WS281X)) {
         //hook isr handler for specific gpio pin
         ESP_LOGD(TAG, "GpioPin::init add isr handler for GPIO %d", _gpio);
         gpio_isr_handler_add(_gpio, gpio_isr_handler, (void*)&_gpio);

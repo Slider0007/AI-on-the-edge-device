@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.16.0)
 
-list(APPEND EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/examples/common_components/protocol_examples_common components/tflite-micro-esp-examples/components/tflite-lib)
-
 if(EXISTS "${SDKCONFIG}.defaults")
     if(EXISTS "sdkconfig.defaults")
         set(SDKCONFIG_DEFAULTS "${SDKCONFIG}.defaults;sdkconfig.defaults")

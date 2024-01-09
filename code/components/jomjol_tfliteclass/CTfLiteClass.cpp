@@ -1,9 +1,9 @@
 #include "CTfLiteClass.h"
+#include "../../include/defines.h"
 
 #include "ClassLogFile.h"
 #include "Helper.h"
 #include "psram.h"
-#include "../../include/defines.h"
 
 
 static const char *TAG = "TFLITE";
@@ -341,7 +341,8 @@ CTfLiteClass::CTfLiteClass()
     modelfile = NULL;
     interpreter = nullptr;
     input = nullptr;
-    output = nullptr;  
+    output = nullptr;
+    tensor_arena = nullptr;
     kTensorArenaSize = 800 * 1024; // according to testfile: 108000 - so far 600;; 2021-09-11: 200 * 1024
 }
 

@@ -1,4 +1,6 @@
 #include "sdcard_check.h"
+#include "../../include/defines.h"
+
 #include <cstring>
 #include <stdio.h>
 #include <stdbool.h>
@@ -7,7 +9,9 @@
 #include <sys/stat.h>
 
 #include "esp_rom_crc.h" 
+
 #include "ClassLogFile.h"
+
 
 static const char *TAG = "SDCARD";
 
@@ -78,6 +82,12 @@ bool SDCardCheckFolderFilePresence()
     /* check if folder exists: config */
     if (stat("/sdcard/config", &sb) != 0) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Folder/file check: Folder /config not found");
+        bRetval = false;
+    }
+
+    /* check if folder exists: config/certs */
+    if (stat("/sdcard/config/certs", &sb) != 0) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Folder/file check: Folder /config/certs not found");
         bRetval = false;
     }
 

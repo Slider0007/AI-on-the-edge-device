@@ -1,4 +1,5 @@
 #include "system.h"
+#include "../../include/defines.h"
 
 #include "esp_pm.h"
 #include "esp_chip_info.h"
@@ -7,7 +8,7 @@
 #include "configFile.h"
 #include "Helper.h"
 #include "ClassLogFile.h"
-#include "../../include/defines.h"
+
 
 static const char* TAG = "SYSTEM";
 

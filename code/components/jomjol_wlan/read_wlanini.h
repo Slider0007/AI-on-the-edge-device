@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef READ_WLANINI_H
 #define READ_WLANINI_H
 

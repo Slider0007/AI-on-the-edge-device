@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
+    <meta charset="UTF-8">
     <title>Alignment marker</title>
-    <meta charset="UTF-8" />
-        
+
     <style>
-        h1 {font-size: 2em;}
+        h1 {font-size: 1.8em;}
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
         p {font-size: 1em;}
+
+        body, html {
+            font-size: 100%;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
 
         input[type=number] {
             width: 60px;
@@ -53,319 +59,367 @@
 
         table {
             width: 660px;
-            padding: 5px;
+            padding: 5px 5px 5px 0px;
+            table-layout: fixed;
         }
-    </style>	
+
+        details {
+            text-align: justify;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+    </style>
+   
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
     <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
-    <script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
-    <script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
+    <script src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
-<body style="font-family: arial; padding: 0px 10px;">
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
 	
 	<h2>Alignment Marker</h2>
-    <details id="desc_details" style="font-size:16px">
-        <summary><b>CLICK HERE</b> for usage description. More infos in documentation:   
+    <details id="desc_details">
+        <summary><b>CLICK HERE</b> for usage description. Further documentation:   
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/Alignment/ target=_blank>Alignment</a>
         </summary>
         <p>
-            Two alignment marker with clear contour and proper contrast are needed to identify unique "fix points" on the image. 
-            The marker area should be not be part of the variable area of ROI evaluation. Please find more information in documenation:
-            <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/Alignment/ target=_blank>Alignment</a>
+            The two alignment marker are required to correct possible small misalignments of the image. The possible misalignment 
+            is determined by an alignment alogrithm, which works according to the principle of SAD (sum of absolute differences). 
+            In a defined search window (expert parameter: Search Field X / Y), the alogrithm attempts to find the pattern specified 
+            by the alignment marker as congruently as possible. The derived correction factors are applied to the image for an 
+            orientation correction (rotation around the image center and / or linear shift).<br>
+
+            When defining the marker position, please make sure that the distance between the two markers is as large as possible 
+            and that they are ideally arranged with respect to the center of the image, e.g. one marker to the left or top of the 
+            center and one to the right or bottom. The markers should not be placed over a variable part of the image, e.g. other 
+            ROIs or moving parts.<br>
+
+            The marker size should only be as large as necessary to depict a clean, high-contrast edge or contour. 
+            (Tip: The smaller the marker area, the faster the processing).<br>
+
+            The histogram can be used to find image sections with high contrast or only to better evaluate the already marked areas. 
+            (Note: 'Default' alignment algorithm is using only RED color channel of image. Only 'High Accuracy' alignment algorithm
+            is using all three channels (RGB) with the drawback of three times the processing time.)
         </p>
         <p>
-            Select an alignment marker area using drag and dop feature by mouse operation or by manually entering the coordinates and sizes in the fields below the image.
-            After you selected a suitable first alignment marker area, push the <b>"Update Marker"</b> button. Switch to second alignment marker with <b>"Marker"</b>
-            and repeat the procedure.
+            Select an alignment marker area using drag and dop feature by mouse operation or by manually entering the coordinates 
+            and sizes in the respective fields. After palcement of a first alignment marker area, push the <b>"Update Marker"</b>
+            button. Choose to second alignment marker with <b>"Marker"</b> dropdown and repeat the procedure.
         </p>
         <p>
-            After definition of both alignment marker is completed don't forget to save with the <b>"Save And Apply"</b> button!<br>
-            The new configuration get automatically applied. No reboot is required.
+            After the definition of both alignment marker is completed don't forget to save the new configuration with the button 
+            <b>"Save And Apply"</b>. The new configuration gets automatically applied. No reboot is required.
         </p>
     </details>
-    <hr />
+    <hr>
 
 	<table>
-    <colgroup>
-        <col span="1" style="width: 33.3%;">
-        <col span="1" style="width: 33.3%;">
-        <col span="1" style="width: 33.3%;">
-    </colgroup>
+        <colgroup>
+            <col span="1" style="width: 19%;">
+            <col span="1" style="width: 21%;">
+            <col span="1" style="width: 30%;">
+            <col span="1" style="width: 30%;">
+        </colgroup>
 	    <tr>
-            <td style="height:25px;">Marker: 
-                <select id="index" name="reference" onchange="ChangeSelection()">
+            <td colspan="2" style="height:25px;">Marker: 
+                <select id="marker_selection" name="marker_selection" onchange="onMarkerSelectionChanged()">
                 <option value="0" selected>Marker 1</option>
                 <option value="1" >Marker 2</option>
                 </select>
             </td>
-            <td style="padding-left: 22px; color: grey;">File: <output type="text" name="name" id="name"></td>
-            <td rowspan="3" style="vertical-align:top; height:140px"><img id="img_ref" src = ""></td>
+            <td rowspan="3" style="vertical-align:top;">
+                Image<br>
+                <img style="padding-top:5px" id="img_marker" src="">
+            <td rowspan="3" style="vertical-align:top;">
+                Histogram<br>
+                <canvas style="padding-top:5px" height="60" width="190" id="canvasHistogram"></canvas><br>
+                <div>
+                    <label><input name="rHistogramType" id="HistogramTypeValue" type="radio" checked>Value</label>
+                    <label><input name="rHistogramType" id="HistogramTypeRed" type="radio">Red</label>
+                    <label><input name="rHistogramType" id="HistogramTypeRGB" type="radio">RGB</label>
+                </div>
+            </td>
         </tr>
         <tr>
-            <td style="height:20px;padding-top: 10px; vertical-align: top;">x: <input type="number" name="refx" id="refx" step=1 onchange="valuemanualchanged()"></td>
-            <td style="padding-top: 10px; vertical-align: top;">dx: <input type="number" name="refdx" id="refdx" step=1 onchange="valuemanualchanged()"></td>
+            <td style="height:20px;padding-top: 10px; vertical-align: top;">x: <input type="number" name="refx" id="refx" min=1 step=1
+                    oninput="(!validity.rangeUnderflow||(value=1));" onchange="onValueManualChanged()"></td>
+            <td style="padding-top: 10px; vertical-align: top;">Δx: <input type="number" name="refdx" id="refdx" min=1 step=1
+                    oninput="(!validity.rangeUnderflow||(value=1));" onchange="onValueManualChanged()"></td>
 
         </tr>
         <tr>
-            <td style="vertical-align: top;">y: <input type="number" name="refy" id="refy" step=1 onchange="valuemanualchanged()"></td>
-            <td style="vertical-align: top;">dy: <input type="number" name="refdy" id="refdy" step=1 onchange="valuemanualchanged()"></td>
-            
+            <td style="vertical-align: top;">y: <input type="number" name="refy" id="refy" min=1 step=1
+                    oninput="(!validity.rangeUnderflow||(value=1));" onchange="onValueManualChanged()"></td>
+            <td style="vertical-align: top;">Δy: <input type="number" name="refdy" id="refdy" min=1 step=1
+                    oninput="(!validity.rangeUnderflow||(value=1));" onchange="onValueManualChanged()"></td>
         </tr>
         <tr>
-            <td style="vertical-align:bottom;"><b>Reference Image:</b></td>
-            <td><input disabled class="button" type="button" id="updatemarker" value="Update Marker" onclick="CutOutReference()"></td>	
-            <td ><input disabled style="font-weight:bold;" class="button" type="submit" name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
+
+        </tr>
+    </table>
+
+    <table>
+        <colgroup>
+            <col span="1" style="width: 33%;">
+            <col span="1" style="width: 33%;">
+            <col span="1" style="width: 33%;">
+        </colgroup>
+        <tr>
+            <td style="vertical-align:bottom;"><b>Reference Image</b></td>
+            <td><input disabled style="float:right" class="button" type="button" id="updatemarker"
+                    value="Update Marker" onclick="onClickUpdateMarker()"></td>	
+            <td ><input disabled style="font-weight:bold; float:right" class="button" type="submit"
+                    name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
             </td>
         </tr> 
         <tr>
-            <td colspan="3"><canvas id="canvas" crossorigin></canvas></td>
+            <td style="padding-right:0px; margin-right:0px" colspan="4"><canvas style="max-width: 100%" id="canvas"></canvas></td>
         </tr>
     </table>
 
 
-<script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
-<script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-<script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>  
-
-<script language="JavaScript">
+<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
+<script>
         var canvas = document.getElementById('canvas'),
-            ctx = canvas.getContext('2d'),
+            context = canvas.getContext('2d'),
             imageObj = new Image(),
             rect = {},
             drag = false,
-            aktindex = 0,
-            refInfo,
-            enhanceCon = false,
-            param;
+            marker_selected = 0,
+            MarkerROI,
+            param,
             domainname = getDomainname();
-            param;
     
-function doReboot() {
-    if (confirm("Are you sure you want to reboot? Did you save your changes?")) {
-            var stringota = getDomainname() + "/reboot";
-            window.location = stringota;
-            window.location.href = stringota;
-            window.location.assign(stringota);
-            window.location.replace(stringota);
-    }
-}
-
-    
-function ChangeSelection(){
-    aktindex = parseInt(document.getElementById("index").value);
-    UpdateReference();
-}
-
-function SaveToConfig(){
-    if (confirm("Are you sure you want to save the new alignment marker configuration?")) {
-        WriteConfigININew();
-        UpdateConfigReference(domainname)
-        SaveConfigToServer(domainname);
-        document.getElementById("savemarker").disabled = true;
         
-        firework.launch('Save and apply configuration...', 'success', 5000);
-        setTimeout(function() {
-            reload_config();
-        }, 500);
+    function onMarkerSelectionChanged()
+    {
+        marker_selected = parseInt(document.getElementById("marker_selection").value);
+        RefreshMarker();
     }
-}
 
 
-function UpdateReference(){
-    var filenameurl = refInfo[aktindex]["name"].replace("/config/", "/img_tmp/");
-
-    var url = domainname + "/fileserver" + filenameurl + "?"  + Date.now();
-    document.getElementById("img_ref").src = url;
-
-    document.getElementById("name").value = refInfo[aktindex]["name"];
-
-    document.getElementById("refx").value = refInfo[aktindex]["x"];
-    document.getElementById("refy").value = refInfo[aktindex]["y"]; 
-    rect.startX = document.getElementById("refx").value;
-    rect.startY = document.getElementById("refy").value;
-
-    document.getElementById("img_ref").onload = function () {
-        document.getElementById("refdx").value = this.width;
-        document.getElementById("refdy").value = this.height;   
-        refInfo[aktindex]["dx"] = this.width;
-        refInfo[aktindex]["dy"] = this.height;
-        rect.w = document.getElementById("refdx").value;
-        rect.h = document.getElementById("refdy").value;
-        draw();
-    }
-    draw();      
-}
-
-function dataURLtoBlob(dataurl) {
-    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-    while(n--){
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], {type:mime});
-}			
-			
-    
-        function loadCanvas(dataURL) {
-                var canvas = document.getElementById('canvas');
-                var context = canvas.getContext('2d');
-    
-                imageObj.onload = function() {
-                    canvas.width = this.width;
-                    canvas.height = this.height;
-                    drawImage();
-                };
-    
-                imageObj.src = dataURL;
-            }
-    
-    
-        function getCoords(elem) { // crossbrowser version
-            var box = elem.getBoundingClientRect();
-            var body = document.body;
-            var docEl = document.documentElement;
-            var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-            var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-            var clientTop = docEl.clientTop || body.clientTop || 0;
-            var clientLeft = docEl.clientLeft || body.clientLeft || 0;
-            var top  = box.top +  scrollTop - clientTop;
-            var left = box.left + scrollLeft - clientLeft;
-            return { top: Math.round(top), left: Math.round(left) };
-        }
-   
-
-        /* hash #description open the details part of the page */
-        function openDescription() {
-        if(window.location.hash) {
-            var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
-            if(hash == 'description')
-                document.getElementById("desc_details").open = true;
-            }
+    function onValueManualChanged()
+    {
+        if (!drag) {
+            rect.w = document.getElementById("refdx").value;
+            rect.h = document.getElementById("refdy").value;                  
+            rect.startX = document.getElementById("refx").value;
+            rect.startY = document.getElementById("refy").value; 
+            MarkerROI[marker_selected]["x"] = document.getElementById("refx").value;
+            MarkerROI[marker_selected]["y"] = document.getElementById("refy").value;
+            MarkerROI[marker_selected]["dx"] = document.getElementById("refdx").value;
+            MarkerROI[marker_selected]["dy"] = document.getElementById("refdy").value;   
         }
 
-    
-        function init() {
-            openDescription();
-            domainname = getDomainname();
-            loadConfig(domainname); 
-            ParseConfig();
-            param = getConfigParameters();
-
-            document.getElementById("savemarker").disabled = true;
-
-            CopyReferenceToImgTmp(domainname);
-
-            refInfo = GetReferencesInfo();
-            UpdateReference();
-
-            canvas.addEventListener('mousedown', mouseDown, false);
-            canvas.addEventListener('mouseup', mouseUp, false);
-            canvas.addEventListener('mousemove', mouseMove, false);
-            loadCanvas(domainname + "/fileserver/config/reference.jpg");
-
-            drawImage();
-            document.getElementById("updatemarker").disabled = false;
-        }
-
-
-        function drawImage(){
-            var canvas = document.getElementById('canvas');
-            var context = canvas.getContext('2d');
-
-            context.clearRect(0,0,imageObj.width,imageObj.height);
-            context.save();
-            context.drawImage(imageObj, 0, 0);
-//            context.restore();
-        }
+        // Validate ROI position
+        ROIPositionValidation(MarkerROI[marker_selected]);
         
+        // Update ROI coordinates
+        document.getElementById("refx").value = MarkerROI[marker_selected]["x"];
+        document.getElementById("refy").value = MarkerROI[marker_selected]["y"];
+        rect.startX = MarkerROI[marker_selected]["x"];
+        rect.startY = MarkerROI[marker_selected]["y"];
 
-        function MakeRefZW(zw, _domainname){
-            _filetarget = zw["name"].replace("/config/", "/img_tmp/");
-            url = _domainname + "/editflow?task=cutref&in=/config/reference.jpg&out="+_filetarget+"&x=" + zw["x"] + "&y="  + zw["y"] + "&dx=" + zw["dx"] + "&dy=" + zw["dy"];
-            var xhttp = new XMLHttpRequest();  
-            try {
-                xhttp.open("GET", url, false);
-                xhttp.send();
-            }
-            catch (error)
-            {
-                firework.launch('Update Maker failed. Please repeat or check logs', 'danger', 30000);
-            }
-        }
+        RefreshDraw();
+    }
 
 
-        function CutOutReference(){
-            url = domainname + '/process_data?type=process_state';     
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    if (xhttp.responseText.split("] ")[1] == "Setup Mode" ||
+    function onClickUpdateMarker()
+    {
+        var url = domainname + '/process_data?type=process_state';
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    if (xhttp.responseText.split("] ")[1] == "Initialization - Delayed" ||
+                        xhttp.responseText.split("] ")[1] == "Initialization Failed" ||
+                        xhttp.responseText.split("] ")[1] == "Setup Mode" ||
                         xhttp.responseText.split("] ")[1] == "Idle - No Autostart" ||
                         xhttp.responseText.split("] ")[1] == "Idle - Waiting for Autostart")
                     {
-                        refInfo[aktindex]["x"] = document.getElementById("refx").value;
-                        refInfo[aktindex]["y"] = document.getElementById("refy").value; 
-                        refInfo[aktindex]["dx"] = document.getElementById("refdx").value;
-                        refInfo[aktindex]["dy"] = document.getElementById("refdy").value;   
-                        MakeRefZW(refInfo[aktindex], domainname);
-                        UpdateReference();
-                        document.getElementById("savemarker").disabled = false;
-                        firework.launch("Marker updated", 'success', 3000);
+                        firework.launch('Updating marker...', 'success', 2000, true);
+                        MarkerROI[marker_selected]["x"] = document.getElementById("refx").value;
+                        MarkerROI[marker_selected]["y"] = document.getElementById("refy").value; 
+                        MarkerROI[marker_selected]["dx"] = document.getElementById("refdx").value;
+                        MarkerROI[marker_selected]["dy"] = document.getElementById("refdy").value;
+                        RequestMarkerCut(MarkerROI[marker_selected], domainname);
                     }
                     else {
-                        var str = "Update marker only possible in any IDLE / SETUP state (Actual State: " + xhttp.responseText.split("] ")[1] + 
-                                "). Wait a few moments until device is in IDLE state and redo action";
-                        firework.launch(str, 'warning', 10000);
+                        var str = "Marker update only possible in any IDLE state. Wait a few moments and repeat action. " +
+                                    "[Actual State: " + xhttp.responseText.split("] ")[1] + "]";
+                        firework.launch(str, 'warning', 3000, true);
                     }
                 }
+                else if (this.status == 403) {
+                    firework.launch("Marker update rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
+                    console.error("Marker update rejected. Process not (yet) initialized. Response status: " + this.status);  
+                }
+                else {
+                    firework.launch("Marker update failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Marker update failed. Response status: " + this.status);  
+                }
             }
-            xhttp.open("GET", url, false);
-            xhttp.send();
+        };
+
+        xhttp.timeout = 10000;  // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    }
+
+
+    function RequestMarkerCut(zw, _domainname)
+    {
+        var filetarget = zw["name"].replace("/config/", "/img_tmp/");
+        var url = _domainname + "/editflow?task=cutref&in=/config/reference.jpg&out="+filetarget+"&x=" + 
+                zw["x"] + "&y="  + zw["y"] + "&dx=" + zw["dx"] + "&dy=" + zw["dy"];
+        
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    RefreshMarker();
+                    document.getElementById("savemarker").disabled = false;
+                    firework.launch("Marker successfully updated", 'success', 2000);
+                }
+                else if (this.status == 403) {
+                    document.getElementById("savemarker").disabled = false;
+                    firework.launch("Marker update rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
+                    console.error("Marker update rejected. Process not (yet) initialized. Response status: " + this.status);  
+                }
+                else {
+                    firework.launch("Marker update failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Marker update failed. Response status: " + this.status);  
+                }
+            }
+        };
+
+        xhttp.timeout = 10000;  // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    }
+
+
+    function RefreshMarker()
+    {      
+        // Load marker image
+        var filenameurl = MarkerROI[marker_selected]["name"].replace("/config/", "/img_tmp/");
+        var url = domainname + "/fileserver" + filenameurl + "?" + Math.floor((Math.random() * 1000000) + 1);
+        document.getElementById("img_marker").src = loadImage(url, url).src; // No alternative image
+        
+        // Execute after marker image gets loaded
+        document.getElementById("img_marker").onload = function () {
+            // Load x,y coordinates from config
+            document.getElementById("refx").value = MarkerROI[marker_selected]["x"];
+            document.getElementById("refy").value = MarkerROI[marker_selected]["y"];
+            rect.startX = MarkerROI[marker_selected]["x"];
+            rect.startY = MarkerROI[marker_selected]["y"];
+
+            // Load ROI dx, dy data derived from image size
+            document.getElementById("refdx").value = this.width;
+            document.getElementById("refdy").value = this.height;
+            MarkerROI[marker_selected]["dx"] = this.width;
+            MarkerROI[marker_selected]["dy"] = this.height;
+            rect.w = this.width
+            rect.h = this.height;
+
+            // Validate ROI position
+            ROIPositionValidation(MarkerROI[marker_selected]);
+            
+            // Update ROI coordinates
+            document.getElementById("refx").value = MarkerROI[marker_selected]["x"];
+            document.getElementById("refy").value = MarkerROI[marker_selected]["y"];
+            rect.startX = MarkerROI[marker_selected]["x"];
+            rect.startY = MarkerROI[marker_selected]["y"];
+
+            RefreshDraw();
+            HistogramUpdate();
         }
-
-        function drawGrid(){
-            var canvas = document.getElementById('canvas');
-            var ctx = canvas.getContext('2d');
-            w = canvas.width;
-            h = canvas.height;
-            ctx.save();
-            ctx.strokeStyle = '#00FF00';
-
-            for (i = h/2; i < h; i += 100) {
-                ctx.moveTo(0, i);
-                ctx.lineTo(w, i);
-                ctx.stroke();
-                ctx.moveTo(0, h-i);
-                ctx.lineTo(w, h-i);
-                ctx.stroke();
-            }
-            for (i = w/2; i < w; i += 100) {
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, h);
-                ctx.stroke();
-                ctx.moveTo(w-i, 0);
-                ctx.lineTo(w-i, h);
-                ctx.stroke();
-            }
-//            ctx.restore();
-        }
+    }
 
 
-    function draw() {
-        var canvas = document.getElementById('canvas');
-        var context = canvas.getContext('2d');
+    function RefreshDraw()
+    {
+        // Draw reference image
+        context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(imageObj, 0, 0);
-        lw = 4
+
+        // During init, MarkerROI is not defined yet OR no marker defined
+        if (typeof MarkerROI === 'undefined' || MarkerROI.length == 0) {
+            return;
+        }
+
+        // Draw alignment marker overlay
+        lw = 2;
         context.lineWidth = lw;
         context.strokeStyle = "#FF0000";
         var x0 = parseInt(rect.startX) - parseInt(lw/2);
         var y0 = parseInt(rect.startY) - parseInt(lw/2);
         var dx = parseInt(rect.w) + parseInt(lw);
         var dy = parseInt(rect.h) + parseInt(lw);
-        context.strokeRect(x0, y0, dx, dy);           
+        context.strokeRect(x0, y0, dx, dy);
     }
 
-    function getCoords(elem) { // crossbrowser version
+
+    function ROIPositionValidation(ROI)
+    {
+        var refImageWidth, refImageHeight;
+
+        if (param["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
+            refImageWidth = 320;
+            refImageHeight = 240;
+        }
+        else if (param["TakeImage"]["ImageSize"]["value1"] == "VGA") {
+            refImageWidth = 640;
+            refImageHeight = 480;
+        }
+        else {
+            firework.launch('Unknown image size. No alignment marker position validation', 'danger', 30000);
+            return;
+        }
+
+        if ((parseInt(ROI.x) + parseInt(ROI.dx)) >= refImageWidth) {
+                ROI.x = refImageWidth - parseInt(ROI.dx) - 1;
+                firework.launch('ROI partially or completely out of image area (x) -> Position automatically adapted. \
+                                    Please verify marker', 'warning', 5000);
+        }
+        else if (parseInt(ROI.x) < 1) {
+            ROI.x = 1;
+            firework.launch('ROI partially or completely out of image area (x) -> Position automatically adapted. \
+                                Please verify marker', 'warning', 5000);
+        }
+
+        if ((parseInt(ROI.y) + parseInt(ROI.dy)) >= refImageHeight) {
+            ROI.y = refImageHeight - parseInt(ROI.dy) - 1;
+            firework.launch('ROI partially or completely out of image area (y) -> Position automatically adapted. \
+                                Please verify marker', 'warning', 5000);
+        }
+        else if (parseInt(ROI.y) < 1) {
+            ROI.y = 1;
+            firework.launch('ROI partially or completely out of image area (y) -> Position automatically adapted. \
+                                Please verify marker', 'warning', 5000);
+        }
+    }
+
+
+    function loadCanvas(dataURL)
+    {
+        imageObj.onload = function() {
+            canvas.width = this.width;
+            canvas.height = this.height;
+            RefreshDraw();
+        };
+
+        imageObj.src = loadImage(dataURL, 'img_not_available.png?v=$COMMIT_HASH').src;
+    }
+
+
+    function getCoords(elem) // crossbrowser version
+    {
         var box = elem.getBoundingClientRect();
         var body = document.body;
         var docEl = document.documentElement;
@@ -375,10 +429,12 @@ function dataURLtoBlob(dataurl) {
         var clientLeft = docEl.clientLeft || body.clientLeft || 0;
         var top  = box.top +  scrollTop - clientTop;
         var left = box.left + scrollLeft - clientLeft;
-    return { top: Math.round(top), left: Math.round(left) };
-}
+        return { top: Math.round(top), left: Math.round(left) };
+    }
 
-    function mouseDown(e) {
+
+    function mouseDown(e)
+    {
         zw = getCoords(this)
         rect.startX = e.pageX - zw.left;
         rect.startY = e.pageY - zw.top;
@@ -387,7 +443,9 @@ function dataURLtoBlob(dataurl) {
         drag = true;
     }
 
-    function mouseUp() {
+
+    function mouseUp()
+    {
         drag = false;
         if (rect.w < 0) {
             rect.w = -rect.w
@@ -400,28 +458,29 @@ function dataURLtoBlob(dataurl) {
         document.getElementById("refdx").value = rect.w;
         document.getElementById("refdy").value = rect.h;
         document.getElementById("refx").value = rect.startX;
-        document.getElementById("refy").value = rect.startY;    
+        document.getElementById("refy").value = rect.startY;
+        onValueManualChanged(); 
     }
 
-    function mouseMove(e) {
+
+    function mouseMove(e)
+    {
         if (drag) {
             zw = getCoords(this)        
             rect.w = (e.pageX - zw.left) - rect.startX;
             rect.h = (e.pageY - zw.top) - rect.startY ;
             document.getElementById("refdx").value = rect.w;
             document.getElementById("refdy").value = rect.h;
-            draw();
+            RefreshDraw();
         }
         else {
-            draw();
-            var canvas = document.getElementById('canvas');
-            var context = canvas.getContext('2d');
+            RefreshDraw();
 
             zw = getCoords(this);
             x = e.pageX - zw.left;
             y = e.pageY - zw.top;
             
-            context.lineWidth = 2;
+            context.lineWidth = 1;
             context.strokeStyle = "#00FF00";
             context.beginPath(); 
             context.moveTo(0,y);
@@ -432,19 +491,188 @@ function dataURLtoBlob(dataurl) {
         }
     }
 
-
-    function valuemanualchanged(){
-        if (!drag) {
-            rect.w = document.getElementById("refdx").value;
-            rect.h = document.getElementById("refdy").value;
-            rect.startX = document.getElementById("refx").value;
-            rect.startY = document.getElementById("refy").value; 
-            draw();            
+    
+    function processImageHistogram(inImg)
+    {
+        const width = inImg.width;
+        const height = inImg.height;
+        const src = new Uint32Array(inImg.data.buffer);
+        const isValueHistogram = $("#HistogramTypeValue").prop('checked');
+        const isRedChannel = $("#HistogramTypeRed").prop('checked');
+        
+        let histBrightness = (new Array(256)).fill(0);
+        let histR = (new Array(256)).fill(0);
+        let histG = (new Array(256)).fill(0);
+        let histB = (new Array(256)).fill(0);
+        for (let i = 0; i < src.length; i++) {
+            let r = src[i] & 0xFF;
+            let g = (src[i] >> 8) & 0xFF;
+            let b = (src[i] >> 16) & 0xFF;
+            histBrightness[r]++;
+            histBrightness[g]++;
+            histBrightness[b]++;
+            histR[r]++;
+            histG[g]++;
+            histB[b]++;
         }
+        
+        let maxBrightness = 0;
+        if (isValueHistogram) {
+            for (let i = 1; i < 256; i++) {
+                if (maxBrightness < histBrightness[i]) {
+                    maxBrightness = histBrightness[i]
+                }
+            }
+        }
+        else {
+            for (let i = 0; i < 256; i++) {
+                if (maxBrightness < histR[i]) {
+                    maxBrightness = histR[i]
+                }
+                else if (maxBrightness < histG[i]) {
+                    maxBrightness = histG[i]
+                }
+                else if (maxBrightness < histB[i]) {
+                    maxBrightness = histB[i]
+                }
+            }
+        }
+        
+        const canvas = document.getElementById('canvasHistogram');
+        const ctx = canvas.getContext('2d');
+        let guideHeight = 4;
+        let startY = (canvas.height - guideHeight);
+        let dx = canvas.width / 256;
+        let dy = startY / maxBrightness;
+        ctx.lineWidth = dx;
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        for (let i = 0; i < 256; i++) {
+            let x = i * dx;
+            if (isValueHistogram) {
+                // Value
+                ctx.strokeStyle = "#000000";
+                ctx.beginPath();
+                ctx.moveTo(x, startY);
+                ctx.lineTo(x, startY - histBrightness[i] * dy);
+                ctx.closePath();
+                ctx.stroke(); 
+            }
+            else {
+                // Red
+                ctx.strokeStyle = "rgba(220,0,0,0.5)";
+                ctx.beginPath();
+                ctx.moveTo(x, startY);
+                ctx.lineTo(x, startY - histR[i] * dy);
+                ctx.closePath();
+                ctx.stroke(); 
+                if (!isRedChannel) {
+                    // Green
+                    ctx.strokeStyle = "rgba(0,210,0,0.5)";
+                    ctx.beginPath();
+                    ctx.moveTo(x, startY);
+                    ctx.lineTo(x, startY - histG[i] * dy);
+                    ctx.closePath();
+                    ctx.stroke(); 
+                    // Blue
+                    ctx.strokeStyle = "rgba(0,0,255,0.5)";
+                    ctx.beginPath();
+                    ctx.moveTo(x, startY);
+                    ctx.lineTo(x, startY - histB[i] * dy);
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+            }
+
+            // Guide
+            ctx.strokeStyle = 'rgb(' + i + ', ' + i + ', ' + i + ')';
+            ctx.beginPath();
+            ctx.moveTo(x, startY);
+            ctx.lineTo(x, canvas.height);
+            ctx.closePath();
+            ctx.stroke(); 
+        }
+    }
+
+
+    function getImageData(el)
+    {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const img = document.getElementById(el);
+
+        if (getTestEnvironmentActive()) // Avoid error in testing mode: The canvas has been tainted by cross-origin data.
+            img.crossOrigin = "Anonymous"; 
+        
+        canvas.width = img.width;
+        canvas.height = img.height;
+        context.drawImage(img, 0, 0);
+        return context.getImageData(0, 0, img.width, img.height);
+    }
+
+
+    function HistogramUpdate(e)
+    {
+        processImageHistogram(getImageData('img_marker'));
+    }
+
+    // Update histogram when radio button 'rHistogramType' changed
+    $('input[name="rHistogramType"]').on('click change', HistogramUpdate);
+
+
+    function SaveToConfig()
+    {
+        if (confirm("Are you sure you want to save the new alignment marker configuration?")) {
+            WriteConfigININew();
+            CopyAlignmentMarker(domainname)
+            SaveConfigToServer(domainname);
+            document.getElementById("savemarker").disabled = true;
+            
+            firework.launch('Save and apply configuration...', 'success', 2000, true);
+            setTimeout(function() {
+                reload_config();
+            }, 200);
+        }
+    }
+    
+
+    /* hash #description open the details part of the page */
+    function openDescription()
+    {
+        if(window.location.hash) {
+            var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+            if(hash == 'description')
+                document.getElementById("desc_details").open = true;
+        }
+    }
+
+
+    function init()
+    {
+        openDescription();
+
+        loadConfig(domainname); 
+        ParseConfig();
+        param = getConfigParameters();
+
+        document.getElementById("savemarker").disabled = true;
+        document.getElementById("updatemarker").disabled = false;
+
+        loadCanvas(domainname + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
+        canvas.addEventListener('mousedown', mouseDown, false);
+        canvas.addEventListener('mouseup', mouseUp, false);
+        canvas.addEventListener('mousemove', mouseMove, false);
+
+        CopyAlignmentMarkerToImgTmp(domainname);
+        MarkerROI = getAlignmentMarker();
+        RefreshMarker();
     }
 
     
     init();
-    </script>
+
+</script>
+
 </body>
 </html>

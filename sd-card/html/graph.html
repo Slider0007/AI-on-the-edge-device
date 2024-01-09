@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en"> 
 <head>
+    <meta charset="UTF-8">
     <title>Data Graph</title>
-    <script type="text/javascript" src='plotly-basic-2.18.2.min.js?v=$COMMIT_HASH'></script>
 
-    <script type="text/javascript" src="common.js?v=$COMMIT_HASH"></script> 
-    <script type="text/javascript" src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
-    <script type="text/javascript" src="readconfigparam.js?v=$COMMIT_HASH"></script>
-    
     <style>
-        h1 {font-size: 2em;}
+        h1 {font-size: 1.8em;}
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
         p {font-size: 1em;}
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
+        body, html {
+            font-size: 100%;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         select {
@@ -42,7 +40,7 @@
 
         .button {
             padding: 5px 10px;
-            width: 160px;
+            width: 170px;
             font-size: 16px;
         }
 
@@ -57,194 +55,198 @@
         }
     </style>
 
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+    <script src="firework.js?v=$COMMIT_HASH"></script>
+    <script src='plotly-basic-2.18.2.min.js?v=$COMMIT_HASH'></script>
+    <script src="common.js?v=$COMMIT_HASH"></script> 
+    <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
+    <script src="readconfigparam.js?v=$COMMIT_HASH"></script>
     <script>
-	function addZero(i)
-	{
-        if (i < 10) {
-            i = "0" + i;
-        }
-        return i;
-	}
-
-    function run() {
-        datefile = document.getElementById("datafiles").value;
-        numbername = document.getElementById("numbers").value;
-        showRelativeValues = document.getElementById("showRelativeValues").checked;
-        //alert("Auslesen: " + datefile + " " + numbername);
-
-        _domainname = getDomainname();
-        fetch(_domainname + '/fileserver/log/data/' + datefile)
-        .then(response => {
-            // handle the response
-            if (response.status == 404) {
-                firework.launch("No data available for " + dateString, 'warning', 10000);
+        function addZero(i)
+        {
+            if (i < 10) {
+                i = "0" + i;
             }
-            response.text()
-            .then( result => {
-                var lines = result.split("\n");
-                var traceValue =             { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Actual Value'};
-                var traceRawValue =          { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Raw Value', visible: 'legendonly'};
-                var traceFallbackValue =     { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Fallback Value', visible: 'legendonly'};
-                var traceRatePerMin =        { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Minute'};
-                var traceRatePerProcessing = { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Processing', visible: 'legendonly'};
+            return i;
+        }
 
-                var timex = 1;
-                for (let line of lines) {
-                    {
-                        //console.log(line);
-                        if (line.split(",")[1] == numbername)
+        function run() {
+            datefile = document.getElementById("datafiles").value;
+            numbername = document.getElementById("numbers").value;
+            showRelativeValues = document.getElementById("showRelativeValues").checked;
+            //alert("Auslesen: " + datefile + " " + numbername);
+
+            fetch(getDomainname() + '/fileserver/log/data/' + datefile)
+            .then(response => {
+                // handle the response
+                if (response.status == 404) {
+                    firework.launch("No data available for " + dateString, 'warning', 10000);
+                }
+                response.text()
+                .then( result => {
+                    var lines = result.split("\n");
+                    var traceValue =             { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Actual Value'};
+                    var traceRawValue =          { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Raw Value', visible: 'legendonly'};
+                    var traceFallbackValue =     { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Fallback Value', visible: 'legendonly'};
+                    var traceRatePerMin =        { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Minute'};
+                    var traceRatePerProcessing = { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Processing', visible: 'legendonly'};
+
+                    var timex = 1;
+                    for (let line of lines) {
                         {
-                            var value = line.split(",")[3];
-                            var rawValue = line.split(",")[2];
-                            var fallbackValue = line.split(",")[4];
-                            var RatePerMin = line.split(",")[5];
-                            var RatePerProcessing = line.split(",")[6];
-                            var time  = line.split(",")[0];
-                            //console.log("> "+time+" "+value+"\n");
+                            //console.log(line);
+                            if (line.split(",")[1] == numbername)
+                            {
+                                var value = line.split(",")[3];
+                                var rawValue = line.split(",")[2];
+                                var fallbackValue = line.split(",")[4];
+                                var RatePerMin = line.split(",")[5];
+                                var RatePerProcessing = line.split(",")[6];
+                                var time  = line.split(",")[0];
+                                //console.log("> "+time+" "+value+"\n");
 
-                            traceValue.x.push(time);
+                                traceValue.x.push(time);
 
-                            /* Catch empty fields */
-                            if (value == "" || isNaN(value)) {
-                                value = NaN;
+                                /* Catch empty fields */
+                                if (value == "" || isNaN(value)) {
+                                    value = NaN;
+                                }
+
+                                if (fallbackValue == "" || isNaN(fallbackValue)) {
+                                    fallbackValue = NaN;
+                                }
+
+                                if (rawValue == "" || isNaN(rawValue)) {
+                                    rawValue = NaN;
+                                }
+
+                                if (RatePerMin == "" || isNaN(RatePerMin)) {
+                                    RatePerMin = NaN;
+                                }
+
+                                if (RatePerProcessing == "" || isNaN(RatePerProcessing)) {
+                                    RatePerProcessing = NaN;
+                                }
+
+                                traceValue.y.push(value);
+                                traceRawValue.y.push(rawValue);
+                                traceFallbackValue.y.push(fallbackValue);
+                                traceRatePerMin.y.push(RatePerMin);
+                                traceRatePerProcessing.y.push(RatePerProcessing);
                             }
-
-                            if (fallbackValue == "" || isNaN(fallbackValue)) {
-                                fallbackValue = NaN;
-                            }
-
-                            if (rawValue == "" || isNaN(rawValue)) {
-                                rawValue = NaN;
-                            }
-
-                            if (RatePerMin == "" || isNaN(RatePerMin)) {
-                                RatePerMin = NaN;
-                            }
-
-                            if (RatePerProcessing == "" || isNaN(RatePerProcessing)) {
-                                RatePerProcessing = NaN;
-                            }
-
-                            traceValue.y.push(value);
-                            traceRawValue.y.push(rawValue);
-                            traceFallbackValue.y.push(fallbackValue);
-                            traceRatePerMin.y.push(RatePerMin);
-                            traceRatePerProcessing.y.push(RatePerProcessing);
                         }
                     }
-                }
 
-                /* If the value trace starts with NaN, replace all those Nans with the first valid value */
-                var firstNonNaNIndex = 0;
-                for(var i = 0; i < traceValue.y.length; i++) {
-                    firstNonNaNIndex = i;
-                    if (! isNaN(traceValue.y[i])) {
-                        break;
+                    /* If the value trace starts with NaN, replace all those Nans with the first valid value */
+                    var firstNonNaNIndex = 0;
+                    for(var i = 0; i < traceValue.y.length; i++) {
+                        firstNonNaNIndex = i;
+                        if (! isNaN(traceValue.y[i])) {
+                            break;
+                        }
                     }
-                }
 
-                if (firstNonNaNIndex == (traceValue.y.length - 1)) {
-                    console.log("No data available for 'value'!");
-                }
-                else if (firstNonNaNIndex > 0) { // Replace all leading NaN with the first valid value 
-                    console.log("The first leading values have all just NaN, replacing them with the value of",
-                            traceValue.y[firstNonNaNIndex], "at", traceValue.x[firstNonNaNIndex], "(Index:", firstNonNaNIndex, ")");
-                    for(var i = 0; i < firstNonNaNIndex; i++) {
-                        traceValue.y[i] = traceValue.y[firstNonNaNIndex];
+                    if (firstNonNaNIndex == (traceValue.y.length - 1)) {
+                        console.log("No data available for 'value'!");
                     }
-                }
-
-
-                // Copy time to all traces
-                traceRawValue.x = traceValue.x;
-                traceFallbackValue.x = traceValue.x;
-                traceRatePerMin.x = traceValue.x;
-                traceRatePerProcessing.x = traceValue.x;
-
-                //console.log(traceValue.y);
-
-                var offsetValue = traceValue.y[0];
-                var offsetRawValue = traceRawValue.y[0];
-                var offsetFallbackValue = traceFallbackValue.y[0];
-
-                traceValue.connectgaps = true;
-
-                if (showRelativeValues) {
-                    traceValue.y.forEach(function(part, index, arr) {
-                        arr[index] = arr[index] - offsetValue;
-                    });
-
-                    traceRawValue.y.forEach(function(part, index, arr) {
-                        arr[index] = arr[index] - offsetRawValue;
-                    });
-
-                    traceFallbackValue.y.forEach(function(part, index, arr) {
-                        arr[index] = arr[index] - offsetFallbackValue;
-                    });
-                }
-
-              //  console.log(traceValue.x)
-
-                var data = [traceValue, traceRawValue, traceFallbackValue, traceRatePerMin, traceRatePerProcessing];
-
-                var layout = {
-                    showlegend: true,
-                    colorway: ['green', 'black', 'blue', 'magenta', 'cyan'],
-
-                    yaxis: {title: 'Value'},
-                    yaxis2: {
-                        title: 'Rate',
-                        overlaying: 'y',
-                        side: 'right'
-                    },
-
-                    margin: {
-                        l: 70,
-                        r: 70,
-                        b: 50,
-                        t: 40,
-                        pad: 4
-                    },
-
-                    legend: {
-                        x: 0.02,
-                        y: 0.97,
-                        xanchor: 'left'
+                    else if (firstNonNaNIndex > 0) { // Replace all leading NaN with the first valid value 
+                        console.log("The first leading values have all just NaN, replacing them with the value of",
+                                traceValue.y[firstNonNaNIndex], "at", traceValue.x[firstNonNaNIndex], "(Index:", firstNonNaNIndex, ")");
+                        for(var i = 0; i < firstNonNaNIndex; i++) {
+                            traceValue.y[i] = traceValue.y[firstNonNaNIndex];
+                        }
                     }
-                };
 
-                document.getElementById("chart").innerHTML = "";
-                Plotly.newPlot('chart', data, layout, {displayModeBar: true});
 
-                // Update refresh timestamp
-                var d = new Date();
-		        var h = addZero(d.getHours());
-		        var m = addZero(d.getMinutes());
-		        var s = addZero(d.getSeconds());
-                $('#timestamp').html("Last Refresh: " + (h + ":" + m + ":" + s));
+                    // Copy time to all traces
+                    traceRawValue.x = traceValue.x;
+                    traceFallbackValue.x = traceValue.x;
+                    traceRatePerMin.x = traceValue.x;
+                    traceRatePerProcessing.x = traceValue.x;
+
+                    //console.log(traceValue.y);
+
+                    var offsetValue = traceValue.y[0];
+                    var offsetRawValue = traceRawValue.y[0];
+                    var offsetFallbackValue = traceFallbackValue.y[0];
+
+                    traceValue.connectgaps = true;
+
+                    if (showRelativeValues) {
+                        traceValue.y.forEach(function(part, index, arr) {
+                            arr[index] = arr[index] - offsetValue;
+                        });
+
+                        traceRawValue.y.forEach(function(part, index, arr) {
+                            arr[index] = arr[index] - offsetRawValue;
+                        });
+
+                        traceFallbackValue.y.forEach(function(part, index, arr) {
+                            arr[index] = arr[index] - offsetFallbackValue;
+                        });
+                    }
+
+                //  console.log(traceValue.x)
+
+                    var data = [traceValue, traceRawValue, traceFallbackValue, traceRatePerMin, traceRatePerProcessing];
+
+                    var layout = {
+                        showlegend: true,
+                        colorway: ['green', 'black', 'blue', 'magenta', 'cyan'],
+
+                        yaxis: {title: 'Value'},
+                        yaxis2: {
+                            title: 'Rate',
+                            overlaying: 'y',
+                            side: 'right'
+                        },
+
+                        margin: {
+                            l: 70,
+                            r: 70,
+                            b: 50,
+                            t: 40,
+                            pad: 4
+                        },
+
+                        legend: {
+                            x: 0.02,
+                            y: 0.97,
+                            xanchor: 'left'
+                        }
+                    };
+
+                    document.getElementById("chart").innerHTML = "";
+                    Plotly.newPlot('chart', data, layout, {displayModeBar: true});
+
+                    // Update refresh timestamp
+                    var d = new Date();
+                    var h = addZero(d.getHours());
+                    var m = addZero(d.getMinutes());
+                    var s = addZero(d.getSeconds());
+                    $('#timestamp').html("Last Refresh: " + (h + ":" + m + ":" + s));
+                });
+            }).catch((error) => {
+                // handle the error
+                console.log(error);
             });
-        }).catch((error) => {
-            // handle the error
-            console.log(error);
-        });
-    }
+        }
     </script>
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
-    <script type="text/javascript" src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
-    <script type="text/javascript" src="firework.js?v=$COMMIT_HASH"></script>
+
 </head>
 
-<body>
+<body style="font-family: arial; padding: 0px 10px;">
     <h2>Data Graph</h2>
     <div style="margin-top:20px;margin-bottom:0px;">
-        Number sequence: <select id="numbers" onchange="run();"></select>
+        Number Sequence: <select id="numbers" onchange="run();"></select>
         Day: <select id="datafiles" onchange="run();"></select>
-        <input type="checkbox" id="showRelativeValues" onclick = 'run();' unchecked ><label for="showRelativeValues">Show relative values</label><br><br>
+        <input type="checkbox" id="showRelativeValues" onclick = 'run();'  ><label for="showRelativeValues">Show relative value</label><br><br>
     </div>
     <div>
         <input type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
-        <label for=AutoRefreshEnabled><class id="AutoRefreshEnabled" style="color:black;">Auto Refresh</class></label>
-        <input required type="number" style="margin-left: 18px;" name="AutoRefreshTime" id="AutoRefreshTime" size="13" min="1" step="1" value="60" 
+        <label for=AutoRefreshEnabled><span id="AutoRefreshEnabled_text" style="color:black;">Auto Refresh</span></label>
+        <input required type="number" style="margin-left: 18px;" name="AutoRefreshTime" id="AutoRefreshTime"  min="1" step="1" value="60" 
                 oninput="(!validity.rangeUnderflow||(value=1));" onchange="AutoRefreshContent();"> s
         <output style="margin-left:48px" id="timestamp" >Last Refresh:</output>
     </div>
@@ -296,9 +298,23 @@
     }
 
 
+    function initAutoRefreshContent()
+    {
+        loadConfig(getDomainname()); 
+        ParseConfigReduced();
+        param = getConfigParameters();
+        
+		document.getElementById("AutoRefreshEnabled").checked = param["WebUI"]["DataGraphAutoRefresh"]["value1"] == "true" ? true : false;
+		document.getElementById("AutoRefreshTime").value = param["WebUI"]["DataGraphAutoRefreshTime"]["value1"];   
+        
+        autoRefreshTimeoutHandle = null; // Init auto refresh handle
+        AutoRefreshContent();
+    }
+
+
 	function AutoRefreshContent()
-	{	
-		if (document.getElementById("AutoRefreshEnabled").checked == true) { // Activated -> Set timeout
+	{	   
+        if (document.getElementById("AutoRefreshEnabled").checked == true) { // Activated -> Set timeout
 
 			if (autoRefreshTimeoutHandle) { // Clear actual timeout handle
 				clearTimeout(autoRefreshTimeoutHandle);
@@ -328,8 +344,7 @@
 
     function init()
 	{
-        autoRefreshTimeoutHandle = null; // Init auto refresh handle
-		document.getElementById("AutoRefreshEnabled").checked = false; // Reset auto refresh checkbox at page init
+        initAutoRefreshContent();
         WriteDataFiles();
         WriteNumbers();
         run();
@@ -339,5 +354,6 @@
 	init();
 
 </script>
+
 </body>
 </html>

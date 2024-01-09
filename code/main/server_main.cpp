@@ -1,42 +1,34 @@
 #include "server_main.h"
 
 #include <string>
-
-#include "server_help.h"
-#include "ClassLogFile.h"
-
-#include "time_sntp.h"
-
-#include "connect_wlan.h"
-#include "read_wlanini.h"
-#include "interface_mqtt.h"
-
-#include "version.h"
-
-#include "esp_wifi.h"
-#include "esp_private/esp_clk.h"
+#include <stdio.h>
 #include <netdb.h>
 
-#include "MainFlowControl.h"
-#include "ClassFlowInfluxDB.h"
-#include "ClassFlowInfluxDBv2.h"
-#include "ClassControllCamera.h"
-
-#include <stdio.h>
+#include "esp_log.h"
+#include "esp_wifi.h"
+#include "esp_private/esp_clk.h"
+#include "cJSON.h"
 
 #ifdef TASK_ANALYSIS_ON
 #include "psram.h"
 #endif
 
+#include "MainFlowControl.h"
+#include "ClassLogFile.h"
+#include "server_help.h"
+#include "time_sntp.h"
+#include "connect_wlan.h"
+#include "read_wlanini.h"
+#include "version.h"
 #include "Helper.h"
 #include "system.h"
-#include "cJSON.h"
+#include "interface_mqtt.h"
 
-
-httpd_handle_t server = NULL;
-extern std::string deviceStartTimestamp;
 
 static const char *TAG = "MAIN_SERVER";
+
+httpd_handle_t server = NULL;   
+extern std::string deviceStartTimestamp;
 
 
 esp_err_t handler_get_info(httpd_req_t *req)
@@ -516,8 +508,7 @@ esp_err_t handler_img_tmp_virtual(httpd_req_t *req)
         return GetRawJPG(req); 
 
     // Serve alg.jpg, alg_roi.jpg or digital and analog ROIs
-    if (ESP_OK == GetJPG(filetosend, req))
-        return ESP_OK;
+    return GetJPG(filetosend, req);
 
     // File was not served already --> serve with img_tmp_handler
     return handler_img_tmp(req);

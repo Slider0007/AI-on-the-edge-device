@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef CALIGNANDCUTIMAGE_H
 #define CALIGNANDCUTIMAGE_H
 

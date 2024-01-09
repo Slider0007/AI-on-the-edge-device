@@ -1,21 +1,16 @@
-#pragma once
-
 #ifndef CIMAGEBASIS_H
 #define CIMAGEBASIS_H
 
-#include <stdint.h>
-#include <string>
-#include <esp_http_server.h>
-
 #include "../../include/defines.h"
 
-#include <math.h>
+#include <string>
 
-#include "../stb/stb_image.h"
-#include "../stb/stb_image_write.h"
-#include "../stb/stb_image_resize.h"
+#include <esp_http_server.h>
 
-#include "esp_heap_caps.h"
+#include "stb/stb_image.h"
+#include "stb/stb_image_write.h"
+#include "stb/stb_image_resize.h"
+
 
 struct ImageData
 {

@@ -1,10 +1,7 @@
 #include "ClassFlowControll.h"
-
-#include "connect_wlan.h"
-#include "read_wlanini.h"
+#include "../../include/defines.h"
 
 #include "freertos/task.h"
-
 #include <sys/stat.h>
 
 #ifdef __cplusplus
@@ -15,20 +12,22 @@ extern "C" {
 }
 #endif
 
+#include "connect_wlan.h"
+#include "read_wlanini.h"
 #include "ClassLogFile.h"
 #include "time_sntp.h"
 #include "Helper.h"
 #include "statusled.h"
 #include "server_ota.h"
+#include "server_help.h"
+#include "MainFlowControl.h"
+#include "server_GPIO.h"
+
 #ifdef ENABLE_MQTT
     #include "interface_mqtt.h"
     #include "server_mqtt.h"
 #endif //ENABLE_MQTT
 
-#include "server_help.h"
-#include "MainFlowControl.h"
-#include "server_GPIO.h"
-#include "../../include/defines.h"
 
 static const char* TAG = "FLOWCTRL";
 
@@ -515,7 +514,7 @@ void ClassFlowControll::DeinitFlow(void)
     StatusLEDOff();
     //LogFile.WriteHeapInfo("After camera");
 
-    gpio_handler_destroy();
+    gpio_handler_deinit();
     //LogFile.WriteHeapInfo("After GPIO");
     
     #ifdef ENABLE_MQTT
@@ -877,6 +876,25 @@ int ClassFlowControll::getNumbersSize()
 }
 
 
+/* Return number of ROIs (sum, digit or analog) */
+int ClassFlowControll::getNumbersROISize(int _seqNo = 0, int _filter = 0)
+{
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Request rejected. Flowpostprocessing not available"); 
+        return -1;
+    }
+    
+    if (_filter == 0)
+        return (*flowpostprocessing->GetNumbers())[_seqNo]->digitCount + (*flowpostprocessing->GetNumbers())[_seqNo]->analogCount;
+    else if (_filter == 1)
+        return (*flowpostprocessing->GetNumbers())[_seqNo]->digitCount;
+    else if (_filter == 2)
+        return (*flowpostprocessing->GetNumbers())[_seqNo]->analogCount;
+    else 
+        return -1;
+}
+
+
 /* Return array postion of a given numbers name (number sequence) */
 int ClassFlowControll::getNumbersNamePosition(std::string _name)
 {
@@ -1108,6 +1126,12 @@ int ClassFlowControll::CleanTempFolder() {
     ESP_LOGD(TAG, "%d files deleted", deleted);
     
     return 0;
+}
+
+
+CImageBasis* ClassFlowControll::getRawImage()
+{
+    return flowtakeimage->rawImage;
 }
 
 

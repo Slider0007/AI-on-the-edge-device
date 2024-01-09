@@ -1,13 +1,15 @@
 #include "CAlignAndCutImage.h"
-#include "CRotateImage.h"
-#include "ClassLogFile.h"
-#include "Helper.h"
+#include "../../include/defines.h"
 
 #include <math.h>
 #include <algorithm>
 #include <esp_log.h>
+
 #include "psram.h"
-#include "../../include/defines.h"
+#include "CRotateImage.h"
+#include "ClassLogFile.h"
+#include "Helper.h"
+
 
 static const char* TAG = "IMG_ALIGNCUT";
 

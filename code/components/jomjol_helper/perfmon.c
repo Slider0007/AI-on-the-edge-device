@@ -1,8 +1,8 @@
-//source : https://github.com/Carbon225/esp32-perfmon
+#include "perfmon.h"
 
-#include "../../include/defines.h"
-
+#ifdef DEBUG_ENABLE_PERFMON
 /*
+source : https://github.com/Carbon225/esp32-perfmon
 ESP32 CPU usage monitor
 Gives you a rough idea of how the Xtensa cores are utilized.
 
@@ -19,17 +19,15 @@ Call perfmon_start() once
 
 */
 
-#ifdef DEBUG_ENABLE_PERFMON
-
-#include "perfmon.h"
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_freertos_hooks.h"
-#include "sdkconfig.h"
 
+#include "sdkconfig.h"
 #include "esp_log.h"
-static const char *TAG = "perfmon";
+
+
+static const char *TAG = "PERFMON";
 
 static uint64_t idle0Calls = 0;
 static uint64_t idle1Calls = 0;

@@ -1,63 +1,18 @@
+#include "../../include/defines.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <regex>
 
-//#include "freertos/FreeRTOS.h"
-//#include "freertos/task.h"
-//#include "freertos/event_groups.h"
-
-//#include "driver/gpio.h"
-//#include "sdkconfig.h"
+#include "nvs_flash.h"
 #include "esp_psram.h"
-
-// SD-Card ////////////////////
-//#include "nvs_flash.h"
 #include "esp_vfs_fat.h"
-//#include "sdmmc_cmd.h"
 #include "driver/sdmmc_host.h"
-//#include "driver/sdmmc_defs.h"
-///////////////////////////////
-
-
-#include "ClassLogFile.h"
-
-#include "connect_wlan.h"
-#include "read_wlanini.h"
-
-#include "server_main.h"
-#include "MainFlowControl.h"
-#include "server_file.h"
-#include "server_ota.h"
-#include "time_sntp.h"
-#include "configFile.h"
-//#include "ClassControllCamera.h"
-#include "server_main.h"
-#include "server_camera.h"
-#ifdef ENABLE_MQTT
-    #include "server_mqtt.h"
-#endif //ENABLE_MQTT
-#include "Helper.h"
-#include "system.h"
-#include "statusled.h"
-#include "sdcard_check.h"
-
-#include "../../include/defines.h"
-//#include "server_GPIO.h"
-
-#ifdef ENABLE_SOFTAP
-    #include "softAP.h"
-#endif //ENABLE_SOFTAP
 
 #ifdef DISABLE_BROWNOUT_DETECTOR
     #include "soc/soc.h" 
     #include "soc/rtc_cntl_reg.h" 
-#endif
-
-// define `gpio_pad_select_gpip` for newer versions of IDF
-#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0))
-#include "esp_rom_gpio.h"
-#define gpio_pad_select_gpio esp_rom_gpio_pad_select_gpio
 #endif
 
 #ifdef USE_HIMEM_IF_AVAILABLE
@@ -74,6 +29,34 @@
     static heap_trace_record_t trace_record[NUM_RECORDS]; // This buffer must be in internal RAM
 #endif
 
+#include "ClassLogFile.h"
+#include "connect_wlan.h"
+#include "read_wlanini.h"
+#include "server_main.h"
+#include "MainFlowControl.h"
+#include "server_file.h"
+#include "server_ota.h"
+#include "time_sntp.h"
+#include "configFile.h"
+#include "server_GPIO.h"
+#include "server_camera.h"
+
+#ifdef ENABLE_MQTT
+#include "server_mqtt.h"
+#endif //ENABLE_MQTT
+
+#include "Helper.h"
+#include "system.h"
+#include "statusled.h"
+#include "sdcard_check.h"
+
+#ifdef ENABLE_SOFTAP
+    #include "softAP.h"
+#endif //ENABLE_SOFTAP
+
+
+static const char *TAG = "MAIN";
+
 extern const char* GIT_TAG;
 extern const char* GIT_REV;
 extern const char* GIT_BRANCH;
@@ -86,9 +69,6 @@ extern std::string getHTMLcommit(void);
 void migrateConfiguration(void);
 
 std::string deviceStartTimestamp;
-
-
-static const char *TAG = "MAIN";
 
 
 bool Init_NVS_SDCard()
@@ -235,8 +215,9 @@ extern "C" void app_main(void)
     // Correct creation of these folders will be checked with function "SDCardCheckFolderFilePresence"
     // ********************************************
     MakeDir("/sdcard/firmware");         // mandatory for OTA firmware update
-    MakeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marks
+    MakeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marker
     MakeDir("/sdcard/demo");             // mandatory for demo mode
+    MakeDir("/sdcard/config/certs");     // mandatory for TLS encryption
 
     // Check for updates
     // ********************************************
@@ -543,11 +524,18 @@ void migrateConfiguration(void)
             }
 
             /* MaxRateType has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "MaxRateType")) { // It is the parameter "MaxRateType" and it is commented out
-                migrated = migrated | replaceString(configLines[i], "Off", "RatePerMin"); // Set it to its default value
-                migrated = migrated | replaceString(configLines[i], "RateChange", "RatePerMin"); // Set it to its default value
-                migrated = migrated | replaceString(configLines[i], "AbsoluteChange", "RatePerMin"); // Set it to its default value
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            if (isInString(configLines[i], "MaxRateType")) { // It is the parameter "MaxRateType"
+                if (isInString(configLines[i], ";")) { // if disabled
+                    migrated = migrated | replaceString(configLines[i], "= Off", "= RatePerMin"); // Convert it to its default value
+                    migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its default value
+                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerMin"); // Convert it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                }
+                else {
+                    migrated = migrated | replaceString(configLines[i], "= Off", "= RateOff"); // Convert it to its new name
+                    migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its new name
+                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerProcessing"); // Convert it to its new name
+                }
             }
 
             if (isInString(configLines[i], "MaxRateValue") && isInString(configLines[i], ";")) { // It is the parameter "MaxRateValue" and it is commented out
@@ -571,6 +559,21 @@ void migrateConfiguration(void)
             migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
             migrated = migrated | replaceString(configLines[i], ";MainTopic", "MainTopic"); // Enable it
             migrated = migrated | replaceString(configLines[i], ";ClientID", "ClientID"); // Enable it
+
+            if (isInString(configLines[i], "CACert") && !isInString(configLines[i], "TLSCACert")) {
+                migrated = migrated | replaceString(configLines[i], "CACert =", "TLSCACert ="); // Rename it
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            if (isInString(configLines[i], "ClientCert") && !isInString(configLines[i], "TLSClientCert")) {
+                migrated = migrated | replaceString(configLines[i], "ClientCert =", "TLSClientCert ="); // Rename it
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
+
+            if (isInString(configLines[i], "ClientKey") && !isInString(configLines[i], "TLSClientKey")) {
+                migrated = migrated | replaceString(configLines[i], "ClientKey =", "TLSClientKey ="); // Rename it
+                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            }
 
             migrated = migrated | replaceString(configLines[i], "SetRetainFlag", "RetainMessages"); // First rename it, enable it with its default value
             migrated = migrated | replaceString(configLines[i], ";RetainMessages = true", ";RetainMessages = false"); // Set it to its default value
@@ -623,7 +626,10 @@ void migrateConfiguration(void)
             if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
-
+            if (isInString(configLines[i], "Database")) { // It is the parameter "Database"
+                migrated = migrated | replaceString(configLines[i], "Database", "Bucket"); // Rename it to Bucket
+            }
+            
             /* Measurement has a <NUMBER> as prefix! */
             if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it

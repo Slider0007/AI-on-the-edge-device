@@ -1,44 +1,34 @@
 #include "MainFlowControl.h"
+#include "../../include/defines.h"
 
 #include <string>
 #include <vector>
-#include "esp_log.h"
-#include <esp_timer.h>
-
 #include <iomanip>
 #include <sstream>
 
-#include "../../include/defines.h"
+#include "esp_log.h"
+#include <esp_timer.h>
+#include "esp_camera.h"
+
+#include "cJSON.h"
+
 #include "Helper.h"
 #include "system.h"
 #include "statusled.h"
-
-#include "esp_camera.h"
 #include "time_sntp.h"
 #include "ClassControllCamera.h"
-
-#include "ClassFlowControll.h"
-
 #include "ClassLogFile.h"
 #include "server_GPIO.h"
-
 #include "server_file.h"
-
 #include "read_wlanini.h"
 #include "connect_wlan.h"
 #include "psram.h"
-#include "cJSON.h"
 
 #ifdef ENABLE_MQTT
     #include "interface_mqtt.h"
     #include "server_mqtt.h"
 #endif //ENABLE_MQTT
 
-
-// support IDF 5.x
-#ifndef portTICK_RATE_MS
-#define portTICK_RATE_MS portTICK_PERIOD_MS
-#endif
 
 ClassFlowControll flowctrl;
 
@@ -180,7 +170,8 @@ bool doInit(void)
     // Init MQTT service
     // ********************************************   
     #ifdef ENABLE_MQTT
-        flowctrl.StartMQTTService();
+        if (!flowctrl.StartMQTTService())
+            bRetVal = false;
     #endif //ENABLE_MQTT
 
     //heap_caps_dump(MALLOC_CAP_INTERNAL);
@@ -305,6 +296,12 @@ esp_err_t handler_reload_config(httpd_req_t *req)
 
 esp_err_t handler_fallbackvalue(httpd_req_t *req)
 {
+    if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E95: Request rejected, flow not initialized");
+        return ESP_FAIL;
+    }
+
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
@@ -325,9 +322,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     httpd_resp_set_type(req, "text/plain");
 
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        #ifdef DEBUG_DETAIL_ON       
-            ESP_LOGD(TAG, "Query: %s", _query);
-        #endif
+        //ESP_LOGD(TAG, "Query: %s", _query);
 
         if (httpd_query_key_value(_query, "sequence", number_sequence, sizeof(number_sequence)) != ESP_OK) { // If request is incomplete
             sReturnMessage = "E91: Query parameter incomplete or not valid!<br> "
@@ -337,14 +332,12 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
         }
 
         if (httpd_query_key_value(_query, "value", value, sizeof(value)) == ESP_OK) {
-            #ifdef DEBUG_DETAIL_ON       
-                ESP_LOGD(TAG, "Value: %s", value);
-            #endif
+            //ESP_LOGD(TAG, "Value: %s", value);
         }
     }
     else {  // if no parameter is provided, print handler usage
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, RESTUsageInfo.c_str());
-        return ESP_FAIL; 
+        httpd_resp_send(req, RESTUsageInfo.c_str(), RESTUsageInfo.length());
+        return ESP_OK; 
     }   
 
     if (strlen(value) == 0) { // If no value is povided --> return actual FallbackValue
@@ -376,7 +369,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
         }
     }
 
-    httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());  
+    httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
 
     return ESP_OK;
 }
@@ -384,11 +377,6 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 
 esp_err_t handler_editflow(httpd_req_t *req)
 {
-    if (!bTaskAutoFlowCreated) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Main task not yet created");
-        return ESP_FAIL;
-    }
-    
     const char* APIName = "editflow:v1"; // API name and version
     char _query[200];
     char _valuechar[30];
@@ -437,6 +425,12 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_sendstr(req, "Copy Done"); 
     }
     else if (type.compare("cutref") == 0) {
+        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
+            return ESP_FAIL;
+        }
+
         std::string in, out, zw;
         int x, y, dx, dy;
 
@@ -474,8 +468,11 @@ esp_err_t handler_editflow(httpd_req_t *req)
         in = "/sdcard" + in;    // --> img_tmp/reference.jpg
         out = "/sdcard" + out;  // --> img_tmp/refX.jpg
 
+        // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp)
         STBIObjectPSRAM.name="rawImage";
-        STBIObjectPSRAM.usePreallocated = true; // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp) 
+        STBIObjectPSRAM.usePreallocated = true;
+        STBIObjectPSRAM.PreallocatedMemory = flowctrl.getRawImage()->RGBImageGet();
+        STBIObjectPSRAM.PreallocatedMemorySize = flowctrl.getRawImage()->getMemsize();
         CAlignAndCutImage* caic = new CAlignAndCutImage("cutref1", in, true);  // CImageBasis of reference.jpg will be created first (921kB RAM needed)
         caic->CutAndSave(out, x, y, dx, dy);
         delete caic;
@@ -483,6 +480,12 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_sendstr(req, "CutImage Done"); 
     }
     else if (type.compare("test_take") == 0) {
+        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
+            return ESP_FAIL;
+        }
+        
         std::string _host = "";
         std::string _bri = "";
         std::string _con = "";
@@ -514,7 +517,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         }
 
         //ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
-        //std::string zwzw = "Do " + task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
+        //std::string zwzw = "Do " + _query + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         Camera.SetBrightnessContrastSaturation(bri, con, sat);
         Camera.SetLEDIntensity(intens);
         ESP_LOGD(TAG, "test_take - vor TakeImage");
@@ -523,12 +526,18 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
     else if (type.compare("test_align") == 0) {
+        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
+            return ESP_FAIL;
+        }
+
         std::string _host = "";
         if (httpd_query_key_value(_query, "host", _valuechar, 30) == ESP_OK) {
             _host = std::string(_valuechar);
         }
         //ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
-        //std::string zwzw = "Do " + task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
+        //std::string zwzw = "Do " + _query + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         std::string zw = flowctrl.doSingleStep("[Alignment]", _host);
 
         httpd_resp_send(req, zw.c_str(), zw.length()); 
@@ -545,7 +554,8 @@ esp_err_t handler_editflow(httpd_req_t *req)
 esp_err_t handler_process_data(httpd_req_t *req)
 {
     if (!bTaskAutoFlowCreated) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Main task not yet created");
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
         return ESP_FAIL;
     }
 
@@ -946,15 +956,10 @@ esp_err_t handler_process_data(httpd_req_t *req)
 
 esp_err_t handler_recognition_details(httpd_req_t *req)
 {
-    if (!bTaskAutoFlowCreated) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Main task not yet created");
-        return ESP_FAIL;
-    }
-
     const char* APIName = "recognition_details:v1"; // API name and version
     char _query[100];
     char _valuechar[30];    
-    std::string type, zw, txt;
+    std::string type, zw;
     
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
         if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
@@ -973,8 +978,10 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
 
     /*++++++++++++++++++++++++++++++++++++++++*/
     /* Page details */
-    txt = "<body style=\"font-family: arial; padding: 0px 10px;\">\n<h2 style=\"margin-block-end: 0.2em;\">Recognition Details</h2>";
-    txt += "<details id=\"desc_details\" style=\"font-size: 16px;\">\n";
+    std::string txt = "<!DOCTYPE html><html lang=\"en\" xml:lang=\"en\"><head><meta charset=\"UTF-8\"><title>Recognition Details</title></head>\n";
+    txt += "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px;font-size:100%;-webkit-text-size-adjust:100%; text-size-adjust:100%;\">";
+    txt += "<h2 style=\"font-size:1.5em;margin-block-start:0.0em;margin-block-end:0.2em;\">Recognition Details</h2>\n";
+    txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;margin-right:10px;\">\n";
     txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
     txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
             "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitalization cycle.</strong></p>";
@@ -983,42 +990,45 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
             "\"Value\". In the sections \"Digit ROI\" and \"Analog ROI\" all single \"raw results\" of the respective ROI images (digit styled ROI and "
             "analog styled ROI) are visualized separated per number sequence. The taken image which was used for processing (including the overlays "
             "to highlight the relevant areas) is visualized at the bottom of this page.</p>";
-    txt += "</details><hr/>";
+    txt += "</details><hr>\n";
 
     if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) { // Display message if flow is not initialized or image processing active
-        txt += "<h4>Image recognition details are only accessable if initialization is completed and no image evaluation is ongoing. <br>"
+        txt += "<h4>"
+                "Image recognition details are only accessable if initialization is completed and no image evaluation is ongoing. "
                 "Wait a few moments and refresh this page.</h4> Current state: " + flowctrl.getActStatus();
         httpd_resp_sendstr_chunk(req, txt.c_str());
     }
     else {
         /*++++++++++++++++++++++++++++++++++++++++*/
         /* Result */
-        txt += "<h3>Result</h3>\n";
-        txt += "<table style=\"width:500px;border-collapse: collapse;table-layout: fixed;\">";
-        txt += "<tr><td style=\"font-weight: bold;width: 50%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Number Sequence</td>"
-                "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Raw Value</td>"
-                "<td style=\"font-weight: bold;width: 25%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">Actual Value</td></tr>";
-        for (int i = 0; i < flowctrl.getNumbersSize(); ++i) {   
-            txt += "<tr><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
-                flowctrl.getNumbersName(i) + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" +
-                flowctrl.getReadout(true, false, i) + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" +
+        txt += "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;margin-top:40px;\">Result</h4>\n";
+        txt += "<table style=\"width:660px;border-collapse:collapse;table-layout:fixed;\">";
+        txt += "<tr><td style=\"font-weight:bold;width:40%;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Number Sequence</td>"
+                "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Raw Value</td>"
+                "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Actual Value</td></tr>";
+        for (int i = 0; i < flowctrl.getNumbersSize(); ++i) {
+            txt += "<tr><td style=\"padding:3px 5px; text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
+                flowctrl.getNumbersName(i) + "</td><td style=\"padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
+                flowctrl.getReadout(true, false, i) + "</td><td style=\"padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
                 flowctrl.getReadout(false, true, i) + "</td></tr>";
         }
-        txt += "</table><hr/>";
+        txt += "</table>\n";
         httpd_resp_sendstr_chunk(req, txt.c_str());
 
         /*++++++++++++++++++++++++++++++++++++++++*/
         /* Digital ROI */
-        txt = "<h3 style=\"margin-block-end: 0.5em;\">Digit ROI</h3>\n";
-        txt += "<table style=\"border-spacing: 5px;\">\n";
+        txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Digit ROI</h4>\n";
+        txt += "<table style=\"border-spacing:5px;\">\n";
 
         std::vector<HTMLInfo*> htmlinfo;
-        htmlinfo = flowctrl.GetAllDigital(); 
+        htmlinfo = flowctrl.GetAllDigital();
 
+        int sequence = -1;
         for (int i = 0; i < htmlinfo.size(); ++i) {
             if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
-                txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number Sequence: " + htmlinfo[i]->name + "</td></tr>\n";
-                txt += "<tr style=\"text-align: center; vertical-align: top;\">\n";
+                txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " + htmlinfo[i]->name + "</td></tr>\n";
+                txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
+                sequence++;
             }
 
             if (flowctrl.GetTypeDigital() == Digital) {
@@ -1036,36 +1046,39 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
                 }
             }
 
-            if (htmlinfo[i]->val > -1) // Only show image if result is set, otherwise text "No Image"
-                txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
-                        zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\"><img src=\"/img_tmp/" + 
+            if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
+                txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
+                        zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
+                        "style=\"max-width:" + to_stringWithPrecision(640/(flowctrl.getNumbersROISize(sequence, 1) + 1), 0) + "px\" src=\"/img_tmp/" +
                         htmlinfo[i]->filename_org + "\"></p></td>\n";
             else
-                txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
-                        zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\">No Image</p></td>\n";
-            
+                txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
+                        zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\">No Image</p></td>\n";
+
             delete htmlinfo[i];
         }
 
         if (htmlinfo.size() == 0)
             txt += "<tr><td>Digit ROI processing deactivated</td>";
-        
+
         htmlinfo.clear();
-    
-        txt += "</tr></table><hr/>";
-        httpd_resp_sendstr_chunk(req, txt.c_str()); 
+
+        txt += "</tr></table>\n";
+        httpd_resp_sendstr_chunk(req, txt.c_str());
 
         /*++++++++++++++++++++++++++++++++++++++++*/
         /* Analog ROI */
-        txt = "<h3 style=\"margin-block-end: 0.5em;\">Analog ROI</h3>\n";
-        txt += "<table style=\"border-spacing: 5px;\">\n";
-        
+        txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Analog ROI</h4>\n";
+        txt += "<table style=\"border-spacing:5px;\">\n";
+
+        sequence = -1;
         htmlinfo = flowctrl.GetAllAnalog();
         for (int i = 0; i < htmlinfo.size(); ++i) {
             if (htmlinfo[i]->position == 0) {     // New line when a new number sequence begins
-                txt += "<tr><td style=\"font-weight: bold;vertical-align: bottom;\" colspan=\"3\">Number Sequence: " + 
+                txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " +
                         htmlinfo[i]->name + "</td></tr>\n";
-                txt += "<tr style=\"text-align: center; vertical-align: top;\">\n";
+                txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
+                sequence++;
             }
 
             if (htmlinfo[i]->val >= 10.0) {
@@ -1075,34 +1088,36 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
                 zw = to_stringWithPrecision(htmlinfo[i]->val, 1);
             }
 
-            if (htmlinfo[i]->val > -1) // Only show image if result is set, otherwise text "No Image"
-                txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
-                        zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\"><img src=\"/img_tmp/" + 
+            if (htmlinfo[i]->val >= -0.1) // Only show image if result is set, otherwise text "No Image"
+                txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
+                        zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
+                        "style=\"max-width:" + to_stringWithPrecision(640/(flowctrl.getNumbersROISize(sequence, 2) + 1), 0) + "px\" src=\"/img_tmp/" +
                         htmlinfo[i]->filename_org + "\"></p></td>\n";
             else
-                txt += "<td style=\"width: 150px;\"><h4 style=\"margin-block-start: 0.5em;margin-block-end: 0.0em;\">" + 
-                        zw + "</h4><p style=\"margin-block-start: 0.5em;margin-block-end: 1.33em;\">No Image</p></td>\n";
-            
+                txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
+                        zw + "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\">No Image</p></td>\n";
+
             delete htmlinfo[i];
         }
 
         if (htmlinfo.size() == 0)
             txt += "<tr><td>Analog ROI processing deactivated</td>";
 
-        htmlinfo.clear();   
+        htmlinfo.clear();
 
-        txt += "</tr></table><hr/>";
-        httpd_resp_sendstr_chunk(req, txt.c_str()); 
+        txt += "</tr></table>\n";
+        httpd_resp_sendstr_chunk(req, txt.c_str());
 
         /*++++++++++++++++++++++++++++++++++++++++*/
-        /* Show ALG_ROI image*/ 
-        txt = "<h3>Processed Image (incl. Overlays)</h3>\n";
-        txt += "<img src=\"/img_tmp/alg_roi.jpg\">\n";                
-        httpd_resp_sendstr_chunk(req, txt.c_str()); 
+        /* Show ALG_ROI image */
+        txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Processed Image (incl. Overlays)</h4>\n";
+        txt += "<img src=\"/img_tmp/alg_roi.jpg\">\n";
+        txt += "</body></html>\n";
+        httpd_resp_sendstr_chunk(req, txt.c_str());
     }
 
     // Respond with an empty chunk to signal HTTP response completion
-    httpd_resp_sendstr_chunk(req, NULL);   
+    httpd_resp_sendstr_chunk(req, NULL);
     return ESP_OK;
 }
 
@@ -1136,6 +1151,8 @@ void task_autodoFlow(void *pvParameter)
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_INIT));
             flowctrl.setActStatus(std::string(FLOW_INIT));
             // Right now, it's not possible to provide state via MQTT because mqtt service is not yet started
+
+            flowctrl.setActFlowError(false); // Reset existing process_error
 
             if (!doInit()) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Process state: " + std::string(FLOW_INIT_FAILED));
@@ -1291,8 +1308,8 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.RemoveOldDebugFiles();
             }
             else {
+                FlowStateErrorsInRow = 0;
                 #ifdef ENABLE_MQTT
-                    FlowStateErrorsInRow = 0;
                     MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "false", 1, false);
                 #endif //ENABLE_MQTT
             }

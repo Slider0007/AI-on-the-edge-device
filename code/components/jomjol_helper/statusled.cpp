@@ -1,17 +1,13 @@
 #include "statusled.h"
+#include "../../include/defines.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "driver/gpio.h"
+#include "esp_rom_gpio.h"
 
 #include "ClassLogFile.h"
-#include "../../include/defines.h"
 
-// define `gpio_pad_select_gpip` for newer versions of IDF
-#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0))
-#include "esp_rom_gpio.h"
-#define gpio_pad_select_gpio esp_rom_gpio_pad_select_gpio
-#endif
 
 static const char* TAG = "STATUSLED";
 
@@ -27,7 +23,7 @@ void task_StatusLED(void *pvParameter)
 		//ESP_LOGD(TAG, "task_StatusLED - start");
 		struct StatusLEDData StatusLEDDataInt = StatusLEDData;
 
-		gpio_pad_select_gpio(BLINK_GPIO); // Init the GPIO
+		esp_rom_gpio_pad_select_gpio(BLINK_GPIO); // Init the GPIO
 		gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
 		gpio_set_level(BLINK_GPIO, 1);// LED off
 
@@ -149,7 +145,7 @@ void StatusLEDOff(void)
 		xHandle_task_StatusLED = NULL;
 	}
 	
-	gpio_pad_select_gpio(BLINK_GPIO); // Init the GPIO
+	esp_rom_gpio_pad_select_gpio(BLINK_GPIO); // Init the GPIO
 	gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
 	gpio_set_level(BLINK_GPIO, 1);// LED off
 }

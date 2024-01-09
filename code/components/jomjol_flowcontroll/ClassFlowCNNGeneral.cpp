@@ -1,13 +1,16 @@
 #include "ClassFlowCNNGeneral.h"
+#include "../../include/defines.h"
 
 #include <math.h>
 #include <iomanip> 
 #include <sys/types.h>
 #include <sstream>      // std::stringstream
 
-#include "ClassLogFile.h"
 #include "esp_log.h"
-#include "../../include/defines.h"
+
+#include "ClassLogFile.h"
+#include "ClassControllCamera.h"
+
 
 static const char* TAG = "CNN";
 
@@ -181,7 +184,7 @@ int ClassFlowCNNGeneral::EvalAnalogNumber(int _value, int _resultPreviousNumber)
         if (_resultPreviousNumber <= Analog_error)
         {
             result = valueMax / 10;
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "EvalAnalogNumber (Ambiguous, use value + corretion): Result = " + std::to_string(result) +
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "EvalAnalogNumber (Ambiguous, use value + corretion): Result: " + std::to_string(result) +
                                                         ", Value: " + to_stringWithPrecision(_value/10.0, 1) + 
                                                         ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
             return result;
@@ -415,10 +418,22 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if (splitted.size() >= 5) {
             general* _analog = GetGENERAL(splitted[0], true);
             t_ROI* newROI = _analog->ROI[_analog->ROI.size()-1];
+
             newROI->posx = std::stoi(splitted[1]);
             newROI->posy = std::stoi(splitted[2]);
             newROI->deltax = std::stoi(splitted[3]);
             newROI->deltay = std::stoi(splitted[4]);
+
+            if (newROI->posx < 1 || (newROI->posx > (Camera.image_width - 1 - newROI->deltax))) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more ROI out of image area (x). Check ROI config");
+                bRetVal = false;
+            }
+
+            if (newROI->posy < 1 || (newROI->posy > (Camera.image_height - 1 - newROI->deltay))) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more ROI out of image area (y). Check ROI config");
+                bRetVal = false;
+            }
+
             newROI->CCW = false;
             if (splitted.size() >= 6) {
                 newROI->CCW = toUpper(splitted[5]) == "TRUE";

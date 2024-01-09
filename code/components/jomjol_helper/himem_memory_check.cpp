@@ -1,15 +1,10 @@
+#include "himem_memory_check.h"
+
+#ifdef DEBUG_HIMEM_MEMORY_CHECK
 
 // need [env:esp32cam-dev-himem]
 //CONFIG_SPIRAM_BANKSWITCH_ENABLE=y
 //CONFIG_SPIRAM_BANKSWITCH_RESERVE=4
-
-
-
-#include "../../include/defines.h"
-
-#ifdef DEBUG_HIMEM_MEMORY_CHECK
-
-#include "himem_memory_check.h"
 
 //source adapted from : https://github.com/espressif/esp-idf/blob/master/examples/system/himem/main/himem_example_main.c
 

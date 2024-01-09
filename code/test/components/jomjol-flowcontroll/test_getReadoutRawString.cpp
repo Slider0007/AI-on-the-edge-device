@@ -1,9 +1,8 @@
 #include "test_flow_postrocess_helper.h"
 
 
-
-void test_getReadoutRawString() {
-
+void test_getReadoutRawString()
+{
     // no ROIs setted up
     UnderTestPost* _undertestPost = setUpClassFlowPostprocessing(Digital100, Analogue100);
 
@@ -21,7 +20,4 @@ void test_getReadoutRawString() {
 
     result = _undertestPost->flowAnalog->getReadoutRawString(0);
     TEST_ASSERT_EQUAL_STRING(",5.5", result.c_str());
-
-
-
 }
