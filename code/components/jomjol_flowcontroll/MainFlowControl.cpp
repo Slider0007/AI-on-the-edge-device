@@ -386,10 +386,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             type = std::string(_valuechar);
         }
-    }  
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
+    }
 
     if (type.compare("api_name") == 0) {
         httpd_resp_sendstr(req, APIName);
@@ -422,6 +419,9 @@ esp_err_t handler_editflow(httpd_req_t *req)
         out = "/sdcard" + out;
 
         CopyFile(in, out);
+        
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, "Copy Done"); 
     }
     else if (type.compare("cutref") == 0) {
@@ -477,6 +477,8 @@ esp_err_t handler_editflow(httpd_req_t *req)
         caic->CutAndSave(out, x, y, dx, dy);
         delete caic;
 
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, "CutImage Done"); 
     }
     else if (type.compare("test_take") == 0) {
@@ -523,6 +525,8 @@ esp_err_t handler_editflow(httpd_req_t *req)
         ESP_LOGD(TAG, "test_take - vor TakeImage");
         std::string zw = flowctrl.doSingleStep("[TakeImage]", _host);
 
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "text/plain");
         httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
     else if (type.compare("test_align") == 0) {
@@ -540,6 +544,8 @@ esp_err_t handler_editflow(httpd_req_t *req)
         //std::string zwzw = "Do " + _query + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
         std::string zw = flowctrl.doSingleStep("[Alignment]", _host);
 
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "text/plain");
         httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
     else {

@@ -222,6 +222,12 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
 }
 
 
+bool getInfluxDBisEncrypted()
+{
+    return influxDBTLSEncryption;
+}
+
+
 bool InfluxDBv2Init(std::string _uri, std::string _bucket, std::string _org, std::string _token, 
                         bool _TLSEncryption, std::string _TLSCACertFilename, std::string _TLSClientCertFilename,
                         std::string _TLSClientKeyFilename)
@@ -371,6 +377,12 @@ void InfluxDBv2Publish(std::string _measurement, std::string _key, std::string _
     }
     esp_http_client_cleanup(http_client);
     free_psram_heap(std::string(TAG) + "->response_buffer", response_buffer);
+}
+
+
+bool getInfluxDBv2isEncrypted()
+{
+    return influxDBv2TLSEncryption;
 }
 
 

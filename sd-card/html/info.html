@@ -488,7 +488,7 @@
 				}
 
 				document.getElementById("mqtt_status").value = _jsonData.mqtt_status;
-				if (_jsonData.mqtt_status == "Connected")
+				if (_jsonData.mqtt_status.substring(0,9) == "Connected")
 					addClassToElement("mqtt_status", "badge-success");
 				else if (_jsonData.mqtt_status == "Disconnected")
 					addClassToElement("mqtt_status", "badge-error");
@@ -500,7 +500,7 @@
 				}
 
 				document.getElementById("influxdbv1_status").value = _jsonData.influxdbv1_status;
-				if (_jsonData.influxdbv1_status == "Enabled")
+				if (_jsonData.influxdbv1_status.substring(0,7) == "Enabled")
 					addClassToElement("influxdbv1_status", "badge-success");
 				else if (_jsonData.influxdbv1_status == "Disabled")
 					addClassToElement("influxdbv1_status", "badge-disabled");
@@ -510,7 +510,7 @@
 				}
 				
 				document.getElementById("influxdbv2_status").value = _jsonData.influxdbv2_status;
-				if (_jsonData.influxdbv2_status == "Enabled")
+				if (_jsonData.influxdbv2_status.substring(0,7) == "Enabled")
 					addClassToElement("influxdbv2_status", "badge-success");
 				else if (_jsonData.influxdbv2_status == "Disabled")
 					addClassToElement("influxdbv2_status", "badge-disabled");

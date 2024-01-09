@@ -23,6 +23,7 @@
 #include "Helper.h"
 #include "system.h"
 #include "interface_mqtt.h"
+#include "interface_influxdb.h"
 
 
 static const char *TAG = "MAIN_SERVER";
@@ -65,7 +66,8 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         
         #ifdef ENABLE_MQTT
-        if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", getMQTTisEnabled() ? (getMQTTisConnected() ? "Connected" : "Disconnected") : "Disabled") == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", getMQTTisEnabled() ? (getMQTTisConnected() ? (getMQTTisEncrypted() ? 
+                                        "Connected (Encrypted)" : "Connected") : "Disconnected") : "Disabled") == NULL)
             retVal = ESP_FAIL;
         #else
         if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", "E01: Service not compiled (#define ENABLE_MQTT)") == NULL)
@@ -74,11 +76,13 @@ esp_err_t handler_get_info(httpd_req_t *req)
 
         #ifdef ENABLE_INFLUXDB
         ClassFlowInfluxDB* influxdb = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDB"));
-        if (cJSON_AddStringToObject(cJSONObject, "influxdbv1_status", influxdb ? "Enabled" : "Disabled") == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "influxdbv1_status", influxdb ? (getInfluxDBisEncrypted() ? 
+                                        "Enabled (Encrypted)" : "Enabled") : "Disabled") == NULL)
             retVal = ESP_FAIL;
         
         ClassFlowInfluxDBv2* influxdbv2 = (ClassFlowInfluxDBv2*)(flowctrl.getFlowClass("ClassFlowInfluxDBv2"));
-        if (cJSON_AddStringToObject(cJSONObject, "influxdbv2_status", influxdbv2 ? "Enabled" : "Disabled") == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "influxdbv2_status", influxdbv2 ? (getInfluxDBv2isEncrypted() ? 
+                                        "Enabled (Encrypted)" : "Enabled") : "Disabled") == NULL)
             retVal = ESP_FAIL;
         #else
         if (cJSON_AddStringToObject(cJSONObject, "influxdbv1_status", "E02: Service not compiled (#define ENABLE_INFLUXDB)") == NULL)
@@ -218,8 +222,9 @@ esp_err_t handler_get_info(httpd_req_t *req)
     
     #ifdef ENABLE_MQTT
     else if (type.compare("mqtt_status") == 0) {
-        httpd_resp_sendstr(req, getMQTTisEnabled() ? (getMQTTisConnected() ? "Connected" : "Disconnected") : "Disabled");
-        return ESP_OK;        
+        httpd_resp_sendstr(req, getMQTTisEnabled() ? (getMQTTisConnected() ? (getMQTTisEncrypted() ? 
+                                "Connected (Encrypted)" : "Connected") : "Disconnected") : "Disabled");
+        return ESP_OK;
     }
     #else
     else if (type.compare("mqtt_status") == 0) {
@@ -231,13 +236,13 @@ esp_err_t handler_get_info(httpd_req_t *req)
     #ifdef ENABLE_INFLUXDB
     else if (type.compare("influxdbv1_status") == 0) {
         ClassFlowInfluxDB* influxdb = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDB"));
-        httpd_resp_sendstr(req, influxdb ? "Enabled" : "Disabled");
-        return ESP_OK;        
+        httpd_resp_sendstr(req, influxdb ? (getInfluxDBisEncrypted() ? "Enabled (Encrypted)" : "Enabled") : "Disabled");
+        return ESP_OK;
     }
     else if (type.compare("influxdbv2_status") == 0) {
         ClassFlowInfluxDB* influxdbv2 = (ClassFlowInfluxDB*)(flowctrl.getFlowClass("ClassFlowInfluxDBv2"));
-        httpd_resp_sendstr(req, influxdbv2 ? "Enabled" : "Disabled");
-        return ESP_OK;        
+        httpd_resp_sendstr(req, influxdbv2 ? (getInfluxDBv2isEncrypted() ? "Enabled (Encrypted)" : "Enabled") : "Disabled");
+        return ESP_OK;
     }
     #else
     else if (type.compare("influxdbv1_status") == 0) {
