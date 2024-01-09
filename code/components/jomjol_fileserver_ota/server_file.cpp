@@ -236,8 +236,6 @@ static esp_err_t handler_logfiles(httpd_req_t *req)
         }
     }
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
     if (type.empty()) {
         return send_logfile(req, false);    
     }
@@ -245,11 +243,13 @@ static esp_err_t handler_logfiles(httpd_req_t *req)
         return send_logfile(req, true);
     }
     else if (type.compare("api_name") == 0) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, APIName);
         return ESP_OK;        
     }
     else {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E91: Parameter not found");
         return ESP_FAIL;
@@ -355,8 +355,6 @@ static esp_err_t handler_datafiles(httpd_req_t *req)
         }
     }
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
     if (type.empty()) {
         return send_datafile(req, false);    
     }
@@ -364,11 +362,13 @@ static esp_err_t handler_datafiles(httpd_req_t *req)
         return send_datafile(req, true);
     }
     else if (type.compare("api_name") == 0) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, APIName);
         return ESP_OK;        
     }
     else {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E91: Parameter not found");
         return ESP_FAIL;
