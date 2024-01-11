@@ -1244,7 +1244,7 @@ esp_err_t ClassFlowControll::GetJPGStream(std::string _fn, httpd_req_t *req)
             result = httpd_resp_send(req, (const char *)fileBuffer, fileSize); 
             free(fileBuffer);
         }
-        else if ((!flowtakeimage->getFlowState()->getExecuted && getActStatus().compare(std::string(FLOW_IDLE_NO_AUTOSTART)) == 0) ||
+        else if (((flowtakeimage != NULL) && !flowtakeimage->getFlowState()->getExecuted && getActStatus().compare(std::string(FLOW_IDLE_NO_AUTOSTART)) == 0) ||
                     (!isAutoStart() && FlowStateEventOccured() && getActStatus().compare(std::string(FLOW_TAKE_IMAGE)) == 0)) {   // Show only before first cycle started or error occured, otherwise result will be shown till next start
             FILE* file = fopen("/sdcard/html/Flowstate_idle_no_autostart.jpg", "rb"); 
 
