@@ -469,6 +469,32 @@ int removeFolder(const char* folderPath, const char* logTag) {
 }
 
 
+void delete_all_in_directory(std::string _directory)
+{
+    struct dirent *entry;
+    DIR *dir = opendir(_directory.c_str());
+    std::string filename;
+
+    if (!dir) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "delete_all_in_directory: Failed to open directory: " + _directory);
+        return;
+    }
+
+    /* Iterate over all files / folders and fetch their names and sizes */
+    while ((entry = readdir(dir)) != NULL) {
+        if (!(entry->d_type == DT_DIR)){
+            if (strcmp("wlan.ini", entry->d_name) != 0){                    // auf wlan.ini soll nicht zugegriffen werden !!!
+                filename = _directory + "/" + std::string(entry->d_name);
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_all_in_directory: Deleting file: " + filename);
+                /* Delete file */
+                unlink(filename.c_str());    
+            }
+        };
+    }
+    closedir(dir);
+}
+
+
 std::vector<std::string> HelperZerlegeZeile(std::string input, std::string _delimiter = "")
 {
 	std::vector<std::string> Output;
