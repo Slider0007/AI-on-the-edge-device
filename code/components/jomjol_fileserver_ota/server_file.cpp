@@ -816,7 +816,7 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         zw = "/sdcard" + zw;
         ESP_LOGD(TAG, "Directory to delete: %s", zw.c_str());
 
-        delete_all_in_directory(zw);
+        deleteAllFilesInDirectory(zw);
        //        directory = std::string(filepath);
         //        directory = "/fileserver" + directory;
         ESP_LOGD(TAG, "Location after delete directory content: %s", directory.c_str());

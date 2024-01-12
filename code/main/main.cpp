@@ -221,9 +221,9 @@ extern "C" void app_main(void)
     // Note: OTA status check only necessary if OTA rollback feature is enabled
     // ********************************************
     #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    CheckOTAStatus();
+    CheckOTAPartitionState();
     #endif
-    CheckUpdate();
+    CheckOTAUpdate();
 
     // Start SoftAP for initial remote setup
     // Note: Start AP if no wlan.ini and/or config.ini available, e.g. SD card empty; function does not exit anymore until reboot

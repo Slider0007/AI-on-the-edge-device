@@ -161,9 +161,9 @@ extern "C" void app_main()
     // Note: OTA Status check only necessary if OTA rollback feature is enabled
     // ********************************************
     #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    CheckOTAStatus();
+    CheckOTAPartitionState();
     #endif
-    CheckUpdate();
+    CheckOTAUpdate();
 
 
     // Create dedicated testing task (heap size can be configured - large enough to handle a lot of testing cases)

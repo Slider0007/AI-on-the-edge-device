@@ -1,13 +1,18 @@
 #ifndef SERVEROTA_H
 #define SERVEROTA_H
 
+#include <string>
+
 #include <esp_http_server.h>
 
 
-void CheckUpdate();
+void CheckOTAUpdate();
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
 void CheckOTAUpdate();
 #endif
+
+std::string unzip_ota(std::string _in_zip_file, std::string _root_folder = "/sdcard/");
+void unzip(std::string _in_zip_file, std::string _target_directory);
 
 void doReboot();
 void doRebootOTA();
