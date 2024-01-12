@@ -267,7 +267,7 @@ static bool diagnostic(void)
 // Roolback functionality is not yet implemented in this firmware
 void CheckOTAPartitionState(void)
 {
-    ESP_LOGI(TAG, "Check OTA firmware state");
+    ESP_LOGI(TAG, "Check OTA partition state");
 
     uint8_t sha_256[HASH_LEN] = { 0 };
     esp_partition_t partition;
