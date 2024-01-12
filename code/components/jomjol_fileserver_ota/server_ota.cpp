@@ -22,14 +22,12 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/rel
 #include "esp_app_format.h"
 #include "miniz.h"
 
-#include "MainFlowControl.h"
-//#include "server_help.h"
-#include "server_GPIO.h"
-
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
 #endif //ENABLE_MQTT
 
+#include "MainFlowControl.h"
+#include "server_GPIO.h"
 #include "ClassControllCamera.h"
 #include "connect_wlan.h"
 #include "ClassLogFile.h"
