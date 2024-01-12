@@ -229,17 +229,21 @@ bool MQTT_Configure(std::string _mqttURI, std::string _clientid, std::string _us
     SetRetainFlag = _SetRetainFlag;
     maintopic = _maintopic;
     callbackOnConnected = ( void (*)(std::string, bool) )(_callbackOnConnected);
-
-    if (!_user.empty()) {
-        user = _user;
-    }
-
-    if (!_password.empty()) {
-        password = _password;
-    }
-
-    // TLS Encryption parameter
+    user = _user;
+    password = _password;
     TLSEncryption = _TLSEncryption;
+
+    #ifdef __HIDE_PASSWORD
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + 
+                        ", password: *****, maintopic: " + maintopic + ", last-will-topic: " + lwt_topic + 
+                        ", keepAlive: " + std::to_string(keepalive) + ", RetainFlag: " + std::to_string(SetRetainFlag) + 
+                        ", TLSEncryption: " + std::to_string(TLSEncryption)); 
+    #else
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + 
+                        ", password: " + password  + ", maintopic: " + maintopic + ", last-will-topic: " + lwt_topic + 
+                        ", keepAlive: " + std::to_string(keepalive)  + ", RetainFlag: " + std::to_string(SetRetainFlag) + 
+                        ", TLSEncryption: " + std::to_string(TLSEncryption));
+     #endif
 
     if (TLSEncryption) {
         if (uri.substr(0,8) != "mqtts://") {
@@ -294,16 +298,6 @@ bool MQTT_Configure(std::string _mqttURI, std::string _clientid, std::string _us
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI parameter not using default MQTT port \'1883\'");
         }
     }
-
-    #ifdef __HIDE_PASSWORD
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + 
-                            ", password: *****, maintopic: " + maintopic + ", last-will-topic: " + lwt_topic + 
-                            ", keepAlive: " + std::to_string(keepalive) + ", RetainFlag: " + std::to_string(SetRetainFlag)); 
-    #else
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "URI: " + uri + ", clientname: " + client_id + ", user: " + user + 
-                            ", password: " + password  + ", maintopic: " + maintopic + ", last-will-topic: " + lwt_topic + 
-                            ", keepAlive: " + std::to_string(keepalive)  + ", RetainFlag: " + std::to_string(SetRetainFlag)); 
-     #endif
 
     mqtt_configOK = true;
     return true;

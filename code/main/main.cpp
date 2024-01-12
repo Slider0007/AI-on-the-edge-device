@@ -161,7 +161,7 @@ extern "C" void app_main(void)
     // ********************************************
     // Highlight start of app_main 
     // ********************************************
-    ESP_LOGI(TAG, "\n\n\n\n================ Start app_main =================");
+    ESP_LOGI(TAG, "================ Start app_main =================\n\n");
     
     // Init SD card
     // ********************************************
@@ -220,9 +220,12 @@ extern "C" void app_main(void)
     MakeDir("/sdcard/config/certs");     // mandatory for TLS encryption
 
     // Check for updates
+    // Note: OTA status check only necessary if OTA rollback feature is enabled
     // ********************************************
+    #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
+    CheckOTAPartitionState();
+    #endif
     CheckOTAUpdate();
-    CheckUpdate();
 
     // Start SoftAP for initial remote setup
     // Note: Start AP if no wlan.ini and/or config.ini available, e.g. SD card empty; function does not exit anymore until reboot

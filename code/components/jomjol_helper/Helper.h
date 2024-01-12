@@ -28,6 +28,7 @@ long getFileSize(std::string filename);
 
 int mkdir_r(const char *dir, const mode_t mode);
 int removeFolder(const char* folderPath, const char* logTag);
+void deleteAllFilesInDirectory(std::string _directory);
 
 std::string toLower(std::string in);
 std::string toUpper(std::string in);

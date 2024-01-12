@@ -158,9 +158,12 @@ extern "C" void app_main()
     // Check for updates before start testing
     // It is possbile to update thr firmware also by placing 'firmware.bin' to '/sdcard/firmware' and
     // file 'update.txt' with content '/sdcard/firmware/firmware.bin' to sd card root folder.
+    // Note: OTA Status check only necessary if OTA rollback feature is enabled
     // ********************************************
+    #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
+    CheckOTAPartitionState();
+    #endif
     CheckOTAUpdate();
-    CheckUpdate();
 
 
     // Create dedicated testing task (heap size can be configured - large enough to handle a lot of testing cases)

@@ -307,18 +307,16 @@ std::string getFileFullFileName(std::string filename)
 
 std::string getDirectory(std::string filename)
 {
-	size_t lastpos = filename.find('/');
+	size_t lastpos = filename.rfind('/');
 
-	if (lastpos == std::string::npos)
-		lastpos = filename.find('\\');
-
-	if (lastpos == std::string::npos)
-		return "";
+	if (lastpos == std::string::npos) {
+		lastpos = filename.rfind('\\');
+		if (lastpos == std::string::npos)
+			return "";
+	}
 
 //	ESP_LOGD(TAG, "Directory: %d", lastpos);
-
-	std::string zw = filename.substr(0, lastpos - 1);
-	return zw;
+	return filename.substr(0, lastpos);
 }
 
 
@@ -466,6 +464,33 @@ int removeFolder(const char* folderPath, const char* logTag) {
 	//ESP_LOGD(logTag, "%d files in folder %s deleted.", deleted, folderPath);
 
 	return deleted;
+}
+
+
+void deleteAllFilesInDirectory(std::string _directory)
+{
+    struct dirent *entry;
+    DIR *dir = opendir(_directory.c_str());
+    std::string filename;
+
+    if (!dir) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "deleteAllFilesInDirectory: Failed to open directory: " + _directory);
+        return;
+    }
+
+    /* Iterate over all files / folders and fetch their names and sizes */
+    while ((entry = readdir(dir)) != NULL) {
+        if (!(entry->d_type == DT_DIR)){
+            if (strcmp("wlan.ini", entry->d_name) != 0) {                    // protect wlan.ini
+                filename = _directory + "/" + std::string(entry->d_name);
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete file: " + filename);
+                /* Delete file */
+                unlink(filename.c_str());    
+            }
+        }
+    }
+
+    closedir(dir);
 }
 
 

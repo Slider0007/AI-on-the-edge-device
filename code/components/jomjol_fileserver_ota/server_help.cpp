@@ -27,7 +27,8 @@ static const char *TAG = "SERVER_HELP";
 char scratch[SERVER_HELPER_SCRATCH_BUFSIZE];
 
 
-bool endsWith(std::string const &str, std::string const &suffix) {
+bool endsWith(std::string const &str, std::string const &suffix)
+{
     if (str.length() < suffix.length()) {
         return false;
     }
@@ -103,8 +104,6 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
     ESP_LOGD(TAG, "File sending complete");    
     return ESP_OK;    
 }
-
-
 
 
 /* Copies the full path into destination buffer and returns
