@@ -41,6 +41,7 @@ static bool manualFlowStart = false;
 static long auto_interval = 0;
 static int cycleCounter = 0;
 static int FlowStateErrorsInRow = 0;
+static int cycleTime = 0;
 
 static const char *TAG = "MAINCTRL";
 
@@ -69,12 +70,6 @@ bool getIsPlannedReboot()
 }
 
 
-int getFlowCycleCounter() 
-{
-    return cycleCounter;
-}
-
-
 void setTaskAutoFlowState(int _value) 
 {
     taskAutoFlowState = _value;
@@ -95,6 +90,18 @@ std::string getProcessStatus(void)
         process_status = "Status unknown: " + taskAutoFlowState;
 
     return process_status;
+}
+
+
+int getFlowCycleCounter() 
+{
+    return cycleCounter;
+}
+
+
+int getFlowCycleTime()
+{
+    return cycleTime;
 }
 
 
@@ -1338,10 +1345,10 @@ void task_autodoFlow(void *pvParameter)
             // WIFI Signal Strength (RSSI) -> Logfile
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "WIFI Signal (RSSI): " + std::to_string(get_WIFI_RSSI()) + "dBm");
 
-
+            cycleTime = (int)(getUpTime() - cycleStartTime);
             // Cycle finished -> Logfile
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(cycleCounter) + 
-                    " completed (" + std::to_string(getUpTime() - cycleStartTime) + "s)");
+                    " completed (" + std::to_string(cycleTime) + "s)");
            
             // Check if time is synchronized (if NTP is configured)
             if (getUseNtp() && !getTimeIsSet()) {

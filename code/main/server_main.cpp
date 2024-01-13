@@ -60,8 +60,10 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_interval", to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str()) == NULL)
             retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "cycle_time", std::to_string(getFlowCycleTime()).c_str()) == NULL)
+            retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
-            retVal = ESP_FAIL;      
+            retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "datalogging_sdcard_status", LogFile.GetDataLogToSD() ? "Enabled" : "Disabled") == NULL)
             retVal = ESP_FAIL;
         

@@ -99,6 +99,12 @@
 			</td>
 		</tr>
 		<tr>
+			<td>Cycle Time</td>
+			<td>
+				<output id="cycle_time"></output>
+			</td>
+		</tr>
+		<tr>
 			<td>Cycle Counter</td>
 			<td>
 				<output id="cycle_counter"></output>
@@ -474,6 +480,7 @@
 					addClassToElement("process_status", "badge-error");
 
 				document.getElementById("process_interval").value = _jsonData.process_interval + " Minutes";
+				document.getElementById("cycle_time").value = _jsonData.cycle_time + " Seconds";
 				document.getElementById("cycle_counter").value = _jsonData.cycle_counter;
 				
 				document.getElementById("datalogging_sdcard_status").value = _jsonData.datalogging_sdcard_status;
