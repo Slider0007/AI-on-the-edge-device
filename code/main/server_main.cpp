@@ -213,6 +213,10 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str());
         return ESP_OK;        
     }
+    else if (type.compare("cycle_time") == 0) {
+        httpd_resp_sendstr(req, std::to_string(getFlowCycleTime()).c_str());
+        return ESP_OK;        
+    }
     else if (type.compare("cycle_counter") == 0) {
         httpd_resp_sendstr(req, std::to_string(getFlowCycleCounter()).c_str());
         return ESP_OK;        
