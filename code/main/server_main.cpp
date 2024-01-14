@@ -60,7 +60,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_interval", to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "cycle_time", std::to_string(getFlowCycleTime()).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "process_time", std::to_string(getFlowProcessingTime()).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -213,8 +213,8 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str());
         return ESP_OK;        
     }
-    else if (type.compare("cycle_time") == 0) {
-        httpd_resp_sendstr(req, std::to_string(getFlowCycleTime()).c_str());
+    else if (type.compare("process_time") == 0) {
+        httpd_resp_sendstr(req, std::to_string(getFlowProcessingTime()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("cycle_counter") == 0) {
