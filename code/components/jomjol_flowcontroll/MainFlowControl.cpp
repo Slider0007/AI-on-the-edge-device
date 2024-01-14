@@ -764,6 +764,8 @@ esp_err_t handler_process_data(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_interval", to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str()) == NULL)
             retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "process_time", std::to_string(getFlowProcessingTime()).c_str()) == NULL)
+            retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_error", flowctrl.getActFlowError() ? (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT ? 
@@ -938,6 +940,10 @@ esp_err_t handler_process_data(httpd_req_t *req)
     }
     else if (type.compare("process_interval") == 0) {
         httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str());
+        return ESP_OK;        
+    }
+    else if (type.compare("process_time") == 0) {
+        httpd_resp_sendstr(req, std::to_string(getFlowProcessingTime()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("process_state") == 0) {
