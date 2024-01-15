@@ -311,6 +311,9 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 
     //ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
 
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
+
     fd = fopen(currentfilename.c_str(), "r");
     if (fd == NULL) {
         //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
@@ -321,9 +324,6 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
     /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(fd, NULL, _IOFBF, 512);
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
 
     if (!send_full_file) { // Send only last part of file
         ESP_LOGD(TAG, "Sending last %d bytes of the actual datafile", LOGFILE_LAST_PART_BYTES);
@@ -399,6 +399,9 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
     // !!! Do not close actual logfile to avoid software exception !!!
     //LogFile.CloseLogFileAppendHandle();
 
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
+
     fd = fopen(currentfilename.c_str(), "r");
     if (fd == NULL) {
         //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
@@ -409,9 +412,6 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
     /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(fd, NULL, _IOFBF, 512);
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
 
     if (!send_full_file) { // Send only last part of file
         ESP_LOGD(TAG, "Sending last %d bytes of the actual logfile", LOGFILE_LAST_PART_BYTES);
