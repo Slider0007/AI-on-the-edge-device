@@ -149,11 +149,11 @@
 <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
 <script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
 <script>
-    var domainname = getDomainname(); 
-    var	NUMBERS;
+    var domainname = getDomainname();
 
 
-    function setFallbackValue() {
+    function setFallbackValue()
+    {
         firework.launch('Update \"Fallback Value\" ...', 'success', 2000, true);
         var inputVal = document.getElementById("myInput").value;
         var sel = document.getElementById("Numbers_value1");
@@ -186,7 +186,8 @@
     }
 
 
-    function loadFallbackValue(_domainname) {
+    function loadFallbackValue(_domainname)
+    {
         // Get current Fallback Value
         var sel = document.getElementById("Numbers_value1");
         var _number = sel.options[sel.selectedIndex].text;
@@ -254,12 +255,14 @@
     }
 
 
-    function numberChanged(){
+    function numberChanged()
+    {
         loadFallbackValue(domainname);
     }
 
 
-    function UpdateNUMBERS(_sel){
+    function UpdateNUMBERS(_sel)
+    {
         NumberSequence = getNumberSequences();
 
         index = 0;
@@ -286,11 +289,16 @@
     }
 
 
-    function init() {
-        domainname = getDomainname();
-        loadConfig(domainname); 
+    function loadConfigData()
+    {
         ParseConfig();
         UpdateNUMBERS();
+    }
+    
+    
+    function init()
+    {
+        loadConfig().then(() => loadConfigData());  
     }
 
 

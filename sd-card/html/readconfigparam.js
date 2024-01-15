@@ -2,7 +2,6 @@ var config_gesamt = "";
 var config_split = [];
 var param = [];
 var category;
-var ref = new Array(2);
 var NUMBERS = new Array(0);
 var REFERENCES = new Array(0);
 var tflite_list = "";
@@ -35,66 +34,63 @@ function getNUMBERSList()
 }
 
 
-function getDATAList()
+async function getDataFileList()
 {
-     var datalist = "";
-     url = getDomainname() + '/editflow?task=data';     
+return new Promise(function (resolve, reject) {
+        var url = getDomainname() + '/editflow?task=data';     
 
-	var xhttp = new XMLHttpRequest();
-     xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-               if (this.status >= 200 && this.status < 300) {
-                    datalist = xhttp.responseText;
-                    datalist = datalist.split("\t");
-                    datalist.pop();
-                    datalist.sort();
-               }
-               else {
-                    firework.launch("Data files request failed (Response status: " + this.status + 
-                                   "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Data files request failed. Response status: " + this.status);  
-               }
-          }
-     };
- 
-     xhttp.open("GET", url, false);
-     xhttp.send();
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                        var datalist = xhttp.responseText;
+                        datalist = datalist.split("\t");
+                        datalist.pop();
+                        datalist.sort();
+                        return resolve(datalist);
+                }
+                else {
+                        firework.launch("Data files request failed (Response status: " + this.status + 
+                                "). Repeat action or check logs.", 'danger', 30000);
+                        console.error("Data files request failed. Response status: " + this.status);
+                        return reject("Data files request failed. Response status: " + this.status);
+                }
+            }
+        };
 
-     return datalist;
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    });
 }
 
 
-function fetchTFLITEList()
+async function fetchTFLITEList()
 {
-     var response = "";
-     url = getDomainname() + '/editflow?task=tflite';
+    return new Promise(function (resolve, reject) {
+        var url = getDomainname() + '/editflow?task=tflite';
 
-	var xhttp = new XMLHttpRequest();
-     xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-               if (this.status >= 200 && this.status < 300) {
-                    response = xhttp.responseText;
-                    response = response.split("\t").filter(element => element); // Split at tab position and remove empty elements
-                    response.sort();  // Sort elements by name
-               }
-               else {
-                    firework.launch("TFLite files request failed (Response status: " + this.status + 
-                                   "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("TFLite files request failed. Response status: " + this.status);  
-               }
-          }
-     };
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                        var response = xhttp.responseText;
+                        response = response.split("\t").filter(element => element); // Split at tab position and remove empty elements
+                        response.sort();  // Sort elements by name
+                        tflite_list = response;  // Save to global variable
+                        return resolve(tflite_list);
+                }
+                else {
+                        firework.launch("TFLite files request failed (Response status: " + this.status + 
+                                "). Repeat action or check logs.", 'danger', 30000);
+                        console.error("TFLite files request failed. Response status: " + this.status);
+                        return reject("TFLite files request failed. Response status: " + this.status);
+                }
+            }
+        };
 
-     xhttp.open("GET", url, false);
-     xhttp.send();
-
-     tflite_list = response;  // Save to global variable
-}
-
-
-function getTFLITEList()
-{
-     return tflite_list;
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    });
 }
 
 
@@ -426,7 +422,6 @@ function ParamAddSingleValueWithPreset(param, _cat, _param, _enabled, _value)
           param[_cat][_param]["Numbers"] = false;
           param[_cat][_param].checkRegExList = null;
      }
-
 }
 
 
@@ -434,13 +429,12 @@ function ParamAddSingleValueWithPreset(param, _cat, _param, _enabled, _value)
 function ParamAddModelWithPreset(param, _cat, _param, _enabled)
 {
      if (param[_cat][_param] == null) {
-    
           param[_cat][_param] = new Object();
           param[_cat][_param]["found"] = true;
           param[_cat][_param]["enabled"] = _enabled;
           param[_cat][_param]["line"] = -1; 
           param[_cat][_param]["anzParam"] = 1;
-          param[_cat][_param]["defaultValue"] = "";   // Parameter only used for numbers sequences
+          param[_cat][_param]["defaultValue"] = "";   // Parameter only used for number sequences
           param[_cat][_param]["Numbers"] = false;
           param[_cat][_param].checkRegExList = null;
 
@@ -449,12 +443,12 @@ function ParamAddModelWithPreset(param, _cat, _param, _enabled)
           else if (_cat == "Analog")
                filter = "/ana";
           
-          list_tflite = getTFLITEList();
-          for (var i = 0; i < list_tflite.length; ++i) {
-               if (list_tflite[i].includes(filter)) {
-                    param[_cat][_param]["value1"] = list_tflite[i]; // Set first occurence as default value to ensure at least one is set
+
+          for (var i = 0; i < tflite_list.length; ++i) {
+               if (tflite_list[i].includes(filter)) {
+                    param[_cat][_param]["value1"] = tflite_list[i]; // Set first occurence as default value to ensure at least one is set
                     break;
-               }   
+               }
           }
      }
      else if (param[_cat][_param]["value1"] == "") { // If value empty, ensure at least one model is selected to avoid crashes
@@ -462,12 +456,12 @@ function ParamAddModelWithPreset(param, _cat, _param, _enabled)
                filter = "/dig";
           else if (_cat == "Analog")
                filter = "/ana";
-          list_tflite = getTFLITEList();
-          for (var i = 0; i < list_tflite.length; ++i) {
-               if (list_tflite[i].includes(filter)) {
-                    param[_cat][_param]["value1"] = list_tflite[i]; // Set first occurence as default value to ensure at least one is set
+
+          for (var i = 0; i < tflite_list.length; ++i) {
+               if (tflite_list[i].includes(filter)) {
+                    param[_cat][_param]["value1"] = tflite_list[i]; // Set first occurence as default value to ensure at least one is set
                     break;
-               }   
+               }
           }
      }
 }
@@ -782,27 +776,6 @@ function getNUMBERS(_name, _type, _create = true)
 
 function getAlignmentMarker(){
      return REFERENCES;
-}
-
- 
-function CopyAlignmentMarkerToImgTmp(_domainname)
-{
-     for (index = 0; index < 2; ++index)
-     {
-          _filenamevon = REFERENCES[index]["name"];
-          _filenamenach = _filenamevon.replace("/config/", "/img_tmp/");
-          FileCopyOnServer(_filenamevon, _filenamenach, _domainname);
-     }
-}
-
-
-function CopyAlignmentMarker(_domainname){
-     for (var index = 0; index < 2; ++index)
-     {
-          _filenamenach = REFERENCES[index]["name"];
-          _filenamevon = _filenamenach.replace("/config/", "/img_tmp/");
-          FileCopyOnServer(_filenamevon, _filenamenach, _domainname);
-     }
 }
 
 

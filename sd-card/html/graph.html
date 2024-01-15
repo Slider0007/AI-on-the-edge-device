@@ -240,7 +240,7 @@
     <h2>Data Graph</h2>
     <div style="margin-top:20px;margin-bottom:0px;">
         Number Sequence: <select id="numbers" onchange="run();"></select>
-        Day: <select id="datafiles" onchange="run();"></select>
+        Day: <select style="width:120px" id="datafiles" onchange="run();"></select>
         <input type="checkbox" id="showRelativeValues" onclick = 'run();'  ><label for="showRelativeValues">Show relative value</label><br><br>
     </div>
     <div>
@@ -259,10 +259,9 @@
 
 
 <script>
-    function WriteDataFiles()
-    {
-        list_data = getDATAList();
 
+    function WriteDataFiles(list_data)
+    {
         var _indexDig = document.getElementById("datafiles");
         while (_indexDig.length)
             _indexDig.remove(0);
@@ -271,12 +270,12 @@
         {
             var optionDig = document.createElement("option");
             
-            var text = list_data[i];
-            optionDig.text = text;
+            optionDig.text = list_data[i].substring(5, list_data[i].lastIndexOf('.'));
             optionDig.value = list_data[i];
             _indexDig.add(optionDig);
         }
     }
+
 
     function WriteNumbers()
     {
@@ -300,7 +299,6 @@
 
     function initAutoRefreshContent()
     {
-        loadConfig(getDomainname()); 
         ParseConfigReduced();
         param = getConfigParameters();
         
@@ -344,13 +342,13 @@
 
     function init()
 	{
-        initAutoRefreshContent();
-        WriteDataFiles();
+        loadConfig().then(() => initAutoRefreshContent());
+        getDataFileList().then((list_data) => WriteDataFiles(list_data));
         WriteNumbers();
         run();
 	}
 
-	
+
 	init();
 
 </script>

@@ -609,19 +609,18 @@
 
 
     /* hash #description open the details part of the page */
-    function openDescription() {
-    if(window.location.hash) {
-        var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
-        if(hash == 'description')
-            document.getElementById("desc_details").open = true;
+    function openDescription()
+    {
+        if(window.location.hash) {
+            var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+            if(hash == 'description')
+                document.getElementById("desc_details").open = true;
         }
     }
 
 
-    function init() {
-        openDescription();
-        canvas.addEventListener('mousemove', mouseMove, false);    
-        loadConfig(getDomainname()); 
+    function loadConfigData()
+    {
         ParseConfig();
         param = getConfigParameters();
 
@@ -654,6 +653,14 @@
         showReference(param); 
     }
 
+
+    function init()
+    {
+        openDescription();
+        
+        canvas.addEventListener('mousemove', mouseMove, false);
+        loadConfig().then(() => loadConfigData());
+    }
 
     init();
 
