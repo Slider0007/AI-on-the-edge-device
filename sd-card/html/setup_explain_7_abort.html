@@ -56,7 +56,7 @@
         param["System"]["SetupMode"]["value1"] = "false";
 
         WriteConfigININew();
-        SaveConfigToServer(domainname);    
+        SaveConfigToServer(getDomainname());
 
         firework.launch('Initial setup aborted', 'warning', 5000);
         setTimeout(function() {
