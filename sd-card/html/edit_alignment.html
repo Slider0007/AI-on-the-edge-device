@@ -629,8 +629,8 @@
             SaveConfigToServer(domainname);
 
             // Copy alignment marker to config folder
-            FileCopyOnServer("/img_tmp/ref0.jpg", "/img_tmp/ref0.jpg", domainname, false);
-            FileCopyOnServer("/img_tmp/ref1.jpg", "/img_tmp/ref1.jpg", domainname, false);
+            FileCopyOnServer("/img_tmp/ref0.jpg", "/config/ref0.jpg", domainname, false);
+            FileCopyOnServer("/img_tmp/ref1.jpg", "/config/ref1.jpg", domainname, false);
             
             firework.launch('Save and apply configuration...', 'success', 2000, true);
             setTimeout(function() {

@@ -293,9 +293,10 @@
 
     function showReference(_param)
     {
-        loadReferenceImage();
+        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);                              
+        loadCanvas(url, false);
         isActReference = true;
-        
+
         if (_param["Alignment"]["InitialRotate"].value1 < 0) {
             document.getElementById("prerotateangle").value = Math.ceil(_param["Alignment"]["InitialRotate"].value1);
         }
@@ -650,13 +651,6 @@
 
         UpdateInput();
         showReference(param);
-    }
-
-  
-    function loadReferenceImage()
-    {
-        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);                              
-        loadCanvas(url, false);
     }
 
 
