@@ -98,7 +98,7 @@
             <col span="1" style="width: 33.3%;">
         </colgroup>
         <tr>
-            <td><input class="button" type="button" value="Show Actual Reference" onclick="showReference(param)"></td>	  
+            <td><input class="button" type="button" value="Show Actual Reference" onclick="showReference(param); loadReferenceImage();"></td>	  
             <td><input class="button" type="button" id="startreference" value="Create New Reference" onclick="loadRawImage(false)"></td>
             <td><input class="button" type="submit" id="take" onclick="doTake()" value="Update Image">
         </tr>
@@ -293,8 +293,6 @@
 
     function showReference(_param)
     {
-        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);
-
         if (_param["Alignment"]["InitialRotate"].value1 < 0) {
             document.getElementById("prerotateangle").value = Math.ceil(_param["Alignment"]["InitialRotate"].value1);
         }
@@ -332,15 +330,6 @@
         document.getElementById("flip").disabled = true;
 
         isActReference = true;
-                                      
-        loadReference();
-    }
-
-
-    function loadReferenceImage()
-    {
-        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);                              
-        loadCanvas(url, false);
     }
 
 
@@ -352,6 +341,7 @@
         WriteParameter(param, category, "TakeImage", "LEDIntensity", false);		
     }
     
+
     /* Parse parameter out of param structure and preset webui fields */
     function WriteParameter(_param, _category, _cat, _name, _optional, outval = false, _select = false, _anzpara = 1)
     {
@@ -658,6 +648,14 @@
         }
 
         UpdateInput();
+        showReference(param);
+    }
+
+  
+    function loadReferenceImage()
+    {
+        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);                              
+        loadCanvas(url, false);
     }
 
 
