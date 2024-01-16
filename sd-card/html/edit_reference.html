@@ -331,9 +331,17 @@
         document.getElementById("mirror").disabled = true;
         document.getElementById("flip").disabled = true;
 
-        isActReference = true;                                  
+        isActReference = true;
+                                      
+        loadReference();
+    }
+
+
+    function loadReferenceImage()
+    {
+        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);                              
         loadCanvas(url, false);
-    }	
+    }
 
 
     function UpdateInput()
@@ -650,7 +658,6 @@
         }
 
         UpdateInput();
-        showReference(param); 
     }
 
 
@@ -659,6 +666,7 @@
         openDescription();
         
         canvas.addEventListener('mousemove', mouseMove, false);
+        loadReferenceImage();
         loadConfig().then(() => loadConfigData());
     }
 

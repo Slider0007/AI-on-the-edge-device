@@ -2036,20 +2036,6 @@
 		NUMBERS;
 
 
-	function loadConfigData() {
-		ParseConfig();
-		param = getConfigParameters();
-		category = getConfigCategory();
-		InitIndivParameter();
-
-		UpdateInput();
-		var sel = document.getElementById("Numbers_value1");
-		UpdateInputIndividual(sel);
-		UpdateExpertModus();
-		document.getElementById("divall").style.display = ''; 
-	}
-
-
 	function InitIndivParameter()
 	{
 		NUMBERS = getNumberSequences();
@@ -2827,13 +2813,35 @@
 		}
 	}
 
+
+	function loadConfigData()
+	{
+		return new Promise(function (resolve, reject) {
+			ParseConfig();
+			param = getConfigParameters();
+			category = getConfigCategory();
+			InitIndivParameter();
+			return resolve();
+		});
+	}
+
+
+	function loadInputData()
+	{
+		UpdateInput();
+		var sel = document.getElementById("Numbers_value1");
+		UpdateInputIndividual(sel);
+		UpdateExpertModus();
+		document.getElementById("divall").style.display = ''; 
+	}
+	
+
 	function init()
 	{
 		openDescription();
 
-		fetchTFLITEList().then(
-			() => loadConfig().then(
-				() => loadConfigData()));
+		loadConfig().then(() => loadConfigData());	
+		Promise.all([fetchTFLITEList()], [loadConfigData()]).then(() => loadInputData());
 	}
 
 

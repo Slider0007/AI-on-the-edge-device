@@ -7,54 +7,56 @@ var REFERENCES = new Array(0);
 var tflite_list = "";
 
 
-function getNUMBERSList()
+async function getNUMBERSList()
 {
-     var namenumberslist = "";
-     url = getDomainname() + '/editflow?task=namenumbers';
+    return new Promise(function (resolve, reject) {
+        var url = getDomainname() + '/editflow?task=namenumbers';
 
-	var xhttp = new XMLHttpRequest();
-     xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-              if (this.status >= 200 && this.status < 300) {
-                    namenumberslist = xhttp.responseText;
-                    namenumberslist = namenumberslist.split("\t");
-               }
-               else {
-                    firework.launch("Sequence names request failed (Response status: " + this.status + 
-                                   "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Sequence names request failed. Response status: " + this.status);  
-               }
-          }
-     };
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+            if (this.status >= 200 && this.status < 300) {
+                        var namenumberslist = xhttp.responseText;
+                        namenumberslist = namenumberslist.split("\t");
+                        return resolve(namenumberslist);
 
-     xhttp.open("GET", url, false);
-     xhttp.send();
+                }
+                else {
+                        firework.launch("Sequence names request failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                        console.error("Sequence names request failed. Response status: " + this.status);
+                        return reject("Sequence names request failed. Response status: " + this.status);
+                }
+            }
+        };
 
-     return namenumberslist;
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    });
 }
 
 
 async function getDataFileList()
 {
-return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         var url = getDomainname() + '/editflow?task=data';     
 
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4) {
-                if (this.status >= 200 && this.status < 300) {
+                    if (this.status >= 200 && this.status < 300) {
                         var datalist = xhttp.responseText;
                         datalist = datalist.split("\t");
                         datalist.pop();
                         datalist.sort();
                         return resolve(datalist);
-                }
-                else {
+                    }
+                    else {
                         firework.launch("Data files request failed (Response status: " + this.status + 
                                 "). Repeat action or check logs.", 'danger', 30000);
                         console.error("Data files request failed. Response status: " + this.status);
                         return reject("Data files request failed. Response status: " + this.status);
-                }
+                    }
             }
         };
 

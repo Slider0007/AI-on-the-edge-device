@@ -260,6 +260,24 @@
 
 <script>
 
+    function WriteNumbers(list_data)
+    {
+        var _indexDig = document.getElementById("numbers");
+        while (_indexDig.length)
+            _indexDig.remove(0);
+
+        for (var i = 0; i < list_data.length; ++i)
+        {
+            var optionDig = document.createElement("option");
+            
+            var text = list_data[i];
+            optionDig.text = text;
+            optionDig.value = list_data[i];
+            _indexDig.add(optionDig);
+        }
+    }
+
+
     function WriteDataFiles(list_data)
     {
         var _indexDig = document.getElementById("datafiles");
@@ -271,26 +289,6 @@
             var optionDig = document.createElement("option");
             
             optionDig.text = list_data[i].substring(5, list_data[i].lastIndexOf('.'));
-            optionDig.value = list_data[i];
-            _indexDig.add(optionDig);
-        }
-    }
-
-
-    function WriteNumbers()
-    {
-        list_data = getNUMBERSList();
-
-        var _indexDig = document.getElementById("numbers");
-        while (_indexDig.length)
-            _indexDig.remove(0);
-
-        for (var i = 0; i < list_data.length; ++i)
-        {
-            var optionDig = document.createElement("option");
-            
-            var text = list_data[i];
-            optionDig.text = text;
             optionDig.value = list_data[i];
             _indexDig.add(optionDig);
         }
@@ -342,9 +340,9 @@
 
     function init()
 	{
-        loadConfig().then(() => initAutoRefreshContent());
+        getNUMBERSList().then((list_data) => WriteNumbers(list_data));
         getDataFileList().then((list_data) => WriteDataFiles(list_data));
-        WriteNumbers();
+        loadConfig().then(() => initAutoRefreshContent());
         run();
 	}
 
