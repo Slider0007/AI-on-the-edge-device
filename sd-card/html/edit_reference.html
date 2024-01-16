@@ -98,7 +98,7 @@
             <col span="1" style="width: 33.3%;">
         </colgroup>
         <tr>
-            <td><input class="button" type="button" value="Show Actual Reference" onclick="showReference(param); loadReferenceImage();"></td>	  
+            <td><input class="button" type="button" value="Show Actual Reference" onclick="showReference(param)"></td>	  
             <td><input class="button" type="button" id="startreference" value="Create New Reference" onclick="loadRawImage(false)"></td>
             <td><input class="button" type="submit" id="take" onclick="doTake()" value="Update Image">
         </tr>
@@ -293,6 +293,9 @@
 
     function showReference(_param)
     {
+        loadReferenceImage();
+        isActReference = true;
+        
         if (_param["Alignment"]["InitialRotate"].value1 < 0) {
             document.getElementById("prerotateangle").value = Math.ceil(_param["Alignment"]["InitialRotate"].value1);
         }
@@ -328,8 +331,6 @@
 
         document.getElementById("mirror").disabled = true;
         document.getElementById("flip").disabled = true;
-
-        isActReference = true;
     }
 
 
@@ -664,7 +665,6 @@
         openDescription();
         
         canvas.addEventListener('mousemove', mouseMove, false);
-        loadReferenceImage();
         loadConfig().then(() => loadConfigData());
     }
 
