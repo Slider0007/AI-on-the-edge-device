@@ -25,7 +25,7 @@ async function getNUMBERSList()
                         firework.launch("Sequence names request failed (Response status: " + this.status + 
                                     "). Repeat action or check logs.", 'danger', 30000);
                         console.error("Sequence names request failed. Response status: " + this.status);
-                        return reject("Sequence names request failed. Response status: " + this.status);
+                        return reject("Sequence names request failed");
                 }
             }
         };
@@ -55,7 +55,7 @@ async function getDataFileList()
                         firework.launch("Data files request failed (Response status: " + this.status + 
                                 "). Repeat action or check logs.", 'danger', 30000);
                         console.error("Data files request failed. Response status: " + this.status);
-                        return reject("Data files request failed. Response status: " + this.status);
+                        return reject("Data files request failed");
                     }
             }
         };
@@ -85,7 +85,7 @@ async function fetchTFLITEList()
                         firework.launch("TFLite files request failed (Response status: " + this.status + 
                                 "). Repeat action or check logs.", 'danger', 30000);
                         console.error("TFLite files request failed. Response status: " + this.status);
-                        return reject("TFLite files request failed. Response status: " + this.status);
+                        return reject("TFLite files request failed");
                 }
             }
         };

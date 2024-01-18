@@ -2814,14 +2814,15 @@
 	}
 
 
-	function loadConfigData()
+	async function loadConfigData()
 	{
-		return new Promise(function (resolve, reject) {
+		return new Promise(function (resolve) {
 			ParseConfig();
 			param = getConfigParameters();
 			category = getConfigCategory();
 			InitIndivParameter();
-			return resolve();
+			console.log("loadConfigData");
+			return resolve("loadConfigData successful");
 		});
 	}
 
@@ -2833,15 +2834,20 @@
 		UpdateInputIndividual(sel);
 		UpdateExpertModus();
 		document.getElementById("divall").style.display = ''; 
+		console.log("loadInputData");
 	}
 	
 
-	function init()
+	async function init()
 	{
 		openDescription();
 
-		loadConfig().then(() => loadConfigData());	
-		Promise.all([fetchTFLITEList()], [loadConfigData()]).then(() => loadInputData());
+		Promise.all([fetchTFLITEList()], [loadConfig().then(() => loadConfigData())])
+			.then(() => loadInputData())
+			.catch((error) => {
+				firework.launch('Configuration page loading failed. Please repeat or check logs', 'danger', 30000);
+				console.error("Configuration page loading failed. Error: " + error.message);
+			});
 	}
 
 
