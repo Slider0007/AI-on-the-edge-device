@@ -656,7 +656,7 @@
         ParseConfig();
         param = getConfigParameters();
 
-        // Copy Alignment marker image to img_tmp for further processing
+        // Copy Alignment marker image to img_tmp folder for further processing
         FileCopyOnServer("/config/ref0.jpg", "/img_tmp/ref0.jpg", domainname, true).then(() => RefreshMarker());
         FileCopyOnServer("/config/ref1.jpg", "/img_tmp/ref1.jpg", domainname, true);
         MarkerROI = getAlignmentMarker();
