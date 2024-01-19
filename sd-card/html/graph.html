@@ -260,32 +260,13 @@
 
 <script>
 
-    function WriteNumbers(list_data)
-    {
-        var _indexDig = document.getElementById("numbers");
-        while (_indexDig.length)
-            _indexDig.remove(0);
-
-        for (var i = 0; i < list_data.length; ++i)
-        {
-            var optionDig = document.createElement("option");
-            
-            var text = list_data[i];
-            optionDig.text = text;
-            optionDig.value = list_data[i];
-            _indexDig.add(optionDig);
-        }
-    }
-
-
-    function WriteDataFiles(list_data)
+    function parseDataFiles(list_data)
     {
         var _indexDig = document.getElementById("datafiles");
         while (_indexDig.length)
             _indexDig.remove(0);
 
-        for (var i = list_data.length - 1; i >= 0; --i)
-        {
+        for (var i = list_data.length - 1; i >= 0; --i) {
             var optionDig = document.createElement("option");
             
             optionDig.text = list_data[i].substring(5, list_data[i].lastIndexOf('.'));
@@ -294,11 +275,30 @@
         }
     }
 
+  
+    function parseNumberSequenceName()
+    {
+        var NumberSequence = getNumberSequences();
+
+        var sel_sequence = document.getElementById("numbers");
+        while (sel_sequence.length) {
+            sel_sequence.remove(0);
+        }
+
+        for (var i = 0; i < NumberSequence.length; ++i) {
+            var option = document.createElement("option");
+            option.text = NumberSequence[i]["name"];
+            option.value = i;
+            sel_sequence.add(option);
+        }
+    }
+
 
     function initAutoRefreshContent()
     {
-        ParseConfigReduced();
+        ParseConfig();
         param = getConfigParameters();
+        parseNumberSequenceName();
         
 		document.getElementById("AutoRefreshEnabled").checked = param["WebUI"]["DataGraphAutoRefresh"]["value1"] == "true" ? true : false;
 		document.getElementById("AutoRefreshTime").value = param["WebUI"]["DataGraphAutoRefreshTime"]["value1"];   
@@ -340,9 +340,8 @@
 
     function init()
 	{
-        getNUMBERSList().then((list_data) => WriteNumbers(list_data));
-        getDataFileList().then((list_data) => WriteDataFiles(list_data));
         loadConfig().then(() => initAutoRefreshContent());
+        getDataFileList().then((list_data) => parseDataFiles(list_data));
         run();
 	}
 

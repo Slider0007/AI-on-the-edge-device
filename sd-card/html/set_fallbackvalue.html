@@ -261,11 +261,9 @@
     }
 
 
-    function UpdateNUMBERS(_sel)
+    function parseNumberSequenceName()
     {
-        NumberSequence = getNumberSequences();
-
-        index = 0;
+        var NumberSequence = getNumberSequences();
 
         var _index = document.getElementById("Numbers_value1");
         while (_index.length){
@@ -277,13 +275,7 @@
             option.text = NumberSequence[i]["name"];
             option.value = i;
             _index.add(option); 
-
-            if (typeof _sel !== 'undefined') {
-                if (NumberSequence[i]["name"] == _sel)
-                    index = i
-            }
         }
-        _index.selectedIndex = index;
 
         loadFallbackValue(domainname);
     }
@@ -292,7 +284,7 @@
     function loadConfigData()
     {
         ParseConfig();
-        UpdateNUMBERS();
+        parseNumberSequenceName();
     }
     
     

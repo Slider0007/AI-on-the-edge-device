@@ -1,13 +1,13 @@
-let config_gesamt = "";
-let config_split = [];
-var param = {};
-var category = {};
-var NUMBERS = new Array(0);
-var REFERENCES = new Array(0);
-let tflite_list = "";
+let config_gesamt = "";  // Parsed config.ini as string
+let config_split = [];   // Config.ini splitted by lines
+var param = {};          // Configuration parameter object
+var category = {};       // Configuration category obejct
+var NUMBERS = [];        // Number sequences
+let REFERENCES = [];     // Alignment marker
+let tflite_list = "";    // TFLite model files as tab separated list
 
 
-async function getNUMBERSList()
+async function getNUMBERSList()    // Legacy: Not in use anymore (was only used for graph.html)
 {
     return new Promise(function (resolve, reject) {
         var url = getDomainname() + '/editflow?task=namenumbers';
