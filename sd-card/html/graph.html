@@ -288,7 +288,7 @@
         for (var i = 0; i < NumberSequence.length; ++i) {
             var option = document.createElement("option");
             option.text = NumberSequence[i]["name"];
-            option.value = i;
+            option.value = NumberSequence[i]["name"];
             sel_sequence.add(option);
         }
     }
@@ -341,8 +341,7 @@
     function init()
 	{
         loadConfig().then(() => initAutoRefreshContent());
-        getDataFileList().then((list_data) => parseDataFiles(list_data));
-        run();
+        getDataFileList().then((list_data) => parseDataFiles(list_data)).then(() => run());
 	}
 
 
