@@ -338,10 +338,19 @@
 	}
 
 
-    function init()
+    async function init()
 	{
-        loadConfig().then(() => initAutoRefreshContent());
-        getDataFileList().then((list_data) => parseDataFiles(list_data)).then(() => run());
+		// Ensure data file list and config (sequence number names) is loaded before parsing data
+		await Promise.all([getDataFileList(), loadConfig()])
+			.then(([list_data, configData]) => {
+                initAutoRefreshContent();
+                parseDataFiles(list_data);
+            })
+			.catch((error) => {
+				firework.launch('Failed loading data for graph page. Please repeat or check logs', 'danger', 30000);
+				console.error("Failed loading data for graph page. Error: " + error.message);
+			});
+        run();
 	}
 
 
