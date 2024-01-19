@@ -261,7 +261,8 @@
     </details>
     <hr>
 
-<div id="divall" style="display:none">
+<div id="divloading">Loading configuration ...</div>
+<div id="divcontent" style="display:none">
 
 	<!-- Configuration View -->
 	<table class="table">
@@ -2029,10 +2030,10 @@
 <script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
 <script>
 	var canvas = document.getElementById('canvas'),
-		domainname = getDomainname(); 
-		param;
-		category;
-		NUNBERSAkt = -1;
+		domainname = getDomainname(),
+		param,
+		category,
+		NUNBERSAkt = -1
 		NUMBERS;
 
 
@@ -2390,8 +2391,11 @@
 			ReadParameter(param, "InfluxDBv2", "Measurement", false, NUNBERSAkt);
 		}
 
-	//	var sel = document.getElementById("Numbers_value1");
-		NUNBERSAkt = sel.selectedIndex;
+		if (sel)
+			NUNBERSAkt = sel.selectedIndex;
+		else
+			NUNBERSAkt = 0;
+
 		WriteParameter(param, category, "PostProcessing", "DecimalShift", false, NUNBERSAkt);
 		WriteParameter(param, category, "PostProcessing", "AnalogDigitalTransitionStart", false, NUNBERSAkt);
 		WriteParameter(param, category, "PostProcessing", "MaxRateValue", false, NUNBERSAkt);
@@ -2814,27 +2818,19 @@
 	}
 
 
-	async function loadConfigData()
+	function loadConfigData()
 	{
-		return new Promise(function (resolve) {
-			ParseConfig();
-			param = getConfigParameters();
-			category = getConfigCategory();
-			InitIndivParameter();
-			console.log("loadConfigData");
-			return resolve("loadConfigData successful");
-		});
-	}
+		ParseConfig();
+		param = getConfigParameters();
+		category = getConfigCategory();
+		InitIndivParameter();
 
-
-	function loadInputData()
-	{
 		UpdateInput();
-		var sel = document.getElementById("Numbers_value1");
-		UpdateInputIndividual(sel);
+		UpdateInputIndividual();
 		UpdateExpertModus();
-		document.getElementById("divall").style.display = ''; 
-		console.log("loadInputData");
+
+		document.getElementById("divloading").style.display = 'none'; // Hide loading indicator
+		document.getElementById("divcontent").style.display = ''; 	// Show parameter content
 	}
 	
 
@@ -2842,11 +2838,12 @@
 	{
 		openDescription();
 
-		Promise.all([fetchTFLITEList()], [loadConfig().then(() => loadConfigData())])
-			.then(() => loadInputData())
+		// Ensure TFLite file list and config.ini is loaded before parsing data
+		Promise.all([fetchTFLITEList(), loadConfig()])
+			.then(() => loadConfigData())
 			.catch((error) => {
-				firework.launch('Configuration page loading failed. Please repeat or check logs', 'danger', 30000);
-				console.error("Configuration page loading failed. Error: " + error.message);
+				firework.launch('Failed loading data for configuration page. Please repeat or check logs', 'danger', 30000);
+				console.error("Failed loading data for configuration page. Error: " + error.message);
 			});
 	}
 

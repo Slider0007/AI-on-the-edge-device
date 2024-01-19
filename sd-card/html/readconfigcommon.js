@@ -31,41 +31,7 @@ function reload_config()
      xhttp.send();
 }
 
-     
-async function loadConfig()
-{
-     return new Promise(function (resolve, reject) {
-          var url = getDomainname() + '/fileserver/config/config.ini';
-
-          var xhttp = new XMLHttpRequest();
-          xhttp.onreadystatechange = function() {
-               if (this.readyState == 4) {
-                    if (this.status >= 200 && this.status < 300) {
-                         config_gesamt = xhttp.responseText;
-                         return resolve("Loading config.ini request successful");
-                    }
-                    else {
-                         firework.launch("Loading config.ini failed (Response status: " + this.status + 
-                                        "). Repeat action or check logs.", 'danger', 30000);
-                         console.error("Loading config.ini failed. Response status: " + this.status);
-                         return reject("Loading config.ini failed");
-                    }
-               }
-          };
-
-          xhttp.timeout = 10000;  // 10 seconds
-          xhttp.open("GET", url, true);
-          xhttp.send();
-     });
-}
-
-
-function getConfig()
-{
-     return config_gesamt;
-}
-
-     
+   
 function dataURLtoBlob(dataurl)
 {
      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
@@ -77,7 +43,7 @@ function dataURLtoBlob(dataurl)
 }	
  
 
-async function FileCopyOnServer(_source, _target, _domainname = "", async = true)
+async function FileCopyOnServer(_source, _target, _domainname = "", async = false)
 {
      return new Promise(function (resolve, reject) {
           var url = _domainname + "/editflow?task=copy&in=" + _source + "&out=" + _target;

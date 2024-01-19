@@ -1,10 +1,10 @@
-var config_gesamt = "";
-var config_split = [];
-var param = [];
-var category;
+let config_gesamt = "";
+let config_split = [];
+var param = {};
+var category = {};
 var NUMBERS = new Array(0);
 var REFERENCES = new Array(0);
-var tflite_list = "";
+let tflite_list = "";
 
 
 async function getNUMBERSList()
@@ -30,6 +30,7 @@ async function getNUMBERSList()
             }
         };
 
+        xhttp.timeout = 10000; // 10 seconds
         xhttp.open("GET", url, true);
         xhttp.send();
     });
@@ -60,6 +61,7 @@ async function getDataFileList()
             }
         };
 
+        xhttp.timeout = 10000; // 10 seconds
         xhttp.open("GET", url, true);
         xhttp.send();
     });
@@ -90,9 +92,44 @@ async function fetchTFLITEList()
             }
         };
 
+        xhttp.timeout = 10000; // 10 seconds
         xhttp.open("GET", url, true);
         xhttp.send();
     });
+}
+
+
+async function loadConfig()
+{
+     return new Promise(function (resolve, reject) {
+          var url = getDomainname() + '/fileserver/config/config.ini';
+
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+               if (this.readyState == 4) {
+                    if (this.status >= 200 && this.status < 300) {
+                         config_gesamt = xhttp.responseText;
+                         return resolve(config_gesamt);
+                    }
+                    else {
+                         firework.launch("Loading config.ini failed (Response status: " + this.status + 
+                                        "). Repeat action or check logs.", 'danger', 30000);
+                         console.error("Loading config.ini failed. Response status: " + this.status);
+                         return reject("Loading config.ini failed");
+                    }
+               }
+          };
+
+          xhttp.timeout = 10000;  // 10 seconds
+          xhttp.open("GET", url, true);
+          xhttp.send();
+     });
+}
+
+
+function getConfig()
+{
+     return config_gesamt;
 }
 
 
@@ -100,8 +137,8 @@ function ParseConfig() {
      config_split = config_gesamt.split("\n");
      var aktline = 0;
 
-     param = new Object();
-     category = new Object(); 
+     //param = new Object();
+     //category = new Object(); 
 
      var catname = "TakeImage";
      category[catname] = new Object(); 
