@@ -28,7 +28,7 @@
                 'status=no,toolbar=no,titlebar=no,' +
                 'left=10,top=250,width=640px,height=480px';
 
-        function loadPage(page) {
+        async function loadPage(page) {
             if (streamPopup)   // Ensure that stream popup is closed because it's blocking web interface
                 streamPopup.close();
 
