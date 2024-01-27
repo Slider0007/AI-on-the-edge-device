@@ -384,17 +384,18 @@ esp_err_t initSDCard()
     sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
 
     #ifdef SOC_SDMMC_USE_GPIO_MATRIX
-    slot_config.clk = GPIO_SDCARD_CLK;
-    slot_config.cmd = GPIO_SDCARD_CMD;
-    slot_config.d0 = GPIO_SDCARD_D0;
+        slot_config.clk = GPIO_SDCARD_CLK;
+        slot_config.cmd = GPIO_SDCARD_CMD;
+        slot_config.d0 = GPIO_SDCARD_D0;
     #endif
+
     #ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
         slot_config.width = 1;
     #else
         #ifdef SOC_SDMMC_USE_GPIO_MATRIX
-        slot_config.d1 = GPIO_SDCARD_D1;
-        slot_config.d2 = GPIO_SDCARD_D2;
-        slot_config.d3 = GPIO_SDCARD_D3;
+            slot_config.d1 = GPIO_SDCARD_D1;
+            slot_config.d2 = GPIO_SDCARD_D2;
+            slot_config.d3 = GPIO_SDCARD_D3;
         #endif
         slot_config.width = 4;
     #endif
