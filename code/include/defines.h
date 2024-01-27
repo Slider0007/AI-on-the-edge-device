@@ -110,8 +110,6 @@
 
 
 //ClassControllCamera + ClassFlowTakeImage
-#define CAMERA_MODEL_AI_THINKER
-#define BOARD_ESP32CAM_AITHINKER
 #define DEMO_IMAGE_SIZE 30000 // Max size of demo image in bytes
 
 //server_GPIO
@@ -130,9 +128,6 @@
 //ClassFlowControll + Main + SoftAP
 #define WLAN_CONFIG_FILE "/sdcard/wlan.ini"
 
-
-//main
-#define __SD_USE_ONE_LINE_MODE__
 
 // server_file + Helper
     #define FILE_PATH_MAX (255) //Max length a file path can have on storage
@@ -303,9 +298,54 @@ CONFIG_WPA_11R_SUPPORT=n
 #define FLOWSTATE_ERRORS_IN_ROW_LIMIT   3
 
 
-//**************************************************************************************
-// HARDWARE DEFINITION
-//**************************************************************************************
+//*************************************************************************
+// HARDWARE RELATED DEFINITIONS
+//*************************************************************************
+
+// Define BOARD and CAMERA configuration
+//************************************
+#define BOARD_AITHINKER_ESP32CAM
+#define CAMERA_MODEL_AI_THINKER
+
+
+// Define SD card configuration
+#define BOARD_SDCARD_SDMMC_BUS_WIDTH_1                  // SD MMC: Operate with 1 data line (D0) instead of 4 lines (D0-D3)
+
+
+// Board types
+//************************************ 
+#ifdef BOARD_AITHINKER_ESP32CAM
+    // SD card (operated with SDMMC peripheral - faster than SPI peripheral)
+    #define GPIO_SDCARD_CLK         GPIO_NUM_14
+    #define GPIO_SDCARD_CMD         GPIO_NUM_15
+    #define GPIO_SDCARD_D0          GPIO_NUM_2
+    #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
+        #define GPIO_SDCARD_D1      GPIO_NUM_4
+        #define GPIO_SDCARD_D2      GPIO_NUM_12
+    #endif
+    #define GPIO_SDCARD_D3          GPIO_NUM_13     // Needs to be high to init SD in MMC mode. After init GPIO can be used as spare GPIO
+
+    // Camera
+    #define CAM_PIN_PWDN 32
+    #define CAM_PIN_RESET -1 //software reset will be performed
+    #define CAM_PIN_XCLK 0
+    #define CAM_PIN_SIOD 26
+    #define CAM_PIN_SIOC 27
+
+    #define CAM_PIN_D7 35
+    #define CAM_PIN_D6 34
+    #define CAM_PIN_D5 39
+    #define CAM_PIN_D4 36
+    #define CAM_PIN_D3 21
+    #define CAM_PIN_D2 19
+    #define CAM_PIN_D1 18
+    #define CAM_PIN_D0 5
+    #define CAM_PIN_VSYNC 25
+    #define CAM_PIN_HREF 23
+    #define CAM_PIN_PCLK 22
+#endif //// Board types
+
+
 //******* camera model 
 #if defined(CAMERA_MODEL_WROVER_KIT)
     #define PWDN_GPIO_NUM    -1
@@ -368,51 +408,6 @@ CONFIG_WPA_11R_SUPPORT=n
     #error "Camera model not selected"
 #endif  //camera model
 
-// ******* Board type   
-#ifdef BOARD_WROVER_KIT // WROVER-KIT PIN Map
-
-    #define CAM_PIN_PWDN -1  //power down is not used
-    #define CAM_PIN_RESET -1 //software reset will be performed
-    #define CAM_PIN_XCLK 21
-    #define CAM_PIN_SIOD 26
-    #define CAM_PIN_SIOC 27
-
-    #define CAM_PIN_D7 35
-    #define CAM_PIN_D6 34
-    #define CAM_PIN_D5 39
-    #define CAM_PIN_D4 36
-    #define CAM_PIN_D3 19
-    #define CAM_PIN_D2 18
-    #define CAM_PIN_D1 5
-    #define CAM_PIN_D0 4
-    #define CAM_PIN_VSYNC 25
-    #define CAM_PIN_HREF 23
-    #define CAM_PIN_PCLK 22
-
-#endif //// WROVER-KIT PIN Map
-
-    
-#ifdef BOARD_ESP32CAM_AITHINKER // ESP32Cam (AiThinker) PIN Map
-
-    #define CAM_PIN_PWDN 32
-    #define CAM_PIN_RESET -1 //software reset will be performed
-    #define CAM_PIN_XCLK 0
-    #define CAM_PIN_SIOD 26
-    #define CAM_PIN_SIOC 27
-
-    #define CAM_PIN_D7 35
-    #define CAM_PIN_D6 34
-    #define CAM_PIN_D5 39
-    #define CAM_PIN_D4 36
-    #define CAM_PIN_D3 21
-    #define CAM_PIN_D2 19
-    #define CAM_PIN_D1 18
-    #define CAM_PIN_D0 5
-    #define CAM_PIN_VSYNC 25
-    #define CAM_PIN_HREF 23
-    #define CAM_PIN_PCLK 22
-
-#endif // ESP32Cam (AiThinker) PIN Map
 
 // ******* LED definition
 #ifdef USE_PWM_LEDFLASH
