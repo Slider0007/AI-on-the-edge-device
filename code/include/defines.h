@@ -99,13 +99,7 @@
 //#define CONFIG_IDF_TARGET_ARCH_XTENSA     //not needed with platformio/espressif32 @ 5.2.0
 
 
-//Statusled + ClassControllCamera
-#define BLINK_GPIO GPIO_NUM_33              // PIN for red board LED
-
-
 //ClassControllCamera
-#define FLASH_GPIO GPIO_NUM_4               // PIN for flashlight LED
-#define USE_PWM_LEDFLASH                    // if __LEDGLOBAL is defined, a global variable is used for LED control, otherwise locally and each time a new
 #define CAM_LIVESTREAM_REFRESHRATE 500      // Camera livestream feature: Waiting time in milliseconds to refresh image
 
 
@@ -298,133 +292,7 @@ CONFIG_WPA_11R_SUPPORT=n
 #define FLOWSTATE_ERRORS_IN_ROW_LIMIT   3
 
 
-//*************************************************************************
-// HARDWARE RELATED DEFINITIONS
-//*************************************************************************
-
-// Define BOARD and CAMERA configuration
-//************************************
-#define BOARD_AITHINKER_ESP32CAM
-#define CAMERA_MODEL_AI_THINKER
-
-
-// Define SD card configuration
-#define BOARD_SDCARD_SDMMC_BUS_WIDTH_1                  // SD MMC: Operate with 1 data line (D0) instead of 4 lines (D0-D3)
-
-
-// Board types
-//************************************ 
-#ifdef BOARD_AITHINKER_ESP32CAM
-    // SD card (operated with SDMMC peripheral - faster than SPI peripheral)
-    #define GPIO_SDCARD_CLK         GPIO_NUM_14
-    #define GPIO_SDCARD_CMD         GPIO_NUM_15
-    #define GPIO_SDCARD_D0          GPIO_NUM_2
-    #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
-        #define GPIO_SDCARD_D1      GPIO_NUM_4
-        #define GPIO_SDCARD_D2      GPIO_NUM_12
-    #endif
-    #define GPIO_SDCARD_D3          GPIO_NUM_13     // Needs to be high to init SD in MMC mode. After init GPIO can be used as spare GPIO
-
-    // Camera
-    #define CAM_PIN_PWDN 32
-    #define CAM_PIN_RESET -1 //software reset will be performed
-    #define CAM_PIN_XCLK 0
-    #define CAM_PIN_SIOD 26
-    #define CAM_PIN_SIOC 27
-
-    #define CAM_PIN_D7 35
-    #define CAM_PIN_D6 34
-    #define CAM_PIN_D5 39
-    #define CAM_PIN_D4 36
-    #define CAM_PIN_D3 21
-    #define CAM_PIN_D2 19
-    #define CAM_PIN_D1 18
-    #define CAM_PIN_D0 5
-    #define CAM_PIN_VSYNC 25
-    #define CAM_PIN_HREF 23
-    #define CAM_PIN_PCLK 22
-#endif //// Board types
-
-
-//******* camera model 
-#if defined(CAMERA_MODEL_WROVER_KIT)
-    #define PWDN_GPIO_NUM    -1
-    #define RESET_GPIO_NUM   -1
-    #define XCLK_GPIO_NUM    21
-    #define SIOD_GPIO_NUM    26
-    #define SIOC_GPIO_NUM    27
-
-    #define Y9_GPIO_NUM      35
-    #define Y8_GPIO_NUM      34
-    #define Y7_GPIO_NUM      39
-    #define Y6_GPIO_NUM      36
-    #define Y5_GPIO_NUM      19
-    #define Y4_GPIO_NUM      18
-    #define Y3_GPIO_NUM       5
-    #define Y2_GPIO_NUM       4
-    #define VSYNC_GPIO_NUM   25
-    #define HREF_GPIO_NUM    23
-    #define PCLK_GPIO_NUM    22
-
-#elif defined(CAMERA_MODEL_M5STACK_PSRAM)
-    #define PWDN_GPIO_NUM     -1
-    #define RESET_GPIO_NUM    15
-    #define XCLK_GPIO_NUM     27
-    #define SIOD_GPIO_NUM     25
-    #define SIOC_GPIO_NUM     23
-
-    #define Y9_GPIO_NUM       19
-    #define Y8_GPIO_NUM       36
-    #define Y7_GPIO_NUM       18
-    #define Y6_GPIO_NUM       39
-    #define Y5_GPIO_NUM        5
-    #define Y4_GPIO_NUM       34
-    #define Y3_GPIO_NUM       35
-    #define Y2_GPIO_NUM       32
-    #define VSYNC_GPIO_NUM    22
-    #define HREF_GPIO_NUM     26
-    #define PCLK_GPIO_NUM     21
-
-#elif defined(CAMERA_MODEL_AI_THINKER)
-    #define PWDN_GPIO_NUM     GPIO_NUM_32
-    #define RESET_GPIO_NUM    -1
-    #define XCLK_GPIO_NUM      GPIO_NUM_0
-    #define SIOD_GPIO_NUM     GPIO_NUM_26
-    #define SIOC_GPIO_NUM     GPIO_NUM_27
-
-    #define Y9_GPIO_NUM       GPIO_NUM_35
-    #define Y8_GPIO_NUM       GPIO_NUM_34
-    #define Y7_GPIO_NUM       GPIO_NUM_39
-    #define Y6_GPIO_NUM       GPIO_NUM_36
-    #define Y5_GPIO_NUM       GPIO_NUM_21
-    #define Y4_GPIO_NUM       GPIO_NUM_19
-    #define Y3_GPIO_NUM       GPIO_NUM_18
-    #define Y2_GPIO_NUM        GPIO_NUM_5
-    #define VSYNC_GPIO_NUM    GPIO_NUM_25
-    #define HREF_GPIO_NUM     GPIO_NUM_23
-    #define PCLK_GPIO_NUM     GPIO_NUM_22
-
-#else
-    #error "Camera model not selected"
-#endif  //camera model
-
-
-// ******* LED definition
-#ifdef USE_PWM_LEDFLASH
-
-    //// PWM für Flash-LED
-    #define LEDC_TIMER              LEDC_TIMER_1 // LEDC_TIMER_0
-    #define LEDC_MODE               LEDC_LOW_SPEED_MODE
-    #define LEDC_OUTPUT_IO          FLASH_GPIO // Define the output GPIO
-    #define LEDC_CHANNEL            LEDC_CHANNEL_1
-    #define LEDC_DUTY_RES           LEDC_TIMER_13_BIT // Set duty resolution to 13 bits
-    #define LEDC_RESOLUTION         (1 << LEDC_TIMER_13_BIT) -1 // 13bit resolution --> 8192: 0 .. 8191
-    //#define LEDC_DUTY               (195) // Set duty to 50%. ((2 ** 13) - 1) * 50% = 4095
-    #define LEDC_FREQUENCY          (5000) // Frequency in Hertz. Set frequency at 5 kHz
-
-#endif //USE_PWM_LEDFLASH
-
-//softAP
+// SoftAP for initial setup process
 #ifdef ENABLE_SOFTAP
     #define EXAMPLE_ESP_WIFI_SSID      "AI-on-the-Edge"
     #define EXAMPLE_ESP_WIFI_PASS      ""
@@ -432,4 +300,85 @@ CONFIG_WPA_11R_SUPPORT=n
     #define EXAMPLE_MAX_STA_CONN       1
 #endif // ENABLE_SOFTAP
 
-#endif // ifndef DEFINES_H
+
+//*************************************************************************
+// HARDWARE RELATED DEFINITIONS
+//*************************************************************************
+
+// Define BOARD and CAMERA configuration
+//************************************
+#define BOARD_AITHINKER_ESP32CAM            // Define BOARD TYPE -> defined in platform.ini
+#define CAMERA_AITHINKER_ESP32CAM_OV2640    // Define CAMERA MODEL -> defined in platform.ini
+
+
+// Define SD card configuration
+#define BOARD_SDCARD_SDMMC_BUS_WIDTH_1      // SD MMC: Operate with 1 data line (D0) instead of 4 lines (D0-D3)
+
+
+// Board types
+//************************************
+#ifdef BOARD_AITHINKER_ESP32CAM
+    // SD card (operated with SDMMC peripheral)
+    #define GPIO_SDCARD_CLK                 GPIO_NUM_14
+    #define GPIO_SDCARD_CMD                 GPIO_NUM_15
+    #define GPIO_SDCARD_D0                  GPIO_NUM_2
+    #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
+        #define GPIO_SDCARD_D1              GPIO_NUM_4
+        #define GPIO_SDCARD_D2              GPIO_NUM_12
+    #endif
+    #define GPIO_SDCARD_D3                  GPIO_NUM_13     // Needs to be high to init SD in MMC mode. After init GPIO can be used as spare GPIO
+
+    // LEDs
+    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_33     // Onboard red status LED
+    #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_4      // Onboard flashlight LED
+    
+    #if defined(BOARD_SDCARD_SDMMC_BUS_WIDTH_1)
+        #define GPIO_FLASHLIGHT_DEFAULT     GPIO_FLASHLIGHT_ONBOARD // Use onboard flashlight as default flashlight
+        #define GPIO_FLASHLIGHT_DEFAULT_USE_LEDC            // Activate LEDC peripheral for PWM control
+    #else
+        #define GPIO_FLASHLIGHT_DEFAULT     GPIO_NUM_NC     // Flash LED cannot be used if SD card operated in 4-line mode
+        #undef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
+    #endif
+#else
+    #error "define.h: No board type defined or type unknown"
+#endif //Board types
+
+
+// Camera models
+// Further models: https://github.com/Mjrovai/XIAO-ESP32S3-Sense/blob/main/camera_round_display_save_jpeg/camera_pins.h
+//************************************
+#ifdef CAMERA_AITHINKER_ESP32CAM_OV2640
+    #define PWDN_GPIO_NUM       GPIO_NUM_32
+    #define RESET_GPIO_NUM      GPIO_NUM_NC
+    #define XCLK_GPIO_NUM       GPIO_NUM_0
+    #define SIOD_GPIO_NUM       GPIO_NUM_26
+    #define SIOC_GPIO_NUM       GPIO_NUM_27
+
+    #define Y9_GPIO_NUM         GPIO_NUM_35
+    #define Y8_GPIO_NUM         GPIO_NUM_34
+    #define Y7_GPIO_NUM         GPIO_NUM_39
+    #define Y6_GPIO_NUM         GPIO_NUM_36
+    #define Y5_GPIO_NUM         GPIO_NUM_21
+    #define Y4_GPIO_NUM         GPIO_NUM_19
+    #define Y3_GPIO_NUM         GPIO_NUM_18
+    #define Y2_GPIO_NUM         GPIO_NUM_5
+    #define VSYNC_GPIO_NUM      GPIO_NUM_25
+    #define HREF_GPIO_NUM       GPIO_NUM_23
+    #define PCLK_GPIO_NUM       GPIO_NUM_22
+#else
+    #error "define.h: No camera model defined or model unknown"
+#endif //Camera models
+
+
+// GPIO_FLASHLIGHT_DEFAULT PWM definitions
+#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
+    #define LEDC_TIMER          LEDC_TIMER_1                // LEDC_TIMER_0 is used for camera
+    #define LEDC_MODE           LEDC_LOW_SPEED_MODE
+    #define LEDC_OUTPUT_IO      GPIO_FLASHLIGHT_DEFAULT     // Define the output GPIO of default flashlight
+    #define LEDC_CHANNEL        LEDC_CHANNEL_1
+    #define LEDC_DUTY_RES       LEDC_TIMER_13_BIT           // Set duty resolution to 13 bits
+    #define LEDC_RESOLUTION     (1 << LEDC_TIMER_13_BIT) -1 // 13bit resolution --> 8192: 0 .. 8191
+    #define LEDC_FREQUENCY      (5000)                      // Frequency in Hertz. Set frequency at 5 kHz
+#endif //GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
+
+#endif // ifndef defines_h

@@ -23,9 +23,9 @@ void task_StatusLED(void *pvParameter)
 		//ESP_LOGD(TAG, "task_StatusLED - start");
 		struct StatusLEDData StatusLEDDataInt = StatusLEDData;
 
-		esp_rom_gpio_pad_select_gpio(BLINK_GPIO); // Init the GPIO
-		gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
-		gpio_set_level(BLINK_GPIO, 1);// LED off
+		esp_rom_gpio_pad_select_gpio(GPIO_STATUS_LED_ONBOARD); // Init the GPIO
+		gpio_set_direction(GPIO_STATUS_LED_ONBOARD, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
+		gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);// LED off
 
 		for (int i=0; i<2; ) // Default: repeat 2 times
 		{
@@ -34,9 +34,9 @@ void task_StatusLED(void *pvParameter)
 
 			for (int j = 0; j < StatusLEDDataInt.iSourceBlinkCnt; ++j)
 			{
-				gpio_set_level(BLINK_GPIO, 0);
+				gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
 				vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
-				gpio_set_level(BLINK_GPIO, 1);      
+				gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);      
 				vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
 			}
 
@@ -44,9 +44,9 @@ void task_StatusLED(void *pvParameter)
 
 			for (int j = 0; j < StatusLEDDataInt.iCodeBlinkCnt; ++j)
 			{
-				gpio_set_level(BLINK_GPIO, 0);      
+				gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);      
 				vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
-				gpio_set_level(BLINK_GPIO, 1);
+				gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
 				vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
 			}
 			vTaskDelay(1500 / portTICK_PERIOD_MS);	// Delay to signal new round
@@ -145,7 +145,7 @@ void StatusLEDOff(void)
 		xHandle_task_StatusLED = NULL;
 	}
 	
-	esp_rom_gpio_pad_select_gpio(BLINK_GPIO); // Init the GPIO
-	gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
-	gpio_set_level(BLINK_GPIO, 1);// LED off
+	esp_rom_gpio_pad_select_gpio(GPIO_STATUS_LED_ONBOARD); // Init the GPIO
+	gpio_set_direction(GPIO_STATUS_LED_ONBOARD, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
+	gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);// LED off
 }
