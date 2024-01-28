@@ -304,26 +304,26 @@ CONFIG_WPA_11R_SUPPORT=n
 
 // Define BOARD and CAMERA configuration
 //************************************
-#define BOARD_AITHINKER_ESP32CAM
-#define CAMERA_MODEL_AI_THINKER
+#define BOARD_AITHINKER_ESP32CAM            // Define BOARD TYPE
+#define CAMERA_MODEL_AI_THINKER             // Define CAMERA MODEL
 
 
 // Define SD card configuration
-#define BOARD_SDCARD_SDMMC_BUS_WIDTH_1                  // SD MMC: Operate with 1 data line (D0) instead of 4 lines (D0-D3)
+#define BOARD_SDCARD_SDMMC_BUS_WIDTH_1      // SD MMC: Operate with 1 data line (D0) instead of 4 lines (D0-D3)
 
 
 // Board types
-//************************************ 
+//************************************
 #ifdef BOARD_AITHINKER_ESP32CAM
-    // SD card (operated with SDMMC peripheral - faster than SPI peripheral)
-    #define GPIO_SDCARD_CLK         GPIO_NUM_14
-    #define GPIO_SDCARD_CMD         GPIO_NUM_15
-    #define GPIO_SDCARD_D0          GPIO_NUM_2
+    // SD card (operated with SDMMC peripheral)
+    #define GPIO_SDCARD_CLK                 GPIO_NUM_14
+    #define GPIO_SDCARD_CMD                 GPIO_NUM_15
+    #define GPIO_SDCARD_D0                  GPIO_NUM_2
     #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
-        #define GPIO_SDCARD_D1      GPIO_NUM_4
-        #define GPIO_SDCARD_D2      GPIO_NUM_12
+        #define GPIO_SDCARD_D1              GPIO_NUM_4
+        #define GPIO_SDCARD_D2              GPIO_NUM_12
     #endif
-    #define GPIO_SDCARD_D3          GPIO_NUM_13     // Needs to be high to init SD in MMC mode. After init GPIO can be used as spare GPIO
+    #define GPIO_SDCARD_D3                  GPIO_NUM_13     // Needs to be high to init SD in MMC mode. After init GPIO can be used as spare GPIO
 
     // Camera
     #define CAM_PIN_PWDN 32
@@ -432,4 +432,4 @@ CONFIG_WPA_11R_SUPPORT=n
     #define EXAMPLE_MAX_STA_CONN       1
 #endif // ENABLE_SOFTAP
 
-#endif // ifndef DEFINES_H
+#endif //DEFINES_H
