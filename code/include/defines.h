@@ -305,14 +305,14 @@ CONFIG_WPA_11R_SUPPORT=n
 // HARDWARE RELATED DEFINITIONS
 //*************************************************************************
 
-// Define BOARD and CAMERA configuration
+// Define BOARD TYPE and CAMERA MODEL
 //************************************
-#define BOARD_AITHINKER_ESP32CAM            // Define BOARD TYPE -> defined in platform.ini
-#define CAMERA_AITHINKER_ESP32CAM_OV2640    // Define CAMERA MODEL -> defined in platform.ini
+//#define BOARD_AITHINKER_ESP32CAM              // Define BOARD TYPE -> defined in platform.ini
+//#define CAMERA_AITHINKER_ESP32CAM_OV2640      // Define CAMERA MODEL -> defined in platform.ini
 
 
 // Define SD card configuration
-#define BOARD_SDCARD_SDMMC_BUS_WIDTH_1      // SD MMC: Operate with 1 data line (D0) instead of 4 lines (D0-D3)
+#define BOARD_SDCARD_SDMMC_BUS_WIDTH_1          // SD MMC: Operate with 1 data line (D0) instead of 4 lines (D0-D3)
 
 
 // Board types
@@ -381,4 +381,4 @@ CONFIG_WPA_11R_SUPPORT=n
     #define LEDC_FREQUENCY      (5000)                      // Frequency in Hertz. Set frequency at 5 kHz
 #endif //GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
 
-#endif // ifndef defines_h
+#endif //DEFINES_H
