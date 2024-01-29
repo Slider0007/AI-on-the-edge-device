@@ -122,26 +122,26 @@ CCamera::CCamera()
 
 void CCamera::PowerResetCamera()
 {
-    const int pwdnPin = PWDN_GPIO_NUM;
-    if (pwdnPin == GPIO_NUM_NC) {
-        ESP_LOGD(TAG, "Camera power pin not defined. Software power reset not possible"); 
+    #if PWDN_GPIO_NUM != GPIO_NUM_NC
+        ESP_LOGD(TAG, "Resetting camera by power cycling");
+        gpio_config_t conf;
+        conf.intr_type = GPIO_INTR_DISABLE;
+        conf.pin_bit_mask = 1LL << PWDN_GPIO_NUM;
+        conf.mode = GPIO_MODE_OUTPUT;
+        conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+        conf.pull_up_en = GPIO_PULLUP_DISABLE;
+        gpio_config(&conf);
+
+        // carefull, logic is inverted compared to reset pin
+        gpio_set_level(PWDN_GPIO_NUM, 1);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        gpio_set_level(PWDN_GPIO_NUM, 0);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
         return;
-    }
-
-    ESP_LOGD(TAG, "Resetting camera by power cycling");
-    gpio_config_t conf;
-    conf.intr_type = GPIO_INTR_DISABLE;
-    conf.pin_bit_mask = 1LL << PWDN_GPIO_NUM;
-    conf.mode = GPIO_MODE_OUTPUT;
-    conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    conf.pull_up_en = GPIO_PULLUP_DISABLE;
-    gpio_config(&conf);
-
-    // carefull, logic is inverted compared to reset pin
-    gpio_set_level(PWDN_GPIO_NUM, 1);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    gpio_set_level(PWDN_GPIO_NUM, 0);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    #else
+        ESP_LOGD(TAG, "Power pin not defined. Software power reset not available"); 
+        return;
+    #endif
 }
 
 

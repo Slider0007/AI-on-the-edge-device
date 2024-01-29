@@ -305,19 +305,32 @@ CONFIG_WPA_11R_SUPPORT=n
 // HARDWARE RELATED DEFINITIONS
 //*************************************************************************
 
-// Define BOARD TYPE and CAMERA MODEL
+// Define BOARD type
+// Define ENV_BOARD_TYPE in platformio.ini
 //************************************
-//#define BOARD_AITHINKER_ESP32CAM              // Define BOARD TYPE -> defined in platform.ini
-//#define CAMERA_AITHINKER_ESP32CAM_OV2640      // Define CAMERA MODEL -> defined in platform.ini
+#if ENV_BOARD_TYPE && ENV_BOARD_TYPE == 1
+#define BOARD_AITHINKER_ESP32CAM
+#else
+#error "Board type (ENV_BOARD_TYPE) not defined"
+#define BOARD_AITHINKER_ESP32CAM
+#endif
 
-
-// Define SD card configuration
-#define BOARD_SDCARD_SDMMC_BUS_WIDTH_1          // SD MMC: Operate with 1 data line (D0) instead of 4 lines (D0-D3)
+// Define CAMERA model
+// Define ENV_CAMERA_MODEL in platformio.ini
+//************************************
+#if ENV_CAMERA_MODEL && ENV_CAMERA_MODEL == 1
+#define CAMERA_AITHINKER_ESP32CAM_OV2640
+#else
+#error "Camera model (ENV_CAMERA_MODEL) not defined"
+#define CAMERA_AITHINKER_ESP32CAM_OV2640
+#endif
 
 
 // Board types
 //************************************
 #ifdef BOARD_AITHINKER_ESP32CAM
+    #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1                  // Only 1 line SD card operation is supported (hardware related)
+
     // SD card (operated with SDMMC peripheral)
     #define GPIO_SDCARD_CLK                 GPIO_NUM_14
     #define GPIO_SDCARD_CMD                 GPIO_NUM_15
@@ -331,13 +344,13 @@ CONFIG_WPA_11R_SUPPORT=n
     // LEDs
     #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_33     // Onboard red status LED
     #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_4      // Onboard flashlight LED
+
+    #define GPIO_FLASHLIGHT_DEFAULT_USE_LEDC                // Activate LEDC peripheral for PWM control
     
-    #if defined(BOARD_SDCARD_SDMMC_BUS_WIDTH_1)
+    #ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
         #define GPIO_FLASHLIGHT_DEFAULT     GPIO_FLASHLIGHT_ONBOARD // Use onboard flashlight as default flashlight
-        #define GPIO_FLASHLIGHT_DEFAULT_USE_LEDC            // Activate LEDC peripheral for PWM control
     #else
-        #define GPIO_FLASHLIGHT_DEFAULT     GPIO_NUM_NC     // Flash LED cannot be used if SD card operated in 4-line mode
-        #undef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
+        #define GPIO_FLASHLIGHT_DEFAULT     GPIO_NUM_13     // Onboard flashlight cannot be used if SD card operated in 4-line mode -> Define GPIO13
     #endif
 #else
     #error "define.h: No board type defined or type unknown"
@@ -375,10 +388,10 @@ CONFIG_WPA_11R_SUPPORT=n
     #define LEDC_TIMER          LEDC_TIMER_1                // LEDC_TIMER_0 is used for camera
     #define LEDC_MODE           LEDC_LOW_SPEED_MODE
     #define LEDC_OUTPUT_IO      GPIO_FLASHLIGHT_DEFAULT     // Define the output GPIO of default flashlight
-    #define LEDC_CHANNEL        LEDC_CHANNEL_1
+    #define LEDC_CHANNEL        LEDC_CHANNEL_1              // LEDC_CHANNEL_0 is used for camera
     #define LEDC_DUTY_RES       LEDC_TIMER_13_BIT           // Set duty resolution to 13 bits
-    #define LEDC_RESOLUTION     (1 << LEDC_TIMER_13_BIT) -1 // 13bit resolution --> 8192: 0 .. 8191
-    #define LEDC_FREQUENCY      (5000)                      // Frequency in Hertz. Set frequency at 5 kHz
+    #define LEDC_RESOLUTION     (1 << LEDC_TIMER_13_BIT) -1 // 13 bit resolution --> 8192: 0 .. 8191
+    #define LEDC_FREQUENCY      (5000)                      // Frequency in hertz. Set frequency at 5 kHz
 #endif //GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
 
 #endif //DEFINES_H
