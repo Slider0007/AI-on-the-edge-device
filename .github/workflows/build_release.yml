@@ -64,7 +64,7 @@ jobs:
         echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
     - name: Cache pip & platformIO cache files
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
             ~/.cache/pip
@@ -74,16 +74,16 @@ jobs:
           
     - name: Cache PIO build files
       if: ${{ ! needs.prepare-release.outputs.release_created }} # do not use cached data when building a release
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ./code/.pio/
         key: build-${{ github.run_id }}
         restore-keys: build # This matches above key as it is only used as a prefix. It restores the nearest cache
           
     - name: Setup python environment
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11'
 
     - name: Install PlatformIO environment
       run: |
@@ -111,7 +111,7 @@ jobs:
         cd html; find . -type f -exec sed -i 's/$COMMIT_HASH/${{ steps.vars.outputs.sha_short }}/g' {} \;
         
     - name: Save generated files
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         path: | 
           ./code/sdkconfig.defaults
@@ -142,7 +142,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Load generated-files
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: | 
           ./code/sdkconfig.defaults
@@ -178,7 +178,7 @@ jobs:
         cp ./sd-card/config/*.tflite ./update/config/ 2>/dev/null || true
 
     - name: Upload update.zip artifact (Firmware + Web UI + CNN)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "AI-on-the-edge-device__update__SLFork__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         path: ./update
@@ -204,7 +204,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Load generated-files
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: | 
           ./code/sdkconfig.defaults
@@ -237,7 +237,7 @@ jobs:
         cd sd-card; zip -r ../manual_setup/sd-card.zip *; cd ..
   
     - name: Upload manual_setup.zip artifact (Firmware + Bootloader + Partitions + Web UI)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "AI-on-the-edge-device__manual-setup__SLFork__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         path: ./manual_setup
@@ -261,7 +261,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Load generated-files
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: | 
           ./code/sdkconfig.defaults
@@ -295,7 +295,7 @@ jobs:
         cp ./sd-card/config/* ./remote_setup/config/ 2>/dev/null || true
 
     - name: Upload remote_setup.zip artifact (Firmware + Web UI + Config)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "AI-on-the-edge-device__remote-setup__SLFork__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         path: ./remote_setup
@@ -318,7 +318,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Load generated-files
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: | 
           ./code/sdkconfig.defaults
@@ -347,7 +347,7 @@ jobs:
         cp -f "./code/.pio/build/esp32cam/firmware.elf" "debug/firmware.elf"
 
     - name: Upload debug_files.zip artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "AI-on-the-edge-device__debug-files__SLFork__${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         path: ./debug
@@ -381,7 +381,7 @@ jobs:
         echo "branch=$(echo ${{ github.ref_name }} | tr / __)" >> $GITHUB_OUTPUT
     
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
         
     - name: Rename artifacts
       run: |
