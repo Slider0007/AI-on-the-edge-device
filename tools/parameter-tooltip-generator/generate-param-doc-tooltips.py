@@ -6,12 +6,12 @@ import glob
 import markdown
 
 
-parameterDocsFolder = "AI-on-the-edge-device-docs/param-docs/parameter-pages"
-docsMainFolder = "../../sd-card/html"
+parameterDocsFolder = "./docs/Configuration/Parameter"
+docsMainFolder = "./sd-card/html"
 configPage = "edit_config_param.html"
 
 htmlTooltipPrefix = """
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
+    <div class="rst-content"><div class="tooltip"><img src="help.png" width="28px"><span class="tooltiptext">
 """
 
 
