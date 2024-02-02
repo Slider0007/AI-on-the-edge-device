@@ -1,5 +1,5 @@
 # AI-on-the-Edge [SL Fork]
-<img src="images/icon/watermeter.svg" width="100px"> 
+<img src="images/icon/watermeter.svg" width="80px"> 
 
 Artificial intelligence based systems have become established in our everyday lives. Just think of speech or image recognition. Most of the systems rely on either powerful processors or a direct connection to the cloud for doing the calculations there. With the increasing power of modern processors, the AI systems are coming closer to the end user – which is usually called **edge computing**.
 Here, this edge computing is put into a practically oriented example, where an AI network is implemented on an ESP32 device so: **AI on the Edge**.
@@ -8,7 +8,7 @@ This project allows you to digitize your **analog** water, gas, power and other 
 
 All you need is an [ESP32-CAM board](https://jomjol.github.io/AI-on-the-edge-device-docs/Hardware-Compatibility/) and something of a practical hand.
 
-<img src="images/esp32-cam.png" width="100px">
+<img src="images/esp32-cam.png" width="120px">
 
 ## Key features
 - Tensorflow Lite (TFLite) integration – including easy-to-use wrapper
@@ -20,23 +20,23 @@ All you need is an [ESP32-CAM board](https://jomjol.github.io/AI-on-the-edge-dev
 - Full integration into Home Assistant
 - InfluxDB v1.x + v2.x
 - MQTT v3.x
-- REST API
+- [REST API](docs/API/REST/_OVERVIEW.md)
 
 
 ## Workflow
 The device takes an image of your meter at a defined interval. It extracts the Regions of Interest (ROIs) from the image and runs them through artificial intelligence. 
-As a result, you get the digitized value of your meter. There are several options for what to do with that value. Either send it to a MQTT broker, write it to an InfluxDB or simply provide access to it via a REST API (JSON / HTML).
+As a result, you get the digitized value of your meter. There are several options for what to do with that value. Either send it to a MQTT broker, write it to InfluxDB or simply provide access to it via a REST API (JSON / HTML).
 
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/idea.jpg" width="00"> 
+<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/idea.jpg" width="800"> 
 
 
 ## Impressions
 ### Hardware
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter_all.jpg" width="200"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/main.jpg" width="200"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/size.png" width="200"> 
+<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter_all.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/main.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/size.png" width="266"> 
 
 
 ### Software
-<img src="https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/07938912-7438-467c-80ca-f1538b37f98c" width="600"> 
+<img src="https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/07938912-7438-467c-80ca-f1538b37f98c" width="800"> 
 
 
 ## Device Installation
