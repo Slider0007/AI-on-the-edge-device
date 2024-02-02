@@ -13,8 +13,8 @@ Trigger for a manual publish of Home Assistant MQTT discovery topics. The reques
 
 
 Payload:
-  - No payload needed
+- No payload needed
 
 Response:
-  - Content type: `HTML`
-  - Content: Query response
+- Content type: `HTML`
+- Content: Query response

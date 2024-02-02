@@ -6,12 +6,14 @@
 
 
 Get actual device boot timestamp (UTC)
+
 Format: `YYYYMMDD-HHMMSS`
 
-- Payload:
-    - No payload needed
+
+Payload:
+- No payload needed
 
 Response:
-  - Content type: `HTML`
-  - Content: Query response
-    - Example: `20240202-125653`
+- Content type: `HTML`
+- Content: Query response
+- Example: `20240202-125653`

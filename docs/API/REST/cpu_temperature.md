@@ -11,8 +11,8 @@ Note: Temperature sensor is not officailly supported by hardware. It can be unpr
 
 Unit: Degree Celcius
 
-- Payload:
-    - No payload needed
+Payload:
+  - No payload needed
 
 Response:
   - Content type: `HTML`

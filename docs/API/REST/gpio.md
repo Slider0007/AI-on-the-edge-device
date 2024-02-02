@@ -7,18 +7,17 @@
 
 Interact with GPIO pins 
 
+
 Payload:
 1. Control a GPIO output
-    - `GPIO` endpoint parameter:
-       - `/GPIO?GPIO=[PinNumber]&Status=high`
-       - `/GPIO?GPIO=[PinNumber]&Status=low`
+    - `/GPIO?GPIO=[PinNumber]&Status=high`
+    - `/GPIO?GPIO=[PinNumber]&Status=low`
     - Example: `/GPIO?GPIO=12&Status=high`
 
 2. Read a GPIO input 
-    - `GPIO` endpoint parameter:
-       - `/GPIO?GPIO=[PinNumber]`
+    - `/GPIO?GPIO=[PinNumber]`
     - Example: `/GPIO?GPIO=12`
 
 Response:
-  - Content type: `HTML`
-  - Content: Query response text
+- Content type: `HTML`
+- Content: Query response text

@@ -7,9 +7,10 @@
 
 Switch the onboard flashlight on
 
-- Payload:
-    - No payload needed
 
-- Response:
-  - Content type: `HTML`
-  - Content: `Light On`
+Payload:
+- No payload needed
+
+Response:
+- Content type: `HTML`
+- Content: `Light On`

@@ -7,9 +7,9 @@
 
 Trigger a flow start
 
-- Payload:
-    - No payload needed
+Payload:
+- No payload needed
 
 Response:
-  - Content type: `HTML`
-  - Content: Query response
+- Content type: `HTML`
+- Content: Query response

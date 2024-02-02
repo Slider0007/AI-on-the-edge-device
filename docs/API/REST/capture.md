@@ -7,9 +7,9 @@
 
 Instantly capture actual image without using flashlight
 
-- Payload:
-    - No payload needed
+Payload:
+- No payload needed
 
-- Response:
-  - Content type: `HTML`
-  - Content: Raw image (JPG file)
+Response:
+- Content type: `HTML`
+- Content: Raw image (JPG file)

@@ -8,11 +8,11 @@
 Save a new image to SD card
 
 Payload:
-  - `filename` Filename incl. path, e.g. `img_tmp/test.jpg` (folder: `img_tmp`, filename: `test.jpg`)
-  - `delay` Flashlight time im milliseconds
-  - Example: `http://<IP>/save?filename=img_tmp/test.jpg&delay=1000`
+- `filename` Filename incl. path, e.g. `img_tmp/test.jpg` (folder: `img_tmp`, filename: `test.jpg`)
+- `delay` Flashlight time im milliseconds
+- Example: `/save?filename=img_tmp/test.jpg&delay=1000`
 
 Response:
-  - Content type: `HTML`
-  - Content: `/sdcard/img_tmp/test.jpg`
-    (Response delayed by flash duration)
+- Content type: `HTML`
+- Content: `/sdcard/img_tmp/test.jpg`<br>
+  (Response delayed by flash duration)

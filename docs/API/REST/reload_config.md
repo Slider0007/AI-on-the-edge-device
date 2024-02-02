@@ -7,9 +7,10 @@
 
 Reload configuration and reinit device with new configuration (no device reboot required)
 
+
 Payload:
-  - No payload needed
+- No payload needed
 
 Response:
-  - Content type: `HTML`
-  - Content: Query response
+- Content type: `HTML`
+- Content: Query response

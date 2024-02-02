@@ -9,13 +9,11 @@ Get live stream of camera
 
 IMPORTANT: A running stream is blocking the entire web interface (to limit memory usage for this function). Please ensure to close stream before continue with WebUI.
 
-Payload:
-  - `flashlight=true` Activate onboard flashlight
 
-Requests:
+Payload:
+- `flashlight=true` Activate onboard flashlight
 - Flashlight off: `/stream` or `/stream?flashlight=false`
 - Flashlight on:`/stream?flashlight=true`
-
 
 Response:
   - Content type: `multipart/x-mixed-replace`

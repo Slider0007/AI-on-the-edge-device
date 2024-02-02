@@ -19,23 +19,23 @@ The following data are available:
 | `timestamp_processed`                | Sequence name + Timestamp of last processed cycle<br>Notes:<br>- Time of image taken | `2024-02-02T11:01:29+0100`
 
 
-- Payload:
-    - No payload needed
+Payload:
+- No payload needed
 
-- Response:
-  - Content type: `JSON`
-  - Content: Query response
-    - Example: 
-      ```
-      {
-          "main": {
-              "actual_value": "146.540",
-              "fallback_value": "146.540",
-              "raw_value": "146.539",
-              "value_status": "E91 Rate negative",
-              "rate_per_min": "0.0000",
-              "rate_per_processing": "0.000",
-              "timestamp_processed": "2024-02-02T14:28:01+0100"
-          }
-      }
-      ```
+Response:
+- Content type: `JSON`
+- Content: Query response
+- Example: 
+```
+{
+  "main": {
+    "actual_value": "146.540",
+    "fallback_value": "146.540",
+    "raw_value": "146.539",
+    "value_status": "E91 Rate negative",
+    "rate_per_min": "0.0000",
+    "rate_per_processing": "0.000",
+    "timestamp_processed": "2024-02-02T14:28:01+0100"
+  }
+}
+```

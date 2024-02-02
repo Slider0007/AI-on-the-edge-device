@@ -9,10 +9,11 @@ Get actual WLAN signal strength
 
 Unit: dBm
 
+
 Payload:
-  - No payload needed
+- No payload needed
 
 Response:
-  - Content type: `HTML`
-  - Content: Query response
-    - Example: `-67`
+- Content type: `HTML`
+- Content: Query response
+- Example: `-67`

@@ -27,29 +27,29 @@ The following data are available:
 | `cycle_counter`                      | Number of processed cycles                          | `4100`
 
 
-- Payload:
-    - No payload needed
+Payload:
+- No payload needed
 
-- Response:
-  - Content type: `JSON`
-  - Content: Query response
-    - Example: 
-      ```
-      {
-        "api_name": "process_data",
-        "timestamp_processed": "main\t2024-02-02T11:01:29+0100",
-        "timestamp_fallbackvalue": "main\t2024-02-02T11:01:29+0100",
-        "actual_value": "main\t146.540",
-        "fallback_value": "main\t146.540",
-        "raw_value": "main\t146.539",
-        "value_status": "main\tE91 Rate negative",
-        "rate_per_min": "main\t0.0000",
-        "rate_per_processing": "main\t0.000",
-        "process_state": "[11:01:42] Idle - Waiting for Autostart",
-        "process_error": "0",
-        "temperature": "38",
-        "rssi": "-54",
-        "uptime": "  5d 16h 38m 06s",
-        "cycle_counter": "4100"
-      }
-      ```
+Response:
+- Content type: `JSON`
+- Content: Query response
+- Example: 
+```
+{
+  "api_name": "process_data",
+  "timestamp_processed": "main\t2024-02-02T11:01:29+0100",
+  "timestamp_fallbackvalue": "main\t2024-02-02T11:01:29+0100",
+  "actual_value": "main\t146.540",
+  "fallback_value": "main\t146.540",
+  "raw_value": "main\t146.539",
+  "value_status": "main\tE91 Rate negative",
+  "rate_per_min": "main\t0.0000",
+  "rate_per_processing": "main\t0.000",
+  "process_state": "[11:01:42] Idle - Waiting for Autostart",
+  "process_error": "0",
+  "temperature": "38",
+  "rssi": "-54",
+  "uptime": "  5d 16h 38m 06s",
+  "cycle_counter": "4100"
+}
+```

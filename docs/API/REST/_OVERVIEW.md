@@ -6,7 +6,7 @@
 
 Further details can be found in the respective REST API endpoint description.
 
-| REST API Endpoint                    | Description                                        | HTML / JSON | Deprecated*       
+| REST API Endpoint                    | Description                                        | HTML / JSON | Depre-<br>cated*       
 |:-------------------------------------|:---------------------------------------------------|:------------|:-----------
 | [/process_data](process_data.md)     | Process Data                                       | JSON        | 
 | [/value](value.md)                   | Process Data                                       | HTML        | X

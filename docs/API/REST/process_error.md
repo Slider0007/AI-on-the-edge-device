@@ -10,12 +10,13 @@ Get actual process error state
 Possible states:
 - `000: No process error`
 - `E90: Process error occured`
-- `E91: Multiple process errors in row` (An error occured three times in a row)
+- `E91: Multiple process errors in row` (3 errors)
+
 
 Payload:
-  - No payload needed
+- No payload needed
 
 Response:
-  - Content type: `HTML`
-  - Content: Query response
-    - Example: `000: No process error`
+- Content type: `HTML`
+- Content: Query response
+- Example: `000: No process error`

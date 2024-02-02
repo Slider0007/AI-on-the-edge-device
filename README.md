@@ -1,4 +1,4 @@
-# AI-on-the-Edge --- SL Fork
+# AI-on-the-Edge [SL Fork]
 <img src="images/icon/watermeter.svg" width="100px"> 
 
 Artificial intelligence based systems have become established in our everyday lives. Just think of speech or image recognition. Most of the systems rely on either powerful processors or a direct connection to the cloud for doing the calculations there. With the increasing power of modern processors, the AI systems are coming closer to the end user – which is usually called **edge computing**.
@@ -59,7 +59,7 @@ For further background information, head to [Neural Networks](https://www.heise.
 [Training Neural Networks](https://www.heise.de/select/make/2022/1/2134114065999161585) and [Programming on the ESP32](https://www.heise.de/select/make/2022/2/2204010051597422030).
 
 ### 2. Download Firmware Package
-Officially released firmware packages can be downloaded on [Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases).<br>
+Officially released firmware packages can be downloaded on [Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases).
 
 ### 3. Install MCU Part Of Firmware
 Initially the MCU of the device has to be flashed via a direct USB connection. Further updates can be performed directly over the air (OTA). <br>
@@ -72,7 +72,7 @@ There are different ways to flash the microcontroller:
 - [ESPtool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
 See [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/) for more information.<br>
-Note: Installation using web installer is not supported by this fork repo.
+Note: Installation using web installer is not supported by this forked repo.
 
 ### 4. Install SD Card Content
 The SD card can be setup using the device's local WLAN hotspot after the MCU firmware got successfully installed  (`AI-on-the-edge-device__remote-setup__*.zip`). See the 
@@ -82,9 +82,14 @@ Alternatively the SD card still can be setup manually without using hotspot, see
 :warning: Do not use github source files in any case, use only release related zip package. Otherwise functionality cannot be fully guaranteed!
 
 
+## API Description
+### REST API
+See [REST API](docs/API/REST/_OVERVIEW.md)
+
+
 ## Build Firmware Yourself
 See [Build Instructions](code/README.md)
 
 
 ## Support
-⚠️ This is a forked version of [jomjol](https://github.com/jomjol/AI-on-the-edge-device) great software which is intented to use for my personal purposes only. ⚠️
+⚠️ This is a forked version of [jomjol](https://github.com/jomjol/AI-on-the-edge-device) great software which is intented to use for my personal purposes only.

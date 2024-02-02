@@ -7,10 +7,10 @@
 
 Instantly capture actual image using flashlight (flash duration: default)
 
-- Payload:
-    - No payload needed
+Payload:
+- No payload needed
 
-- Response:
-  - Content type: `HTML`
-  - Content: Raw image (JPG file)
-    (Response delayed by flash duration)
+Response:
+- Content type: `HTML`
+- Content: Raw image (JPG file)<br>
+  (Response delayed by flash duration)
