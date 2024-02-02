@@ -1,4 +1,4 @@
-[Overview](_overview.md) 
+[Overview](_Overview.md) 
 
 ### REST API endpoint: cpu_temperature
 
@@ -6,7 +6,9 @@
 
 
 Get actual device CPU temperature 
-Be aware: Temperature sensor is not officailly supported by hardware. It can be unprecise or unreliable
+
+Note: Temperature sensor is not officailly supported by hardware. It can be unprecise or unreliable
+
 Unit: Degree Celcius
 
 - Payload:

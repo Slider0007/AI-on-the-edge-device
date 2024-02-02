@@ -1,4 +1,4 @@
-[Overview](_overview.md) 
+[Overview](_Overview.md) 
 
 ### REST API endpoint: data
 
@@ -8,13 +8,14 @@
 Get all data entries from today
 
 Each row represents one processed cycle.
+
 CSV separated format: `time, sequence name, raw value, actual value, fallback value, rate per min, rate per processing, process status, results of digit ROIs, results of analog ROIs`
 
 Process status:
-`000`: Valid, no deviation
-`E91`: Small negative rate, use fallback value as actual value (information only)
-`E92`: Negative rate larger than specified max rate (error)
-`E93`: Positive rate larger than specified max rate (error)
+- `000`: Valid, no deviation
+- `E91`: Small negative rate, use fallback value as actual value (information only)
+- `E92`: Negative rate larger than specified max rate (error)
+- `E93`: Positive rate larger than specified max rate (error)
 
 
 Payload:

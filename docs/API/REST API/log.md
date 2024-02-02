@@ -1,4 +1,4 @@
-[Overview](_overview.md) 
+[Overview](_Overview.md) 
 
 ### REST API endpoint: logfileact
 
@@ -8,6 +8,7 @@
 Get all log entries from today
 
 Each row represents one log entry.
+
 Format: `[uptime] timestamp <log level> [source] message`
 
 Log levels:

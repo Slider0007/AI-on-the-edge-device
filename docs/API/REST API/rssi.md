@@ -1,4 +1,4 @@
-[Overview](_overview.md) 
+[Overview](_Overview.md) 
 
 ### REST API endpoint: rssi
 
@@ -6,10 +6,11 @@
 
 
 Get actual WLAN signal strength
+
 Unit: dBm
 
-- Payload:
-    - No payload needed
+Payload:
+  - No payload needed
 
 Response:
   - Content type: `HTML`

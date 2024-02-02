@@ -1,8 +1,8 @@
 ## Overview: REST API
 
 ### General usage
-Generic: `http://IP-ADDRESS/REST API endpoint`
-Example: `http://192.168.1.x/process_data`
+- Generic: `http://IP-ADDRESS/REST API endpoint`
+- Example: `http://192.168.1.x/process_data`
 
 Further details can be found in the respective REST API endpoint description.
 

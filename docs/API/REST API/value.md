@@ -1,4 +1,4 @@
-[Overview](_overview.md) 
+[Overview](_Overview.md) 
 
 ### REST API endpoint: value
 
@@ -25,4 +25,4 @@ Payload:
 
 Response:
 - Content type: `HTML`
-- Content: Query response (Sequence name + Result devided by TAB)
+- Content: Query response (sequence name + result devided by TAB)
