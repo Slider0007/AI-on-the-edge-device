@@ -8,7 +8,7 @@ This project allows you to digitize your **analog** water, gas, power and other 
 
 All you need is an [ESP32-CAM board](https://jomjol.github.io/AI-on-the-edge-device-docs/Hardware-Compatibility/) and something of a practical hand.
 
-<img src="images/esp32-cam.png" width="200px">
+<img src="images/esp32-cam.png" width="100px">
 
 ## Key features
 - Tensorflow Lite (TFLite) integration – including easy-to-use wrapper
@@ -27,16 +27,16 @@ All you need is an [ESP32-CAM board](https://jomjol.github.io/AI-on-the-edge-dev
 The device takes an image of your meter at a defined interval. It extracts the Regions of Interest (ROIs) from the image and runs them through artificial intelligence. 
 As a result, you get the digitized value of your meter. There are several options for what to do with that value. Either send it to a MQTT broker, write it to an InfluxDB or simply provide access to it via a REST API (JSON / HTML).
 
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/idea.jpg" width="800"> 
+<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/idea.jpg" width="00"> 
 
 
 ## Impressions
 ### Hardware
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter_all.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/main.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/size.png" width="266"> 
+<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter_all.jpg" width="200"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/main.jpg" width="200"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/size.png" width="200"> 
 
 
 ### Software
-<img src="https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/07938912-7438-467c-80ca-f1538b37f98c" width="800"> 
+<img src="https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/07938912-7438-467c-80ca-f1538b37f98c" width="600"> 
 
 
 ## Device Installation
@@ -87,7 +87,7 @@ Alternatively the SD card still can be setup manually without using hotspot, see
 See [REST API](docs/API/REST/_OVERVIEW.md)
 
 
-## Build Firmware Yourself
+## Build Yourself
 See [Build Instructions](code/README.md)
 
 
