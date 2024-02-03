@@ -7,9 +7,9 @@
 
 Trigger for a manual publish of Home Assistant MQTT discovery topics. The request will be executed in the next upcoming "Publish To MQTT" state.
 
-!!! Note
-    1. The Home Assistant Discovery function needs to be activated in configuration. Please check 'MQTT' section in configuration.
-    2. If the function is activated, discovery topics gets automatically published once after a device restart in the above mentioned state.
+!!! Note:<br> 
+    1. The Home Assistant Discovery function needs to be activated in configuration. Please check 'MQTT' section in configuration.<br>
+    2. If the function is activated, discovery topics gets automatically published once after a device restart in the above mentioned state.<br>
     3. This request can also be triggerd from 'WebUI' --> 'Manual Control' --> 'Resend HA Discovery'
 
 

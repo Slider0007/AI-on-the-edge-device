@@ -17,9 +17,9 @@ All you need is an [ESP32-CAM board](https://jomjol.github.io/AI-on-the-edge-dev
 - Integrated camera and illumination
 - Web interface for administration and control
 - OTA interface for updating directly via web interface
-- Full integration into Home Assistant
+- Full integration into [Home Assistant](docs/API/MQTT/homeassistant_discovery.md)
 - InfluxDB v1.x + v2.x
-- MQTT v3.x
+- [MQTT v3.x](docs/API/MQTT/_OVERVIEW.md)
 - [REST API](docs/API/REST/_OVERVIEW.md)
 
 
@@ -85,6 +85,9 @@ Alternatively the SD card still can be setup manually without using hotspot, see
 ## API Description
 ### REST API
 See [REST API](docs/API/REST/_OVERVIEW.md)
+
+### MQTT API
+See [MQTT API](docs/API/MQTT/_OVERVIEW.md)
 
 
 ## Build Yourself

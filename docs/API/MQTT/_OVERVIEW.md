@@ -2,7 +2,7 @@
 
 The device is capable to register to a MQTT broker to publish data and subscribe to specific topics.
 
-!!! Note
+!!! Note:<br>  
     Only MQTT v3.1.1 is supported.
 
 ### Precondition
@@ -95,7 +95,7 @@ The following device status topics gets published during the `Publish To MQTT` s
 
 Topic | Description | Output
 :-|:-|:-
-`[Main Topic]/connection` | MQTT Connection Status<br><br>Possible States:<br>- connected<br>- disconnected | `connected`
+`[Main Topic]/connection` | MQTT Connection Status<br><br>Possible States:<br>- connected<br>- connection lost | `connected`
 `[Main Topic]/uptime` | Device Uptime [s] | `147`
 `[Main Topic]/freeMem` | Total Free Memory (Int. + Ext.) [kB] | `3058639`
 `[Main Topic]/wifiRSSI` | WLAN Signal Strength [dBm] | `-54`
@@ -109,7 +109,7 @@ Topic | Description | Output
 - Format: `[Main Topic]/[Sequence Name]/[Topic]`
 - Example: `watermeter/MAC`
 
-!!! Note
+!!! Note:<br>
     All configured number sequences get published depending on your device configuration.
 
 The following topics gets published during the `Publish To MQTT` state of every cycle.
