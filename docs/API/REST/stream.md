@@ -7,7 +7,7 @@
 
 Get live stream of camera
 
-IMPORTANT: A running stream is blocking the entire web interface (to limit memory usage for this function). Please ensure to close stream before continue with WebUI.
+__IMPORTANT__: A running stream is blocking the entire web interface (to limit memory usage for this function). Please ensure to close stream before continue with WebUI.
 
 
 Payload:

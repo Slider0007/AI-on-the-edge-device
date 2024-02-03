@@ -1,8 +1,8 @@
 [Overview](_OVERVIEW.md) 
 
-### MQTT API : Home Assistant Discovery
+## MQTT API : Home Assistant Discovery
 
-#### General
+### General
 
 AI-on-the-Edge devices support Home Assistant Discovery.
 
@@ -12,9 +12,9 @@ AI-on-the-Edge devices support Home Assistant Discovery.
 
 Further information can be found in [jomjol documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Integration-Home-Assistant/).
 
-#### Topics
+### Topics
 
-##### Sensor
+#### Sensor
 
 - Format: `homeassistant/sensor/[hostname]/[Topic]/config`
 - Example: `homeassistant/sensor/watermeter/uptime/config`
@@ -67,7 +67,7 @@ Example: `[Main Topic]/[Sequence Name]/actual_value/config`
 ```
 
 
-##### Binary Sensor (equal to a summary error of the device)
+#### Binary Sensor (equal to a summary error of the device)
 
 - Format: `homeassistant/binary_sensor/[hostname]/problem`
 - Example: `homeassistant/binary_sensor/watermeter/problem`

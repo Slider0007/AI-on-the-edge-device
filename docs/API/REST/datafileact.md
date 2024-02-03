@@ -9,7 +9,7 @@ Get data entries from today (only last 80kB)
 
 Each row represents one processed cycle.
 
-CSV separated format: `time, sequence name, raw value, actual value, fallback value, rate per min, rate per processing, process status, results of digit ROIs, results of analog ROIs`
+CSV separated format: `time, sequence name, raw value, actual value, fallback value, rate per min, rate per processing, value status, results of digit ROIs, results of analog ROIs`
 
 Process status:
 - `000`: Valid, no deviation

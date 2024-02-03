@@ -2,7 +2,7 @@
 
 The device is capable to register to a MQTT broker to publish data and subscribe to specific topics.
 
-!!! Note:<br>  
+!!! __Note__: 
     Only MQTT v3.1.1 is supported.
 
 ### Precondition
@@ -72,7 +72,7 @@ Usage Details
 
 The following device status topics gets published during the `Publish To MQTT` state **only in the first cycle**.
 
-!!!Warning
+!!! __Warning__: 
     If you want to use these topics, it is recommended to switch on `Message Retain` flag to avoid loosing topic state whenever your topic consuming system is potentially getting restarted while AI-on-the-Edge running without interruption.
 
 - Format: `[Main Topic]/[Topic]`
@@ -109,7 +109,7 @@ Topic | Description | Output
 - Format: `[Main Topic]/[Sequence Name]/[Topic]`
 - Example: `watermeter/main/actual_value`
 
-!!! Note:<br>
+!!! __Note__: 
     All configured number sequences get published depending on your device configuration.
 
 The following topics gets published during the `Publish To MQTT` state of every cycle.
