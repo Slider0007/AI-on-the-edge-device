@@ -8,12 +8,12 @@
 
 ## Description
 
-MQTT main topic where the data are published.
+MQTT main topic where the data are published.<br>
+Check [MQTT API description](../../../API/MQTT/_OVERVIEW.md) for more details.
 
 !!! Note
-    The results are pubished per number sequence, e.g. `MainTopic/[NUMBER SEQUENCE]/[RESULT TOPIC]`.
-    A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.<br>
-    See [MQTT Result Topics](https://jomjol.github.io/AI-on-the-edge-device-docs/MQTT-API/#Result) for a full list of result topics.
+    The results are pubished per number sequence: `[Main Topic]/[Number Sequence]/[Topic]`.<br>
+    A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.
 
 !!! Note
-    The general connection status gets published to `MainTopic/connection`. 
+    The general connection status gets published to `[Main Topic]/connection`. 

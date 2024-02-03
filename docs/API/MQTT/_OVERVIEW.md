@@ -107,7 +107,7 @@ Topic | Description | Output
 #### Number Sequence Results
 
 - Format: `[Main Topic]/[Sequence Name]/[Topic]`
-- Example: `watermeter/MAC`
+- Example: `watermeter/main/actual_value`
 
 !!! Note:<br>
     All configured number sequences get published depending on your device configuration.
