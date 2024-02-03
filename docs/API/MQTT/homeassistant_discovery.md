@@ -36,7 +36,7 @@ Discovery Topic Configuration| Description
 `[Main Topic]/[Sequence Name]/raw_value/config` | Raw value <br>The value before performing any post-processing
 `[Main Topic]/[Sequence Name]/value_status/config` | Value Status
 `[Main Topic]/[Sequence Name]/rate_per_processing/config` | Rate per processing<br>(Delta of the last two valid processed cycles)
-`[Main Topic]/[Sequence Name]/rate_per_time_unit/config` | Rate per HA time unit<br>(Delta of the last two valid processed cycles and normalized to time unit, e.g. minute. The time unit gets derived from Home Assistant [meter type](docs/Configuration/Parameter/MQTT/MeterType.md))
+`[Main Topic]/[Sequence Name]/rate_per_time_unit/config` | Rate per HA time unit<br>(Delta of the last two valid processed cycles and normalized to time unit, e.g. minute. The time unit gets derived from Home Assistant [meter type](../../Configuration/Parameter/MQTT/MeterType.md))
 `[Main Topic]/[Sequence Name]/timestamp_processed/config` | Timestamp of last processed cycle
 `[Main Topic]/[Sequence Name]/json/config` | Provide the following content in JSON notation: `actual_value`, `fallback_vaue`, `raw_value`, `value_status`, `rate_per_min`, `rate_per_processing`, `timestamp_processed`
 
