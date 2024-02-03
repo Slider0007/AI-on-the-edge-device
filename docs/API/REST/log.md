@@ -27,4 +27,5 @@ Response:
 - Example: `[0d02h49m24s] 2024-02-01T15:54:07	<DBG>	[FLOWCTRL] Status: Aligning (15:54:07)`
 
 
-Tip: Get log entries from previous days: Use [/fileserver](fileserver.md) endpoint.
+!!! Tip
+    Get log entries from previous days: Use [/fileserver](fileserver.md) endpoint.
