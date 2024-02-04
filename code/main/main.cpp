@@ -57,6 +57,9 @@
 
 static const char *TAG = "MAIN";
 
+
+std::string deviceStartTimestamp = "";
+
 extern const char* GIT_TAG;
 extern const char* GIT_REV;
 extern const char* GIT_BRANCH;
