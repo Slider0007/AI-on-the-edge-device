@@ -90,18 +90,18 @@ bool sendHomeAssistantDiscoveryTopic(std::string group, std::string field, std::
         "\"icon\": \"mdi:" + icon + "\",";        
 
     if (group != "") {
-        if (field == "problem") { // Special binary sensor which is based on error topic
-            payload += "\"state_topic\": \"~/" + group + "/error\",";
-            payload += "\"value_template\": \"{{ 'OFF' if 'no error' in value else 'ON'}}\",";
+        if (field == "problem") { // Special binary sensor which is based on 'value_status' topic
+            payload += "\"state_topic\": \"~/value_status\",";
+            payload += "\"value_template\": \"{{ 'OFF' if '000 Valid' in value or 'E91 Rate negative' in value else 'ON'}}\",";
         }
         else {
             payload += "\"state_topic\": \"~/" + group + "/" + field + "\",";
         }
     }
     else {
-        if (field == "problem") { // Special binary sensor which is based on error topic
-            payload += "\"state_topic\": \"~/error\",";
-            payload += "\"value_template\": \"{{ 'OFF' if 'no error' in value else 'ON'}}\",";
+        if (field == "problem") { // Special binary sensor which is based on 'value_status' topic
+            payload += "\"state_topic\": \"~/value_status\",";
+            payload += "\"value_template\": \"{{ 'OFF' if '000 Valid' in value or 'E91 Rate negative' in value else 'ON'}}\",";
         }
         else {
             payload += "\"state_topic\": \"~/" + field + "\",";
@@ -177,7 +177,7 @@ bool MQTThomeassistantDiscovery(int qos)
         //                                                   Group | Field                   | User Friendly Name            | Icon                      | Unit         | Device Class   | State Class       | Entity Category | QOS
         allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "actual_value",           "Actual Value",                 "gauge",                    valueUnit,      meterType,      "total_increasing", "",               qos);
         allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "raw_value",              "Raw Value",                    "raw",                      "",             "",             "",                 "diagnostic",     qos);
-        allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "fallback_value",         "Fallback Value",              "raw",                      "",             "",             "",                 "diagnostic",     qos);
+        allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "fallback_value",         "Fallback Value",               "raw",                      "",             "",             "",                 "diagnostic",     qos);
         allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "value_status",           "Value Status",                 "alert-circle-outline",     "",             "",             "",                 "diagnostic",     qos);        
         allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "rate_per_time_unit",     "Rate (" + rateUnit + ")",      "swap-vertical",            rateUnit,       "",             "measurement",      "",               qos);
         allSendsSuccessed |= sendHomeAssistantDiscoveryTopic(group, "rate_per_processing",    "Rate per processing interval", "arrow-expand-vertical",    valueUnit,      "",             "measurement",      "",               qos); // correctly the Unit is Unit/Interval!
