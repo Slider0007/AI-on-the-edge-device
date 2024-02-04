@@ -66,78 +66,9 @@ extern std::string getFwVersion(void);
 extern std::string getHTMLversion(void);
 extern std::string getHTMLcommit(void);
 
-void migrateConfiguration(void);
-
-std::string deviceStartTimestamp;
-
-
-bool Init_NVS_SDCard()
-{
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-
-    ESP_LOGD(TAG, "Using SDMMC peripheral");
-    sdmmc_host_t host = SDMMC_HOST_DEFAULT();
-
-    // This initializes the slot without card detect (CD) and write protect (WP) signals.
-    // Modify slot_config.gpio_cd and slot_config.gpio_wp if your board has these signals.
-    sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
-
-    // To use 1-line SD mode, uncomment the following line:
-    #ifdef __SD_USE_ONE_LINE_MODE__
-        slot_config.width = 1;
-    #endif
-
-    // GPIOs 15, 2, 4, 12, 13 should have external 10k pull-ups.
-    // Internal pull-ups are not sufficient. However, enabling internal pull-ups
-    // does make a difference some boards, so we do that here.
-    gpio_set_pull_mode(GPIO_NUM_15, GPIO_PULLUP_ONLY);   // CMD, needed in 4- and 1- line modes
-    gpio_set_pull_mode(GPIO_NUM_2, GPIO_PULLUP_ONLY);    // D0, needed in 4- and 1-line modes
-    #ifndef __SD_USE_ONE_LINE_MODE__
-        gpio_set_pull_mode(GPIO_NUM_4, GPIO_PULLUP_ONLY);    // D1, needed in 4-line mode only
-        gpio_set_pull_mode(GPIO_NUM_12, GPIO_PULLUP_ONLY);   // D2, needed in 4-line mode only
-    #endif
-    gpio_set_pull_mode(GPIO_NUM_13, GPIO_PULLUP_ONLY);   // D3, needed in 4- and 1-line modes
-
-    // Options for mounting the filesystem.
-    // If format_if_mount_failed is set to true, SD card will be partitioned and
-    // formatted in case when mounting fails.
-    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-        .format_if_mount_failed = false,
-        .max_files = 12,                         // previously -> 2022-09-21: 5, 2023-01-02: 7 
-        .allocation_unit_size = 16 * 1024
-    };
-
-    sdmmc_card_t* card;
-    // Use settings defined above to initialize SD card and mount FAT filesystem.
-    // Note: esp_vfs_fat_sdmmc_mount is an all-in-one convenience function.
-    // Please check its source code and implement error recovery when developing
-    // production applications.
-    ret = esp_vfs_fat_sdmmc_mount("/sdcard", &host, &slot_config, &mount_config, &card);
-
-    if (ret != ESP_OK) {
-        if (ret == ESP_FAIL) {
-            ESP_LOGE(TAG, "Failed to mount FAT filesystem on SD card. Check SD card filesystem (only FAT supported) or try another card");
-            StatusLED(SDCARD_INIT, 1, true);
-        } 
-        else if (ret == 263) { // Error code: 0x107 --> usually: SD not found
-            ESP_LOGE(TAG, "SD card init failed. Check if SD card is properly inserted into SD card slot or try another card");
-            StatusLED(SDCARD_INIT, 2, true);
-        }
-        else {
-            ESP_LOGE(TAG, "SD card init failed. Check error code or try another card");
-            StatusLED(SDCARD_INIT, 3, true);
-        }
-        return false;
-    }
-
-    //sdmmc_card_print_info(stdout, card);  // With activated CONFIG_NEWLIB_NANO_FORMAT --> capacity not printed correctly anymore
-    SaveSDCardInfo(card);
-    return true;
-}
+esp_err_t initNVSFlash();
+esp_err_t initSDCard();
+void migrateConfiguration();
 
 
 extern "C" void app_main(void)
@@ -161,14 +92,20 @@ extern "C" void app_main(void)
     // ********************************************
     // Highlight start of app_main 
     // ********************************************
-    ESP_LOGI(TAG, "================ Start app_main =================\n\n");
+    ESP_LOGI(TAG, "================ Start app_main =================");
     
+    // Init NVS flash
+    // ********************************************
+    if (ESP_OK != initNVSFlash()) {
+        ESP_LOGE(TAG, "Device init aborted");
+        return; // Stop here, NVS is needed for proper operation
+    }
+
     // Init SD card
     // ********************************************
-    if (!Init_NVS_SDCard())
-    {
+    if (ESP_OK != initSDCard()) {
         ESP_LOGE(TAG, "Device init aborted");
-        return; // No way to continue without working SD card!
+        return; // Stop here, SD card is needed for proper operation
     }
 
     // SD card: Create log directories (if not already existing)
@@ -416,6 +353,94 @@ extern "C" void app_main(void)
     else { 
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed");
     }
+}
+
+
+esp_err_t initNVSFlash()
+{
+    ESP_LOGI(TAG, "Initializing NVS flash");
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    return ret;
+}
+
+
+esp_err_t initSDCard()
+{
+    esp_err_t ret = ESP_OK;
+
+    ESP_LOGI(TAG,"Initializing SD card: Using SDMMC peripheral");
+    sdmmc_host_t host = SDMMC_HOST_DEFAULT();
+
+    // Pullup SD card D3 pin to ensure SD init using MMC mode
+    // Additionally, an external pullup is needed
+    gpio_set_pull_mode(GPIO_SDCARD_D3, GPIO_PULLUP_ONLY);
+
+    // This initializes the slot without card detect (CD) and write protect (WP) signals.
+    // Modify slot_config.gpio_cd and slot_config.gpio_wp if your board has these signals.
+    sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
+
+    #ifdef SOC_SDMMC_USE_GPIO_MATRIX
+        slot_config.clk = GPIO_SDCARD_CLK;
+        slot_config.cmd = GPIO_SDCARD_CMD;
+        slot_config.d0 = GPIO_SDCARD_D0;
+    #endif
+
+    #ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
+        slot_config.width = 1;
+    #else
+        #ifdef SOC_SDMMC_USE_GPIO_MATRIX
+            slot_config.d1 = GPIO_SDCARD_D1;
+            slot_config.d2 = GPIO_SDCARD_D2;
+            slot_config.d3 = GPIO_SDCARD_D3;
+        #endif
+        slot_config.width = 4;
+    #endif
+
+    // Enable internal pullups on enabled pins. The internal pullups
+    // are insufficient however, please make sure 10k external pullups are
+    // connected on the bus. This is for debug / example purpose only.
+    slot_config.flags |= SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
+
+    // Options for mounting the filesystem.
+    // If format_if_mount_failed is set to true, SD card will be partitioned and
+    // formatted in case when mounting fails.
+    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
+        .format_if_mount_failed = false,
+        .max_files = 12,                         // previously -> 2022-09-21: 5, 2023-01-02: 7 
+        .allocation_unit_size = 16 * 1024,
+        .disk_status_check_enable = 0
+    };
+
+    sdmmc_card_t* card;
+
+    // Use settings defined above to initialize SD card and mount FAT filesystem.
+    // Note: esp_vfs_fat_sdmmc_mount is an all-in-one convenience function.
+    // Please check its source code and implement error recovery when developing
+    // production applications.
+    ret = esp_vfs_fat_sdmmc_mount("/sdcard", &host, &slot_config, &mount_config, &card);
+
+    if (ret != ESP_OK) {
+        if (ret == ESP_FAIL) {
+            ESP_LOGE(TAG, "Failed to mount FAT filesystem on SD card. Check SD card filesystem (only FAT supported) or try another card");
+            StatusLED(SDCARD_INIT, 1, true);
+        } 
+        else if (ret == 263) { // Error code: 0x107 --> usually: SD not found
+            ESP_LOGE(TAG, "SD card init failed. Check if SD card is properly inserted into SD card slot or try another card");
+            StatusLED(SDCARD_INIT, 2, true);
+        }
+        else {
+            ESP_LOGE(TAG, "SD card init failed. Check error code or try another card");
+            StatusLED(SDCARD_INIT, 3, true);
+        }
+        return ret;
+    }
+
+    SaveSDCardInfo(card);
+    return ret;
 }
 
 

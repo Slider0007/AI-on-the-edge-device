@@ -240,7 +240,7 @@
     <h2>Data Graph</h2>
     <div style="margin-top:20px;margin-bottom:0px;">
         Number Sequence: <select id="numbers" onchange="run();"></select>
-        Day: <select id="datafiles" onchange="run();"></select>
+        Day: <select style="width:120px" id="datafiles" onchange="run();"></select>
         <input type="checkbox" id="showRelativeValues" onclick = 'run();'  ><label for="showRelativeValues">Show relative value</label><br><br>
     </div>
     <div>
@@ -255,54 +255,50 @@
         <button class="button" onClick="window.location.href = 'data.html?v=$COMMIT_HASH'">Show Data Viewer</button>
         <button class="button" onClick="window.location.href = getDomainname() + '/fileserver/log/data/'">Show Data Files</button>
     </div>
-    <div id='chart'><p>Loading graph...<br></p></div>
+    <div id='chart'><p>Loading graph ...<br></p></div>
 
 
 <script>
-    function WriteDataFiles()
-    {
-        list_data = getDATAList();
 
+    function parseDataFiles(list_data)
+    {
         var _indexDig = document.getElementById("datafiles");
         while (_indexDig.length)
             _indexDig.remove(0);
 
-        for (var i = list_data.length - 1; i >= 0; --i)
-        {
+        for (var i = list_data.length - 1; i >= 0; --i) {
             var optionDig = document.createElement("option");
             
-            var text = list_data[i];
-            optionDig.text = text;
+            optionDig.text = list_data[i].substring(5, list_data[i].lastIndexOf('.'));
             optionDig.value = list_data[i];
             _indexDig.add(optionDig);
         }
     }
 
-    function WriteNumbers()
+  
+    function parseNumberSequenceName()
     {
-        list_data = getNUMBERSList();
+        var NumberSequence = getNumberSequences();
 
-        var _indexDig = document.getElementById("numbers");
-        while (_indexDig.length)
-            _indexDig.remove(0);
+        var sel_sequence = document.getElementById("numbers");
+        while (sel_sequence.length) {
+            sel_sequence.remove(0);
+        }
 
-        for (var i = 0; i < list_data.length; ++i)
-        {
-            var optionDig = document.createElement("option");
-            
-            var text = list_data[i];
-            optionDig.text = text;
-            optionDig.value = list_data[i];
-            _indexDig.add(optionDig);
+        for (var i = 0; i < NumberSequence.length; ++i) {
+            var option = document.createElement("option");
+            option.text = NumberSequence[i]["name"];
+            option.value = NumberSequence[i]["name"];
+            sel_sequence.add(option);
         }
     }
 
 
     function initAutoRefreshContent()
     {
-        loadConfig(getDomainname()); 
-        ParseConfigReduced();
+        ParseConfig();
         param = getConfigParameters();
+        parseNumberSequenceName();
         
 		document.getElementById("AutoRefreshEnabled").checked = param["WebUI"]["DataGraphAutoRefresh"]["value1"] == "true" ? true : false;
 		document.getElementById("AutoRefreshTime").value = param["WebUI"]["DataGraphAutoRefreshTime"]["value1"];   
@@ -342,15 +338,22 @@
 	}
 
 
-    function init()
+    async function init()
 	{
-        initAutoRefreshContent();
-        WriteDataFiles();
-        WriteNumbers();
+		// Ensure data file list and config (sequence number names) is loaded before parsing data
+		await Promise.all([getDataFileList(), loadConfig()])
+			.then(([list_data, configData]) => {
+                initAutoRefreshContent();
+                parseDataFiles(list_data);
+            })
+			.catch((error) => {
+				firework.launch('Failed loading data for graph page. Please repeat or check logs', 'danger', 30000);
+				console.error("Failed loading data for graph page. Error: " + error.message);
+			});
         run();
 	}
 
-	
+
 	init();
 
 </script>

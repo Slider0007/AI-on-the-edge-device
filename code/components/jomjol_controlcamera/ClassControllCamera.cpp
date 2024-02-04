@@ -40,35 +40,34 @@ static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %
 
 
 static camera_config_t camera_config = {
-    .pin_pwdn = CAM_PIN_PWDN,
-    .pin_reset = CAM_PIN_RESET,
-    .pin_xclk = CAM_PIN_XCLK,
-    .pin_sscb_sda = CAM_PIN_SIOD,
-    .pin_sscb_scl = CAM_PIN_SIOC,
+    .pin_pwdn       = PWDN_GPIO_NUM,
+    .pin_reset      = RESET_GPIO_NUM,
+    .pin_xclk       = XCLK_GPIO_NUM,
+    .pin_sccb_sda   = SIOD_GPIO_NUM,
+    .pin_sccb_scl   = SIOC_GPIO_NUM,
+    .pin_d7         = Y9_GPIO_NUM,
+    .pin_d6         = Y8_GPIO_NUM,
+    .pin_d5         = Y7_GPIO_NUM,
+    .pin_d4         = Y6_GPIO_NUM,
+    .pin_d3         = Y5_GPIO_NUM,
+    .pin_d2         = Y4_GPIO_NUM,
+    .pin_d1         = Y3_GPIO_NUM,
+    .pin_d0         = Y2_GPIO_NUM,
+    .pin_vsync      = VSYNC_GPIO_NUM,
+    .pin_href       = HREF_GPIO_NUM,
+    .pin_pclk       = PCLK_GPIO_NUM,
 
-    .pin_d7 = CAM_PIN_D7,
-    .pin_d6 = CAM_PIN_D6,
-    .pin_d5 = CAM_PIN_D5,
-    .pin_d4 = CAM_PIN_D4,
-    .pin_d3 = CAM_PIN_D3,
-    .pin_d2 = CAM_PIN_D2,
-    .pin_d1 = CAM_PIN_D1,
-    .pin_d0 = CAM_PIN_D0,
-    .pin_vsync = CAM_PIN_VSYNC,
-    .pin_href = CAM_PIN_HREF,
-    .pin_pclk = CAM_PIN_PCLK,
-
-    //XCLK 20MHz or 10MHz for OV2640 double FPS (Experimental)
-    .xclk_freq_hz = 20000000,             // Orginal value
+    .xclk_freq_hz = 20000000,           // Frequency (20Mhz)
+    
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0,
 
-    .pixel_format = PIXFORMAT_JPEG, //YUV422,GRAYSCALE,RGB565,JPEG
-    .frame_size = FRAMESIZE_VGA,    //QQVGA-UXGA Do not use sizes above QVGA when not JPEG
-    .jpeg_quality = 12, //0-63 lower number means higher quality
-    .fb_count = 1,       //if more than one, i2s runs in continuous mode. Use only with JPEG
-    .fb_location = CAMERA_FB_IN_PSRAM, /*!< The location where the frame buffer will be allocated */
-    .grab_mode = CAMERA_GRAB_LATEST,      // only from new esp32cam version
+    .pixel_format = PIXFORMAT_JPEG,     // YUV422, GRAYSCALE, RGB565, JPEG
+    .frame_size = FRAMESIZE_VGA,        // QQVGA-UXGA Do not use sizes above QVGA when not JPEG
+    .jpeg_quality = 12,                 // 0-63 lower number means higher quality
+    .fb_count = 1,                      // if more than one, i2s runs in continuous mode. Use only with JPEG
+    .fb_location = CAMERA_FB_IN_PSRAM,  // The location where the frame buffer will be allocated */
+    .grab_mode = CAMERA_GRAB_LATEST     // only from new esp32cam version
 };
 
 
@@ -115,7 +114,7 @@ CCamera::CCamera()
     demoMode = false;
     CameraInitSuccessful = false;
 
-    #ifdef USE_PWM_LEDFLASH
+    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
         ledc_init();   
     #endif
 }
@@ -123,21 +122,26 @@ CCamera::CCamera()
 
 void CCamera::PowerResetCamera()
 {
-
-        ESP_LOGD(TAG, "Resetting camera by power down line");
+    #if PWDN_GPIO_NUM != GPIO_NUM_NC
+        ESP_LOGD(TAG, "Resetting camera by power cycling");
         gpio_config_t conf;
         conf.intr_type = GPIO_INTR_DISABLE;
-        conf.pin_bit_mask = 1LL << GPIO_NUM_32;
+        conf.pin_bit_mask = 1LL << PWDN_GPIO_NUM;
         conf.mode = GPIO_MODE_OUTPUT;
         conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
         conf.pull_up_en = GPIO_PULLUP_DISABLE;
         gpio_config(&conf);
 
         // carefull, logic is inverted compared to reset pin
-        gpio_set_level(GPIO_NUM_32, 1);
+        gpio_set_level(PWDN_GPIO_NUM, 1);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
-        gpio_set_level(GPIO_NUM_32, 0);
+        gpio_set_level(PWDN_GPIO_NUM, 0);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
+        return;
+    #else
+        ESP_LOGD(TAG, "Power pin not defined. Software power reset not available"); 
+        return;
+    #endif
 }
 
 
@@ -713,19 +717,19 @@ void CCamera::LightOnOff(bool status)
 {
     GpioHandler* gpioHandler = gpio_handler_get();
     if ((gpioHandler != NULL) && (gpioHandler->isEnabled())) {
-        ESP_LOGD(TAG, "Use gpioHandler to trigger flashlight");
+        ESP_LOGD(TAG, "GPIO handler enabled: Trigger flashlight by GPIO handler");
         gpioHandler->flashLightEnable(status);
-    }  
+    }
     else {
-    #ifdef USE_PWM_LEDFLASH
+    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
         if (status) {
-            ESP_LOGD(TAG, "Internal Flash-LED turn on with PWM %d", led_intensity);
+            ESP_LOGD(TAG, "Default flashlight turn on with PWM %d", led_intensity);
             ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, led_intensity));
             // Update duty to apply the new value
             ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
         }
         else {
-            ESP_LOGD(TAG, "Internal Flash-LED turn off PWM");
+            ESP_LOGD(TAG, "Default flashlight turn off PWM");
             ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, 0));
             ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
         }
@@ -733,12 +737,12 @@ void CCamera::LightOnOff(bool status)
         // Init the GPIO
         esp_rom_gpio_pad_select_gpio(FLASH_GPIO);
         // Set the GPIO as a push/pull output 
-        gpio_set_direction(FLASH_GPIO, GPIO_MODE_OUTPUT);  
+        gpio_set_direction(GPIO_FLASHLIGHT_DEFAULT, GPIO_MODE_OUTPUT);  
 
         if (status)  
-            gpio_set_level(FLASH_GPIO, 1);
+            gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 1);
         else
-            gpio_set_level(FLASH_GPIO, 0);
+            gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 0);
     #endif
     }
 }
@@ -748,14 +752,14 @@ void CCamera::LEDOnOff(bool status)
 {
 	if (xHandle_task_StatusLED == NULL) {
         // Init the GPIO
-        esp_rom_gpio_pad_select_gpio(BLINK_GPIO);
+        esp_rom_gpio_pad_select_gpio(GPIO_STATUS_LED_ONBOARD);
         /* Set the GPIO as a push/pull output */
-        gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);  
+        gpio_set_direction(GPIO_STATUS_LED_ONBOARD, GPIO_MODE_OUTPUT);  
 
         if (!status)  
-            gpio_set_level(BLINK_GPIO, 1);
+            gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
         else
-            gpio_set_level(BLINK_GPIO, 0);   
+            gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);   
     }
 }
 

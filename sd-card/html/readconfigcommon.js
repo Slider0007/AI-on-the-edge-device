@@ -1,23 +1,3 @@
-function SaveConfigToServer(_domainname)
-{
-     // leere Zeilen am Ende löschen
-     var zw = config_split.length - 1;
-     while (config_split[zw] == "") {
-          config_split.pop();
-     }
-
-     var _config_gesamt = "";
-     for (var i = 0; i < config_split.length; ++i)
-     {
-          _config_gesamt = _config_gesamt + config_split[i] + "\n";
-     } 
-
-     // Save to temporary file and then promote to config.ini on firmware level (server_file.cpp)
-     // -> Reduce data loss risk (e.g. network connection got interrupted during data transfer)
-     FileSendContent(_config_gesamt, "/config/config.tmp", _domainname);       
-}
-
-
 function reload_config()
 {
      var url = getDomainname() + '/reload_config';
@@ -51,31 +31,173 @@ function reload_config()
      xhttp.send();
 }
 
-
-function UpdateConfig(zw, _index, _enhance, _domainname)
+   
+function dataURLtoBlob(dataurl)
 {
-     var namezw = zw["name"];
-     FileCopyOnServer("/img_tmp/ref_zw.jpg", namezw, _domainname);
-     var namezw = zw["name"].replace(".jpg", "_org.jpg");
-     FileCopyOnServer("/img_tmp/ref_zw_org.jpg", namezw, _domainname);     
+     var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+          bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+     while(n--){
+          u8arr[n] = bstr.charCodeAt(n);
+     }
+     return new Blob([u8arr], {type:mime});
+}	
+ 
+
+async function FileCopyOnServer(_source, _target, _domainname = "", async = false)
+{
+     return new Promise(function (resolve, reject) {
+          var url = _domainname + "/editflow?task=copy&in=" + _source + "&out=" + _target;
+
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+               if (this.readyState == 4) {
+                    if (this.status >= 200 && this.status < 300) {
+                         return resolve("Copy file request successful");
+                    }
+                    if (this.status > 400) {
+                         firework.launch("Copy file request failed (Response status: " + this.status + 
+                                             "). Repeat action or check logs.", 'danger', 30000);
+                         console.error("Copy file request failed. Response status: " + this.status);
+                         return reject("Copy file request failed");
+                    }
+               }
+          };
+     
+          if (async)
+               xhttp.timeout = 10000;  // 10 seconds
+
+          xhttp.open("GET", url, async);
+          xhttp.send();
+     });
 }
 
 
-function createReader(file)
+function FileDeleteOnServer(_filename, _domainname = "")
 {
-     var image = new Image();
-     reader.onload = function(evt) {
-         var image = new Image();
-         image.onload = function(evt) {
-             var width = this.width;
-             var height = this.height;
-             //alert (width); // will produce something like 198
-         };
-         image.src = evt.target.result; 
-     };
-     reader.readAsDataURL(file);
- }
+     var okay = false;
+     var url = _domainname + "/delete" + _filename;
 
+     var xhttp = new XMLHttpRequest();
+     xhttp.onreadystatechange = function() {
+          if (xhttp.readyState == 4) {
+               if (xhttp.status >= 200 && xhttp.status < 300) {
+                    okay = true;
+               }
+               else {
+                    firework.launch("File delete request failed (Response status: " + this.status + 
+                                        "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("File delete request failed. Response status: " + this.status);
+                    okay = false;
+               }
+          }
+     };
+
+     xhttp.open("POST", url, false);
+     xhttp.send();
+
+     return okay;
+}
+
+
+function FileSendContent(_content, _filename, _domainname = "")
+{
+     var okay = false;
+     var url = _domainname + "/upload" + _filename;
+     
+     var xhttp = new XMLHttpRequest();  
+     xhttp.onreadystatechange = function() {
+          if (xhttp.readyState == 4) {
+               if (xhttp.status >= 200 && xhttp.status < 300) {
+                    okay = true;
+               } 
+               else if (xhttp.status == 0) {
+				firework.launch('File send request failed. Server closed the connection abruptly!', 'danger', 30000);
+               } 
+               else {
+                    firework.launch("File send request failed (Response status: " + this.status + 
+                                        "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("File send request failed. Response status: " + this.status);
+                    okay = false;
+               }
+          }
+     };
+
+     xhttp.open("POST", url, false);
+     xhttp.send(_content);
+
+     return okay;        
+}
+
+
+function SaveCanvasToImage(_canvas, _filename, _delete = true, _domainname = "")
+{
+     var JPEG_QUALITY=0.8;
+     var dataUrl = _canvas.toDataURL('image/jpeg', JPEG_QUALITY);	
+     var rtn = dataURLtoBlob(dataUrl);
+
+     if (_delete) {
+          FileDeleteOnServer(_filename, _domainname);
+     }
+	
+     FileSendContent(rtn, _filename, _domainname);
+}
+
+
+function SaveConfigToServer(_domainname)
+{
+     // leere Zeilen am Ende löschen
+     var zw = config_split.length - 1;
+     while (config_split[zw] == "") {
+          config_split.pop();
+     }
+
+     var _config_gesamt = "";
+     for (var i = 0; i < config_split.length; ++i)
+     {
+          _config_gesamt = _config_gesamt + config_split[i] + "\n";
+     } 
+
+     // Save to temporary file and then promote to config.ini on firmware level (server_file.cpp)
+     // -> Reduce data loss risk (e.g. network connection got interrupted during data transfer)
+     FileSendContent(_config_gesamt, "/config/config.tmp", _domainname);       
+}
+
+
+
+function loadImage(url, altUrl)
+{
+    var timer;
+    function clearTimer() {
+        if (timer) {                
+            clearTimeout(timer);
+            timer = null;
+        }
+    }
+
+    function handleFail() {
+        // kill previous error handlers
+        this.onload = this.onabort = this.onerror = function() {};
+        // stop existing timer
+        clearTimer();
+        // switch to alternate url
+        if (this.src === url) {
+            this.src = altUrl;
+        }
+    }
+
+    var img = new Image();
+    img.onerror = img.onabort = handleFail;
+    img.onload = function() {
+        clearTimer();
+    };
+    img.src = url;
+    timer = setTimeout(function(theImg) { 
+        return function() {
+            handleFail.call(theImg);
+        };
+    }(img), 10000);
+    return(img);
+}
 
 
 function ZerlegeZeile(input, delimiter = " =\t\r")
@@ -161,176 +283,4 @@ function trim(istring, adddelimiter)
      }
 
      return istring;
-}
-     
-
-function getConfig()
-{
-     return config_gesamt;
-}
-
-     
-function loadConfig(_domainname)
-{
-     var okay = false;
-     var url = _domainname + '/fileserver/config/config.ini';
-
-     var xhttp = new XMLHttpRequest();
-     xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-               if (this.status >= 200 && this.status < 300) {
-                    config_gesamt = xhttp.responseText;
-                    okay = true;
-               }
-               else {
-                    firework.launch("Loading config.ini failed (Response status: " + this.status + 
-                                    "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Loading config.ini failed. Response status: " + this.status);
-                    okay = false;
-                }
-          }
-     };
-
-     xhttp.open("GET", url, false);
-     xhttp.send();
-
-     return okay;
-}
-
-     
-function dataURLtoBlob(dataurl)
-{
-     var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-          bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-     while(n--){
-          u8arr[n] = bstr.charCodeAt(n);
-     }
-     return new Blob([u8arr], {type:mime});
-}	
- 
-
-function FileCopyOnServer(_source, _target, _domainname = "")
-{
-     var url = _domainname + "/editflow?task=copy&in=" + _source + "&out=" + _target;
-
-     var xhttp = new XMLHttpRequest();
-     xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-               if (this.status > 400) {
-                    firework.launch("Copy file request failed (Response status: " + this.status + 
-                                        "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Copy file request failed. Response status: " + this.status);
-               }
-          }
-     };
- 
-     xhttp.open("GET", url, false);
-     xhttp.send();
-}
-
-
-function FileDeleteOnServer(_filename, _domainname = "")
-{
-     var okay = false;
-     var url = _domainname + "/delete" + _filename;
-
-     var xhttp = new XMLHttpRequest();
-     xhttp.onreadystatechange = function() {
-          if (xhttp.readyState == 4) {
-               if (xhttp.status >= 200 && xhttp.status < 300) {
-                    okay = true;
-               }
-               else {
-                    firework.launch("File delete request failed (Response status: " + this.status + 
-                                        "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("File delete request failed. Response status: " + this.status);
-                    okay = false;
-               }
-          }
-     };
-
-     xhttp.open("POST", url, false);
-     xhttp.send();
-
-     return okay;
-}
-
-
-function FileSendContent(_content, _filename, _domainname = "")
-{
-     var okay = false;
-     var url = _domainname + "/upload" + _filename;
-     
-     var xhttp = new XMLHttpRequest();  
-     xhttp.onreadystatechange = function() {
-          if (xhttp.readyState == 4) {
-               if (xhttp.status >= 200 && xhttp.status < 300) {
-                    okay = true;
-               } 
-               else if (xhttp.status == 0) {
-				firework.launch('File send request failed. Server closed the connection abruptly!', 'danger', 30000);
-               } 
-               else {
-                    firework.launch("File send request failed (Response status: " + this.status + 
-                                        "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("File send request failed. Response status: " + this.status);
-                    okay = false;
-               }
-          }
-     };
-
-     xhttp.open("POST", url, false);
-     xhttp.send(_content);
-
-     return okay;        
-}
-
-
-function SaveCanvasToImage(_canvas, _filename, _delete = true, _domainname = "")
-{
-     var JPEG_QUALITY=0.8;
-     var dataUrl = _canvas.toDataURL('image/jpeg', JPEG_QUALITY);	
-     var rtn = dataURLtoBlob(dataUrl);
-
-     if (_delete) {
-          FileDeleteOnServer(_filename, _domainname);
-     }
-	
-     FileSendContent(rtn, _filename, _domainname);
-}
-
-
-function loadImage(url, altUrl)
-{
-    var timer;
-    function clearTimer() {
-        if (timer) {                
-            clearTimeout(timer);
-            timer = null;
-        }
-    }
-
-    function handleFail() {
-        // kill previous error handlers
-        this.onload = this.onabort = this.onerror = function() {};
-        // stop existing timer
-        clearTimer();
-        // switch to alternate url
-        if (this.src === url) {
-            this.src = altUrl;
-        }
-    }
-
-    var img = new Image();
-    img.onerror = img.onabort = handleFail;
-    img.onload = function() {
-        clearTimer();
-    };
-    img.src = url;
-    timer = setTimeout(function(theImg) { 
-        return function() {
-            handleFail.call(theImg);
-        };
-    }(img), 10000);
-    return(img);
 }

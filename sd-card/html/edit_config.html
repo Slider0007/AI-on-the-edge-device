@@ -54,14 +54,14 @@
 
 <script src="common.js?v=$COMMIT_HASH"></script> 
 <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
 <script>
 	var canvas = document.getElementById('canvas'),
 		domainname = getDomainname(); 
 
 
-	function LoadConfigNeu()
+	function loadConfigData()
 	{
-		loadConfig(domainname); 	
 		document.getElementById("inputTextToSave").value = getConfig();
 	}
 
@@ -82,8 +82,14 @@
 	}
 
 	
-	LoadConfigNeu();
-	
+	function init()
+	{
+		loadConfig().then(() => loadConfigData());
+	}
+
+
+	init();
+
 </script>
  
 </body>

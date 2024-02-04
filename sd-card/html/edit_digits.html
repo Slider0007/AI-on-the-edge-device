@@ -583,8 +583,8 @@
 
     function RefreshSequences(_sel)
     {
-        NumberSequence = getNumberSequences();
-        index = 0;
+        var NumberSequence = getNumberSequences();
+        var index = 0;
 
         var sel_sequence = document.getElementById("SequenceSelect");
         while (sel_sequence.length) {
@@ -1094,16 +1094,17 @@
     }
 
 
-    function init()
+    function loadReferenceImage()
     {
-        openDescription();
-
         loadCanvas(domainname + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
         canvas.addEventListener('mousedown', mouseDown, false);
         canvas.addEventListener('mouseup', mouseUp, false);
         canvas.addEventListener('mousemove', mouseMove, false);
+    }
 
-        loadConfig(domainname); 
+    
+    function loadConfigData()
+    {
         ParseConfig();
         param = getConfigParameters(); 
         param_category = getConfigCategory();
@@ -1113,6 +1114,15 @@
         RefreshDraw();
 
         document.getElementById("saveconfig").disabled = true;
+    }
+
+
+    function init()
+    {
+        openDescription();
+        
+        loadReferenceImage();
+        loadConfig().then(() => loadConfigData());
     }
 
 

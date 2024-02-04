@@ -293,7 +293,9 @@
 
     function showReference(_param)
     {
-        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);
+        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);                              
+        loadCanvas(url, false);
+        isActReference = true;
 
         if (_param["Alignment"]["InitialRotate"].value1 < 0) {
             document.getElementById("prerotateangle").value = Math.ceil(_param["Alignment"]["InitialRotate"].value1);
@@ -330,10 +332,7 @@
 
         document.getElementById("mirror").disabled = true;
         document.getElementById("flip").disabled = true;
-
-        isActReference = true;                                  
-        loadCanvas(url, false);
-    }	
+    }
 
 
     function UpdateInput()
@@ -344,6 +343,7 @@
         WriteParameter(param, category, "TakeImage", "LEDIntensity", false);		
     }
     
+
     /* Parse parameter out of param structure and preset webui fields */
     function WriteParameter(_param, _category, _cat, _name, _optional, outval = false, _select = false, _anzpara = 1)
     {
@@ -609,19 +609,18 @@
 
 
     /* hash #description open the details part of the page */
-    function openDescription() {
-    if(window.location.hash) {
-        var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
-        if(hash == 'description')
-            document.getElementById("desc_details").open = true;
+    function openDescription()
+    {
+        if(window.location.hash) {
+            var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+            if(hash == 'description')
+                document.getElementById("desc_details").open = true;
         }
     }
 
 
-    function init() {
-        openDescription();
-        canvas.addEventListener('mousemove', mouseMove, false);    
-        loadConfig(getDomainname()); 
+    function loadConfigData()
+    {
         ParseConfig();
         param = getConfigParameters();
 
@@ -651,9 +650,17 @@
         }
 
         UpdateInput();
-        showReference(param); 
+        showReference(param);
     }
 
+
+    function init()
+    {
+        openDescription();
+        
+        canvas.addEventListener('mousemove', mouseMove, false);
+        loadConfig().then(() => loadConfigData());
+    }
 
     init();
 

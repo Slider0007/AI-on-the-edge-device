@@ -5,7 +5,6 @@ import os
 import glob
 import markdown
 import shutil
-import git
 import sys
 
 scriptName = "generate-param-doc-tooltips-localbuild.py"
@@ -24,20 +23,12 @@ else:
     rootPath = scriptPath.split("tools",1)[0]
 
 
-if not os.path.exists(scriptPath + "AI-on-the-edge-device-docs"):
-    print(scriptName + ": Clone \'AI-on-the-edge-device-docs\'")
-    git.Git(scriptPath).clone("https://github.com/Slider0007/AI-on-the-edge-device-docs.git", branch='parameter-description')
-else:
-    print(scriptName + ": Pull \'AI-on-the-edge-device-docs\'")
-    git.Git(scriptPath).pull
-
-
-parameterDocsFolder = scriptPath + "/AI-on-the-edge-device-docs/param-docs/parameter-pages"
+parameterDocsFolder = rootPath + "/docs/Configuration/Parameter"
 docsMainFolder = rootPath + "/sd-card/html"
 configPage = "edit_config_param.html"
 
 htmlTooltipPrefix = """
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="32px"><span class="tooltiptext">
+    <div class="rst-content"><div class="tooltip"><img src="help.png" width="28px"><span class="tooltiptext">
 """
 
 

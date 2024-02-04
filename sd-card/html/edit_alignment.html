@@ -624,10 +624,13 @@
     function SaveToConfig()
     {
         if (confirm("Are you sure you want to save the new alignment marker configuration?")) {
-            WriteConfigININew();
-            CopyAlignmentMarker(domainname)
-            SaveConfigToServer(domainname);
             document.getElementById("savemarker").disabled = true;
+            WriteConfigININew();
+            SaveConfigToServer(domainname);
+
+            // Copy alignment marker to config folder
+            FileCopyOnServer("/img_tmp/ref0.jpg", "/config/ref0.jpg", domainname, false);
+            FileCopyOnServer("/img_tmp/ref1.jpg", "/config/ref1.jpg", domainname, false);
             
             firework.launch('Save and apply configuration...', 'success', 2000, true);
             setTimeout(function() {
@@ -648,28 +651,39 @@
     }
 
 
+    function loadConfigData()
+    {
+        ParseConfig();
+        param = getConfigParameters();
+
+        // Copy Alignment marker image to img_tmp folder for further processing
+        FileCopyOnServer("/config/ref0.jpg", "/img_tmp/ref0.jpg", domainname, true).then(() => RefreshMarker());
+        FileCopyOnServer("/config/ref1.jpg", "/img_tmp/ref1.jpg", domainname, true);
+        MarkerROI = getAlignmentMarker();
+    }
+
+
+    function loadReferenceImage()
+    {
+        loadCanvas(domainname + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
+        canvas.addEventListener('mousedown', mouseDown, false);
+        canvas.addEventListener('mouseup', mouseUp, false);
+        canvas.addEventListener('mousemove', mouseMove, false); 
+    }
+
+
     function init()
     {
         openDescription();
 
-        loadConfig(domainname); 
-        ParseConfig();
-        param = getConfigParameters();
+        loadReferenceImage();
+        loadConfig().then(() => loadConfigData());
 
         document.getElementById("savemarker").disabled = true;
         document.getElementById("updatemarker").disabled = false;
-
-        loadCanvas(domainname + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
-        canvas.addEventListener('mousedown', mouseDown, false);
-        canvas.addEventListener('mouseup', mouseUp, false);
-        canvas.addEventListener('mousemove', mouseMove, false);
-
-        CopyAlignmentMarkerToImgTmp(domainname);
-        MarkerROI = getAlignmentMarker();
-        RefreshMarker();
     }
 
-    
+
     init();
 
 </script>

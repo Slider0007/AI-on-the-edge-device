@@ -1,100 +1,135 @@
-var config_gesamt = "";
-var config_split = [];
-var param = [];
-var category;
-var ref = new Array(2);
-var NUMBERS = new Array(0);
-var REFERENCES = new Array(0);
-var tflite_list = "";
+let config_gesamt = "";  // Parsed config.ini as string
+let config_split = [];   // Config.ini splitted by lines
+var param = {};          // Configuration parameter object
+var category = {};       // Configuration category obejct
+var NUMBERS = [];        // Number sequences
+let REFERENCES = [];     // Alignment marker
+let tflite_list = "";    // TFLite model files as tab separated list
 
 
-function getNUMBERSList()
+async function getNUMBERSList()    // Legacy: Not in use anymore (was only used for graph.html)
 {
-     var namenumberslist = "";
-     url = getDomainname() + '/editflow?task=namenumbers';
+    return new Promise(function (resolve, reject) {
+        var url = getDomainname() + '/editflow?task=namenumbers';
 
-	var xhttp = new XMLHttpRequest();
-     xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-              if (this.status >= 200 && this.status < 300) {
-                    namenumberslist = xhttp.responseText;
-                    namenumberslist = namenumberslist.split("\t");
-               }
-               else {
-                    firework.launch("Sequence names request failed (Response status: " + this.status + 
-                                   "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Sequence names request failed. Response status: " + this.status);  
-               }
-          }
-     };
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+            if (this.status >= 200 && this.status < 300) {
+                        var namenumberslist = xhttp.responseText;
+                        namenumberslist = namenumberslist.split("\t");
+                        return resolve(namenumberslist);
 
-     xhttp.open("GET", url, false);
-     xhttp.send();
+                }
+                else {
+                        firework.launch("Sequence names request failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                        console.error("Sequence names request failed. Response status: " + this.status);
+                        return reject("Sequence names request failed");
+                }
+            }
+        };
 
-     return namenumberslist;
+        xhttp.timeout = 10000; // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    });
 }
 
 
-function getDATAList()
+async function getDataFileList()
 {
-     var datalist = "";
-     url = getDomainname() + '/editflow?task=data';     
+    return new Promise(function (resolve, reject) {
+        var url = getDomainname() + '/editflow?task=data';     
 
-	var xhttp = new XMLHttpRequest();
-     xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-               if (this.status >= 200 && this.status < 300) {
-                    datalist = xhttp.responseText;
-                    datalist = datalist.split("\t");
-                    datalist.pop();
-                    datalist.sort();
-               }
-               else {
-                    firework.launch("Data files request failed (Response status: " + this.status + 
-                                   "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Data files request failed. Response status: " + this.status);  
-               }
-          }
-     };
- 
-     xhttp.open("GET", url, false);
-     xhttp.send();
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                    if (this.status >= 200 && this.status < 300) {
+                        var datalist = xhttp.responseText;
+                        datalist = datalist.split("\t");
+                        datalist.pop();
+                        datalist.sort();
+                        return resolve(datalist);
+                    }
+                    else {
+                        firework.launch("Data files request failed (Response status: " + this.status + 
+                                "). Repeat action or check logs.", 'danger', 30000);
+                        console.error("Data files request failed. Response status: " + this.status);
+                        return reject("Data files request failed");
+                    }
+            }
+        };
 
-     return datalist;
+        xhttp.timeout = 10000; // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    });
 }
 
 
-function fetchTFLITEList()
+async function fetchTFLITEList()
 {
-     var response = "";
-     url = getDomainname() + '/editflow?task=tflite';
+    return new Promise(function (resolve, reject) {
+        var url = getDomainname() + '/editflow?task=tflite';
 
-	var xhttp = new XMLHttpRequest();
-     xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-               if (this.status >= 200 && this.status < 300) {
-                    response = xhttp.responseText;
-                    response = response.split("\t").filter(element => element); // Split at tab position and remove empty elements
-                    response.sort();  // Sort elements by name
-               }
-               else {
-                    firework.launch("TFLite files request failed (Response status: " + this.status + 
-                                   "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("TFLite files request failed. Response status: " + this.status);  
-               }
-          }
-     };
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                        var response = xhttp.responseText;
+                        response = response.split("\t").filter(element => element); // Split at tab position and remove empty elements
+                        response.sort();  // Sort elements by name
+                        tflite_list = response;  // Save to global variable
+                        return resolve(tflite_list);
+                }
+                else {
+                        firework.launch("TFLite files request failed (Response status: " + this.status + 
+                                "). Repeat action or check logs.", 'danger', 30000);
+                        console.error("TFLite files request failed. Response status: " + this.status);
+                        return reject("TFLite files request failed");
+                }
+            }
+        };
 
-     xhttp.open("GET", url, false);
-     xhttp.send();
-
-     tflite_list = response;  // Save to global variable
+        xhttp.timeout = 10000; // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    });
 }
 
 
-function getTFLITEList()
+async function loadConfig()
 {
-     return tflite_list;
+     return new Promise(function (resolve, reject) {
+          var url = getDomainname() + '/fileserver/config/config.ini';
+
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+               if (this.readyState == 4) {
+                    if (this.status >= 200 && this.status < 300) {
+                         config_gesamt = xhttp.responseText;
+                         return resolve(config_gesamt);
+                    }
+                    else {
+                         firework.launch("Loading config.ini failed (Response status: " + this.status + 
+                                        "). Repeat action or check logs.", 'danger', 30000);
+                         console.error("Loading config.ini failed. Response status: " + this.status);
+                         return reject("Loading config.ini failed");
+                    }
+               }
+          };
+
+          xhttp.timeout = 10000;  // 10 seconds
+          xhttp.open("GET", url, true);
+          xhttp.send();
+     });
+}
+
+
+function getConfig()
+{
+     return config_gesamt;
 }
 
 
@@ -102,8 +137,8 @@ function ParseConfig() {
      config_split = config_gesamt.split("\n");
      var aktline = 0;
 
-     param = new Object();
-     category = new Object(); 
+     //param = new Object();
+     //category = new Object(); 
 
      var catname = "TakeImage";
      category[catname] = new Object(); 
@@ -426,7 +461,6 @@ function ParamAddSingleValueWithPreset(param, _cat, _param, _enabled, _value)
           param[_cat][_param]["Numbers"] = false;
           param[_cat][_param].checkRegExList = null;
      }
-
 }
 
 
@@ -434,13 +468,12 @@ function ParamAddSingleValueWithPreset(param, _cat, _param, _enabled, _value)
 function ParamAddModelWithPreset(param, _cat, _param, _enabled)
 {
      if (param[_cat][_param] == null) {
-    
           param[_cat][_param] = new Object();
           param[_cat][_param]["found"] = true;
           param[_cat][_param]["enabled"] = _enabled;
           param[_cat][_param]["line"] = -1; 
           param[_cat][_param]["anzParam"] = 1;
-          param[_cat][_param]["defaultValue"] = "";   // Parameter only used for numbers sequences
+          param[_cat][_param]["defaultValue"] = "";   // Parameter only used for number sequences
           param[_cat][_param]["Numbers"] = false;
           param[_cat][_param].checkRegExList = null;
 
@@ -449,12 +482,12 @@ function ParamAddModelWithPreset(param, _cat, _param, _enabled)
           else if (_cat == "Analog")
                filter = "/ana";
           
-          list_tflite = getTFLITEList();
-          for (var i = 0; i < list_tflite.length; ++i) {
-               if (list_tflite[i].includes(filter)) {
-                    param[_cat][_param]["value1"] = list_tflite[i]; // Set first occurence as default value to ensure at least one is set
+
+          for (var i = 0; i < tflite_list.length; ++i) {
+               if (tflite_list[i].includes(filter)) {
+                    param[_cat][_param]["value1"] = tflite_list[i]; // Set first occurence as default value to ensure at least one is set
                     break;
-               }   
+               }
           }
      }
      else if (param[_cat][_param]["value1"] == "") { // If value empty, ensure at least one model is selected to avoid crashes
@@ -462,12 +495,12 @@ function ParamAddModelWithPreset(param, _cat, _param, _enabled)
                filter = "/dig";
           else if (_cat == "Analog")
                filter = "/ana";
-          list_tflite = getTFLITEList();
-          for (var i = 0; i < list_tflite.length; ++i) {
-               if (list_tflite[i].includes(filter)) {
-                    param[_cat][_param]["value1"] = list_tflite[i]; // Set first occurence as default value to ensure at least one is set
+
+          for (var i = 0; i < tflite_list.length; ++i) {
+               if (tflite_list[i].includes(filter)) {
+                    param[_cat][_param]["value1"] = tflite_list[i]; // Set first occurence as default value to ensure at least one is set
                     break;
-               }   
+               }
           }
      }
 }
@@ -782,27 +815,6 @@ function getNUMBERS(_name, _type, _create = true)
 
 function getAlignmentMarker(){
      return REFERENCES;
-}
-
- 
-function CopyAlignmentMarkerToImgTmp(_domainname)
-{
-     for (index = 0; index < 2; ++index)
-     {
-          _filenamevon = REFERENCES[index]["name"];
-          _filenamenach = _filenamevon.replace("/config/", "/img_tmp/");
-          FileCopyOnServer(_filenamevon, _filenamenach, _domainname);
-     }
-}
-
-
-function CopyAlignmentMarker(_domainname){
-     for (var index = 0; index < 2; ++index)
-     {
-          _filenamenach = REFERENCES[index]["name"];
-          _filenamevon = _filenamenach.replace("/config/", "/img_tmp/");
-          FileCopyOnServer(_filenamevon, _filenamenach, _domainname);
-     }
 }
 
 

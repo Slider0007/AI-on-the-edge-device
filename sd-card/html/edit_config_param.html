@@ -261,7 +261,8 @@
     </details>
     <hr>
 
-<div id="divall" style="display:none">
+<div id="divloading">Loading configuration ...</div>
+<div id="divcontent" style="display:none">
 
 	<!-- Configuration View -->
 	<table class="table">
@@ -2029,31 +2030,11 @@
 <script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
 <script>
 	var canvas = document.getElementById('canvas'),
-		domainname = getDomainname(); 
-		param;
-		category;
-		NUNBERSAkt = -1;
+		domainname = getDomainname(),
+		param,
+		category,
+		NUNBERSAkt = -1,
 		NUMBERS;
-
-
-	function LoadConfigNeu() {
-		if (!loadConfig(domainname)) {
-			firework.launch('Configuration could not be loaded! Please reload the page!', 'danger', 30000);
-			return;
-		}
-		ParseConfig();	
-		param = getConfigParameters();
-		category = getConfigCategory();
-		InitIndivParameter();
-
-		UpdateInput();
-		var sel = document.getElementById("Numbers_value1");
-		UpdateInputIndividual(sel);
-		UpdateExpertModus();
-		document.getElementById("divall").style.display = ''; 
-	}
-
-
 
 
 	function InitIndivParameter()
@@ -2410,8 +2391,11 @@
 			ReadParameter(param, "InfluxDBv2", "Measurement", false, NUNBERSAkt);
 		}
 
-	//	var sel = document.getElementById("Numbers_value1");
-		NUNBERSAkt = sel.selectedIndex;
+		if (sel)
+			NUNBERSAkt = sel.selectedIndex;
+		else
+			NUNBERSAkt = 0;
+
 		WriteParameter(param, category, "PostProcessing", "DecimalShift", false, NUNBERSAkt);
 		WriteParameter(param, category, "PostProcessing", "AnalogDigitalTransitionStart", false, NUNBERSAkt);
 		WriteParameter(param, category, "PostProcessing", "MaxRateValue", false, NUNBERSAkt);
@@ -2560,29 +2544,26 @@
 		while (_indexAna.length)
 			_indexAna.remove(0);
 
-		for (var i = 0; i < list_tflite.length; ++i) {
+		for (var i = 0; i < tflite_list.length; ++i) {
 			var optionDig = document.createElement("option");
 			var optionAna = document.createElement("option");
 			
-			var text = list_tflite[i].replace("/config/", "");
-			
-			if (list_tflite[i].includes("/dig")) { // Its a digital file, only show in the digital list box
-				optionDig.text = text;
-				optionDig.value = list_tflite[i];
+			var text = tflite_list[i].replace("/config/", "");
+
+            if (tflite_list[i].includes("/dig")) { // Its a digit model, only show in the digital list box
+				optionDig.text = text.substring(0, text.lastIndexOf('.'));
+				optionDig.value = tflite_list[i];
 				_indexDig.add(optionDig);
 			}
-			else if (list_tflite[i].includes("/ana")) { // Its a digital file, only show in the analog list box
-				optionAna.text = text;
-				optionAna.value = list_tflite[i];
+			else if (tflite_list[i].includes("/ana")) { // Its a analog model, only show in the analog list box
+				optionAna.text = text.substring(0, text.lastIndexOf('.'));
+				optionAna.value = tflite_list[i];
 				_indexAna.add(optionAna);
 			}
 			else { // all other files, show in both list boxes
-				optionDig.text = text;
-				optionDig.value = list_tflite[i];
+				optionDig.text = optionAna.text = text.substring(0, text.lastIndexOf('.'));
+				optionDig.value = optionAna.value = tflite_list[i];
 				_indexDig.add(optionDig);
-				
-				optionAna.text = text;
-				optionAna.value = list_tflite[i];
 				_indexAna.add(optionAna);
 			}
 		}
@@ -2836,9 +2817,38 @@
 		}
 	}
 
-	openDescription();
-	fetchTFLITEList();
-	LoadConfigNeu();
+
+	function loadConfigData()
+	{
+		ParseConfig();
+		param = getConfigParameters();
+		category = getConfigCategory();
+		InitIndivParameter();
+
+		UpdateInput();
+		UpdateInputIndividual();
+		UpdateExpertModus();
+
+		document.getElementById("divloading").style.display = 'none'; // Hide loading indicator
+		document.getElementById("divcontent").style.display = ''; 	// Show parameter content
+	}
+	
+
+	async function init()
+	{
+		openDescription();
+
+		// Ensure TFLite file list and config.ini is loaded before parsing data
+		Promise.all([fetchTFLITEList(), loadConfig()])
+			.then(() => loadConfigData())
+			.catch((error) => {
+				firework.launch('Failed loading data for configuration page. Please repeat or check logs', 'danger', 30000);
+				console.error("Failed loading data for configuration page. Error: " + error.message);
+			});
+	}
+
+
+	init();
 
 </script>
 	

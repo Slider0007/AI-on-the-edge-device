@@ -143,7 +143,7 @@
     LoadHostname();
     LoadFwVersion();
     LoadWebUiVersion();
-    HA_send_discovery_visibililty();
+    loadConfig().then(() => HA_send_discovery_visibililty());
 
     if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH")
     {
@@ -194,7 +194,6 @@
 
     function HA_send_discovery_visibililty()
     {
-		loadConfig(getDomainname());
 		ParseConfigReduced();
 		_category = getConfigCategory();
         _param = getConfigParameters();
