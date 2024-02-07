@@ -4,7 +4,7 @@ Whenever a critical error occurs during boot process which avoids loading of reg
 
 The error code(s) get printed with specific error codes. This page lists the possible error codes, their meaning and possible solutions.
 
-Note: Here the error codes are defined in source code: [error codes](https://github.com/jomjol/AI-on-the-edge-device/blob/rolling/code/components/jomjol_helper/Helper.h).
+Note: Error codes defined in source code: [Error Codes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/code/components/jomjol_helper/system.h).
 
 
 ## Critical Errors
@@ -59,6 +59,6 @@ The following folders / files get checked during boot sequence:
 - /sdcard/html/common.js
 - /sdcard/html/version.txt
 
-Note: This list might be outdated, see the source code for the latest implementation: [SDCardCheckRW()](https://github.com/slider0007/AI-on-the-edge-device/blob/develop/code/components/jomjol_helper/sdcard_check.cpp#L14)
+Note: This list might be outdated, see the source code for the latest implementation: [SDCardCheckFolderFilePresence()](https://github.com/slider0007/AI-on-the-edge-device/blob/develop/code/components/jomjol_helper/sdcard_check.cpp#L14)
 
 Recommendation: Check logs and / or redo a Over-The-Air Update (OTA Update) to ensure proper SD card structure
