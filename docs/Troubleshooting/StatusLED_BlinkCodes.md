@@ -14,8 +14,8 @@ The error code source definition can be found [here](https://github.com/Slider00
 
 # Overview
 
-| **source**    | source<br>blink count| error / warning / status         | status<br>blink count| repeat<br>infinite |
-| ------------- | ----------------- |---------------------------------------| ---------------- | -----------------|
+| **source**    | source<br>blink count| error / warning / status           | status<br>blink count| repeat<br>infinite |
+| ------------- | ----------------- |---------------------------------------| ---------------- | -----------------------|
 | WLAN_CONN     | 1                 | Disconnected (No Access Point)        | 1                |
 | WLAN_CONN     | 1                 | Disconnected (Authentication failure) | 2                |
 | WLAN_CONN     | 1                 | Disconnected (Timeout)                | 3                |
@@ -23,9 +23,12 @@ The error code source definition can be found [here](https://github.com/Slider00
 | WLAN_INIT     | 2                 | WLAN.ini empty or not readable        | 1                | X
 | WLAN_INIT     | 2                 | SSID or password empty                | 2                | X
 | WLAN_INIT     | 2                 | WIFI init error (details console)     | 3                | X
-| SDCARD_INIT   | 3                 | SD card filesystem mount failed       | 1                | X
-| SDCARD_INIT   | 3                 | SD card not found (0x107)             | 2                | X
-| SDCARD_INIT   | 3                 | SD card init failed (details console) | 3                | X
+| SDCARD_NVS_INIT | 3               | SD card filesystem mount failed       | 1                | X
+| SDCARD_NVS_INIT | 3               | SD card not found (0x107)             | 2                | X
+| SDCARD_NVS_INIT | 3               | SD card init failed (details console) | 3                | X
+| SDCARD_NVS_INIT | 3               | NVS init failed: No partition found   | 4                | X
+| SDCARD_NVS_INIT | 3               | NVS init failed: No free pages found  | 5                | X
+| SDCARD_NVS_INIT | 3               | NVS init failed (details console)     | 6                | X
 | SDCARD_CHECK  | 4                 | Basic check: file creation/write error| 1                | X
 | SDCARD_CHECK  | 4                 | Basic check: file read/CRC error      | 2                | X
 | SDCARD_CHECK  | 4                 | Basic check: file delete error        | 3                | X
@@ -92,6 +95,16 @@ SD card init failed. Check if SD card is properly inserted into SD card slot or 
 
 ### `SD card init failed (details console)`
 A general SD card initialization error occured. Please check serial console output.
+
+### `NVS init failed: No partition found`
+A general NVS initialization error occured. No parition for NVS found in partition table. Check parition table configuration `partitions.csv`
+
+### `NVS init failed: No free pages found`
+A general NVS initialization error occured. No free NVS pages found. Check NVS parition size.
+
+### `NVS init failed (details console)`
+A general NVS initialization error occured. Please check serial console output.
+
 
 
 ## Source SDCARD_CHECK: SD card basic check
