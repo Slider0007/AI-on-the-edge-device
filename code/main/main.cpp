@@ -376,7 +376,7 @@ esp_err_t initNVSFlash()
             StatusLED(SDCARD_NVS_INIT, 5, true);
         }
         else {
-            ESP_LOGE(TAG, "NVS flash init failed. Error code: " + intToHexString(ret));
+            ESP_LOGE(TAG, "NVS flash init failed. Check error code");
             StatusLED(SDCARD_NVS_INIT, 6, true);
         }
     }

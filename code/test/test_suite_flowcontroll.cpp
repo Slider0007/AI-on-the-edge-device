@@ -134,7 +134,7 @@ esp_err_t initNVSFlash()
             ESP_LOGE(TAG, "NVS flash init failed. No free NVS pages found");
         }
         else {
-            ESP_LOGE(TAG, "NVS flash init failed. Error code: " + intToHexString(ret));
+            ESP_LOGE(TAG, "NVS flash init failed. Check error code");
         }
     }
     
