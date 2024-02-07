@@ -359,11 +359,28 @@ extern "C" void app_main(void)
 esp_err_t initNVSFlash()
 {
     ESP_LOGI(TAG, "Initializing NVS flash");
+    
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
+    
+    if (ret != ESP_OK) {
+        if (ret == ESP_ERR_NOT_FOUND) {
+            ESP_LOGE(TAG, "NVS flash init failed. No NVS partition found");
+            StatusLED(SDCARD_NVS_INIT, 4, true);
+        } 
+        else if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
+            ESP_LOGE(TAG, "NVS flash init failed. No free NVS pages found");
+            StatusLED(SDCARD_NVS_INIT, 5, true);
+        }
+        else {
+            ESP_LOGE(TAG, "NVS flash init failed. Error code: " + intToHexString(ret));
+            StatusLED(SDCARD_NVS_INIT, 6, true);
+        }
+    }
+
     return ret;
 }
 
@@ -426,15 +443,15 @@ esp_err_t initSDCard()
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
             ESP_LOGE(TAG, "Failed to mount FAT filesystem on SD card. Check SD card filesystem (only FAT supported) or try another card");
-            StatusLED(SDCARD_INIT, 1, true);
+            StatusLED(SDCARD_NVS_INIT, 1, true);
         } 
         else if (ret == 263) { // Error code: 0x107 --> usually: SD not found
             ESP_LOGE(TAG, "SD card init failed. Check if SD card is properly inserted into SD card slot or try another card");
-            StatusLED(SDCARD_INIT, 2, true);
+            StatusLED(SDCARD_NVS_INIT, 2, true);
         }
         else {
             ESP_LOGE(TAG, "SD card init failed. Check error code or try another card");
-            StatusLED(SDCARD_INIT, 3, true);
+            StatusLED(SDCARD_NVS_INIT, 3, true);
         }
         return ret;
     }

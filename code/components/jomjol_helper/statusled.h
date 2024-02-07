@@ -10,7 +10,7 @@ extern TaskHandle_t xHandle_task_StatusLED;
 enum StatusLedSource {
 	WLAN_CONN = 1,
     WLAN_INIT = 2,
-    SDCARD_INIT = 3,
+    SDCARD_NVS_INIT = 3,
 	SDCARD_CHECK = 4,
     CAM_INIT = 5,
     PSRAM_INIT = 6,
