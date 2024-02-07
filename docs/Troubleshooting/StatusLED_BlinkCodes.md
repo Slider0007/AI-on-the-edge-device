@@ -2,7 +2,7 @@ This page lists possible blink codes of the onboard status LED, their meaning an
 
 The error code source definition can be found [here](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/code/components/jomjol_helper/statusled.h).
 
-# General design approach:
+# Design
 
   * 250ms blink code to identify source
   * 500ms defined LED off
@@ -10,6 +10,9 @@ The error code source definition can be found [here](https://github.com/Slider00
   * 1,5s defined LED off to signal repetition
   * Repetition blink code: infinite for critical errors and status indication or 2x for warning indication
   * e.g. 3x blinks | 500ms LED off | 2x blinks --> error: SD card not found
+
+
+# Overview
 
 | **source**    | source<br>blink count| error / warning / status         | status<br>blink count| repeat<br>infinite |
 | ------------- | ----------------- |---------------------------------------| ---------------- | -----------------|
@@ -38,7 +41,7 @@ The error code source definition can be found [here](https://github.com/Slider00
 
 
 
-# ERROR / WARNING
+# Errors / Warnings
 
 ## Source WLAN_CONN: WLAN disconnected
 
@@ -156,7 +159,7 @@ If system is configured to be synced with a NTP server the sync status is checke
 
 
 
-# STATUS
+# Status
 
 !!! __NOTE__:
     All only status indication
