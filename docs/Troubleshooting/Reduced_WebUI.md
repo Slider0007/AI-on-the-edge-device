@@ -6,6 +6,7 @@ The error code(s) get printed with specific error codes. This page lists the pos
 
 Note: Here the error codes are defined in source code: [error codes](https://github.com/jomjol/AI-on-the-edge-device/blob/rolling/code/components/jomjol_helper/Helper.h).
 
+
 ## Critical Errors
 Those Errors make the normal operation of the device impossible.
 Most likely they are caused by a hardware issue!
@@ -23,7 +24,6 @@ cpu_start: Failed to init external RAM!
 ### `0x00000002` Heap too small
 The firmware failed to allocate enough memory. This most likely is a consequential error of a bad PSRAM!
 
-
 ### `0x00000008` SD card basic check failed
 One or more basic SD card checks failed.
 
@@ -34,7 +34,7 @@ The following checks are performed during boot sequence:
  - CRC verification
  - Delete the file
 
-Detailed error indication (write, rerad or delete error) can be derived from blinking code of red board status LED. Please refer to [StatusLED-BlinkCodes](https://jomjol.github.io/AI-on-the-edge-device-docs/StatusLED-BlinkCodes/)
+Detailed error indication (write, rerad or delete error) can be derived from blinking code of red board status LED. Please refer to [Status LED Blink Codes](StatusLED_BlinkCodes.md)
 
 Recommendation: Reformat SD card and check again or try another SD card
 
