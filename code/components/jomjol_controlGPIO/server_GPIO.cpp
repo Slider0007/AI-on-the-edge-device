@@ -308,22 +308,14 @@ bool GpioHandler::readConfig()
     bool disabledLine = false;
     bool eof = false;
     gpio_num_t gpioExtLED = (gpio_num_t) 0;
-    
-//    ESP_LOGD(TAG, "readConfig - Start 1");
         
     while ((!configFile.GetNextParagraph(line, disabledLine, eof) || (line.compare("[GPIO]") != 0)) && !eof) {}
-    if (eof)
+
+    if (disabledLine || eof) {
+        ESP_LOGI(TAG, "GPIO handler disabled");
+        _isEnabled = false;
         return false;
-
-//    ESP_LOGD(TAG, "readConfig - Start 2 line: %s, disabbledLine: %d", line.c_str(), (int) disabledLine);
-
-
-    _isEnabled = !disabledLine;
-
-    if (!_isEnabled)
-        return false;
-
-//    ESP_LOGD(TAG, "readConfig - Start 3");
+    }
 
 #ifdef ENABLE_MQTT
 //    std::string mainTopicMQTT = "";
@@ -433,6 +425,7 @@ bool GpioHandler::readConfig()
 //        _SmartLED = new SmartLed( LED_WS2812, 2, GPIO_NUM_12, 0, DoubleBuffer );
     }
 
+    _isEnabled = true;
     return true;
 }
 
