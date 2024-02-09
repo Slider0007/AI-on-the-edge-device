@@ -5,9 +5,9 @@
 
 ### Bug Fixes
 
-* Fix exeception accessing getJPG ressource ([#121](https://github.com/Slider0007/AI-on-the-edge-device/issues/121)) ([5d114d3](https://github.com/Slider0007/AI-on-the-edge-device/commit/5d114d310279087cbeba7cb03d7549c4de6607e0))
+* **flowctrl:** Fix exception accessing getJPG ressource ([#121](https://github.com/Slider0007/AI-on-the-edge-device/issues/121)) ([5d114d3](https://github.com/Slider0007/AI-on-the-edge-device/commit/5d114d310279087cbeba7cb03d7549c4de6607e0))
 * **gpio:** Fix GPIO handler enable flag ([#134](https://github.com/Slider0007/AI-on-the-edge-device/issues/134)) ([6f4a8f4](https://github.com/Slider0007/AI-on-the-edge-device/commit/6f4a8f4ddc625603c8efc1ddbb4e88d16f199e75))
-* **mqtt:** Fix Home Assistant Topic 'Problem'  ([#130](https://github.com/Slider0007/AI-on-the-edge-device/issues/130)) ([cab4597](https://github.com/Slider0007/AI-on-the-edge-device/commit/cab4597ad7dc299cb76c6dbe38637d2742681c1c))
+* **mqtt:** Fix Home Assistant topic 'problem'  ([#130](https://github.com/Slider0007/AI-on-the-edge-device/issues/130)) ([cab4597](https://github.com/Slider0007/AI-on-the-edge-device/commit/cab4597ad7dc299cb76c6dbe38637d2742681c1c))
 * **mqtt:** Reset username+password when parameter is disabled ([#122](https://github.com/Slider0007/AI-on-the-edge-device/issues/122)) ([abb0afe](https://github.com/Slider0007/AI-on-the-edge-device/commit/abb0afe699a549ec2d360e2c3875e9f7e28d22fd))
 * **webui:** Add missing cycle start state message ([#133](https://github.com/Slider0007/AI-on-the-edge-device/issues/133)) ([f349a2d](https://github.com/Slider0007/AI-on-the-edge-device/commit/f349a2d078cac710a043a0309415899ff358bdf1))
 
