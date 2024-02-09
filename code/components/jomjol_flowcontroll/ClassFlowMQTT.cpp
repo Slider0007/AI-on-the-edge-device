@@ -225,11 +225,10 @@ bool ClassFlowMQTT::Start(float _processingInterval)
                                             LWT_DISCONNECTED, TLSEncryption, TLSCACertFilename, TLSClientCertFilename,
                                             TLSClientKeyFilename, keepAlive, SetRetainFlag, (void *)&GotConnected);
 
-    if (!MQTTConfigCheck) {
-        return false;
-    }
+    if (MQTTConfigCheck)
+        MQTT_Init();
 
-    return (MQTT_Init() == 1);
+    return MQTTConfigCheck;
 }
 
 
