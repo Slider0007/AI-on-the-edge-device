@@ -1,5 +1,19 @@
 # Changelog
 
+## [16.1.3-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.2-SLFork...v16.1.3-SLFork) (2024-02-13)
+
+
+### Bug Fixes
+
+* **mqtt:** Fix Home Assistant topic 'problem' ([#140](https://github.com/Slider0007/AI-on-the-edge-device/issues/140)) ([926acdb](https://github.com/Slider0007/AI-on-the-edge-device/commit/926acdb500c3e688c5d1633da4140091708ca89d))
+* **mqtt:** Fix Home Assistant topic problem (again) ([926acdb](https://github.com/Slider0007/AI-on-the-edge-device/commit/926acdb500c3e688c5d1633da4140091708ca89d))
+* **mqtt:** Fix process init failed if MQTT not yet connected ([#139](https://github.com/Slider0007/AI-on-the-edge-device/issues/139)) ([64b63b7](https://github.com/Slider0007/AI-on-the-edge-device/commit/64b63b7892457c9048567613af75ea4646a6741c))
+
+
+### Other Changes
+
+* **build:** Release tag gets printed twice in log: Remove one ([#137](https://github.com/Slider0007/AI-on-the-edge-device/issues/137)) ([73218c8](https://github.com/Slider0007/AI-on-the-edge-device/commit/73218c8d7207843a9322e8df9f8fa8df5d7e5b61))
+
 ## [16.1.2-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.1-SLFork...v16.1.2-SLFork) (2024-02-09)
 
 
