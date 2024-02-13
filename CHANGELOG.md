@@ -6,7 +6,6 @@
 ### Bug Fixes
 
 * **mqtt:** Fix Home Assistant topic 'problem' ([#140](https://github.com/Slider0007/AI-on-the-edge-device/issues/140)) ([926acdb](https://github.com/Slider0007/AI-on-the-edge-device/commit/926acdb500c3e688c5d1633da4140091708ca89d))
-* **mqtt:** Fix Home Assistant topic problem (again) ([926acdb](https://github.com/Slider0007/AI-on-the-edge-device/commit/926acdb500c3e688c5d1633da4140091708ca89d))
 * **mqtt:** Fix process init failed if MQTT not yet connected ([#139](https://github.com/Slider0007/AI-on-the-edge-device/issues/139)) ([64b63b7](https://github.com/Slider0007/AI-on-the-edge-device/commit/64b63b7892457c9048567613af75ea4646a6741c))
 
 
