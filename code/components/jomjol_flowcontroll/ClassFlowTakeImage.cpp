@@ -48,16 +48,16 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     int saturation = 0;
     int sharpness = 0;
     int autoExposureLevel = 0;
-    bool imageAec2 = false;
+    bool aec2Algo = false;
     bool fixedExposure = false;
     #ifdef GRAYSCALE_AS_DEFAULT
-        bool imageGrayscale = true;
+        bool grayscale = true;
     #else
-        bool imageGrayscale = false;
+        bool grayscale = false;
     #endif
-    bool imageNegative = false;
-    bool imageMirror = false;
-    bool imageFlip = false;
+    bool negative = false;
+    bool mirrorHorizontal = false;
+    bool flipVertical = false;
     bool zoom = false;
     int zoomMode = 0;
     int zoomOffsetX = 0;
@@ -68,13 +68,13 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     aktparamgraph = trim(aktparamgraph);
 
     if (aktparamgraph.size() == 0)
-        if (!this->GetNextParagraph(pfile, aktparamgraph))
+        if (!GetNextParagraph(pfile, aktparamgraph))
             return false;
 
     if (aktparamgraph.compare("[TakeImage]") != 0)       // Paragraph does not fit TakeImage
         return false;
 
-    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph)) {
+    while (getNextLine(pfile, &aktparamgraph) && !isNewParagraph(aktparamgraph)) {
         splitted = ZerlegeZeile(aktparamgraph);
 
         if ((toUpper(splitted[0]) ==  "RAWIMAGESLOCATION") && (splitted.size() > 1)) {
@@ -83,7 +83,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         }
 
         if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION") && (splitted.size() > 1)) {
-            this->imagesRetention = std::stoi(splitted[1]);
+            imagesRetention = std::stoi(splitted[1]);
         }
 
         if ((toUpper(splitted[0]) == "LEDINTENSITY") && (splitted.size() > 1)) {
@@ -128,9 +128,9 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
         if ((toUpper(splitted[0]) == "AEC2ALGO") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                imageAec2 = true;
+                aec2Algo = true;
             else
-                imageAec2 = false;
+                aec2Algo = false;
         }
 
         if ((toUpper(splitted[0]) == "FIXEDEXPOSURE") && (splitted.size() > 1)) {
@@ -142,30 +142,30 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
         if ((toUpper(splitted[0]) == "GRAYSCALE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                imageGrayscale = true;
+                grayscale = true;
             else
-                imageGrayscale = false;
+                grayscale = false;
         }
 
         if ((toUpper(splitted[0]) == "NEGATIVE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                imageNegative = true;
+                negative = true;
             else
-                imageNegative = false;
+                negative = false;
         }
 
         if ((toUpper(splitted[0]) == "MIRRORHORIZONTAL") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                imageMirror = true;
+                mirrorHorizontal = true;
             else
-                imageMirror = false;
+                mirrorHorizontal = false;
         }
 
         if ((toUpper(splitted[0]) == "FLIPVERTICAL") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                imageFlip = true;
+                flipVertical = true;
             else
-                imageFlip = false;
+                flipVertical = false;
         }
 
         if ((toUpper(splitted[0]) == "ZOOM") && (splitted.size() > 1)) {
@@ -186,7 +186,6 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if ((toUpper(splitted[0]) == "ZOOMOFFSETY") && (splitted.size() > 1)) {
             zoomOffsetY = std::stoi(splitted[1]);
         }
-
 
         if ((toUpper(splitted[0]) == "DEMO") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
@@ -209,7 +208,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     Camera.setCameraFrequency(cameraFrequency);
     Camera.setSizeQuality(imageQuality, imageSize, zoom, zoomMode, zoomOffsetX, zoomOffsetY);
     Camera.setImageManipulation(brightness, contrast, saturation, sharpness, autoExposureLevel, 
-                                imageAec2, imageGrayscale, imageNegative, imageMirror, imageFlip);
+                                aec2Algo, grayscale, negative, mirrorHorizontal, flipVertical);
 
     image_width = Camera.image_width;
     image_height = Camera.image_height;

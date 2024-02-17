@@ -16,24 +16,29 @@ typedef struct {
 } jpg_chunking_t;
 
 
+struct CameraParameter {
+    framesize_t actualResolution;
+    int actualQuality;
+    int flashIntensity;
+    int flashTime;
+    int brightness, contrast, saturation, sharpness;
+    int autoExposureLevel;
+    bool negative;
+    bool grayscale;
+    bool aec2Algo;
+    bool isFixedExposure;
+    bool mirrorHorizontal;
+    bool flipVertical;
+    bool zoom;
+    int zoomMode, zoomOffsetX, zoomOffsetY;
+};
+
+
 class CCamera
 {
     protected:
         bool cameraInitSuccessful;
-        int flashIntensity;
-        int flashTime;
-
-        framesize_t actualResolution;
-        int actualQuality;
-
-        int brightness, contrast, saturation, sharpness;
-        int autoExposureLevel;
-        int zoomMode, zoomOffsetX, zoomOffsetY;
-        bool negative;
-        bool grayscale;
-        bool aec2Algo;
-        bool isFixedExposure;
-        bool zoom;
+        CameraParameter camParameter;
 
         bool demoMode;
         uint8_t *demoImage; // Buffer holding the demo image in bytes
@@ -77,6 +82,7 @@ class CCamera
         void setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
         bool setMirrorFlip(bool _mirror, bool _flip);
         bool enableAutoExposure();
+        CameraParameter getCameraParameter();
 
         framesize_t textToFramesize(const char * text);
 

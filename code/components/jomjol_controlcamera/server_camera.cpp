@@ -22,9 +22,9 @@ esp_err_t handler_camera(httpd_req_t *req)
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
-        "- Set camera parameter: /camera?task=set_parameter&flashtime=2.0&flashintensity=1"
-        "&brightness=0&contrast=0&saturation=0&sharpness=0NaNfalse&negative=false"
-        "&autoexposurelevel=0&aec2=true&zoom=false";
+        "1. Set camera parameter: http://192.168.2.68/camera?task=set_parameter&flashtime=2.0&flashintensity=1 "
+        "&brightness=0&contrast=0&saturation=0&sharpness=0&autoexposurelevel=0&aec2=true&grayscale=false&negative=false "
+        "&mirror=false&flip=false&zoom=true&zoommode=0&zoomx=0&zoomy=0";
 
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
@@ -42,89 +42,71 @@ esp_err_t handler_camera(httpd_req_t *req)
                                 "Camera not initialized: REST API /lighton not available");
             return ESP_ERR_NOT_FOUND;
         }
-        
-        int flashIntensity = 50;
-        int flashTime = 2000; // Flashtime in ms
-        int brightness = 0;
-        int saturation = 0;
-        int contrast = 0;
-        int sharpness = 0;
-        int autoExposureLevel = 0;
-        bool aec2 = false;
-        int autoExposure2Value = 300;
-        #ifdef GRAYSCALE_AS_DEFAULT
-        bool grayscale = true;
-        #else
-        bool grayscale = false;
-        #endif
-        bool negative = false;
-        bool mirror = false;
-        bool flip = false;
-        bool zoom = false;
-        int zoomMode = 0;
-        int zoomOffsetX = 0;
-        int zoomOffsetY = 0;
 
-        if (httpd_query_key_value(_query, "flashintensity", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            flashIntensity = stoi(std::string(_valuechar));
-        }
+        CameraParameter camParameter = Camera.getCameraParameter(); // Retrieve actual parameter settings
+
         if (httpd_query_key_value(_query, "flashtime", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            flashTime = (int)(stof(std::string(_valuechar)) * 1000); // flashTime in ms
+            camParameter.flashTime = (int)(stof(std::string(_valuechar)) * 1000); // flashTime in ms
+        }
+        if (httpd_query_key_value(_query, "flashintensity", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.flashIntensity = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "brightness", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            brightness = stoi(std::string(_valuechar));
+            camParameter.brightness = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "contrast", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            contrast = stoi(std::string(_valuechar));
+            camParameter.contrast = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "saturation", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            saturation = stoi(std::string(_valuechar));
+            camParameter.saturation = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "sharpness", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            sharpness = stoi(std::string(_valuechar));
+            camParameter.sharpness = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "autoexposurelevel", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            autoExposureLevel = stoi(std::string(_valuechar));
+            camParameter.autoExposureLevel = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "aec2", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                aec2 = true : aec2 = false;
+                camParameter.aec2Algo = true : camParameter.aec2Algo = false;
         }
         if (httpd_query_key_value(_query, "grayscale", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                grayscale = true : grayscale = false;
+                camParameter.grayscale = true : camParameter.grayscale = false;
         }
         if (httpd_query_key_value(_query, "negative", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                negative = true : negative = false;
+                camParameter.negative = true : camParameter.negative = false;
         }
         if (httpd_query_key_value(_query, "mirror", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                mirror = true : mirror = false;
+                camParameter.mirrorHorizontal = true : camParameter.mirrorHorizontal = false;
         }
         if (httpd_query_key_value(_query, "flip", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                flip = true : flip = false;
+                camParameter.flipVertical = true : camParameter.flipVertical = false;
         }
         if (httpd_query_key_value(_query, "zoom", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                zoom = true : zoom = false;
+                camParameter.zoom = true : camParameter.zoom = false;
         }
         if (httpd_query_key_value(_query, "zoommode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            zoomMode = stoi(std::string(_valuechar));
+            camParameter.zoomMode = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "zoomx", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            zoomOffsetX = stoi(std::string(_valuechar));
+            camParameter.zoomOffsetX = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "zoomy", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            zoomOffsetY = stoi(std::string(_valuechar));
+            camParameter.zoomOffsetY = stoi(std::string(_valuechar));
         }
 
-        Camera.setFlashIntensity(flashIntensity);
-        Camera.setFlashTime(flashTime);
-        Camera.setZoom(zoom, zoomMode, zoomOffsetX, zoomOffsetY);
-        Camera.setImageManipulation(brightness, contrast, saturation, sharpness, 
-                                    autoExposureLevel, aec2, grayscale, negative, mirror, flip);
+        Camera.setFlashIntensity(camParameter.flashIntensity);
+        Camera.setFlashTime(camParameter.flashTime);
+        Camera.setZoom(camParameter.zoom, camParameter.zoomMode, camParameter.zoomOffsetX, camParameter.zoomOffsetY);
+        Camera.setImageManipulation(camParameter.brightness, camParameter.contrast, camParameter.saturation, 
+                                    camParameter.sharpness, camParameter.autoExposureLevel, camParameter.aec2Algo, 
+                                    camParameter.grayscale, camParameter.negative, camParameter.mirrorHorizontal, 
+                                    camParameter.flipVertical);
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_sendstr(req, "001: Parameter set");

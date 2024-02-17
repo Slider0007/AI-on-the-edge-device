@@ -107,35 +107,41 @@ CCamera::CCamera()
 {
     cameraInitSuccessful = false;
 
-    flashTime = 2000; // flashTime in ms
-    flashIntensity = 4095;
+    camParameter.flashTime = 2000; // flashTime in ms
+    camParameter.flashIntensity = 4095;
 
-    actualResolution = FRAMESIZE_VGA;
-    actualQuality = 12;
+    camParameter.actualResolution = FRAMESIZE_VGA;
+    camParameter.actualQuality = 12;
 
-    brightness = 0;
-    contrast = 0;
-    saturation = 0;
-    sharpness = 0;
-    autoExposureLevel = 0;
-    aec2Algo = false;
-    isFixedExposure = false;
-    negative = false;
+    camParameter.brightness = 0;
+    camParameter.contrast = 0;
+    camParameter.saturation = 0;
+    camParameter.sharpness = 0;
+    camParameter.autoExposureLevel = 0;
+    camParameter.aec2Algo = false;
+    camParameter.isFixedExposure = false;
+    camParameter.negative = false;
     #ifdef GRAYSCALE_AS_DEFAULT
-        grayscale = true;
+        camParameter.grayscale = true;
     #else
-        grayscale = false;
+        camParameter.grayscale = false;
     #endif
-    zoom = false;
-    zoomMode = 0;
-    zoomOffsetX = 0;
-    zoomOffsetY = 0;
+    camParameter.zoom = false;
+    camParameter.zoomMode = 0;
+    camParameter.zoomOffsetX = 0;
+    camParameter.zoomOffsetY = 0;
 
     demoMode = false;
 
     #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
         ledc_init();   
     #endif
+}
+
+
+CameraParameter CCamera::getCameraParameter()
+{
+    return camParameter;
 }
 
 
@@ -181,8 +187,8 @@ esp_err_t CCamera::initCam()
         return err;
     }
 
-    actualResolution = camera_config.frame_size;
-    actualQuality = camera_config.jpeg_quality;
+    camParameter.actualResolution = camera_config.frame_size;
+    camParameter.actualQuality = camera_config.jpeg_quality;
 
     cameraInitSuccessful = true;
     return ESP_OK;
@@ -290,10 +296,10 @@ void CCamera::setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoo
     return;
 
     // Set quality
-    actualQuality = std::min(63, std::max(8, _qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
+    camParameter.actualQuality = std::min(63, std::max(8, _qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
     sensor_t * s = esp_camera_sensor_get();
     if (s != NULL) {
-        s->set_quality(s, actualQuality);
+        s->set_quality(s, camParameter.actualQuality);
     }
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setSizeQuality: Failed to get control structure");
@@ -301,8 +307,8 @@ void CCamera::setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoo
     }
 
     // Set resolution
-    actualResolution = _resol;
-    setImageWidthHeightFromResolution(actualResolution);
+    camParameter.actualResolution = _resol;
+    setImageWidthHeightFromResolution(camParameter.actualResolution);
 
     // Set zoom / framesize
     setZoom(_zoom, _zoomMode, _zoomOffsetX, _zoomOffsetY);
@@ -321,17 +327,17 @@ void CCamera::setCamWindow(sensor_t *_s, int _resolution, int _xOffset, int _yOf
 
 void CCamera::setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY)
 {
-    zoom = _zoom;
-    zoomMode = _zoomMode;
-    zoomOffsetX = _zoomOffsetX;
-    zoomOffsetY = _zoomOffsetY;
+    camParameter.zoom = _zoom;
+    camParameter.zoomMode = _zoomMode;
+    camParameter.zoomOffsetX = _zoomOffsetX;
+    camParameter.zoomOffsetY = _zoomOffsetY;
 
     sensor_t *s = esp_camera_sensor_get();
     if (s != NULL) {
-        if (zoom) {
-            int mode = zoomMode;
-            int x = zoomOffsetX;
-            int y = zoomOffsetY;
+        if (camParameter.zoom) {
+            int mode = camParameter.zoomMode;
+            int x = camParameter.zoomOffsetX;
+            int y = camParameter.zoomOffsetY;
 
             // Maintain correct mode
             if (mode > 1)
@@ -360,7 +366,7 @@ void CCamera::setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffs
             setCamWindow(s, mode, x, y, image_width, image_height);
         }
         else {
-            s->set_framesize(s, actualResolution);
+            s->set_framesize(s, camParameter.actualResolution);
         }
     }
     else {
@@ -446,17 +452,18 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
         return false;
     }
 
-    if (((_brightness != brightness) || (_contrast != contrast) || (_saturation != saturation)) && isFixedExposure)
+    if (((_brightness != camParameter.brightness) || (_contrast != camParameter.contrast) || 
+        (_saturation != camParameter.saturation)) && camParameter.isFixedExposure)
         enableAutoExposure();
 
-    brightness = _brightness;
-    contrast = _contrast;
-    saturation = _saturation;
-    sharpness = _sharpness;
-    autoExposureLevel = _autoExposureLevel;
-    aec2Algo = _aec2Algo;
-    grayscale = _grayscale;
-    negative = _negative;
+    camParameter.brightness = _brightness;
+    camParameter.contrast = _contrast;
+    camParameter.saturation = _saturation;
+    camParameter.sharpness = _sharpness;
+    camParameter.autoExposureLevel = _autoExposureLevel;
+    camParameter.aec2Algo = _aec2Algo;
+    camParameter.grayscale = _grayscale;
+    camParameter.negative = _negative;
 
     return true;
 }
@@ -474,6 +481,9 @@ bool CCamera::setMirrorFlip(bool _mirror, bool _flip)
         return false;
     }
 
+    camParameter.mirrorHorizontal = _mirror;
+    camParameter.flipVertical = _flip;
+
     return true;
 }
 
@@ -483,17 +493,17 @@ bool CCamera::enableAutoExposure()
     if (!getcameraInitSuccessful())
         return false;
     
-    if (flashTime > 0) {
+    if (camParameter.flashTime > 0) {
         setStatusLED(true);
         setFlashlight(true);
-        vTaskDelay(flashTime / portTICK_PERIOD_MS);
+        vTaskDelay(camParameter.flashTime / portTICK_PERIOD_MS);
     }
 
     camera_fb_t * fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);
     fb = esp_camera_fb_get();
 
-    if (flashTime > 0) {
+    if (camParameter.flashTime > 0) {
         setStatusLED(false);  
         setFlashlight(false);
     }    
@@ -514,7 +524,7 @@ bool CCamera::enableAutoExposure()
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableAutoExposure: Failed to get control structure to set gain+exposure");
     }
 
-    isFixedExposure = true;
+    camParameter.isFixedExposure = true;
     return true;
 }
 
@@ -523,23 +533,23 @@ void CCamera::setFlashIntensity(int _flashIntensity)
 {
     _flashIntensity = std::min(_flashIntensity, 100);
     _flashIntensity = std::max(_flashIntensity, 0);
-    flashIntensity = ((_flashIntensity * LEDC_RESOLUTION) / 100);
-    ESP_LOGD(TAG, "Set flashIntensity to %d of %d", flashIntensity, LEDC_RESOLUTION); // @TODO: LOGD
+    camParameter.flashIntensity = ((_flashIntensity * LEDC_RESOLUTION) / 100);
+    ESP_LOGD(TAG, "Set flashIntensity to %d of %d", camParameter.flashIntensity, LEDC_RESOLUTION); // @TODO: LOGD
 }
 
 
 /* Set flash time in milliseconds */
 void CCamera::setFlashTime(int _flashTime)
 {
-    flashTime = std::max(_flashTime, 0);
-    ESP_LOGD(TAG, "Set flashTime to %d", flashTime); // @TODO: LOGD
+    camParameter.flashTime = std::max(_flashTime, 0);
+    ESP_LOGD(TAG, "Set flashTime to %d", camParameter.flashTime); // @TODO: LOGD
 }
 
 
 /* Get flash time in milliseconds */
 int CCamera::getFlashTime()
 {
-    return flashTime;
+    return camParameter.flashTime;
 }
 
 
@@ -548,10 +558,10 @@ esp_err_t CCamera::captureToBasisImage(CImageBasis *_Image)
     if (!getcameraInitSuccessful())
         return ESP_FAIL;
 
-    if (flashTime > 0) {    // Switch on for defined time if a flashTime is set
+    if (camParameter.flashTime > 0) {    // Switch on for defined time if a flashTime is set
         setStatusLED(true);
         setFlashlight(true);
-        vTaskDelay(flashTime / portTICK_PERIOD_MS);
+        vTaskDelay(camParameter.flashTime / portTICK_PERIOD_MS);
     }
 
 	#ifdef DEBUG_DETAIL_ON
@@ -562,7 +572,7 @@ esp_err_t CCamera::captureToBasisImage(CImageBasis *_Image)
     esp_camera_fb_return(fb);        
     fb = esp_camera_fb_get();
 
-    if (flashTime > 0) {    // Switch off if flashlight was on
+    if (camParameter.flashTime > 0) {    // Switch off if flashlight was on
         setStatusLED(false);  
         setFlashlight(false);
     }
@@ -601,17 +611,17 @@ esp_err_t CCamera::captureToFile(std::string _nm)
     
     std::string ftype;
 
-    if (flashTime > 0) {    // Switch on for defined time if a flashTime is set
+    if (camParameter.flashTime > 0) {    // Switch on for defined time if a flashTime is set
         setStatusLED(true);
         setFlashlight(true);
-        vTaskDelay(flashTime / portTICK_PERIOD_MS);
+        vTaskDelay(camParameter.flashTime / portTICK_PERIOD_MS);
     }
 
     camera_fb_t * fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);
     fb = esp_camera_fb_get();
 
-    if (flashTime > 0) {    // Switch off if flashlight was on
+    if (camParameter.flashTime > 0) {    // Switch off if flashlight was on
         setStatusLED(false);    
         setFlashlight(false);
     }
@@ -649,7 +659,7 @@ esp_err_t CCamera::captureToFile(std::string _nm)
     if (ftype.compare("JPG") == 0)
     {
         if(fb->format != PIXFORMAT_JPEG){
-            bool jpeg_converted = frame2jpg(fb, actualQuality, &buf, &buf_len);
+            bool jpeg_converted = frame2jpg(fb, camParameter.actualQuality, &buf, &buf_len);
             converted = true;
             if(!jpeg_converted){
                 ESP_LOGE(TAG, "JPEG compression failed");
@@ -709,17 +719,17 @@ esp_err_t CCamera::captureToHTTP(httpd_req_t *_req)
     size_t fb_len = 0;
     int64_t fr_start = esp_timer_get_time();
 
-    if (flashTime > 0) {
+    if (camParameter.flashTime > 0) {
         setStatusLED(true);
         setFlashlight(true);
-        vTaskDelay(flashTime / portTICK_PERIOD_MS);
+        vTaskDelay(camParameter.flashTime / portTICK_PERIOD_MS);
     }
 
     camera_fb_t *fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);
     fb = esp_camera_fb_get();
 
-    if (flashTime > 0) {    // Switch off if flashlight was on
+    if (camParameter.flashTime > 0) {    // Switch off if flashlight was on
         setStatusLED(false); 
         setFlashlight(false);
     }
@@ -846,8 +856,8 @@ void CCamera::setFlashlight(bool _status)
     else {
     #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
         if (_status) {
-            ESP_LOGD(TAG, "Default flashlight turn on with PWM %d", flashIntensity);
-            ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, flashIntensity));
+            ESP_LOGD(TAG, "Default flashlight turn on with PWM %d", camParameter.flashIntensity);
+            ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, camParameter.flashIntensity));
             // Update duty to apply the new value
             ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
         }
@@ -902,7 +912,7 @@ framesize_t CCamera::textToFramesize(const char * _size)
     else if (strcmp(_size, "UXGA") == 0)
         return FRAMESIZE_UXGA;     // 1600x1200  
 
-    return actualResolution;
+    return camParameter.actualResolution;
 }
 
 
