@@ -2,14 +2,10 @@
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Flash Time          | WaitBeforeTakingPicture
+| Parameter Name    | Flash Time          | WaitBefore TakingPicture
 | Default Value     | `2.0`               | `2.0`
 | Input Options     | `0.1` .. &infin;    | `0.1` .. &infin;
 | Unit              | Seconds             | Seconds
-
-
-!!! Warning
-    This is an **Expert Parameter**! Only change it if you understand what it does!  
 
 
 ## Description

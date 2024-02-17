@@ -9,7 +9,7 @@
 
 ## Description
 
-Mirror the image on the horizontal
+Mirror the image on the horizontal axis
 
 
 !!! Tip

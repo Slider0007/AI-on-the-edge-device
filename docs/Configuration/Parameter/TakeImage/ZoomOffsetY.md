@@ -5,10 +5,7 @@
 | Parameter Name    | Zoom Offset Y       | ZoomOffsetY
 | Default Value     | `0`                 | `0`
 | Input Options     | `0` .. &infin;      | `0` .. &infin;
-
-
-!!! Warning
-    This is an **Expert Parameter**! Only change it if you understand what it does!
+| Unit              | pixel               | pixel
 
 
 ## Description

@@ -651,6 +651,18 @@
 			<td>$TOOLTIP_Alignment_SearchFieldY</td>
 		</tr>
 
+		<tr>
+			<td class="indent1">
+			    <span id="Alignment_InitialRotate_text" style="color:black;">Image Rotation</span>
+			</td>
+			<td>
+				<input required type="number" name="name" id="Alignment_InitialRotate_value1" min="-360.0" max="360.0" step="0.1"
+				oninput="(!validity.rangeUnderflow||(value=-360.0)) && (!validity.rangeOverflow||(value=360.0)) && 
+				(!validity.stepMismatch||(value=parseInt(this.value)));">Degree
+			</td>
+			<td>$TOOLTIP_Alignment_InitialRotate</td>
+		</tr>
+
 		<tr class="expert">
 			<td class="indent1">
 			    <span id="Alignment_FlipImageSize_text" style="color:black;">Flip Image Size</span>
@@ -662,18 +674,6 @@
 				</select>
 			</td>
 			<td>$TOOLTIP_Alignment_FlipImageSize</td>
-		</tr>
-
-		<tr>
-			<td class="indent1">
-			    <span id="Alignment_InitialRotate_text" style="color:black;">Image Rotation</span>
-			</td>
-			<td>
-				<input required type="number" name="name" id="Alignment_InitialRotate_value1" min="-360.0" max="360.0" step="0.1"
-				oninput="(!validity.rangeUnderflow||(value=-360.0)) && (!validity.rangeOverflow||(value=360.0)) && 
-				(!validity.stepMismatch||(value=parseInt(this.value)));">Degree
-			</td>
-			<td>$TOOLTIP_Alignment_InitialRotate</td>
 		</tr>
 
 		<tr class="expert">
@@ -871,7 +871,7 @@
 
 		<tr class="expert">
 			<td class="indent2">
-				<span id="PostProcessing_AllowNegativeRates_text" style="color:black;">Allow Negative Rates</span>
+				<span id="PostProcessing_AllowNegativeRates_text" style="color:black;">Allow Negative Rate</span>
 			</td>
 			<td>
 				<select id="PostProcessing_AllowNegativeRates_value1">

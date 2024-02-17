@@ -424,12 +424,20 @@ bool ClassFlowCNNGeneral::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             newROI->deltax = std::stoi(splitted[3]);
             newROI->deltay = std::stoi(splitted[4]);
 
-            if (newROI->posx < 1 || (newROI->posx > (Camera.image_width - 1 - newROI->deltax))) {
+            // ROI position plausibilty check - Check Flip Image Size
+            int img_width = Camera.image_width;
+            int img_height = Camera.image_height;
+            if (flowpostalignment != NULL && flowpostalignment->getFlipImageSize()) {
+                img_width = Camera.image_height;
+                img_height = Camera.image_width;
+            }
+
+            if (newROI->posx < 1 || (newROI->posx > (img_width - 1 - newROI->deltax))) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more ROI out of image area (x). Check ROI config");
                 bRetVal = false;
             }
 
-            if (newROI->posy < 1 || (newROI->posy > (Camera.image_height - 1 - newROI->deltay))) {
+            if (newROI->posy < 1 || (newROI->posy > (img_height - 1 - newROI->deltay))) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more ROI out of image area (y). Check ROI config");
                 bRetVal = false;
             }

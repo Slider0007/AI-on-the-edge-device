@@ -7,10 +7,6 @@
 | Input Options     | `Crop`<br>`Scale & Crop` | `0`<br>`1`
 
 
-!!! Warning
-    This is an **Expert Parameter**! Only change it if you understand what it does!
-
-
 ## Description
 
 Select the zoom mode. 

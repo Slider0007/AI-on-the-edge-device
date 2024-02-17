@@ -7,10 +7,6 @@
 | Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
-!!! Warning
-    This is an **Expert Parameter**! Only change it if you understand what it does!
-
-
 ## Description
 
 Enable camera zoom functionality

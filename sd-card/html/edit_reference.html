@@ -668,28 +668,30 @@
     function ImageSizeValidation()
     {
         if (paramLocal["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
-            configuredWidth = 320;
+            if (document.getElementById("Alignment_FlipImageSize_value1").checked ? false : true) {
+                configuredWidth = 320;
+            }
+            else {
+                configuredWidth = 240;
+            }
         }
         else if (paramLocal["TakeImage"]["ImageSize"]["value1"] == "VGA") {
-            configuredWidth = 640;
+            if (document.getElementById("Alignment_FlipImageSize_value1").checked ? false : true) {
+                configuredWidth = 640;
+            }
+            else {
+                configuredWidth = 480;
+            }
         }
         else {
             firework.launch('Unknown image size. No reference image size validation', 'danger', 30000);
             return;
         }
 
-        if (document.getElementById("Alignment_FlipImageSize_value1").checked ? true : false) {
-            if (configuredWidth != canvas.height) {
-                    firework.launch('Actual reference image size differs to configured image size. \
-                                    Please create a new reference image and redo alignment marker and ROI configuration', 'warning', 10000);
-            }
+        if (configuredWidth != canvas.width) {
+                firework.launch('Actual reference image size differs to configured image size. \
+                    Please create a new reference image and redo alignment marker and ROI configuration', 'warning', 10000);
         }
-        else {
-            if (configuredWidth != canvas.width) {
-                    firework.launch('Actual reference image size differs to configured image size. \
-                                    Please create a new reference image and redo alignment marker and ROI configuration', 'warning', 10000);
-            }
-        }    
     }
 
 
