@@ -2,14 +2,14 @@
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | LED Intensity       | LEDIntensity
+| Parameter Name    | Flash Intensity     | LEDIntensity
 | Default Value     | `50`                | `50`
 | Input Options     | `0` .. `100`        | `0` .. `100`
 
 
 ## Description
 
-Set the flash intensity (PWM-controlled LED).
+Set the flash intensity (PWM-controlled LED)
 
 
 !!! Tip

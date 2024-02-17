@@ -9,7 +9,7 @@
 
 ## Description
 
-Set the brightness level of the image.
+Set the brightness level of the image
 
 
 !!! Tip

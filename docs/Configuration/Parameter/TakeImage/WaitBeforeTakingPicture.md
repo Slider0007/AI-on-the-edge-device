@@ -1,10 +1,10 @@
-# Parameter: Flash Duration
+# Parameter: Flash Time
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Flash Duration      | WaitBeforeTakingPicture
+| Parameter Name    | Flash Time          | WaitBeforeTakingPicture
 | Default Value     | `2.0`               | `2.0`
-| Input Options     | `0.0` .. &infin;    | `0.0` .. &infin;
+| Input Options     | `0.1` .. &infin;    | `0.1` .. &infin;
 | Unit              | Seconds             | Seconds
 
 
@@ -14,8 +14,8 @@
 
 ## Description
 
-Flash on time before taking the image.
+Flash on time before taking the image
 
 
 !!! Note
-    A shorter flash duration than 0.5s ist not recommended.
+    A shorter flash duration than 0.5s is not recommended.

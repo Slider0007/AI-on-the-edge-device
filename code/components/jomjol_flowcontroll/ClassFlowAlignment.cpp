@@ -26,9 +26,8 @@ void ClassFlowAlignment::SetInitialParameter(void)
     initalrotate = 0.0;
     anz_ref = 0;
     AlignFAST_SADThreshold = 10;  // FAST ALIGN ALGO: SADNorm -> if smaller than threshold use same alignment values as last cycle
-    initialmirror = false;
     use_antialiasing = false;
-    initialflip = false;
+    flipImageSize = false;
     SaveDebugInfo = false;
     SaveAllFiles = false;
     ListFlowControll = NULL;
@@ -70,12 +69,10 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     if (aktparamgraph.compare("[Alignment]") != 0)       //Paragraph does not fit Alignment
         return false;
 
-    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
-    {
+    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph)) {
         splitted = ZerlegeZeile(aktparamgraph);
         
-        if ((toUpper(splitted[0]) == "ALIGNMENTALGO") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "ALIGNMENTALGO") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "HIGHACCURACY")
                 alg_algo = 1;
             else if (toUpper(splitted[1]) == "FAST")
@@ -93,63 +90,47 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             #endif
         }
         
-        if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1)) {
             search_x = std::stoi(splitted[1]);
         } 
 
-        if ((toUpper(splitted[0]) == "SEARCHFIELDY") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SEARCHFIELDY") && (splitted.size() > 1)) {
             search_y = std::stoi(splitted[1]);
         }
-
-        if ((toUpper(splitted[0]) == "FLIPIMAGESIZE") && (splitted.size() > 1))
-        {
-            if (toUpper(splitted[1]) == "TRUE")
-                initialflip = true;
-            else
-                initialflip = false;
-        }
-
-        if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1))
-        {
+    
+        if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1)) {
             this->initalrotate = std::stof(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "INITIALMIRROR") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "FLIPIMAGESIZE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                initialmirror = true;
+                flipImageSize = true;
             else
-                initialmirror = false;
+                flipImageSize = false;
         }
- 
-        if ((toUpper(splitted[0]) == "ANTIALIASING") && (splitted.size() > 1))
-        {
+
+        if ((toUpper(splitted[0]) == "ANTIALIASING") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 use_antialiasing = true;
             else
                 use_antialiasing = false;
         }
 
-        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 SaveDebugInfo = true;
             else
                 SaveDebugInfo = false;
         }
 
-        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 SaveAllFiles = true;
             else
                 SaveAllFiles = false;
         }
 
-        if ((splitted.size() == 3) && (anz_ref < 2))
-        {
+        if ((splitted.size() == 3) && (anz_ref < 2)) {
             int x=0,y=0,n=0;
             References[anz_ref].image_file = FormatFileName("/sdcard" + splitted[0]);
             stbi_info(References[anz_ref].image_file.c_str(), &x, &y, &n);
@@ -244,8 +225,8 @@ bool ClassFlowAlignment::doFlow(std::string time)
         return false;
     }
 
-    CRotateImage rt("rawImageRT", AlignAndCutImage, ImageTMP, initialflip);
-    if (initialflip)
+    CRotateImage rt("rawImageRT", AlignAndCutImage, ImageTMP, flipImageSize);
+    if (flipImageSize)
     {
         int _zw = ImageBasis->height;
         ImageBasis->height = ImageBasis->width;
@@ -255,17 +236,8 @@ bool ClassFlowAlignment::doFlow(std::string time)
         ImageTMP->width = ImageTMP->height;
         ImageTMP->height = _zw;
     }
-
-    if (initialmirror)
-    {
-        ESP_LOGD(TAG, "do mirror");
-        rt.Mirror();
-        
-        if (SaveAllFiles)
-            AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/mirror.jpg"));
-    }
  
-    if ((initalrotate != 0) || initialflip)
+    if ((initalrotate != 0) || flipImageSize)
     {
         if (References[0].alignment_algo == 4)  // alignment off: no initial rotation and no additional alignment algo
             initalrotate = 0;

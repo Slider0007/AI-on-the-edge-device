@@ -17,8 +17,7 @@ class ClassFlowAlignment : public ClassFlow
         strRefInfo References[2];
         int anz_ref;
         float initalrotate;
-        bool initialmirror;
-        bool initialflip;
+        bool flipImageSize;
         bool use_antialiasing;
         bool SaveDebugInfo;
         bool SaveAllFiles;

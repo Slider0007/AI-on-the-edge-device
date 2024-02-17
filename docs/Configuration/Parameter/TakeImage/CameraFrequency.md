@@ -14,7 +14,7 @@
 
 ## Description
 
-This parameter sets the internally used camera frequency. 
+This parameter sets the internally used camera frequency
 
 
 !!! Note

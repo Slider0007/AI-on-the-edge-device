@@ -611,7 +611,7 @@ void task_reboot(void *DeleteMainFlow)
 
     gpio_handler_destroy();
 
-    Camera.LightOnOff(false);
+    Camera.setFlashlight(false);
     StatusLEDOff();
     esp_camera_deinit();
 
@@ -647,9 +647,9 @@ void doRebootOTA()
 {
     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Reboot in 5sec");
 
-    Camera.LightOnOff(false);
+    Camera.setFlashlight(false);
     StatusLEDOff();
-    Camera.DeinitCam();
+    Camera.deinitCam();
 
     vTaskDelay(5000 / portTICK_PERIOD_MS);
     esp_restart();      // Reset type: CPU reset (Reset both CPUs)

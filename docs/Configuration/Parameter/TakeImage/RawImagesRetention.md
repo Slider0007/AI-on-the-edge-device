@@ -15,4 +15,4 @@
 
 ## Description
 
-Number of days the raw image files are kept.
+Number of days the raw image files are kept

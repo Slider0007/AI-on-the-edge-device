@@ -9,7 +9,7 @@
 
 ## Description
 
-Set the contrast level of the image.
+Set the contrast level of the image
 
 
 !!! Tip

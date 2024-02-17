@@ -1,15 +1,15 @@
-# Parameter: Saturation
+# Parameter: Flip Vertical
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Saturation          | Saturation
-| Default Value     | `0`                 | `0`
-| Input Options     | `-2` .. `2`         | `-2` .. `2`
+| Parameter Name    | Flip Vertical       | FlipVertical
+| Default Value     | `false`             | `false`
+| Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
 ## Description
 
-Set the saturation level of the image
+Flip the image on the vertical
 
 
 !!! Tip

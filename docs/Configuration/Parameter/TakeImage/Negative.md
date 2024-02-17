@@ -1,15 +1,15 @@
-# Parameter: Mirror Image
+# Parameter: Negative
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Mirror Image        | InitialMirror
+| Parameter Name    | Negative            | Negative
 | Default Value     | `false`             | `false`
 | Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
 ## Description
 
-Mirror the image on the x-axis
+Invert the colors
 
 
 !!! Tip

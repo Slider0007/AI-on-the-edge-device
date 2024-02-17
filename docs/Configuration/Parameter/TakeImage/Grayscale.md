@@ -1,15 +1,15 @@
-# Parameter: Saturation
+# Parameter: Grayscale
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Saturation          | Saturation
-| Default Value     | `0`                 | `0`
-| Input Options     | `-2` .. `2`         | `-2` .. `2`
+| Parameter Name    | Grayscale           | Grayscale
+| Default Value     | `false`             | `false`
+| Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
 ## Description
 
-Set the saturation level of the image
+Produces black and white image
 
 
 !!! Tip

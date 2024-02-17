@@ -19,52 +19,69 @@ typedef struct {
 class CCamera
 {
     protected:
-        uint8_t *demoImage; // Buffer holding the demo image in bytes
-        int ActualQuality;
-        framesize_t ActualResolution;
-        int brightness, contrast, saturation;
-        bool isFixedExposure;
-        int flashduration;
-        int led_intensity;
+        bool cameraInitSuccessful;
+        int flashIntensity;
+        int flashTime;
 
-        bool CameraInitSuccessful;
+        framesize_t actualResolution;
+        int actualQuality;
+
+        int brightness, contrast, saturation, sharpness;
+        int autoExposureLevel;
+        int zoomMode, zoomOffsetX, zoomOffsetY;
+        bool negative;
+        bool grayscale;
+        bool aec2Algo;
+        bool isFixedExposure;
+        bool zoom;
+
         bool demoMode;
+        uint8_t *demoImage; // Buffer holding the demo image in bytes
         std::vector<std::string> demoFiles;
 
-        void LEDOnOff(bool status);
-        bool loadNextDemoImage(camera_fb_t *fb);
+        void setStatusLED(bool status);
+        bool loadNextDemoImage(camera_fb_t *_fb);
+
+        void setCamWindow(sensor_t *_s, int _resolution, int _xOffset, int _yOffset, int _xLength, int _yLength);
+        void setImageWidthHeightFromResolution(framesize_t resol);
 
     public:
         int image_height, image_width;
         
         CCamera();
         ~CCamera();
-        void FreeMemoryOnly();
-        void PowerResetCamera();
-        esp_err_t InitCam();
-        esp_err_t DeinitCam();
+        void freeMemoryOnly();
+        void powerResetCamera();
+        esp_err_t initCam();
+        esp_err_t deinitCam();
         bool testCamera(void);
         void printCamInfo(void);
+        bool getcameraInitSuccessful();
 
-        esp_err_t CaptureToBasisImage(CImageBasis *_Image, int delay = 0);
-        esp_err_t CaptureToFile(std::string nm, int delay = 0);
-        esp_err_t CaptureToHTTP(httpd_req_t *req, int delay = 0);
-        esp_err_t CaptureToStream(httpd_req_t *req, bool FlashlightOn);
+        esp_err_t captureToBasisImage(CImageBasis *_Image);
+        esp_err_t captureToFile(std::string _nm);
+        esp_err_t captureToHTTP(httpd_req_t *_req);
+        esp_err_t captureToStream(httpd_req_t *_req, bool _flashlightOn);
 
         void ledc_init(void);
-        void SetCameraFrequency(int _frequency);
-        void SetQualitySize(int qual, framesize_t resol);
-        bool SetBrightnessContrastSaturation(int _brightness, int _contrast, int _saturation);
-        framesize_t TextToFramesize(const char * text);
-        void GetCameraParameter(httpd_req_t *req, int &qual, framesize_t &resol);
-        void SetLEDIntensity(int _intrel);
+        void setFlashIntensity(int _flashIntensity);
+        void setFlashTime(int _flashTime);
+        int getFlashTime();
+        void setFlashlight(bool _status);
 
-        bool EnableAutoExposure(int flash_duration);
-        bool getCameraInitSuccessful();
-        void LightOnOff(bool status);
+        void setCameraFrequency(int _frequency);
+        void setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoomMode, 
+                            int _zoomOffsetX, int _zoomOffsetY);
+        bool setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, int _autoExposureLevel, 
+                                  bool _aec2, bool _grayscale, bool _negative, bool _mirror, bool _flip);
+        void setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
+        bool setMirrorFlip(bool _mirror, bool _flip);
+        bool enableAutoExposure();
 
-        void EnableDemoMode(void);
-        void DisableDemoMode(void);
+        framesize_t textToFramesize(const char * text);
+
+        void enableDemoMode(void);
+        void disableDemoMode(void);
 };
 
 

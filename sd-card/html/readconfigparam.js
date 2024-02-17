@@ -148,14 +148,25 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "RawImagesLocation", false, "/log/source");
      ParamAddSingleValueWithPreset(param, catname, "RawImagesRetention", false, "5");
      ParamAddSingleValueWithPreset(param, catname, "WaitBeforeTakingPicture", true, "2.0");
+     ParamAddSingleValueWithPreset(param, catname, "LEDIntensity", true, "50");
      ParamAddSingleValueWithPreset(param, catname, "CameraFrequency", true, "20");
      ParamAddSingleValueWithPreset(param, catname, "ImageQuality", true, "12");
      ParamAddSingleValueWithPreset(param, catname, "ImageSize", true, "VGA");
-     ParamAddSingleValueWithPreset(param, catname, "LEDIntensity", true, "50");
      ParamAddSingleValueWithPreset(param, catname, "Brightness", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "Contrast", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "Saturation", true, "0");
+     ParamAddSingleValueWithPreset(param, catname, "Sharpness", true, "0");
+     ParamAddSingleValueWithPreset(param, catname, "AutoExposureLevel", true, "0");
+     ParamAddSingleValueWithPreset(param, catname, "Aec2Algo", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "FixedExposure", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "Grayscale", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "Negative", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "MirrorHorizontal", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "FlipVertical", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "Zoom", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "ZoomMode", true, "0");
+     ParamAddSingleValueWithPreset(param, catname, "ZoomOffsetX", true, "0");
+     ParamAddSingleValueWithPreset(param, catname, "ZoomOffsetY", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "Demo", true, "false");    
 
      var catname = "Alignment";
@@ -166,9 +177,8 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "AlignmentAlgo", true, "Default");
      ParamAddSingleValueWithPreset(param, catname, "SearchFieldX", true, "20");
      ParamAddSingleValueWithPreset(param, catname, "SearchFieldY", true, "20");     
-     ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "InitialRotate", true, "0.0");
-     ParamAddSingleValueWithPreset(param, catname, "InitialMirror", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "SaveDebugInfo", true, "false");
 
      var catname = "Digits";

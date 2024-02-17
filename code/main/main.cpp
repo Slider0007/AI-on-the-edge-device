@@ -293,8 +293,8 @@ extern "C" void app_main(void)
             else { // HEAP size OK --> continue to camera init
                 // Init camera
                 // ********************************************
-                esp_err_t camStatus = Camera.InitCam();
-                Camera.LightOnOff(false);
+                esp_err_t camStatus = Camera.initCam();
+                Camera.setFlashlight(false);
 
                 // Check camera init
                 // ********************************************

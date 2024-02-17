@@ -493,8 +493,8 @@ void ClassFlowControll::DeinitFlow(void)
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Deinit flow");
     //LogFile.WriteHeapInfo("DeinitFlow start");
 
-    Camera.FreeMemoryOnly(); // ClassControlCamera: Free any additional user allocated memory, but no cam driver deinit
-    Camera.LightOnOff(false);
+    Camera.freeMemoryOnly(); // ClassControlCamera: Free any additional user allocated memory, but no cam driver deinit
+    Camera.setFlashlight(false);
     StatusLEDOff();
     //LogFile.WriteHeapInfo("After camera");
 

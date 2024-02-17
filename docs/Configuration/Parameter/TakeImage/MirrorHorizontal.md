@@ -1,15 +1,15 @@
-# Parameter: Saturation
+# Parameter: Mirror Horizontal
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Saturation          | Saturation
-| Default Value     | `0`                 | `0`
-| Input Options     | `-2` .. `2`         | `-2` .. `2`
+| Parameter Name    | Mirror Horizontal   | MirrorHorizontal
+| Default Value     | `false`             | `false`
+| Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
 ## Description
 
-Set the saturation level of the image
+Mirror the image on the horizontal
 
 
 !!! Tip

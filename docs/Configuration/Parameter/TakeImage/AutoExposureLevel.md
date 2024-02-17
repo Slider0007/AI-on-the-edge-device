@@ -1,15 +1,15 @@
-# Parameter: Saturation
+# Parameter: Auto Exposure Level
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Saturation          | Saturation
+| Parameter Name    | Auto Exposure Level | AutoExposureLevel
 | Default Value     | `0`                 | `0`
 | Input Options     | `-2` .. `2`         | `-2` .. `2`
 
 
 ## Description
 
-Set the saturation level of the image
+Exposure compensation. The lower the value the darker the image
 
 
 !!! Tip

@@ -127,9 +127,9 @@ bool doInit(void)
     // Init cam if init not yet done.
     // Make sure this is called between deinit and init of flow components (avoid SPIRAM fragmentation)
     // ********************************************   
-    if (!Camera.getCameraInitSuccessful()) { 
-        Camera.PowerResetCamera();
-        esp_err_t camStatus = Camera.InitCam(); 
+    if (!Camera.getcameraInitSuccessful()) { 
+        Camera.powerResetCamera();
+        esp_err_t camStatus = Camera.initCam(); 
 
         if (camStatus != ESP_OK) // Camera init failed
             return false;
@@ -661,17 +661,17 @@ esp_err_t handler_editflow(httpd_req_t *req)
         return get_numbers_file_handler(req);
     }
 
-    if (_task.compare("data") == 0) {
+    else if (_task.compare("data") == 0) {
         //ESP_LOGD(TAG, "Get data list");
         return get_data_file_handler(req);
     }
 
-    if (_task.compare("tflite") == 0) {
+    else if (_task.compare("tflite") == 0) {
         //ESP_LOGD(TAG, "Get tflite list");
         return get_tflite_file_handler(req);
     }
 
-    if (_task.compare("copy") == 0) {
+    else if (_task.compare("copy") == 0) {
         std::string in, out, zw;
 
         httpd_query_key_value(_query, "in", _valuechar, 30);
@@ -693,7 +693,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
 
-    if (_task.compare("cutref") == 0) {
+    else if (_task.compare("cutref") == 0) {
         if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
             httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
@@ -751,56 +751,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_send(req, zw.c_str(), zw.length()); 
     }
 
-    if (_task.compare("test_take") == 0) {
-        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
-            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
-            return ESP_FAIL;
-        }
-        
-        std::string _host = "";
-        std::string _bri = "";
-        std::string _con = "";
-        std::string _sat = "";
-        std::string _int = "";
-        int bri = -100;
-        int sat = -100;
-        int con = -100;
-        int intens = -100;
-
-        if (httpd_query_key_value(_query, "host", _valuechar, 30) == ESP_OK) {
-            _host = std::string(_valuechar);
-        }
-        if (httpd_query_key_value(_query, "int", _valuechar, 30) == ESP_OK) {
-            _int = std::string(_valuechar);
-            intens = stoi(_int);
-        }
-        if (httpd_query_key_value(_query, "bri", _valuechar, 30) == ESP_OK) {
-            _bri = std::string(_valuechar);
-            bri = stoi(_bri);
-        }
-        if (httpd_query_key_value(_query, "con", _valuechar, 30) == ESP_OK) {
-            _con = std::string(_valuechar);
-            con = stoi(_con);
-        }
-        if (httpd_query_key_value(_query, "sat", _valuechar, 30) == ESP_OK) {
-            _sat = std::string(_valuechar);
-            sat = stoi(_sat);
-        }
-
-
-        //ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
-        //std::string zwzw = "Do " + _task + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
-        Camera.SetBrightnessContrastSaturation(bri, con, sat);
-        Camera.SetLEDIntensity(intens);
-        ESP_LOGD(TAG, "test_take - vor TakeImage");
-        std::string zw = flowctrl.doSingleStep("[TakeImage]", _host);
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_send(req, zw.c_str(), zw.length()); 
-    } 
-
-
-    if (_task.compare("test_align") == 0) {
+    else if (_task.compare("test_align") == 0) {
         if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
             httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
