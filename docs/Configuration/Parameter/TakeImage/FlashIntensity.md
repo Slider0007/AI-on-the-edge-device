@@ -2,7 +2,7 @@
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Flash Intensity     | LEDIntensity
+| Parameter Name    | Flash Intensity     | FlashIntensity
 | Default Value     | `50`                | `50`
 | Input Options     | `0` .. `100`        | `0` .. `100`
 | Unit              | %                   | %

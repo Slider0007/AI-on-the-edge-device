@@ -202,7 +202,7 @@
                             onchange='setEnabled("TakeImage_Zoom_parameter", this.checked ? true : false);'></td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_Brightness</td>
             <td>
-                <span id="TakeImage_Brightness_text" style="color:black;">Brightness</span>
+                <span id="TakeImage_Brightness_text">Brightness</span>
             </td>
             <td>
                 <input class="camParameter" style="clear: both; width: 80%;vertical-align:middle" type="range" id="TakeImage_Brightness_value1" 
@@ -224,7 +224,7 @@
             </td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_Contrast</td>
             <td>
-                <span id="TakeImage_Contrast_text" style="color:black;">Contrast</span>
+                <span id="TakeImage_Contrast_text">Contrast</span>
             </td>
             <td>
                 <input class="camParameter" style="clear: both; width: 80%;vertical-align:middle" type="range" id="TakeImage_Contrast_value1"
@@ -245,7 +245,7 @@
             </td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_Saturation</td>
             <td>
-                <span id="TakeImage_Saturation_text" style="color:black;">Saturation</span>
+                <span id="TakeImage_Saturation_text">Saturation</span>
             </td>
             <td>
                 <input class="camParameter" style="clear: both; width: 80%;vertical-align:middle" type="range" id="TakeImage_Saturation_value1"
@@ -323,12 +323,12 @@
                         value="0" min="-360" max="360" onchange="drawRotated()" oninput="(!validity.rangeOverflow||(value=360)) 
                         && (!validity.rangeUnderflow||(value=-360)) && (!validity.stepMismatch||(value=parseInt(this.value)));">°
             </td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_WaitBeforeTakingPicture</td>		
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_FlashTime</td>		
             <td>
-                <span id="TakeImage_WaitBeforeTakingPicture_text">Flash Time</span>
+                <span id="TakeImage_FlashTime_text">Flash Time</span>
             </td>
             <td>
-                <input class="camParameter" required type="number" id="TakeImage_WaitBeforeTakingPicture_value1" 
+                <input class="camParameter" required type="number" id="TakeImage_FlashTime_value1" 
                         value="2.0" min="0.1" step="0.1" oninput="(!validity.rangeUnderflow||(value=0.1));">s
             </td>
         </tr>
@@ -341,12 +341,12 @@
                         value=0.0 min="-1" max="1" step="0.1" onchange="drawRotated()" oninput="(!validity.rangeOverflow||(value=1)) && 
                         (!validity.rangeUnderflow||(value=-1)) && (!validity.stepMismatch||(value=parseInt(this.value)));">°
             </td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_LEDIntensity</td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_FlashIntensity</td>
             <td>
-                <span id="TakeImage_LEDIntensity_text" style="color:black;">Flash Intensity</span>
+                <span id="TakeImage_FlashIntensity_text">Flash Intensity</span>
             </td>
             <td>
-                <input class="camParameter" required style="clear: both" type="number" id="TakeImage_LEDIntensity_value1" 
+                <input class="camParameter" required style="clear: both" type="number" id="TakeImage_FlashIntensity_value1" 
                         value="0" min="0" max="100" oninput="(!validity.rangeOverflow||(value=100)) && 
                         (!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">%
             </td>
@@ -427,9 +427,9 @@
 
         if (paramLocal["TakeImage"]["Brightness"].found && paramLocal["TakeImage"]["Brightness"].enabled) // Parameter available?
         {
-            let flashtime = document.getElementById("TakeImage_WaitBeforeTakingPicture_value1").value;
+            let flashtime = document.getElementById("TakeImage_FlashTime_value1").value;
             if (flashtime == "") flashtime = "2.0";
-            let flashintensity = document.getElementById("TakeImage_LEDIntensity_value1").value;
+            let flashintensity = document.getElementById("TakeImage_FlashIntensity_value1").value;
             if (flashintensity == "") flashintensity = "50";
             let brightness = document.getElementById("TakeImage_Brightness_value1").value;
             if (brightness == "") brightness = "0";
@@ -541,8 +541,8 @@
 
     function parseActualData()
     {
-        WriteParameter(paramLocal, "TakeImage", "WaitBeforeTakingPicture");
-        WriteParameter(paramLocal, "TakeImage", "LEDIntensity");
+        WriteParameter(paramLocal, "TakeImage", "FlashTime");
+        WriteParameter(paramLocal, "TakeImage", "FlashIntensity");
         WriteParameter(paramLocal, "TakeImage", "Brightness", true);		
         WriteParameter(paramLocal, "TakeImage", "Contrast", true);		
         WriteParameter(paramLocal, "TakeImage", "Saturation", true);
@@ -844,8 +844,8 @@
         if (confirm("Are you sure you want to save and apply the new camera configuration and reference image?")) {
             document.getElementById("savereference").disabled = true;
 
-            ReadParameter(param, "TakeImage", "WaitBeforeTakingPicture");
-            ReadParameter(param, "TakeImage", "LEDIntensity");
+            ReadParameter(param, "TakeImage", "FlashTime");
+            ReadParameter(param, "TakeImage", "FlashIntensity");
             ReadParameter(param, "TakeImage", "Brightness");		
             ReadParameter(param, "TakeImage", "Contrast");
             ReadParameter(param, "TakeImage", "Saturation");

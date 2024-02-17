@@ -147,8 +147,8 @@ function ParseConfig() {
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "RawImagesLocation", false, "/log/source");
      ParamAddSingleValueWithPreset(param, catname, "RawImagesRetention", false, "5");
-     ParamAddSingleValueWithPreset(param, catname, "WaitBeforeTakingPicture", true, "2.0");
-     ParamAddSingleValueWithPreset(param, catname, "LEDIntensity", true, "50");
+     ParamAddSingleValueWithPreset(param, catname, "FlashTime", true, "2.0");
+     ParamAddSingleValueWithPreset(param, catname, "FlashIntensity", true, "50");
      ParamAddSingleValueWithPreset(param, catname, "CameraFrequency", true, "20");
      ParamAddSingleValueWithPreset(param, catname, "ImageQuality", true, "12");
      ParamAddSingleValueWithPreset(param, catname, "ImageSize", true, "VGA");
