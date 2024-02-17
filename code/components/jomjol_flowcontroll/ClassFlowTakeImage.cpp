@@ -86,12 +86,12 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             imagesRetention = std::stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "LEDINTENSITY") && (splitted.size() > 1)) {
-            flashIntensity = std::max(0, std::min(stoi(splitted[1]), 100));
+        if ((toUpper(splitted[0]) == "FLASHTIME") && (splitted.size() > 1)) {
+            flashTime = (int)(stof(splitted[1]) * 1000); // Flashtime in ms
         }
 
-        if ((toUpper(splitted[0]) == "WAITBEFORETAKINGPICTURE") && (splitted.size() > 1)) {
-            flashTime = (int)(stof(splitted[1]) * 1000); // Flashtime in ms
+        if ((toUpper(splitted[0]) == "FLASHINTENSITY") && (splitted.size() > 1)) {
+            flashIntensity = std::max(0, std::min(stoi(splitted[1]), 100));
         }
 
         if ((toUpper(splitted[0]) == "CAMERAFREQUENCY") && (splitted.size() > 1)) {
