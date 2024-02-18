@@ -50,11 +50,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     int autoExposureLevel = 0;
     bool aec2Algo = false;
     bool fixedExposure = false;
-    #ifdef GRAYSCALE_AS_DEFAULT
-        bool grayscale = true;
-    #else
-        bool grayscale = false;
-    #endif
+    int specialEffect = 0;
     bool negative = false;
     bool mirrorHorizontal = false;
     bool flipVertical = false;
@@ -140,18 +136,8 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
                 fixedExposure = false;
         }
 
-        if ((toUpper(splitted[0]) == "GRAYSCALE") && (splitted.size() > 1)) {
-            if (toUpper(splitted[1]) == "TRUE")
-                grayscale = true;
-            else
-                grayscale = false;
-        }
-
-        if ((toUpper(splitted[0]) == "NEGATIVE") && (splitted.size() > 1)) {
-            if (toUpper(splitted[1]) == "TRUE")
-                negative = true;
-            else
-                negative = false;
+        if ((toUpper(splitted[0]) == "SPECIALEFFECT") && (splitted.size() > 1)) {
+            specialEffect = std::stoi(splitted[1]);
         }
 
         if ((toUpper(splitted[0]) == "MIRRORHORIZONTAL") && (splitted.size() > 1)) {
@@ -208,7 +194,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     Camera.setCameraFrequency(cameraFrequency);
     Camera.setSizeQuality(imageQuality, imageSize, zoom, zoomMode, zoomOffsetX, zoomOffsetY);
     Camera.setImageManipulation(brightness, contrast, saturation, sharpness, autoExposureLevel, 
-                                aec2Algo, grayscale, negative, mirrorHorizontal, flipVertical);
+                                aec2Algo, specialEffect, mirrorHorizontal, flipVertical);
 
     image_width = Camera.image_width;
     image_height = Camera.image_height;

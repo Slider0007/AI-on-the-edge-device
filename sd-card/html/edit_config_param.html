@@ -485,28 +485,16 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_Grayscale_text">Grayscale</class>
+				<class id="TakeImage_SpecialEffect_text">Special Effect</class>
 			</td>
 			<td>
-				<select id="TakeImage_Grayscale_value1">
-					<option value="false" selected>false</option>
-					<option value="true">true</option>
+				<select id="TakeImage_SpecialEffect_value1">
+					<option value="0" selected>None</option>
+					<option value="1">Negative</option>
+					<option value="2">Grayscale</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_TakeImage_Grayscale</td>
-		</tr>
-
-		<tr>
-			<td class="indent1">
-				<class id="TakeImage_Negative_text">Negative</class>
-			</td>
-			<td>
-				<select id="TakeImage_Negative_value1">
-					<option value="false" selected>false</option>
-					<option value="true">true</option>
-				</select>
-			</td>
-			<td>$TOOLTIP_TakeImage_Negative</td>
+			<td>$TOOLTIP_TakeImage_SpecialEffect</td>
 		</tr>
 
 		<tr>
@@ -568,8 +556,8 @@
 				<class id="TakeImage_ZoomOffsetX_text">Zoom Offset X</class>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_ZoomOffsetX_value1" min="0" step="1"
-					oninput="(!validity.rangeUnderflow||(value=0));">Pixel
+				<input required type="number" id="TakeImage_ZoomOffsetX_value1" value="0" min="0" max="960" 
+					oninput="(!validity.rangeOverflow||(value=960)) && (!validity.rangeUnderflow||(value=0));">Pixel
 			</td>
 			<td>$TOOLTIP_TakeImage_ZoomOffsetX</td>
 		</tr>
@@ -580,8 +568,8 @@
 				<class id="TakeImage_ZoomOffsetY_text">Zoom Offset Y</class>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_ZoomOffsetY_value1" min="0" step="1"
-					oninput="(!validity.rangeUnderflow||(value=0));">Pixel
+				<input required type="number" id="TakeImage_ZoomOffsetY_value1" value="0" min="0" max="720" 
+					oninput="(!validity.rangeOverflow||(value=720)) && (!validity.rangeUnderflow||(value=0));">Pixel
 			</td>
 			<td>$TOOLTIP_TakeImage_ZoomOffsetY</td>
 		</tr>
@@ -2612,8 +2600,7 @@
         WriteParameter(param, category, "TakeImage", "AutoExposureLevel", false);
         WriteParameter(param, category, "TakeImage", "Aec2Algo", false);
 		WriteParameter(param, category, "TakeImage", "FixedExposure", false);
-		WriteParameter(param, category, "TakeImage", "Grayscale", false);
-        WriteParameter(param, category, "TakeImage", "Negative", false);
+		WriteParameter(param, category, "TakeImage", "SpecialEffect", false);
 		WriteParameter(param, category, "TakeImage", "MirrorHorizontal", false);
         WriteParameter(param, category, "TakeImage", "FlipVertical", false);
 		WriteParameter(param, category, "TakeImage", "Zoom", false);
@@ -2776,8 +2763,7 @@
         ReadParameter(param, "TakeImage", "AutoExposureLevel", false);
         ReadParameter(param, "TakeImage", "Aec2Algo", false);
 		ReadParameter(param, "TakeImage", "FixedExposure", false);
-		ReadParameter(param, "TakeImage", "Grayscale", false);
-        ReadParameter(param, "TakeImage", "Negative", false);
+		ReadParameter(param, "TakeImage", "SpecialEffect", false);
 		ReadParameter(param, "TakeImage", "MirrorHorizontal", false);
         ReadParameter(param, "TakeImage", "FlipVertical", false);
 		ReadParameter(param, "TakeImage", "Zoom", false);

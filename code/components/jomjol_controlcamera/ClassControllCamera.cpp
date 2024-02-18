@@ -120,12 +120,7 @@ CCamera::CCamera()
     camParameter.autoExposureLevel = 0;
     camParameter.aec2Algo = false;
     camParameter.isFixedExposure = false;
-    camParameter.negative = false;
-    #ifdef GRAYSCALE_AS_DEFAULT
-        camParameter.grayscale = true;
-    #else
-        camParameter.grayscale = false;
-    #endif
+    camParameter.specialEffect = 0;
     camParameter.zoom = false;
     camParameter.zoomMode = 0;
     camParameter.zoomOffsetX = 0;
@@ -295,6 +290,13 @@ void CCamera::setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoo
     if (!getcameraInitSuccessful())
     return;
 
+    // Set resolution
+    camParameter.actualResolution = _resol;
+    setImageWidthHeightFromResolution(camParameter.actualResolution);
+
+    // Set zoom / framesize
+    setZoom(_zoom, _zoomMode, _zoomOffsetX, _zoomOffsetY);
+
     // Set quality
     camParameter.actualQuality = std::min(63, std::max(8, _qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
     sensor_t * s = esp_camera_sensor_get();
@@ -305,13 +307,6 @@ void CCamera::setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoo
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setSizeQuality: Failed to get control structure");
         return;
     }
-
-    // Set resolution
-    camParameter.actualResolution = _resol;
-    setImageWidthHeightFromResolution(camParameter.actualResolution);
-
-    // Set zoom / framesize
-    setZoom(_zoom, _zoomMode, _zoomOffsetX, _zoomOffsetY);
 }
 
 
@@ -376,79 +371,78 @@ void CCamera::setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffs
 
 
 bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, 
-                int _autoExposureLevel, bool _aec2Algo, bool _grayscale, bool _negative, bool _mirror, bool _flip)
+                int _autoExposureLevel, bool _aec2Algo, int _specialEffect, bool _mirror, bool _flip)
 {
     if (!getcameraInitSuccessful())
         return false;
-    
-    bool autoSharpness = false;
-    if (_sharpness <= -4)   // _sharpness == -4 -> auto sharpness
-        autoSharpness = true;
 
     sensor_t * s = esp_camera_sensor_get();
     if (s != NULL) {
-        // auto exposure controls
-        s->set_exposure_ctrl(s, 1); // Enable auto exposure control
-        s->set_gainceiling(s, GAINCEILING_2X); // GAINCEILING_2X 4X 8X 16X 32X 64X 128X -> Limit gain
-        s->set_ae_level(s, std:: min(2, std::max(-2, _autoExposureLevel))); // -2 .. 2 -> Adapt auto exposure control level
-        s->set_aec2(s, _aec2Algo ? 1 : 0); // Switch to alternative auto exposure control alogrithm
-
-        // post processing
+        // Basic image manipulation
         s->set_brightness(s, std::min(2, std::max(-2, _brightness)));   // -2 .. 2
         s->set_contrast(s, std::min(2, std::max(-2, _contrast)));       // -2 .. 2
         s->set_saturation(s, std::min(2, std::max(-2, _saturation)));   // -2 .. 2
-        s->set_sharpness(s, 0); // Not officially supported, use own implementation
+        s->set_sharpness(s, 0); // Default: Sharpness not supported, use owm implementation
+        s->set_special_effect(s, std::min(6, std::max(_specialEffect, 0))); // Set special effect (0: None, 1: Negative, 2: Grayscale)
+
+        // Auto exposure control
+        s->set_exposure_ctrl(s, 1); // Enable auto exposure control
+        s->set_ae_level(s, std:: min(2, std::max(-2, _autoExposureLevel))); // -2 .. 2 -> Adapt auto exposure control level
+        s->set_aec2(s, _aec2Algo ? 1 : 0); // Switch to alternative auto exposure control alogrithm
+
+        // Gain control
+        s->set_gain_ctrl(s, 1); // Enable auto gain control
+        s->set_gainceiling(s, GAINCEILING_2X); // GAINCEILING_2X 4X 8X 16X 32X 64X 128X -> Limit gain
+
+        // White balance control
+        s->set_whitebal(s, 1); // Enable auto white balance control
+        s->set_awb_gain(s, 1); // Enable auto white balance gain control
+        s->set_wb_mode(s, 0); // Set white balance mode to Auto
+
+        // Image orientation
+        s->set_hmirror(s, _mirror ? 1 : 0);
+        s->set_vflip(s, _flip ? 1 : 0);
 
         camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&(s->id));
         if (sensor_info != NULL) {
             if (sensor_info->model == CAMERA_OV2640) {
                 // Sharpness implementation (not officially supported)
-                if (autoSharpness) {
-                    s->set_sharpness(s, 0);
-                    ov2640_enable_auto_sharpness(s);
+                if (_sharpness > -4) { // Sharpness == -4 -> Auto sharpness
+                    ov2640_set_sharpness(s, std::min(3, std::max(-3, std::min(_sharpness, 3)))); // -3 .. 3
                 } 
                 else {
-                    ov2640_set_sharpness(s, std::min(3, std::max(-3, _sharpness))); // -3 .. 3
+                    ov2640_enable_auto_sharpness(s);    
                 }
 
                 /* Workaround - bug in cam library - enable bits are set without using bitwise OR logic -> only latest enable setting is used */
                 /* Library version: https://github.com/espressif/esp32-camera/commit/5c8349f4cf169c8a61283e0da9b8cff10994d3f3 */
                 /* Reference: https://esp32.com/viewtopic.php?f=19&t=14376#p93178 */
-                //s->set_reg(s, 0x7C, 0xFF, 2); // Optional feature - hue setting: Select byte 2 in register 0x7C to set hue value
-                //s->set_reg(s, 0x7D, 0xFF, 0); // Optional feature - hue setting: Hue value 0 - 255
+                //s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 2); // Optional feature - hue setting: Select byte 2 in register 0x7C to set hue value
+                //s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, 0); // Optional feature - hue setting: Hue value 0 - 255
 
                 int indirectReg0 = 0x07; // Set bit 0, 1, 2 to enable saturation, contrast, brightness and hue control
                 
-                // Bitwise OR grayscale and/or negative
-                if (_grayscale && _negative) {
-                    indirectReg0 |= 0x58;
+                // Maintain OV2640_IRA_BPDATA register to keep brightness, contrast and saturation settings
+                if (_specialEffect == 1) { // Sepcial effect: negative
+                    indirectReg0 |= 0x40;
                 }
-                else if (_grayscale) {
+                else if (_specialEffect >= 2 && _specialEffect <= 6) { // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
                     indirectReg0 |= 0x18;
                 }
-                else if (_negative) {
-                     indirectReg0 |= 0x40;
-                }
 
-                 // Set brightness, contrast, saturation + optional features
+                 // Enable brightness, contrast, saturation and optional special effects
                 s->set_reg(s, 0xFF, 0x01, 0); // Select bank
                 s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x00); // Address 0x00
                 s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, indirectReg0);
-                s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x05); // Address 0x05
-                s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, 0x80);
-                s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, 0x80);
             }
-
-            s->set_hmirror(s, _mirror ? 1 : 0);
-            s->set_vflip(s, _flip ? 1 : 0);
         }
         else {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setBrightnessContrastSaturation: Failed to get info structure");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Failed to get info structure");
             return false;
         }
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setBrightnessContrastSaturation: Failed to get control structure");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Failed to get control structure");
         return false;
     }
 
@@ -462,8 +456,7 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
     camParameter.sharpness = _sharpness;
     camParameter.autoExposureLevel = _autoExposureLevel;
     camParameter.aec2Algo = _aec2Algo;
-    camParameter.grayscale = _grayscale;
-    camParameter.negative = _negative;
+    camParameter.specialEffect = _specialEffect;
 
     return true;
 }

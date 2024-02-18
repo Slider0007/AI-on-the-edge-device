@@ -70,13 +70,8 @@ esp_err_t handler_camera(httpd_req_t *req)
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
                 camParameter.aec2Algo = true : camParameter.aec2Algo = false;
         }
-        if (httpd_query_key_value(_query, "grayscale", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                camParameter.grayscale = true : camParameter.grayscale = false;
-        }
-        if (httpd_query_key_value(_query, "negative", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                camParameter.negative = true : camParameter.negative = false;
+        if (httpd_query_key_value(_query, "specialeffect", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.specialEffect = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "mirror", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
@@ -105,8 +100,7 @@ esp_err_t handler_camera(httpd_req_t *req)
         Camera.setZoom(camParameter.zoom, camParameter.zoomMode, camParameter.zoomOffsetX, camParameter.zoomOffsetY);
         Camera.setImageManipulation(camParameter.brightness, camParameter.contrast, camParameter.saturation, 
                                     camParameter.sharpness, camParameter.autoExposureLevel, camParameter.aec2Algo, 
-                                    camParameter.grayscale, camParameter.negative, camParameter.mirrorHorizontal, 
-                                    camParameter.flipVertical);
+                                    camParameter.specialEffect, camParameter.mirrorHorizontal, camParameter.flipVertical);
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_sendstr(req, "001: Parameter set");

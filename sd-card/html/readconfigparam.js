@@ -159,8 +159,7 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "AutoExposureLevel", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "Aec2Algo", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "FixedExposure", true, "false");
-     ParamAddSingleValueWithPreset(param, catname, "Grayscale", true, "false");
-     ParamAddSingleValueWithPreset(param, catname, "Negative", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "SpecialEffect", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "MirrorHorizontal", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "FlipVertical", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "Zoom", true, "false");

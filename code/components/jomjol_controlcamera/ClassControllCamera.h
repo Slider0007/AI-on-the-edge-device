@@ -23,10 +23,9 @@ struct CameraParameter {
     int flashTime;
     int brightness, contrast, saturation, sharpness;
     int autoExposureLevel;
-    bool negative;
-    bool grayscale;
     bool aec2Algo;
     bool isFixedExposure;
+    int specialEffect;
     bool mirrorHorizontal;
     bool flipVertical;
     bool zoom;
@@ -78,7 +77,7 @@ class CCamera
         void setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoomMode, 
                             int _zoomOffsetX, int _zoomOffsetY);
         bool setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, int _autoExposureLevel, 
-                                  bool _aec2, bool _grayscale, bool _negative, bool _mirror, bool _flip);
+                                  bool _aec2Algo, int _specialEffect, bool _mirror, bool _flip);
         void setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
         bool setMirrorFlip(bool _mirror, bool _flip);
         bool enableAutoExposure();
