@@ -259,7 +259,6 @@ void CCamera::printCamConfig(void)
 }
 
 
-
 void CCamera::setCameraFrequency(int _frequency)
 {
     if (camera_config.xclk_freq_hz == (_frequency * 1000000)) // If frequency is matching, return without any action
@@ -414,8 +413,8 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
         s->set_contrast(s, std::min(2, std::max(-2, _contrast)));       // -2 .. 2
         s->set_brightness(s, std::min(2, std::max(-2, _brightness)));   // -2 .. 2 (IMPORTANT: Apply brightness after saturation and conrast)
         s->set_sharpness(s, 0); // Default: Sharpness not supported, use owm implementation
-        if (_specialEffect <= 6)
-            s->set_special_effect(s, std::max(_specialEffect, 0)); // Set special effect (0: None, 1: Negative, 2: Grayscale)
+        if (_specialEffect <= 6) // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
+            s->set_special_effect(s, std::max(_specialEffect, 0));
 
         // Auto exposure control
         s->set_exposure_ctrl(s, 1); // Enable auto exposure control
@@ -453,20 +452,20 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
                 //s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 2); // Optional feature - hue setting: Select byte 2 in register 0x7C to set hue value
                 //s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, 0); // Optional feature - hue setting: Hue value 0 - 255
 
-                int indirectReg0 = 0x07; // Set bit 0, 1, 2 to enable saturation, contrast, brightness and hue control
+                int registerValue = 0x07; // Set bit 0, 1, 2 to enable saturation, contrast, brightness and hue control
                 
-                // Maintain DSP bank byte 0 register to keep brightness, contrast and saturation settings
-                if (_specialEffect == 1) { // Sepcial effect: negative
-                    indirectReg0 |= 0x40;
+                // Bitwise OR of special effect enable bits
+                if (_specialEffect == 1) { // Sepcial effect: 1: negative
+                    registerValue |= 0x40;
                 }
                 else if (_specialEffect >= 2 && _specialEffect <= 6) { // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
-                    indirectReg0 |= 0x18;
+                    registerValue |= 0x18;
                 }
 
-                // Enable brightness, contrast, saturation and optional special effects
+                // Maintain DSP bank byte 0 register to keep brightness, contrast, saturation and special effect settings
                 s->set_reg(s, 0xFF, 0x01, 0); // Select DSP bank
                 s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x00); // Select byte 0 on DSP bank
-                s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, indirectReg0); // Write value
+                s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, registerValue); // Write value
             }
         }
         else {
