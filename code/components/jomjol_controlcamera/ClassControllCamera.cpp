@@ -223,10 +223,41 @@ void CCamera::printCamInfo(void)
     // ********************************************
     char caminfo[64];
     sensor_t * s = esp_camera_sensor_get();
-    sprintf(caminfo, "PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x, FREQ: %dMhz", s->id.PID, 
-                s->id.VER, s->id.MIDH, s->id.MIDL, s->xclk_freq_hz/1000000);
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera info: " + std::string(caminfo));
+    if (s != NULL) {
+        sprintf(caminfo, "PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x, FREQ: %dMhz", s->id.PID, 
+                    s->id.VER, s->id.MIDH, s->id.MIDL, s->xclk_freq_hz/1000000);
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera info: " + std::string(caminfo));
+    }
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "printCamInfo: Failed to get control structure");
+    }
 }
+
+
+void CCamera::printCamConfig(void)
+{
+    // Print camera config
+    // ********************************************
+    char camconfig[512];
+    sensor_t * s = esp_camera_sensor_get();
+    if (s != NULL) {
+        sprintf(camconfig, "ae_level:%d, aec2:%d, aec:%d, aec_value:%d, agc:%d, agc_gain:%d, awb:%d, awb_gain:%d, "
+                    "binning:%d, bpc:%d, brightness:%d, colorbar:%d, contrast:%d, dcw:%d, deonoise:%d, framesize:%d, "
+                    "gainceiling:%d, hmirror:%d, lenc:%d, quality:%d, raw_gma:%d, saturation:%d, scale:%d, sharpness:%d, "
+                    "special_effect:%d, vflip:%d, wb_mode:%d, wpc:%d", 
+                    s->status.ae_level, s->status.aec2, s->status.aec, s->status.aec_value, 
+                    s->status.agc, s->status.agc_gain, s->status.awb, s->status.awb_gain, s->status.binning,
+                    s->status.bpc, s->status.brightness, s->status.colorbar, s->status.contrast, s->status.dcw,
+                    s->status.denoise, s->status.framesize, s->status.gainceiling, s->status.hmirror, s->status.lenc,
+                    s->status.quality, s->status.raw_gma, s->status.saturation, s->status.scale, s->status.sharpness,
+                    s->status.special_effect, s->status.vflip, s->status.wb_mode, s->status.wpc);
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera config: " + std::string(camconfig));
+    }
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "printCamConfig: Failed to get control structure");
+    }
+}
+
 
 
 void CCamera::setCameraFrequency(int _frequency)
@@ -379,11 +410,12 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
     sensor_t * s = esp_camera_sensor_get();
     if (s != NULL) {
         // Basic image manipulation
-        s->set_brightness(s, std::min(2, std::max(-2, _brightness)));   // -2 .. 2
-        s->set_contrast(s, std::min(2, std::max(-2, _contrast)));       // -2 .. 2
         s->set_saturation(s, std::min(2, std::max(-2, _saturation)));   // -2 .. 2
+        s->set_contrast(s, std::min(2, std::max(-2, _contrast)));       // -2 .. 2
+        s->set_brightness(s, std::min(2, std::max(-2, _brightness)));   // -2 .. 2 (IMPORTANT: Apply brightness after saturation and conrast)
         s->set_sharpness(s, 0); // Default: Sharpness not supported, use owm implementation
-        s->set_special_effect(s, std::min(6, std::max(_specialEffect, 0))); // Set special effect (0: None, 1: Negative, 2: Grayscale)
+        if (_specialEffect <= 6)
+            s->set_special_effect(s, std::max(_specialEffect, 0)); // Set special effect (0: None, 1: Negative, 2: Grayscale)
 
         // Auto exposure control
         s->set_exposure_ctrl(s, 1); // Enable auto exposure control
@@ -414,6 +446,7 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
                     ov2640_enable_auto_sharpness(s);    
                 }
 
+                // Enable brightness, contrast, saturation and optional special effects
                 /* Workaround - bug in cam library - enable bits are set without using bitwise OR logic -> only latest enable setting is used */
                 /* Library version: https://github.com/espressif/esp32-camera/commit/5c8349f4cf169c8a61283e0da9b8cff10994d3f3 */
                 /* Reference: https://esp32.com/viewtopic.php?f=19&t=14376#p93178 */
@@ -422,7 +455,7 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
 
                 int indirectReg0 = 0x07; // Set bit 0, 1, 2 to enable saturation, contrast, brightness and hue control
                 
-                // Maintain OV2640_IRA_BPDATA register to keep brightness, contrast and saturation settings
+                // Maintain DSP bank byte 0 register to keep brightness, contrast and saturation settings
                 if (_specialEffect == 1) { // Sepcial effect: negative
                     indirectReg0 |= 0x40;
                 }
@@ -430,10 +463,10 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
                     indirectReg0 |= 0x18;
                 }
 
-                 // Enable brightness, contrast, saturation and optional special effects
-                s->set_reg(s, 0xFF, 0x01, 0); // Select bank
-                s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x00); // Address 0x00
-                s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, indirectReg0);
+                // Enable brightness, contrast, saturation and optional special effects
+                s->set_reg(s, 0xFF, 0x01, 0); // Select DSP bank
+                s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x00); // Select byte 0 on DSP bank
+                s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, indirectReg0); // Write value
             }
         }
         else {

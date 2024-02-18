@@ -60,6 +60,7 @@ class CCamera
         esp_err_t deinitCam();
         bool testCamera(void);
         void printCamInfo(void);
+        void printCamConfig(void);
         bool getcameraInitSuccessful();
 
         esp_err_t captureToBasisImage(CImageBasis *_Image);
