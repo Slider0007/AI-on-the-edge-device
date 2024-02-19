@@ -134,12 +134,6 @@ CCamera::CCamera()
 }
 
 
-CameraParameter CCamera::getCameraParameter()
-{
-    return camParameter;
-}
-
-
 void CCamera::powerResetCamera()
 {
     #if PWDN_GPIO_NUM != GPIO_NUM_NC
@@ -204,16 +198,13 @@ bool CCamera::testCamera(void)
 {
     bool retval;
     camera_fb_t *fb = esp_camera_fb_get();
-    if (fb) {
-        retval = true;
-    }
-    else {
-        retval = false;
+    if (fb == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Camera framebuffer check failed");
-    }  
-    esp_camera_fb_return(fb);
+        return false;
+    }
 
-    return retval;
+    esp_camera_fb_return(fb);
+    return true;
 }
 
 
@@ -222,15 +213,16 @@ void CCamera::printCamInfo(void)
     // Print camera infos
     // ********************************************
     char caminfo[64];
+
     sensor_t * s = esp_camera_sensor_get();
-    if (s != NULL) {
-        sprintf(caminfo, "PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x, FREQ: %dMhz", s->id.PID, 
-                    s->id.VER, s->id.MIDH, s->id.MIDL, s->xclk_freq_hz/1000000);
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera info: " + std::string(caminfo));
-    }
-    else {
+    if (s == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "printCamInfo: Failed to get control structure");
+        return;
     }
+
+    sprintf(caminfo, "PID: 0x%02x, VER: 0x%02x, MIDL: 0x%02x, MIDH: 0x%02x, FREQ: %dMhz", s->id.PID, 
+                s->id.VER, s->id.MIDH, s->id.MIDL, s->xclk_freq_hz/1000000);
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera info: " + std::string(caminfo));
 }
 
 
@@ -239,23 +231,24 @@ void CCamera::printCamConfig(void)
     // Print camera config
     // ********************************************
     char camconfig[512];
+
     sensor_t * s = esp_camera_sensor_get();
-    if (s != NULL) {
-        sprintf(camconfig, "ae_level:%d, aec2:%d, aec:%d, aec_value:%d, agc:%d, agc_gain:%d, awb:%d, awb_gain:%d, "
-                    "binning:%d, bpc:%d, brightness:%d, colorbar:%d, contrast:%d, dcw:%d, deonoise:%d, framesize:%d, "
-                    "gainceiling:%d, hmirror:%d, lenc:%d, quality:%d, raw_gma:%d, saturation:%d, scale:%d, sharpness:%d, "
-                    "special_effect:%d, vflip:%d, wb_mode:%d, wpc:%d", 
-                    s->status.ae_level, s->status.aec2, s->status.aec, s->status.aec_value, 
-                    s->status.agc, s->status.agc_gain, s->status.awb, s->status.awb_gain, s->status.binning,
-                    s->status.bpc, s->status.brightness, s->status.colorbar, s->status.contrast, s->status.dcw,
-                    s->status.denoise, s->status.framesize, s->status.gainceiling, s->status.hmirror, s->status.lenc,
-                    s->status.quality, s->status.raw_gma, s->status.saturation, s->status.scale, s->status.sharpness,
-                    s->status.special_effect, s->status.vflip, s->status.wb_mode, s->status.wpc);
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera config: " + std::string(camconfig));
-    }
-    else {
+    if (s == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "printCamConfig: Failed to get control structure");
-    }
+        return;
+    }        
+
+    sprintf(camconfig, "ae_level:%d, aec2:%d, aec:%d, aec_value:%d, agc:%d, agc_gain:%d, awb:%d, awb_gain:%d, "
+                "binning:%d, bpc:%d, brightness:%d, colorbar:%d, contrast:%d, dcw:%d, deonoise:%d, framesize:%d, "
+                "gainceiling:%d, hmirror:%d, lenc:%d, quality:%d, raw_gma:%d, saturation:%d, scale:%d, sharpness:%d, "
+                "special_effect:%d, vflip:%d, wb_mode:%d, wpc:%d", 
+                s->status.ae_level, s->status.aec2, s->status.aec, s->status.aec_value, 
+                s->status.agc, s->status.agc_gain, s->status.awb, s->status.awb_gain, s->status.binning,
+                s->status.bpc, s->status.brightness, s->status.colorbar, s->status.contrast, s->status.dcw,
+                s->status.denoise, s->status.framesize, s->status.gainceiling, s->status.hmirror, s->status.lenc,
+                s->status.quality, s->status.raw_gma, s->status.saturation, s->status.scale, s->status.sharpness,
+                s->status.special_effect, s->status.vflip, s->status.wb_mode, s->status.wpc);
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Camera config: " + std::string(camconfig));
 }
 
 
@@ -318,7 +311,7 @@ void CCamera::setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoo
                                 int _zoomOffsetX, int _zoomOffsetY)
 {
     if (!getcameraInitSuccessful())
-    return;
+        return;
 
     // Set resolution
     camParameter.actualResolution = _resol;
@@ -327,16 +320,15 @@ void CCamera::setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoo
     // Set zoom / framesize
     setZoom(_zoom, _zoomMode, _zoomOffsetX, _zoomOffsetY);
 
-    // Set quality
-    camParameter.actualQuality = std::min(63, std::max(8, _qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
     sensor_t * s = esp_camera_sensor_get();
-    if (s != NULL) {
-        s->set_quality(s, camParameter.actualQuality);
-    }
-    else {
+    if (s == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setSizeQuality: Failed to get control structure");
         return;
     }
+
+    // Set quality
+    camParameter.actualQuality = std::min(63, std::max(8, _qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
+    s->set_quality(s, camParameter.actualQuality);
 }
 
 
@@ -346,6 +338,10 @@ void CCamera::setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoo
 */
 void CCamera::setCamWindow(sensor_t *_s, int _resolution, int _xOffset, int _yOffset, int _xLength, int _yLength)
 {
+    if (_s == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setCamWindow: No valid control structure");
+        return;
+    }
     _s->set_res_raw(_s, _resolution, 0, 0, 0, _xOffset, _yOffset, _xLength, _yLength, _xLength, _yLength, false, false);
 }
 
@@ -358,44 +354,44 @@ void CCamera::setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffs
     camParameter.zoomOffsetY = _zoomOffsetY;
 
     sensor_t *s = esp_camera_sensor_get();
-    if (s != NULL) {
-        if (camParameter.zoom) {
-            int mode = camParameter.zoomMode;
-            int x = camParameter.zoomOffsetX;
-            int y = camParameter.zoomOffsetY;
+    if (s == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setZoom: Failed to get control structure");
+        return;
+    }
 
-            // Maintain correct mode
-            if (mode > 1)
-                mode = 1;
+    if (camParameter.zoom) {
+        int mode = camParameter.zoomMode;
+        int x = camParameter.zoomOffsetX;
+        int y = camParameter.zoomOffsetY;
 
-            if (image_width >= 800 || image_height >= 600) {
-                mode = 0;
-            }
+        // Maintain correct mode
+        if (mode > 1)
+            mode = 1;
 
-            // Eval max values
-            int maxX = 1600 - image_width;
-            int maxY = 1200 - image_height;
-
-            if (mode == 1) {
-                maxX = 800 - image_width;
-                maxY = 600 - image_height;
-            }
-
-            // Maintain max x,y value
-            if (x > maxX)
-                x = maxX;
-            
-            if (y > maxY)
-                y = maxY;
-            
-            setCamWindow(s, mode, x, y, image_width, image_height);
+        if (image_width >= 800 || image_height >= 600) {
+            mode = 0;
         }
-        else {
-            s->set_framesize(s, camParameter.actualResolution);
+
+        // Eval max values
+        int maxX = 1600 - image_width;
+        int maxY = 1200 - image_height;
+
+        if (mode == 1) {
+            maxX = 800 - image_width;
+            maxY = 600 - image_height;
         }
+
+        // Maintain max x,y value
+        if (x > maxX)
+            x = maxX;
+        
+        if (y > maxY)
+            y = maxY;
+        
+        setCamWindow(s, mode, x, y, image_width, image_height);
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setZoom: Failed to get control structure");
+        s->set_framesize(s, camParameter.actualResolution);
     }
 }
 
@@ -407,75 +403,77 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
         return false;
 
     sensor_t * s = esp_camera_sensor_get();
-    if (s != NULL) {
-        // Basic image manipulation
-        s->set_saturation(s, std::min(2, std::max(-2, _saturation)));   // -2 .. 2
-        s->set_contrast(s, std::min(2, std::max(-2, _contrast)));       // -2 .. 2
-        s->set_brightness(s, std::min(2, std::max(-2, _brightness)));   // -2 .. 2 (IMPORTANT: Apply brightness after saturation and conrast)
-        s->set_sharpness(s, 0); // Default: Sharpness not supported, use owm implementation
-        if (_specialEffect <= 6) // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
-            s->set_special_effect(s, std::max(_specialEffect, 0));
-
-        // Auto exposure control
-        s->set_exposure_ctrl(s, 1); // Enable auto exposure control
-        s->set_ae_level(s, std:: min(2, std::max(-2, _autoExposureLevel))); // -2 .. 2 -> Adapt auto exposure control level
-        s->set_aec2(s, _aec2Algo ? 1 : 0); // Switch to alternative auto exposure control alogrithm
-
-        // Gain control
-        s->set_gain_ctrl(s, 1); // Enable auto gain control
-        s->set_gainceiling(s, GAINCEILING_2X); // GAINCEILING_2X 4X 8X 16X 32X 64X 128X -> Limit gain
-
-        // White balance control
-        s->set_whitebal(s, 1); // Enable auto white balance control
-        s->set_awb_gain(s, 1); // Enable auto white balance gain control
-        s->set_wb_mode(s, 0); // Set white balance mode to Auto
-
-        // Image orientation
-        s->set_hmirror(s, _mirror ? 1 : 0);
-        s->set_vflip(s, _flip ? 1 : 0);
-
-        camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&(s->id));
-        if (sensor_info != NULL) {
-            if (sensor_info->model == CAMERA_OV2640) {
-                // Sharpness implementation (not officially supported)
-                if (_sharpness > -4) { // Sharpness == -4 -> Auto sharpness
-                    ov2640_set_sharpness(s, std::min(3, std::max(-3, std::min(_sharpness, 3)))); // -3 .. 3
-                } 
-                else {
-                    ov2640_enable_auto_sharpness(s);    
-                }
-
-                // Enable brightness, contrast, saturation and optional special effects
-                /* Workaround - bug in cam library - enable bits are set without using bitwise OR logic -> only latest enable setting is used */
-                /* Library version: https://github.com/espressif/esp32-camera/commit/5c8349f4cf169c8a61283e0da9b8cff10994d3f3 */
-                /* Reference: https://esp32.com/viewtopic.php?f=19&t=14376#p93178 */
-                //s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 2); // Optional feature - hue setting: Select byte 2 in register 0x7C to set hue value
-                //s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, 0); // Optional feature - hue setting: Hue value 0 - 255
-
-                int registerValue = 0x07; // Set bit 0, 1, 2 to enable saturation, contrast, brightness and hue control
-                
-                // Bitwise OR of special effect enable bits
-                if (_specialEffect == 1) { // Sepcial effect: 1: negative
-                    registerValue |= 0x40;
-                }
-                else if (_specialEffect >= 2 && _specialEffect <= 6) { // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
-                    registerValue |= 0x18;
-                }
-
-                // Maintain DSP bank byte 0 register to keep brightness, contrast, saturation and special effect settings
-                s->set_reg(s, 0xFF, 0x01, 0); // Select DSP bank
-                s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x00); // Select byte 0 on DSP bank
-                s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, registerValue); // Write value
-            }
-        }
-        else {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Failed to get info structure");
-            return false;
-        }
-    }
-    else {
+    if (s == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Failed to get control structure");
         return false;
+    }
+
+    // Basic image manipulation
+    s->set_saturation(s, std::min(2, std::max(-2, _saturation)));   // -2 .. 2
+    s->set_contrast(s, std::min(2, std::max(-2, _contrast)));       // -2 .. 2
+    s->set_brightness(s, std::min(2, std::max(-2, _brightness)));   // -2 .. 2 (IMPORTANT: Apply brightness after saturation and conrast)
+    s->set_sharpness(s, 0); // Default: Sharpness not supported, use owm implementation
+    if (_specialEffect <= 6) // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
+        s->set_special_effect(s, std::max(_specialEffect, 0));
+
+    // Auto exposure control
+    s->set_exposure_ctrl(s, 1); // Enable auto exposure control
+    s->set_ae_level(s, std:: min(2, std::max(-2, _autoExposureLevel))); // -2 .. 2 -> Adapt auto exposure control level
+    s->set_aec2(s, _aec2Algo ? 1 : 0); // Switch to alternative auto exposure control alogrithm
+
+    // Gain control
+    s->set_gain_ctrl(s, 1); // Enable auto gain control
+    s->set_gainceiling(s, GAINCEILING_2X); // GAINCEILING_2X 4X 8X 16X 32X 64X 128X -> Limit gain
+
+    // White balance control
+    s->set_whitebal(s, 1); // Enable auto white balance control
+    s->set_awb_gain(s, 1); // Enable auto white balance gain control
+    s->set_wb_mode(s, 0); // Set white balance mode to Auto
+
+    // Image orientation
+    s->set_hmirror(s, _mirror ? 1 : 0);
+    s->set_vflip(s, _flip ? 1 : 0);
+
+    camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&(s->id));
+    if (sensor_info == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Failed to get info structure");
+        return false;
+    }
+
+    if (sensor_info->model == CAMERA_OV2640) {
+        // Sharpness implementation (not officially supported)
+        if (_sharpness > -4) { // Sharpness == -4 -> Auto sharpness
+            ov2640_set_sharpness(s, std::min(3, std::max(-3, std::min(_sharpness, 3)))); // -3 .. 3
+        } 
+        else {
+            ov2640_enable_auto_sharpness(s);    
+        }
+
+        // Enable brightness, contrast, saturation and optional special effects
+        /* Workaround - bug in cam library - enable bits are set without using bitwise OR logic -> only latest enable setting is used */
+        /* Library version: https://github.com/espressif/esp32-camera/commit/5c8349f4cf169c8a61283e0da9b8cff10994d3f3 */
+        /* Reference: https://esp32.com/viewtopic.php?f=19&t=14376#p93178 */
+        //s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 2); // Optional feature - hue setting: Select byte 2 in register 0x7C to set hue value
+        //s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, 0); // Optional feature - hue setting: Hue value 0 - 255
+
+        int registerValue = 0x07; // Set bit 0, 1, 2 to enable saturation, contrast, brightness and hue control
+        
+        // Bitwise OR of special effect enable bits
+        if (_specialEffect == 1) { // Sepcial effect: 1: negative
+            registerValue |= 0x40;
+        }
+        else if (_specialEffect >= 2 && _specialEffect <= 6) { // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
+            registerValue |= 0x18;
+        }
+
+        // Maintain DSP bank byte 0 register to keep brightness, contrast, saturation and special effect settings
+        s->set_reg(s, 0xFF, 0x01, 0); // Select DSP bank
+        s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x00); // Select byte 0 on DSP bank
+        s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, registerValue); // Write value
+    }
+    else {
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "setImageManipulation: Camera model not fully supported. "
+                            "Sharpness, brightness, contrast, saturation and special effects not properly set"); 
     }
 
     if (((_brightness != camParameter.brightness) || (_contrast != camParameter.contrast) || 
@@ -497,14 +495,13 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
 bool CCamera::setMirrorFlip(bool _mirror, bool _flip)
 {
     sensor_t * s = esp_camera_sensor_get();
-    if (s != NULL) {
-        s->set_hmirror(s, _mirror ? 1 : 0);
-        s->set_vflip(s, _flip ? 1 : 0);
-    }
-    else {
+    if (s == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setMirrorFlip: Failed to get control structure");
         return false;
     }
+
+    s->set_hmirror(s, _mirror ? 1 : 0);
+    s->set_vflip(s, _flip ? 1 : 0);
 
     camParameter.mirrorHorizontal = _mirror;
     camParameter.flipVertical = _flip;
@@ -533,21 +530,21 @@ bool CCamera::enableAutoExposure()
         setFlashlight(false);
     }    
 
-    if (!fb) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableAutoExposure: Capture Failed. "
+    if (fb == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableAutoExposure: Capture failed. "
                                                 "Check camera module and/or proper electrical connection");
         return false;
     }
     esp_camera_fb_return(fb);
 
     sensor_t * s = esp_camera_sensor_get(); 
-    if (s) {
-        s->set_gain_ctrl(s, 0);
-        s->set_exposure_ctrl(s, 0);
+    if (s == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableAutoExposure: Failed to get control structure");
+        return false;
     }
-    else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableAutoExposure: Failed to get control structure to set gain+exposure");
-    }
+
+    s->set_gain_ctrl(s, 0); // Disable auto gain control
+    s->set_exposure_ctrl(s, 0); // Disable auto exposure control
 
     camParameter.isFixedExposure = true;
     return true;
@@ -602,7 +599,7 @@ esp_err_t CCamera::captureToBasisImage(CImageBasis *_Image)
         setFlashlight(false);
     }
 
-    if (!fb) {
+    if (fb == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "captureToBasisImage: Failed to get camera framebuffer");
         return ESP_FAIL;
     }
@@ -651,7 +648,7 @@ esp_err_t CCamera::captureToFile(std::string _nm)
         setFlashlight(false);
     }
 
-    if (!fb) {
+    if (fb == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "captureToFile: Failed to get camera framebuffer");
         return ESP_FAIL;
     }
@@ -676,20 +673,19 @@ esp_err_t CCamera::captureToFile(std::string _nm)
     size_t buf_len = 0;   
     bool converted = false; 
 
-    if (ftype.compare("BMP") == 0)
-    {
+    if (ftype.compare("BMP") == 0) {
         frame2bmp(fb, &buf, &buf_len);
         converted = true;
     }
-    if (ftype.compare("JPG") == 0)
-    {
-        if(fb->format != PIXFORMAT_JPEG){
+    else if (ftype.compare("JPG") == 0) {
+        if (fb->format != PIXFORMAT_JPEG){
             bool jpeg_converted = frame2jpg(fb, camParameter.actualQuality, &buf, &buf_len);
             converted = true;
-            if(!jpeg_converted){
+            if (!jpeg_converted) {
                 ESP_LOGE(TAG, "JPEG compression failed");
             }
-        } else {
+        } 
+        else {
             buf_len = fb->len;
             buf = fb->buf;
         }
@@ -721,11 +717,11 @@ static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size
 {
     jpg_chunking_t *j = (jpg_chunking_t *)arg;
 
-    if(!index) {
+    if (!index) {
         j->len = 0;
     }
 
-    if(httpd_resp_send_chunk(j->req, (const char *)data, len) != ESP_OK) {
+    if (httpd_resp_send_chunk(j->req, (const char *)data, len) != ESP_OK) {
         return 0;
     }
 
@@ -759,18 +755,18 @@ esp_err_t CCamera::captureToHTTP(httpd_req_t *_req)
         setFlashlight(false);
     }
 
-    if (!fb) {
+    if (fb == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "captureToFile: Failed to get camera framebuffer");
         httpd_resp_send_500(_req);
         return ESP_FAIL;
     }
   
     res = httpd_resp_set_type(_req, "image/jpeg");
-    if(res == ESP_OK) {
+    if (res == ESP_OK) {
         res = httpd_resp_set_hdr(_req, "Content-Disposition", "inline; filename=raw.jpg");
     }
 
-    if(res == ESP_OK) {
+    if (res == ESP_OK) {
         if (demoMode) { // Use images stored on SD-Card instead of camera image
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Demo mode active");
             /* Replace Framebuffer with image from SD-Card */
@@ -779,7 +775,7 @@ esp_err_t CCamera::captureToHTTP(httpd_req_t *_req)
             res = httpd_resp_send(_req, (const char *)fb->buf, fb->len);
         }
         else {
-            if(fb->format == PIXFORMAT_JPEG) {
+            if (fb->format == PIXFORMAT_JPEG) {
                 fb_len = fb->len;
                 res = httpd_resp_send(_req, (const char *)fb->buf, fb->len);
             } 
@@ -822,13 +818,12 @@ esp_err_t CCamera::captureToStream(httpd_req_t *_req, bool _flashlightOn)
     httpd_resp_set_type(_req, _STREAM_CONTENT_TYPE);
     httpd_resp_send_chunk(_req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
 
-    while(1)
-    {
+    while(1) {
         fr_start = esp_timer_get_time();
         camera_fb_t *fb = esp_camera_fb_get();
         esp_camera_fb_return(fb);
         fb = esp_camera_fb_get();
-        if (!fb) {
+        if (fb == NULL) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "captureToStream: Failed to get camera framebuffer");
             break;
         }
@@ -850,7 +845,7 @@ esp_err_t CCamera::captureToStream(httpd_req_t *_req, bool _flashlightOn)
         int64_t fr_end = esp_timer_get_time();
         ESP_LOGD(TAG, "JPG: %dKB %dms", (int)(fb_len/1024), (int)((fr_end - fr_start)/1000));
 
-        if (res != ESP_OK){ // Exit loop, e.g. also when closing the webpage
+        if (res != ESP_OK) { // Exit loop, e.g. also when closing the webpage
             break;
         }
 
@@ -908,7 +903,7 @@ void CCamera::setFlashlight(bool _status)
 
 void CCamera::setStatusLED(bool _status)
 {
-	if (xHandle_task_StatusLED == NULL) {
+	if (xHandle_task_StatusLED == NULL) { // Only if status LED is not used by higher prior status
         // Init the GPIO
         esp_rom_gpio_pad_select_gpio(GPIO_STATUS_LED_ONBOARD);
         /* Set the GPIO as a push/pull output */
@@ -925,7 +920,7 @@ void CCamera::setStatusLED(bool _status)
 framesize_t CCamera::textToFramesize(const char * _size)
 {
     if (strcmp(_size, "QVGA") == 0)
-        return FRAMESIZE_QVGA;       // 320x240
+        return FRAMESIZE_QVGA;     // 320x240
     else if (strcmp(_size, "VGA") == 0)
         return FRAMESIZE_VGA;      // 640x480
     else if (strcmp(_size, "SVGA") == 0)
@@ -947,6 +942,12 @@ bool CCamera::getcameraInitSuccessful()
 }
 
 
+CameraParameter CCamera::getCameraParameter()
+{
+    return camParameter;
+}
+
+
 void CCamera::enableDemoMode()
 {
     demoFiles.clear();
@@ -954,7 +955,7 @@ void CCamera::enableDemoMode()
     char line[50];
 
     FILE *fd = fopen("/sdcard/demo/files.txt", "r");
-    if (!fd) {
+    if (fd == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Can not start Demo mode, the folder '/sdcard/demo/' does not contain the needed files");
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "See details on https://jomjol.github.io/AI-on-the-edge-device-docs/Demo-Mode");
         return;
@@ -1006,7 +1007,7 @@ bool CCamera::loadNextDemoImage(camera_fb_t *_fb) {
     }
 
     FILE * fp = fopen(filename, "rb");
-    if (!fp) {
+    if (fp == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read file: " + std::string(filename));
         return false;
     }

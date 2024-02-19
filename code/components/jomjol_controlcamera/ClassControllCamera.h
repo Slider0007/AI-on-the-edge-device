@@ -62,6 +62,7 @@ class CCamera
         void printCamInfo(void);
         void printCamConfig(void);
         bool getcameraInitSuccessful();
+        CameraParameter getCameraParameter();
 
         esp_err_t captureToBasisImage(CImageBasis *_Image);
         esp_err_t captureToFile(std::string _nm);
@@ -82,7 +83,6 @@ class CCamera
         void setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
         bool setMirrorFlip(bool _mirror, bool _flip);
         bool enableAutoExposure();
-        CameraParameter getCameraParameter();
 
         framesize_t textToFramesize(const char * text);
 
