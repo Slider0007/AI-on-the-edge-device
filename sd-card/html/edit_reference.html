@@ -310,6 +310,7 @@
 					<option value="0" selected>None</option>
 					<option value="1">Negative</option>
 					<option value="2">Grayscale</option>
+                    <option value="7">Gray+Negative</option>
 				</select>
             </td>
         </tr>
@@ -416,17 +417,18 @@
 
     function doTake(release_save = false)
     { 
-        firework.launch('Taking image...', 'success', 250, true);
-
+        let url = "";
+        
         if (release_save)
             document.getElementById("savereference").disabled = false;
-
-        let url = "";
 
         if (paramLocal["TakeImage"]["Brightness"].found && paramLocal["TakeImage"]["Brightness"].enabled) // Parameter available?
         {
             let flashtime = document.getElementById("TakeImage_FlashTime_value1").value;
             if (flashtime == "") flashtime = "2.0";
+
+            firework.launch('Taking image...', 'success', flashtime * 1000, true);
+
             let flashintensity = document.getElementById("TakeImage_FlashIntensity_value1").value;
             if (flashintensity == "") flashintensity = "50";
             let brightness = document.getElementById("TakeImage_Brightness_value1").value;
@@ -504,6 +506,7 @@
 
     function loadRawImage(new_image)
     {
+        document.getElementById("take").disabled = true;
         if (new_image) {
             let url = getDomainname() + "/img_tmp/raw.jpg?" + Math.floor((Math.random() * 1000000) + 1);
             loadCanvas(url, true);     
@@ -710,6 +713,8 @@
         document.getElementById("Alignment_InitialRotate_value1").value =  prerot;
         let degrees = finerot + prerot;
 
+        let specialeffect;
+
        if (_applySpecials) {
             // Handle flip
             let flipImageSize = document.getElementById("Alignment_FlipImageSize_value1").checked;
@@ -722,6 +727,11 @@
                 canvas.width = imageObj.width;
                 canvas.height = imageObj.height;
             }
+
+            // Handle special effect case 7 (grayscale + negative)
+            // Both effects together are not working when processed on camera
+            // Workaround: Process grayscale on camera + negative on MCU (procesisng) / browser (preview)
+            specialeffect = document.getElementById("TakeImage_SpecialEffect_value1").value;
         }
 
         context.fillStyle = "white";
@@ -734,6 +744,9 @@
         else {
             context.translate(canvas.width/2,canvas.height/2);
             context.rotate(degrees*Math.PI/180);
+
+            if (specialeffect == "7")
+                context.filter = 'invert(1)';
 
             context.drawImage(imageObj,-imageObj.width/2,-imageObj.height/2);
         }
@@ -782,8 +795,10 @@
             canvas.width = this.width;
             canvas.height = this.height;
 
-            if (grid)
+            if (grid) {
                 drawRotated(true, true);
+                document.getElementById("take").disabled = false;
+            }
             else
                 drawRotated(false);
 

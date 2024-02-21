@@ -119,7 +119,7 @@ CCamera::CCamera()
     camParameter.sharpness = 0;
     camParameter.autoExposureLevel = 0;
     camParameter.aec2Algo = false;
-    camParameter.isFixedExposure = false;
+    camParameter.fixedExposure = false;
     camParameter.specialEffect = 0;
     camParameter.zoom = false;
     camParameter.zoomMode = 0;
@@ -413,8 +413,18 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
     s->set_contrast(s, std::min(2, std::max(-2, _contrast)));       // -2 .. 2
     s->set_brightness(s, std::min(2, std::max(-2, _brightness)));   // -2 .. 2 (IMPORTANT: Apply brightness after saturation and conrast)
     s->set_sharpness(s, 0); // Default: Sharpness not supported, use owm implementation
-    if (_specialEffect <= 6) // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
-        s->set_special_effect(s, std::max(_specialEffect, 0));
+    
+    // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
+    if (_specialEffect >= 0 && _specialEffect <= 6)
+        s->set_special_effect(s, _specialEffect);
+    // Set sepcial effect: 7: Grayscale + Negative in combination
+    // Potential bug in camera firmware -> Workaround: Do grayscale on camera + negative on MCU
+    else if (_specialEffect == 7)
+        s->set_special_effect(s, 2); // Grayscale
+    else {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Selected special effect unknown");
+        return false;
+    }
 
     // Auto exposure control
     s->set_exposure_ctrl(s, 1); // Enable auto exposure control
@@ -453,8 +463,8 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
         /* Workaround - bug in cam library - enable bits are set without using bitwise OR logic -> only latest enable setting is used */
         /* Library version: https://github.com/espressif/esp32-camera/commit/5c8349f4cf169c8a61283e0da9b8cff10994d3f3 */
         /* Reference: https://esp32.com/viewtopic.php?f=19&t=14376#p93178 */
-        //s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 2); // Optional feature - hue setting: Select byte 2 in register 0x7C to set hue value
-        //s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, 0); // Optional feature - hue setting: Hue value 0 - 255
+        //s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x02); // Optional feature - hue setting: Select byte 2 in register 0x7C to set hue value
+        //s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, 0x80); // Optional feature - hue setting: Hue value 0 - 255
 
         int registerValue = 0x07; // Set bit 0, 1, 2 to enable saturation, contrast, brightness and hue control
         
@@ -464,6 +474,11 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
         }
         else if (_specialEffect >= 2 && _specialEffect <= 6) { // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
             registerValue |= 0x18;
+        }
+        else if (_specialEffect == 7) { // Sepcial effect: 7: Grayscale + Negative in combination
+            //registerValue |= 0x58;    // Flags which should perform both together on camera
+            registerValue |= 0x18;      // Potential bug in camera firmware -> Workaround: Do grayscale on camera + negative on MCU
+                                        // Disadvantage: effect in combination not visible in other camera consumers like live stream / REST API
         }
 
         // Maintain DSP bank byte 0 register to keep brightness, contrast, saturation and special effect settings
@@ -476,9 +491,9 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
                             "Sharpness, brightness, contrast, saturation and special effects not properly set"); 
     }
 
-    if (((_brightness != camParameter.brightness) || (_contrast != camParameter.contrast) || 
-        (_saturation != camParameter.saturation)) && camParameter.isFixedExposure)
-        enableAutoExposure();
+    // Disable auto exposure control after initial image capturing
+    if (camParameter.fixedExposure)
+        enableFixedExposure();
 
     camParameter.brightness = _brightness;
     camParameter.contrast = _contrast;
@@ -492,25 +507,7 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
 }
 
 
-bool CCamera::setMirrorFlip(bool _mirror, bool _flip)
-{
-    sensor_t * s = esp_camera_sensor_get();
-    if (s == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setMirrorFlip: Failed to get control structure");
-        return false;
-    }
-
-    s->set_hmirror(s, _mirror ? 1 : 0);
-    s->set_vflip(s, _flip ? 1 : 0);
-
-    camParameter.mirrorHorizontal = _mirror;
-    camParameter.flipVertical = _flip;
-
-    return true;
-}
-
-
-bool CCamera::enableAutoExposure()
+bool CCamera::enableFixedExposure()
 {
     if (!getcameraInitSuccessful())
         return false;
@@ -531,7 +528,7 @@ bool CCamera::enableAutoExposure()
     }    
 
     if (fb == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableAutoExposure: Capture failed. "
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableFixedExposure: Capture failed. "
                                                 "Check camera module and/or proper electrical connection");
         return false;
     }
@@ -539,14 +536,37 @@ bool CCamera::enableAutoExposure()
 
     sensor_t * s = esp_camera_sensor_get(); 
     if (s == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableAutoExposure: Failed to get control structure");
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableFixedExposure: Failed to get control structure");
         return false;
     }
 
-    s->set_gain_ctrl(s, 0); // Disable auto gain control
+    //s->set_gain_ctrl(s, 0); // Disable auto gain control
     s->set_exposure_ctrl(s, 0); // Disable auto exposure control
 
-    camParameter.isFixedExposure = true;
+    return true;
+}
+
+
+void CCamera::setFixedExposure(bool _fixedExposure)
+{
+    camParameter.fixedExposure = _fixedExposure;
+}
+
+
+bool CCamera::setMirrorFlip(bool _mirror, bool _flip)
+{
+    sensor_t * s = esp_camera_sensor_get();
+    if (s == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setMirrorFlip: Failed to get control structure");
+        return false;
+    }
+
+    s->set_hmirror(s, _mirror ? 1 : 0);
+    s->set_vflip(s, _flip ? 1 : 0);
+
+    camParameter.mirrorHorizontal = _mirror;
+    camParameter.flipVertical = _flip;
+
     return true;
 }
 
@@ -616,6 +636,12 @@ esp_err_t CCamera::captureToBasisImage(CImageBasis *_Image)
         STBIObjectPSRAM.PreallocatedMemorySize = _Image->getMemsize();
 
         _Image->LoadFromMemoryPreallocated(fb->buf, fb->len);
+
+        // Special effect: grayscale + negative in combination: Not functional due to potential bug in camera firmware
+        // Workaround: Do grayscale on camera + negative on MCU
+        // Disadvantage: effect in combination not visible in other camera consumers like live stream / REST API
+        if (camParameter.specialEffect == 7)
+            _Image->Negative();
     }
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "captureToBasisImage: rawImage not allocated");

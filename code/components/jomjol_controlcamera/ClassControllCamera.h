@@ -24,7 +24,7 @@ struct CameraParameter {
     int brightness, contrast, saturation, sharpness;
     int autoExposureLevel;
     bool aec2Algo;
-    bool isFixedExposure;
+    bool fixedExposure;
     int specialEffect;
     bool mirrorHorizontal;
     bool flipVertical;
@@ -82,7 +82,8 @@ class CCamera
                                   bool _aec2Algo, int _specialEffect, bool _mirror, bool _flip);
         void setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
         bool setMirrorFlip(bool _mirror, bool _flip);
-        bool enableAutoExposure();
+        void setFixedExposure(bool _fixedExposure);
+        bool enableFixedExposure();
 
         framesize_t textToFramesize(const char * text);
 

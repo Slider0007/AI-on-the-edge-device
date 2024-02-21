@@ -192,6 +192,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     Camera.setFlashIntensity(flashIntensity);
     Camera.setFlashTime(flashTime);
     Camera.setCameraFrequency(cameraFrequency);
+    Camera.setFixedExposure(fixedExposure);
     Camera.setSizeQuality(imageQuality, imageSize, zoom, zoomMode, zoomOffsetX, zoomOffsetY);
     Camera.setImageManipulation(brightness, contrast, saturation, sharpness, autoExposureLevel, 
                                 aec2Algo, specialEffect, mirrorHorizontal, flipVertical);
@@ -208,11 +209,6 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ReadParameter: Can't create CImageBasis for rawImage");
         return false;
-    }
-
-    if (fixedExposure && (flashTime > 0)) {
-        //ESP_LOGD(TAG, "Fixed Exposure enabled");
-        Camera.enableAutoExposure();
     }
 
     return true;
