@@ -9,7 +9,7 @@
 
 ## Description
 
-Exposure compensation. The lower the value the darker the image
+Auto exposure offset. The lower the value the darker the image.
 
 
 !!! Tip

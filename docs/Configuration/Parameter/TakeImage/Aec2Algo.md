@@ -9,8 +9,8 @@
 
 ## Description
 
-Switch to an alternative auto exposure control algorithm. 
-This may resolve some over-exposure and under-exposure issues.
+Switch to an alternative auto exposure control algorithm or extending the range 
+of automatic gain control. This may resolve some over-exposure and under-exposure issues.
 
 
 !!! Tip

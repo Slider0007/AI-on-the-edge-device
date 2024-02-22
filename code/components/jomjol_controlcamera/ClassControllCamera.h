@@ -22,13 +22,11 @@ struct CameraParameter {
     int flashIntensity;
     int flashTime;
     int brightness, contrast, saturation, sharpness;
-    int autoExposureLevel;
-    bool aec2Algo;
-    bool fixedExposure;
+    int exposureControlMode, autoExposureLevel, manualExposureValue;
+    int gainControlMode, manualGainValue;
     int specialEffect;
     bool mirrorHorizontal;
     bool flipVertical;
-    bool zoom;
     int zoomMode, zoomOffsetX, zoomOffsetY;
 };
 
@@ -76,14 +74,12 @@ class CCamera
         void setFlashlight(bool _status);
 
         void setCameraFrequency(int _frequency);
-        void setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoomMode, 
-                            int _zoomOffsetX, int _zoomOffsetY);
-        bool setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, int _autoExposureLevel, 
-                                  bool _aec2Algo, int _specialEffect, bool _mirror, bool _flip);
-        void setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
+        void setSizeQuality(int _qual, framesize_t _resol, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
+        void setZoom(int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
+        bool setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, int _exposureControlMode, 
+                                  int _autoExposureLevel, int _manualExposureValue, int _gainControlMode, int _manualGainValue, 
+                                  int _specialEffect, bool _mirror, bool _flip);
         bool setMirrorFlip(bool _mirror, bool _flip);
-        void setFixedExposure(bool _fixedExposure);
-        bool enableFixedExposure();
 
         framesize_t textToFramesize(const char * text);
 

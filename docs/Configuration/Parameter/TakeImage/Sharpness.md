@@ -9,8 +9,9 @@
 
 ## Description
 
-Set the sharpness level of the image. 
-To determine sharpness automatically by camera controller, set it to `Auto` (-4).
+Set the sharpness level of the image. Positive values increase sharpness 
+(more defined edges), negative values lower it (softer edges). To determine 
+sharpness automatically by camera controller, set it to `Auto` (-4).
 
 
 !!! Tip

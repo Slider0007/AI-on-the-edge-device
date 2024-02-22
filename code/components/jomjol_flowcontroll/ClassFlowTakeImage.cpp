@@ -47,14 +47,14 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     int contrast = 0;
     int saturation = 0;
     int sharpness = 0;
+    int exposureControlMode = 1;
     int autoExposureLevel = 0;
-    bool aec2Algo = false;
-    bool fixedExposure = false;
+    int manualExposureValue = 300;
+    int gainControlMode = 1;
+    int manualGainValue = 0;
     int specialEffect = 0;
-    bool negative = false;
     bool mirrorHorizontal = false;
     bool flipVertical = false;
-    bool zoom = false;
     int zoomMode = 0;
     int zoomOffsetX = 0;
     int zoomOffsetY = 0;
@@ -118,22 +118,24 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             sharpness = stoi(splitted[1]);
         }
 
+        if ((toUpper(splitted[0]) == "EXPOSURECONTROLMODE") && (splitted.size() > 1)) {
+            exposureControlMode = std::stoi(splitted[1]);
+        }
+
         if ((toUpper(splitted[0]) == "AUTOEXPOSURELEVEL") && (splitted.size() > 1)) {
             autoExposureLevel = std::stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "AEC2ALGO") && (splitted.size() > 1)) {
-            if (toUpper(splitted[1]) == "TRUE")
-                aec2Algo = true;
-            else
-                aec2Algo = false;
+        if ((toUpper(splitted[0]) == "MANUALEXPOSUREVALUE") && (splitted.size() > 1)) {
+            manualExposureValue = std::stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "FIXEDEXPOSURE") && (splitted.size() > 1)) {
-            if (toUpper(splitted[1]) == "TRUE")
-                fixedExposure = true;
-            else
-                fixedExposure = false;
+        if ((toUpper(splitted[0]) == "GAINCONTROLMODE") && (splitted.size() > 1)) {
+            gainControlMode = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "MANUALGAINVALUE") && (splitted.size() > 1)) {
+            manualGainValue = std::stoi(splitted[1]);
         }
 
         if ((toUpper(splitted[0]) == "SPECIALEFFECT") && (splitted.size() > 1)) {
@@ -152,13 +154,6 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
                 flipVertical = true;
             else
                 flipVertical = false;
-        }
-
-        if ((toUpper(splitted[0]) == "ZOOM") && (splitted.size() > 1)) {
-            if (toUpper(splitted[1]) == "TRUE")
-                zoom = true;
-            else
-                zoom = false;
         }
 
         if ((toUpper(splitted[0]) == "ZOOMMODE") && (splitted.size() > 1)) {
@@ -192,11 +187,10 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     Camera.setFlashIntensity(flashIntensity);
     Camera.setFlashTime(flashTime);
     Camera.setCameraFrequency(cameraFrequency);
-    Camera.setFixedExposure(fixedExposure);
-    Camera.setSizeQuality(imageQuality, imageSize, zoom, zoomMode, zoomOffsetX, zoomOffsetY);
-    Camera.setImageManipulation(brightness, contrast, saturation, sharpness, autoExposureLevel, 
-                                aec2Algo, specialEffect, mirrorHorizontal, flipVertical);
-
+    Camera.setSizeQuality(imageQuality, imageSize, zoomMode, zoomOffsetX, zoomOffsetY);
+    Camera.setImageManipulation(brightness, contrast, saturation, sharpness, exposureControlMode, autoExposureLevel, 
+                                manualExposureValue, gainControlMode, manualGainValue, specialEffect, mirrorHorizontal, flipVertical);
+    
     image_width = Camera.image_width;
     image_height = Camera.image_height;
     rawImage = new CImageBasis("rawImage");

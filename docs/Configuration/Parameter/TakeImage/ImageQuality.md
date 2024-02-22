@@ -13,7 +13,7 @@
 
 ## Description
 
-Image quality index
+Image quality index. The lower the index, the better the picture quality.
 
 
 !!! Warning

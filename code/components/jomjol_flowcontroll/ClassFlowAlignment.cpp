@@ -146,7 +146,12 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             STBIObjectPSRAM.usePreallocated = true;
             STBIObjectPSRAM.PreallocatedMemory = References[anz_ref].refImage->RGBImageGet();
             STBIObjectPSRAM.PreallocatedMemorySize = References[anz_ref].refImage->getMemsize();
-            References[anz_ref].refImage->LoadFromFilePreallocated("refImage" + std::to_string(anz_ref), References[anz_ref].image_file.c_str());
+
+            if (!References[anz_ref].refImage->LoadFromFilePreallocated("refImage" + 
+                                std::to_string(anz_ref), References[anz_ref].image_file.c_str()))
+            {
+                return false;
+            }
 
             References[anz_ref].target_x = std::stoi(splitted[1]);
             References[anz_ref].target_y = std::stoi(splitted[2]);

@@ -9,7 +9,8 @@
 
 ## Description
 
-Set the saturation level of the image
+Set the saturation level of the image. Positive values increase saturation 
+(more vibrant colors), negative values lower it (more muted colors).
 
 
 !!! Tip

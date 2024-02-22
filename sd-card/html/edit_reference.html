@@ -27,8 +27,8 @@
         }
 
         select {
-			min-width: 125px;
-			max-width: 125%;
+			min-width: 140px;
+			max-width: 140%;
 			padding: 3px 5px;
 			display: inline-block;
 			border: 1px solid #ccc;
@@ -190,16 +190,23 @@
         <colgroup>
             <col span="1" style="width: 5%;">
             <col span="1" style="width: 20%;">
-            <col span="1" style="width: 28%;">
+            <col span="1" style="width: 26%;">
             <col span="1" style="width: 5%;">
             <col span="1" style="width: 20%;">
-            <col span="1" style="width: 21%;">
+            <col span="1" style="width: 23%;">
         </colgroup>
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_Zoom</td>
-            <td><label for="TakeImage_Zoom_value1" id="TakeImage_Zoom_text">Digital Zoom</label></td>
-            <td><input class="camParameter" type="checkbox" id="TakeImage_Zoom_value1" name="TakeImage_Zoom"
-                            onchange='setEnabled("TakeImage_Zoom_parameter", this.checked ? true : false);'></td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_ZoomMode</td>
+            <td>
+                <span id="TakeImage_ZoomMode_text">Zoom Mode</span>
+            </td>
+            <td class="camParameter">
+				<select id="TakeImage_ZoomMode_value1" onchange='setEnabled("TakeImage_Zoom_parameter", this.value > 0 ? true : false);'>
+                    <option value=0 selected>Off</option>
+					<option value=1>Crop</option>
+					<option value=2>Scale & Crop</option>
+				</select>
+            </td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_Brightness</td>
             <td>
                 <span id="TakeImage_Brightness_text">Brightness</span>
@@ -212,15 +219,13 @@
             </td>
         </tr>
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_ZoomMode</td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_ZoomOffsetX</td>
             <td>
-                <span id="TakeImage_ZoomMode_text">Zoom Mode</span>
+                <span id="TakeImage_ZoomOffsetX_text">Zoom Offset X</span>
             </td>
-            <td class="camParameter TakeImage_Zoom_parameter">
-				<select id="TakeImage_ZoomMode_value1">
-					<option value="0" selected>Crop</option>
-					<option value="1">Scale & Crop</option>
-				</select>
+            <td  class="camParameter TakeImage_Zoom_parameter">
+                <input required style="clear: both" type="number" id="TakeImage_ZoomOffsetX_value1" value="0" min="0" max="960" 
+                        oninput="(!validity.rangeOverflow||(value=960)) && (!validity.rangeUnderflow||(value=0));">px
             </td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_Contrast</td>
             <td>
@@ -234,13 +239,13 @@
             </td>
         </tr>
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_ZoomOffsetX</td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_ZoomOffsetY</td>
             <td>
-                <span id="TakeImage_ZoomOffsetX_text">Zoom Offset X</span>
+                <span id="TakeImage_ZoomOffsetY_text">Zoom Offset Y</span>
             </td>
-            <td  class="camParameter TakeImage_Zoom_parameter">
-                <input required style="clear: both" type="number" id="TakeImage_ZoomOffsetX_value1" value="0" min="0" max="960" 
-                        oninput="(!validity.rangeOverflow||(value=960)) && (!validity.rangeUnderflow||(value=0));">px
+            <td class="camParameter TakeImage_Zoom_parameter">
+                <input required style="clear: both" type="number" id="TakeImage_ZoomOffsetY_value1" value="0" min="0" max="720" 
+                        oninput="(!validity.rangeOverflow||(value=720)) && (!validity.rangeUnderflow||(value=0));">px
             </td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_Saturation</td>
             <td>
@@ -254,14 +259,9 @@
             </td>
         </tr>
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_ZoomOffsetY</td>
-            <td>
-                <span id="TakeImage_ZoomOffsetY_text">Zoom Offset Y</span>
-            </td>
-            <td class="camParameter TakeImage_Zoom_parameter">
-                <input required style="clear: both" type="number" id="TakeImage_ZoomOffsetY_value1" value="0" min="0" max="720" 
-                        oninput="(!validity.rangeOverflow||(value=720)) && (!validity.rangeUnderflow||(value=0));">px
-            </td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_MirrorHorizontal</td>
+            <td><label for="TakeImage_MirrorHorizontal_value1" id="TakeImage_MirrorHorizontal_text">Mirror Horizontal</label></td>
+            <td><input class="camParameter" type="checkbox" id="TakeImage_MirrorHorizontal_value1" name="TakeImage_MirrorHorizontal" value="1" ></td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_Sharpness</td>
             <td>
                 <span id="TakeImage_Sharpness_text">Sharpness</span>
@@ -274,15 +274,58 @@
             </td>
         </tr>
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_MirrorHorizontal</td>
-            <td><label for="TakeImage_MirrorHorizontal_value1" id="TakeImage_MirrorHorizontal_text">Mirror Horizontal</label></td>
-            <td><input class="camParameter" type="checkbox" id="TakeImage_MirrorHorizontal_value1" name="TakeImage_MirrorHorizontal" value="1" ></td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_FlipVertical</td>
+            <td><label for="TakeImage_FlipVertical_value1" id="TakeImage_FlipVertical_text">Flip Vertical</label></td>
+            <td><input class="camParameter" type="checkbox" id="TakeImage_FlipVertical_value1" name="TakeImage_FlipVertical" value="1" ></td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_SpecialEffect</td>
+            <td>
+                <span id="TakeImage_SpecialEffect_text">Special Effect</span>
+            </td>
+            <td class="camParameter">
+				<select id="TakeImage_SpecialEffect_value1">
+					<option value=0 selected>None</option>
+					<option value=1>Negative</option>
+					<option value=2>Grayscale</option>
+                    <option value=7>Gray+Negative</option>
+				</select>
+            </td>
+        </tr>
+        <tr>
+            <td style="overflow:hidden">$TOOLTIP_Alignment_FlipImageSize</td>
+            <td><label for="Alignment_FlipImageSize_value1" id="Alignment_FlipImageSize_text">Flip Image Size</label></td>
+            <td><input class="camParameter" type="checkbox" id="Alignment_FlipImageSize_value1" name="Alignment_FlipImageSize" value="1"></td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_ExposureControlMode</td>
+            <td>
+                <span id="TakeImage_ExposureControlMode_text">Exposure Control</span>
+            </td>
+            <td class="camParameter">
+				<select id="TakeImage_ExposureControlMode_value1" 
+                        onchange='setEnabled("TakeImage_ExposureControlModeAuto_parameter", this.value > 0 ? true : false);
+                                  setEnabled("TakeImage_ExposureControlModeManual_parameter", this.value == 0 ? true : false);'>
+                    <option value=0>Manual</option>
+					<option value=1 selected>Auto</option>
+                    <option value=2>Auto (AEC2)</option>
+				</select>
+            </td>
+        </tr>
+        <tr>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_GainControlMode</td>
+            <td>
+                <span id="TakeImage_GainControlMode_text">Gain Control</span>
+            </td>
+            <td class="camParameter">
+				<select id="TakeImage_GainControlMode_value1"
+                    onchange='setEnabled("TakeImage_GainControlModeManual_parameter", this.value == 0 ? true : false);'>>
+					<option value=0>Manual</option>
+                    <option value=1 selected>Auto</option>
+				</select>
+            </td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_AutoExposureLevel</td>
             <td style="padding:0px 5px 0px 0px">
                 <span id="TakeImage_AutoExposureLevel_text">Auto Exposure Level</span>
             </td>
             <td>
-                <input class="camParameter" style="clear: both; width: 80%;vertical-align:middle" 
+                <input class="camParameter TakeImage_ExposureControlModeAuto_parameter" style="clear: both; width: 80%;vertical-align:middle" 
                         type="range" id="TakeImage_AutoExposureLevel_value1" value=0 min="-2" max="2" 
                         onchange="this.nextElementSibling.value = this.value">
                 <output id="TakeImage_AutoExposureLevel_value1_output" style="vertical-align:middle; 
@@ -290,28 +333,23 @@
             </td>
         </tr>
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_FlipVertical</td>
-            <td><label for="TakeImage_FlipVertical_value1" id="TakeImage_FlipVertical_text">Flip Vertical</label></td>
-            <td><input class="camParameter" type="checkbox" id="TakeImage_FlipVertical_value1" name="TakeImage_FlipVertical" value="1" ></td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_Aec2Algo</td>
-            <td style="padding:0px 5px 0px 0px"><label for="TakeImage_Aec2Algo_value1" id="TakeImage_Aec2Algo_text">Auto Exposure Control 2 Algo</label></td>
-            <td><input class="camParameter" type="checkbox" id="TakeImage_Aec2Algo_value1" name="TakeImage_Aec2Algo" value="1"></td>
-        </tr>
-        <tr>
-            <td style="overflow:hidden">$TOOLTIP_Alignment_FlipImageSize</td>
-            <td><label for="Alignment_FlipImageSize_value1" id="Alignment_FlipImageSize_text">Flip Image Size</label></td>
-            <td><input class="camParameter" type="checkbox" id="Alignment_FlipImageSize_value1" name="Alignment_FlipImageSize" value="1"></td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_SpecialEffect</td>
-            <td>
-                <span id="TakeImage_SpecialEffect_text">Special Effect</span>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_ManualGainValue</td>
+            <td style="padding:0px 5px 0px 0px">
+                <span id="TakeImage_ManualGainValue_text">Manual Gain</span>
             </td>
-            <td class="camParameter">
-				<select id="TakeImage_SpecialEffect_value1">
-					<option value="0" selected>None</option>
-					<option value="1">Negative</option>
-					<option value="2">Grayscale</option>
-                    <option value="7">Gray+Negative</option>
-				</select>
+            <td>
+                <input class="camParameter TakeImage_GainControlModeManual_parameter" required style="clear: both" type="number" id="TakeImage_ManualGainValue_value1" 
+                        value="0" min="0" max="5" oninput="(!validity.rangeOverflow||(value=5)) && 
+                        (!validity.rangeUnderflow||(value=0));">
+            </td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_ManualExposureValue</td>
+            <td style="padding:0px 5px 0px 0px">
+                <span id="TakeImage_ManualExposureValue_text">Manual Exposure Value</span>
+            </td>
+            <td>
+                <input class="camParameter TakeImage_ExposureControlModeManual_parameter" required style="clear: both" type="number" id="TakeImage_ManualExposureValue_value1" 
+                        value="300" min="0" max="1200" oninput="(!validity.rangeOverflow||(value=1200)) && 
+                        (!validity.rangeUnderflow||(value=0));">
             </td>
         </tr>
         <tr>
@@ -439,34 +477,35 @@
             if (saturation == "") saturation = "0";
             let sharpness = document.getElementById("TakeImage_Sharpness_value1").value;
             if (sharpness == "") sharpness = "0";
+            let exposureControlMode = document.getElementById("TakeImage_ExposureControlMode_value1").value;
+            if (exposureControlMode == "") exposureControlMode = "1";
             let autoExposureLevel = document.getElementById("TakeImage_AutoExposureLevel_value1").value;
             if (autoExposureLevel == "") autoExposureLevel = "0";
-            let aec2 = document.getElementById("TakeImage_Aec2Algo_value1").checked ? "true" : "false";
-            if (aec2 == "") aec2 = "false";
+            let manualExposureValue = document.getElementById("TakeImage_ManualExposureValue_value1").value;
+            if (manualExposureValue == "") manualExposureValue = "300";
+            let gainControlMode = document.getElementById("TakeImage_GainControlMode_value1").value;
+            if (gainControlMode == "") gainControlMode = "1";
+            let manualGainValue = document.getElementById("TakeImage_ManualGainValue_value1").value;
+            if (manualGainValue == "") manualGainValue = "0";
             let specialeffect = document.getElementById("TakeImage_SpecialEffect_value1").value;
             if (specialeffect == "") specialeffect = "0";
             let mirror = document.getElementById("TakeImage_MirrorHorizontal_value1").checked ? "true" : "false";
             if (mirror == "") mirror = "false";
             let flip = document.getElementById("TakeImage_FlipVertical_value1").checked ? "true" : "false";
             if (flip == "") flip = "false";
-            let zoom = document.getElementById("TakeImage_Zoom_value1").checked ? "true" : "false";
-            if (zoom == "") zoom = "false";
+            let zoomMode = document.getElementById("TakeImage_ZoomMode_value1").value;
+            if (zoomMode == "") zoomMode = "0";
+            let zoomOffsetX = document.getElementById("TakeImage_ZoomOffsetX_value1").value;
+            if (zoomOffsetX == "") zoomOffsetX = "0";
+            let zoomOffsetY = document.getElementById("TakeImage_ZoomOffsetY_value1").value;
+            if (zoomOffsetX == "") zoomOffsetX = "0";
 
             url = getDomainname() + "/camera?task=set_parameter&flashtime=" + flashtime + "&flashintensity=" + flashintensity + 
                     "&brightness=" + brightness + "&contrast=" + contrast + "&saturation=" + saturation + "&sharpness=" + sharpness + 
-                    "&autoexposurelevel=" + autoExposureLevel + "&aec2=" + aec2 + "&specialeffect=" + specialeffect + 
-                    "&mirror=" + mirror + "&flip=" + flip + "&zoom=" + zoom;
-            
-            if (zoom == "true") {
-                let zoommode = document.getElementById("TakeImage_ZoomMode_value1").value;
-                if (zoommode == "") zoommode = "0";
-                let zoomOffsetX = document.getElementById("TakeImage_ZoomOffsetX_value1").value;
-                if (zoomOffsetX == "") zoomOffsetX = "0";
-                let zoomOffsetY = document.getElementById("TakeImage_ZoomOffsetY_value1").value;
-                if (zoomOffsetX == "") zoomOffsetX = "0";
-
-                url += "&zoommode=" + zoommode + "&zoomx=" + zoomOffsetX + "&zoomy=" + zoomOffsetY;
-            }
+                    "&exposurecontrolmode=" + exposureControlMode + "&autoexposurelevel=" + autoExposureLevel + 
+                    "&manualexposurevalue=" + manualExposureValue + "&gaincontrolmode=" + gainControlMode + 
+                    "&manualgainvalue=" + manualGainValue + "&specialeffect=" + specialeffect + "&mirror=" + mirror + "&flip=" + flip + 
+                    "&zoommode=" + zoomMode + "&zoomx=" + zoomOffsetX + "&zoomy=" + zoomOffsetY;
         }
         else {
             firework.launch('Parsing of parameter failed', 'danger', 30000);
@@ -516,8 +555,20 @@
             document.getElementById("createreference").disabled = true;
             document.getElementById("savereference").disabled = true;
             document.getElementById("take").disabled = false;
-            setEnabled("camParameter", true); // Release input for all camera parameter
-            setEnabled("TakeImage_Zoom_parameter", paramLocal["TakeImage"]["Zoom"]["value1"] == "true" ? true : false); 
+
+            // Release input for all camera parameter
+            setEnabled("camParameter", true);
+            // Release additional zoom parameter
+            setEnabled("TakeImage_Zoom_parameter", paramLocal["TakeImage"]["ZoomMode"]["value1"] > 0 ? true : false);
+            // Release additional exposure control parameter
+            setEnabled("TakeImage_ExposureControlModeAuto_parameter", 
+                document.getElementById("TakeImage_ExposureControlMode_value1").value > 0 ? true : false);
+		    setEnabled("TakeImage_ExposureControlModeManual_parameter", 
+                document.getElementById("TakeImage_ExposureControlMode_value1").value == 0 ? true : false);
+            // Release additional gain control parameter
+		    setEnabled("TakeImage_GainControlModeManual_parameter", 
+                document.getElementById("TakeImage_GainControlMode_value1").value == 0 ? true : false);
+            
             doTake();
         }
     }
@@ -547,12 +598,14 @@
         WriteParameter(paramLocal, "TakeImage", "Saturation", true);
         WriteParameter(paramLocal, "TakeImage", "Sharpness", true);
         onchangeSharpness(paramLocal["TakeImage"]["Sharpness"]["value1"]); // -4 -> Auto
+        WriteParameter(paramLocal, "TakeImage", "ExposureControlMode");
         WriteParameter(paramLocal, "TakeImage", "AutoExposureLevel", true);
-        WriteParameter(paramLocal, "TakeImage", "Aec2Algo");
+        WriteParameter(paramLocal, "TakeImage", "ManualExposureValue");
+        WriteParameter(paramLocal, "TakeImage", "GainControlMode");
+        WriteParameter(paramLocal, "TakeImage", "ManualGainValue");
         WriteParameter(paramLocal, "TakeImage", "SpecialEffect");
         WriteParameter(paramLocal, "TakeImage", "MirrorHorizontal");
         WriteParameter(paramLocal, "TakeImage", "FlipVertical");
-        WriteParameter(paramLocal, "TakeImage", "Zoom");
         WriteParameter(paramLocal, "TakeImage", "ZoomMode");
         WriteParameter(paramLocal, "TakeImage", "ZoomOffsetX");
         WriteParameter(paramLocal, "TakeImage", "ZoomOffsetY");
@@ -832,7 +885,7 @@
         if (isActReference)
             drawRotated(false);
         else
-            drawRotated(true);
+            drawRotated(true, true);
 
         let zw = getCoords(this);
         let x = e.pageX - zw.left;
@@ -860,12 +913,14 @@
             ReadParameter(param, "TakeImage", "Contrast");
             ReadParameter(param, "TakeImage", "Saturation");
             ReadParameter(param, "TakeImage", "Sharpness");
+            ReadParameter(param, "TakeImage", "ExposureControlMode");
             ReadParameter(param, "TakeImage", "AutoExposureLevel");
-            ReadParameter(param, "TakeImage", "Aec2Algo");
+            ReadParameter(param, "TakeImage", "ManualExposureValue");
+            ReadParameter(param, "TakeImage", "GainControlMode");
+            ReadParameter(param, "TakeImage", "ManualGainValue");
             ReadParameter(param, "TakeImage", "SpecialEffect");
             ReadParameter(param, "TakeImage", "MirrorHorizontal");
             ReadParameter(param, "TakeImage", "FlipVertical");
-            ReadParameter(param, "TakeImage", "Zoom");
             ReadParameter(param, "TakeImage", "ZoomMode");
             ReadParameter(param, "TakeImage", "ZoomOffsetX");
             ReadParameter(param, "TakeImage", "ZoomOffsetY");

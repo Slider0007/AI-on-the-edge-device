@@ -15,7 +15,7 @@ static const char *TAG = "CAM_SERVER";
 
 esp_err_t handler_camera(httpd_req_t *req)
 {
-    char _query[300];
+    char _query[384];
     char _valuechar[30];
     std::string task;
 
@@ -63,12 +63,20 @@ esp_err_t handler_camera(httpd_req_t *req)
         if (httpd_query_key_value(_query, "sharpness", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             camParameter.sharpness = stoi(std::string(_valuechar));
         }
+        if (httpd_query_key_value(_query, "exposurecontrolmode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.exposureControlMode  = stoi(std::string(_valuechar));
+        }
         if (httpd_query_key_value(_query, "autoexposurelevel", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             camParameter.autoExposureLevel = stoi(std::string(_valuechar));
         }
-        if (httpd_query_key_value(_query, "aec2", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                camParameter.aec2Algo = true : camParameter.aec2Algo = false;
+        if (httpd_query_key_value(_query, "manualexposurevalue", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.manualExposureValue = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "gaincontrolmode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.gainControlMode = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "manualgainvalue", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.manualGainValue = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "specialeffect", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             camParameter.specialEffect = stoi(std::string(_valuechar));
@@ -80,10 +88,6 @@ esp_err_t handler_camera(httpd_req_t *req)
         if (httpd_query_key_value(_query, "flip", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
                 camParameter.flipVertical = true : camParameter.flipVertical = false;
-        }
-        if (httpd_query_key_value(_query, "zoom", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                camParameter.zoom = true : camParameter.zoom = false;
         }
         if (httpd_query_key_value(_query, "zoommode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             camParameter.zoomMode = stoi(std::string(_valuechar));
@@ -97,9 +101,10 @@ esp_err_t handler_camera(httpd_req_t *req)
 
         Camera.setFlashIntensity(camParameter.flashIntensity);
         Camera.setFlashTime(camParameter.flashTime);
-        Camera.setZoom(camParameter.zoom, camParameter.zoomMode, camParameter.zoomOffsetX, camParameter.zoomOffsetY);
+        Camera.setZoom(camParameter.zoomMode, camParameter.zoomOffsetX, camParameter.zoomOffsetY);
         Camera.setImageManipulation(camParameter.brightness, camParameter.contrast, camParameter.saturation, 
-                                    camParameter.sharpness, camParameter.autoExposureLevel, camParameter.aec2Algo, 
+                                    camParameter.sharpness, camParameter.exposureControlMode, camParameter.autoExposureLevel, 
+                                    camParameter.manualExposureValue, camParameter.gainControlMode, camParameter.manualGainValue, 
                                     camParameter.specialEffect, camParameter.mirrorHorizontal, camParameter.flipVertical);
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");

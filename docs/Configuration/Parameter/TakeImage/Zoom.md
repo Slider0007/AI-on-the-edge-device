@@ -9,7 +9,7 @@
 
 ## Description
 
-Enable camera zoom functionality
+Enable camera digital zoom (windowing) functionality
 
 
 !!! Tip

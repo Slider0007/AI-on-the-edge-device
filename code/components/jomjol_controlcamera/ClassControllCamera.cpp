@@ -117,11 +117,12 @@ CCamera::CCamera()
     camParameter.contrast = 0;
     camParameter.saturation = 0;
     camParameter.sharpness = 0;
+    camParameter.exposureControlMode = 1;
     camParameter.autoExposureLevel = 0;
-    camParameter.aec2Algo = false;
-    camParameter.fixedExposure = false;
+    camParameter.manualExposureValue = 300;
+    camParameter.gainControlMode = 1;
+    camParameter.manualGainValue = 0;
     camParameter.specialEffect = 0;
-    camParameter.zoom = false;
     camParameter.zoomMode = 0;
     camParameter.zoomOffsetX = 0;
     camParameter.zoomOffsetY = 0;
@@ -307,7 +308,7 @@ void CCamera::setImageWidthHeightFromResolution(framesize_t _resol)
 }
 
 
-void CCamera::setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoomMode, 
+void CCamera::setSizeQuality(int _qual, framesize_t _resol, int _zoomMode, 
                                 int _zoomOffsetX, int _zoomOffsetY)
 {
     if (!getcameraInitSuccessful())
@@ -318,7 +319,7 @@ void CCamera::setSizeQuality(int _qual, framesize_t _resol, bool _zoom, int _zoo
     setImageWidthHeightFromResolution(camParameter.actualResolution);
 
     // Set zoom / framesize
-    setZoom(_zoom, _zoomMode, _zoomOffsetX, _zoomOffsetY);
+    setZoom(_zoomMode, _zoomOffsetX, _zoomOffsetY);
 
     sensor_t * s = esp_camera_sensor_get();
     if (s == NULL) {
@@ -346,9 +347,8 @@ void CCamera::setCamWindow(sensor_t *_s, int _resolution, int _xOffset, int _yOf
 }
 
 
-void CCamera::setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY)
+void CCamera::setZoom(int _zoomMode, int _zoomOffsetX, int _zoomOffsetY)
 {
-    camParameter.zoom = _zoom;
     camParameter.zoomMode = _zoomMode;
     camParameter.zoomOffsetX = _zoomOffsetX;
     camParameter.zoomOffsetY = _zoomOffsetY;
@@ -359,36 +359,32 @@ void CCamera::setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffs
         return;
     }
 
-    if (camParameter.zoom) {
-        int mode = camParameter.zoomMode;
+    if (camParameter.zoomMode > 0) { // zoomMode = 0 -> zoom off
+        int resolMode = camParameter.zoomMode - 1;
         int x = camParameter.zoomOffsetX;
         int y = camParameter.zoomOffsetY;
 
-        // Maintain correct mode
-        if (mode > 1)
-            mode = 1;
+        // Maintain correct mode, only mode 0 and 1 available
+        resolMode = std::min(resolMode, 1);
 
-        if (image_width >= 800 || image_height >= 600) {
-            mode = 0;
-        }
+        // Force mode 0 if image size is larger than 800 x 600
+        if (image_width >= 800 || image_height >= 600)
+            resolMode = 0;
 
-        // Eval max values
+        // Max values depending on mode
         int maxX = 1600 - image_width;
         int maxY = 1200 - image_height;
 
-        if (mode == 1) {
+        if (resolMode == 1) {
             maxX = 800 - image_width;
             maxY = 600 - image_height;
         }
 
-        // Maintain max x,y value
-        if (x > maxX)
-            x = maxX;
+        // Maintain max x,y values
+        x = std::min(x, maxX);
+        y = std::min(y, maxY);
         
-        if (y > maxY)
-            y = maxY;
-        
-        setCamWindow(s, mode, x, y, image_width, image_height);
+        setCamWindow(s, resolMode, x, y, image_width, image_height);
     }
     else {
         s->set_framesize(s, camParameter.actualResolution);
@@ -396,8 +392,9 @@ void CCamera::setZoom(bool _zoom, int _zoomMode, int _zoomOffsetX, int _zoomOffs
 }
 
 
-bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, 
-                int _autoExposureLevel, bool _aec2Algo, int _specialEffect, bool _mirror, bool _flip)
+bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, int _exposureControlMode, 
+                                   int _autoExposureLevel, int _manualExposureValue, int _gainControlMode, 
+                                   int _manualGainValue, int _specialEffect, bool _mirror, bool _flip)
 {
     if (!getcameraInitSuccessful())
         return false;
@@ -408,32 +405,54 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
         return false;
     }
 
+    camParameter.brightness = _brightness;
+    camParameter.contrast = _contrast;
+    camParameter.saturation = _saturation;
+    camParameter.sharpness = _sharpness;
+    camParameter.exposureControlMode = _exposureControlMode;
+    camParameter.autoExposureLevel = _autoExposureLevel;
+    camParameter.manualExposureValue = _manualExposureValue;
+    camParameter.gainControlMode = _gainControlMode;
+    camParameter.manualGainValue = _manualGainValue;
+    camParameter.specialEffect = _specialEffect;
+    camParameter.mirrorHorizontal = _mirror;
+    camParameter.flipVertical = _flip;
+
     // Basic image manipulation
-    s->set_saturation(s, std::min(2, std::max(-2, _saturation)));   // -2 .. 2
-    s->set_contrast(s, std::min(2, std::max(-2, _contrast)));       // -2 .. 2
-    s->set_brightness(s, std::min(2, std::max(-2, _brightness)));   // -2 .. 2 (IMPORTANT: Apply brightness after saturation and conrast)
+    s->set_saturation(s, std::min(2, std::max(-2, camParameter.saturation)));   // [-2 .. 2]
+    s->set_contrast(s, std::min(2, std::max(-2, camParameter.contrast )));       // [-2 .. 2]
+    s->set_brightness(s, std::min(2, std::max(-2, camParameter.brightness)));   // [-2 .. 2] (IMPORTANT: Apply brightness after saturation and conrast)
     s->set_sharpness(s, 0); // Default: Sharpness not supported, use owm implementation
     
     // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
-    if (_specialEffect >= 0 && _specialEffect <= 6)
-        s->set_special_effect(s, _specialEffect);
+    if (camParameter.specialEffect >= 0 && camParameter.specialEffect <= 6)
+        s->set_special_effect(s, camParameter.specialEffect); // [0 .. 6]
     // Set sepcial effect: 7: Grayscale + Negative in combination
     // Potential bug in camera firmware -> Workaround: Do grayscale on camera + negative on MCU
-    else if (_specialEffect == 7)
-        s->set_special_effect(s, 2); // Grayscale
+    else if (camParameter.specialEffect == 7)
+        s->set_special_effect(s, 2); // 2: Grayscale
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Selected special effect unknown");
         return false;
     }
 
     // Auto exposure control
-    s->set_exposure_ctrl(s, 1); // Enable auto exposure control
-    s->set_ae_level(s, std:: min(2, std::max(-2, _autoExposureLevel))); // -2 .. 2 -> Adapt auto exposure control level
-    s->set_aec2(s, _aec2Algo ? 1 : 0); // Switch to alternative auto exposure control alogrithm
+    s->set_exposure_ctrl(s, camParameter.exposureControlMode > 0 ? 1 : 0); // Enable auto exposure control
+    
+    if (s->status.aec) { // Auto exposure control --> Use exposure level correction
+        s->set_ae_level(s, std:: min(2, std::max(-2, camParameter.autoExposureLevel))); // Adjust auto exposure level [-2 .. 2]
+        s->set_aec2(s, camParameter.exposureControlMode == 2 ? 1 : 0); // Switch to alternative auto exposure control alogrithm
+    }
+    else { // Manual exposure control -> Use exposure value
+        s->set_aec_value(s, std::min(1200, std::max(0, camParameter.manualExposureValue))); // Set manual exposure value [0 .. 1200]
+    }
 
     // Gain control
-    s->set_gain_ctrl(s, 1); // Enable auto gain control
-    s->set_gainceiling(s, GAINCEILING_2X); // GAINCEILING_2X 4X 8X 16X 32X 64X 128X -> Limit gain
+    s->set_gain_ctrl(s, camParameter.gainControlMode == 1 ? 1 : 0); // Enable auto gain control
+    if (s->status.agc) // Auto gain control --> Use GAINCEILING parameter (max 2X)
+        s->set_gainceiling(s, GAINCEILING_2X); // GAINCEILING_2X 4X 8X 16X 32X 64X 128X -> Limit gain
+    else // Manual gain control --> Use manual gain value [0 .. 30]
+        s->set_agc_gain(s, std::min(30, std::max(0, camParameter.manualGainValue)));
 
     // White balance control
     s->set_whitebal(s, 1); // Enable auto white balance control
@@ -441,8 +460,8 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
     s->set_wb_mode(s, 0); // Set white balance mode to Auto
 
     // Image orientation
-    s->set_hmirror(s, _mirror ? 1 : 0);
-    s->set_vflip(s, _flip ? 1 : 0);
+    s->set_hmirror(s, camParameter.mirrorHorizontal ? 1 : 0);
+    s->set_vflip(s, camParameter.flipVertical ? 1 : 0);
 
     camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&(s->id));
     if (sensor_info == NULL) {
@@ -452,8 +471,8 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
 
     if (sensor_info->model == CAMERA_OV2640) {
         // Sharpness implementation (not officially supported)
-        if (_sharpness > -4) { // Sharpness == -4 -> Auto sharpness
-            ov2640_set_sharpness(s, std::min(3, std::max(-3, std::min(_sharpness, 3)))); // -3 .. 3
+        if (camParameter.sharpness > -4) { // Sharpness == -4 -> Auto sharpness
+            ov2640_set_sharpness(s, std::min(3, std::max(-3, std::min(camParameter.sharpness, 3)))); // -3 .. 3
         } 
         else {
             ov2640_enable_auto_sharpness(s);    
@@ -469,13 +488,15 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
         int registerValue = 0x07; // Set bit 0, 1, 2 to enable saturation, contrast, brightness and hue control
         
         // Bitwise OR of special effect enable bits
-        if (_specialEffect == 1) { // Sepcial effect: 1: negative
+        if (camParameter.specialEffect == 1) { // Sepcial effect: 1: negative
             registerValue |= 0x40;
         }
-        else if (_specialEffect >= 2 && _specialEffect <= 6) { // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
+        // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
+        else if (camParameter.specialEffect >= 2 && camParameter.specialEffect <= 6) {
             registerValue |= 0x18;
         }
-        else if (_specialEffect == 7) { // Sepcial effect: 7: Grayscale + Negative in combination
+        // Sepcial effect: 7: Grayscale + Negative in combination
+        else if (camParameter.specialEffect == 7) {
             //registerValue |= 0x58;    // Flags which should perform both together on camera
             registerValue |= 0x18;      // Potential bug in camera firmware -> Workaround: Do grayscale on camera + negative on MCU
                                         // Disadvantage: effect in combination not visible in other camera consumers like live stream / REST API
@@ -491,65 +512,7 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
                             "Sharpness, brightness, contrast, saturation and special effects not properly set"); 
     }
 
-    // Disable auto exposure control after initial image capturing
-    if (camParameter.fixedExposure)
-        enableFixedExposure();
-
-    camParameter.brightness = _brightness;
-    camParameter.contrast = _contrast;
-    camParameter.saturation = _saturation;
-    camParameter.sharpness = _sharpness;
-    camParameter.autoExposureLevel = _autoExposureLevel;
-    camParameter.aec2Algo = _aec2Algo;
-    camParameter.specialEffect = _specialEffect;
-
     return true;
-}
-
-
-bool CCamera::enableFixedExposure()
-{
-    if (!getcameraInitSuccessful())
-        return false;
-    
-    if (camParameter.flashTime > 0) {
-        setStatusLED(true);
-        setFlashlight(true);
-        vTaskDelay(camParameter.flashTime / portTICK_PERIOD_MS);
-    }
-
-    camera_fb_t * fb = esp_camera_fb_get();
-    esp_camera_fb_return(fb);
-    fb = esp_camera_fb_get();
-
-    if (camParameter.flashTime > 0) {
-        setStatusLED(false);  
-        setFlashlight(false);
-    }    
-
-    if (fb == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableFixedExposure: Capture failed. "
-                                                "Check camera module and/or proper electrical connection");
-        return false;
-    }
-    esp_camera_fb_return(fb);
-
-    sensor_t * s = esp_camera_sensor_get(); 
-    if (s == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "enableFixedExposure: Failed to get control structure");
-        return false;
-    }
-
-    //s->set_gain_ctrl(s, 0); // Disable auto gain control
-    s->set_exposure_ctrl(s, 0); // Disable auto exposure control
-
-    return true;
-}
-
-
-void CCamera::setFixedExposure(bool _fixedExposure)
-{
-    camParameter.fixedExposure = _fixedExposure;
 }
 
 
@@ -561,11 +524,11 @@ bool CCamera::setMirrorFlip(bool _mirror, bool _flip)
         return false;
     }
 
-    s->set_hmirror(s, _mirror ? 1 : 0);
-    s->set_vflip(s, _flip ? 1 : 0);
-
     camParameter.mirrorHorizontal = _mirror;
     camParameter.flipVertical = _flip;
+
+    s->set_hmirror(s, camParameter.mirrorHorizontal ? 1 : 0);
+    s->set_vflip(s, camParameter.flipVertical ? 1 : 0);
 
     return true;
 }
@@ -635,7 +598,8 @@ esp_err_t CCamera::captureToBasisImage(CImageBasis *_Image)
         STBIObjectPSRAM.PreallocatedMemory = _Image->RGBImageGet();
         STBIObjectPSRAM.PreallocatedMemorySize = _Image->getMemsize();
 
-        _Image->LoadFromMemoryPreallocated(fb->buf, fb->len);
+        if(!_Image->LoadFromMemoryPreallocated(fb->buf, fb->len))
+            return ESP_FAIL;
 
         // Special effect: grayscale + negative in combination: Not functional due to potential bug in camera firmware
         // Workaround: Do grayscale on camera + negative on MCU

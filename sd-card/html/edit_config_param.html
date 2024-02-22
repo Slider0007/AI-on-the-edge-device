@@ -395,7 +395,7 @@
 				<span id="TakeImage_Brightness_text">Brightness</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_Brightness_value1" min="-2" max="2"
+				<input required type="number" id="TakeImage_Brightness_value1" value="0" min="-2" max="2"
 					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
@@ -407,7 +407,7 @@
 				<span id="TakeImage_Contrast_text">Contrast</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_Contrast_value1" min="-2" max="2"
+				<input required type="number" id="TakeImage_Contrast_value1" value="0" min="-2" max="2"
 					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
@@ -419,7 +419,7 @@
 				<span id="TakeImage_Saturation_text">Saturation</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_Saturation_value1" min="-2" max="2"
+				<input required type="number" id="TakeImage_Saturation_value1" value="0" min="-2" max="2"
 					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
@@ -432,14 +432,14 @@
 			</td>
 			<td>
 				<select id="TakeImage_Sharpness_value1">
-					<option value="-4" selected>Auto</option>
+					<option value="-4">Auto</option>
 					<option value="-3">-3</option>
 					<option value="-2">-2</option>
 					<option value="-1">-1</option>
-					<option value="0" selected>0</option>
-					<option value="1">1</option>
-					<option value="2">2</option>
-					<option value="3">3</option>
+					<option value="0" selected> 0</option>
+					<option value="1"> 1</option>
+					<option value="2"> 2</option>
+					<option value="3"> 3</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_TakeImage_Sharpness</td>
@@ -447,40 +447,65 @@
 
 		<tr>
 			<td class="indent1">
+				<class id="TakeImage_ExposureControlMode_text">Exposure Control Mode</class>
+			</td>
+			<td>
+				<select id="TakeImage_ExposureControlMode_value1" 
+						onchange='setEnabled("TakeImage_ExposureControlModeAuto_parameter", this.value > 0 ? true : false);
+						setEnabled("TakeImage_ExposureControlModeManual_parameter", this.value == 0 ? true : false);'>
+                    <option value="0">Manual</option>
+					<option value="1" selected>Auto</option>
+                    <option value="2">Auto (AEC2)</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_TakeImage_ExposureControlMode</td>
+		</tr>
+
+		<tr class="TakeImage_ExposureControlModeAuto_parameter">
+			<td class="indent1">
 				<class id="TakeImage_AutoExposureLevel_text">Auto Exposure Level</class>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_AutoExposureLevel_value1" min="-2" max="2"
-					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) &&
-						(!validity.stepMismatch||(value=parseInt(this.value)));">
+				<input required type="number" id="TakeImage_AutoExposureLevel_value1" value="0" min="-2" max="2"
+					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2));">
 			</td>
 			<td>$TOOLTIP_TakeImage_AutoExposureLevel</td>
 		</tr>
 
+		<tr class="TakeImage_ExposureControlModeManual_parameter">
+			<td class="indent1">
+				<class id="TakeImage_ManualExposureValue_text">Manual Exposure Value</class>
+			</td>
+			<td>
+				<input required type="number" id="TakeImage_ManualExposureValue_value1" value="300" min="0" max="1200"
+					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1200));">
+			</td>
+			<td>$TOOLTIP_TakeImage_ManualExposureValue</td>
+		</tr>
+
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_Aec2Algo_text">Auto Exposure Control 2 Algo</class>
+				<class id="TakeImage_GainControlMode_text">Gain Control Mode</class>
 			</td>
 			<td>
-				<select id="TakeImage_Aec2Algo_value1">
-					<option value="false" selected>false</option>
-					<option value="true">true</option>
+				<select id="TakeImage_GainControlMode_value1" 
+						onchange='setEnabled("TakeImage_GainControlModeManual_parameter", this.value == 0 ? true : false);'>
+                    <option value="0">Manual</option>
+					<option value="1" selected>Auto</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_TakeImage_Aec2Algo</td>
+			<td>$TOOLTIP_TakeImage_GainControlMode</td>
 		</tr>
-	
-		<tr class="expert">
+
+		<tr class="TakeImage_GainControlModeManual_parameter">
 			<td class="indent1">
-				<span id="TakeImage_FixedExposure_text">Fixed Exposure</span>
+				<class id="TakeImage_ManualGainValue_text">Manual Gain Value</class>
 			</td>
 			<td>
-				<select id="TakeImage_FixedExposure_value1">
-					<option value="false" selected>false</option>
-					<option value="true">true</option>
-				</select>
+				<input required type="number" id="TakeImage_ManualGainValue_value1" value="0" min="0" max="5"
+					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5));">
 			</td>
-			<td>$TOOLTIP_TakeImage_FixedExposure</td>
+			<td>$TOOLTIP_TakeImage_ManualGainValue</td>
 		</tr>
 
 		<tr>
@@ -526,26 +551,14 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_Zoom_text">Digital Zoom</class>
-			</td>
-			<td>
-				<select id="TakeImage_Zoom_value1" onchange='setEnabled("TakeImage_Zoom_parameter", 
-						this.value == "true" ? true : false);'>
-					<option value="false" selected>false</option>
-					<option value="true">true</option>
-				</select>
-			</td>
-			<td>$TOOLTIP_TakeImage_Zoom</td>
-		</tr>
-
-		<tr class="TakeImage_Zoom_parameter">
-			<td class="indent1">
 				<class id="TakeImage_ZoomMode_text">Zoom Mode</class>
 			</td>
 			<td>
-				<select class="TakeImage_Zoom_parameter" id="TakeImage_ZoomMode_value1">
-					<option value="0" selected>Crop</option>
-					<option value="1">Scale & Crop</option>
+				<select id="TakeImage_ZoomMode_value1" 
+						onchange='setEnabled("TakeImage_Zoom_parameter", this.value > 0 ? true : false);'>
+                    <option value="0" selected>Off</option>
+					<option value="1">Crop</option>
+					<option value="2">Scale & Crop</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_TakeImage_ZoomMode</td>
@@ -2598,13 +2611,14 @@
 		WriteParameter(param, category, "TakeImage", "Contrast", false);
 		WriteParameter(param, category, "TakeImage", "Saturation", false);
         WriteParameter(param, category, "TakeImage", "Sharpness", false);
+        WriteParameter(param, category, "TakeImage", "ExposureControlMode", false);
         WriteParameter(param, category, "TakeImage", "AutoExposureLevel", false);
-        WriteParameter(param, category, "TakeImage", "Aec2Algo", false);
-		WriteParameter(param, category, "TakeImage", "FixedExposure", false);
+        WriteParameter(param, category, "TakeImage", "ManualExposureValue", false);
+        WriteParameter(param, category, "TakeImage", "GainControlMode", false);
+        WriteParameter(param, category, "TakeImage", "ManualGainValue", false);
 		WriteParameter(param, category, "TakeImage", "SpecialEffect", false);
 		WriteParameter(param, category, "TakeImage", "MirrorHorizontal", false);
         WriteParameter(param, category, "TakeImage", "FlipVertical", false);
-		WriteParameter(param, category, "TakeImage", "Zoom", false);
         WriteParameter(param, category, "TakeImage", "ZoomMode", false);
         WriteParameter(param, category, "TakeImage", "ZoomOffsetX", false);
         WriteParameter(param, category, "TakeImage", "ZoomOffsetY", false);
@@ -2694,7 +2708,10 @@
 		WriteModelFiles();
 
 		// Visualize subparameter of a parameter
-		setEnabled("TakeImage_Zoom_parameter", document.getElementById("TakeImage_Zoom_value1").value == "true" ? true : false);
+		setEnabled("TakeImage_ExposureControlModeAuto_parameter", document.getElementById("TakeImage_ExposureControlMode_value1").value > 0 ? true : false);
+		setEnabled("TakeImage_ExposureControlModeManual_parameter", document.getElementById("TakeImage_ExposureControlMode_value1").value == 0 ? true : false);
+		setEnabled("TakeImage_GainControlModeManual_parameter", document.getElementById("TakeImage_GainControlMode_value1").value == 0 ? true : false);
+		setEnabled("TakeImage_Zoom_parameter", document.getElementById("TakeImage_ZoomMode_value1").value > 0 ? true : false);
 		setEnabled("MQTT_TLSEncryption_parameter", document.getElementById("MQTT_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("InfluxDB_TLSEncryption_parameter", document.getElementById("InfluxDB_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("InfluxDBv2_TLSEncryption_parameter", document.getElementById("InfluxDBv2_TLSEncryption_value1").value == "true" ? true : false);
@@ -2761,13 +2778,14 @@
 		ReadParameter(param, "TakeImage", "Contrast", false);
 		ReadParameter(param, "TakeImage", "Saturation", false);
         ReadParameter(param, "TakeImage", "Sharpness", false);
+		ReadParameter(param, "TakeImage", "ExposureControlMode", false);
         ReadParameter(param, "TakeImage", "AutoExposureLevel", false);
-        ReadParameter(param, "TakeImage", "Aec2Algo", false);
-		ReadParameter(param, "TakeImage", "FixedExposure", false);
+        ReadParameter(param, "TakeImage", "ManualExposureValue", false);
+		ReadParameter(param, "TakeImage", "GainControlMode", false);
+		ReadParameter(param, "TakeImage", "ManualGainValue", false);
 		ReadParameter(param, "TakeImage", "SpecialEffect", false);
 		ReadParameter(param, "TakeImage", "MirrorHorizontal", false);
         ReadParameter(param, "TakeImage", "FlipVertical", false);
-		ReadParameter(param, "TakeImage", "Zoom", false);
         ReadParameter(param, "TakeImage", "ZoomMode", false);
         ReadParameter(param, "TakeImage", "ZoomOffsetX", false);
         ReadParameter(param, "TakeImage", "ZoomOffsetY", false);
