@@ -160,12 +160,12 @@
         <p>
             Firstly the actual saved reference image is shown. If you start with the setup from scratch a default image is shown
             as placeholder. Use the button <b>"Create New Reference"</b> to start creation of your own reference image. After
-            selecting the button a new image will be taken and all configured parameter will be applied to the shown image.
-            With the button <b>"Update Image"</b> you can update the image again (still all parameter get applied to the new image).
-        </p>        
+            selecting the button a new image will be taken using all configured parameter. With the button <b>"Update Image"</b> 
+            the image can be refreshed (still all parameter get applied to the new image).
+        </p>            
         <p>
             To have reliable evaluation processing a properly horizontal aligned evaluation area is mandatory. Using the parameter
-            "Rotation angle" and "Rotation angle (Fine-tune)" the image can be rotated in both directions. The resulting rotation
+            "Image Rotation" and "Image Rotation (Fine-tune)" the image can be rotated in both directions. The resulting rotation
             angle is used to prerotate the image before the alignment algorithm is processed to compensate only small misalignments.
         </p>
         <p>
@@ -354,7 +354,7 @@
         </tr>
         <tr>
             <td style="overflow:hidden">$TOOLTIP_Alignment_InitialRotate</td>
-            <td><label for="Alignment_InitialRotate_value1" name="Alignment_InitialRotate_text">Rotation Angle</label></td>	  
+            <td><label for="Alignment_InitialRotate_value1" name="Alignment_InitialRotate_text">Image Rotation</label></td>	  
             <td>
                 <input class="camParameter" required type="number" id="Alignment_InitialRotate_value1" name="Alignment_InitialRotate" 
                         value="0" min="-360" max="360" onchange="drawRotated()" oninput="(!validity.rangeOverflow||(value=360)) 
@@ -372,7 +372,7 @@
         <tr>
             <td style="overflow:hidden">$TOOLTIP_Alignment_InitialRotate</td>
             <td style="padding:0px 5px 0px 0px"><label for="Alignment_InitialRotate_value1_fine" 
-                    name="Alignment_InitialRotate_text">Rotation Angle<br>(Fine-tune)</label></td>	
+                    name="Alignment_InitialRotate_text">Image Rotation<br>(Fine-tune)</label></td>	
             <td>
                 <input class="camParameter" required type="number" id="Alignment_InitialRotate_value1_fine" name="Alignment_InitialRotate" 
                         value=0.0 min="-1" max="1" step="0.1" onchange="drawRotated()" oninput="(!validity.rangeOverflow||(value=1)) && 

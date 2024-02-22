@@ -19,16 +19,18 @@ Payload:
         - `contrast` Image Contrast [-2 .. 2]
         - `saturation` Image Saturation [-2 .. 2]
         - `sharpness` Image Sharpness [-4(Auto), -3 .. 3]
+        - `exposurecontrolmode` Exposure Control Mode [0 .. 2]
         - `autoexposurelevel` Auto Exposure Level [-2 .. 2]
-        - `aec2` Alternative Auto Exposure Control Algorithm [true, false]
-        - `specialeffect` Special Effect [0 .. 2] (0: None, 1: Negative, 2: Grayscale)
+        - `manualexposurevalue` Manual Exposure Value [0 .. 1200]
+        - `gaincontrolmode` Gain Control Mode [0 .. 1]
+        - `manualgainvalue` Manual Gain Value [0 .. 30]
+        - `specialeffect` Special Effect [0 .. 2, 7] (0: None, 1: Negative, 2: Grayscale, 7: Grayscale + Negative)
         - `mirror` Image Mirror Horizontally [true, false]
         - `flip` Image Flip Vertically [true, false]
-        - `zoom` Enable Zoom [true, false]
-        - `zoommode` Zoom Mode [0 .. 1] (0: Crop only, 1: Scale & Crop)
+        - `zoommode` Zoom Mode [0 .. 2] (0: Off, 1: Crop only, 2: Scale & Crop)
         - `zoomx` Zoom Offset X [0 .. 960]
         - `zommy` Zoom Offset Y [0 .. 720]
-      - Example: `/camera?task=set_parameter&flashtime=2.0&flashintensity=1&brightness=0&contrast=0&saturation=0&sharpness=0&autoexposurelevel=0&aec2=false&specialeffect=0&mirror=false&flip=false&zoom=true&zoommode=0&zoomx=0&zoomy=0`
+      - Example: `/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0&saturation=0 &sharpness=0&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1 &manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoommode=0&zoomx=0&zoomy=0`
       - Response:
         - Content type: `HTML`
         - Content: `001: Parameter set`
