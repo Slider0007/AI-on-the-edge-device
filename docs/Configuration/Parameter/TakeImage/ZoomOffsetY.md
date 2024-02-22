@@ -11,7 +11,7 @@
 ## Description
 
 Y coordinate of the crop location within the camera sensor frame. 
-This only applies when `Digital Zoom` is enabled. 
+This only applies when `Zoom Mode` is set to `Crop` or `Scale & Crop`.
 
 
 !!! Tip

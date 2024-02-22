@@ -10,7 +10,7 @@
 
 ## Description
 
-Set the flash intensity (PWM-controlled LED).
+Set the flash intensity (`0 - 100%`).
 
 
 !!! Tip

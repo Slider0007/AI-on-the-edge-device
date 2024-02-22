@@ -9,8 +9,8 @@
 
 ## Description
 
-Auto exposure offset. The lower the value the darker the image.
-
+Auto exposure offset. The lower the value the darker the image. 
+This only applies when `Exposure Control Mode` is set to any `Auto` mode. 
 
 !!! Tip
     This parameter should be set on the 'Reference Image' configuration page.

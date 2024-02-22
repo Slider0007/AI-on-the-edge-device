@@ -4,7 +4,7 @@
 |:---               |:---                 |:----
 | Parameter Name    | Sharpness           | Sharpness
 | Default Value     | `0`                 | `0`
-| Input Options     | `Auto`, `-3` .. `3` | `-4` .. `3`
+| Input Options     | `Auto`, `-3` .. `3` | `-4`, `-3` .. `3`
 
 
 ## Description

@@ -10,7 +10,7 @@
 
 ## Description
 
-Flash on time before taking the image
+Flash on time before taking the image.
 
 
 !!! Note

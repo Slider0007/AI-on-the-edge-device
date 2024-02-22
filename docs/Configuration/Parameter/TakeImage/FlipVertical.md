@@ -9,7 +9,7 @@
 
 ## Description
 
-Flip the image on the vertical axis
+Flip the image on the vertical axis.
 
 
 !!! Tip

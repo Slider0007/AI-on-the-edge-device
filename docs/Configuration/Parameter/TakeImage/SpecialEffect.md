@@ -3,8 +3,8 @@
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
 | Parameter Name    | Special Effect      | SpecialEffect
-| Default Value     | `None`                 | `0`
-| Input Options     | `None`<br>`Negative`<br>`Grayscale`| `0` .. `2`
+| Default Value     | `None`              | `0`
+| Input Options     | `None`<br>`Negative`<br>`Grayscale`<br>`Gray+Negative`| `0`<br>`1`<br>`2`<br>`7`
 
 
 ## Description
@@ -16,7 +16,9 @@ Apply a special effect to the image
 |:---           |:---
 | `None`        | No special effect het applied
 | `Negative`    | Colors of image are inverted
-| `Grayscale`   | Only luminance of image pixel is kept
+| `Grayscale`   | Grayscale image
+| `Gray+Negative`| Grayscale image and additionally invert colors
+
 
 
 !!! Tip
