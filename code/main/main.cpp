@@ -502,8 +502,7 @@ void migrateConfiguration(void)
             migrated = migrated | replaceString(configLines[i], "WaitBeforeTakingPicture", "FlashTime"); // Rename
             migrated = migrated | replaceString(configLines[i], "LEDIntensity", "FlashIntensity"); // Rename
 
-            migrated = migrated | replaceString(configLines[i], ";FixedExposure = true", ";FixedExposure = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";FixedExposure", "FixedExposure"); // Enable it
+            migrated = migrated | replaceString(configLines[i], "FixedExposure", "UNUSED"); // Mark as unused
 
             migrated = migrated | replaceString(configLines[i], ";Demo = true", ";Demo = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";Demo", "Demo"); // Enable it
@@ -520,7 +519,7 @@ void migrateConfiguration(void)
             migrated = migrated | replaceString(configLines[i], ";FlipImageSize = true", ";FlipImageSize = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";FlipImageSize", "FlipImageSize"); // Enable it
 
-            migrated = migrated | replaceString(configLines[i], "InitialMirror", "UNUSED"); // Enable it
+            migrated = migrated | replaceString(configLines[i], "InitialMirror", "UNUSED"); // Mark as unused
         }
 
         if (section == "[Digits]") {

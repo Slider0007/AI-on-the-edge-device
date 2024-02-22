@@ -202,9 +202,9 @@
             </td>
             <td class="camParameter">
 				<select id="TakeImage_ZoomMode_value1" onchange='setEnabled("TakeImage_Zoom_parameter", this.value > 0 ? true : false);'>
-                    <option value=0 selected>Off</option>
-					<option value=1>Crop</option>
-					<option value=2>Scale & Crop</option>
+                    <option value="0" selected>Off</option>
+					<option value="1">Crop</option>
+					<option value="2">Scale & Crop</option>
 				</select>
             </td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_Brightness</td>
@@ -283,10 +283,10 @@
             </td>
             <td class="camParameter">
 				<select id="TakeImage_SpecialEffect_value1">
-					<option value=0 selected>None</option>
-					<option value=1>Negative</option>
-					<option value=2>Grayscale</option>
-                    <option value=7>Gray+Negative</option>
+					<option value="0" selected>None</option>
+					<option value="1">Negative</option>
+					<option value="2">Grayscale</option>
+                    <option value="7">Gray+Negative</option>
 				</select>
             </td>
         </tr>
@@ -302,9 +302,9 @@
 				<select id="TakeImage_ExposureControlMode_value1" 
                         onchange='setEnabled("TakeImage_ExposureControlModeAuto_parameter", this.value > 0 ? true : false);
                                   setEnabled("TakeImage_ExposureControlModeManual_parameter", this.value == 0 ? true : false);'>
-                    <option value=0>Manual</option>
-					<option value=1 selected>Auto</option>
-                    <option value=2>Auto (AEC2)</option>
+                    <option value="0">Manual</option>
+					<option value="1" selected>Auto</option>
+                    <option value="2">Auto (AEC2)</option>
 				</select>
             </td>
         </tr>
@@ -316,8 +316,8 @@
             <td class="camParameter">
 				<select id="TakeImage_GainControlMode_value1"
                     onchange='setEnabled("TakeImage_GainControlModeManual_parameter", this.value == 0 ? true : false);'>>
-					<option value=0>Manual</option>
-                    <option value=1 selected>Auto</option>
+					<option value="0">Manual</option>
+                    <option value="1" selected>Auto</option>
 				</select>
             </td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_AutoExposureLevel</td>
@@ -487,7 +487,8 @@
             if (gainControlMode == "") gainControlMode = "1";
             let manualGainValue = document.getElementById("TakeImage_ManualGainValue_value1").value;
             if (manualGainValue == "") manualGainValue = "0";
-            let specialeffect = document.getElementById("TakeImage_SpecialEffect_value1").value;
+            // Special case: Use as global variable: use to draw negative by browser
+            specialeffect = document.getElementById("TakeImage_SpecialEffect_value1").value;
             if (specialeffect == "") specialeffect = "0";
             let mirror = document.getElementById("TakeImage_MirrorHorizontal_value1").checked ? "true" : "false";
             if (mirror == "") mirror = "false";
@@ -766,8 +767,6 @@
         document.getElementById("Alignment_InitialRotate_value1").value =  prerot;
         let degrees = finerot + prerot;
 
-        let specialeffect;
-
        if (_applySpecials) {
             // Handle flip
             let flipImageSize = document.getElementById("Alignment_FlipImageSize_value1").checked;
@@ -780,11 +779,6 @@
                 canvas.width = imageObj.width;
                 canvas.height = imageObj.height;
             }
-
-            // Handle special effect case 7 (grayscale + negative)
-            // Both effects together are not working when processed on camera
-            // Workaround: Process grayscale on camera + negative on MCU (procesisng) / browser (preview)
-            specialeffect = document.getElementById("TakeImage_SpecialEffect_value1").value;
         }
 
         context.fillStyle = "white";
@@ -798,6 +792,9 @@
             context.translate(canvas.width/2,canvas.height/2);
             context.rotate(degrees*Math.PI/180);
 
+            // Handle special effect case 7 (grayscale + negative)
+            // Both effects together are not working when processed on camera
+            // Workaround: Process grayscale on camera + negative on MCU (procesisng) / browser (preview)
             if (specialeffect == "7")
                 context.filter = 'invert(1)';
 
@@ -885,7 +882,7 @@
         if (isActReference)
             drawRotated(false);
         else
-            drawRotated(true, true);
+            drawRotated(true);
 
         let zw = getCoords(this);
         let x = e.pageX - zw.left;

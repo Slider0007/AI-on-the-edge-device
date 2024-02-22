@@ -258,7 +258,7 @@ void CCamera::setCameraFrequency(int _frequency)
     if (camera_config.xclk_freq_hz == (_frequency * 1000000)) // If frequency is matching, return without any action
         return;
     
-    if (_frequency >= 8 && _frequency <= 20)
+    if (_frequency >= 5 && _frequency <= 20)
         camera_config.xclk_freq_hz = _frequency * 1000000;
     else
         camera_config.xclk_freq_hz = 2000000;
