@@ -13,7 +13,8 @@
 
 ## Description
 
-This parameter can be used to rotate the viewport together with the alignment rotation:  
+Flip the image size (e.g. 640 x 480 -> 480 x 640).
+Benefit: Do not loose image data when image gets rotated.
 <br>
 ![](../img/flipImageSize.png)  
 

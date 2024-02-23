@@ -9,7 +9,7 @@
 
 ## Description
 
-Flip the image top-to-bottom.
+Flip the image (e.g. at rotation angle: 0° -> top-to-bottom).
 
 
 !!! Tip

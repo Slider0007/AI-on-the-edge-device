@@ -9,7 +9,7 @@
 
 ## Description
 
-Mirror the image left-to-right.
+Mirror the image (e.g. rotation angle: 0° -> left-to-right).
 
 
 !!! Tip
