@@ -162,8 +162,8 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "GainControlMode", true, "1");
      ParamAddSingleValueWithPreset(param, catname, "ManualGainValue", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "SpecialEffect", true, "0");
-     ParamAddSingleValueWithPreset(param, catname, "MirrorHorizontal", true, "false");
-     ParamAddSingleValueWithPreset(param, catname, "FlipVertical", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "MirrorImage", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "FlipImage", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "ZoomMode", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "ZoomOffsetX", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "ZoomOffsetY", true, "0");

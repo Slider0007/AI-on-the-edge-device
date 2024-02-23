@@ -525,28 +525,28 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_MirrorHorizontal_text">Mirror Horizontal</class>
+				<class id="TakeImage_MirrorImage_text">Mirror Horizontal</class>
 			</td>
 			<td>
-				<select id="TakeImage_MirrorHorizontal_value1">
+				<select id="TakeImage_MirrorImage_value1">
 					<option value="false" selected>false</option>
 					<option value="true">true</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_TakeImage_MirrorHorizontal</td>
+			<td>$TOOLTIP_TakeImage_MirrorImage</td>
 		</tr>
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_FlipVertical_text">Flip Vertical</class>
+				<class id="TakeImage_FlipImage_text">Flip Vertical</class>
 			</td>
 			<td>
-				<select id="TakeImage_FlipVertical_value1">
+				<select id="TakeImage_FlipImage_value1">
 					<option value="false" selected>false</option>
 					<option value="true">true</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_TakeImage_FlipVertical</td>
+			<td>$TOOLTIP_TakeImage_FlipImage</td>
 		</tr>
 
 		<tr>
@@ -2617,8 +2617,8 @@
         WriteParameter(param, category, "TakeImage", "GainControlMode", false);
         WriteParameter(param, category, "TakeImage", "ManualGainValue", false);
 		WriteParameter(param, category, "TakeImage", "SpecialEffect", false);
-		WriteParameter(param, category, "TakeImage", "MirrorHorizontal", false);
-        WriteParameter(param, category, "TakeImage", "FlipVertical", false);
+		WriteParameter(param, category, "TakeImage", "MirrorImage", false);
+        WriteParameter(param, category, "TakeImage", "FlipImage", false);
         WriteParameter(param, category, "TakeImage", "ZoomMode", false);
         WriteParameter(param, category, "TakeImage", "ZoomOffsetX", false);
         WriteParameter(param, category, "TakeImage", "ZoomOffsetY", false);
@@ -2784,8 +2784,8 @@
 		ReadParameter(param, "TakeImage", "GainControlMode", false);
 		ReadParameter(param, "TakeImage", "ManualGainValue", false);
 		ReadParameter(param, "TakeImage", "SpecialEffect", false);
-		ReadParameter(param, "TakeImage", "MirrorHorizontal", false);
-        ReadParameter(param, "TakeImage", "FlipVertical", false);
+		ReadParameter(param, "TakeImage", "MirrorImage", false);
+        ReadParameter(param, "TakeImage", "FlipImage", false);
         ReadParameter(param, "TakeImage", "ZoomMode", false);
         ReadParameter(param, "TakeImage", "ZoomOffsetX", false);
         ReadParameter(param, "TakeImage", "ZoomOffsetY", false);

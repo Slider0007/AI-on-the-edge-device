@@ -1,15 +1,15 @@
-# Parameter: Flip Vertical
+# Parameter: Flip Image
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Flip Vertical       | FlipVertical
+| Parameter Name    | Flip Image          | FlipImage
 | Default Value     | `false`             | `false`
 | Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
 ## Description
 
-Flip the image on the vertical axis.
+Flip the image top-to-bottom.
 
 
 !!! Tip

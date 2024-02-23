@@ -25,8 +25,8 @@ struct CameraParameter {
     int exposureControlMode, autoExposureLevel, manualExposureValue;
     int gainControlMode, manualGainValue;
     int specialEffect;
-    bool mirrorHorizontal;
-    bool flipVertical;
+    bool mirrorImage;
+    bool flipImage;
     int zoomMode, zoomOffsetX, zoomOffsetY;
 };
 

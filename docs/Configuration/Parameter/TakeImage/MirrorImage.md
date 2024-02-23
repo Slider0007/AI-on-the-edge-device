@@ -1,15 +1,15 @@
-# Parameter: Mirror Horizontal
+# Parameter: Mirror Image
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Mirror Horizontal   | MirrorHorizontal
+| Parameter Name    | Mirror Image        | MirrorImage
 | Default Value     | `false`             | `false`
 | Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
 ## Description
 
-Mirror the image on the horizontal axis.
+Mirror the image left-to-right.
 
 
 !!! Tip

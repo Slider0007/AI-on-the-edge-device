@@ -53,8 +53,8 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     int gainControlMode = 1;
     int manualGainValue = 0;
     int specialEffect = 0;
-    bool mirrorHorizontal = false;
-    bool flipVertical = false;
+    bool mirrorImage = false;
+    bool flipImage = false;
     int zoomMode = 0;
     int zoomOffsetX = 0;
     int zoomOffsetY = 0;
@@ -142,18 +142,18 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             specialEffect = std::stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "MIRRORHORIZONTAL") && (splitted.size() > 1)) {
+        if ((toUpper(splitted[0]) == "MIRRORIMAGE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                mirrorHorizontal = true;
+                mirrorImage = true;
             else
-                mirrorHorizontal = false;
+                mirrorImage = false;
         }
 
-        if ((toUpper(splitted[0]) == "FLIPVERTICAL") && (splitted.size() > 1)) {
+        if ((toUpper(splitted[0]) == "FLIPIMAGE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                flipVertical = true;
+                flipImage = true;
             else
-                flipVertical = false;
+                flipImage = false;
         }
 
         if ((toUpper(splitted[0]) == "ZOOMMODE") && (splitted.size() > 1)) {
@@ -189,7 +189,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     Camera.setCameraFrequency(cameraFrequency);
     Camera.setSizeQuality(imageQuality, imageSize, zoomMode, zoomOffsetX, zoomOffsetY);
     Camera.setImageManipulation(brightness, contrast, saturation, sharpness, exposureControlMode, autoExposureLevel, 
-                                manualExposureValue, gainControlMode, manualGainValue, specialEffect, mirrorHorizontal, flipVertical);
+                                manualExposureValue, gainControlMode, manualGainValue, specialEffect, mirrorImage, flipImage);
     
     image_width = Camera.image_width;
     image_height = Camera.image_height;

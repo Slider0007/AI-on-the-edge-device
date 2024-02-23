@@ -259,9 +259,9 @@
             </td>
         </tr>
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_MirrorHorizontal</td>
-            <td><label for="TakeImage_MirrorHorizontal_value1" id="TakeImage_MirrorHorizontal_text">Mirror Horizontal</label></td>
-            <td><input class="camParameter" type="checkbox" id="TakeImage_MirrorHorizontal_value1" name="TakeImage_MirrorHorizontal" value="1" ></td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_MirrorImage</td>
+            <td><label for="TakeImage_MirrorImage_value1" id="TakeImage_MirrorImage_text">Mirror Image</label></td>
+            <td><input class="camParameter" type="checkbox" id="TakeImage_MirrorImage_value1" name="TakeImage_MirrorImage" value="1" ></td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_Sharpness</td>
             <td>
                 <span id="TakeImage_Sharpness_text">Sharpness</span>
@@ -274,9 +274,9 @@
             </td>
         </tr>
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_FlipVertical</td>
-            <td><label for="TakeImage_FlipVertical_value1" id="TakeImage_FlipVertical_text">Flip Vertical</label></td>
-            <td><input class="camParameter" type="checkbox" id="TakeImage_FlipVertical_value1" name="TakeImage_FlipVertical" value="1" ></td>
+            <td style="overflow:hidden">$TOOLTIP_TakeImage_FlipImage</td>
+            <td><label for="TakeImage_FlipImage_value1" id="TakeImage_FlipImage_text">Flip Image</label></td>
+            <td><input class="camParameter" type="checkbox" id="TakeImage_FlipImage_value1" name="TakeImage_FlipImage" value="1" ></td>
             <td style="overflow:hidden">$TOOLTIP_TakeImage_SpecialEffect</td>
             <td>
                 <span id="TakeImage_SpecialEffect_text">Special Effect</span>
@@ -490,9 +490,9 @@
             // Special case: Use as global variable: use to draw negative by browser
             specialeffect = document.getElementById("TakeImage_SpecialEffect_value1").value;
             if (specialeffect == "") specialeffect = "0";
-            let mirror = document.getElementById("TakeImage_MirrorHorizontal_value1").checked ? "true" : "false";
+            let mirror = document.getElementById("TakeImage_MirrorImage_value1").checked ? "true" : "false";
             if (mirror == "") mirror = "false";
-            let flip = document.getElementById("TakeImage_FlipVertical_value1").checked ? "true" : "false";
+            let flip = document.getElementById("TakeImage_FlipImage_value1").checked ? "true" : "false";
             if (flip == "") flip = "false";
             let zoomMode = document.getElementById("TakeImage_ZoomMode_value1").value;
             if (zoomMode == "") zoomMode = "0";
@@ -605,8 +605,8 @@
         WriteParameter(paramLocal, "TakeImage", "GainControlMode");
         WriteParameter(paramLocal, "TakeImage", "ManualGainValue");
         WriteParameter(paramLocal, "TakeImage", "SpecialEffect");
-        WriteParameter(paramLocal, "TakeImage", "MirrorHorizontal");
-        WriteParameter(paramLocal, "TakeImage", "FlipVertical");
+        WriteParameter(paramLocal, "TakeImage", "MirrorImage");
+        WriteParameter(paramLocal, "TakeImage", "FlipImage");
         WriteParameter(paramLocal, "TakeImage", "ZoomMode");
         WriteParameter(paramLocal, "TakeImage", "ZoomOffsetX");
         WriteParameter(paramLocal, "TakeImage", "ZoomOffsetY");
@@ -916,8 +916,8 @@
             ReadParameter(param, "TakeImage", "GainControlMode");
             ReadParameter(param, "TakeImage", "ManualGainValue");
             ReadParameter(param, "TakeImage", "SpecialEffect");
-            ReadParameter(param, "TakeImage", "MirrorHorizontal");
-            ReadParameter(param, "TakeImage", "FlipVertical");
+            ReadParameter(param, "TakeImage", "MirrorImage");
+            ReadParameter(param, "TakeImage", "FlipImage");
             ReadParameter(param, "TakeImage", "ZoomMode");
             ReadParameter(param, "TakeImage", "ZoomOffsetX");
             ReadParameter(param, "TakeImage", "ZoomOffsetY");

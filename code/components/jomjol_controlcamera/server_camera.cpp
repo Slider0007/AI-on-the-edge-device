@@ -83,11 +83,11 @@ esp_err_t handler_camera(httpd_req_t *req)
         }
         if (httpd_query_key_value(_query, "mirror", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                camParameter.mirrorHorizontal = true : camParameter.mirrorHorizontal = false;
+                camParameter.mirrorImage = true : camParameter.mirrorImage = false;
         }
         if (httpd_query_key_value(_query, "flip", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
-                camParameter.flipVertical = true : camParameter.flipVertical = false;
+                camParameter.flipImage = true : camParameter.flipImage = false;
         }
         if (httpd_query_key_value(_query, "zoommode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             camParameter.zoomMode = stoi(std::string(_valuechar));
@@ -105,7 +105,7 @@ esp_err_t handler_camera(httpd_req_t *req)
         Camera.setImageManipulation(camParameter.brightness, camParameter.contrast, camParameter.saturation, 
                                     camParameter.sharpness, camParameter.exposureControlMode, camParameter.autoExposureLevel, 
                                     camParameter.manualExposureValue, camParameter.gainControlMode, camParameter.manualGainValue, 
-                                    camParameter.specialEffect, camParameter.mirrorHorizontal, camParameter.flipVertical);
+                                    camParameter.specialEffect, camParameter.mirrorImage, camParameter.flipImage);
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_sendstr(req, "001: Parameter set");

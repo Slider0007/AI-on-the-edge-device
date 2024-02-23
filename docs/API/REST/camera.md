@@ -25,8 +25,8 @@ Payload:
         - `gaincontrolmode` Gain Control Mode [0 .. 1]
         - `manualgainvalue` Manual Gain Value [0 .. 30]
         - `specialeffect` Special Effect [0 .. 2, 7] (0: None, 1: Negative, 2: Grayscale, 7: Grayscale + Negative)
-        - `mirror` Image Mirror Horizontally [true, false]
-        - `flip` Image Flip Vertically [true, false]
+        - `mirror` Image Mirror [true, false]
+        - `flip` Image Flip [true, false]
         - `zoommode` Zoom Mode [0 .. 2] (0: Off, 1: Crop only, 2: Scale & Crop)
         - `zoomx` Zoom Offset X [0 .. 960]
         - `zommy` Zoom Offset Y [0 .. 720]

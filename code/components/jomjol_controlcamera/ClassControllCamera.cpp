@@ -415,8 +415,8 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
     camParameter.gainControlMode = _gainControlMode;
     camParameter.manualGainValue = _manualGainValue;
     camParameter.specialEffect = _specialEffect;
-    camParameter.mirrorHorizontal = _mirror;
-    camParameter.flipVertical = _flip;
+    camParameter.mirrorImage = _mirror;
+    camParameter.flipImage = _flip;
 
     // Basic image manipulation
     s->set_saturation(s, std::min(2, std::max(-2, camParameter.saturation)));   // [-2 .. 2]
@@ -460,8 +460,8 @@ bool CCamera::setImageManipulation(int _brightness, int _contrast, int _saturati
     s->set_wb_mode(s, 0); // Set white balance mode to Auto
 
     // Image orientation
-    s->set_hmirror(s, camParameter.mirrorHorizontal ? 1 : 0);
-    s->set_vflip(s, camParameter.flipVertical ? 1 : 0);
+    s->set_hmirror(s, camParameter.mirrorImage ? 1 : 0);
+    s->set_vflip(s, camParameter.flipImage ? 1 : 0);
 
     camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&(s->id));
     if (sensor_info == NULL) {
@@ -524,11 +524,11 @@ bool CCamera::setMirrorFlip(bool _mirror, bool _flip)
         return false;
     }
 
-    camParameter.mirrorHorizontal = _mirror;
-    camParameter.flipVertical = _flip;
+    camParameter.mirrorImage = _mirror;
+    camParameter.flipImage = _flip;
 
-    s->set_hmirror(s, camParameter.mirrorHorizontal ? 1 : 0);
-    s->set_vflip(s, camParameter.flipVertical ? 1 : 0);
+    s->set_hmirror(s, camParameter.mirrorImage ? 1 : 0);
+    s->set_vflip(s, camParameter.flipImage ? 1 : 0);
 
     return true;
 }
