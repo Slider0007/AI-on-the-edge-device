@@ -52,6 +52,7 @@ class CImageBasis
         void drawEllipse(int x1, int y1, int radx, int rady, int r, int g, int b, int thickness = 1);
 
         void setPixelColor(int x, int y, int r, int g, int b);
+        void Negative(void);
         void Contrast(float _contrast);
         bool ImageOkay();
         bool CopyFromMemory(uint8_t* _source, int _size);
@@ -74,9 +75,9 @@ class CImageBasis
         void Resize(int _new_dx, int _new_dy);        
         void Resize(int _new_dx, int _new_dy, CImageBasis *_target);        
 
-        void LoadFromMemory(stbi_uc *_buffer, int len);
-        void LoadFromMemoryPreallocated(stbi_uc *_buffer, int len);
-        void LoadFromFilePreallocated(std::string _name, std::string _image);
+        bool LoadFromMemory(stbi_uc *_buffer, int len);
+        bool LoadFromMemoryPreallocated(stbi_uc *_buffer, int len);
+        bool LoadFromFilePreallocated(std::string _name, std::string _image);
 
         ImageData* writeToMemoryAsJPG(const int quality = 90);
         void writeToMemoryAsJPG(ImageData* ii, const int quality = 90);

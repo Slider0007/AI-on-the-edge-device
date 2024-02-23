@@ -5,7 +5,9 @@
 .vscode/launch.json
 .vscode/ipch
 version.cpp
+dependencies.lock
 sdkconfig.esp32cam
 sdkconfig.esp32cam-debug
 sdkconfig.esp32cam-himem
 sdkconfig.esp32cam-task-analysis
+sdkconfig.esp32cam-localbuild

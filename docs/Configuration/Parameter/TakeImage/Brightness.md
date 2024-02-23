@@ -9,7 +9,8 @@
 
 ## Description
 
-Set the brightness level of the image.
+Set the brightness level of the image. Positive values increase brightness, 
+negative values lower it.
 
 
 !!! Tip

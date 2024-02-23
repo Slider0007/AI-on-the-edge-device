@@ -23,6 +23,7 @@ Further details can be found in the respective REST API endpoint description.
 | [/reload_config](reload_config.md)   | Reload Configuration                               | HTML        | 
 | [/set_fallbackvalue](set_fallbackvalue.md) | Set Fallback Value                           | HTML        | 
 | [/editflow](editflow.md)             | Parametrization Helper                             | HTML        | 
+| [/camera](camera.md)                 | Camera tasks                                       | HTML        | 
 | [/lighton](lighton.md)               | Switch onboard flashlight on                       | HTML        | X
 | [/lightoff](lightoff.md)             | Switch onboard flashlight off                      | HTML        | X
 | [/capture](capture.md)               | Capture image (without flashlight)                 | HTML        | 

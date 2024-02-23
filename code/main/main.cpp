@@ -183,19 +183,13 @@ extern "C" void app_main(void)
 
     // Check version information
     // ********************************************
-    std::string versionFormated = getFwVersion() + ", Date/Time: " + std::string(BUILD_TIME) + \
-        ", Web UI: " + getHTMLversion();
-
-     if (std::string(GIT_TAG) != "" && std::string(GIT_TAG) != "N/A") { // We are on a tag, add it as prefix
-        versionFormated = "Tag: '" + std::string(GIT_TAG) + "', " + versionFormated;
-    }
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, versionFormated);
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, getFwVersion() + " | Build time: " + std::string(BUILD_TIME) + " | WebUI: " + getHTMLversion());
 
     if (getHTMLcommit().substr(0, 7) == "?")
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse Web UI version"));
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse WebUI version"));
  
     if (getHTMLcommit().substr(0, 7) != std::string(GIT_REV).substr(0, 7)) { // Compare the first 7 characters of both hashes
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Web UI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "WebUI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using AI-on-the-edge-device__update__*.zip");    
     }
 
@@ -302,8 +296,8 @@ extern "C" void app_main(void)
             else { // HEAP size OK --> continue to camera init
                 // Init camera
                 // ********************************************
-                esp_err_t camStatus = Camera.InitCam();
-                Camera.LightOnOff(false);
+                esp_err_t camStatus = Camera.initCam();
+                Camera.setFlashlight(false);
 
                 // Check camera init
                 // ********************************************
@@ -362,11 +356,28 @@ extern "C" void app_main(void)
 esp_err_t initNVSFlash()
 {
     ESP_LOGI(TAG, "Initializing NVS flash");
+    
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
+    
+    if (ret != ESP_OK) {
+        if (ret == ESP_ERR_NOT_FOUND) {
+            ESP_LOGE(TAG, "NVS flash init failed. No NVS partition found");
+            StatusLED(SDCARD_NVS_INIT, 4, true);
+        } 
+        else if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
+            ESP_LOGE(TAG, "NVS flash init failed. No free NVS pages found");
+            StatusLED(SDCARD_NVS_INIT, 5, true);
+        }
+        else {
+            ESP_LOGE(TAG, "NVS flash init failed. Check error code");
+            StatusLED(SDCARD_NVS_INIT, 6, true);
+        }
+    }
+
     return ret;
 }
 
@@ -429,15 +440,15 @@ esp_err_t initSDCard()
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
             ESP_LOGE(TAG, "Failed to mount FAT filesystem on SD card. Check SD card filesystem (only FAT supported) or try another card");
-            StatusLED(SDCARD_INIT, 1, true);
+            StatusLED(SDCARD_NVS_INIT, 1, true);
         } 
         else if (ret == 263) { // Error code: 0x107 --> usually: SD not found
             ESP_LOGE(TAG, "SD card init failed. Check if SD card is properly inserted into SD card slot or try another card");
-            StatusLED(SDCARD_INIT, 2, true);
+            StatusLED(SDCARD_NVS_INIT, 2, true);
         }
         else {
             ESP_LOGE(TAG, "SD card init failed. Check error code or try another card");
-            StatusLED(SDCARD_INIT, 3, true);
+            StatusLED(SDCARD_NVS_INIT, 3, true);
         }
         return ret;
     }
@@ -491,8 +502,10 @@ void migrateConfiguration(void)
             migrated = migrated | replaceString(configLines[i], "LogImageLocation", "RawImagesLocation");
             migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "RawImagesRetention");
 
-            migrated = migrated | replaceString(configLines[i], ";FixedExposure = true", ";FixedExposure = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";FixedExposure", "FixedExposure"); // Enable it
+            migrated = migrated | replaceString(configLines[i], "WaitBeforeTakingPicture", "FlashTime"); // Rename
+            migrated = migrated | replaceString(configLines[i], "LEDIntensity", "FlashIntensity"); // Rename
+
+            migrated = migrated | replaceString(configLines[i], "FixedExposure", "UNUSED"); // Mark as unused
 
             migrated = migrated | replaceString(configLines[i], ";Demo = true", ";Demo = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";Demo", "Demo"); // Enable it
@@ -509,8 +522,7 @@ void migrateConfiguration(void)
             migrated = migrated | replaceString(configLines[i], ";FlipImageSize = true", ";FlipImageSize = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";FlipImageSize", "FlipImageSize"); // Enable it
 
-            migrated = migrated | replaceString(configLines[i], ";InitialMirror = true", ";InitialMirror = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";InitialMirror", "InitialMirror"); // Enable it
+            migrated = migrated | replaceString(configLines[i], "InitialMirror", "UNUSED"); // Mark as unused
         }
 
         if (section == "[Digits]") {

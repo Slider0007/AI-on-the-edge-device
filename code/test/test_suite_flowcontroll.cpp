@@ -11,6 +11,7 @@
 #endif
 #include <cmath>
 
+#include "nvs_flash.h"
 #include "esp_vfs_fat.h"
 #include "driver/sdmmc_host.h"
 
@@ -26,7 +27,7 @@
 #include "components/jomjol-flowcontroll/test_PointerEvalAnalogToDigitNew.cpp"
 #include "components/jomjol-flowcontroll/test_getReadoutRawString.cpp"
 
-
+esp_err_t initNVSFlash();
 esp_err_t initSDCard();
 
 
@@ -80,6 +81,13 @@ void task_UnityTesting(void *pvParameter)
  */
 extern "C" void app_main()
 {
+    // Init NVS flash
+    // ********************************************
+    if (ESP_OK != initNVSFlash()) {
+        ESP_LOGE(TAG, "Device init aborted");
+        return; // Stop here, NVS is needed for proper operation
+    }
+    
     // Init SD card
     // ********************************************
     if (ESP_OK != initSDCard()) {
@@ -105,6 +113,32 @@ extern "C" void app_main()
     // Create dedicated testing task (heap size can be configured - large enough to handle a lot of testing cases)
     // ********************************************
     xTaskCreate(&task_UnityTesting, "task_UnityTesting", 12 * 1024, NULL, tskIDLE_PRIORITY+2, NULL);
+}
+
+
+esp_err_t initNVSFlash()
+{
+    ESP_LOGI(TAG, "Initializing NVS flash");
+
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    
+    if (ret != ESP_OK) {
+        if (ret == ESP_ERR_NOT_FOUND) {
+            ESP_LOGE(TAG, "NVS flash init failed. No NVS partition found");
+        } 
+        else if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
+            ESP_LOGE(TAG, "NVS flash init failed. No free NVS pages found");
+        }
+        else {
+            ESP_LOGE(TAG, "NVS flash init failed. Check error code");
+        }
+    }
+    
+    return ret;
 }
 
 

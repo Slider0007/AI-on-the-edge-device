@@ -1,0 +1,15 @@
+{
+  "packages": {
+    ".": {}
+  },
+  "release-type": "simple",
+  "changelog-path": "CHANGELOG.md",
+  "changelog-sections":  [{"type":"feat","section":"Features"},
+                          {"type":"fix","section":"Bug Fixes"},
+                          {"type":"refactor","section":"Refactoring / Style Changes"},
+                          {"type":"chore","section":"Other Changes"}],
+  "draft-pull-request": true,
+  "pull-request-header": ":robot: Gather changes for upcoming release",
+  "pull-request-footer": "**Test this not yet officially released version? [Download](https://github.com/Slider0007/AI-on-the-edge-device/actions?query=branch%3Adevelop) recent successfully build of branch 'develop'.** <br>The handling and update process of this version is identical to any official release version."
+
+}

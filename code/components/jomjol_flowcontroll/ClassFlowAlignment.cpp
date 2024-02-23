@@ -26,9 +26,8 @@ void ClassFlowAlignment::SetInitialParameter(void)
     initalrotate = 0.0;
     anz_ref = 0;
     AlignFAST_SADThreshold = 10;  // FAST ALIGN ALGO: SADNorm -> if smaller than threshold use same alignment values as last cycle
-    initialmirror = false;
     use_antialiasing = false;
-    initialflip = false;
+    flipImageSize = false;
     SaveDebugInfo = false;
     SaveAllFiles = false;
     ListFlowControll = NULL;
@@ -70,12 +69,10 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     if (aktparamgraph.compare("[Alignment]") != 0)       //Paragraph does not fit Alignment
         return false;
 
-    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
-    {
+    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph)) {
         splitted = ZerlegeZeile(aktparamgraph);
         
-        if ((toUpper(splitted[0]) == "ALIGNMENTALGO") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "ALIGNMENTALGO") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "HIGHACCURACY")
                 alg_algo = 1;
             else if (toUpper(splitted[1]) == "FAST")
@@ -93,63 +90,47 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             #endif
         }
         
-        if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1)) {
             search_x = std::stoi(splitted[1]);
         } 
 
-        if ((toUpper(splitted[0]) == "SEARCHFIELDY") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SEARCHFIELDY") && (splitted.size() > 1)) {
             search_y = std::stoi(splitted[1]);
         }
-
-        if ((toUpper(splitted[0]) == "FLIPIMAGESIZE") && (splitted.size() > 1))
-        {
-            if (toUpper(splitted[1]) == "TRUE")
-                initialflip = true;
-            else
-                initialflip = false;
-        }
-
-        if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1))
-        {
+    
+        if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1)) {
             this->initalrotate = std::stof(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "INITIALMIRROR") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "FLIPIMAGESIZE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                initialmirror = true;
+                flipImageSize = true;
             else
-                initialmirror = false;
+                flipImageSize = false;
         }
- 
-        if ((toUpper(splitted[0]) == "ANTIALIASING") && (splitted.size() > 1))
-        {
+
+        if ((toUpper(splitted[0]) == "ANTIALIASING") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 use_antialiasing = true;
             else
                 use_antialiasing = false;
         }
 
-        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 SaveDebugInfo = true;
             else
                 SaveDebugInfo = false;
         }
 
-        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
                 SaveAllFiles = true;
             else
                 SaveAllFiles = false;
         }
 
-        if ((splitted.size() == 3) && (anz_ref < 2))
-        {
+        if ((splitted.size() == 3) && (anz_ref < 2)) {
             int x=0,y=0,n=0;
             References[anz_ref].image_file = FormatFileName("/sdcard" + splitted[0]);
             stbi_info(References[anz_ref].image_file.c_str(), &x, &y, &n);
@@ -165,17 +146,30 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             STBIObjectPSRAM.usePreallocated = true;
             STBIObjectPSRAM.PreallocatedMemory = References[anz_ref].refImage->RGBImageGet();
             STBIObjectPSRAM.PreallocatedMemorySize = References[anz_ref].refImage->getMemsize();
-            References[anz_ref].refImage->LoadFromFilePreallocated("refImage" + std::to_string(anz_ref), References[anz_ref].image_file.c_str());
+
+            if (!References[anz_ref].refImage->LoadFromFilePreallocated("refImage" + 
+                                std::to_string(anz_ref), References[anz_ref].image_file.c_str()))
+            {
+                return false;
+            }
 
             References[anz_ref].target_x = std::stoi(splitted[1]);
             References[anz_ref].target_y = std::stoi(splitted[2]);
 
-            if (References[anz_ref].target_x < 1 || (References[anz_ref].target_x > (Camera.image_width - 1 - References[anz_ref].refImage->width))) {
+            // ROI position plausibilty check - Check Flip Image Size
+            int img_width = Camera.image_width;
+            int img_height = Camera.image_height;
+            if (flipImageSize) {
+                img_width = Camera.image_height;
+                img_height = Camera.image_width;
+            }
+            
+            if (References[anz_ref].target_x < 1 || (References[anz_ref].target_x > (img_width - 1 - References[anz_ref].refImage->width))) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (x). Check alignment marker");
                 return false;
             }
 
-            if (References[anz_ref].target_y < 1 || (References[anz_ref].target_y > (Camera.image_height - 1 - References[anz_ref].refImage->height))) {
+            if (References[anz_ref].target_y < 1 || (References[anz_ref].target_y > (img_height - 1 - References[anz_ref].refImage->height))) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (y). Check alignment marker");
                 return false;
             }
@@ -209,26 +203,21 @@ std::string ClassFlowAlignment::getHTMLSingleStep(std::string host)
 bool ClassFlowAlignment::doFlow(std::string time) 
 {
     presetFlowStateHandler(false, time);
-    if (AlgROI == NULL)  // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
-    {
+    if (AlgROI == NULL) { // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
         AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
-        if (AlgROI == NULL) 
-        {
+        if (AlgROI == NULL) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to allocate AlgROI");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
         }
     }
 
-    if (AlgROI)
-    {
+    if (AlgROI) {
         ImageBasis->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
     }
 
-    if (ImageTMP == NULL) 
-    {
+    if (ImageTMP == NULL) {
         ImageTMP = new CImageBasis("ImageTMP", ImageBasis, 1);
-        if (ImageTMP == NULL) 
-        {
+        if (ImageTMP == NULL) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to allocate ImageTMP");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
             return false;
@@ -237,16 +226,14 @@ bool ClassFlowAlignment::doFlow(std::string time)
 
     delete AlignAndCutImage;
     AlignAndCutImage = new CAlignAndCutImage("AlignAndCutImage", ImageBasis, ImageTMP);
-    if (AlignAndCutImage == NULL) 
-    {
+    if (AlignAndCutImage == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to allocate AlignAndCutImage");
         LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
         return false;
     }
 
-    CRotateImage rt("rawImageRT", AlignAndCutImage, ImageTMP, initialflip);
-    if (initialflip)
-    {
+    CRotateImage rt("rawImageRT", AlignAndCutImage, ImageTMP, flipImageSize);
+    if (flipImageSize) {
         int _zw = ImageBasis->height;
         ImageBasis->height = ImageBasis->width;
         ImageBasis->width = _zw;
@@ -255,18 +242,8 @@ bool ClassFlowAlignment::doFlow(std::string time)
         ImageTMP->width = ImageTMP->height;
         ImageTMP->height = _zw;
     }
-
-    if (initialmirror)
-    {
-        ESP_LOGD(TAG, "do mirror");
-        rt.Mirror();
-        
-        if (SaveAllFiles)
-            AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/mirror.jpg"));
-    }
  
-    if ((initalrotate != 0) || initialflip)
-    {
+    if ((initalrotate != 0) || flipImageSize) {
         if (References[0].alignment_algo == 4)  // alignment off: no initial rotation and no additional alignment algo
             initalrotate = 0;
         
@@ -304,8 +281,7 @@ bool ClassFlowAlignment::doFlow(std::string time)
         ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
     }
     
-    if (SaveAllFiles)
-    {
+    if (SaveAllFiles) {
         AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/alg.jpg"));
         ImageTMP->SaveToFile(FormatFileName("/sdcard/img_tmp/alg_roi.jpg"));
     }
@@ -438,11 +414,16 @@ bool ClassFlowAlignment::LoadReferenceAlignmentValues(void)
 
 void ClassFlowAlignment::DrawRef(CImageBasis *_zw)
 {
-    if (_zw->ImageOkay()) 
-    {
+    if (_zw->ImageOkay()) {
         _zw->drawRect(References[0].target_x, References[0].target_y, References[0].width, References[0].height, 255, 0, 0, 2);
         _zw->drawRect(References[1].target_x, References[1].target_y, References[1].width, References[1].height, 255, 0, 0, 2);
     }
+}
+
+
+bool ClassFlowAlignment::getFlipImageSize()
+{
+    return flipImageSize;
 }
 
 

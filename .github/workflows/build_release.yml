@@ -19,21 +19,13 @@ jobs:
       version: "${{steps.release.outputs.major}}.${{steps.release.outputs.minor}}.${{steps.release.outputs.patch}}"
       tag_name: ${{ steps.release.outputs.tag_name }} 
     steps:
-      - uses: google-github-actions/release-please-action@v3
+      - uses: google-github-actions/release-please-action@v4
         id: release
         with:
-          default-branch: develop
-          release-type: simple
-          package-name: release-please-action
-          draft-pull-request: true
-          pull-request-header: ':robot: Gather changes for upcoming release'
-          changelog-path: CHANGELOG.md
-          changelog-types: '[
-                             {"type":"feat","section":"Features"},
-                             {"type":"fix","section":"Bug Fixes"},
-                             {"type":"refactor","section":"Refactoring / Style Changes"},
-                             {"type":"chore","section":"Other Changes"}
-                            ]'
+          target-branch: develop
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+
 
 #########################################################################################
 ## Build Firmware

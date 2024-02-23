@@ -10,7 +10,7 @@
 
 ## Description
 
-Rotate image before any further image processing.  
+Image rotation angle which will be applied before any further image processing.  
 
 
 !!! Tip

@@ -127,10 +127,9 @@ inline void writejpgtohttphelp(void *context, void *data, int size)
     SendJPGHTTP* _send = (SendJPGHTTP*) context;
     if ((_send->size + size) >= HTTP_BUFFER_SENT)     // data no longer fits in buffer
     {
-        if (httpd_resp_send_chunk(_send->req, _send->buf, _send->size) != ESP_OK) 
-        {
-                    ESP_LOGE(TAG, "File sending failed");
-                    _send->res = ESP_FAIL;  
+        if (httpd_resp_send_chunk(_send->req, _send->buf, _send->size) != ESP_OK) {
+            ESP_LOGE(TAG, "File sending failed");
+            _send->res = ESP_FAIL;
         }
         _send->size = 0;      
     }
@@ -149,10 +148,8 @@ esp_err_t CImageBasis::SendJPGtoHTTP(httpd_req_t *_req, const int quality)
     RGBImageLock();
     stbi_write_jpg_to_func(writejpgtohttphelp, &ii, width, height, channels, rgb_image, quality);
 
-    if (ii.size > 0)
-    {
-        if (httpd_resp_send_chunk(_req, (char*) ii.buf, ii.size) != ESP_OK)             //still send the rest
-        {
+    if (ii.size > 0) {
+        if (httpd_resp_send_chunk(_req, (char*) ii.buf, ii.size) != ESP_OK) { // still send the rest
             ESP_LOGE(TAG, "File sending failed");
             ii.res = ESP_FAIL;  
         }
@@ -167,8 +164,7 @@ esp_err_t CImageBasis::SendJPGtoHTTP(httpd_req_t *_req, const int quality)
 bool CImageBasis::CopyFromMemory(uint8_t* _source, int _size)
 {
     int gr = height * width * channels;
-    if (gr != _size)            // Size does not fit
-    {
+    if (gr != _size) {           // Size does not fit
         ESP_LOGE(TAG, "Cannot copy image from memory - sizes do not match: should be %d, but is %d", _size, gr);
         return false;
     }
@@ -475,7 +471,7 @@ void CImageBasis::EmptyImage()
 }
 
 
-void CImageBasis::LoadFromMemory(stbi_uc *_buffer, int len)
+bool CImageBasis::LoadFromMemory(stbi_uc *_buffer, int len)
 {
     RGBImageLock();
 
@@ -492,17 +488,21 @@ void CImageBasis::LoadFromMemory(stbi_uc *_buffer, int len)
     {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFromMemory: Image loading failed");
         LogFile.WriteHeapInfo("LoadFromMemory");
+        return false;
     }
+
     RGBImageRelease();
+    return true;
 }
 
 
-void CImageBasis::LoadFromMemoryPreallocated(stbi_uc *_buffer, int len)
+bool CImageBasis::LoadFromMemoryPreallocated(stbi_uc *_buffer, int len)
 {
     RGBImageLock();
 
     if (rgb_image == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "No preallocation found");
+        return false;
     }
 
     rgb_image = stbi_load_from_memory(_buffer, len, &width, &height, &channels, 3);
@@ -513,13 +513,15 @@ void CImageBasis::LoadFromMemoryPreallocated(stbi_uc *_buffer, int len)
     {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFromMemoryPreallocated: Image loading failed");
         LogFile.WriteHeapInfo("LoadFromMemoryPreallocated");
+        return false;
     }
 
     RGBImageRelease();
+    return true;
 }
 
 
-void CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image)
+bool CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image)
 {
     name = _name;
     islocked = false;
@@ -529,7 +531,7 @@ void CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image
 
     if (file_size(_image.c_str()) == 0) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, filename + " is empty");
-        return;
+        return false;
     }
 
     RGBImageLock();
@@ -548,7 +550,7 @@ void CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "CImageBasis-LoadFromFilePreallocated: Failed to load " + filename);
         LogFile.WriteHeapInfo("CImageBasis-LoadFromFilePreallocated");
         RGBImageRelease();
-        return;
+        return false;
     }
     
     RGBImageRelease();
@@ -562,6 +564,8 @@ void CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image
     #ifdef DEBUG_DETAIL_ON 
         LogFile.WriteHeapInfo("CImageBasis-LoadFromFilePreallocated - done");
     #endif
+
+    return true;
 }
 
 
@@ -759,7 +763,8 @@ CImageBasis::CImageBasis(std::string _name, std::string _image, bool _externalIm
 }
 
 
-bool CImageBasis::ImageOkay(){
+bool CImageBasis::ImageOkay()
+{
     return rgb_image != NULL;
 }
 
@@ -774,6 +779,20 @@ CImageBasis::CImageBasis(std::string _name, uint8_t* _rgb_image, int _channels, 
     height = _height;
     bpp = _bpp;
     externalImage = true;
+}
+
+
+void CImageBasis::Negative(void)
+{
+    RGBImageLock();
+
+    for (int i = 0; i < width * height * channels; i += channels) {
+        for (int c = 0; c < channels; c++) {
+            rgb_image[i+c] = 255 - rgb_image[i+c];
+        }
+    }
+
+    RGBImageRelease();
 }
 
 
@@ -818,17 +837,15 @@ void CImageBasis::SaveToFile(std::string _imageout)
 
     RGBImageLock();
 
-    if ((typ == "jpg") || (typ == "JPG"))       // CAUTION PROBLEMATIC IN ESP32
-    {
+    if ((typ == "jpg") || (typ == "JPG")) {       // CAUTION PROBLEMATIC IN ESP32
         stbi_write_jpg(_imageout.c_str(), width, height, channels, rgb_image, 0);
     }
  
-#ifndef STBI_ONLY_JPEG
-    if ((typ == "bmp") || (typ == "BMP"))
-    {
+    #ifndef STBI_ONLY_JPEG
+    if ((typ == "bmp") || (typ == "BMP")) {
         stbi_write_bmp(_imageout.c_str(), width, height, channels, rgb_image);
     }
-#endif
+    #endif
     RGBImageRelease();
 }
 
@@ -855,8 +872,7 @@ void CImageBasis::Resize(int _new_dx, int _new_dy)
 
 void CImageBasis::Resize(int _new_dx, int _new_dy, CImageBasis *_target)
 {
-    if ((_target->height != _new_dy) || (_target->width != _new_dx) || (_target->channels != channels))
-    {
+    if ((_target->height != _new_dy) || (_target->width != _new_dx) || (_target->channels != channels)) {
         ESP_LOGE(TAG, "Resize - Target image size does not fit");
         return;
     }

@@ -91,7 +91,7 @@ bool sendHomeAssistantDiscoveryTopic(std::string group, std::string field, std::
 
     if (group != "") {
         if (field == "problem") { // Special binary sensor which is based on 'value_status' topic
-            payload += "\"state_topic\": \"~/value_status\",";
+            payload += "\"state_topic\": \"~/" + group + "/value_status\",";
             payload += "\"value_template\": \"{{ 'OFF' if '000 Valid' in value or 'E91 Rate negative' in value else 'ON'}}\",";
         }
         else {

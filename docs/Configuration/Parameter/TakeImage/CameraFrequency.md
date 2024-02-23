@@ -4,7 +4,7 @@
 |:---               |:---                 |:----
 | Parameter Name    | Camera Frequency    | CameraFrequency
 | Default Value     | `20`                | `20`
-| Input Options     | `8 Mhz`<br>`10 Mhz`<br>`16 Mhz`<br>`20 Mhz` | `8`<br>`10`<br>`16`<br>`20`
+| Input Options     | `5 Mhz`<br>`8 Mhz`<br>`10 Mhz`<br>`20 Mhz` | `5`<br>`8`<br>`10`<br>`20`
 | Unit              | Mhz                 | Mhz
 
 
@@ -14,7 +14,7 @@
 
 ## Description
 
-This parameter sets the internally used camera frequency. 
+This parameter sets the internally used camera frequency.
 
 
 !!! Note

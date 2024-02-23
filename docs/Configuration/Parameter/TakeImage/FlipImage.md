@@ -1,15 +1,15 @@
-# Parameter: Mirror Image
+# Parameter: Flip Image
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Mirror Image        | InitialMirror
+| Parameter Name    | Flip Image          | FlipImage
 | Default Value     | `false`             | `false`
 | Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
 ## Description
 
-Mirror the image on the x-axis
+Flip the image (e.g. at rotation angle: 0° -> top-to-bottom).
 
 
 !!! Tip

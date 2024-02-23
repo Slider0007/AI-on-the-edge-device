@@ -13,187 +13,204 @@
 static const char *TAG = "CAM_SERVER";
 
 
-esp_err_t handler_flashlight(httpd_req_t *req)
+esp_err_t handler_camera(httpd_req_t *req)
 {
-    if (!Camera.getCameraInitSuccessful()) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Camera not initialized");
-        return ESP_FAIL;
-    }
-
-    const char* APIName = "flashlight:v2"; // API name and version
-    // Default usage message when handler gets called without any parameter
-    const std::string RESTUsageInfo = 
-        "00: Handler usage:<br>"
-        "- '/flashlight?type=api_name : Print API name and version<br>"
-        "- '/flashlight?type=on' : Flashlight on<br>"
-        "- '/flashlight?type=off' : Flashlight off<br>";
-    char _query[100];
-    char _valuechar[30];    
-    std::string type;
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
-    
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
-        if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            type = std::string(_valuechar);
-        }
-    }
-    else {  // if no parameter is provided, print handler usage
-        httpd_resp_set_type(req, "text/html");
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, RESTUsageInfo.c_str());
-        return ESP_FAIL; 
-    }
-    
-    if (type.compare("on") == 0) {
-        Camera.LightOnOff(true);
-        httpd_resp_sendstr(req, "001: Flashlight on");
-        return ESP_OK;        
-    }
-    else if (type.compare("off") == 0) {
-        Camera.LightOnOff(false);
-        httpd_resp_sendstr(req, "002: Flashlight off");
-        return ESP_OK;        
-    }
-    else if (type.compare("api_name") == 0) {
-        httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
-    }
-    else {
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E92: Parameter not found");
-        return ESP_FAIL;  
-    }
-}
-
-
-esp_err_t handler_capture(httpd_req_t *req)
-{
-    if (!Camera.getCameraInitSuccessful()) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Camera not initialized");
-        return ESP_FAIL;
-    }
-
-    const char* APIName = "capture:v2"; // API name and version
-    // Default usage message when handler gets called without any parameter
-    const std::string RESTUsageInfo = 
-        "00: Handler usage:<br>"
-        "- '/capture?type=api_name : Print API name and version<br>"
-        "- '/capture?type=capture' : Capture without flashlight<br>"
-        "- '/capture?type=capture_with_flashlight&flashduration=1000' : Capture with flashlight (flashduration in ms)<br>"
-        "- '/capture?type=capture_to_file&flashduration=1000&filename=/img_tmp/filename.jpg' : \
-            Capture image with flashlight (flashduration in ms) and save '/img_tmp/filename.jpg' onto SD-card<br>";
-    char _query[100];
-    char _valuechar[30], _flashduration[30], _filename[100];   
-    std::string type;
+    const char* APIName = "camera:v2"; // API name and version
+    char _query[384];
+    char _valuechar[30], _flashtime[30], _filename[100];
+    std::string task;
     std::string fn = "/sdcard/";
-    int flashduration = 0;
+    int flashtime = 0;
+
+    // Default usage message when handler gets called without any parameter
+    const std::string RESTUsageInfo = 
+        "00: Handler usage:<br>"
+        "1. Set camera parameter:<br>"
+        "-  '/camera?task=set_parameter&flashtime=2.0&flashintensity=1 "
+        "&brightness=0&contrast=0&saturation=0&sharpness=0&autoexposurelevel=0&aec2=true&grayscale=false&negative=false "
+        "&mirror=false&flip=false&zoom=true&zoommode=0&zoomx=0&zoomy=0'<br>"
+        "2. Capture image<br>"
+        "  - '/camera?task=capture' : Capture without flashlight<br>"
+        "  - '/camera?task=capture_with_flashlight&flashtime=1000' : Capture with flashlight (flashtime in ms)<br>"
+        "  - '/camera?task=capture_to_file&flashtime=1000&filename=/img_tmp/filename.jpg' : \
+            Capture image with flashlight (flashtime in ms) and save '/img_tmp/filename.jpg' onto SD-card<br>"
+        "3. Control Flashlight<br>"
+        "  - '/camera?task=flashlight_on' : Flashlight on<br>"
+        "  - '/camera?task=flashlight_off' : Flashlight off<br>"
+        "4. '/camera?task=api_name' : Print API name and version<br>";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_type(req, "text/plain");
-    
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
-        if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            type = std::string(_valuechar);
+
+    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
+        if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            task = std::string(_valuechar);
         }
-        if (httpd_query_key_value(_query, "flashduration", _flashduration, sizeof(_flashduration)) == ESP_OK) {     
-            flashduration = atoi(_flashduration);
-            if (flashduration < 0)
-                flashduration = 0;
+        if (httpd_query_key_value(_query, "flashtime", _flashtime, sizeof(_flashtime)) == ESP_OK) {     
+            flashtime = std::max(0, atoi(_flashtime));
         }
         if (httpd_query_key_value(_query, "filename", _filename, sizeof(_filename)) == ESP_OK) {
             fn.append(_filename);
-            #ifdef DEBUG_DETAIL_ON   
-                ESP_LOGD(TAG, "Filename: %s", fn.c_str());
-            #endif
         }
     }
     else {  // if no parameter is provided, print handler usage
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, RESTUsageInfo.c_str());
-        return ESP_FAIL; 
+        return ESP_FAIL;
     }
+    
+    if (task.compare("set_parameter") == 0) {
+        if (!Camera.getcameraInitSuccessful()) {
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, 
+                                "Camera not initialized: REST API /lighton not available");
+            return ESP_ERR_NOT_FOUND;
+        }
 
-    if (type.compare("capture") == 0) {
-        int quality;
-        framesize_t res;
+        CameraParameter camParameter = Camera.getCameraParameter(); // Retrieve actual parameter settings
 
-        Camera.GetCameraParameter(req, quality, res);
-        #ifdef DEBUG_DETAIL_ON   
-            ESP_LOGD(TAG, "Size: %d, Quality: %d", res, quality);
-        #endif
-        Camera.SetQualitySize(quality, res);
+        if (httpd_query_key_value(_query, "flashtime", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.flashTime = (int)(stof(std::string(_valuechar)) * 1000); // flashTime in ms
+        }
+        if (httpd_query_key_value(_query, "flashintensity", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.flashIntensity = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "brightness", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.brightness = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "contrast", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.contrast = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "saturation", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.saturation = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "sharpness", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.sharpness = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "exposurecontrolmode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.exposureControlMode  = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "autoexposurelevel", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.autoExposureLevel = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "manualexposurevalue", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.manualExposureValue = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "gaincontrolmode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.gainControlMode = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "manualgainvalue", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.manualGainValue = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "specialeffect", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.specialEffect = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "mirror", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
+                camParameter.mirrorImage = true : camParameter.mirrorImage = false;
+        }
+        if (httpd_query_key_value(_query, "flip", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
+                camParameter.flipImage = true : camParameter.flipImage = false;
+        }
+        if (httpd_query_key_value(_query, "zoommode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.zoomMode = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "zoomx", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.zoomOffsetX = stoi(std::string(_valuechar));
+        }
+        if (httpd_query_key_value(_query, "zoomy", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            camParameter.zoomOffsetY = stoi(std::string(_valuechar));
+        }
 
-        esp_err_t result = Camera.CaptureToHTTP(req);
+        Camera.setFlashIntensity(camParameter.flashIntensity);
+        Camera.setFlashTime(camParameter.flashTime);
+        Camera.setZoom(camParameter.zoomMode, camParameter.zoomOffsetX, camParameter.zoomOffsetY);
+        Camera.setImageManipulation(camParameter.brightness, camParameter.contrast, camParameter.saturation, 
+                                    camParameter.sharpness, camParameter.exposureControlMode, camParameter.autoExposureLevel, 
+                                    camParameter.manualExposureValue, camParameter.gainControlMode, camParameter.manualGainValue, 
+                                    camParameter.specialEffect, camParameter.mirrorImage, camParameter.flipImage);
+
+        httpd_resp_sendstr(req, "001: Camera parameter set");
+        return ESP_OK;
+    }
+    else if (task.compare("capture") == 0) {
+        int save_flashTime = Camera.getFlashTime();
+        Camera.setFlashTime(0);
+        esp_err_t result = Camera.captureToHTTP(req);
+        Camera.setFlashTime(save_flashTime);
 
         if (result == ESP_OK) {
-            httpd_resp_sendstr(req, "001: Capture without flashlight successful");
+            httpd_resp_sendstr(req, "002: Capture without flashlight successful");
         }
         else {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Camera capture error");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Camera capture error");
         } 
         return result;        
     }
-    else if (type.compare("capture_with_flashlight") == 0) {
-        if (flashduration == 0) {
+    else if (task.compare("capture_with_flashlight") == 0) {
+        if (flashtime == 0) {
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, 
-                "E93: No flashduration provided, e.g. '/capture?type=CaptureWithFlashlight&flashduration=1000'");
+                "E93: No flashtime provided, e.g. '/capture?type=CaptureWithFlashlight&flashtime=1000'");
             return ESP_FAIL;
         }
 
-        int quality;
-        framesize_t res;
+        int save_flashTime = Camera.getFlashTime();
+        Camera.setFlashTime(flashtime);
+        esp_err_t result = Camera.captureToHTTP(req);
+        Camera.setFlashTime(save_flashTime);
 
-        Camera.GetCameraParameter(req, quality, res);
-        #ifdef DEBUG_DETAIL_ON   
-            ESP_LOGD(TAG, "Size: %d, Quality: %d", res, quality);
-        #endif
-        Camera.SetQualitySize(quality, res);
-
-        esp_err_t result = Camera.CaptureToHTTP(req, flashduration);
-
-        if (result != ESP_OK) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Camera capture error");
+        if (result == ESP_OK) {
+            httpd_resp_sendstr(req, "003: Capture with flashlight successful");
+        }
+        else {
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Camera capture error");
         } 
-        return result;        
+
+        return result;
     }
-    else if (type.compare("capture_to_file") == 0) {
-        if (flashduration == 0) {
+    else if (task.compare("capture_to_file") == 0) {
+        if (flashtime == 0) {
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, 
-                "E93: No flashduration provided, e.g. '/capture?type=CaptureWithFlashlight&flashduration=1000'");
+                "E93: No flashtime provided, e.g. '/capture?type=CaptureWithFlashlight&flashtime=1000'");
             return ESP_FAIL;
         }
 
         if (fn.compare("/sdcard/") == 0) {
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, 
-                "E94: No destination provided, e.g. '/capture?type=CaptureWithFlashlight&flashduration=1000&filename=/img_tmp/test.jpg'");
+                "E94: No destination provided, e.g. '/capture?type=CaptureWithFlashlight&flashtime=1000&filename=/img_tmp/test.jpg'");
             return ESP_FAIL;
         }
-        int quality;
-        framesize_t res;
 
-        Camera.GetCameraParameter(req, quality, res);
-        #ifdef DEBUG_DETAIL_ON   
-            ESP_LOGD(TAG, "Size: %d, Quality: %d", res, quality);
-        #endif
-        Camera.SetQualitySize(quality, res);
-
-        esp_err_t result = Camera.CaptureToFile(fn, flashduration);
+        int save_flashTime = Camera.getFlashTime();
+        Camera.setFlashTime(flashtime);
+        esp_err_t result = Camera.captureToFile(fn);
+        Camera.setFlashTime(save_flashTime);
 
         if (result == ESP_OK) {
-            httpd_resp_sendstr(req, "001: Capture to file successful");
+            httpd_resp_sendstr(req, "004: Capture to file successful");
         }
         else {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Camera capture error");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Camera capture error");
         } 
-        return result;        
+        return result;
     }
-    if (type.compare("api_name") == 0) {
+    else if (task.compare("flashlight_on") == 0) {
+        Camera.setFlashlight(true);
+        httpd_resp_sendstr(req, "005: Flashlight on");
+        return ESP_OK;        
+    }
+    else if (task.compare("flashlight_off") == 0) {
+        Camera.setFlashlight(false);
+        httpd_resp_sendstr(req, "006: Flashlight off");
+        return ESP_OK;        
+    }
+    else if (task.compare("api_name") == 0) {
         httpd_resp_sendstr(req, APIName);
         return ESP_OK;        
     }
     else {
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Parameter not found");
-        return ESP_FAIL;  
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_sendstr(req, "E90: Task not found");
+        return ESP_ERR_NOT_FOUND;
     }
 }
 
@@ -204,14 +221,9 @@ void register_server_camera_uri(httpd_handle_t server)
 
     httpd_uri_t camuri = { };
     camuri.method    = HTTP_GET;
-
-    camuri.uri       = "/flashlight";
-    camuri.handler   = handler_flashlight;
-    camuri.user_ctx  = NULL;    
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/capture";
-    camuri.handler   = handler_capture;
+  
+    camuri.uri       = "/camera";
+    camuri.handler   = handler_camera;
     camuri.user_ctx  = NULL; 
-    httpd_register_uri_handler(server, &camuri);      
+    httpd_register_uri_handler(server, &camuri);
 }

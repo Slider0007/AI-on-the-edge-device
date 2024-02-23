@@ -1,22 +1,15 @@
-# Parameter: Flip Image Size
+# Parameter: Mirror Image
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Flip Image Size     | FlipImageSize
+| Parameter Name    | Mirror Image        | MirrorImage
 | Default Value     | `false`             | `false`
 | Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
-!!! Warning
-    This is an **Expert Parameter**! Only change it if you understand what it does!  
-
-
 ## Description
 
-Flip the image size (e.g. 640 x 480 -> 480 x 640).
-Benefit: Do not loose image data when image gets rotated.
-<br>
-![](../img/flipImageSize.png)  
+Mirror the image (e.g. rotation angle: 0° -> left-to-right).
 
 
 !!! Tip

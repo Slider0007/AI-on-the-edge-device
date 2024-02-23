@@ -468,7 +468,7 @@ esp_err_t handler_get_stream(httpd_req_t *req)
         }
     }
 
-    Camera.CaptureToStream(req, flashlightOn);
+    Camera.captureToStream(req, flashlightOn);
     return ESP_OK;
 }
 

@@ -21,20 +21,11 @@ void ClassFlowTakeImage::SetInitialParameter(void)
     presetFlowStateHandler(true);
 
     disabled = false;
-    rawImage = NULL;
-    namerawimage = "/sdcard/img_tmp/raw.jpg";
-    waitbeforepicture = 2.0; // Flash duration in s
-    flash_duration = (int)(waitbeforepicture * 1000); // Flash duration in ms
-    isImageSize = false;
-    ImageSize = FRAMESIZE_VGA;
-    TimeImageTaken = 0;
-    CameraFrequency = 20; // Mhz
-    ImageQuality = 12;
-    brightness = 0;
-    contrast = 0;
-    saturation = 0;
-    FixedExposure = false;
     SaveAllFiles = false;
+
+    timeImageTaken = 0;
+    namerawimage = "/sdcard/img_tmp/raw.jpg";
+    rawImage = NULL;
 }     
 
 
@@ -47,53 +38,70 @@ ClassFlowTakeImage::ClassFlowTakeImage(std::vector<ClassFlow*>* lfc) : ClassFlow
 
 bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 {
+    int flashTime = 2000; // FlashTime in ms
+    int flashIntensity = 50;
+    int cameraFrequency = 20; // Mhz
+    framesize_t imageSize = FRAMESIZE_VGA;
+    int imageQuality = 12;
+    int brightness = 0;
+    int contrast = 0;
+    int saturation = 0;
+    int sharpness = 0;
+    int exposureControlMode = 1;
+    int autoExposureLevel = 0;
+    int manualExposureValue = 300;
+    int gainControlMode = 1;
+    int manualGainValue = 0;
+    int specialEffect = 0;
+    bool mirrorImage = false;
+    bool flipImage = false;
+    int zoomMode = 0;
+    int zoomOffsetX = 0;
+    int zoomOffsetY = 0;
+
     std::vector<std::string> splitted;
-    int ledintensity = 50;
 
     aktparamgraph = trim(aktparamgraph);
+
     if (aktparamgraph.size() == 0)
-        if (!this->GetNextParagraph(pfile, aktparamgraph))
+        if (!GetNextParagraph(pfile, aktparamgraph))
             return false;
 
     if (aktparamgraph.compare("[TakeImage]") != 0)       // Paragraph does not fit TakeImage
         return false;
 
-    while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
-    {
+    while (getNextLine(pfile, &aktparamgraph) && !isNewParagraph(aktparamgraph)) {
         splitted = ZerlegeZeile(aktparamgraph);
+
         if ((toUpper(splitted[0]) ==  "RAWIMAGESLOCATION") && (splitted.size() > 1)) {
             imagesLocation = "/sdcard" + splitted[1];
             isLogImage = true;
         }
 
         if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION") && (splitted.size() > 1)) {
-            this->imagesRetention = std::stoi(splitted[1]);
+            imagesRetention = std::stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "WAITBEFORETAKINGPICTURE") && (splitted.size() > 1)) {
-            waitbeforepicture = stof(splitted[1]);
-            flash_duration = (int)(waitbeforepicture * 1000);
+        if ((toUpper(splitted[0]) == "FLASHTIME") && (splitted.size() > 1)) {
+            flashTime = (int)(stof(splitted[1]) * 1000); // Flashtime in ms
+        }
+
+        if ((toUpper(splitted[0]) == "FLASHINTENSITY") && (splitted.size() > 1)) {
+            flashIntensity = std::max(0, std::min(stoi(splitted[1]), 100));
         }
 
         if ((toUpper(splitted[0]) == "CAMERAFREQUENCY") && (splitted.size() > 1)) {
-            CameraFrequency = std::stoi(splitted[1]);
+            cameraFrequency = std::stoi(splitted[1]);
         }
 
         if ((toUpper(splitted[0]) == "IMAGEQUALITY") && (splitted.size() > 1)) {
-            ImageQuality = std::stod(splitted[1]);
+            imageQuality = std::stoi(splitted[1]);
         }
 
         if ((toUpper(splitted[0]) == "IMAGESIZE") && (splitted.size() > 1)) {
-            ImageSize = Camera.TextToFramesize(splitted[1].c_str());
-            isImageSize = true;
+            imageSize = Camera.textToFramesize(splitted[1].c_str());
         }
-
-        if ((toUpper(splitted[0]) == "LEDINTENSITY") && (splitted.size() > 1)) {
-            ledintensity = stoi(splitted[1]);
-            ledintensity = std::min(100, ledintensity);
-            ledintensity = std::max(0, ledintensity);
-        }
-
+ 
         if ((toUpper(splitted[0]) == "BRIGHTNESS") && (splitted.size() > 1)) {
             brightness = stoi(splitted[1]);
         }
@@ -106,18 +114,65 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             saturation = stoi(splitted[1]);
         }
 
-        if ((toUpper(splitted[0]) == "FIXEDEXPOSURE") && (splitted.size() > 1)) {
+        if ((toUpper(splitted[0]) == "SHARPNESS") && (splitted.size() > 1)) {
+            sharpness = stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "EXPOSURECONTROLMODE") && (splitted.size() > 1)) {
+            exposureControlMode = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "AUTOEXPOSURELEVEL") && (splitted.size() > 1)) {
+            autoExposureLevel = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "MANUALEXPOSUREVALUE") && (splitted.size() > 1)) {
+            manualExposureValue = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "GAINCONTROLMODE") && (splitted.size() > 1)) {
+            gainControlMode = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "MANUALGAINVALUE") && (splitted.size() > 1)) {
+            manualGainValue = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "SPECIALEFFECT") && (splitted.size() > 1)) {
+            specialEffect = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "MIRRORIMAGE") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                FixedExposure = true;
+                mirrorImage = true;
             else
-                FixedExposure = false;
+                mirrorImage = false;
+        }
+
+        if ((toUpper(splitted[0]) == "FLIPIMAGE") && (splitted.size() > 1)) {
+            if (toUpper(splitted[1]) == "TRUE")
+                flipImage = true;
+            else
+                flipImage = false;
+        }
+
+        if ((toUpper(splitted[0]) == "ZOOMMODE") && (splitted.size() > 1)) {
+            zoomMode = std::stoi(splitted[1]);
+        }
+        
+        if ((toUpper(splitted[0]) == "ZOOMOFFSETX") && (splitted.size() > 1)) {
+            zoomOffsetX = std::stoi(splitted[1]);
+        }
+        
+        if ((toUpper(splitted[0]) == "ZOOMOFFSETY") && (splitted.size() > 1)) {
+            zoomOffsetY = std::stoi(splitted[1]);
         }
 
         if ((toUpper(splitted[0]) == "DEMO") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                Camera.EnableDemoMode();
+                Camera.enableDemoMode();
             else
-                Camera.DisableDemoMode();
+                Camera.disableDemoMode();
         }
 
         if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
@@ -129,11 +184,13 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     }
 
     Camera.ledc_init(); // PWM init needs to be done here due to parameter reload (camera class not to be deleted completely)
-    Camera.SetLEDIntensity(ledintensity);
-    Camera.SetCameraFrequency(CameraFrequency);
-    Camera.SetQualitySize(ImageQuality, ImageSize);
-    Camera.SetBrightnessContrastSaturation(brightness, contrast, saturation);
-
+    Camera.setFlashIntensity(flashIntensity);
+    Camera.setFlashTime(flashTime);
+    Camera.setCameraFrequency(cameraFrequency);
+    Camera.setSizeQuality(imageQuality, imageSize, zoomMode, zoomOffsetX, zoomOffsetY);
+    Camera.setImageManipulation(brightness, contrast, saturation, sharpness, exposureControlMode, autoExposureLevel, 
+                                manualExposureValue, gainControlMode, manualGainValue, specialEffect, mirrorImage, flipImage);
+    
     image_width = Camera.image_width;
     image_height = Camera.image_height;
     rawImage = new CImageBasis("rawImage");
@@ -146,11 +203,6 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ReadParameter: Can't create CImageBasis for rawImage");
         return false;
-    }
-
-    if (FixedExposure && (flash_duration > 0)) {
-        //ESP_LOGD(TAG, "Fixed Exposure enabled");
-        Camera.EnableAutoExposure(flash_duration);
     }
 
     return true;
@@ -166,7 +218,7 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
         LogFile.WriteHeapInfo("ClassFlowTakeImage::doFlow - Start");
     #endif
 
-    if (!takePictureWithFlash(flash_duration)) {
+    if (!takePictureWithFlash()) {
         setFlowStateHandlerEvent(-1); // Set error code for post cycle error handler 'doPostProcessEventHandling' (error level)
         return false;
     }
@@ -193,7 +245,7 @@ void ClassFlowTakeImage::doPostProcessEventHandling()
     for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
         if (getFlowState()->EventCode[i] == -1) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Camera init or framebuffer access failed, reinit camera");
-            Camera.DeinitCam(); // Reinit will be done here: MainFlowControl.cpp -> DoInit()
+            Camera.deinitCam(); // Reinit will be done here: MainFlowControl.cpp -> DoInit()
             setTaskAutoFlowState(FLOW_TASK_STATE_INIT); // Do fully init process to avoid SPIRAM fragmentation
         }
     }
@@ -207,20 +259,7 @@ std::string ClassFlowTakeImage::getHTMLSingleStep(std::string host)
 }
 
 
-esp_err_t ClassFlowTakeImage::camera_capture()
-{
-    std::string nm =  namerawimage;
-
-    if (Camera.CaptureToFile(nm) != ESP_OK)
-        return ESP_FAIL;
-
-    time(&TimeImageTaken);
-
-    return ESP_OK;
-}
-
-
-bool ClassFlowTakeImage::takePictureWithFlash(int _flash_duration)
+bool ClassFlowTakeImage::takePictureWithFlash()
 {
     if (rawImage == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "takePictureWithFlash: rawImage not initialized");
@@ -231,11 +270,10 @@ bool ClassFlowTakeImage::takePictureWithFlash(int _flash_duration)
     rawImage->width = image_width;          
     rawImage->height = image_height;
 
-    ESP_LOGD(TAG, "flash_duration: %d", _flash_duration);
-    if (Camera.CaptureToBasisImage(rawImage, _flash_duration) != ESP_OK)
+    if (Camera.captureToBasisImage(rawImage) != ESP_OK)
         return false;
 
-    time(&TimeImageTaken);
+    time(&timeImageTaken);
 
     if (SaveAllFiles)
         rawImage->SaveToFile(namerawimage);
@@ -246,9 +284,9 @@ bool ClassFlowTakeImage::takePictureWithFlash(int _flash_duration)
 
 esp_err_t ClassFlowTakeImage::SendRawJPG(httpd_req_t *req)
 {
-    time(&TimeImageTaken);
+    time(&timeImageTaken);
 
-    return Camera.CaptureToHTTP(req, flash_duration);
+    return Camera.captureToHTTP(req);   // Capture with configured flash time
 }
 
 
@@ -257,10 +295,10 @@ ImageData* ClassFlowTakeImage::SendRawImage()
     CImageBasis *zw = new CImageBasis("SendRawImage", rawImage);
     ImageData *id;
 
-    if (Camera.CaptureToBasisImage(rawImage, flash_duration) != ESP_OK)
+    if (Camera.captureToBasisImage(rawImage) != ESP_OK)
         return NULL;
 
-    time(&TimeImageTaken);
+    time(&timeImageTaken);
 
     id = zw->writeToMemoryAsJPG();    
     delete zw;
@@ -270,7 +308,7 @@ ImageData* ClassFlowTakeImage::SendRawImage()
 
 time_t ClassFlowTakeImage::getTimeImageTaken()
 {
-    return TimeImageTaken;
+    return timeImageTaken;
 }
 
 

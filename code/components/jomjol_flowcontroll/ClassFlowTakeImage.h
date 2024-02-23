@@ -10,24 +10,13 @@
 class ClassFlowTakeImage : public ClassFlowImage
 {
     protected:
-        time_t TimeImageTaken;
-        std::string namerawimage;
-        float waitbeforepicture;
-        int flash_duration;
-        framesize_t ImageSize;
-        bool isImageSize;
-        int CameraFrequency;
-        int ImageQuality;
-        int brightness;
-        int contrast;
-        int saturation;
-        int image_height, image_width;
         bool SaveAllFiles;
-        bool FixedExposure;
+        time_t timeImageTaken;
+        std::string namerawimage;
+        int image_height, image_width;
 
-        void SetInitialParameter(void);    
-        esp_err_t camera_capture();
-        bool takePictureWithFlash(int flash_duration);
+        void SetInitialParameter();
+        bool takePictureWithFlash();
 
     public:
         CImageBasis *rawImage;

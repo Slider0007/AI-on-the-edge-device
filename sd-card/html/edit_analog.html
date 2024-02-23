@@ -739,12 +739,32 @@
         var refImageWidth, refImageHeight;
 
         if (param["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
-            refImageWidth = 320;
-            refImageHeight = 240;
+            if (param["Alignment"]["FlipImageSize"]["value1"] == "false") {
+                refImageWidth = 320;
+                refImageHeight = 240;
+            }
+            else if (param["Alignment"]["FlipImageSize"]["value1"] == "true") {
+                refImageWidth = 240;
+                refImageHeight = 320;
+            }
+            else {
+                firework.launch('Unknown FlipImageSize. No ROI position validation', 'danger', 30000);
+                return;
+            }
         }
         else if (param["TakeImage"]["ImageSize"]["value1"] == "VGA") {
-            refImageWidth = 640;
-            refImageHeight = 480;
+            if (param["Alignment"]["FlipImageSize"]["value1"] == "false") {
+                refImageWidth = 640;
+                refImageHeight = 480;
+            }
+            else if (param["Alignment"]["FlipImageSize"]["value1"] == "true") {
+                refImageWidth = 480;
+                refImageHeight = 640;
+            }
+            else {
+                firework.launch('Unknown FlipImageSize. No ROI position validation', 'danger', 30000);
+                return;
+            }
         }
         else {
             firework.launch('Unknown image size. No ROI position validation', 'danger', 30000);

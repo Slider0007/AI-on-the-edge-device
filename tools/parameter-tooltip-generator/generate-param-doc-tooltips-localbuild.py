@@ -26,9 +26,10 @@ else:
 parameterDocsFolder = rootPath + "/docs/Configuration/Parameter"
 docsMainFolder = rootPath + "/sd-card/html"
 configPage = "edit_config_param.html"
+referenceImagePage = "edit_reference.html"
 
 htmlTooltipPrefix = """
-    <div class="rst-content"><div class="tooltip"><img src="help.png" width="28px"><span class="tooltiptext">
+    <div class="rst-content"><div class="tooltip"><img src="help.png" width="20px"><span class="tooltiptext">
 """
 
 
@@ -61,7 +62,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
 
     htmlTooltip = htmlTooltipPrefix + htmlTooltip + htmlTooltipSuffix
 
-    # Add the tooltip to the config page
+    ####### configPage: Add tooltips
     with open(docsMainFolder + "/" + configPage, 'r') as configPageHandle:
         configPageContent = configPageHandle.read()
 
@@ -70,6 +71,17 @@ def generateHtmlTooltip(section, parameter, markdownFile):
 
     with open(docsMainFolder + "/" + configPage, 'w') as configPageHandle:
         configPageHandle.write(configPageContent)
+
+    ####### referenceImagePage: Add tooltips
+    with open(docsMainFolder + "/" + referenceImagePage, 'r') as referenceImagePageHandle:
+        referenceImagePageContent = referenceImagePageHandle.read()
+
+    # print("replacing $TOOLTIP_" + section + "_" + parameter + " with the tooltip content...")
+    referenceImagePageContent = referenceImagePageContent.replace("<td style=\"overflow:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>", 
+                                                                  "<td>" + htmlTooltip + "</td>")
+
+    with open(docsMainFolder + "/" + referenceImagePage, 'w') as referenceImagePageHandle:
+        referenceImagePageHandle.write(referenceImagePageContent)
 
 
 print(scriptName + ": Generate tooltips")

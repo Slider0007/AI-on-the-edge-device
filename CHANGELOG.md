@@ -1,5 +1,49 @@
 # Changelog
 
+## [16.1.3-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.2-SLFork...v16.1.3-SLFork) (2024-02-13)
+
+
+### Bug Fixes
+
+* **mqtt:** Fix Home Assistant topic 'problem' ([#140](https://github.com/Slider0007/AI-on-the-edge-device/issues/140)) ([926acdb](https://github.com/Slider0007/AI-on-the-edge-device/commit/926acdb500c3e688c5d1633da4140091708ca89d))
+* **mqtt:** Fix process init failed if MQTT not yet connected ([#139](https://github.com/Slider0007/AI-on-the-edge-device/issues/139)) ([64b63b7](https://github.com/Slider0007/AI-on-the-edge-device/commit/64b63b7892457c9048567613af75ea4646a6741c))
+
+
+### Other Changes
+
+* **build:** Release tag gets printed twice in log: Remove one ([#137](https://github.com/Slider0007/AI-on-the-edge-device/issues/137)) ([73218c8](https://github.com/Slider0007/AI-on-the-edge-device/commit/73218c8d7207843a9322e8df9f8fa8df5d7e5b61))
+
+## [16.1.2-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.1-SLFork...v16.1.2-SLFork) (2024-02-09)
+
+
+### Bug Fixes
+
+* **flowctrl:** Fix exception accessing getJPG ressource ([#121](https://github.com/Slider0007/AI-on-the-edge-device/issues/121)) ([5d114d3](https://github.com/Slider0007/AI-on-the-edge-device/commit/5d114d310279087cbeba7cb03d7549c4de6607e0))
+* **gpio:** Fix GPIO handler enable flag ([#134](https://github.com/Slider0007/AI-on-the-edge-device/issues/134)) ([6f4a8f4](https://github.com/Slider0007/AI-on-the-edge-device/commit/6f4a8f4ddc625603c8efc1ddbb4e88d16f199e75))
+* **mqtt:** Fix Home Assistant topic 'problem'  ([#130](https://github.com/Slider0007/AI-on-the-edge-device/issues/130)) ([cab4597](https://github.com/Slider0007/AI-on-the-edge-device/commit/cab4597ad7dc299cb76c6dbe38637d2742681c1c))
+* **mqtt:** Reset username+password when parameter is disabled ([#122](https://github.com/Slider0007/AI-on-the-edge-device/issues/122)) ([abb0afe](https://github.com/Slider0007/AI-on-the-edge-device/commit/abb0afe699a549ec2d360e2c3875e9f7e28d22fd))
+* **webui:** Add missing cycle start state message ([#133](https://github.com/Slider0007/AI-on-the-edge-device/issues/133)) ([f349a2d](https://github.com/Slider0007/AI-on-the-edge-device/commit/f349a2d078cac710a043a0309415899ff358bdf1))
+
+
+### Refactoring / Style Changes
+
+* **build:** Refactor board type / camera model selection ([#126](https://github.com/Slider0007/AI-on-the-edge-device/issues/126)) ([54f6847](https://github.com/Slider0007/AI-on-the-edge-device/commit/54f6847dd51afeb0ab31ce36ca9513f8628ed5d2))
+* Cleanup / rearrange header includes ([#117](https://github.com/Slider0007/AI-on-the-edge-device/issues/117)) ([a45431f](https://github.com/Slider0007/AI-on-the-edge-device/commit/a45431fc84f4e820fa23406819ff3291b7144cac))
+* **ota:** Refactor / cleanup OTA functions ([#123](https://github.com/Slider0007/AI-on-the-edge-device/issues/123)) ([c85bd06](https://github.com/Slider0007/AI-on-the-edge-device/commit/c85bd06b08b6c7741a51726654893d4f91254b51))
+* **sdcard:** Refactor SD card init ([#125](https://github.com/Slider0007/AI-on-the-edge-device/issues/125)) ([e0e2a4e](https://github.com/Slider0007/AI-on-the-edge-device/commit/e0e2a4e07d0a2c8831442dd99c194a442950272a))
+* **webui:** Improve page loading time (async REST API calls) ([#124](https://github.com/Slider0007/AI-on-the-edge-device/issues/124)) ([4c1a1c9](https://github.com/Slider0007/AI-on-the-edge-device/commit/4c1a1c9192572b2e7fb65e48dc51f249661076da))
+
+
+### Other Changes
+
+* **build:** Include parameter docs into this repo ([#128](https://github.com/Slider0007/AI-on-the-edge-device/issues/128)) ([6fb0b53](https://github.com/Slider0007/AI-on-the-edge-device/commit/6fb0b5308022f411cbc55a637be95a2654a035eb))
+* **build:** Refactor / cleanup platformio environments ([#120](https://github.com/Slider0007/AI-on-the-edge-device/issues/120)) ([cd13662](https://github.com/Slider0007/AI-on-the-edge-device/commit/cd13662d8736e06d8b09d474a557e2a686853a3c))
+* **build:** Update github actions (node 16 EOL) ([#127](https://github.com/Slider0007/AI-on-the-edge-device/issues/127)) ([263c821](https://github.com/Slider0007/AI-on-the-edge-device/commit/263c82195754d4145f88d97c61b6052f2ac22101))
+* **build:** Update release-please-action (node 16 EOL) ([#135](https://github.com/Slider0007/AI-on-the-edge-device/issues/135)) ([9269194](https://github.com/Slider0007/AI-on-the-edge-device/commit/926919407adce5cf7419c82fbb65cddd235d3421))
+* **docs:** Add some troubleshooting docs ([#132](https://github.com/Slider0007/AI-on-the-edge-device/issues/132)) ([cfd046e](https://github.com/Slider0007/AI-on-the-edge-device/commit/cfd046ed72c916b0f5f859f1ce949fd175e07940))
+* **docs:** Include REST API + MQTT API description into this repo  ([#129](https://github.com/Slider0007/AI-on-the-edge-device/issues/129)) ([d3dc0a3](https://github.com/Slider0007/AI-on-the-edge-device/commit/d3dc0a3c32fa2de7735be339979b0b604b98b4cf))
+* **nvs:** Add staus LED blink codes for NVS init errors ([#131](https://github.com/Slider0007/AI-on-the-edge-device/issues/131)) ([f455c76](https://github.com/Slider0007/AI-on-the-edge-device/commit/f455c76dda7e7362aa3c83cd2b62d3f63c14d940))
+
 ## [16.1.1-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.0-SLFork...v16.1.1-SLFork) (2024-01-08)
 
 

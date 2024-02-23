@@ -17,8 +17,7 @@ class ClassFlowAlignment : public ClassFlow
         strRefInfo References[2];
         int anz_ref;
         float initalrotate;
-        bool initialmirror;
-        bool initialflip;
+        bool flipImageSize;
         bool use_antialiasing;
         bool SaveDebugInfo;
         bool SaveAllFiles;
@@ -40,6 +39,7 @@ class ClassFlowAlignment : public ClassFlow
         void DrawRef(CImageBasis *_zw);
         bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
         bool doFlow(std::string time);
+        bool getFlipImageSize();
         std::string getHTMLSingleStep(std::string host);
         std::string name() {return "ClassFlowAlignment";};
 };

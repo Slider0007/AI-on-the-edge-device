@@ -9,7 +9,8 @@
 
 ## Description
 
-Set the contrast level of the image.
+Set the contrast level of the image. Positive values increase contrast, 
+negative values lower it.
 
 
 !!! Tip

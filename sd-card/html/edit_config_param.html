@@ -302,8 +302,10 @@
 
 		<tr class="expert">
 			<td class="indent1">
-				<input type="checkbox" id="TakeImage_RawImagesLocation_enabled" value="1" onclick='InvertEnableItem("TakeImage", "RawImagesLocation")'  >
-				<label for=TakeImage_RawImagesLocation_enabled><span id="TakeImage_RawImagesLocation_text" style="color:black;">Raw Images Location</span></label>
+				<input type="checkbox" id="TakeImage_RawImagesLocation_enabled" value="1" 
+								onclick='InvertEnableItem("TakeImage", "RawImagesLocation")'  >
+				<label for=TakeImage_RawImagesLocation_enabled>
+						<span id="TakeImage_RawImagesLocation_text">Raw Images Location</span></label>
 			</td>
 			<td>
 				<input required type="text" name="name" id="TakeImage_RawImagesLocation_value1">
@@ -313,37 +315,51 @@
 
 		<tr class="expert">
 			<td class="indent1">
-				<input type="checkbox" id="TakeImage_RawImagesRetention_enabled" value="1" onclick='InvertEnableItem("TakeImage", "RawImagesRetention")'  >
-				<label for=TakeImage_RawImagesRetention_enabled><span id="TakeImage_RawImagesRetention_text" style="color:black;">Raw Images Retention</span></label>
+				<input type="checkbox" id="TakeImage_RawImagesRetention_enabled" value="1" 
+								onclick='InvertEnableItem("TakeImage", "RawImagesRetention")'  >
+				<label for=TakeImage_RawImagesRetention_enabled>
+						<span id="TakeImage_RawImagesRetention_text"">Raw Images Retention</span></label>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_RawImagesRetention_value1"  min="0" step="1"
+				<input required type="number" id="TakeImage_RawImagesRetention_value1" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
 			<td>$TOOLTIP_TakeImage_RawImagesRetention</td>
 		</tr>
 
-		<tr class="expert">		
+		<tr>		
 			<td class="indent1">
-				<span id="TakeImage_WaitBeforeTakingPicture_text" style="color:black;">Flash Duration</span>
+				<span id="TakeImage_FlashTime_text">Flash Time</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_WaitBeforeTakingPicture_value1"  min="0" step="any"
-					oninput="(!validity.rangeUnderflow||(value=0));">Seconds
+				<input required type="number" id="TakeImage_FlashTime_value1"  min="0.1" step="0.1"
+					oninput="(!validity.rangeUnderflow||(value=0.1));">Seconds
 			</td>
-			<td>$TOOLTIP_TakeImage_WaitBeforeTakingPicture</td>
+			<td>$TOOLTIP_TakeImage_FlashTime</td>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<span id="TakeImage_FlashIntensity_text">Flash Intensity</span>
+			</td>
+			<td>
+				<input required type="number" id="TakeImage_FlashIntensity_value1" min="0" max="100"
+					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100)) && 
+						(!validity.stepMismatch||(value=parseInt(this.value)));">%
+			</td>
+			<td>$TOOLTIP_TakeImage_FlashIntensity</td>
 		</tr>
 
 		<tr class="expert">
 			<td class="indent1">
-				<span id="TakeImage_CameraFrequency_text" style="color:black;">Camera Frequency</span>
+				<span id="TakeImage_CameraFrequency_text">Camera Frequency</span>
 			</td>
 			<td>
 				<select id="TakeImage_CameraFrequency_value1">
 					<option value="20" selected>20 Mhz</option>
-					<option value="16" >16 Mhz</option>
 					<option value="10" >10 Mhz</option>
 					<option value="8" >8 Mhz</option>
+					<option value="5" >5 Mhz</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_TakeImage_CameraFrequency</td>
@@ -351,10 +367,10 @@
 
 		<tr class="expert">
 			<td class="indent1">
-				<span id="TakeImage_ImageQuality_text" style="color:black;">Image Quality</span>
+				<span id="TakeImage_ImageQuality_text">Image Quality</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_ImageQuality_value1"  min="8" max="63"
+				<input required type="number" id="TakeImage_ImageQuality_value1" min="8" max="63"
 					oninput="(!validity.rangeUnderflow||(value=8)) && (!validity.rangeOverflow||(value=63)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
@@ -363,7 +379,7 @@
 
 		<tr class="expert">
 			<td class="indent1">
-				<span id="TakeImage_ImageSize_text" style="color:black;">Image Size</span>
+				<span id="TakeImage_ImageSize_text">Image Size</span>
 			</td>
 			<td>
 				<select id="TakeImage_ImageSize_value1">
@@ -373,25 +389,13 @@
 			</td>
 			<td>$TOOLTIP_TakeImage_ImageSize</td>
 		</tr>
-
+			
 		<tr>
 			<td class="indent1">
-				<span id="TakeImage_LEDIntensity_text" style="color:black;">LED Intensity</span>
+				<span id="TakeImage_Brightness_text">Brightness</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_LEDIntensity_value1"  min="0" max="100"
-					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100)) && 
-						(!validity.stepMismatch||(value=parseInt(this.value)));">
-			</td>
-			<td>$TOOLTIP_TakeImage_LEDIntensity</td>
-		</tr>
-
-		<tr>
-			<td class="indent1">
-				<span id="TakeImage_Brightness_text" style="color:black;">Brightness</span>
-			</td>
-			<td>
-				<input required type="number" id="TakeImage_Brightness_value1"  min="-2" max="2"
+				<input required type="number" id="TakeImage_Brightness_value1" value="0" min="-2" max="2"
 					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
@@ -400,10 +404,10 @@
 
 		<tr>
 			<td class="indent1">
-				<span id="TakeImage_Contrast_text" style="color:black;">Contrast</span>
+				<span id="TakeImage_Contrast_text">Contrast</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_Contrast_value1"  min="-2" max="2"
+				<input required type="number" id="TakeImage_Contrast_value1" value="0" min="-2" max="2"
 					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
@@ -412,37 +416,186 @@
 
 		<tr>
 			<td class="indent1">
-				<span id="TakeImage_Saturation_text" style="color:black;">Saturation</span>
+				<span id="TakeImage_Saturation_text">Saturation</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_Saturation_value1"  min="-2" max="2"
+				<input required type="number" id="TakeImage_Saturation_value1" value="0" min="-2" max="2"
 					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_TakeImage_Saturation</td>
 		</tr>
 		
-		<tr class="expert">
+		<tr>
 			<td class="indent1">
-				<span id="TakeImage_FixedExposure_text" style="color:black;">Fixed Exposure</span>
+				<class id="TakeImage_Sharpness_text">Sharpness</class>
 			</td>
 			<td>
-				<select id="TakeImage_FixedExposure_value1">
-					<option value="true" selected>true</option>
-					<option value="false" >false</option>
+				<select id="TakeImage_Sharpness_value1">
+					<option value="-4">Auto</option>
+					<option value="-3">-3</option>
+					<option value="-2">-2</option>
+					<option value="-1">-1</option>
+					<option value="0" selected> 0</option>
+					<option value="1"> 1</option>
+					<option value="2"> 2</option>
+					<option value="3"> 3</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_TakeImage_FixedExposure</td>
+			<td>$TOOLTIP_TakeImage_Sharpness</td>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<class id="TakeImage_ExposureControlMode_text">Exposure Control Mode</class>
+			</td>
+			<td>
+				<select id="TakeImage_ExposureControlMode_value1" 
+						onchange='setEnabled("TakeImage_ExposureControlModeAuto_parameter", this.value > 0 ? true : false);
+						setEnabled("TakeImage_ExposureControlModeManual_parameter", this.value == 0 ? true : false);'>
+                    <option value="0">Manual</option>
+					<option value="1" selected>Auto</option>
+                    <option value="2">Auto (AEC2)</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_TakeImage_ExposureControlMode</td>
+		</tr>
+
+		<tr class="TakeImage_ExposureControlModeAuto_parameter">
+			<td class="indent1">
+				<class id="TakeImage_AutoExposureLevel_text">Auto Exposure Level</class>
+			</td>
+			<td>
+				<input required type="number" id="TakeImage_AutoExposureLevel_value1" value="0" min="-2" max="2"
+					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2));">
+			</td>
+			<td>$TOOLTIP_TakeImage_AutoExposureLevel</td>
+		</tr>
+
+		<tr class="TakeImage_ExposureControlModeManual_parameter">
+			<td class="indent1">
+				<class id="TakeImage_ManualExposureValue_text">Manual Exposure Value</class>
+			</td>
+			<td>
+				<input required type="number" id="TakeImage_ManualExposureValue_value1" value="300" min="0" max="1200"
+					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1200));">
+			</td>
+			<td>$TOOLTIP_TakeImage_ManualExposureValue</td>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<class id="TakeImage_GainControlMode_text">Gain Control Mode</class>
+			</td>
+			<td>
+				<select id="TakeImage_GainControlMode_value1" 
+						onchange='setEnabled("TakeImage_GainControlModeManual_parameter", this.value == 0 ? true : false);'>
+                    <option value="0">Manual</option>
+					<option value="1" selected>Auto</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_TakeImage_GainControlMode</td>
+		</tr>
+
+		<tr class="TakeImage_GainControlModeManual_parameter">
+			<td class="indent1">
+				<class id="TakeImage_ManualGainValue_text">Manual Gain Value</class>
+			</td>
+			<td>
+				<input required type="number" id="TakeImage_ManualGainValue_value1" value="0" min="0" max="5"
+					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5));">
+			</td>
+			<td>$TOOLTIP_TakeImage_ManualGainValue</td>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<class id="TakeImage_SpecialEffect_text">Special Effect</class>
+			</td>
+			<td>
+				<select id="TakeImage_SpecialEffect_value1">
+					<option value="0" selected>None</option>
+					<option value="1">Negative</option>
+					<option value="2">Grayscale</option>
+                    <option value="7">Gray+Negative</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_TakeImage_SpecialEffect</td>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<class id="TakeImage_MirrorImage_text">Mirror Image</class>
+			</td>
+			<td>
+				<select id="TakeImage_MirrorImage_value1">
+					<option value="false" selected>false</option>
+					<option value="true">true</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_TakeImage_MirrorImage</td>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<class id="TakeImage_FlipImage_text">Flip Image</class>
+			</td>
+			<td>
+				<select id="TakeImage_FlipImage_value1">
+					<option value="false" selected>false</option>
+					<option value="true">true</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_TakeImage_FlipImage</td>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<class id="TakeImage_ZoomMode_text">Zoom Mode</class>
+			</td>
+			<td>
+				<select id="TakeImage_ZoomMode_value1" 
+						onchange='setEnabled("TakeImage_Zoom_parameter", this.value > 0 ? true : false);'>
+                    <option value="0" selected>Off</option>
+					<option value="1">Crop</option>
+					<option value="2">Scale & Crop</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_TakeImage_ZoomMode</td>
+		</tr>
+
+		<tr class="TakeImage_Zoom_parameter">
+
+			<td class="indent1">
+				<class id="TakeImage_ZoomOffsetX_text">Zoom Offset X</class>
+			</td>
+			<td>
+				<input required type="number" id="TakeImage_ZoomOffsetX_value1" value="0" min="0" max="960" 
+					oninput="(!validity.rangeOverflow||(value=960)) && (!validity.rangeUnderflow||(value=0));">Pixel
+			</td>
+			<td>$TOOLTIP_TakeImage_ZoomOffsetX</td>
+		</tr>
+
+		<tr class="TakeImage_Zoom_parameter">
+
+			<td class="indent1">
+				<class id="TakeImage_ZoomOffsetY_text">Zoom Offset Y</class>
+			</td>
+			<td>
+				<input required type="number" id="TakeImage_ZoomOffsetY_value1" value="0" min="0" max="720" 
+					oninput="(!validity.rangeOverflow||(value=720)) && (!validity.rangeUnderflow||(value=0));">Pixel
+			</td>
+			<td>$TOOLTIP_TakeImage_ZoomOffsetY</td>
 		</tr>
 
 		<tr class="expert">
 			<td class="indent1">
-				<span id="TakeImage_Demo_text" style="color:black;">Demo Mode</span>
+				<span id="TakeImage_Demo_text">Demo Mode</span>
 			</td>
 			<td>
 				<select id="TakeImage_Demo_value1">
-					<option value="true">true</option>
 					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_TakeImage_Demo</td>
@@ -483,7 +636,7 @@
 			    <span id="Alignment_SearchFieldX_text" style="color:black;">Search Field X</span>
 			</td>
 			<td>
-				<input required type="number" name="name" id="Alignment_SearchFieldX_value1"  min="1"  step="1"
+				<input required type="number" name="name" id="Alignment_SearchFieldX_value1" min="1" step="1"
 					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Pixel
 			</td>
 			<td>$TOOLTIP_Alignment_SearchFieldX</td>
@@ -500,42 +653,29 @@
 			<td>$TOOLTIP_Alignment_SearchFieldY</td>
 		</tr>
 
-		<tr class="expert">
-			<td class="indent1">
-			    <span id="Alignment_FlipImageSize_text" style="color:black;">Flip Image Size</span>
-			</td>
-			<td>
-				<select id="Alignment_FlipImageSize_value1">
-					<option value="true">true</option>
-					<option value="false" selected>false</option>
-				</select>
-			</td>
-			<td>$TOOLTIP_Alignment_FlipImageSize</td>
-		</tr>
-
 		<tr>
 			<td class="indent1">
 			    <span id="Alignment_InitialRotate_text" style="color:black;">Image Rotation</span>
 			</td>
 			<td>
-				<input required type="number" name="name" id="Alignment_InitialRotate_value1"  min="-360.0" max="360.0" step="0.1"
+				<input required type="number" name="name" id="Alignment_InitialRotate_value1" min="-360.0" max="360.0" step="0.1"
 				oninput="(!validity.rangeUnderflow||(value=-360.0)) && (!validity.rangeOverflow||(value=360.0)) && 
 				(!validity.stepMismatch||(value=parseInt(this.value)));">Degree
 			</td>
 			<td>$TOOLTIP_Alignment_InitialRotate</td>
 		</tr>
 
-		<tr>
+		<tr class="expert">
 			<td class="indent1">
-			    <span id="Alignment_InitialMirror_text" style="color:black;">Mirror Image</span>
+			    <span id="Alignment_FlipImageSize_text" style="color:black;">Flip Image Size</span>
 			</td>
 			<td>
-				<select id="Alignment_InitialMirror_value1">
-					<option value="true">true</option>
+				<select id="Alignment_FlipImageSize_value1">
 					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_Alignment_InitialMirror</td>
+			<td>$TOOLTIP_Alignment_FlipImageSize</td>
 		</tr>
 
 		<tr class="expert">
@@ -544,8 +684,8 @@
 			</td>
 			<td>
 				<select id="Alignment_SaveDebugInfo_value1">
-					<option value="true">true</option>
 					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_Alignment_SaveDebugInfo</td>
@@ -563,7 +703,7 @@
 
 		<tr id="Category_Digits_ex4">
 			<th colspan="3">
-				<input type="checkbox" id="Category_Digits_enabled" value="1"  onclick ='UpdateAfterCategoryCheck()'  >
+				<input type="checkbox" id="Category_Digits_enabled" value="1" onclick='UpdateAfterCategoryCheck()'>
 				<label for=Category_Digits_enabled>Digit ROI Processing</label>
 			</th>
 		</tr>
@@ -593,8 +733,10 @@
 
 		<tr class="DigitItem expert">
 			<td class="indent1">
-				<input type="checkbox" id="Digits_ROIImagesLocation_enabled" value="1"  onclick = 'InvertEnableItem("Digits", "ROIImagesLocation")'  >
-				<label for=Digits_ROIImagesLocation_enabled><span id="Digits_ROIImagesLocation_text" style="color:black;">ROI Images Location</span></label>
+				<input type="checkbox" id="Digits_ROIImagesLocation_enabled" value="1" 
+								onclick='InvertEnableItem("Digits", "ROIImagesLocation")'>
+				<label for=Digits_ROIImagesLocation_enabled><span id="Digits_ROIImagesLocation_text" 
+								style="color:black;">ROI Images Location</span></label>
 			</td>
 			<td>
 				<input required type="text" name="name" id="Digits_ROIImagesLocation_value1">
@@ -604,8 +746,10 @@
 
 		<tr class="DigitItem expert">
 			<td class="indent1">
-				<input type="checkbox" id="Digits_ROIImagesRetention_enabled" value="1"  onclick = 'InvertEnableItem("Digits", "ROIImagesRetention")'  >
-				<label for=Digits_ROIImagesRetention_enabled><span id="Digits_ROIImagesRetention_text" style="color:black;">ROI Images Retention</span></label>
+				<input type="checkbox" id="Digits_ROIImagesRetention_enabled" value="1" 
+								onclick='InvertEnableItem("Digits", "ROIImagesRetention")'>
+				<label for=Digits_ROIImagesRetention_enabled><span id="Digits_ROIImagesRetention_text" 
+								style="color:black;">ROI Images Retention</span></label>
 			</td>
 			<td>
 				<input required type="number" id="Digits_ROIImagesRetention_value1" min="0"  step="1"
@@ -626,7 +770,7 @@
 
 		<tr id="Category_Analog_ex4">
 			<th colspan="3">
-				<input type="checkbox" id="Category_Analog_enabled" value="1"  onclick = 'UpdateAfterCategoryCheck()'  >
+				<input type="checkbox" id="Category_Analog_enabled" value="1" onclick='UpdateAfterCategoryCheck()'>
 				<label for=Category_Analog_enabled>Analog ROI Processing</label>
 			</th>
 		</tr>
@@ -644,8 +788,10 @@
 
 		<tr class="AnalogItem expert">
 			<td class="indent1">
-				<input type="checkbox" id="Analog_ROIImagesLocation_enabled" value="1"  onclick = 'InvertEnableItem("Analog", "ROIImagesLocation")'  >
-				<label for=Analog_ROIImagesLocation_enabled><span id="Analog_ROIImagesLocation_text" style="color:black;">ROI Images Location</span>
+				<input type="checkbox" id="Analog_ROIImagesLocation_enabled" value="1" 
+								onclick='InvertEnableItem("Analog", "ROIImagesLocation")'>
+				<label for=Analog_ROIImagesLocation_enabled>
+							<span id="Analog_ROIImagesLocation_text" style="color:black;">ROI Images Location</span>
 				</label>
 			</td>
 			<td> <input required type="text" name="name" id="Analog_ROIImagesLocation_value1"> </td>
@@ -654,8 +800,10 @@
 
 		<tr class="AnalogItem expert">
 			<td class="indent1">
-				<input type="checkbox" id="Analog_ROIImagesRetention_enabled" value="1"  onclick = 'InvertEnableItem("Analog", "ROIImagesRetention")'  >
-				<label for=Analog_ROIImagesRetention_enabled><span id="Analog_ROIImagesRetention_text" style="color:black;">ROI Images Retention</span></label></td>
+				<input type="checkbox" id="Analog_ROIImagesRetention_enabled" value="1" 
+								onclick='InvertEnableItem("Analog", "ROIImagesRetention")'>
+				<label for=Analog_ROIImagesRetention_enabled>
+							<span id="Analog_ROIImagesRetention_text" style="color:black;">ROI Images Retention</span></label></td>
 			<td> 
 				<input required type="number" id="Analog_ROIImagesRetention_value1" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
@@ -683,8 +831,8 @@
 			</td>
 			<td>
 				<select id="PostProcessing_FallbackValueUse_value1">
-					<option value="true" selected>true</option>
 					<option value="false" >false</option>
+					<option value="true" selected>true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_PostProcessing_FallbackValueUse</td>
@@ -695,7 +843,7 @@
 				<span id="PostProcessing_FallbackValueAgeStartup_text" style="color:black;">Max. Age of Fallback Value</span>
 			</td>
 			<td>
-				<input required type="number" id="PostProcessing_FallbackValueAgeStartup_value1"  min="0"
+				<input required type="number" id="PostProcessing_FallbackValueAgeStartup_value1" min="0"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Minutes
 			</td>
 			<td>$TOOLTIP_PostProcessing_FallbackValueAgeStartup</td>
@@ -707,8 +855,8 @@
 			</td>
 			<td>
 				<select id="PostProcessing_CheckDigitIncreaseConsistency_value1">
-					<option value="true" selected>true</option>
 					<option value="false" >false</option>
+					<option value="true" selected>true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_PostProcessing_CheckDigitIncreaseConsistency</td>
@@ -725,12 +873,12 @@
 
 		<tr class="expert">
 			<td class="indent2">
-				<span id="PostProcessing_AllowNegativeRates_text" style="color:black;">Allow Negative Rates</span>
+				<span id="PostProcessing_AllowNegativeRates_text" style="color:black;">Allow Negative Rate</span>
 			</td>
 			<td>
 				<select id="PostProcessing_AllowNegativeRates_value1">
-					<option value="true" selected>true</option>
 					<option value="false" >false</option>
+					<option value="true" selected>true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.AllowNegativeRates</td>
@@ -753,9 +901,9 @@
 				<span id="PostProcessing_AnalogDigitalTransitionStart_text" style="color:black;">Analog/Digital Transition Start</span>
 			</td>
 			<td>
-				<input required type="number" id="PostProcessing_AnalogDigitalTransitionStart_value1" step="0.1" min="6.0" max="9.9" value="9.2"
-					oninput="(!validity.rangeUnderflow||(value=6.0)) && (!validity.rangeOverflow||(value=9.9)) && 
-						(!validity.stepMismatch||(value=parseInt(this.value)));">
+				<input required type="number" id="PostProcessing_AnalogDigitalTransitionStart_value1" step="0.1" 
+					min="6.0" max="9.9" value="9.2" oninput="(!validity.rangeUnderflow||(value=6.0)) && 
+					(!validity.rangeOverflow||(value=9.9)) && (!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.AnalogDigitalTransitionStart</td>
 		</tr>
@@ -791,8 +939,8 @@
 			</td>
 			<td>
 				<select id="PostProcessing_ExtendedResolution_value1">
-					<option value="true" >true</option>
 					<option value="false" selected>false</option>
+					<option value="true" >true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.ExtendedResolution</td>
@@ -804,8 +952,8 @@
 			</td>
 			<td>
 				<select id="PostProcessing_IgnoreLeadingNaN_value1">
-					<option value="true" >true</option>
 					<option value="false" selected>false</option>
+					<option value="true" >true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.IgnoreLeadingNaN</td>
@@ -817,8 +965,8 @@
 			</td>
 			<td>
 				<select id="PostProcessing_SaveDebugInfo_value1">
-					<option value="true">true</option>
 					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_PostProcessing_SaveDebugInfo</td>
@@ -836,7 +984,7 @@
 
 		<tr>
 			<th colspan="3">
-				<input type="checkbox" id="Category_MQTT_enabled" value="1"  onclick = 'UpdateAfterCategoryCheck()'  >
+				<input type="checkbox" id="Category_MQTT_enabled" value="1" onclick='UpdateAfterCategoryCheck()'>
 				<label for=Category_MQTT_enabled>MQTT</label>
 			</th>
 		</tr>
@@ -873,7 +1021,7 @@
 
 		<tr class="MQTTItem">
 			<td class="indent1">
-				<input type="checkbox" id="MQTT_user_enabled" value="1"  onclick = 'InvertEnableItem("MQTT", "user")'  >
+				<input type="checkbox" id="MQTT_user_enabled" value="1" onclick ='InvertEnableItem("MQTT", "user")'>
 				<label for=MQTT_user_enabled><span id="MQTT_user_text" style="color:black;">Username</span></label>
 			</td>
 			<td>
@@ -884,7 +1032,7 @@
 
 		<tr class="MQTTItem">
 			<td class="indent1">
-				<input type="checkbox" id="MQTT_password_enabled" value="1"  onclick = 'InvertEnableItem("MQTT", "password")'  >
+				<input type="checkbox" id="MQTT_password_enabled" value="1" onclick='InvertEnableItem("MQTT", "password")'>
 				<label for=MQTT_password_enabled><span id="MQTT_password_text" style="color:black;">Password</span></label>
 			</td>
 			<td>
@@ -898,9 +1046,10 @@
 				<span id="MQTT_TLSEncryption_text" style="color:black;">TLS Encryption</span>
 			</td>
 			<td>
-				<select id="MQTT_TLSEncryption_value1" onchange='setEnabled("MQTT_TLSEncryption_parameter", this.value == "true" ? true : false);'>
-					<option value="true">true</option>
+				<select id="MQTT_TLSEncryption_value1" onchange='setEnabled("MQTT_TLSEncryption_parameter", 
+						this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_MQTT_TLSEncryption</td>
@@ -942,8 +1091,8 @@
 			</td>
 			<td>
 				<select id="MQTT_RetainMessages_value1">
-					<option value="true" selected>true</option>
 					<option value="false" >false</option>
+					<option value="true" selected>true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_MQTT_RetainMessages</td>
@@ -961,8 +1110,8 @@
 			</td>
 			<td>
 				<select id="MQTT_HomeassistantDiscovery_value1">
-					<option value="true" selected>true</option>
 					<option value="false" >false</option>
+					<option value="true" selected>true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_MQTT_HomeassistantDiscovery</td>
@@ -973,7 +1122,8 @@
 				<span id="MQTT_MeterType_text" style="color:black;">Meter Type</span>
 			</td>
 			<td>
-				<select class="select_large" id="MQTT_MeterType_value1"> <!--  See https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes -->
+				 <!--  See https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes -->
+				<select class="select_large" id="MQTT_MeterType_value1">
 					<option value="other" selected>Other (no Units)</option>
 					<option value="water_m3">Watermeter (Value: m³, Rate: m³/h)</option>
 					<option value="water_l">Watermeter (Value: l, Rate: l/h)</option>
@@ -1002,7 +1152,7 @@
 
 		<tr>
 			<th colspan="3">
-				<input type="checkbox" id="Category_InfluxDB_enabled" value="1"  onclick = 'UpdateAfterCategoryCheck()'  >
+				<input type="checkbox" id="Category_InfluxDB_enabled" value="1" onclick='UpdateAfterCategoryCheck()'>
 				<label for=Category_InfluxDB_enabled>InfluxDB v1.x</label>
 			</th>
 		</tr>
@@ -1029,7 +1179,7 @@
 
 		<tr class="InfluxDBv1Item">
 			<td class="indent1">
-				<input type="checkbox" id="InfluxDB_user_enabled" value="1"  onclick = 'InvertEnableItem("InfluxDB", "user")'  >
+				<input type="checkbox" id="InfluxDB_user_enabled" value="1" onclick='InvertEnableItem("InfluxDB", "user")'>
 				<label for=InfluxDB_user_enabled><span id="InfluxDB_user_text" style="color:black;">Username</span></label>
 			</td>
 			<td>
@@ -1040,7 +1190,7 @@
 
 		<tr class="InfluxDBv1Item">
 			<td class="indent1">
-				<input type="checkbox" id="InfluxDB_password_enabled" value="1"  onclick = 'InvertEnableItem("InfluxDB", "password")'  >
+				<input type="checkbox" id="InfluxDB_password_enabled" value="1" onclick='InvertEnableItem("InfluxDB", "password")'>
 				<label for=InfluxDB_password_enabled><span id="InfluxDB_password_text" style="color:black;">Password</span></label>
 			</td>
 			<td>
@@ -1054,9 +1204,10 @@
 				<span id="InfluxDB_TLSEncryption_text" style="color:black;">TLS Encryption</span>
 			</td>
 			<td>
-				<select id="InfluxDB_TLSEncryption_value1" onchange='setEnabled("InfluxDB_TLSEncryption_parameter", this.value == "true" ? true : false);'>
-					<option value="true">true</option>
+				<select id="InfluxDB_TLSEncryption_value1" onchange='setEnabled("InfluxDB_TLSEncryption_parameter", 
+						this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_InfluxDB_TLSEncryption</td>
@@ -1133,7 +1284,7 @@
 
 		<tr>
 			<th colspan="3">
-				<input type="checkbox" id="Category_InfluxDBv2_enabled" value="1"  onclick = 'UpdateAfterCategoryCheck()'  >
+				<input type="checkbox" id="Category_InfluxDBv2_enabled" value="1" onclick='UpdateAfterCategoryCheck()'>
 				<label for=Category_InfluxDBv2_enabled>InfluxDB v2.x</label>
 			</th>
 		</tr>
@@ -1160,7 +1311,7 @@
 
 		<tr class="InfluxDBv2Item">
 			<td class="indent1">
-				<input type="checkbox" id="InfluxDBv2_Org_enabled" value="1"  onclick = 'InvertEnableItem("InfluxDBv2", "Org")'  >
+				<input type="checkbox" id="InfluxDBv2_Org_enabled" value="1" onclick='InvertEnableItem("InfluxDBv2", "Org")'>
 				<label for=InfluxDBv2_Org_enabled><span id="InfluxDBv2_Org_text" style="color:black;">Organization (Org)</span></label>
 			</td>
 			<td>
@@ -1171,7 +1322,7 @@
 
 		<tr class="InfluxDBv2Item">
 			<td class="indent1">
-				<input type="checkbox" id="InfluxDBv2_Token_enabled" value="1"  onclick = 'InvertEnableItem("InfluxDBv2", "Token")'  >
+				<input type="checkbox" id="InfluxDBv2_Token_enabled" value="1" onclick='InvertEnableItem("InfluxDBv2", "Token")'>
 				<label for=InfluxDBv2_Token_enabled><span id="InfluxDBv2_Token_text" style="color:black;">Token</span></label>
 			</td>
 			<td>
@@ -1185,9 +1336,10 @@
 				<span id="InfluxDBv2_TLSEncryption_text" style="color:black;">TLS Encryption</span>
 			</td>
 			<td>
-				<select id="InfluxDBv2_TLSEncryption_value1" onchange='setEnabled("InfluxDBv2_TLSEncryption_parameter", this.value == "true" ? true : false);'>
-					<option value="true">true</option>
+				<select id="InfluxDBv2_TLSEncryption_value1" onchange='setEnabled("InfluxDBv2_TLSEncryption_parameter", 
+						this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_InfluxDBv2_TLSEncryption</td>
@@ -1264,7 +1416,7 @@
 
 		<tr>
 			<th colspan="3">
-				<input type="checkbox" id="Category_GPIO_enabled" value="1"  onclick='UpdateAfterCategoryCheck()'  > 
+				<input type="checkbox" id="Category_GPIO_enabled" value="1" onclick='UpdateAfterCategoryCheck()'> 
 				    <label for=Category_GPIO_enabled>GPIO (General Purpose Input / Output)</label>
 			</th>
 		</tr>
@@ -1272,7 +1424,7 @@
 		<!-- GPIO0 begin -->
 		<tr class="GPIO_IO0 GPIO_item expert">
 			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO0_enabled" value="1"  onclick = 'InvertEnableItem("GPIO", "IO0")' >
+				<input type="checkbox" id="GPIO_IO0_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO0")'>
 				<label for=GPIO_IO0_enabled><span id="GPIO_IO0_text">GPIO0 Configuration</span></label>
 			</td>
 			<td>
@@ -1343,7 +1495,7 @@
 		<!-- GPIO1 begin -->
 		<tr class="GPIO_IO1 GPIO_item expert">
 			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO1_enabled" value="1"  onclick = 'InvertEnableItem("GPIO", "IO1")' >
+				<input type="checkbox" id="GPIO_IO1_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO1")'>
 				<label for=GPIO_IO1_enabled><span id="GPIO_IO1_text">GPIO1 Configuration</span></label>
 			</td>
 			<td>
@@ -1413,7 +1565,7 @@
 		<!-- GPIO3 begin -->
 		<tr class="GPIO_IO3 GPIO_item expert">
 			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO3_enabled" value="1"  onclick = 'InvertEnableItem("GPIO", "IO3")' >
+				<input type="checkbox" id="GPIO_IO3_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO3")'>
 				<label for=GPIO_IO3_enabled><span id="GPIO_IO3_text">GPIO3 Configuration</span></label>
 			</td>
 			<td>
@@ -1483,7 +1635,7 @@
 		<!-- GPIO4 begin -->
 		<tr class="GPIO_item" style="border-bottom: 0px;">
 			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO4_enabled" value="1"  onclick = 'InvertEnableItem("GPIO", "IO4")' checked>
+				<input type="checkbox" id="GPIO_IO4_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO4")' checked>
 				<label for=GPIO_IO4_enabled><span id="GPIO_IO4_text">GPIO4 Configuration</span></label>
 			</td>
 			<td>
@@ -1563,7 +1715,7 @@
 		<!-- GPIO12 begin -->
 		<tr class="GPIO_item">
 			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO12_enabled" value="1"  onclick = 'InvertEnableItem("GPIO", "IO12")' >
+				<input type="checkbox" id="GPIO_IO12_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO12")'>
 				<label for=GPIO_IO12_enabled><span id="GPIO_IO12_text">GPIO12 Configuration</span></label>
 			</td>
 			<td>
@@ -1678,7 +1830,7 @@
 		<!-- GPIO13 begin -->
 		<tr class="GPIO_IO13 GPIO_item expert">
 			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO13_enabled" value="1"  onclick = 'InvertEnableItem("GPIO", "IO13")' >
+				<input type="checkbox" id="GPIO_IO13_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO13")'>
 				<label for=GPIO_IO13_enabled><span id="GPIO_IO13_text">GPIO13 Configuration</span></label>
 			</td>
 			<td>
@@ -1764,8 +1916,8 @@
 			</td>
 			<td>
 				<select id="AutoTimer_AutoStart_value1">
-					<option value="true" selected>true</option>
 					<option value="false" >false</option>
+					<option value="true" selected>true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_AutoTimer_AutoStart</td>
@@ -1801,8 +1953,8 @@
 			</td>
 			<td>
 				<select id="DataLogging_DataLogActive_value1">
-					<option value="true" selected>true</option>
 					<option value="false" >false</option>
+					<option value="true" selected>true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_DataLogging_DataLogActive</td>
@@ -1813,7 +1965,7 @@
 				<span id="DataLogging_DataFilesRetention_text" style="color:black;">Data Files Retention</span>
 			</td>
 			<td>
-				<input required type="number" id="DataLogging_DataFilesRetention_value1"  min="0" step="1"
+				<input required type="number" id="DataLogging_DataFilesRetention_value1" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
 			<td>$TOOLTIP_DataLogging_DataFilesRetention</td>
@@ -1853,7 +2005,7 @@
 				<span id="Debug_LogfilesRetention_text" style="color:black;">Log Files Retention</span>
 			</td>
 			<td>
-				<input required type="number" id="Debug_LogfilesRetention_value1"  min="0" step="1"
+				<input required type="number" id="Debug_LogfilesRetention_value1" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
 			<td>$TOOLTIP_Debug_LogfilesRetention</td>
@@ -1864,7 +2016,7 @@
 				<span id="Debug_DebugFilesRetention_text" style="color:black;">Debug Files Retention</span>
 			</td>
 			<td>
-				<input required type="number" id="Debug_DebugFilesRetention_value1"  min="0" step="1"
+				<input required type="number" id="Debug_DebugFilesRetention_value1" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
 			<td>$TOOLTIP_Debug_DebugFilesRetention</td>
@@ -1885,7 +2037,7 @@
 
 		<tr>
 			<td class="indent1">
-				<input type="checkbox" id="System_TimeServer_enabled" value="1"  onclick = 'InvertEnableItem("System", "TimeServer")' checked >
+				<input type="checkbox" id="System_TimeServer_enabled" value="1" onclick='InvertEnableItem("System", "TimeServer")' checked>
 				<label for=System_TimeServer_enabled><span id="System_TimeServer_text" style="color:black;">Time Server (NTP)</span></label>
 			</td>
 			<td>
@@ -1918,8 +2070,10 @@
 
 		<tr class="expert">
 			<td class="indent1">
-				<input type="checkbox" id="System_RSSIThreshold_enabled" value="1"  onclick = 'InvertEnableItem("System", "RSSIThreshold")'  >
-				<label for=System_RSSIThreshold_enabled><span id="System_RSSIThreshold_text" style="color:black;">WIFI Roaming RSSI Threshold</span></label>
+				<input type="checkbox" id="System_RSSIThreshold_enabled" value="1" 
+							onclick='InvertEnableItem("System", "RSSIThreshold")'>
+				<label for=System_RSSIThreshold_enabled>
+						<span id="System_RSSIThreshold_text" style="color:black;">WIFI Roaming RSSI Threshold</span></label>
 			</td>
 			<td>
 				<input required type="number" name="name" id="System_RSSIThreshold_value1" min="-100" max="0" step="1"
@@ -1965,9 +2119,10 @@
 				<span id="WebUI_OverviewAutoRefresh_text" style="color:black;">Auto Refresh</span>
 			</td>
 			<td>
-				<select id="WebUI_OverviewAutoRefresh_value1" onchange='setEnabled("WebUI_OverviewAutoRefresh_parameter", this.value == "true" ? true : false);'>
-					<option value="true" selected>true</option>
+				<select id="WebUI_OverviewAutoRefresh_value1" onchange='setEnabled("WebUI_OverviewAutoRefresh_parameter", 
+						this.value == "true" ? true : false);'>
 					<option value="false" >false</option>
+					<option value="true" selected>true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_WebUI_OverviewAutoRefresh</td>
@@ -1995,9 +2150,10 @@
 				<span id="WebUI_DataGraphAutoRefresh_text" style="color:black;">Auto Refresh</span>
 			</td>
 			<td>
-				<select id="WebUI_DataGraphAutoRefresh_value1" onchange='setEnabled("WebUI_DataGraphAutoRefresh_parameter", this.value == "true" ? true : false);'>
-					<option value="true">true</option>
+				<select id="WebUI_DataGraphAutoRefresh_value1" onchange='setEnabled("WebUI_DataGraphAutoRefresh_parameter", 
+						this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_WebUI_DataGraphAutoRefresh</td>
@@ -2008,7 +2164,7 @@
 				<span id="WebUI_DataGraphAutoRefreshTime_text" style="color:black;">Auto Refresh Time</span>
 			</td>
 			<td>
-				<input required type="number" id="WebUI_DataGraphAutoRefreshTime_value1"  min="1" step="1"
+				<input required type="number" id="WebUI_DataGraphAutoRefreshTime_value1" min="1" step="1"
 					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Seconds
 			</td>
 			<td>$TOOLTIP_WebUI_DataGraphAutoRefreshTime</td>
@@ -2232,8 +2388,10 @@
 		for (i = 0; i < elements.length; i++) {
 			if (enabled) {
 				elements[i].classList.remove("disabled");
+				elements[i].disabled = false;
 			} else {
 				elements[i].classList.add("disabled");
+				elements[i].disabled = true;
 			}
 
 			let inputs = elements[i].getElementsByTagName("input");
@@ -2246,6 +2404,19 @@
 					inputs[j].removeAttribute("disabled");
 				} else {
 					inputs[j].setAttribute("disabled", "disabled");
+				}
+			}
+
+			let select = elements[i].getElementsByTagName("select");
+			for (j = 0; j < select.length; j++) {
+				if (select[j].id.endsWith("_enabled"))
+					continue;
+
+					select[j].style.color = _color;
+				if (enabled) {
+					select[j].removeAttribute("disabled");
+				} else {
+					select[j].setAttribute("disabled", "disabled");
 				}
 			}
 		}
@@ -2431,23 +2602,33 @@
 
 		WriteParameter(param, category, "TakeImage", "RawImagesLocation", true);
 		WriteParameter(param, category, "TakeImage", "RawImagesRetention", true);
-		WriteParameter(param, category, "TakeImage", "Demo", false);
-		WriteParameter(param, category, "TakeImage", "WaitBeforeTakingPicture", false);
+		WriteParameter(param, category, "TakeImage", "FlashTime", false);
+		WriteParameter(param, category, "TakeImage", "FlashIntensity", false);
 		WriteParameter(param, category, "TakeImage", "CameraFrequency", false);
 		WriteParameter(param, category, "TakeImage", "ImageQuality", false);
+		WriteParameter(param, category, "TakeImage", "ImageSize", false);
 		WriteParameter(param, category, "TakeImage", "Brightness", false);
 		WriteParameter(param, category, "TakeImage", "Contrast", false);
 		WriteParameter(param, category, "TakeImage", "Saturation", false);
-		WriteParameter(param, category, "TakeImage", "LEDIntensity", false);
-		WriteParameter(param, category, "TakeImage", "ImageSize", false);
-		WriteParameter(param, category, "TakeImage", "FixedExposure", false);
+        WriteParameter(param, category, "TakeImage", "Sharpness", false);
+        WriteParameter(param, category, "TakeImage", "ExposureControlMode", false);
+        WriteParameter(param, category, "TakeImage", "AutoExposureLevel", false);
+        WriteParameter(param, category, "TakeImage", "ManualExposureValue", false);
+        WriteParameter(param, category, "TakeImage", "GainControlMode", false);
+        WriteParameter(param, category, "TakeImage", "ManualGainValue", false);
+		WriteParameter(param, category, "TakeImage", "SpecialEffect", false);
+		WriteParameter(param, category, "TakeImage", "MirrorImage", false);
+        WriteParameter(param, category, "TakeImage", "FlipImage", false);
+        WriteParameter(param, category, "TakeImage", "ZoomMode", false);
+        WriteParameter(param, category, "TakeImage", "ZoomOffsetX", false);
+        WriteParameter(param, category, "TakeImage", "ZoomOffsetY", false);
+		WriteParameter(param, category, "TakeImage", "Demo", false);
 
 		WriteParameter(param, category, "Alignment", "SearchFieldX", false);		
 		WriteParameter(param, category, "Alignment", "SearchFieldY", false);		
 		WriteParameter(param, category, "Alignment", "AlignmentAlgo", false);
-		WriteParameter(param, category, "Alignment", "FlipImageSize", false);
 		WriteParameter(param, category, "Alignment", "InitialRotate", false);
-		WriteParameter(param, category, "Alignment", "InitialMirror", false);
+		WriteParameter(param, category, "Alignment", "FlipImageSize", false);
 		WriteParameter(param, category, "Alignment", "SaveDebugInfo", false);
 
 		WriteParameter(param, category, "Digits", "CNNGoodThreshold", false);
@@ -2527,6 +2708,10 @@
 		WriteModelFiles();
 
 		// Visualize subparameter of a parameter
+		setEnabled("TakeImage_ExposureControlModeAuto_parameter", document.getElementById("TakeImage_ExposureControlMode_value1").value > 0 ? true : false);
+		setEnabled("TakeImage_ExposureControlModeManual_parameter", document.getElementById("TakeImage_ExposureControlMode_value1").value == 0 ? true : false);
+		setEnabled("TakeImage_GainControlModeManual_parameter", document.getElementById("TakeImage_GainControlMode_value1").value == 0 ? true : false);
+		setEnabled("TakeImage_Zoom_parameter", document.getElementById("TakeImage_ZoomMode_value1").value > 0 ? true : false);
 		setEnabled("MQTT_TLSEncryption_parameter", document.getElementById("MQTT_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("InfluxDB_TLSEncryption_parameter", document.getElementById("InfluxDB_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("InfluxDBv2_TLSEncryption_parameter", document.getElementById("InfluxDBv2_TLSEncryption_value1").value == "true" ? true : false);
@@ -2584,23 +2769,33 @@
 		
 		ReadParameter(param, "TakeImage", "RawImagesLocation", true);
 		ReadParameter(param, "TakeImage", "RawImagesRetention", true);
-		ReadParameter(param, "TakeImage", "Demo", false);
-		ReadParameter(param, "TakeImage", "WaitBeforeTakingPicture", false);
+		ReadParameter(param, "TakeImage", "FlashTime", false);
+		ReadParameter(param, "TakeImage", "FlashIntensity", false);
 		ReadParameter(param, "TakeImage", "CameraFrequency", false);
 		ReadParameter(param, "TakeImage", "ImageQuality", false);
+		ReadParameter(param, "TakeImage", "ImageSize", false);
 		ReadParameter(param, "TakeImage", "Brightness", false);
 		ReadParameter(param, "TakeImage", "Contrast", false);
 		ReadParameter(param, "TakeImage", "Saturation", false);
-		ReadParameter(param, "TakeImage", "LEDIntensity", false);
-		ReadParameter(param, "TakeImage", "ImageSize", false);
-		ReadParameter(param, "TakeImage", "FixedExposure", false);
+        ReadParameter(param, "TakeImage", "Sharpness", false);
+		ReadParameter(param, "TakeImage", "ExposureControlMode", false);
+        ReadParameter(param, "TakeImage", "AutoExposureLevel", false);
+        ReadParameter(param, "TakeImage", "ManualExposureValue", false);
+		ReadParameter(param, "TakeImage", "GainControlMode", false);
+		ReadParameter(param, "TakeImage", "ManualGainValue", false);
+		ReadParameter(param, "TakeImage", "SpecialEffect", false);
+		ReadParameter(param, "TakeImage", "MirrorImage", false);
+        ReadParameter(param, "TakeImage", "FlipImage", false);
+        ReadParameter(param, "TakeImage", "ZoomMode", false);
+        ReadParameter(param, "TakeImage", "ZoomOffsetX", false);
+        ReadParameter(param, "TakeImage", "ZoomOffsetY", false);
+		ReadParameter(param, "TakeImage", "Demo", false);
 
 		ReadParameter(param, "Alignment", "SearchFieldX", false);	
 		ReadParameter(param, "Alignment", "SearchFieldY", false);
 		ReadParameter(param, "Alignment", "AlignmentAlgo", false);
-		ReadParameter(param, "Alignment", "FlipImageSize", false);
 		ReadParameter(param, "Alignment", "InitialRotate", false);
-		ReadParameter(param, "Alignment", "InitialMirror", false);
+		ReadParameter(param, "Alignment", "FlipImageSize", false);
 		ReadParameter(param, "Alignment", "SaveDebugInfo", false);
 
 		ReadParameter(param, "Digits", "Model", false);
