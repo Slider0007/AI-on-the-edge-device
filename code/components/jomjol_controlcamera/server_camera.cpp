@@ -26,9 +26,9 @@ esp_err_t handler_camera(httpd_req_t *req)
     const std::string RESTUsageInfo = 
         "00: Handler usage:<br>"
         "1. Set camera parameter:<br>"
-        "-  '/camera?task=set_parameter&flashtime=2.0&flashintensity=1 "
-        "&brightness=0&contrast=0&saturation=0&sharpness=0&autoexposurelevel=0&aec2=true&grayscale=false&negative=false "
-        "&mirror=false&flip=false&zoom=true&zoommode=0&zoomx=0&zoomy=0'<br>"
+        "-  '/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0& "
+            "saturation=0&sharpness=1&exposurecontrolmode=0&autoexposurelevel=0&manualexposurevalue=1200& "
+            "gaincontrolmode=0&manualgainvalue=2&specialeffect=0&mirror=false&flip=false&zoommode=0&zoomx=0&zoomy=0'<br>"
         "2. Capture image<br>"
         "  - '/camera?task=capture' : Capture without flashlight<br>"
         "  - '/camera?task=capture_with_flashlight&flashtime=1000' : Capture with flashlight (flashtime in ms)<br>"
@@ -54,8 +54,8 @@ esp_err_t handler_camera(httpd_req_t *req)
     }
     else {  // if no parameter is provided, print handler usage
         httpd_resp_set_type(req, "text/html");
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, RESTUsageInfo.c_str());
-        return ESP_FAIL;
+        httpd_resp_sendstr(req, RESTUsageInfo.c_str());
+        return ESP_OK;
     }
     
     if (task.compare("set_parameter") == 0) {
@@ -149,7 +149,7 @@ esp_err_t handler_camera(httpd_req_t *req)
     else if (task.compare("capture_with_flashlight") == 0) {
         if (flashtime == 0) {
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, 
-                "E93: No flashtime provided, e.g. '/capture?type=CaptureWithFlashlight&flashtime=1000'");
+                "E93: No flashtime provided, e.g. '/capture?task=capture_with_flashlight&flashtime=1000'");
             return ESP_FAIL;
         }
 
@@ -170,13 +170,13 @@ esp_err_t handler_camera(httpd_req_t *req)
     else if (task.compare("capture_to_file") == 0) {
         if (flashtime == 0) {
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, 
-                "E93: No flashtime provided, e.g. '/capture?type=CaptureWithFlashlight&flashtime=1000'");
+                "E93: No flashtime provided, e.g. '/capture?task=capture_to_file&flashtime=1000&filename=/img_tmp/test.jpg'");
             return ESP_FAIL;
         }
 
         if (fn.compare("/sdcard/") == 0) {
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, 
-                "E94: No destination provided, e.g. '/capture?type=CaptureWithFlashlight&flashtime=1000&filename=/img_tmp/test.jpg'");
+                "E94: No destination provided, e.g. '/capture?task=capture_to_file&flashtime=1000&filename=/img_tmp/test.jpg'");
             return ESP_FAIL;
         }
 
