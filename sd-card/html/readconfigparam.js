@@ -7,36 +7,6 @@ let REFERENCES = [];     // Alignment marker
 let tflite_list = "";    // TFLite model files as tab separated list
 
 
-async function getNUMBERSList()    // Legacy: Not in use anymore (was only used for graph.html)
-{
-    return new Promise(function (resolve, reject) {
-        var url = getDomainname() + '/editflow?task=namenumbers';
-
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4) {
-            if (this.status >= 200 && this.status < 300) {
-                        var namenumberslist = xhttp.responseText;
-                        namenumberslist = namenumberslist.split("\t");
-                        return resolve(namenumberslist);
-
-                }
-                else {
-                        firework.launch("Sequence names request failed (Response status: " + this.status + 
-                                    "). Repeat action or check logs.", 'danger', 30000);
-                        console.error("Sequence names request failed. Response status: " + this.status);
-                        return reject("Sequence names request failed");
-                }
-            }
-        };
-
-        xhttp.timeout = 10000; // 10 seconds
-        xhttp.open("GET", url, true);
-        xhttp.send();
-    });
-}
-
-
 async function getDataFileList()
 {
     return new Promise(function (resolve, reject) {

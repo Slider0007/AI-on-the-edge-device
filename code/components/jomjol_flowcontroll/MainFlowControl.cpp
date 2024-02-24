@@ -384,32 +384,28 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 
 esp_err_t handler_editflow(httpd_req_t *req)
 {
-    const char* APIName = "editflow:v1"; // API name and version
+    const char* APIName = "editflow:v2"; // API name and version
     char _query[200];
     char _valuechar[30];
-    std::string type;
+    std::string task;
 
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            type = std::string(_valuechar);
+            task = std::string(_valuechar);
         }
     }
 
-    if (type.compare("api_name") == 0) {
+    if (task.compare("api_name") == 0) {
         httpd_resp_sendstr(req, APIName);
         return ESP_OK;        
     }
-    else if (type.compare("namenumbers") == 0) {
-        httpd_resp_sendstr(req, flowctrl.getNumbersName().c_str());
-        return ESP_OK;
-    }
-    else if (type.compare("data") == 0) {
+    else if (task.compare("data") == 0) {
         return get_data_file_handler(req);
     }
-    else if (type.compare("tflite") == 0) {
+    else if (task.compare("tflite") == 0) {
         return get_tflite_file_handler(req);
     }
-    else if (type.compare("copy") == 0) {
+    else if (task.compare("copy") == 0) {
         std::string in, out;
 
         httpd_query_key_value(_query, "in", _valuechar, 30);
@@ -431,7 +427,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, "Copy Done"); 
     }
-    else if (type.compare("cutref") == 0) {
+    else if (task.compare("cutref") == 0) {
         if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
             httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
@@ -488,26 +484,9 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, "CutImage Done"); 
     }
-    else if (type.compare("test_align") == 0) {
-        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
-            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
-            return ESP_FAIL;
-        }
-        std::string _host = "";
-        if (httpd_query_key_value(_query, "host", _valuechar, 30) == ESP_OK) {
-            _host = std::string(_valuechar);
-        }
-        //ESP_LOGD(TAG, "Parameter host: %s", _host.c_str());
-        //std::string zwzw = "Do " + _query + " start\n"; ESP_LOGD(TAG, zwzw.c_str());
-        std::string zw = flowctrl.doSingleStep("[Alignment]", _host);
-
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_send(req, zw.c_str(), zw.length()); 
-    }
     else {
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E93: Parameter not found");
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E91: Task not found");
         return ESP_FAIL;  
     }
 
@@ -720,9 +699,9 @@ esp_err_t handler_process_data(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_error", flowctrl.getActFlowError() ? (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT ? 
-                "E01: Process error occured" : "E02: Multiple process errors in row") : "000: No process error") == NULL)
+                "-1" : "-2") : "0") == NULL) // 0: No error, -1 (E01): One error occured, -2 (E02): Three errors in a row
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "device_uptime", getFormatedUptime(false).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "device_uptime", std::to_string(getUptime()).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -902,11 +881,12 @@ esp_err_t handler_process_data(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("process_error") == 0) {
-        httpd_resp_sendstr(req, std::to_string(flowctrl.getActFlowError()).c_str());
+        httpd_resp_sendstr(req, flowctrl.getActFlowError() ? (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT ? 
+                "E01: Process error occured" : "E02: Multiple process errors in row") : "000: No process error");
         return ESP_OK;        
     }
     else if (type.compare("device_uptime") == 0) {
-        httpd_resp_sendstr(req, getFormatedUptime(false).c_str());
+        httpd_resp_sendstr(req, std::to_string(getUptime()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("cycle_counter") == 0) {
@@ -1224,14 +1204,14 @@ void task_autodoFlow(void *pvParameter)
         else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {       
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "----------------------------------------------------------------"); // Clear separation between runs
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(++cycleCounter) + " started"); 
-            cycleStartTime = getUpTime();
+            cycleStartTime = getUptime();
             fr_start = esp_timer_get_time();
 
             flowctrl.setActFlowError(false); // Reset process_error at prcoess start
                    
             if (flowctrl.doFlowImageEvaluation(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Image evaluation completed (" + 
-                                    std::to_string(getUpTime() - cycleStartTime) + "s)");
+                                    std::to_string(getUptime() - cycleStartTime) + "s)");
             }
             else {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image evaluation process error occured");
@@ -1302,7 +1282,7 @@ void task_autodoFlow(void *pvParameter)
             // WIFI Signal Strength (RSSI) -> Logfile
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "WIFI Signal (RSSI): " + std::to_string(get_WIFI_RSSI()) + "dBm");
 
-            processingTime = (int)(getUpTime() - cycleStartTime);
+            processingTime = (int)(getUptime() - cycleStartTime);
             // Cycle finished -> Logfile
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(cycleCounter) + 
                     " completed (" + std::to_string(processingTime) + "s)");

@@ -100,7 +100,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "device_starttime", deviceStartTimestamp.c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "device_uptime", getFormatedUptime(false).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "device_uptime", std::to_string(getUptime()).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "wlan_status", getWIFIisConnected() ? "Connected" : "Disconnected") == NULL)
             retVal = ESP_FAIL;
@@ -270,7 +270,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("device_uptime") == 0) {
-        httpd_resp_sendstr(req, getFormatedUptime(false).c_str());
+        httpd_resp_sendstr(req, std::to_string(getUptime()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("wlan_status") == 0) {

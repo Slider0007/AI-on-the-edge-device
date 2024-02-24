@@ -457,7 +457,7 @@
 		</tr>
 		<tr>
 			<td>
-				Copyright &copy; 2020 - 2023 by <a href="https://github.com/jomjol/AI-on-the-edge-device" target=_blank>Jomjol</a> and others<br>
+				Copyright &copy; 2020 - 2024 by <a href="https://github.com/jomjol/AI-on-the-edge-device" target=_blank>Jomjol</a> and others<br>
 				Remark: This is a forked version by <a href="https://github.com/Slider0007/AI-on-the-edge-device" target=_blank>Slider0007</a>
 			</td>
 		</tr>
@@ -546,8 +546,8 @@
 				document.getElementById("current_time").value = _jsonData.current_time.substr(0,10) + " " +
 												_jsonData.current_time.substr(11,8) + " (UTC" +	
 												_jsonData.current_time.substr(19,5) + ")";	
-																	
-				document.getElementById("device_uptime").value = _jsonData.device_uptime;
+
+				document.getElementById("device_uptime").value = formatUptime(_jsonData.device_uptime);
 	
 				document.getElementById("wlan_status").value = _jsonData.wlan_status;
 				if (_jsonData.wlan_status == "Connected")

@@ -57,8 +57,12 @@ esp_err_t handler_camera(httpd_req_t *req)
         httpd_resp_sendstr(req, RESTUsageInfo.c_str());
         return ESP_OK;
     }
-    
-    if (task.compare("set_parameter") == 0) {
+
+    if (task.compare("api_name") == 0) {
+        httpd_resp_sendstr(req, APIName);
+        return ESP_OK;        
+    }  
+    else if (task.compare("set_parameter") == 0) {
         if (!Camera.getcameraInitSuccessful()) {
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, 
                                 "Camera not initialized: REST API /lighton not available");
@@ -203,12 +207,7 @@ esp_err_t handler_camera(httpd_req_t *req)
         httpd_resp_sendstr(req, "006: Flashlight off");
         return ESP_OK;        
     }
-    else if (task.compare("api_name") == 0) {
-        httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
-    }
     else {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_sendstr(req, "E90: Task not found");
         return ESP_ERR_NOT_FOUND;
     }

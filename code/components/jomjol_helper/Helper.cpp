@@ -572,7 +572,7 @@ std::string to_stringWithPrecision(const double _value, int _decPlace = 6)
 }
 
 
-time_t getUpTime(void)
+time_t getUptime(void)
 {
     return (uint32_t)(esp_timer_get_time()/1000/1000); // in seconds
 }
@@ -584,7 +584,7 @@ std::string getFormatedUptime(bool compact)
 	char buf[20];
 	#pragma GCC diagnostic ignored "-Wformat-truncation"
 
-    int uptime = getUpTime(); // in seconds
+    int uptime = getUptime(); // in seconds
 
     int days = int(floor(uptime / (3600*24)));
     int hours = int(floor((uptime - days * 3600*24) / (3600)));

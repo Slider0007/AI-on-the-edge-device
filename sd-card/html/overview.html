@@ -169,7 +169,7 @@
 				loadValue(_jsonData.value_status.inline, "status", "border-collapse: collapse; width: 100%");
 				$('#statusflow').html(_jsonData.process_state);
 				loadProcessError(_jsonData.process_error);
-				$('#device_uptime').html(_jsonData.device_uptime);
+				$('#device_uptime').html(formatUptime(_jsonData.device_uptime));
 				$('#cycle_counter').html(_jsonData.cycle_counter);
 				loadWLANRSSI(_jsonData.wlan_rssi);
 			}
@@ -266,7 +266,7 @@
 
 	function loadProcessError(_value)
 	{
-		if (_value !== "000: No process error") {
+		if (_value !== "0") {
 			$('#processerror').html("!!! Process error detected. Check logs !!!");
 		}
 		else {

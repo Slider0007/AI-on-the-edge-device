@@ -40,7 +40,7 @@ void memCopyGen(uint8_t* _source, uint8_t* _target, int _size);
 std::vector<std::string> HelperZerlegeZeile(std::string input, std::string _delimiter);
 std::vector<std::string> ZerlegeZeile(std::string input, std::string delimiter = " =, \t");
 
-time_t getUpTime(void);
+time_t getUptime(void);
 std::string getFormatedUptime(bool compact);
 
 const char* get404(void);

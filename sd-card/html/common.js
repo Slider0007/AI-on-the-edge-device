@@ -141,3 +141,14 @@ function compareVersions()
                         'warning', 10000);
     }
 }
+
+
+function formatUptime(uptime)
+{
+    let uptime_days = Math.floor(uptime / (3600*24));
+    let uptime_hours = Math.floor(Math.floor((uptime - uptime_days * 3600*24) / (3600)));
+    let uptime_minutes = Math.floor((uptime - uptime_days * 3600*24 - uptime_hours * 3600) / (60));
+    let uptime_seconds = uptime - uptime_days * 3600*24 - uptime_hours * 3600 - uptime_minutes * 60;
+
+    return uptime_days + "d " + uptime_hours + "h " +uptime_minutes + "m " +uptime_seconds + "s";
+}

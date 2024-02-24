@@ -216,7 +216,7 @@ bool publishSystemData(int qos)
 
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + std::string(LWT_TOPIC), LWT_CONNECTED, qos, retainFlag); // Publish "connected" to maintopic/connection
 
-    sprintf(tmp_char, "%ld", (long)getUpTime());
+    sprintf(tmp_char, "%ld", (long)getUptime());
     allSendsSuccessed |= MQTTPublish(maintopic + "/" + "uptime", std::string(tmp_char), qos, retainFlag);
     
     sprintf(tmp_char, "%lu", (long) getESPHeapSizeTotalFree());
