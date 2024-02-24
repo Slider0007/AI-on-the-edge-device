@@ -1,14 +1,11 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: rssi
+### REST API endpoint: cycle_start
 
-`http://IP-ADDRESS/rssi`
+`http://IP-ADDRESS/cycle_start`
 
 
-Get actual WLAN signal strength
-
-Unit: dBm
-
+Trigger a start of a new process cycle.
 
 Payload:
 - No payload needed
@@ -16,4 +13,5 @@ Payload:
 Response:
 - Content type: `HTML`
 - Content: Query response
-- Example: `-67`
+
+

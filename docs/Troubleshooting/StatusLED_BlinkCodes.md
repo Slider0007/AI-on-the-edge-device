@@ -191,3 +191,5 @@ The built-in access point functionality is started to perform initial remote rem
 
 ### `LED on when flashlight is on`
 The LED is solid on as long the flashlight is on. This feature has lower priority than the other LED codes. Whenever another code occurs this feature will be overrided.
+
+

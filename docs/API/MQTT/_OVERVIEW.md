@@ -155,3 +155,5 @@ GPIO pin status gets published to the following topic.
 Topic | Description | Output
 :-|:-|:-
 `[Main Topic]/GPIO/[GPIO Name]` | GPIO Pin State<br><br>Possible States:<br>- `HIGH`: `true`<br>- `LOW`: `false` | `false`
+
+

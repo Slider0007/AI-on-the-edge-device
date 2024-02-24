@@ -62,3 +62,5 @@ The following folders / files get checked during boot sequence:
 Note: This list might be outdated, see the source code for the latest implementation: [SDCardCheckFolderFilePresence()](https://github.com/slider0007/AI-on-the-edge-device/blob/develop/code/components/jomjol_helper/sdcard_check.cpp#L14)
 
 Recommendation: Check logs and / or redo a Over-The-Air Update (OTA Update) to ensure proper SD card structure
+
+

@@ -29,3 +29,5 @@ Response:
 
 !!! __Tip__: 
     Get log entries from previous days: Use [/fileserver](fileserver.md) endpoint.
+
+

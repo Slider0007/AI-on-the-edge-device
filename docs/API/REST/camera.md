@@ -10,6 +10,11 @@ Camera related tasks
 Payload:
   - `task` Task to perform
   - Available options:
+    - `api_name` API name + version
+      - Example: `/camera?task=api_name`
+      - Response:
+        - Content type: `HTML`
+        - Content: `camera:vx`
     - `set_parameter` Set camera parameter
       - Full or delta parameter update is possible
       - Possible parameter:
@@ -33,5 +38,38 @@ Payload:
       - Example: `/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0&saturation=0 &sharpness=0&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1 &manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoommode=0&zoomx=0&zoomy=0`
       - Response:
         - Content type: `HTML`
-        - Content: `001: Parameter set`
+        - Content: `001: Camer parameter set`
+    - `capture` Capture image without flashlight
+      - Example: `/camera?task=capture`
+      - Response:
+        - Content type: `HTML`
+        - Content: Raw image (JPG file)
+    - `capture_with_flashlight` Capture with flashlight
+      - Parameter:
+        - `flashtime` Flashlight time in ms
+      - Example: `/camera?task=capture_with_flashlight&flashtime=1000`
+      - Response:
+        - Content type: `HTML`
+        - Content: Raw image (JPG file)<br>
+          (Response delayed by flash duration)
+    - `capture_to_file` Capture image with flashlight and save onto SD card
+      - Parameter:
+        - `flashtime` Flashlight time in ms
+        - `filename` Filename incl. path on SD card
+      - Example: `/camera?task=capture_to_file&flashtime=1000&filename=/img_tmp/filename.jpg`
+      - Response:
+        - Content type: `HTML`
+        - Content: `/sdcard/img_tmp/test.jpg`<br>
+          (Response delayed by flash duration)
+    - `flashlight_on` Flashlight on
+      - Example: `/camera?task=flashlight_on`
+      - Response:
+        - Content type: `HTML`
+        - Content: `005: Flashlight on`
+    - `flashlight_off` Flashlight off
+      - Example: `/camera?task=flashlight_off`
+      - Response:
+        - Content type: `HTML`
+        - Content: `006: Flashlight off`
+
 
