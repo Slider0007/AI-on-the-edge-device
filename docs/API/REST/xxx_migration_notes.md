@@ -9,13 +9,12 @@ Mapping which new endpoint replaces functionality of removed endpoint:
 | [/cycle_start](cycle_start.md)       | Trigger Cycle (Flow) Start                         | HTML        | 
 | [/reload_config](reload_config.md)   | Reload Configuration                               | HTML        | 
 | [/set_fallbackvalue](set_fallbackvalue.md) | Set Fallback Value                           | HTML        | 
-| [/editflow](editflow.md)             | Parametrization Helper                             | HTML        | 
-| [/camera](camera.md)                 | Camera tasks                                       | HTML        | `/editflow?task=test_take`, `/capture`, `/capture_with_flashlight`, `/save`, `/lighton`, `/lightoff`
+| [/editflow](editflow.md)             | Parametrization Helper                             | HTML        |
+| [/camera](camera.md)                 | Camera Capture, Stream, Parametrization + Flashlight| HTML       | `/editflow?task=test_take`, `/capture`, `/capture_with_flashlight`, `/save`, `/lighton`, `/lightoff`, `/stream`
 | [/GPIO](gpio.md)                     | Read / Control GPIO                                | HTML        | 
 | [/mqtt_publish_discovery](mqtt_publish_discovery.md)|Publish Home Assistant MQTT Discovery Topics| HTML | 
 | [/data](data.md)                     | Data of today (last 80kB)                          | HTML        | `/datafileact`
 | [/log](log.md)                       | Log of today (last 80kB)                           | HTML        | `/logfileact`
-| [/stream](stream.md)                 | Camera Live Stream                                 | HTML        | 
 | [/ota](ota.md)                       | Over The Air Update                                | HTML        | 
 | [/reboot](reboot.md)                 | Trigger Reboot                                     | HTML        | 
 | [/fileserver/](fileserver.md)        | Fileserver                                         | HTML        | 

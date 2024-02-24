@@ -232,9 +232,9 @@
             streamPopup.close();
 
         if (streamFlashlight)
-            streamPopup = window.open(getDomainname() + '/stream?flashlight=true','LivestreamWithlight',streamWindowFeatures);
+            streamPopup = window.open(getDomainname() + '/camera?task=stream_flashlight','LivestreamWithlight',streamWindowFeatures);
         else
-            streamPopup = window.open(getDomainname() + '/stream','Livestream',streamWindowFeatures);
+            streamPopup = window.open(getDomainname() + '/camera?task=stream','Livestream',streamWindowFeatures);
 
         streamPopup.focus();
     }

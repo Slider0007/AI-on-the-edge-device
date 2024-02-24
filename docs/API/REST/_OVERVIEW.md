@@ -16,12 +16,12 @@ Further details can be found in the respective REST API endpoint description.
 | [/reload_config](reload_config.md)   | Reload Configuration                               | HTML        | 
 | [/set_fallbackvalue](set_fallbackvalue.md) | Set Fallback Value                           | HTML        | 
 | [/editflow](editflow.md)             | Parametrization Helper                             | HTML        | 
-| [/camera](camera.md)                 | Camera tasks                                       | HTML        | 
+| [/recognition_details](recognition_details.md)|Image Recognition Details (WebUI Page)     | HTML        |
+| [/camera](camera.md)                 | Camera Capture, Stream, Parametrization + Flashlight| HTML       | 
 | [/GPIO](gpio.md)                     | Read / Control GPIO                                | HTML        | 
 | [/mqtt_publish_discovery](mqtt_publish_discovery.md)|Publish Home Assistant MQTT Discovery Topics| HTML | 
 | [/data](data.md)                     | Data of today (last 80kB)                          | HTML        | 
 | [/log](log.md)                       | Log of today (last 80kB)                           | HTML        | 
-| [/stream](stream.md)                 | Camera Live Stream                                 | HTML        | 
 | [/ota](ota.md)                       | Over The Air Update                                | HTML        | 
 | [/reboot](reboot.md)                 | Trigger Reboot                                     | HTML        | 
 | [/fileserver/](fileserver.md)        | Fileserver                                         | HTML        | 

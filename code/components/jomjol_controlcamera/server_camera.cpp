@@ -207,6 +207,16 @@ esp_err_t handler_camera(httpd_req_t *req)
         httpd_resp_sendstr(req, "006: Flashlight off");
         return ESP_OK;        
     }
+    else if (task.compare("stream") == 0) {
+        Camera.captureToStream(req, false);
+        httpd_resp_sendstr(req, "007: Camera livestream");
+        return ESP_OK;
+    }
+    else if (task.compare("stream_flashlight") == 0) {
+        Camera.captureToStream(req, true);
+        httpd_resp_sendstr(req, "008: Camera livestream with flashlight");
+        return ESP_OK;
+    }
     else {
         httpd_resp_sendstr(req, "E90: Task not found");
         return ESP_ERR_NOT_FOUND;

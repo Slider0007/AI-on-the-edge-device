@@ -71,5 +71,19 @@ Payload:
       - Response:
         - Content type: `HTML`
         - Content: `006: Flashlight off`
+    - `stream` Camera livestream without flashlight<br>
+      __IMPORTANT__: A running stream is blocking the entire web interface (to limit memory usage for 
+                     this function). Please ensure to close stream before continue with WebUI.
+      - Example: `/camera?task=stream`
+      - Response:
+        - Content type: `HTML`
+        - Content: `007: Camera livestream`
+    - `stream_flashlight` Camera livestream with flashlight<br>
+      __IMPORTANT__: A running stream is blocking the entire web interface (to limit memory usage for 
+                     this function). Please ensure to close stream before continue with WebUI.
+      - Example: `/camera?task=stream_flashlight`
+      - Response:
+        - Content type: `HTML`
+        - Content: `008: Camera livestream with flashlight`
 
 

@@ -455,24 +455,6 @@ esp_err_t handler_get_info(httpd_req_t *req)
 }
 
 
-esp_err_t handler_get_stream(httpd_req_t *req)
-{
-    char _query[100];
-    char _valuechar[30];
-    bool flashlightOn = false;
-
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        if (httpd_query_key_value(_query, "flashlight", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            if (strlen(_valuechar) > 0)
-                flashlightOn = true;
-        }
-    }
-
-    Camera.captureToStream(req, flashlightOn);
-    return ESP_OK;
-}
-
-
 esp_err_t handler_img_tmp(httpd_req_t *req)
 {
     char filepath[50];
@@ -622,7 +604,7 @@ httpd_handle_t start_webserver(void)
     config.server_port = 80;
     config.ctrl_port = 32768;
     config.max_open_sockets = 5; //20210921 --> previously 7   
-    config.max_uri_handlers = 21; // previously 42  
+    config.max_uri_handlers = 20; // previously 42  
     config.max_resp_headers = 8;                        
     config.backlog_conn = 5;                        
     config.lru_purge_enable = true; // this cuts old connections if new ones are needed.               
@@ -686,11 +668,6 @@ void register_server_main_uri(httpd_handle_t server, const char *base_path)
     camuri.uri       = "/info";
     camuri.handler   = handler_get_info;
     camuri.user_ctx  = (void*) base_path;   // Pass server data as context
-    httpd_register_uri_handler(server, &camuri);
-
-    camuri.uri       = "/stream";
-    camuri.handler   = handler_get_stream;
-    camuri.user_ctx  = NULL;   // Pass server data as context
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/img_tmp/*";
