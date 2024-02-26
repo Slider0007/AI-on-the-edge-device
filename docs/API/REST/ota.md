@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: ota
+## REST API endpoint: ota
 
 `http://IP-ADDRESS/ota`
 
@@ -36,4 +36,4 @@ Response:
 - Content type: `HTML`
 - Content: Query response, e.g. `reboot`
 
-
+---

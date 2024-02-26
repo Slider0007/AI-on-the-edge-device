@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: logfileact
+## REST API endpoint: logfileact
 
 `http://IP-ADDRESS/logfileact`
 
@@ -30,4 +30,4 @@ Response:
 !!! __Tip__: 
     Get log entries from previous days: Use [/fileserver](fileserver.md) endpoint.
 
-
+---

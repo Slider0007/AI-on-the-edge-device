@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: fileserver
+## REST API endpoint: fileserver
 
 `http://IP-ADDRESS/fileserver/`
 
@@ -19,4 +19,4 @@ Payload:
       - Content type: `HTML`
       - Content: Content of folder (HTML table)
 
-
+---

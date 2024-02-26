@@ -36,4 +36,4 @@ Further details can be found in the respective REST API endpoint description.
 ### Migration notes (Removed / updated endpoints)
 Check migration notes for migrated or removed REST API endpoints: [Migration notes](xxx_migration_notes.md)
 
-
+---

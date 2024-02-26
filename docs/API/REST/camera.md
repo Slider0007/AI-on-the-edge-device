@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: camera
+## REST API endpoint: camera
 
 `http://IP-ADDRESS/camera`
 
@@ -86,4 +86,4 @@ Payload:
         - Content type: `HTML`
         - Content: `008: Camera livestream with flashlight`
 
-
+---

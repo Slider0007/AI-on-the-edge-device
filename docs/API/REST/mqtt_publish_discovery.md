@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: mqtt_publish_discovery
+## REST API endpoint: mqtt_publish_discovery
 
 `http://IP-ADDRESS/mqtt_publish_discovery`
 
@@ -20,4 +20,4 @@ Response:
 - Content type: `HTML`
 - Content: Query response
 
-
+---

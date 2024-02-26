@@ -1,4 +1,4 @@
-## Overview: MQTT
+## Overview: MQTT API
 
 The device is capable to register to a MQTT broker to publish data and subscribe to specific topics.
 
@@ -26,7 +26,7 @@ All data gets located under the `Main Topic` which is defined in device configur
 
 #### Home Assistant Discovery
 
-see [Home Assistant Discovery](homeassistant_discovery.md)
+see [Home Assistant Discovery](home-assistant-discovery.md)
 
 ### Topics
 
@@ -67,6 +67,7 @@ Usage Details
         }
         ```
 
+---
 
 #### Device Status (Static)
 
@@ -85,6 +86,7 @@ Topic | Description | Output
 `[Main Topic]/hostname` | Device Hostname | `watermetter`
 `[Main Topic]/interval` | [Processing Interval](../../Configuration/Parameter/AutoTimer/Interval.md) [min] | `2.0`
 
+---
 
 #### Device Status
 
@@ -103,6 +105,7 @@ Topic | Description | Output
 `[Main Topic]/status` | Process State | `Idle - Waiting for Autostart`
 `[Main Topic]/process_error` | Process Error State<br><br>Possible States:<br>- `0`: No error<br>- `1`: Three process errors in a row | `0`
 
+---
 
 #### Number Sequence Results
 
@@ -126,6 +129,7 @@ Topic | Description | Output
 `[Main Topic]/[Sequence Name]/timestamp_processed` | Timestamp of last processed cycle | `2024-02-02T16:59:24+0100`
 `[Main Topic]/[Sequence Name]/json` | Provide the following content in JSON notation: `actual_value`, `fallback_vaue`, `raw_value`, `value_status`, `rate_per_min`, `rate_per_processing`, `timestamp_processed` | `{"actual_value": "146.540", "fallback_value": "146.540", "raw_value": "146.539", "value_status": "E91 Rate negative", "rate_per_min": "0.0000", "rate_per_processing": "0.000", "timestamp_processed": "2024-02-02T20:13:54+0100"}`
 
+---
 
 #### GPIO (General Purpose Input / Output Pins)
 
@@ -144,6 +148,7 @@ Topic | Description | Payload
 :-|:-|:-
 `[Main Topic]/GPIO/[GPIO Name]` | Control GPIO Pin State | `HIGH`: `true` or `1`<br>`LOW`: `false` or `0`
 
+---
 
 ##### GPIO Status
 
@@ -156,4 +161,4 @@ Topic | Description | Output
 :-|:-|:-
 `[Main Topic]/GPIO/[GPIO Name]` | GPIO Pin State<br><br>Possible States:<br>- `HIGH`: `true`<br>- `LOW`: `false` | `false`
 
-
+---

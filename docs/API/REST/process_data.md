@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: process_data
+## REST API endpoint: process_data
 
 `http://IP-ADDRESS/process_data`
 
@@ -12,6 +12,7 @@ Get process related actual data, results and system infos (all content which is 
 - HTML: `/process_data?type=xxx&sequencename=xxx` -> Number seqeunce related data provided separate per number sequence
 
 The following data are available:
+
 | JSON Property / HTML query `type=`   | Description                                        | Output
 |:-------------------------------------|:---------------------------------------------------|:-----------------------
 | `api_name`                           | API Name + Version                                 | `process_data:v2`
@@ -120,4 +121,4 @@ The following data are available:
       - Content: HTML query response
     - Example: `/process_data?type=process_status` 
 
-
+---

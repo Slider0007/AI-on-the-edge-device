@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: info
+## REST API endpoint: info
 
 `http://IP-ADDRESS/info`
 
@@ -12,6 +12,7 @@ Data is provided using JSON notation and also by HTML query request.
 - HTML: `/info?type=xxx`
 
 The following infos are available:
+
 | JSON Property / HTML query `type=`   | Description                                        | Output
 |:-------------------------------------|:---------------------------------------------------|:-----------------------
 | `api_name`                           | Name of the API                                    | `info:v2`
@@ -137,4 +138,4 @@ The following infos are available:
       - Content: HTML query response
     - Example: `/info?type=process_status` 
 
-
+---

@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: img_tmp
+## REST API endpoint: img_tmp
 
 `http://IP-ADDRESS/img_tmp`
 
@@ -19,5 +19,5 @@ Response:
   - Content type: `image/jpeg`
   - Content: JPG file
 
-
+---
   

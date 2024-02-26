@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: set_fallbackvalue
+## REST API endpoint: set_fallbackvalue
 
 `http://IP-ADDRESS/set_fallbackvalue`
 
@@ -18,4 +18,4 @@ Payload:
       - `numbers`: Provide name of number sequence, e.g. `main`
       - `value`: Provide any negative number
 
-
+---

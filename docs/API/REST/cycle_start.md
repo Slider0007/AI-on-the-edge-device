@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: cycle_start
+## REST API endpoint: cycle_start
 
 `http://IP-ADDRESS/cycle_start`
 
@@ -14,4 +14,4 @@ Response:
 - Content type: `HTML`
 - Content: Query response
 
-
+---

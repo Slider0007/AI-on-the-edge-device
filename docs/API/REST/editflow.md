@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: editflow
+## REST API endpoint: editflow
 
 `http://IP-ADDRESS/editflow`
 
@@ -44,4 +44,4 @@ Response:
 - Content type: `HTML`
 - Content: Query response
 
-
+---

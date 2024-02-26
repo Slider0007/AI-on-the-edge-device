@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API endpoint: GPIO
+## REST API endpoint: GPIO
 
 `http://IP-ADDRESS/GPIO`
 
@@ -22,4 +22,4 @@ Response:
 - Content type: `HTML`
 - Content: Query response text
 
-
+---

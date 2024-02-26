@@ -1,4 +1,8 @@
-## Migration notes from v16.x to v17.x
+[Overview](_OVERVIEW.md)
+
+## Migration notes
+
+### Migration from v16.x to v17.x
 
 Mapping which new endpoint replaces functionality of removed endpoint:
 
@@ -22,3 +26,5 @@ Mapping which new endpoint replaces functionality of removed endpoint:
 | [/delete/](delete.md)                | File Deletion (POST)                               | HTML        | 
 | [/img_tmp/](img_tmp.md)              | Load Images From RAM                               | HTML        | 
 | /                                    | WebUI (Redirected to `index.html`)                 | HTML        | 
+
+---
