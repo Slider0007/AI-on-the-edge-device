@@ -40,13 +40,12 @@ def generateRestAPI(markdownFile):
     if "./img/" in markdownFileContent:
         markdownFileContent = markdownFileContent.replace("./img/", "/")
 
-    # Remove existing file
+    # Remove existing markdown file
     if os.path.exists(htmlFolder + "/" + docAPIRest):
         os.remove(htmlFolder + "/" + docAPIRest)
 
     with open(htmlFolder + "/" + docAPIRest, 'a') as docAPIRestHandle:
-        docAPIRestHandle.write(markdownFileContent)
-    docAPIRestHandle.close
+        docAPIRestHandle.append(markdownFileContent)
 
 
 # Generate MQTT API doc markdown file for offline usage
@@ -74,13 +73,12 @@ def generateMqttAPI(markdownFile):
     if "./img/" in markdownFileContent:
         markdownFileContent = markdownFileContent.replace("./img/", "/")
 
-    # Remove existing file
+    # Remove existing markdown file
     if os.path.exists(htmlFolder + "/" + docAPIMqtt):
         os.remove(htmlFolder + "/" + docAPIMqtt)
 
     with open(htmlFolder + "/" + docAPIMqtt, 'a') as docAPIMqttHandle:
-        docAPIMqttHandle.write(markdownFileContent)
-    docAPIMqttHandle.close
+        docAPIMqttHandle.append(markdownFileContent)
 
 
 ##########################################################################################
