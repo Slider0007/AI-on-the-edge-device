@@ -6,8 +6,8 @@ import glob
 import shutil
 
 
-docsRootFolder = "../../docs"
-docsMainFolder = "../../sd-card/html"
+docsRootFolder = "./docs"
+docsMainFolder = "./sd-card/html"
 docAPIRest = "doc_api_rest.md"
 docAPIMqtt = "doc_api_mqtt.md"
 

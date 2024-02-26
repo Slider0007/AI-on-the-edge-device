@@ -88,13 +88,12 @@ jobs:
 
     - name: Prepare WebUI (Generate parameter tooltips + Update hash)
       run: |
-        rm -rf ./html
-        mkdir ./html
-
         python -m pip install markdown
         python ./tools/parameter-tooltip-generator/generate-param-doc-tooltips.py
         python ./tools/docs-generator/generate-api-docs.py
 
+        rm -rf ./html
+        mkdir ./html
         cp -r ./sd-card/html/* ./html/
 
         echo "Replacing variables..."
