@@ -102,9 +102,9 @@ for folder in folders:
             continue
         print(file)
 
-        if (folder == "API/REST"):
+        if (folder == "REST"):
             generateRestAPI(file)
-        elif (folder == "API/MQTT"):
+        elif (folder == "MQTT"):
             generateMqttAPI(file)
 
     if os.path.exists(docsRootFolder + "/" + folder + "/img"):
