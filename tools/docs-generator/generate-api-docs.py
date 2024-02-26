@@ -6,8 +6,8 @@ import glob
 import shutil
 
 
-docsRootFolder = "./docs/API"
-docsMainFolder = "./sd-card/html"
+docsAPIRootFolder = "./docs/API"
+htmlFolder = "./sd-card/html"
 docAPIRest = "doc_api_rest.md"
 docAPIMqtt = "doc_api_mqtt.md"
 
@@ -43,10 +43,10 @@ def generateRestAPI(markdownFile):
         markdownFileContent = markdownFileContent.replace("./img/", "/")
 
     # Remove existing file
-    if os.path.exists(docsMainFolder + "/" + docAPIRest):
-        os.remove(docsMainFolder + "/" + docAPIRest)
+    if os.path.exists(htmlFolder + "/" + docAPIRest):
+        os.remove(htmlFolder + "/" + docAPIRest)
 
-    with open(docsMainFolder + "/" + docAPIRest, 'a') as docAPIRestHandle:
+    with open(htmlFolder + "/" + docAPIRest, 'a') as docAPIRestHandle:
         docAPIRestHandle.write(markdownFileContent)
 
 
@@ -78,10 +78,10 @@ def generateMqttAPI(markdownFile):
         markdownFileContent = markdownFileContent.replace("./img/", "/")
 
     # Remove existing file
-    if os.path.exists(docsMainFolder + "/" + docAPIMqtt):
-        os.remove(docsMainFolder + "/" + docAPIMqtt)
+    if os.path.exists(htmlFolder + "/" + docAPIMqtt):
+        os.remove(htmlFolder + "/" + docAPIMqtt)
 
-    with open(docsMainFolder + "/" + docAPIMqtt, 'a') as docAPIMqttHandle:
+    with open(htmlFolder + "/" + docAPIMqtt, 'a') as docAPIMqttHandle:
         docAPIMqttHandle.write(markdownFileContent)
 
 
@@ -90,13 +90,13 @@ def generateMqttAPI(markdownFile):
 ##########################################################################################
 print("Generating API docs...")
 
-folders = sorted( filter( os.path.isdir, glob.glob(docsRootFolder + '/*') ) )
+folders = sorted( filter( os.path.isdir, glob.glob(docsAPIRootFolder + '/*') ) )
 
 for folder in folders:
     folder = folder.split("/")[-1]
     print(folder)
 
-    files = sorted(filter(os.path.isfile, glob.glob(docsRootFolder + "/" + folder + '/*')))
+    files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/*')))
     for file in files:
         print(file)
         if not ".md" in file: # Skip non-markdown files
@@ -107,7 +107,7 @@ for folder in folders:
         elif (folder == "MQTT"):
             generateMqttAPI(file)
 
-    if os.path.exists(docsRootFolder + "/" + folder + "/img"):
-        files = sorted(filter(os.path.isfile, glob.glob(docsRootFolder + "/" + folder + '/img/*')))
+    if os.path.exists(docsAPIRootFolder + "/" + folder + "/img"):
+        files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/img/*')))
         for file in files:
-            shutil.copy2(file, docsMainFolder + "/")
+            shutil.copy2(file, htmlFolder + "/")
