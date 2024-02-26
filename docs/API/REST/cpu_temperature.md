@@ -18,3 +18,5 @@ Response:
 - Content type: `HTML`
 - Content: Query response
 - Example: `41`
+
+---

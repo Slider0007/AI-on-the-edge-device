@@ -16,3 +16,5 @@ Response:
 - Content type: `HTML`
 - Content: `/sdcard/img_tmp/test.jpg`<br>
   (Response delayed by flash duration)
+
+---

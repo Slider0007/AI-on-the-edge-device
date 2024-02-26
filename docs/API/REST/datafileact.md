@@ -25,3 +25,5 @@ Response:
 - Content type: `HTML`
 - Content: Content of file
 - Example: `2024-02-01T14:39:33+0100,main,146.364,146.364,146.364,0.0000,0.000,000,1.2,4.0,6.3,3.5,6.4`
+
+---

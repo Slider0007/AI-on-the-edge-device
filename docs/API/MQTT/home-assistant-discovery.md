@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## MQTT API : Home Assistant Discovery
+## MQTT API: Home Assistant Discovery
 
 ### General
 
@@ -102,3 +102,5 @@ Example:
   }
 }
 ```
+
+---

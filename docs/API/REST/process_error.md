@@ -20,3 +20,5 @@ Response:
 - Content type: `HTML`
 - Content: Query response
 - Example: `000: No process error`
+
+---

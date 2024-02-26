@@ -16,3 +16,5 @@ Response:
 - Content type: `HTML`
 - Content: Query response
 - Example: `[11:01:42] Idle - Waiting for Autostart`
+
+---

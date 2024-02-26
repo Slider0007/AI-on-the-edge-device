@@ -18,3 +18,5 @@ Payload:
 Response:
   - Content type: `multipart/x-mixed-replace`
   - Content: Camera live stream
+  
+---

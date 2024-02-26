@@ -14,3 +14,5 @@ Payload:
 Response:
 - Content type: `HTML`
 - Content: `Light Off`
+
+---

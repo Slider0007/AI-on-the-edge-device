@@ -18,3 +18,5 @@ Payload:
     - Response:
       - Content type: `HTML`
       - Content: Content of folder (HTML table)
+      
+---

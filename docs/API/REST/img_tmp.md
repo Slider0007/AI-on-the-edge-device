@@ -18,3 +18,5 @@ Payload:
 Response:
   - Content type: `image/jpeg`
   - Content: JPG file
+
+---

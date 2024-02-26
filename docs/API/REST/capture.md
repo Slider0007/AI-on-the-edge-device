@@ -13,3 +13,5 @@ Payload:
 Response:
 - Content type: `HTML`
 - Content: Raw image (JPG file)
+
+---
