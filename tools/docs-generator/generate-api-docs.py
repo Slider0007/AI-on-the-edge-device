@@ -19,12 +19,10 @@ def generateRestAPI(markdownFile):
 
     linkPosEnd = markdownFileContent.find(".md)")
     while (linkPosEnd >= 0):
-        print("REST while loop")
 
         # Find markdown local links
         replaceLink = markdownFileContent[markdownFileContent.rfind("(", 0, linkPosEnd)+1:linkPosEnd+3]
         ReplaceLinkName = replaceLink.split("\\")[-1].replace(".md", "")
-        print(ReplaceLinkName)
 
         # Taking care of special cases
         if (ReplaceLinkName == "_OVERVIEW"):
@@ -48,6 +46,7 @@ def generateRestAPI(markdownFile):
 
     with open(htmlFolder + "/" + docAPIRest, 'a') as docAPIRestHandle:
         docAPIRestHandle.write(markdownFileContent)
+    docAPIMqttHandle.close
 
 
 # Generate MQTT API doc markdown file for offline usage
@@ -57,12 +56,10 @@ def generateMqttAPI(markdownFile):
 
     linkPosEnd = markdownFileContent.find(".md)")
     while (linkPosEnd >= 0):
-        print("MQTT while loop")
         
         # Find markdown local links
         replaceLink = markdownFileContent[markdownFileContent.rfind("(", 0, linkPosEnd)+1:linkPosEnd+3]
         ReplaceLinkName = replaceLink.split("\\")[-1].replace(".md", "")
-        print(ReplaceLinkName)
 
         # Taking care of special cases
         if (ReplaceLinkName == "_OVERVIEW"):
@@ -83,6 +80,7 @@ def generateMqttAPI(markdownFile):
 
     with open(htmlFolder + "/" + docAPIMqtt, 'a') as docAPIMqttHandle:
         docAPIMqttHandle.write(markdownFileContent)
+    docAPIMqttHandle.close
 
 
 ##########################################################################################
@@ -94,11 +92,9 @@ folders = sorted( filter( os.path.isdir, glob.glob(docsAPIRootFolder + '/*') ) )
 
 for folder in folders:
     folder = folder.split("/")[-1]
-    print(folder)
 
     files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/*')))
     for file in files:
-        print(file)
         if not ".md" in file: # Skip non-markdown files
             continue
 
