@@ -6,7 +6,7 @@ import glob
 import shutil
 
 
-docsRootFolder = "./docs"
+docsRootFolder = "./docs/API"
 docsMainFolder = "./sd-card/html"
 docAPIRest = "doc_api_rest.md"
 docAPIMqtt = "doc_api_mqtt.md"
@@ -90,7 +90,7 @@ def generateMqttAPI(markdownFile):
 ##########################################################################################
 print("Generating API docs...")
 
-folders = sorted( filter( os.path.isdir, glob.glob(docsRootFolder + '/API/*') ) )
+folders = sorted( filter( os.path.isdir, glob.glob(docsRootFolder + '/*') ) )
 
 for folder in folders:
     folder = folder.split("/")[-1]
@@ -98,9 +98,9 @@ for folder in folders:
 
     files = sorted(filter(os.path.isfile, glob.glob(docsRootFolder + "/" + folder + '/*')))
     for file in files:
+        print(file)
         if not ".md" in file: # Skip non-markdown files
             continue
-        print(file)
 
         if (folder == "REST"):
             generateRestAPI(file)
