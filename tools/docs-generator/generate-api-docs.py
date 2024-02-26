@@ -91,9 +91,9 @@ for folder in folders:
         if not ".md" in file: # Skip non-markdown files
             continue
 
-        if (folder == "API\REST"):
+        if (folder == "API/REST"):
             generateRestAPI(file)
-        elif (folder == "API\MQTT"):
+        elif (folder == "API/MQTT"):
             generateMqttAPI(file)
 
     if os.path.exists(docsRootFolder + "/" + folder + "/img"):
