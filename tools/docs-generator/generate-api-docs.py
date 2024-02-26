@@ -1,5 +1,5 @@
 """
-Grab all parameter files (markdown) and convert them to html files
+Grab all API doc files and create a single markdown file
 """
 import os
 import glob
@@ -46,7 +46,7 @@ def generateRestAPI(markdownFile):
 
     with open(htmlFolder + "/" + docAPIRest, 'a') as docAPIRestHandle:
         docAPIRestHandle.write(markdownFileContent)
-    docAPIMqttHandle.close
+    docAPIRestHandle.close
 
 
 # Generate MQTT API doc markdown file for offline usage
