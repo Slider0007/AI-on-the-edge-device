@@ -13,7 +13,7 @@ docAPIMqtt = "doc_api_mqtt.md"
 
 
 # Generate REST API doc markdown file for offline usage
-def generateRestAPI(markdownFile):
+def prepareRestApiMarkdown(markdownFile):
     with open(markdownFile, 'r') as markdownFileHandle:
         markdownFileContent = markdownFileHandle.read()
 
@@ -41,15 +41,14 @@ def generateRestAPI(markdownFile):
         markdownFileContent = markdownFileContent.replace("./img/", "/")
 
     # Remove existing markdown file
-    if os.path.exists(htmlFolder + "/" + docAPIRest):
-        os.remove(htmlFolder + "/" + docAPIRest)
-
-    with open(htmlFolder + "/" + docAPIRest, 'a') as docAPIRestHandle:
-        docAPIRestHandle.append(markdownFileContent)
+    #if os.path.exists(htmlFolder + "/" + docAPIRest):
+    #    os.remove(htmlFolder + "/" + docAPIRest)
+    
+    return markdownFileContent
 
 
 # Generate MQTT API doc markdown file for offline usage
-def generateMqttAPI(markdownFile):
+def prepareMqttApiMarkdown(markdownFile):
     with open(markdownFile, 'r') as markdownFileHandle:
         markdownFileContent = markdownFileHandle.read()
 
@@ -74,11 +73,10 @@ def generateMqttAPI(markdownFile):
         markdownFileContent = markdownFileContent.replace("./img/", "/")
 
     # Remove existing markdown file
-    if os.path.exists(htmlFolder + "/" + docAPIMqtt):
-        os.remove(htmlFolder + "/" + docAPIMqtt)
+    #if os.path.exists(htmlFolder + "/" + docAPIMqtt):
+    #    os.remove(htmlFolder + "/" + docAPIMqtt)
 
-    with open(htmlFolder + "/" + docAPIMqtt, 'a') as docAPIMqttHandle:
-        docAPIMqttHandle.append(markdownFileContent)
+    return markdownFileContent
 
 
 ##########################################################################################
@@ -88,6 +86,9 @@ print("Generating API docs...")
 
 folders = sorted( filter( os.path.isdir, glob.glob(docsAPIRootFolder + '/*') ) )
 
+markdownRestApi = ''
+markdownMqttApi = ''
+
 for folder in folders:
     folder = folder.split("/")[-1]
 
@@ -96,12 +97,21 @@ for folder in folders:
         if not ".md" in file: # Skip non-markdown files
             continue
 
-        if (folder == "REST"):
-            generateRestAPI(file)
+        if (folder == "REST"):  
+            markdownRestApi += prepareRestApiMarkdown(file)
         elif (folder == "MQTT"):
             generateMqttAPI(file)
-
+            markdownMqttApi += prepareMqttApiMarkdown(file)
+    
     if os.path.exists(docsAPIRootFolder + "/" + folder + "/img"):
         files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/img/*')))
         for file in files:
             shutil.copy2(file, htmlFolder + "/")
+
+# Write REST API markdown file
+with open(htmlFolder + "/" + docAPIRest, 'w') as docAPIRestHandle:
+    docAPIRestHandle.write(markdownRestApi)
+
+# Write MQTT API markdown file
+with open(htmlFolder + "/" + docAPIMqtt, 'w') as docAPIMqttHandle:
+    docAPIMqttHandle.write(markdownMqttApi)
