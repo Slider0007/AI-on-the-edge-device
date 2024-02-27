@@ -72,7 +72,10 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
     {
 
         if (filename == "/sdcard/html/index.html") {    
-            httpd_resp_set_hdr(req, "Cache-Control", "max-age=180");
+            httpd_resp_set_hdr(req, "Cache-Control", "max-age=120");
+        }
+        else if (filename == "/sdcard/html/reboot_page.html") {    
+            httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
         }
         else if (filename == "/sdcard/html/setup.html") {    
             httpd_resp_set_hdr(req, "Clear-Site-Data", "\"*\"");
