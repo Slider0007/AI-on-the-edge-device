@@ -630,8 +630,8 @@ void task_reboot(void *DeleteMainFlow)
 
 void doReboot()
 {
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Reboot triggered by Software (5s)");
-    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Reboot in 5sec");
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Reboot triggered by software");
+    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Reboot in 5 seconds");
 
     BaseType_t xReturned = xTaskCreate(&task_reboot, "task_reboot", configMINIMAL_STACK_SIZE * 4, (void*) true, 10, NULL);
     if( xReturned != pdPASS )
@@ -639,7 +639,6 @@ void doReboot()
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "task_reboot not created -> force reboot without killing flow");
         task_reboot((void*) false);
     }
-    vTaskDelay(15000 / portTICK_PERIOD_MS); // Prevent serving web client fetch response until system is shuting down
 }
 
 
@@ -662,20 +661,12 @@ void doRebootOTA()
 esp_err_t handler_reboot(httpd_req_t *req)
 {
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handler_reboot");
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "System will restart within 5 sec");
-
-    std::string response = 
-        "<html><head><script>"
-            "function m(h) {"
-                "document.getElementById('t').innerHTML=h;"
-                "setInterval(function (){h +='.'; document.getElementById('t').innerHTML=h;"
-                "fetch('reboot_page.html',{mode: 'no-cors'}).then(r=>{parent.location.href=('index.html');})}, 1000);"
-            "}</script></head></html><body style='font-family: arial'><h3 id=t></h3>"
-            "<script>m('Rebooting!<br>The page will automatically reload in around 25..60s.<br><br>');</script>"
-            "</body></html>";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_send(req, response.c_str(), strlen(response.c_str()));
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
+    httpd_resp_set_type(req, "text/plain");
+
+    httpd_resp_sendstr(req, "Reboot initiated");
     
     doReboot();
 
