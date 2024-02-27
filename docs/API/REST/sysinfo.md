@@ -8,6 +8,7 @@
 Get device info
 
 The following data are available:
+
 | JSON Property               | Description                                      | Output
 |:----------------------------|:-------------------------------------------------|:-----------------------
 | `firmware`                  | Firmware version                                 | `Develop: develop (Commit: 4c1a1c9`

@@ -8,6 +8,7 @@
 Get process related actual data and results per number sequence
 
 The following data are available:
+
 | JSON Property                        | Description                                        | Output
 |:-------------------------------------|:---------------------------------------------------|:-----------------------
 | `actual_value`                       | Actual value | `146.540`

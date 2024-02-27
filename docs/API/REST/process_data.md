@@ -8,6 +8,7 @@
 Get process related actual data, results and system infos (all content which is visualized on WebUI Overview page)
 
 The following data are available:
+
 | JSON Property                        | Description                                        | Output
 |:-------------------------------------|:---------------------------------------------------|:-----------------------
 | `api_name`                           | Name of the API                                    | `process_data`
