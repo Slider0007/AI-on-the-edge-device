@@ -17,5 +17,3 @@ Payload:
     - Example: `/set_fallbackvalue?numbers=main&value=-1`
       - `numbers`: Provide name of number sequence, e.g. `main`
       - `value`: Provide any negative number
-
----

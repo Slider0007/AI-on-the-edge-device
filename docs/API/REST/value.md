@@ -27,5 +27,3 @@ Payload:
 Response:
 - Content type: `HTML`
 - Content: Query response (sequence name + result; Tab devided)
-
----

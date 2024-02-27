@@ -83,7 +83,7 @@ folders = sorted( filter( os.path.isdir, glob.glob(docsAPIRootFolder + '/*') ) )
 markdownRestApi = ''
 markdownMqttApi = ''
 
-# Create combined markdown file
+# Create a combined markdown file
 for folder in folders:
     folder = folder.split("/")[-1]
 
@@ -92,10 +92,12 @@ for folder in folders:
         if not ".md" in file: # Skip non-markdown files
             continue
 
-        if (folder == "REST"):  
+        if (folder == "REST"):
             markdownRestApi += prepareRestApiMarkdown(file)
+            markdownRestApi += "\n\n---\n\n"
         elif (folder == "MQTT"):
             markdownMqttApi += prepareMqttApiMarkdown(file)
+            markdownMqttApi += "\n\n---\n\n"
     
     if os.path.exists(docsAPIRootFolder + "/" + folder + "/img"):
         files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/img/*')))

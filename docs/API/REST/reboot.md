@@ -13,5 +13,3 @@ Payload:
 
 Response:
 - None
-
----

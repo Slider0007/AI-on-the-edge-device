@@ -35,5 +35,3 @@ Example: `/ota?task=update&file=AI-on-the-edge-device__update__*.zip`
 Response:
 - Content type: `HTML`
 - Content: Query response, e.g. `reboot`
-
----

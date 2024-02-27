@@ -14,5 +14,3 @@ Response:
 - Content type: `HTML`
 - Content: Raw image (JPG file)<br>
   (Response delayed by flash duration)
-
----

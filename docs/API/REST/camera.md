@@ -34,5 +34,3 @@ Payload:
       - Response:
         - Content type: `HTML`
         - Content: `001: Parameter set`
-
----

@@ -53,5 +53,3 @@ Response:
   "cycle_counter": "4100"
 }
 ```
-
----

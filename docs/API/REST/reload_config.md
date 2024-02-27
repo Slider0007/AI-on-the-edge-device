@@ -14,5 +14,3 @@ Payload:
 Response:
 - Content type: `HTML`
 - Content: Query response
-
----

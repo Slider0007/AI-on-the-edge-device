@@ -17,5 +17,3 @@ Response:
 - Content type: `HTML`
 - Content: Query response
 - Example: `20240202-125653`
-
----
