@@ -7,5 +7,3 @@
 WebUI helper. HTML page with image recognition details.
 
 ![recognition_details](./img/recognition_details.png)
-
----

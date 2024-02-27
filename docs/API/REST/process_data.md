@@ -120,5 +120,3 @@ The following data are available:
       - Content type: `HTML`
       - Content: HTML query response
     - Example: `/process_data?type=process_status` 
-
----

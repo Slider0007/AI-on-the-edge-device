@@ -137,5 +137,3 @@ The following infos are available:
       - Content type: `HTML`
       - Content: HTML query response
     - Example: `/info?type=process_status` 
-
----

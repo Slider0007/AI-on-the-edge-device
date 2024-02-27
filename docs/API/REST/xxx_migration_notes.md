@@ -26,5 +26,3 @@ Mapping which new endpoint replaces functionality of removed endpoint:
 | [/delete/](delete.md)                | File Deletion (POST)                               | HTML        | 
 | [/img_tmp/](img_tmp.md)              | Load Images From RAM                               | HTML        | 
 | /                                    | WebUI (Redirected to `index.html`)                 | HTML        | 
-
----

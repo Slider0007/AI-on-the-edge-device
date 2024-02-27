@@ -85,5 +85,3 @@ Payload:
       - Response:
         - Content type: `HTML`
         - Content: `008: Camera livestream with flashlight`
-
----

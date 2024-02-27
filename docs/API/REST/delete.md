@@ -11,5 +11,3 @@ Delete content on SD card by HTTP POST.
 Response:
 - Content type: `HTML`
 - Content: Content of destination folder
-
----
