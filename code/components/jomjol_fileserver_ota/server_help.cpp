@@ -54,7 +54,7 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
 //    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     /* For all files with the following file extention tell
-       the webbrowser to cache them for 24h */
+       the webbrowser to cache them for a long period */
     if (endsWith(filename, ".html") ||
         endsWith(filename, ".htm") ||
         endsWith(filename, ".css") ||
@@ -65,13 +65,26 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
         endsWith(filename, ".ico") ||
         endsWith(filename, ".gif") ||
         endsWith(filename, ".svg") ||
-        endsWith(filename, ".png"))
+        endsWith(filename, ".png") ||
+        endsWith(filename, ".md") ||
+        endsWith(filename, ".webmanifest") ||
+        endsWith(filename, ".txt"))
     {
-    	if (filename == "/sdcard/html/setup.html") {    
+
+        if (filename == "/sdcard/html/index.html") {    
+            httpd_resp_set_hdr(req, "Cache-Control", "max-age=30");
+        }
+        else if (filename == "/sdcard/html/reboot_page.html") {
+            httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
+        }
+        else if (filename == "/sdcard/html/ota_page.html.html") {
+            httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
+        }
+        else if (filename == "/sdcard/html/setup.html") {
             httpd_resp_set_hdr(req, "Clear-Site-Data", "\"*\"");
         }
         else {
-            httpd_resp_set_hdr(req, "Cache-Control", "max-age=86400");
+            httpd_resp_set_hdr(req, "Cache-Control", "max-age=31536000");
         }
     }
 

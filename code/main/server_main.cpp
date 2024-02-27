@@ -199,6 +199,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
 
     /* Legacy: Provide single data as text response */
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
     if (type.compare("api_name") == 0) {
