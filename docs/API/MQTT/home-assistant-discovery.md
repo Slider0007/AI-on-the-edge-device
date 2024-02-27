@@ -74,7 +74,7 @@ Example: `[Main Topic]/[Sequence Name]/actual_value/config`
 
 Discovery Topic Configuration| Description
 :-|:-
-`homeassistant/sensor/[hostname]/problem/config` | Uptime
+`homeassistant/sensor/[hostname]/problem/config` | Problem
 
 Example:
 ```

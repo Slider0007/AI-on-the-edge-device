@@ -1,4 +1,4 @@
-# AI-on-the-Edge [SL Fork]
+# AI-on-the-Edge device [SL Fork]
 <img src="images/icon/watermeter.svg" width="80px"> 
 
 Artificial intelligence based systems have become established in our everyday lives. Just think of speech or image recognition. Most of the systems rely on either powerful processors or a direct connection to the cloud for doing the calculations there. With the increasing power of modern processors, the AI systems are coming closer to the end user – which is usually called **edge computing**.
@@ -27,16 +27,16 @@ All you need is an [ESP32-CAM board](https://jomjol.github.io/AI-on-the-edge-dev
 The device takes an image of your meter at a defined interval. It extracts the Regions of Interest (ROIs) from the image and runs them through artificial intelligence. 
 As a result, you get the digitized value of your meter. There are several options for what to do with that value. Either send it to a MQTT broker, write it to InfluxDB or simply provide access to it via a REST API (JSON / HTML).
 
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/idea.jpg" width="800"> 
+<img src="https://raw.githubusercontent.com/Slider0007/AI-on-the-edge-device/develop/images/idea.jpg" width="800"> 
 
 
 ## Impressions
 ### Hardware
-<img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/watermeter_all.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/main.jpg" width="266"><img src="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/size.png" width="266"> 
+<img src="https://raw.githubusercontent.com/Slider0007/AI-on-the-edge-device/develop/images/watermeter_all.jpg" width="266"><img src="https://raw.githubusercontent.com/Slider0007/AI-on-the-edge-device/develop/images/main.jpg" width="266"><img src="https://raw.githubusercontent.com/Slider0007/AI-on-the-edge-device/develop/images/size.png" width="266"> 
 
 
-### Software
-<img src="https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/07938912-7438-467c-80ca-f1538b37f98c" width="800"> 
+### Web Interface
+<img src="https://raw.githubusercontent.com/Slider0007/AI-on-the-edge-device/develop/images/webinterface_overview.png" width="800"> 
 
 
 ## Device Installation
@@ -68,7 +68,6 @@ NOTE: OTA updates will be performed with `AI-on-the-edge-device__update__*.zip` 
 
 There are different ways to flash the microcontroller:
 - [Espressif Flash Tool](https://www.espressif.com/sites/default/files/tools/flash_download_tool_3.9.5.zip)<br>
-  ![image](https://github.com/Slider0007/AI-on-the-edge-device/assets/115730895/fb3d659f-3e21-49fd-9d84-7224994b7e28)
 - [ESPtool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
 See [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/) for more information.<br>
@@ -79,15 +78,17 @@ The SD card can be setup using the device's local WLAN hotspot after the MCU fir
 [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#remote-setup-using-the-built-in-access-point) for details. For this to work, the SD card must be FAT formated (which is the default on a new SD card).<br>
 Alternatively the SD card still can be setup manually without using hotspot, see the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#3-sd-card) for details (`AI-on-the-edge-device__manual-setup__*.zip`).
 
-:warning: Do not use github source files in any case, use only release related zip package. Otherwise functionality cannot be fully guaranteed!
+⚠️ Do not use github source files in any case, use only release related zip package. Otherwise functionality cannot be fully guaranteed!
 
 
 ## API Description
 ### REST API
-See [REST API](docs/API/REST/_OVERVIEW.md)
+See [REST API Documentation](docs/API/REST/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > REST API`).<br>
+⚠️ Read API documenation carefully. REST API is not fully compatible with jomjol's original firmware.
 
 ### MQTT API
-See [MQTT API](docs/API/MQTT/_OVERVIEW.md)
+See [MQTT API Documentation](docs/API/MQTT/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > MQTT API`).<br>
+⚠️ Read API documenation carefully. MQTT API is not fully compatible  with jomjol's original firmware.
 
 
 ## Build Yourself
