@@ -4,10 +4,25 @@ Grab all API doc files and create a single markdown file
 import os
 import glob
 import shutil
+import sys
 
+scriptName = "generate-api-docs-localbuild.py"
 
-docsAPIRootFolder = "./docs/API"
-htmlFolder = "./sd-card/html"
+if len(sys.argv) > 1:
+    scriptPath = sys.argv[1] + "/tools/docs-generator/"
+    rootPath = sys.argv[1]
+    
+else:
+    scriptPath = sys.argv[0].split(scriptName,1)[0]
+    if scriptPath[0] == ".":
+         scriptPath = os.getcwd() + scriptPath[1:]
+    else:
+        scriptPath = os.getcwd() + scriptPath
+
+    rootPath = scriptPath.split("tools",1)[0]
+
+docsAPIRootFolder = rootPath + "/docs/API"
+htmlFolder = rootPath + "/sd-card/html"
 docAPIRest = "doc_api_rest.md"
 docAPIMqtt = "doc_api_mqtt.md"
 
@@ -85,7 +100,8 @@ markdownMqttApi = ''
 
 # Create a combined markdown file
 for folder in folders:
-    folder = folder.split("/")[-1]
+    folder = folder.split("\\")[-1]
+    print(folder)
 
     files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/*')))
     for file in files:
