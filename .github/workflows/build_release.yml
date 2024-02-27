@@ -86,17 +86,17 @@ jobs:
       #run: echo "Testing... ${{ github.ref }}, ${{ github.ref_name }}, ${{ steps.vars.outputs.sha_short }}, ${{ steps.vars.outputs.branch }}" > ./sd-card/html/version.txt; mkdir -p ./code/.pio/build/esp32cam/; cd ./code/.pio/build/esp32cam/; echo "${{ steps.vars.outputs.sha_short }}" > firmware.bin; cp firmware.bin partitions.bin; cp firmware.bin bootloader.bin # Testing
       run: cd code; platformio run --environment esp32cam
 
-    - name: Prepare WebUI (Generate parameter tooltips + Update hash)
+    - name: Prepare WebUI (Generate parameter tooltips, API docs and update hash)
       run: |
-        rm -rf ./html
-        mkdir ./html
-
         python -m pip install markdown
         python ./tools/parameter-tooltip-generator/generate-param-doc-tooltips.py
+        python ./tools/docs-generator/generate-api-docs.py
 
+        rm -rf ./html
+        mkdir ./html
         cp -r ./sd-card/html/* ./html/
 
-        echo "Replacing variables..."
+        echo "Update hash..."
         cd ./html; find . -type f -exec sed -i 's/$COMMIT_HASH/${{ steps.vars.outputs.sha_short }}/g' {} \;
 
     - name: Save generated files

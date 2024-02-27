@@ -89,7 +89,7 @@
             </ul>
         </li>
 
-        <li><a>Settings <i class="arrow down"></i></a>
+        <li><a>Settings<i class="arrow down"></i></a>
             <ul class="submenu">
             <li><a href="#" onclick="loadPage('set_fallbackvalue.html?v=$COMMIT_HASH');">Set "Fallback Value"</a></li>
             <li><a href="#" onclick="loadPage('edit_config_param.html?v=$COMMIT_HASH');">Configuration</a></li>
@@ -104,7 +104,7 @@
             </ul>
         </li>
 
-        <li><a>System <i class="arrow down"></i></a>
+        <li><a>System<i class="arrow down"></i></a>
             <ul class="submenu">
                 <li><a href="#" onclick="loadPage('backup.html?v=$COMMIT_HASH');">Backup/Restore</a></li>
                 <li><a href="#" onclick="loadPage('ota_page.html?v=$COMMIT_HASH');">OTA Update</a></li>
@@ -117,10 +117,15 @@
                     </ul>
                 <li><a href="#" onclick="loadPage('reboot_page.html?v=$COMMIT_HASH');">Reboot</a></li>
                 <li><a href="#" onclick="loadPage('info.html?v=$COMMIT_HASH');">Info</a></li>
+                <li><a>Documentation<i class="arrow right"></i></a>
+                    <ul>
+                        <li><a href="#" onclick="loadPage('doc_api_rest.html?v=$COMMIT_HASH');">REST API</a></li>
+                        <li><a href="#" onclick="loadPage('doc_api_mqtt.html?v=$COMMIT_HASH');">MQTT API</a></li>
+                    </ul>
             </ul>
         </li>
 
-        <li><a>Manual Control <i class="arrow down"></i></a>
+        <li><a>Manual Control<i class="arrow down"></i></a>
             <ul class="submenu">
                 <li><a href="#" onclick="manual_cycle_start()">Start Cycle</a></li>
                 <li id="HASendDiscovery" style="display:none;"><a href="#" onclick="HA_send_discovery()">Resend HA Discovery</a></li>

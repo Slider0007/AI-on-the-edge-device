@@ -18,6 +18,12 @@ subprocess.call("python ./tools/parameter-tooltip-generator/generate-param-doc-t
 
 
 ################################################################################################################################
+print("localbuild.py: Generate API docs")
+#print(env["PROJECT_DIR"])
+#os.chdir('../')
+subprocess.call("python ./tools/docs-generator/generate-api-docs-localbuild.py " + os.getcwd())
+
+################################################################################################################################
 print("localbuild.py: Add hash to HTML files")
 os.chdir('sd-card/html')
 
