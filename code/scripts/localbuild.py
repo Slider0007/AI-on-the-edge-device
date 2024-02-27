@@ -20,7 +20,7 @@ subprocess.call("python ./tools/parameter-tooltip-generator/generate-param-doc-t
 ################################################################################################################################
 print("localbuild.py: Generate API docs")
 #print(env["PROJECT_DIR"])
-os.chdir('../')
+#os.chdir('../')
 subprocess.call("python ./tools/docs-generator/generate-api-docs-localbuild.py " + os.getcwd())
 
 ################################################################################################################################

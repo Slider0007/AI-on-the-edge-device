@@ -91,7 +91,7 @@ def prepareMqttApiMarkdown(markdownFile):
 ##########################################################################################
 # Generate API docs for offline usage in WebUI
 ##########################################################################################
-print("Generating API docs...")
+#print("Generating API docs...")
 
 folders = sorted( filter( os.path.isdir, glob.glob(docsAPIRootFolder + '/*') ) )
 
@@ -101,7 +101,6 @@ markdownMqttApi = ''
 # Create a combined markdown file
 for folder in folders:
     folder = folder.split("\\")[-1]
-    print(folder)
 
     files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/*')))
     for file in files:
@@ -114,7 +113,8 @@ for folder in folders:
         elif (folder == "MQTT"):
             markdownMqttApi += prepareMqttApiMarkdown(file) # Merge files
             markdownMqttApi += "\n\n---\n" # Add a divider line
-    
+
+    # Copy in API doc linked images to HTMl folder
     if os.path.exists(docsAPIRootFolder + "/" + folder + "/img"):
         files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/img/*')))
         for file in files:

@@ -99,6 +99,7 @@ for folder in folders:
             markdownMqttApi += prepareMqttApiMarkdown(file) # Merge files
             markdownMqttApi += "\n\n---\n" # Add a divider line
     
+    # Copy in API doc linked images to HTMl folder
     if os.path.exists(docsAPIRootFolder + "/" + folder + "/img"):
         files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/img/*')))
         for file in files:
