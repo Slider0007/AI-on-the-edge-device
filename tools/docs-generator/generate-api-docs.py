@@ -39,10 +39,6 @@ def prepareRestApiMarkdown(markdownFile):
     # Update image paths
     if "./img/" in markdownFileContent:
         markdownFileContent = markdownFileContent.replace("./img/", "/")
-
-    # Remove existing markdown file
-    #if os.path.exists(htmlFolder + "/" + docAPIRest):
-    #    os.remove(htmlFolder + "/" + docAPIRest)
     
     return markdownFileContent
 
@@ -62,6 +58,8 @@ def prepareMqttApiMarkdown(markdownFile):
         # Taking care of special cases
         if (ReplaceLinkName == "_OVERVIEW"):
             markdownFileContent = markdownFileContent.replace("_OVERVIEW.md", "#overview-mqtt-api")
+        elif (ReplaceLinkName == "xxx_migration_notes"):
+            markdownFileContent = markdownFileContent.replace("xxx_migration_notes.md", "#migration-notes")
         
         # Replace all links with local links
         markdownFileContent = markdownFileContent.replace(replaceLink, "#mqtt-api-" + ReplaceLinkName)
@@ -71,10 +69,6 @@ def prepareMqttApiMarkdown(markdownFile):
     # Update image paths
     if "./img/" in markdownFileContent:
         markdownFileContent = markdownFileContent.replace("./img/", "/")
-
-    # Remove existing markdown file
-    #if os.path.exists(htmlFolder + "/" + docAPIMqtt):
-    #    os.remove(htmlFolder + "/" + docAPIMqtt)
 
     return markdownFileContent
 
@@ -89,6 +83,7 @@ folders = sorted( filter( os.path.isdir, glob.glob(docsAPIRootFolder + '/*') ) )
 markdownRestApi = ''
 markdownMqttApi = ''
 
+# Create combined markdown file
 for folder in folders:
     folder = folder.split("/")[-1]
 
@@ -100,7 +95,6 @@ for folder in folders:
         if (folder == "REST"):  
             markdownRestApi += prepareRestApiMarkdown(file)
         elif (folder == "MQTT"):
-            generateMqttAPI(file)
             markdownMqttApi += prepareMqttApiMarkdown(file)
     
     if os.path.exists(docsAPIRootFolder + "/" + folder + "/img"):
