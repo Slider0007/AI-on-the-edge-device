@@ -70,6 +70,7 @@ esp_err_t get_data_file_handler(httpd_req_t *req)
     const char verz_name[] = "/sdcard/log/data";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
     DIR *dir = opendir(verz_name);
@@ -113,6 +114,7 @@ esp_err_t get_tflite_file_handler(httpd_req_t *req)
     const char verz_name[] = "/sdcard/config";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
     DIR *dir = opendir(verz_name);
@@ -183,6 +185,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     }
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
 
     /* Send HTML file header */
     //httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>"); --> This is already part of 'file_server.html' file
@@ -312,6 +315,7 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
     //ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
     fd = fopen(currentfilename.c_str(), "r");
@@ -400,6 +404,7 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
     //LogFile.CloseLogFileAppendHandle();
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
     fd = fopen(currentfilename.c_str(), "r");
@@ -568,6 +573,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     setvbuf(fd, NULL, _IOFBF, 512);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
 
     ESP_LOGD(TAG, "Sending file: %s (%ld bytes)", filename, file_stat.st_size);
     set_content_type_from_file(req, filename);
