@@ -134,162 +134,126 @@ esp_err_t get_tflite_file_handler(httpd_req_t *req)
 }
 
 
-/* Send HTTP response with a run-time generated html consisting of
- * a list of all files and folders under the requested path.
- * In case of SPIFFS this returns empty list when path is any
- * string other than '/', since SPIFFS doesn't support directories */
-static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const char* uripath, bool readonly)
+static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
 {
-    char entrypath[FILE_PATH_MAX];
-    char entrysize[16];
-    const char *entrytype;
+    FILE *fd = NULL;
+    std::string currentfilename = LogFile.GetCurrentFileName();
 
-    struct dirent *entry;
-    struct stat entry_stat;
+    //ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
 
-    char dirpath_corrected[FILE_PATH_MAX];
-    strcpy(dirpath_corrected, dirpath);
+    // !!! Do not close actual logfile to avoid software exception !!!
+    //LogFile.CloseLogFileAppendHandle();
 
-    file_server_data * server_data = (file_server_data *) req->user_ctx;
-    if ((strlen(dirpath_corrected)-1) > strlen(server_data->base_path))      // if dirpath is not mountpoint, the last "\" needs to be removed
-        dirpath_corrected[strlen(dirpath_corrected)-1] = '\0';
-
-    DIR *dir = opendir(dirpath_corrected);
-
-    const size_t dirpath_len = strlen(dirpath);
-    ESP_LOGD(TAG, "Dirpath: <%s>, Pathlength: %d", dirpath, dirpath_len);
-
-    /* Retrieve the base path of file storage to construct the full path */
-    strlcpy(entrypath, dirpath, sizeof(entrypath));
-    ESP_LOGD(TAG, "entrypath: <%s>", entrypath);
-
-    if (!dir) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to open directory: " + std::string(dirpath));
-        /* Respond with 404 Not Found */
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
-        return ESP_FAIL;
+    fd = fopen(currentfilename.c_str(), "r");
+    if (fd == NULL) {
+        //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
+        httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
+        return ESP_OK;
     }
+
+    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(fd, NULL, _IOFBF, 512);
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
+    httpd_resp_set_type(req, "text/plain");
 
-    /* Send HTML file header */
-    //httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>"); --> This is already part of 'file_server.html' file
+    if (!send_full_file) { // Send only last part of file
+        ESP_LOGD(TAG, "Sending last %d bytes of the actual logfile", LOGFILE_LAST_PART_BYTES);
+        long pos = 0;
+        
+        /* Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/ */
+        if (fseek(fd, 0, SEEK_END)) {
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to get to end of file");
+            return ESP_FAIL;
+        }
+        else {
+            pos = ftell(fd); // Number of bytes in the file
+            ESP_LOGD(TAG, "File contains %ld bytes", pos);
 
-    /////////////////////////////////////////////////
-    if (!readonly) {
-        FILE *fd = fopen("/sdcard/html/file_server.html", "r");
+            // Calc start position -> either beginning of LAST PART (EOF - LAST_PART_BYTES) or beginning of file (pos = 0)
+            pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos); 
 
-        /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-        // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-        setvbuf(fd, NULL, _IOFBF, 512);
-
-        char *chunk = ((struct file_server_data *)req->user_ctx)->scratch;
-        size_t chunksize;
-        do {
-            chunksize = fread(chunk, 1, SERVER_FILER_SCRATCH_BUFSIZE, fd);
-            //ESP_LOGD(TAG, "Chunksize %d", chunksize);
-            if (chunksize > 0){
-                if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
-                    fclose(fd);
-                    std::string msg_txt = "http_resp_dir_html: File sending failed: /sdcard/html/file_server.html";
-                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, msg_txt);
-                    /* Abort sending file */
-                    httpd_resp_sendstr_chunk(req, NULL);
-                    /* Respond with 500 Internal Server Error */
-                    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
-                    return ESP_FAIL;
-                }
+            if (fseek(fd, pos, SEEK_SET)) { // Go to start position
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to go back " + 
+                                    std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
+                return ESP_FAIL;
             }
-        } while (chunksize != 0);
-        fclose(fd);
-        //    ESP_LOGD(TAG, "File sending complete");
-    }
-    ///////////////////////////////
+        }
 
-    std::string _zw = std::string(dirpath);
-    _zw = _zw.substr(8, _zw.length() - 8);
-    _zw = "/delete/" + _zw + "?task=deldircontent"; 
-
-
-    /* Send file-list table definition and column labels */
-    httpd_resp_sendstr_chunk(req,
-        "<table id=\"files_table\">"
-        "<col style=\"width:800px\"><col style=\"width:300px\"><col style=\"width:300px\"><col style=\"width:100px\">"
-        "<thead><tr><th>Name</th><th>Type</th><th>Size</th>");
-    if (!readonly) {
-        httpd_resp_sendstr_chunk(req, "<th>"
-            "<form method=\"post\" action=\"");
-        httpd_resp_sendstr_chunk(req, _zw.c_str());
-        httpd_resp_sendstr_chunk(req,
-            "\"><button type=\"submit\">DELETE ALL!</button></form>"
-            "</th></tr>");
-    }
-    httpd_resp_sendstr_chunk(req, "</thead><tbody>\n");
-
-    /* Iterate over all files / folders and fetch their names and sizes */
-    while ((entry = readdir(dir)) != NULL) {
-        if (strcmp("wlan.ini", entry->d_name) != 0 )        // wlan.ini soll nicht angezeigt werden!
-        {
-            entrytype = (entry->d_type == DT_DIR ? "directory" : "file");
-
-            strlcpy(entrypath + dirpath_len, entry->d_name, sizeof(entrypath) - dirpath_len);
-            ESP_LOGD(TAG, "Entrypath: %s", entrypath);
-            if (stat(entrypath, &entry_stat) == -1) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to read " + 
-                                    std::string(entrytype) + ": " + std::string(entry->d_name));
-                continue;
+        /* Find end of line */
+        while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART"
+                          // (skip if start is from beginning of file to ensure first line is included)
+            if (fgetc(fd) == '\n') {
+                break;
             }
-
-            if (entry->d_type == DT_DIR) {
-                strcpy(entrysize, "-\0");
-            }
-            else {
-                if (entry_stat.st_size >= 1024) {
-                    sprintf(entrysize, "%ld KB", entry_stat.st_size / 1024); // kBytes
-                }
-                else {
-                    sprintf(entrysize, "%ld B", entry_stat.st_size); // Bytes
-                }
-            }
-
-            ESP_LOGD(TAG, "Found %s: %s (%s bytes)", entrytype, entry->d_name, entrysize);
-
-            /* Send chunk of HTML file containing table entries with file name and size */
-            httpd_resp_sendstr_chunk(req, "<tr><td><a href=\"");
-            httpd_resp_sendstr_chunk(req, "/fileserver");
-            httpd_resp_sendstr_chunk(req, uripath);
-            httpd_resp_sendstr_chunk(req, entry->d_name);
-            if (entry->d_type == DT_DIR) {
-                httpd_resp_sendstr_chunk(req, "/");
-            }
-            httpd_resp_sendstr_chunk(req, "\">");
-            httpd_resp_sendstr_chunk(req, entry->d_name);
-            httpd_resp_sendstr_chunk(req, "</a></td><td>");
-            httpd_resp_sendstr_chunk(req, entrytype);
-            httpd_resp_sendstr_chunk(req, "</td><td>");
-            httpd_resp_sendstr_chunk(req, entrysize);
-            if (!readonly) {
-                httpd_resp_sendstr_chunk(req, "</td><td>");
-                httpd_resp_sendstr_chunk(req, "<form method=\"post\" action=\"/delete");
-                httpd_resp_sendstr_chunk(req, uripath);
-                httpd_resp_sendstr_chunk(req, entry->d_name);
-                httpd_resp_sendstr_chunk(req, "\"><button type=\"submit\">Delete</button></form>");
-            }
-            httpd_resp_sendstr_chunk(req, "</td></tr>\n");
         }
     }
-    closedir(dir);
 
-    /* Finish the file list table */
-    httpd_resp_sendstr_chunk(req, "</tbody></table>");
+    /* Retrieve the pointer to scratch buffer for temporary storage */
+    char *chunk = ((struct file_server_data *)req->user_ctx)->scratch;
+    size_t chunksize;
+    do {
+        /* Read file in chunks into the scratch buffer */
+        chunksize = fread(chunk, 1, SERVER_FILER_SCRATCH_BUFSIZE, fd);
 
-    /* Send remaining chunk of HTML file to complete it */
-    httpd_resp_sendstr_chunk(req, "</body></html>");
+        /* Send the buffer contents as HTTP response chunk */
+        if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
+            fclose(fd);
+            std::string msg_txt = "send_logfile: File sending failed: " + currentfilename;
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, msg_txt);
+            /* Abort sending file */
+            httpd_resp_sendstr_chunk(req, NULL);
+            /* Respond with 500 Internal Server Error */
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
+            return ESP_FAIL;
+        }
 
-    /* Send empty chunk to signal HTTP response completion */
-    httpd_resp_sendstr_chunk(req, NULL);
+        /* Keep looping till the whole file is sent */
+    } while (chunksize != 0);
+
+    /* Close file after sending complete */
+    fclose(fd);
+    ESP_LOGD(TAG, "File sending complete");
+
+    /* Respond with an empty chunk to signal HTTP response completion */
+    httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
+}
+
+
+static esp_err_t handler_logfiles(httpd_req_t *req)
+{
+    const char* APIName = "log:v2"; // API name and version
+    char _query[100];
+    char _valuechar[30];    
+    std::string type;
+
+    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
+        if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            type = std::string(_valuechar);
+        }
+    }
+
+    if (type.empty()) {
+        return send_logfile(req, false);    
+    }
+    else if (type.compare("full") == 0) {
+        return send_logfile(req, true);
+    }
+    else if (type.compare("api_name") == 0) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_sendstr(req, APIName);
+        return ESP_OK;        
+    }
+    else {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E91: Parameter not found");
+        return ESP_FAIL;
+    }
 }
 
 
@@ -379,25 +343,30 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 }
 
 
-static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
+static esp_err_t handler_datafiles(httpd_req_t *req)
 {
-    FILE *fd = NULL;
-    std::string currentfilename = LogFile.GetCurrentFileName();
+    const char* APIName = "data:v2"; // API name and version
+    char _query[100];
+    char _valuechar[30];    
+    std::string type;
 
-    //ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
+    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
+        if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            type = std::string(_valuechar);
+        }
+    }
 
-    // !!! Do not close actual logfile to avoid software exception !!!
-    //LogFile.CloseLogFileAppendHandle();
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
-    httpd_resp_set_type(req, "text/plain");
-
-    fd = fopen(currentfilename.c_str(), "r");
-    if (fd == NULL) {
-        //LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
-        httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
-        return ESP_OK;
+    if (type.empty()) {
+        return send_datafile(req, false);    
+    }
+    else if (type.compare("full") == 0) {
+        return send_datafile(req, true);
+    }
+    else if (type.compare("api_name") == 0) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_sendstr(req, APIName);
+        return ESP_OK;        
     }
     else {
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -445,6 +414,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     }
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
 
     /* Send HTML file header */
     //httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>"); --> This is already part of 'file_server.html' file
