@@ -207,7 +207,7 @@
     //console.log("Current path: " + getPath().replace("/fileserver", ""));
     document.getElementById("currentpath").innerHTML = "Current path: <b>" + getPath().replace("/fileserver", "") + "</b>";
 
-    document.cookie = "page=" + getPath() + "; path=/";
+    document.cookie = "page=" + getPath() + ";path=/;SameSite=Lax";
 
 </script>
 

@@ -195,7 +195,7 @@
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4) {
                 if (xhttp.status == 200) {
-                    document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/"; // Make sure after the reboot we go to the overview page
+                    document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax"; // Make sure after the reboot we go to the overview page
 
                     if (xhttp.responseText.startsWith("reboot")) { // Reboot required
                         console.log("Upload completed, the device will now restart and install the update!");
@@ -215,7 +215,7 @@
                                 /* Check if the device is up again and forward to index page if so */
                                 fetch('reboot_page.html', {mode: 'no-cors'})
                                     .then(r=>{
-                                        parent.location.href=('index.html?' + Math.floor((Math.random() * 1000000) + 1));
+                                        parent.location.href=('index.html');
                                     });
                             }
 

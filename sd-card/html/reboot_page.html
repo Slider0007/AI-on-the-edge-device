@@ -92,7 +92,7 @@
 				checkCounter += 1;
 				fetch(getDomainname() + '/reboot_page.html', {mode: 'no-cors'})
 					.then(r=>{
-						parent.location.href=(getDomainname() + '/index.html?' + Math.floor((Math.random() * 1000000) + 1));
+						parent.location.href=(getDomainname() + '/index.html');
 					});
 
 				if (checkCounter > 30) { // 30 x 2s -> 60s, but device still not ready
