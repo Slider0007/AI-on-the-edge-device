@@ -137,7 +137,7 @@ CCamera::CCamera()
 
 void CCamera::powerResetCamera()
 {
-    #if PWDN_GPIO_NUM != GPIO_NUM_NC
+    #if PWDN_GPIO_NUM > -1 // Use reset only if pin is available (PWDN_GPIO_NC == -1)
         ESP_LOGD(TAG, "Resetting camera by power cycling");
         gpio_config_t conf;
         conf.intr_type = GPIO_INTR_DISABLE;
