@@ -92,7 +92,7 @@
 				checkCounter += 1;
 				fetch(getDomainname(), {mode: 'no-cors'})
 					.then(r=>{
-						parent.location.href=(getDomainname());
+						parent.location.href=('index.html');
 					});
 
 				if (checkCounter > 30) { // 30 x 2s -> 60s, but device still not ready
