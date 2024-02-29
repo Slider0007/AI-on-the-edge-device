@@ -90,9 +90,9 @@
 			// Check every 2 seconds for availability
 			let checkInterval = setInterval(function() {
 				checkCounter += 1;
-				fetch(getDomainname() + '/reboot_page.html', {mode: 'no-cors'})
+				fetch(getDomainname(), {mode: 'no-cors'})
 					.then(r=>{
-						parent.location.href=(getDomainname() + '/index.html');
+						parent.location.href=(getDomainname());
 					});
 
 				if (checkCounter > 30) { // 30 x 2s -> 60s, but device still not ready

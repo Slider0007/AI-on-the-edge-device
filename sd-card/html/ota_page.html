@@ -213,9 +213,9 @@
 
                             if (action_runtime > 10) { // After 30 seconds, start to check if we are up again
                                 /* Check if the device is up again and forward to index page if so */
-                                fetch('reboot_page.html', {mode: 'no-cors'})
+                                fetch(getDomainname(), {mode: 'no-cors'})
                                     .then(r=>{
-                                        parent.location.href=('index.html');
+                                        parent.location.href=(getDomainname());
                                     });
                             }
 
