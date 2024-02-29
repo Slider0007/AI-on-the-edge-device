@@ -28,12 +28,12 @@
                 'status=no,toolbar=no,titlebar=no,' +
                 'left=10,top=250,width=640px,height=480px';
 
-        async function loadPage(page) {
+        function loadPage(page) {
             if (streamPopup)   // Ensure that stream popup is closed because it's blocking web interface
                 streamPopup.close();
 
             //console.log("loadPage(" + page + ")");
-            document.cookie = "page="+page + "; path=/";
+            document.cookie = "page=" + page + ";path=/;SameSite=Lax";
             document.getElementById('maincontent').src = page;
 
             [].forEach.call(document.querySelectorAll('.submenu'), function (el) {
@@ -146,9 +146,8 @@
     LoadWebUiVersion();
     loadConfig().then(() => HA_send_discovery_visibililty());
 
-    if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH")
-    {
-        document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/";
+    if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH") {
+        document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax";
     }
 
     //console.log("Loading page: " + getCookie("page"));

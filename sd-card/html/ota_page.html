@@ -195,7 +195,7 @@
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4) {
                 if (xhttp.status == 200) {
-                    document.cookie = "page=overview.html?v=$COMMIT_HASH" + "; path=/"; // Make sure after the reboot we go to the overview page
+                    document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax"; // Make sure after the reboot we go to the overview page
 
                     if (xhttp.responseText.startsWith("reboot")) { // Reboot required
                         console.log("Upload completed, the device will now restart and install the update!");
@@ -208,18 +208,18 @@
                         action_runtime = 0;
                         updateTimer = setInterval(function() {                            
                             action_runtime += 1;
-                            console.log("Waiting: " + action_runtime + "s");  
                             _("progressBar").value = Math.round(action_runtime);
 
-                            if (action_runtime > 10) { // After 10 seconds, start to check if we are up again
+                            if (action_runtime > 10) { // After 30 seconds, start to check if we are up again
                                 /* Check if the device is up again and forward to index page if so */
-                                fetch('reboot_page.html?v=$COMMIT_HASH&' + Math.random(), {mode: 'no-cors'}).then(
-                                    r=>{parent.location.href=('index.html?v=$COMMIT_HASH');}
-                                )
+                                fetch(getDomainname(), {mode: 'no-cors'})
+                                    .then(r=>{
+                                        parent.location.href=('index.html');
+                                    });
                             }
 
                             if (action_runtime > 100) { // We reached 300 seconds but device is not ready yet
-                                firework.launch("The device seems not do be up again, or maybe we missed it. Try to reload this page or reset the device!", 'danger', 30000);
+                                firework.launch("Reboot takes unusually long. Reload this page or power cycle the device", 'danger', 30000);
                                 clearInterval(updateTimer);
                             }
                         }, 3000);                           
