@@ -59,7 +59,8 @@ For further background information, head to [Neural Networks](https://www.heise.
 [Training Neural Networks](https://www.heise.de/select/make/2022/1/2134114065999161585) and [Programming on the ESP32](https://www.heise.de/select/make/2022/2/2204010051597422030).
 
 ### 2. Download Firmware Package
-Officially released firmware packages can be downloaded on [Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases).
+Officially released firmware packages can be downloaded on [Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases).<br>
+A possibly already available development version (upcoming release version) can be previewed [here](https://github.com/Slider0007/AI-on-the-edge-device/pulls?q=is%3Aopen+is%3Apr+label%3A%22autorelease%3A+pending%22).
 
 ### 3. Install MCU Part Of Firmware
 Initially the MCU of the device has to be flashed via a direct USB connection. Further updates can be performed directly over the air (OTA). <br>
