@@ -17,7 +17,7 @@ All you need is an [ESP32-CAM board](https://jomjol.github.io/AI-on-the-edge-dev
 - Integrated camera and illumination
 - Web interface for administration and control
 - OTA interface for updating directly via web interface
-- Full integration into [Home Assistant](docs/API/MQTT/homeassistant_discovery.md)
+- Full integration into [Home Assistant](docs/API/MQTT/home-assistant-discovery.md)
 - InfluxDB v1.x + v2.x
 - [MQTT v3.x](docs/API/MQTT/_OVERVIEW.md)
 - [REST API](docs/API/REST/_OVERVIEW.md)
@@ -41,12 +41,9 @@ As a result, you get the digitized value of your meter. There are several option
 
 ## Device Installation
 ### 1. Inform Yourself
-There is growing [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/) which provides you with a lot of information. Head there to get a start, set it up and configure it.
+There is growing [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/) which provides you with a lot of information. Head there to get a start, how to set it up and configure it.
 
-A lot of people created useful Youtube videos which might help you getting started.
-
-Here is a small selection:
-
+Small selection of youtube videos which might give you an idea how to getting started:
 - [youtube.com/watch?v=HKBofb1cnNc](https://www.youtube.com/watch?v=HKBofb1cnNc)
 - [youtube.com/watch?v=yyf0ORNLCk4](https://www.youtube.com/watch?v=yyf0ORNLCk4)
 - [youtube.com/watch?v=XxmTubGek6M](https://www.youtube.com/watch?v=XxmTubGek6M)
@@ -55,11 +52,14 @@ Here is a small selection:
 - [youtube.com/watch?v=MAHE_QyHZFQ](https://www.youtube.com/watch?v=MAHE_QyHZFQ)
 - [youtube.com/watch?v=Uap_6bwtILQ](https://www.youtube.com/watch?v=Uap_6bwtILQ)
 
-For further background information, head to [Neural Networks](https://www.heise.de/select/make/2021/6/2126410443385102621), 
-[Training Neural Networks](https://www.heise.de/select/make/2022/1/2134114065999161585) and [Programming on the ESP32](https://www.heise.de/select/make/2022/2/2204010051597422030).
+Further technical background information:
+- [Neural Networks](https://www.heise.de/select/make/2021/6/2126410443385102621) 
+- [Training Neural Networks](https://www.heise.de/select/make/2022/1/2134114065999161585)
+- [Programming on the ESP32](https://www.heise.de/select/make/2022/2/2204010051597422030).
 
 ### 2. Download Firmware Package
-Officially released firmware packages can be downloaded on [Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases).
+Officially released firmware packages can be downloaded from [releases](https://github.com/slider0007/AI-on-the-edge-device/releases) page.<br>
+A possibly already available development version (upcoming release version) can be previewed [here](https://github.com/Slider0007/AI-on-the-edge-device/pulls?q=is%3Aopen+is%3Apr+label%3A%22autorelease%3A+pending%22).
 
 ### 3. Install MCU Part Of Firmware
 Initially the MCU of the device has to be flashed via a direct USB connection. Further updates can be performed directly over the air (OTA). <br>
