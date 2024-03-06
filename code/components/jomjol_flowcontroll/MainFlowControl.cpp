@@ -122,7 +122,7 @@ bool doInit(void)
     // Deinit main flow components before init all ressources again
     // ********************************************   
     flowctrl.DeinitFlow();
-    //heap_caps_dump(MALLOC_CAP_SPIRAM);
+    heap_caps_dump(MALLOC_CAP_SPIRAM);
 
     // Init cam if init not yet done.
     // Make sure this is called between deinit and init of flow components (avoid SPIRAM fragmentation)
@@ -158,7 +158,7 @@ bool doInit(void)
     #endif //ENABLE_MQTT
 
     //heap_caps_dump(MALLOC_CAP_INTERNAL);
-    //heap_caps_dump(MALLOC_CAP_SPIRAM);
+    heap_caps_dump(MALLOC_CAP_SPIRAM);
 
     return bRetVal;
 }
