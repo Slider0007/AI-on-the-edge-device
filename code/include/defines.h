@@ -114,10 +114,6 @@
 #define CONFIG_FILE_BACKUP "/sdcard/config/config.bak"
 
 
-//interface_mqtt + read_wlanini
-#define __HIDE_PASSWORD
-
-
 //ClassFlowControll + Main + SoftAP
 #define WLAN_CONFIG_FILE "/sdcard/wlan.ini"
 
@@ -185,12 +181,14 @@
 #define READOUT_TYPE_RAWVALUE                4
 #define READOUT_TYPE_VALUE_STATUS            5
 #define READOUT_TYPE_RATE_PER_MIN            6
-#define READOUT_TYPE_RATE_PER_PROCESSING     7
+#define READOUT_TYPE_RATE_PER_INTERVAL     7
+
 
 //ClassFlowMQTT
-#define LWT_TOPIC           "connection"
-#define LWT_CONNECTED       "connected"
-#define LWT_DISCONNECTED    "connection lost"
+#define MQTT_STATUS_TOPIC           "/device/status/connection"
+#define MQTT_STATUS_ONLINE          "online"
+#define MQTT_STATUS_OFFLINE         "offline"
+#define MQTT_QOS                    1
 
 
 //CImageBasis
@@ -207,12 +205,6 @@
 
 //interface_influxdb
 #define MAX_HTTP_OUTPUT_BUFFER 2048
-
-
-//server_mqtt
-#define LWT_TOPIC        "connection"
-#define LWT_CONNECTED    "connected"
-#define LWT_DISCONNECTED "connection lost"
 
 
 // connect_wlan.cpp
@@ -288,7 +280,7 @@ CONFIG_WPA_11R_SUPPORT=n
 #define FLOW_INVALID_STATE          "Invalid State"
 
 // Process state misc
-#define FLOWSTATE_ERRORS_IN_ROW_LIMIT   3
+#define FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT   3
 
 
 // SoftAP for initial setup process

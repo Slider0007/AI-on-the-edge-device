@@ -910,12 +910,12 @@
 
 		<tr>
 			<td class="indent2">
-				<span id="PostProcessing_MaxRateType_text" style="color:black;">Maximum Rate Check Type</span>
+				<span id="PostProcessing_MaxRateType_text" style="color:black;">Rate Check Type</span>
 			</td>
 			<td>
 				<select id="PostProcessing_MaxRateType_value1">
 					<option value="RatePerMin" selected>Rate Per Minute</option>
-					<option value="RatePerProcessing">Rate Per Processing</option>
+					<option value="RatePerInterval">Rate Per Interval</option>
 					<option value="RateOff" >No Rate Check</option>
 				</select>
 			</td>
@@ -924,7 +924,7 @@
 
 		<tr>
 			<td class="indent2">
-				<span id="PostProcessing_MaxRateValue_text" style="color:black;">Maximum Rate Value</span>
+				<span id="PostProcessing_MaxRateValue_text" style="color:black;">Rate Check Limit Value</span>
 			</td>
 			<td>
 				<input required type="number" id="PostProcessing_MaxRateValue_value1" step="any"
@@ -1047,7 +1047,7 @@
 			</td>
 			<td>
 				<select id="MQTT_TLSEncryption_value1" onchange='setEnabled("MQTT_TLSEncryption_parameter", 
-						this.value == "true" ? true : false);'>
+																 	this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
 					<option value="true">true</option>
 				</select>
@@ -1087,45 +1087,93 @@
 
 		<tr class="MQTTItem">
 			<td class="indent1">
-				<span id="MQTT_RetainMessages_text" style="color:black;">Retain Messages</span>
+				<span id="MQTT_RetainProcessData_text">Retain Process Data</span>
 			</td>
 			<td>
-				<select id="MQTT_RetainMessages_value1">
-					<option value="false" >false</option>
-					<option value="true" selected>true</option>
+				<select id="MQTT_RetainProcessData_value1">
+					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_MQTT_RetainMessages</td>
+			<td>$TOOLTIP_MQTT_RetainProcessData</td>
+		</tr>
+
+		<tr class="MQTTItem">
+			<td class="indent1">
+				<span id="MQTT_ProcessDataNotation_text">Process Data Notation</span>
+			</td>
+			<td>
+				<select id="MQTT_ProcessDataNotation_value1">
+					<option value="0" selected>JSON Topic</option>
+					<option value="1">Single Topics</option>
+					<option value="2">JSON + Topics</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_MQTT_ProcessDataNotation</td>
 		</tr>
 
 		<tr class="MQTTItem">
 			<td class="indent1" style="padding-top:25px" colspan="3">
-				<b>Homeassistant Discovery (using MQTT)</b>
+				<b>Home Assistant Discovery</b>
 			</td>
 		</tr>
 
 		<tr class="MQTTItem">
 			<td class="indent2">
-				<span id="MQTT_HomeassistantDiscovery_text" style="color:black;">Homeassistant Discovery</span>
+				<span id="MQTT_HomeassistantDiscovery_text">Enable Discovery</span>
 			</td>
 			<td>
-				<select id="MQTT_HomeassistantDiscovery_value1">
-					<option value="false" >false</option>
-					<option value="true" selected>true</option>
+				<select id="MQTT_HomeassistantDiscovery_value1" onchange='setEnabled("MQTT_HomeassistantDiscovery_parameter", 
+																        	this.value == "true" ? true : false);'>
+					<option value="false" selected>false</option>
+					<option value="true">true</option>
 				</select>
 			</td>
 			<td>$TOOLTIP_MQTT_HomeassistantDiscovery</td>
 		</tr>
 
-		<tr class="MQTTItem">
+		<tr class="MQTTItem MQTT_HomeassistantDiscovery_parameter">
 			<td class="indent2">
-				<span id="MQTT_MeterType_text" style="color:black;">Meter Type</span>
+				<span id="MQTT_HARetainDiscovery_text">Retain Discovery Topics</span>
+			</td>
+			<td>
+				<select id="MQTT_HARetainDiscovery_value1">
+					<option value="false" selected>false</option>
+					<option value="true">true</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_MQTT_HARetainDiscovery</td>
+		</tr>
+
+		<tr class="MQTTItem MQTT_HomeassistantDiscovery_parameter">
+			<td class="indent2">
+				<span id="MQTT_HADiscoveryPrefix_text">Discovery Prefix</span>
+			</td>
+			<td>
+				<input type="text" id="MQTT_HADiscoveryPrefix_value1">
+			</td>
+			<td>$TOOLTIP_MQTT_HADiscoveryPrefix</td>
+		</tr>
+
+		<tr class="MQTTItem MQTT_HomeassistantDiscovery_parameter">
+			<td class="indent2">
+				<span id="MQTT_HAStatusTopic_text">Home Assistant Status Topic</span>
+			</td>
+			<td>
+				<input type="text" id="MQTT_HAStatusTopic_value1">
+			</td>
+			<td>$TOOLTIP_MQTT_HAStatusTopic</td>
+		</tr>
+
+		<tr class="MQTTItem MQTT_HomeassistantDiscovery_parameter">
+			<td class="indent2">
+				<span id="MQTT_HAMeterType_text">Home Assistant Meter Type</span>
 			</td>
 			<td>
 				 <!--  See https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes -->
-				<select class="select_large" id="MQTT_MeterType_value1">
-					<option value="other" selected>Other (no Units)</option>
-					<option value="water_m3">Watermeter (Value: m³, Rate: m³/h)</option>
+				<select class="select_large" id="MQTT_HAMeterType_value1">
+					<option value="none">None (no Units)</option>
+					<option value="water_m3" selected>Watermeter (Value: m³, Rate: m³/h)</option>
 					<option value="water_l">Watermeter (Value: l, Rate: l/h)</option>
 					<option value="water_gal">Watermeter (Value: gal, Rate: gal/h)</option>
 					<option value="water_ft3">Watermeter (Value: ft³, Rate: ft³/m)</option>
@@ -1137,7 +1185,7 @@
 					<option value="energy_gj">Energymeter (Value: GJ, Rate: GJ/h)</option>
 				</select>
 			</td>
-			<td>$TOOLTIP_MQTT_MeterType</td>
+			<td>$TOOLTIP_MQTT_HAMeterType</td>
 		</tr>
 	</table>
 
@@ -1925,11 +1973,12 @@
 
 		<tr>
 			<td class="indent1">
-			    <span id="AutoTimer_Interval_text" style="color:black;">Processing Interval</span>
+			    <span id="AutoTimer_Interval_text" style="color:black;">Process Interval</span>
 			</td>
 			<td>
-				<input required type="number" id="AutoTimer_Interval_value1"  min="1" step="any"
-					oninput="(!validity.rangeUnderflow||(value=1));">Minutes
+				<input required type="number" id="AutoTimer_Interval_value1" min="1" step="0.1"
+					oninput="(!validity.rangeUnderflow||(value=1)) && 
+						     (!validity.stepMismatch||(value=parseInt(this.value)));">Minutes
 			</td>
 			<td>$TOOLTIP_AutoTimer_Interval</td>
 		</tr>
@@ -2652,9 +2701,13 @@
 		WriteParameter(param, category, "MQTT", "TLSCACert", false);
 		WriteParameter(param, category, "MQTT", "TLSClientCert", false);
 		WriteParameter(param, category, "MQTT", "TLSClientKey", false);
-		WriteParameter(param, category, "MQTT", "RetainMessages", false);
+		WriteParameter(param, category, "MQTT", "RetainProcessData", false);
+		WriteParameter(param, category, "MQTT", "ProcessDataNotation", false);
 		WriteParameter(param, category, "MQTT", "HomeassistantDiscovery", false);
-		WriteParameter(param, category, "MQTT", "MeterType", false);
+		WriteParameter(param, category, "MQTT", "HADiscoveryPrefix", false);
+		WriteParameter(param, category, "MQTT", "HAStatusTopic", false);
+		WriteParameter(param, category, "MQTT", "HARetainDiscovery", false);
+		WriteParameter(param, category, "MQTT", "HAMeterType", false);
 		
 		WriteParameter(param, category, "InfluxDB", "Uri", false);	
 		WriteParameter(param, category, "InfluxDB", "Database", false);	
@@ -2713,6 +2766,7 @@
 		setEnabled("TakeImage_GainControlModeManual_parameter", document.getElementById("TakeImage_GainControlMode_value1").value == 0 ? true : false);
 		setEnabled("TakeImage_Zoom_parameter", document.getElementById("TakeImage_ZoomMode_value1").value > 0 ? true : false);
 		setEnabled("MQTT_TLSEncryption_parameter", document.getElementById("MQTT_TLSEncryption_value1").value == "true" ? true : false);
+		setEnabled("MQTT_HomeassistantDiscovery_parameter", document.getElementById("MQTT_HomeassistantDiscovery_value1").value == "true" ? true : false);
 		setEnabled("InfluxDB_TLSEncryption_parameter", document.getElementById("InfluxDB_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("InfluxDBv2_TLSEncryption_parameter", document.getElementById("InfluxDBv2_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("WebUI_OverviewAutoRefresh_parameter", document.getElementById("WebUI_OverviewAutoRefresh_value1").value == "true" ? true : false);
@@ -2821,9 +2875,13 @@
 		ReadParameter(param, "MQTT", "TLSCACert", false);
 		ReadParameter(param, "MQTT", "TLSClientCert", false);
 		ReadParameter(param, "MQTT", "TLSClientKey", false);
-		ReadParameter(param, "MQTT", "RetainMessages", false);
+		ReadParameter(param, "MQTT", "RetainProcessData", false);
+		ReadParameter(param, "MQTT", "ProcessDataNotation", false);
 		ReadParameter(param, "MQTT", "HomeassistantDiscovery", false);
-		ReadParameter(param, "MQTT", "MeterType", false);
+		ReadParameter(param, "MQTT", "HADiscoveryPrefix", false);
+		ReadParameter(param, "MQTT", "HAStatusTopic", false);
+		ReadParameter(param, "MQTT", "HARetainDiscovery", false);
+		ReadParameter(param, "MQTT", "HAMeterType", false);
 
 		ReadParameter(param, "InfluxDB", "Uri", false);
 		ReadParameter(param, "InfluxDB", "Database", false);

@@ -577,7 +577,7 @@ void migrateConfiguration(void)
                 else {
                     migrated = migrated | replaceString(configLines[i], "= Off", "= RateOff"); // Convert it to its new name
                     migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its new name
-                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerProcessing"); // Convert it to its new name
+                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerInterval"); // Convert it to its new name
                 }
             }
 
@@ -621,16 +621,17 @@ void migrateConfiguration(void)
             migrated = migrated | replaceString(configLines[i], "SetRetainFlag", "RetainMessages"); // First rename it, enable it with its default value
             migrated = migrated | replaceString(configLines[i], ";RetainMessages = true", ";RetainMessages = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";RetainMessages", "RetainMessages"); // Enable it
+            migrated = migrated | replaceString(configLines[i], "RetainMessages", "RetainProcessData"); // Rename it
 
             migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery = true", ";HomeassistantDiscovery = false"); // Set it to its default value
             migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery", "HomeassistantDiscovery"); // Enable it
 
-            if (isInString(configLines[i], "MeterType") && isInString(configLines[i], ";")) { // It is the parameter "MeterType" and it is commented out
+            if (isInString(configLines[i], "MeterType") && !isInString(configLines[i], "HAMeterType")) {
+                migrated = migrated | replaceString(configLines[i], "MeterType =", "HAMeterType ="); // Rename it
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
             }
-
-            if (configLines[i].rfind("Topic", 0) != std::string::npos)  // only if string starts with "Topic" (Was the naming in very old version)
-            {
+            
+            if (configLines[i].rfind("Topic", 0) != std::string::npos) { // only if string starts with "Topic" (Was the naming in very old version)
                 migrated = migrated | replaceString(configLines[i], "Topic", "MainTopic");
             }
         }

@@ -208,7 +208,7 @@
 
     function HA_send_discovery()
     {
-        var url = getDomainname() + '/mqtt_publish_discovery';
+        var url = getDomainname() + '/mqtt?task=publish_ha_discovery';
 
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {

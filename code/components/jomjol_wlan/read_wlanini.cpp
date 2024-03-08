@@ -97,11 +97,7 @@ int LoadWlanFromFile(std::string fn)
                 }
                 wlan_config.password = tmp;
                 if (!wlan_config.password.empty()) {
-                    #ifndef __HIDE_PASSWORD
-                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: " + wlan_config.password);
-                    #else
                     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: *****");
-                    #endif
                 }
                 else {
                     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: No password set");

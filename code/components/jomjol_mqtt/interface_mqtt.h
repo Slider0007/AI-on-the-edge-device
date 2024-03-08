@@ -8,14 +8,40 @@
 #include <map>
 #include <functional>
 
-bool MQTT_Configure(std::string _mqttURI, std::string _clientid, std::string _user, std::string _password,
-                    std::string _maintopic, std::string _lwt, std::string _lwt_connected, std::string _lwt_disconnected,
-                    bool _TLSEncryption, std::string _TLSCACertFilename, std::string _TLSClientCertFilename, std::string _TLSClientKeyFilename, 
-                    int _keepalive, bool SetRetainFlag, void *callbackOnConnected);
+#include "read_wlanini.h"
+
+
+struct strMqttConfig {
+    std::string uri = "";
+    std::string clientID = wlan_config.hostname;
+    std::string mainTopic = wlan_config.hostname;
+    std::string user = "";
+    std::string password = "";
+    bool TLSEncryption = false;
+    std::string TLSCACertFilename = "";
+    std::string TLSClientCertFilename = "";
+    std::string TLSClientKeyFilename = "";
+    bool retainProcessData = false;
+    int keepAlive = 25*60;
+};
+
+
+struct strMqttState {
+    bool mqttEnabled = false;
+    bool mqttConfigOK = false;
+    bool mqttInitialized = false;
+    bool mqttConnected = false;
+
+    int failedOnCycle = -1;
+    int mqttReconnectCnt = 0;
+};
+
+
+bool MQTT_Configure();
 int MQTT_Init();
 void MQTTdestroy_client(bool _disable);
 
-bool MQTTPublish(std::string _key, std::string _content, int qos, bool retained_flag = 1);            // retained Flag as Standart
+bool MQTTPublish(std::string _key, std::string _content, int qos, bool _retainFlag = false);
 
 bool getMQTTisEnabled();
 bool getMQTTisConnected();

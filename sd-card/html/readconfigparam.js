@@ -197,13 +197,17 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "ClientID", true, "watermeter");
      ParamAddSingleValueWithPreset(param, catname, "user", false, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "password", false, "undefined");
-     ParamAddSingleValueWithPreset(param, catname, "TLSEncryption", false, "false");
+     ParamAddSingleValueWithPreset(param, catname, "TLSEncryption", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "TLSCACert", true, "/config/certs/ca.crt");
      ParamAddSingleValueWithPreset(param, catname, "TLSClientCert", true, "/config/certs/client.crt");
      ParamAddSingleValueWithPreset(param, catname, "TLSClientKey", true, "/config/certs/client.key");
-     ParamAddSingleValueWithPreset(param, catname, "RetainMessages", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "RetainProcessData", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "ProcessDataNotation", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "HomeassistantDiscovery", true, "false");
-     ParamAddSingleValueWithPreset(param, catname, "MeterType", true, "other");
+     ParamAddSingleValueWithPreset(param, catname, "HADiscoveryPrefix", true, "homeassistant");
+     ParamAddSingleValueWithPreset(param, catname, "HAStatusTopic", true, "homeassistant/status");
+     ParamAddSingleValueWithPreset(param, catname, "HARetainDiscovery", true, "false");
+     ParamAddSingleValueWithPreset(param, catname, "HAMeterType", true, "water_m3");
 
      var catname = "InfluxDB";
      category[catname] = new Object(); 
@@ -214,7 +218,7 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "Database", true, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "user", false, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "password", false, "undefined");
-     ParamAddSingleValueWithPreset(param, catname, "TLSEncryption", false, "false");
+     ParamAddSingleValueWithPreset(param, catname, "TLSEncryption", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "TLSCACert", true, "/config/certs/ca.crt");
      ParamAddSingleValueWithPreset(param, catname, "TLSClientCert", true, "/config/certs/client.crt");
      ParamAddSingleValueWithPreset(param, catname, "TLSClientKey", true, "/config/certs/client.key");
@@ -230,7 +234,7 @@ function ParseConfig() {
      ParamAddSingleValueWithPreset(param, catname, "Bucket", true, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "Org", false, "undefined");
      ParamAddSingleValueWithPreset(param, catname, "Token", false, "undefined");
-     ParamAddSingleValueWithPreset(param, catname, "TLSEncryption", false, "false");
+     ParamAddSingleValueWithPreset(param, catname, "TLSEncryption", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "TLSCACert", true, "/config/certs/ca.crt");
      ParamAddSingleValueWithPreset(param, catname, "TLSClientCert", true, "/config/certs/client.crt");
      ParamAddSingleValueWithPreset(param, catname, "TLSClientKey", true, "/config/certs/client.key");
@@ -803,7 +807,13 @@ function getNumberSequences(){
 }
 
 
-function CreateNumberSequence(_sequence_name){
+function CreateNumberSequence(_sequence_name)
+{
+     if ((_sequence_name.indexOf(".") >= 0) || (_sequence_name.indexOf(",") >= 0) || 
+     (_sequence_name.indexOf(" ") >= 0) || (_sequence_name.indexOf("\"") >= 0)) {
+          return "Number sequence name must not contain , . \" or a space";
+     }
+     
      found = false;
      for (i = 0; i < NUMBERS.length; ++i) {
           if (NUMBERS[i]["name"] == _sequence_name)

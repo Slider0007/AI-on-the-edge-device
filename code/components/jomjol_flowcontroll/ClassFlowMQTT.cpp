@@ -5,78 +5,40 @@
 #include <iomanip>
 #include <time.h>
 
+#include "cJSON.h"
+
+#include "MainFlowControl.h"
 #include "Helper.h"
-#include "connect_wlan.h"
-#include "read_wlanini.h"
-#include "time_sntp.h"
-#include "interface_mqtt.h"
-#include "server_mqtt.h"
 #include "ClassLogFile.h"
 #include "ClassFlowControll.h"
+#include "interface_mqtt.h"
+#include "server_mqtt.h"
 
 
 static const char *TAG = "MQTT";
 
-extern const char* libfive_git_version(void);
-extern const char* libfive_git_revision(void);
-extern const char* libfive_git_branch(void);
+extern strMqttConfig mqttConfig;
+extern strHADiscoveryConfig HADiscoveryConfig;
 
 
 void ClassFlowMQTT::SetInitialParameter(void)
 {
     presetFlowStateHandler(true);
-    flowpostprocessing = NULL; 
     previousElement = NULL;
     ListFlowControll = NULL; 
     disabled = false;
 
-    uri = "";
-    maintopic = wlan_config.hostname;
-    clientname = wlan_config.hostname;
-    user = "";
-    password = "";
-    TLSEncryption = false;
-    TLSCACertFilename = "";
-    TLSClientCertFilename = "";
-    TLSClientKeyFilename = "";
-    SetRetainFlag = false;
-    
-    keepAlive = 25*60; 
+    mqttConfig = {};
+    HADiscoveryConfig = {};
+
+    processDataNotation = JSON;
 }       
 
-ClassFlowMQTT::ClassFlowMQTT()
+
+ClassFlowMQTT::ClassFlowMQTT(ClassFlowPostProcessing* _flowpostprocessing)
 {
+    flowpostprocessing = _flowpostprocessing;
     SetInitialParameter();
-}
-
-ClassFlowMQTT::ClassFlowMQTT(std::vector<ClassFlow*>* lfc)
-{
-    SetInitialParameter();
-
-    ListFlowControll = lfc;
-    for (int i = 0; i < ListFlowControll->size(); ++i)
-    {
-        if (((*ListFlowControll)[i])->name().compare("ClassFlowPostProcessing") == 0)
-        {
-            flowpostprocessing = (ClassFlowPostProcessing*) (*ListFlowControll)[i];
-        }
-    }
-}
-
-ClassFlowMQTT::ClassFlowMQTT(std::vector<ClassFlow*>* lfc, ClassFlow *_prev)
-{
-    SetInitialParameter();
-
-    previousElement = _prev;
-    ListFlowControll = lfc;
-
-    for (int i = 0; i < ListFlowControll->size(); ++i)
-    {
-        if (((*ListFlowControll)[i])->name().compare("ClassFlowPostProcessing") == 0)
-        {
-            flowpostprocessing = (ClassFlowPostProcessing*) (*ListFlowControll)[i];
-        }
-    }
 }
 
 
@@ -93,76 +55,87 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     if (toUpper(aktparamgraph).compare("[MQTT]") != 0)       // Paragraph does not fit MQTT
         return false;
 
-    while (getNextLine(pfile, &aktparamgraph) && !isNewParagraph(aktparamgraph))
-    {
+    while (getNextLine(pfile, &aktparamgraph) && !isNewParagraph(aktparamgraph)) {
         splitted = ZerlegeZeile(aktparamgraph);
-        if ((toUpper(splitted[0]) == "URI") && (splitted.size() > 1))
-        {
-            uri = splitted[1];
+        if ((toUpper(splitted[0]) == "URI") && (splitted.size() > 1)) {
+            mqttConfig.uri = splitted[1];
         }
 
-        if (((toUpper(splitted[0]) == "TOPIC") || (toUpper(splitted[0]) == "MAINTOPIC")) && (splitted.size() > 1))
-        {
-            maintopic = splitted[1];
+        if ((toUpper(splitted[0]) == "MAINTOPIC") && (splitted.size() > 1)) {
+            mqttConfig.mainTopic = splitted[1];
+             if('/' == mqttConfig.mainTopic.back() || '\\' == mqttConfig.mainTopic.back()) // Remove slash or backslash if existing
+                mqttConfig.mainTopic.pop_back();
         }
 
-        if ((toUpper(splitted[0]) == "CLIENTID") && (splitted.size() > 1))
-        {
-            clientname = splitted[1];
+        if ((toUpper(splitted[0]) == "CLIENTID") && (splitted.size() > 1)) {
+            mqttConfig.clientID = splitted[1];
         }
 
-        if ((toUpper(splitted[0]) == "USER") && (splitted.size() > 1))
-        {
-            user = splitted[1];
+        if ((toUpper(splitted[0]) == "USER") && (splitted.size() > 1)) {
+            mqttConfig.user = splitted[1];
         }
 
-        if ((toUpper(splitted[0]) == "PASSWORD") && (splitted.size() > 1))
-        {
-            password = splitted[1];
+        if ((toUpper(splitted[0]) == "PASSWORD") && (splitted.size() > 1)) {
+            mqttConfig.password = splitted[1];
         }   
 
-        if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                TLSEncryption = true;  
+                mqttConfig.TLSEncryption = true;  
             else
-                TLSEncryption = false;
+                mqttConfig.TLSEncryption = false;
         }
 
-        if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1))
-        {
-            TLSCACertFilename = "/sdcard" + splitted[1];
+        if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
+            mqttConfig.TLSCACertFilename = "/sdcard" + splitted[1];
         }
         
-        if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1))
-        {
-            TLSClientCertFilename = "/sdcard" + splitted[1];
+        if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
+            mqttConfig.TLSClientCertFilename = "/sdcard" + splitted[1];
         }
 
-        if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1))
-        {
-            TLSClientKeyFilename = "/sdcard" + splitted[1];
+        if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
+            mqttConfig.TLSClientKeyFilename = "/sdcard" + splitted[1];
         }      
 
-        if ((toUpper(splitted[0]) == "RETAINMESSAGES") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "RETAINPROCESSDATA") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                SetRetainFlag = true;  
+                mqttConfig.retainProcessData = true;  
             else
-                SetRetainFlag = false;
-
-            setMqtt_Server_Retain(SetRetainFlag);
+                mqttConfig.retainProcessData = false;
         }
 
-        if ((toUpper(splitted[0]) == "HOMEASSISTANTDISCOVERY") && (splitted.size() > 1))
-        {
+        if ((toUpper(splitted[0]) == "PROCESSDATANOTATION") && (splitted.size() > 1)) {
+            processDataNotation = std::stoi(splitted[1]);
+        }
+
+        if ((toUpper(splitted[0]) == "HOMEASSISTANTDISCOVERY") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "TRUE")
-                SetHomeassistantDiscoveryEnabled(true);
+                HADiscoveryConfig.HADiscoveryEnabled = true;
             else
-                SetHomeassistantDiscoveryEnabled(false);
+                HADiscoveryConfig.HADiscoveryEnabled = false;
+        }
+
+        if ((toUpper(splitted[0]) == "HADISCOVERYPREFIX") && (splitted.size() > 1)) {
+            HADiscoveryConfig.HADiscoveryPrefix = splitted[1];
+            // Remove traling slash or backslash if existing
+            if('/' == HADiscoveryConfig.HADiscoveryPrefix.back() || '\\' == HADiscoveryConfig.HADiscoveryPrefix.back())
+                HADiscoveryConfig.HADiscoveryPrefix.pop_back();
+        }
+
+        
+        if ((toUpper(splitted[0]) == "HASTATUSTOPIC") && (splitted.size() > 1)) {
+            HADiscoveryConfig.HAStatusTopic = splitted[1];
+            // Remove traling slash or backslash if existing
+            if('/' == HADiscoveryConfig.HAStatusTopic.back() || '\\' == HADiscoveryConfig.HAStatusTopic.back())
+                HADiscoveryConfig.HAStatusTopic.pop_back();
+        }
+
+        if ((toUpper(splitted[0]) == "HARETAINDISCOVERY") && (splitted.size() > 1)) {
+            HADiscoveryConfig.HARetainDiscoveryTopics = std::stoi(splitted[1]);
         }
         
-        if ((toUpper(splitted[0]) == "METERTYPE") && (splitted.size() > 1)) {
+        if ((toUpper(splitted[0]) == "HAMETERTYPE") && (splitted.size() > 1)) {
         /* Use meter type for the device class 
            Make sure it is a listed one on https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes */
             if (toUpper(splitted[1]) == "WATER_M3") {
@@ -195,14 +168,14 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             else if (toUpper(splitted[1]) == "ENERGY_GJ") {
                 mqttServer_setMeterType("energy", "GJ", "h", "GJ/h");
             }
+            else {
+                mqttServer_setMeterType("none", "", "", "");
+            }
         }
     }
-      
-    scheduleSendingStaticTopics();
-    mqttServer_setMainTopic(maintopic);
 
     /* Note:
-     * Originally, we started the MQTT client here.
+     * Originally, MQTT client was initiated here.
      * How ever we need the interval parameter from the ClassFlowControll, but that only gets started later.
      * To work around this, we delay the start and trigger it from ClassFlowControll::ReadParameter() */
 
@@ -212,74 +185,148 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
 bool ClassFlowMQTT::Start(float _processingInterval) 
 {
-    keepAlive = _processingInterval * 60 * 2.5; // Seconds, make sure it is greater than 2 processing cycles!
-
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(1) << "Processing interval: " << _processingInterval <<
-            "min -> MQTT LWT timeout: " << ((float)keepAlive/60) << "min";
+
+    mqttServer_setParameter(flowpostprocessing->GetNumbers(), _processingInterval);
+    mqttServer_schedulePublishDeviceInfo();
+
+    if (HADiscoveryConfig.HADiscoveryEnabled)
+        mqttServer_schedulePublishHADiscovery();
+
+    mqttConfig.keepAlive = _processingInterval * 60 * 2.5; // Seconds, make sure it is greater than 2 processing cycles!
+
+    stream << std::fixed << std::setprecision(1) << "Process interval: " << _processingInterval <<
+            "min -> MQTT keepAlive: " << ((float)mqttConfig.keepAlive/60) << "min";
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, stream.str());
-
-    mqttServer_setParameter(flowpostprocessing->GetNumbers(), keepAlive, _processingInterval);
-
-    bool MQTTConfigCheck = MQTT_Configure(uri, clientname, user, password, maintopic, LWT_TOPIC, LWT_CONNECTED,
-                                            LWT_DISCONNECTED, TLSEncryption, TLSCACertFilename, TLSClientCertFilename,
-                                            TLSClientKeyFilename, keepAlive, SetRetainFlag, (void *)&GotConnected);
-
-    if (MQTTConfigCheck)
+    
+    if (MQTT_Configure()) {
         MQTT_Init();
+        return true;
+    }
 
-    return MQTTConfigCheck;
+    return false;
 }
 
 
 bool ClassFlowMQTT::doFlow(std::string zwtime)
 {
     presetFlowStateHandler(false, zwtime);
-    bool success;
-    std::string namenumber = "";
-    int qos = 1;
+    bool retValCommon = true, retValStatus = true, retValData = true;
 
-    /* Send static topics and if selected the the HA discovery topics as well*/
-    sendDiscovery_and_static_Topics();
+    if (!getMQTTisConnected()) {
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip publish, not (yet) connected to broker");
+        return true;
+    }
 
-    success = publishSystemData(qos);
+    // Publish device info / status + HA Discovery
+    retValCommon &= mqttServer_publishHADiscovery(MQTT_QOS);
+    retValCommon &= mqttServer_publishDeviceInfo(MQTT_QOS);
+    retValCommon &= mqttServer_publishDeviceStatus(MQTT_QOS);
 
-    if (flowpostprocessing && getMQTTisConnected())
-    {
-        std::vector<NumberPost*>* NUMBERS = flowpostprocessing->GetNumbers();
+    // Publish process status
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publish process status");
+    retValStatus &= MQTTPublish(mqttConfig.mainTopic + "/process/status/process_status", 
+                                getProcessStatus().c_str(), MQTT_QOS, false);
+    retValStatus &= MQTTPublish(mqttConfig.mainTopic + "/process/status/process_interval", 
+                                to_stringWithPrecision(flowctrl.getProcessInterval(), 1).c_str(), MQTT_QOS, false);
+    retValStatus &= MQTTPublish(mqttConfig.mainTopic + "/process/status/process_time", 
+                                std::to_string(getFlowProcessingTime()).c_str(), MQTT_QOS, false);
+    retValStatus &= MQTTPublish(mqttConfig.mainTopic + "/process/status/process_state", 
+                                flowctrl.getActStatus().c_str(), MQTT_QOS, false);
+    retValStatus &= MQTTPublish(mqttConfig.mainTopic + "/process/status/process_error", 
+                                std::to_string(flowctrl.getFlowStateErrorOrDeviation()).c_str(), MQTT_QOS, false);
+    retValStatus &= MQTTPublish(mqttConfig.mainTopic + "/process/status/cycle_counter", 
+                                std::to_string(getFlowCycleCounter()).c_str(), MQTT_QOS, false);
 
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publishing MQTT topics");
+    if (!retValStatus)
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Failed to publish process status");
 
-        for (int i = 0; i < (*NUMBERS).size(); ++i) {
-            namenumber = (*NUMBERS)[i]->name;
-            if (namenumber == "default")
-                namenumber = maintopic + "/";
-            else
-                namenumber = maintopic + "/" + namenumber + "/";
+    // Publish process data per sequence
+    if (flowpostprocessing == NULL) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to retrieve process data");
+        return false;
+    }
 
-            success |= MQTTPublish(namenumber + "actual_value", (*NUMBERS)[i]->sActualValue, qos, SetRetainFlag);
-            success |= MQTTPublish(namenumber + "fallback_value", (*NUMBERS)[i]->sFallbackValue, qos, SetRetainFlag);
-            success |= MQTTPublish(namenumber + "raw_value", (*NUMBERS)[i]->sRawValue, qos, SetRetainFlag);
-            success |= MQTTPublish(namenumber + "value_status", (*NUMBERS)[i]->sValueStatus, qos, SetRetainFlag);
-            success |= MQTTPublish(namenumber + "rate_per_min", (*NUMBERS)[i]->sRatePerMin, qos, SetRetainFlag);
-            success |= MQTTPublish(namenumber + "rate_per_processing", (*NUMBERS)[i]->sRatePerProcessing, qos, SetRetainFlag);
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publish process data");
 
-            if (getTimeUnit() == "h") { // Rate per hour
-                success |= MQTTPublish(namenumber + "rate_per_time_unit", std::to_string((*NUMBERS)[i]->ratePerMin * 60), qos, SetRetainFlag); // per minutes => per hour
+    std::vector<NumberPost*> *numberSequences = flowpostprocessing->GetNumbers();
+
+    retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/number_sequences", 
+                              std::to_string((*numberSequences).size()), MQTT_QOS, mqttConfig.retainProcessData);
+    
+    for (int i = 0; i < (*numberSequences).size(); ++i) {        
+        if (processDataNotation == JSON || processDataNotation == JSON_AND_TOPICS || HADiscoveryConfig.HADiscoveryEnabled) {
+            cJSON *cJSONObject = cJSON_CreateObject();
+            if (cJSONObject == NULL) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
+                return false;
             }
-            else { // Default: Rate per minute
-                success |= MQTTPublish(namenumber + "rate_per_time_unit", (*NUMBERS)[i]->sRatePerMin, qos, SetRetainFlag); // rate per minutes
+            if (cJSON_AddStringToObject(cJSONObject, "sequence_name", (*numberSequences)[i]->name.c_str()) == NULL)
+                retValData = false;
+            if (cJSON_AddStringToObject(cJSONObject, "actual_value", (*numberSequences)[i]->sActualValue.c_str()) == NULL)
+                retValData = false;
+            if (cJSON_AddStringToObject(cJSONObject, "fallback_value", (*numberSequences)[i]->sFallbackValue.c_str()) == NULL)
+                retValData = false;
+            if (cJSON_AddStringToObject(cJSONObject, "raw_value", (*numberSequences)[i]->sRawValue.c_str()) == NULL)
+                retValData = false;
+            if (cJSON_AddStringToObject(cJSONObject, "value_status", (*numberSequences)[i]->sValueStatus.c_str()) == NULL)
+                retValData = false;
+            if (cJSON_AddStringToObject(cJSONObject, "rate_per_minute", (*numberSequences)[i]->sRatePerMin.c_str()) == NULL)
+                retValData = false;
+            if (cJSON_AddStringToObject(cJSONObject, "rate_per_interval", (*numberSequences)[i]->sRatePerInterval.c_str()) == NULL)
+                retValData = false;
+            if (HADiscoveryConfig.HADiscoveryEnabled) { // Only used for Home Assistant integration
+                if (cJSON_AddStringToObject(cJSONObject, "rate_per_time_unit", (mqttServer_getTimeUnit() == "h") ? 
+                            to_stringWithPrecision((*numberSequences)[i]->ratePerMin * 60, (*numberSequences)[i]->decimalPlaceCount).c_str() : 
+                                                (*numberSequences)[i]->sRatePerMin.c_str()) == NULL) 
+                    retValData = false;
             }
-            success |= MQTTPublish(namenumber + "timestamp_processed", (*NUMBERS)[i]->sTimeProcessed, qos, SetRetainFlag);
-            
-            std::string json = flowpostprocessing->getJsonFromNumber(i, "\n");
-            success |= MQTTPublish(namenumber + "json", json, qos, SetRetainFlag);
+            if (cJSON_AddStringToObject(cJSONObject, "timestamp_processed", (*numberSequences)[i]->sTimeProcessed.c_str()) == NULL)
+                retValData = false;
+            if (cJSON_AddStringToObject(cJSONObject, "timestamp_fallbackvalue", (*numberSequences)[i]->sTimeFallbackValue.c_str()) == NULL)
+                retValData = false;
+                
+            char *jsonString = cJSON_PrintBuffered(cJSONObject, 512, 1); // Print to predefined buffer, avoid dynamic allocations
+            std::string jsonData = std::string(jsonString);
+            cJSON_free(jsonString);  
+            cJSON_Delete(cJSONObject);
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/json", 
+                                      jsonData, MQTT_QOS, mqttConfig.retainProcessData);
+        }
+
+        if (processDataNotation == TOPICS || processDataNotation == JSON_AND_TOPICS) {
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/sequence_name", 
+                                        (*numberSequences)[i]->name.c_str(), MQTT_QOS, mqttConfig.retainProcessData);
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/actual_value", 
+                                        (*numberSequences)[i]->sActualValue.c_str(), MQTT_QOS, mqttConfig.retainProcessData);
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/fallback_value", 
+                                        (*numberSequences)[i]->sFallbackValue.c_str(), MQTT_QOS, mqttConfig.retainProcessData);
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/raw_value", 
+                                        (*numberSequences)[i]->sRawValue.c_str(), MQTT_QOS, mqttConfig.retainProcessData);
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/value_status", 
+                                        (*numberSequences)[i]->sValueStatus.c_str(), MQTT_QOS, mqttConfig.retainProcessData);
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/rate_per_minute", 
+                                        (*numberSequences)[i]->sRatePerMin.c_str(), MQTT_QOS, mqttConfig.retainProcessData);
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/rate_per_interval", 
+                                        (*numberSequences)[i]->sRatePerInterval.c_str(), MQTT_QOS, mqttConfig.retainProcessData);
+            if (HADiscoveryConfig.HADiscoveryEnabled) { // Only used for Home Assistant integration
+                retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/rate_per_time_unit", 
+                            (mqttServer_getTimeUnit() == "h") ? to_stringWithPrecision((*numberSequences)[i]->ratePerMin * 60, 
+                            (*numberSequences)[i]->decimalPlaceCount).c_str() : (*numberSequences)[i]->sRatePerMin.c_str(), 
+                            MQTT_QOS, mqttConfig.retainProcessData);
+            }
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/timestamp_processed", 
+                                        (*numberSequences)[i]->sTimeProcessed.c_str(), MQTT_QOS, mqttConfig.retainProcessData);
+            retValData &= MQTTPublish(mqttConfig.mainTopic + "/process/data/" + std::to_string(i+1) + "/timestamp_fallbackvalue", 
+                                        (*numberSequences)[i]->sTimeFallbackValue.c_str(), MQTT_QOS, mqttConfig.retainProcessData);
         }
     }
 
-    if (!success) {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Failed to publish one or more topics (system / result)");
-    }
+    if (!retValData)
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Failed to publish process data");
+
+    if (!retValCommon || !retValStatus || !retValData) // If publishing of one of the clusters failed
+        return false;
     
     return true;
 }

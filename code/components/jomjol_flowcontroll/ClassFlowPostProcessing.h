@@ -56,8 +56,6 @@ class ClassFlowPostProcessing : public ClassFlow
     std::string getReadoutStatus(int _number = 0);
     std::string getReadoutRate(int _number = 0);
     std::string getReadoutTimeStamp(int _number = 0);
-    std::string getJsonFromNumber(int i, std::string _lineend);
-    std::string GetJSON(std::string _lineend = "\n");
     std::string GetFallbackValue(std::string _number = "");
     bool SetFallbackValue(double zw, std::string _numbers);
     bool getUseFallbackValue(void);

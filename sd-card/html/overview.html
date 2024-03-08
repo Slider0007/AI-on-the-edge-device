@@ -168,7 +168,7 @@
 				loadValue(_jsonData.raw_value.inline, "raw", "border-collapse: collapse; width: 100%");
 				loadValue(_jsonData.value_status.inline, "status", "border-collapse: collapse; width: 100%");
 				$('#statusflow').html(_jsonData.process_state);
-				loadProcessError(_jsonData.process_error);
+				loadProcessError(_jsonData.process_error, _jsonData.process_state);
 				$('#device_uptime').html(formatUptime(_jsonData.device_uptime));
 				$('#cycle_counter').html(_jsonData.cycle_counter);
 				loadWLANRSSI(_jsonData.wlan_rssi);
@@ -264,10 +264,20 @@
 	}
 
 
-	function loadProcessError(_value)
+	function loadProcessError(_value, _processState)
 	{
-		if (_value !== "0") {
-			$('#processerror').html("!!! Process error detected. Check logs !!!");
+		if (_processState.split("] ")[1] == "Initialization - Delayed" ||
+			_processState.split("] ")[1] == "Initialization Failed" ||
+			_processState.split("] ")[1] == "Setup Mode" ||
+			_processState.split("] ")[1] == "Idle - No Autostart" ||
+			_processState.split("] ")[1] == "Idle - Waiting for Autostart")
+		{
+			if (_value < "0") {
+				$('#processerror').html("!!! Process error detected. Check logs !!!");
+			}
+			else {
+				$('#processerror').html("");
+			}
 		}
 		else {
 			$('#processerror').html("");

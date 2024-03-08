@@ -36,7 +36,7 @@ struct general {
 enum t_RateType {
     rtRateOff,
     rtRatePerMin,
-    rtRatePerProcessing
+    rtRatePerInterval
  };
 
 
@@ -62,7 +62,8 @@ struct NumberPost {
     t_RateType rateType;            // Parameter: Select Rate Checking Procedure
     float maxRateValue;             // Parameter: Max allowed rate
     double ratePerMin;              // Rate per minute (e.g. m3/min)
-    double ratePerProcessing;       // Rate per processinig interval (e.g. m3/processing interval)
+    double ratePerInterval;         // Rate per interval, value delta between actual and fallback value, 
+                                    // e.g. dV/dT (actual value-fallbackvalue)/(actual processing timestamp-fallbackvalue processing timestamp)
 
     double fallbackValue;           // Fallback value, equal the last successful processed value (legacy name: prevalue)
     double actualValue;             // Actual result value
@@ -70,7 +71,7 @@ struct NumberPost {
     std::string sTimeProcessed;     // Processed timestamp -> Time of last processing
     std::string sTimeFallbackValue; // FallbackValue timestamp -> Time of last valid value
     std::string sRatePerMin;        // Rate per minute, based on time between last valid and actual reading
-    std::string sRatePerProcessing; // Rate per processing interval, based on the absolute difference between last and actual reading
+    std::string sRatePerInterval;   // Rate per interval, value delta between actual value and last valid value (fallback value)
     std::string sRawValue;          // Raw value (possibly incl. N & leading 0)    
     std::string sActualValue;       // Value of actual valid reading, incl. post-processing corrections
     std::string sFallbackValue;     // Fallback value, equal to last valid reading (legacy name: prevalue)

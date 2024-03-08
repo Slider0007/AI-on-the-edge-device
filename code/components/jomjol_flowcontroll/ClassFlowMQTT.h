@@ -8,25 +8,27 @@
 
 #include "ClassFlow.h"
 #include "ClassFlowPostProcessing.h"
+#include "interface_mqtt.h"
+#include "server_mqtt.h"
+
+
+enum eDataNotation {
+    JSON = 0,
+    TOPICS,
+    JSON_AND_TOPICS
+};
 
 
 class ClassFlowMQTT : public ClassFlow
 {
     protected:
-        ClassFlowPostProcessing* flowpostprocessing; 
-        std::string uri, maintopic, clientname; 
-        std::string user, password;
-        bool TLSEncryption;
-        std::string TLSCACertFilename, TLSClientCertFilename, TLSClientKeyFilename;
-        bool SetRetainFlag;
-        int keepAlive; // Seconds
-        
-        void SetInitialParameter(void);        
+        void SetInitialParameter(void);
+        ClassFlowPostProcessing* flowpostprocessing;
+
+        int processDataNotation;
 
     public:
-        ClassFlowMQTT();
-        ClassFlowMQTT(std::vector<ClassFlow*>* lfc);
-        ClassFlowMQTT(std::vector<ClassFlow*>* lfc, ClassFlow *_prev);
+        ClassFlowMQTT(ClassFlowPostProcessing* _flowpostprocessing);
         virtual ~ClassFlowMQTT();
         bool Start(float AutoInterval);
 

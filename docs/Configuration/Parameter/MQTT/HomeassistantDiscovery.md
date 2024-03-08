@@ -1,16 +1,21 @@
-# Parameter: Homeassistant Discovery
+# Parameter: Enable Discovery
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Homeassistant Discovery | HomeassistantDiscovery
+| Parameter Name    | Enable Discovery    | HomeassistantDiscovery
 | Default Value     | `false`             | `false`
 | Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
 
 ## Description
 
-Enable or disable the Homeassistant Discovery.<br>
-If activated, the discovery topics gets automatically scheduled to sent once after device startup during state "Publish to MQTT".
-To schedule a retransmission: Use "Manual Control > Resend HA Discovery" or call REST API: 
-<a href=mqtt_publish_discovery target="_blank">http://&lt;IP&gt;/mqtt_publish_discovery</a><br>
-Check [MQTT API - HA description](../../../API/MQTT/homeassistant_discovery.md) for more details.
+Enable or disable the Home Assistant discovery.<br>
+Refer to [MQTT API - Home Assistant](../../../API/MQTT/home-assistant-discovery.md) desciption for more details about Home Assistant discovery topics.
+
+!!! Note
+    - If enabled, discovery topics get automatically published once after a device restart.<br>
+    - If enabled, discovery topics get automatically published after Home Assistant status topic changed to 'online'.<br>
+    (Ensure Home Assistant status topic parameter is set correctly -> parameter `Home Assistant Status Topic`).<br>
+    - This request can also be triggerd by `WebUI > Manual Control > Resend HA Discovery`.<br>
+    - This request can also be triggered by REST API: `/mqtt?task=publish_ha_discovery`.<br>
+    Check [REST API](../../../API/REST/mqtt.md) description for more details.

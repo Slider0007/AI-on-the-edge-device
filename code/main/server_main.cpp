@@ -58,7 +58,8 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_status", getProcessStatus().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_interval", to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "process_interval", 
+                                    to_stringWithPrecision(flowctrl.getProcessInterval(), 1).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_time", std::to_string(getFlowProcessingTime()).c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -211,7 +212,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("process_interval") == 0) {
-        httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str());
+        httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessInterval(), 1).c_str());
         return ESP_OK;        
     }
     else if (type.compare("process_time") == 0) {
@@ -499,10 +500,10 @@ esp_err_t handler_img_tmp_virtual(httpd_req_t *req)
 
     // Serve raw.jpg
     if (filetosend == "raw.jpg")
-        return GetRawJPG(req); 
+        return flowctrl.SendRawJPG(req);
 
     // Serve alg.jpg, alg_roi.jpg or digital and analog ROIs
-    return GetJPG(filetosend, req);
+    return flowctrl.GetJPGStream(filetosend, req);
 
     // File was not served already --> serve with img_tmp_handler
     return handler_img_tmp(req);
@@ -566,7 +567,7 @@ esp_err_t handler_main(httpd_req_t *req)
             httpd_resp_send(req, message.c_str(), message.length());
             return ESP_OK;
         }
-        else if (isSetupModusActive()) {
+        else if (flowctrl.getStatusSetupModus()) {
             ESP_LOGD(TAG, "System is in setup mode --> index.html --> setup.html");
             filetosend = "/sdcard/html/setup.html";
         }

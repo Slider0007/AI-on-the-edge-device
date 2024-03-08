@@ -13,6 +13,7 @@
 static const char* TAG = "SYSTEM";
 
 unsigned int systemStatus = 0;
+static bool isPlannedReboot = false;
 
 sdmmc_cid_t SDCardCid;
 sdmmc_csd_t SDCardCsd;
@@ -365,6 +366,26 @@ std::string getResetReason(void)
     return reasonText;
 }
 
+
+void CheckIsPlannedReboot()
+{
+ 	FILE *pfile;
+    if ((pfile = fopen("/sdcard/reboot.txt", "r")) == NULL) {
+		//LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial boot or not a planned reboot");
+        isPlannedReboot = false;
+	}
+    else {
+		LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Planned reboot");
+        DeleteFile("/sdcard/reboot.txt");   // Prevent Boot Loop!!!
+        isPlannedReboot = true;
+	}
+}
+
+
+bool getIsPlannedReboot() 
+{
+    return isPlannedReboot;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 /* Source: https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/tree/lsmmc.c */

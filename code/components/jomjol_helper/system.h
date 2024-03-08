@@ -56,6 +56,9 @@ bool isSetSystemStatusFlag(SystemStatusFlag_t flag);
 
 std::string getResetReason(void);
 
+void CheckIsPlannedReboot();
+bool getIsPlannedReboot();
+
 void SaveSDCardInfo(sdmmc_card_t* card);
 std::string getSDCardPartitionSize(void);
 std::string getSDCardFreePartitionSpace(void);

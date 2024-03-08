@@ -90,7 +90,7 @@
                     var traceRawValue =          { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Raw Value', visible: 'legendonly'};
                     var traceFallbackValue =     { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Fallback Value', visible: 'legendonly'};
                     var traceRatePerMin =        { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Minute'};
-                    var traceRatePerProcessing = { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Processing', visible: 'legendonly'};
+                    var traceRatePerInterval = { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Interval', visible: 'legendonly'};
 
                     var timex = 1;
                     for (let line of lines) {
@@ -102,7 +102,7 @@
                                 var rawValue = line.split(",")[2];
                                 var fallbackValue = line.split(",")[4];
                                 var RatePerMin = line.split(",")[5];
-                                var RatePerProcessing = line.split(",")[6];
+                                var RatePerInterval = line.split(",")[6];
                                 var time  = line.split(",")[0];
                                 //console.log("> "+time+" "+value+"\n");
 
@@ -125,15 +125,15 @@
                                     RatePerMin = NaN;
                                 }
 
-                                if (RatePerProcessing == "" || isNaN(RatePerProcessing)) {
-                                    RatePerProcessing = NaN;
+                                if (RatePerInterval == "" || isNaN(RatePerInterval)) {
+                                    RatePerInterval = NaN;
                                 }
 
                                 traceValue.y.push(value);
                                 traceRawValue.y.push(rawValue);
                                 traceFallbackValue.y.push(fallbackValue);
                                 traceRatePerMin.y.push(RatePerMin);
-                                traceRatePerProcessing.y.push(RatePerProcessing);
+                                traceRatePerInterval.y.push(RatePerInterval);
                             }
                         }
                     }
@@ -163,7 +163,7 @@
                     traceRawValue.x = traceValue.x;
                     traceFallbackValue.x = traceValue.x;
                     traceRatePerMin.x = traceValue.x;
-                    traceRatePerProcessing.x = traceValue.x;
+                    traceRatePerInterval.x = traceValue.x;
 
                     //console.log(traceValue.y);
 
@@ -189,7 +189,7 @@
 
                 //  console.log(traceValue.x)
 
-                    var data = [traceValue, traceRawValue, traceFallbackValue, traceRatePerMin, traceRatePerProcessing];
+                    var data = [traceValue, traceRawValue, traceFallbackValue, traceRatePerMin, traceRatePerInterval];
 
                     var layout = {
                         showlegend: true,

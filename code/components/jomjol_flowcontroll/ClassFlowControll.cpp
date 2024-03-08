@@ -17,6 +17,7 @@ extern "C" {
 #include "ClassLogFile.h"
 #include "time_sntp.h"
 #include "Helper.h"
+#include "system.h"
 #include "statusled.h"
 #include "server_ota.h"
 #include "server_help.h"
@@ -59,7 +60,8 @@ void ClassFlowControll::SetInitialParameter(void)
     disabled = false;
     readParameterDone = false;
     setActStatus(std::string(FLOW_NO_TASK));
-    setActFlowError(false);
+    flowStateErrorInRow = 0;
+    flowStateDeviationInRow = 0;
 }
 
 
@@ -386,7 +388,7 @@ ClassFlow* ClassFlowControll::CreateClassFlow(std::string _type)
     #ifdef ENABLE_MQTT
     else if (toUpper(_type).compare("[MQTT]") == 0) 
     {
-        cfc = new ClassFlowMQTT(&FlowControll);
+        cfc = new ClassFlowMQTT(flowpostprocessing);
         if(cfc) {
             flowMQTT = (ClassFlowMQTT*) cfc;
             FlowControlPublish.push_back(cfc);
@@ -577,7 +579,7 @@ bool ClassFlowControll::doFlowImageEvaluation(std::string time)
         setActStatus(TranslateAktstatus(FlowControll[i]->name()));
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + getActStatus());
         #ifdef ENABLE_MQTT
-            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), 1, false);
+            MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", getActStatus(), 1, false);
         #endif //ENABLE_MQTT
 
         if (!FlowControll[i]->doFlow(time)) {
@@ -587,10 +589,14 @@ bool ClassFlowControll::doFlowImageEvaluation(std::string time)
                 if (FlowControll[i]->getFlowState()->EventCode[j] < 0) {
                     LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActStatus() + "\"");
                     result = false;
+                    flowStateErrorInRow++;
+                    flowStateDeviationInRow = 0;
                     break;
                 }
                 else {
                     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
+                    flowStateDeviationInRow++;
+                    flowStateErrorInRow = 0;
                 }
             }
 
@@ -616,7 +622,7 @@ bool ClassFlowControll::doFlowPublishData(std::string time)
         setActStatus(TranslateAktstatus(FlowControlPublish[i]->name()));
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + getActStatus());
         #ifdef ENABLE_MQTT
-            MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), 1, false);
+            MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", getActStatus(), 1, false);
         #endif //ENABLE_MQTT
 
         if (!FlowControlPublish[i]->doFlow(time)) {
@@ -626,10 +632,14 @@ bool ClassFlowControll::doFlowPublishData(std::string time)
                 if (FlowControll[i]->getFlowState()->EventCode[j] < 0) {
                     LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActStatus() + "\"");
                     result = false;
+                    flowStateErrorInRow++;
+                    flowStateDeviationInRow = 0;
                     break;
                 }
                 else {
                     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
+                    flowStateDeviationInRow++;
+                    flowStateErrorInRow = 0;
                 }
             }
 
@@ -652,7 +662,7 @@ bool ClassFlowControll::doFlowTakeImageOnly(std::string time)
             setActStatus(TranslateAktstatus(FlowControll[i]->name()));
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + getActStatus());
             #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", getActStatus(), 1, false);
+                MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", getActStatus(), 1, false);
             #endif //ENABLE_MQTT
 
             if (!FlowControlPublish[i]->doFlow(time)) {
@@ -661,11 +671,15 @@ bool ClassFlowControll::doFlowTakeImageOnly(std::string time)
                 for (int j = 0; j < FlowControll[i]->getFlowState()->EventCode.size(); j++) {
                     if (FlowControll[i]->getFlowState()->EventCode[j] < 0) {
                         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActStatus() + "\"");
+                        flowStateErrorInRow++;
+                        flowStateDeviationInRow = 0;
                         result = false;
                         break;
                     }
                     else {
                         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActStatus() + "\"");
+                        flowStateDeviationInRow++;
+                        flowStateErrorInRow = 0;
                     }
                 }
 
@@ -715,7 +729,7 @@ void ClassFlowControll::PostProcessEventHandler()
 }
 
 
-float ClassFlowControll::getProcessingInterval(void)
+float ClassFlowControll::getProcessInterval(void)
 {
     return AutoInterval;
 }
@@ -734,6 +748,13 @@ bool ClassFlowControll::isAutoStart(long &_interval)
 }
 
 
+void ClassFlowControll::setActStatus(std::string _aktstatus)
+{
+    aktstatus = _aktstatus;
+    aktstatusWithTime = "[" + getCurrentTimeString("%H:%M:%S") + "] " + _aktstatus;
+}
+
+
 std::string ClassFlowControll::getActStatusWithTime()
 {
     return aktstatusWithTime;
@@ -746,22 +767,32 @@ std::string ClassFlowControll::getActStatus()
 }
 
 
-void ClassFlowControll::setActFlowError(bool _aktflowerror)
+void ClassFlowControll::setFlowStateError()
 {
-    aktflowerror = _aktflowerror;
+    flowStateErrorInRow++;
+    flowStateDeviationInRow = 0;
 }
 
 
-bool ClassFlowControll::getActFlowError()
+void ClassFlowControll::clearFlowStateEventInRowCounter()
 {
-    return aktflowerror;
+    flowStateErrorInRow = 0;
+    flowStateDeviationInRow = 0;
 }
 
 
-void ClassFlowControll::setActStatus(std::string _aktstatus)
+int ClassFlowControll::getFlowStateErrorOrDeviation()
 {
-    aktstatus = _aktstatus;
-    aktstatusWithTime = "[" + getCurrentTimeString("%H:%M:%S") + "] " + _aktstatus;
+    if (flowStateErrorInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT)
+        return MULTIPLE_ERROR_IN_ROW;
+    else if (flowStateDeviationInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT)
+        return MULTIPLE_DEVIATION_IN_ROW;
+    else if (flowStateErrorInRow > 0)
+        return SINGLE_ERROR;
+    else if (flowStateDeviationInRow > 0)
+        return SINGLE_DEVIATION;
+    else
+        return NONE;
 }
 
 
@@ -823,21 +854,12 @@ void ClassFlowControll::AnalogDrawROI(CImageBasis *_zw)
 #ifdef ENABLE_MQTT
 bool ClassFlowControll::StartMQTTService() 
 {
-    /* Start the MQTT service */
-        for (int i = 0; i < FlowControlPublish.size(); ++i) {
-            if (FlowControlPublish[i]->name().compare("ClassFlowMQTT") == 0) {
-                return ((ClassFlowMQTT*) (FlowControlPublish[i]))->Start(AutoInterval);
-            }  
-        } 
-    return false;
+    if (flowMQTT == NULL)
+        return false;
+    
+    return flowMQTT->Start(AutoInterval);
 }
 #endif //ENABLE_MQTT
-
-
-std::string ClassFlowControll::getJSON()
-{
-    return flowpostprocessing->GetJSON();
-}
 
 
 /* Return all available numbers names (number sequences)*/
@@ -947,8 +969,8 @@ std::string ClassFlowControll::getNumbersValue(int _position, int _type)
         case READOUT_TYPE_RATE_PER_MIN:
             return (*flowpostprocessing->GetNumbers())[_position]->sRatePerMin;
         
-        case READOUT_TYPE_RATE_PER_PROCESSING:
-            return (*flowpostprocessing->GetNumbers())[_position]->sRatePerProcessing;
+        case READOUT_TYPE_RATE_PER_INTERVAL:
+            return (*flowpostprocessing->GetNumbers())[_position]->sRatePerInterval;
         
         default:
             return "";
@@ -1016,8 +1038,8 @@ std::string ClassFlowControll::getReadoutAll(int _type)
                 case READOUT_TYPE_RATE_PER_MIN:
                     out = out + (*numbers)[i]->sRatePerMin;
                     break;
-                case READOUT_TYPE_RATE_PER_PROCESSING:
-                    out = out + (*numbers)[i]->sRatePerProcessing;
+                case READOUT_TYPE_RATE_PER_INTERVAL:
+                    out = out + (*numbers)[i]->sRatePerInterval;
                     break;
             }
             if (i < (*numbers).size()-1)

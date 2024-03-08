@@ -1,21 +1,29 @@
-# Parameter: Maximum Rate Check Type
+# Parameter: Rate Check Type
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | Maximum Rate Check Type | [NUMBER SEQUENCE].MaxRateType
+| Parameter Name    | Rate Check Type     | [NUMBER SEQUENCE].MaxRateType
 | Default Value     | `Rate Per Minute`   | `RatePerMin`
-| Input Options     | `Rate Per Minute`<br>`Rate Per Processing`<br>`No Rate Check`| `RatePerMin`<br>`RatePerProcessing`<br>`RateOff`
+| Input Options     | `Rate Per Minute`<br>`Rate Per Interval`<br>`No Rate Check`| `RatePerMin`<br>`RatePerInterval`<br>`RateOff`
 
 
 ## Description
 
-This parameter defines if the maximum rate evaluation is performed using the difference of the last two readings 
-(`Rate Per Processing` == rate / processing interval) or using the difference of the last two readings normalized 
-to a minute (`Rate Per Minute`). Setting it to `No Rate Check` no maximum rate evaluation will be performed.<br><br> 
+This parameter defines which approach is used to check rate / value delta to avoid unrealistic 
+value jumps in positive and also in negative direction.
+
+
+### Input Options
+
+| Input Option              | Description
+|:---                       |:---
+| `Rate Per Minute`         | Delta between actual and last valid processed value (Fallback Value) and additionally normalized to a minute. -> Self-healing: Delta time as calculation base is increasing over time -> rate/min is getting lower and lower. At some point the rate is in accepatable range again.
+| `Rate Per Interval`       | Delta between actual and last valid processed value (Fallback Value) -> Not self-healing: Value delta is increasing over time. Rate limit is fixed. Limit should cover realistic consumption + possible false readings.
+| `No Rate Check`           | No rate / value delta check is performed
 
 
 !!! Note
-    The rate will be checked against positive and negative rate deviation.
+    The rate / value delta is checked against positive and negative rate deviation.
 
 !!! Note
     This parameter can to be set for each number sequence separately.

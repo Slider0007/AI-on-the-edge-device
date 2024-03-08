@@ -30,9 +30,12 @@
 #endif //ENABLE_MQTT
 
 
+static const char *TAG = "MAINCTRL";
+
+//#define DEBUG_DETAIL_ON
+
 ClassFlowControll flowctrl;
 
-static bool isPlannedReboot = false;
 static TaskHandle_t xHandletask_autodoFlow = NULL;
 static bool bTaskAutoFlowCreated = false;
 static int taskAutoFlowState = FLOW_TASK_STATE_INIT;
@@ -40,103 +43,7 @@ static bool reloadConfig = false;
 static bool manualFlowStart = false;
 static long auto_interval = 0;
 static int cycleCounter = 0;
-static int FlowStateErrorsInRow = 0;
 static int processingTime = 0;
-
-static const char *TAG = "MAINCTRL";
-
-
-//#define DEBUG_DETAIL_ON
-
-
-void CheckIsPlannedReboot()
-{
- 	FILE *pfile;
-    if ((pfile = fopen("/sdcard/reboot.txt", "r")) == NULL) {
-		//LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial boot or not a planned reboot");
-        isPlannedReboot = false;
-	}
-    else {
-		LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Planned reboot");
-        DeleteFile("/sdcard/reboot.txt");   // Prevent Boot Loop!!!
-        isPlannedReboot = true;
-	}
-}
-
-
-bool getIsPlannedReboot() 
-{
-    return isPlannedReboot;
-}
-
-
-void setTaskAutoFlowState(int _value) 
-{
-    taskAutoFlowState = _value;
-}
-
-
-std::string getProcessStatus(void)
-{
-    std::string process_status;
-    
-    if (taskAutoFlowState >=4 && taskAutoFlowState <= 7) 
-        process_status = "Processing (Automatic)";
-    else if (taskAutoFlowState == 3) 
-        process_status = "Processing (Triggered Only)";
-    else if (taskAutoFlowState < 3) 
-        process_status = "Not Processing / Not Ready";
-    else
-        process_status = "Status unknown: " + taskAutoFlowState;
-
-    return process_status;
-}
-
-
-int getFlowProcessingTime()
-{
-    return processingTime;
-}
-
-
-int getFlowCycleCounter() 
-{
-    return cycleCounter;
-}
-
-
-esp_err_t GetJPG(std::string _filename, httpd_req_t *req)
-{
-    return flowctrl.GetJPGStream(_filename, req);
-}
-
-
-esp_err_t GetRawJPG(httpd_req_t *req)
-{
-    return flowctrl.SendRawJPG(req);
-}
-
-
-bool isSetupModusActive() 
-{
-    return flowctrl.getStatusSetupModus();
-}
-
-
-void DeleteMainFlowTask()
-{
-    #ifdef DEBUG_DETAIL_ON      
-        ESP_LOGD(TAG, "DeleteMainFlowTask: xHandletask_autodoFlow: %ld", (long) xHandletask_autodoFlow);
-    #endif
-    if( xHandletask_autodoFlow != NULL )
-    {
-        vTaskDelete(xHandletask_autodoFlow);
-        xHandletask_autodoFlow = NULL;
-    }
-    #ifdef DEBUG_DETAIL_ON      
-    	ESP_LOGD(TAG, "Killed: xHandletask_autodoFlow");
-    #endif
-}
 
 
 bool doInit(void)
@@ -311,7 +218,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
-        "00: Handler usage:<br>"
+        "Handler usage:<br>"
         "- To retrieve actual Fallback Value, please provide a number sequence name only, e.g. /set_fallbackvalue?sequence=main<br>"
         "- To set Fallback Value to a new value, please provide a number sequence name and a value, e.g. /set_fallbackvalue?sequence=main&value=1234.5678<br>"
         "NOTE:<br>"
@@ -670,21 +577,21 @@ esp_err_t handler_process_data(httpd_req_t *req)
             }
         }
 
-        cJSON *cJSONObjectRatePerProcessing = cJSON_AddObjectToObject(cJSONObject, "rate_per_processing");
-        if (cJSONObjectRatePerProcessing == NULL) {
+        cJSON *cJSONObjectRatePerInterval = cJSON_AddObjectToObject(cJSONObject, "rate_per_interval");
+        if (cJSONObjectRatePerInterval == NULL) {
             retVal = ESP_FAIL;
         }
         else {
-            if (cJSON_AddStringToObject(cJSONObjectRatePerProcessing, "inline", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str()) == NULL)
+            if (cJSON_AddStringToObject(cJSONObjectRatePerInterval, "inline", flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_INTERVAL).c_str()) == NULL)
                 retVal = ESP_FAIL;
-            cJSON *cJSONObjectRatePerProcessingSequence = cJSON_AddObjectToObject(cJSONObjectRatePerProcessing, "sequence");
-            if (cJSONObjectRatePerProcessingSequence == NULL) {
+            cJSON *cJSONObjectRatePerIntervalSequence = cJSON_AddObjectToObject(cJSONObjectRatePerInterval, "sequence");
+            if (cJSONObjectRatePerIntervalSequence == NULL) {
                 retVal = ESP_FAIL;
             }
             else {
                 for(int i = 0; i < flowctrl.getNumbersSize(); i++) {
-                    if (cJSON_AddStringToObject(cJSONObjectRatePerProcessingSequence, flowctrl.getNumbersName(i).c_str(), 
-                                                flowctrl.getNumbersValue(i, READOUT_TYPE_RATE_PER_PROCESSING).c_str()) == NULL)
+                    if (cJSON_AddStringToObject(cJSONObjectRatePerIntervalSequence, flowctrl.getNumbersName(i).c_str(), 
+                                                flowctrl.getNumbersValue(i, READOUT_TYPE_RATE_PER_INTERVAL).c_str()) == NULL)
                     retVal = ESP_FAIL;
                 }
             }
@@ -692,15 +599,18 @@ esp_err_t handler_process_data(httpd_req_t *req)
 
         if (cJSON_AddStringToObject(cJSONObject, "process_status", getProcessStatus().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_interval", to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "process_interval", 
+                                    to_stringWithPrecision(flowctrl.getProcessInterval(), 1).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_time", std::to_string(getFlowProcessingTime()).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_error", flowctrl.getActFlowError() ? (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT ? 
-                "-1" : "-2") : "0") == NULL) // 0: No error, -1 (E01): One error occured, -2 (E02): Three errors in a row
+
+        // 0: No error, -1: Error occured, -2: Multiple errors in a row, 1: Deviation occured, 2: Multiple deviaton in a row
+        if (cJSON_AddStringToObject(cJSONObject, "process_error", std::to_string(flowctrl.getFlowStateErrorOrDeviation()).c_str()) == NULL)
             retVal = ESP_FAIL;
+
         if (cJSON_AddStringToObject(cJSONObject, "device_uptime", std::to_string(getUptime()).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
@@ -848,9 +758,9 @@ esp_err_t handler_process_data(httpd_req_t *req)
             return ESP_OK;  
         }
     }
-    else if (type.compare("rate_per_processing") == 0) {
+    else if (type.compare("rate_per_interval") == 0) {
         if (number_sequence.empty()) {
-            httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_PROCESSING).c_str());
+            httpd_resp_sendstr(req, flowctrl.getReadoutAll(READOUT_TYPE_RATE_PER_INTERVAL).c_str());
             return ESP_OK;
         }
         else {
@@ -860,7 +770,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
                 httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E94: Number sequence not found");
                 return ESP_FAIL;
             }
-            httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_RATE_PER_PROCESSING).c_str());
+            httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_RATE_PER_INTERVAL).c_str());
             return ESP_OK;  
         }   
     }
@@ -869,7 +779,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("process_interval") == 0) {
-        httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str());
+        httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessInterval(), 1).c_str());
         return ESP_OK;        
     }
     else if (type.compare("process_time") == 0) {
@@ -881,8 +791,17 @@ esp_err_t handler_process_data(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("process_error") == 0) {
-        httpd_resp_sendstr(req, flowctrl.getActFlowError() ? (FlowStateErrorsInRow < FLOWSTATE_ERRORS_IN_ROW_LIMIT ? 
-                "E01: Process error occured" : "E02: Multiple process errors in row") : "000: No process error");
+        // 000: No error, E01: Error occured, E02: Multiple errors in a row, 001: Deviation occured, 002: Multiple deviaton in a row
+        if (flowctrl.getFlowStateErrorOrDeviation() == 0)
+            httpd_resp_sendstr(req, "000: No process error/deviation");
+        else if (flowctrl.getFlowStateErrorOrDeviation() == -2)
+            httpd_resp_sendstr(req, "E02: Multiple process errors in row");
+        else if (flowctrl.getFlowStateErrorOrDeviation() == 2)
+            httpd_resp_sendstr(req, "002: Multiple process deviation in row");
+        else if (flowctrl.getFlowStateErrorOrDeviation() == -1)
+            httpd_resp_sendstr(req, "E01: Process error occured");
+        else if (flowctrl.getFlowStateErrorOrDeviation() == 1)
+            httpd_resp_sendstr(req, "001: Process deviation occured");
         return ESP_OK;        
     }
     else if (type.compare("device_uptime") == 0) {
@@ -1072,6 +991,41 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
 }
 
 
+void setTaskAutoFlowState(int _value) 
+{
+    taskAutoFlowState = _value;
+}
+
+
+std::string getProcessStatus(void)
+{
+    std::string process_status;
+    
+    if (flowctrl.isAutoStart() && (taskAutoFlowState >= 4 && taskAutoFlowState <= 7)) 
+        process_status = "Processing (Automatic)";
+    else if (!flowctrl.isAutoStart() && (taskAutoFlowState >= 3 && taskAutoFlowState <= 7)) 
+        process_status = "Processing (Triggered Only)";
+    else if (taskAutoFlowState >= 0 && taskAutoFlowState < 3) 
+        process_status = "Not Processing / Not Ready";
+    else
+        process_status = "Status unknown: " + taskAutoFlowState;
+
+    return process_status;
+}
+
+
+int getFlowCycleCounter() 
+{
+    return cycleCounter;
+}
+
+
+int getFlowProcessingTime()
+{
+    return processingTime;
+}
+
+
 void task_autodoFlow(void *pvParameter)
 {
     int64_t fr_start = 0;
@@ -1087,7 +1041,7 @@ void task_autodoFlow(void *pvParameter)
         if (taskAutoFlowState == FLOW_TASK_STATE_INIT_DELAYED) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Process state: " + std::string(FLOW_INIT_DELAYED));
             flowctrl.setActStatus(std::string(FLOW_INIT_DELAYED));
-            flowctrl.setActFlowError(true);
+            flowctrl.setFlowStateError();
             // Right now, it's not possible to provide state via MQTT because mqtt service is not yet started
 
             vTaskDelay(60*5000 / portTICK_PERIOD_MS); // Wait 5 minutes to give time to do an OTA update or fetch the log 
@@ -1101,16 +1055,15 @@ void task_autodoFlow(void *pvParameter)
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_INIT));
             flowctrl.setActStatus(std::string(FLOW_INIT));
             // Right now, it's not possible to provide state via MQTT because mqtt service is not yet started
-
-            flowctrl.setActFlowError(false); // Reset existing process_error
+            flowctrl.clearFlowStateEventInRowCounter();
 
             if (!doInit()) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Process state: " + std::string(FLOW_INIT_FAILED));
                 flowctrl.setActStatus(std::string(FLOW_INIT_FAILED));
-                flowctrl.setActFlowError(true);
+                flowctrl.setFlowStateError();
                 #ifdef ENABLE_MQTT
                 if (getMQTTisConnected())
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActStatus(), 1, false);
                 #endif //ENABLE_MQTT
 
                 while (true) {                                      // Waiting for a REQUEST
@@ -1131,7 +1084,7 @@ void task_autodoFlow(void *pvParameter)
                 }
             }
             else {
-                flowctrl.setActFlowError(false);
+                flowctrl.clearFlowStateEventInRowCounter();
                 taskAutoFlowState = FLOW_TASK_STATE_SETUPMODE;      // Continue to test if SETUP is ACTIVE
             }
         }
@@ -1140,16 +1093,13 @@ void task_autodoFlow(void *pvParameter)
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_SETUPMODE) {
 
-            if (isSetupModusActive())
+            if (flowctrl.getStatusSetupModus())
             {
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_SETUP_MODE));
                 flowctrl.setActStatus(std::string(FLOW_SETUP_MODE));
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActStatus(), 1, false);
                 #endif //ENABLE_MQTT
-
-                //std::string zw_time = getCurrentTimeString(DEFAULT_TIME_FORMAT);
-                //flowctrl.doFlowTakeImageOnly(zw_time);    // Start only ClassFlowTakeImage to capture images
 
                 while (true) {                              // Waiting for a REQUEST
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -1174,7 +1124,7 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_NO_AUTOSTART));
                 flowctrl.setActStatus(std::string(FLOW_IDLE_NO_AUTOSTART));
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActStatus(), 1, false);
                 #endif //ENABLE_MQTT
 
                 while (true) {                              // Waiting for a REQUEST
@@ -1201,13 +1151,12 @@ void task_autodoFlow(void *pvParameter)
 
         // IMAGE PROCESSING / EVALUATION
         // ********************************************     
-        else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {       
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "----------------------------------------------------------------"); // Clear separation between runs
+        else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
+            // Clear separation between runs      
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "----------------------------------------------------------------");
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(++cycleCounter) + " started"); 
             cycleStartTime = getUptime();
             fr_start = esp_timer_get_time();
-
-            flowctrl.setActFlowError(false); // Reset process_error at prcoess start
                    
             if (flowctrl.doFlowImageEvaluation(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Image evaluation completed (" + 
@@ -1215,7 +1164,6 @@ void task_autodoFlow(void *pvParameter)
             }
             else {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Image evaluation process error occured");
-                flowctrl.setActFlowError(true);
             }
 
             taskAutoFlowState = FLOW_TASK_STATE_PUBLISH_DATA;               // Continue with TASKS after FLOW FINISHED
@@ -1227,7 +1175,6 @@ void task_autodoFlow(void *pvParameter)
 
             if (!flowctrl.doFlowPublishData(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Publish data process error occured"); 
-                flowctrl.setActFlowError(true);
             }
             taskAutoFlowState = FLOW_TASK_STATE_ADDITIONAL_TASKS;           // Continue with TASKS after FLOW FINISHED
         }
@@ -1243,25 +1190,17 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_POST_EVENT_HANDLING));
                 flowctrl.setActStatus(std::string(FLOW_POST_EVENT_HANDLING));
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
+                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActStatus(), 1, false);
                 #endif
 
-                #ifdef ENABLE_MQTT
-                    // Provide flow error indicator to MQTT interface (error occured 3 times in a row)
-                    FlowStateErrorsInRow++;
-                    if (FlowStateErrorsInRow >= FLOWSTATE_ERRORS_IN_ROW_LIMIT) {
-                        MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "true", 1, false);
-                    }
-                #endif //ENABLE_MQTT
-            
                 flowctrl.PostProcessEventHandler();
                 LogFile.RemoveOldDebugFiles();
             }
             else {
-                FlowStateErrorsInRow = 0;
+                flowctrl.clearFlowStateEventInRowCounter();
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/" + "process_error", "false", 1, false);
-                #endif //ENABLE_MQTT
+                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_error", "0", 1, false);
+                #endif
             }
 
             // Additional tasks
@@ -1269,7 +1208,7 @@ void task_autodoFlow(void *pvParameter)
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_ADDITIONAL_TASKS));
             flowctrl.setActStatus(std::string(FLOW_ADDITIONAL_TASKS));
             #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
+                MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActStatus(), 1, false);
             #endif //ENABLE_MQTT
 
             // Cleanup outdated log and data files (retention policy)  
@@ -1341,7 +1280,7 @@ void task_autodoFlow(void *pvParameter)
             LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_AUTOSTART));
             flowctrl.setActStatus(std::string(FLOW_IDLE_AUTOSTART));
             #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/" + "status", flowctrl.getActStatus(), 1, false);
+                MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActStatus(), 1, false);
             #endif //ENABLE_MQTT
 
             int64_t fr_delta_ms = (esp_timer_get_time() - fr_start) / 1000;
@@ -1399,11 +1338,27 @@ void CreateMainFlowTask()
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create task_autodoFlow");
         LogFile.WriteHeapInfo("CreateFlowTask: Failed to create task");
         flowctrl.setActStatus(std::string(FLOW_FLOW_TASK_FAILED));
-        flowctrl.setActFlowError(true);
+        flowctrl.setFlowStateError();
     }
 
     #ifdef DEBUG_DETAIL_ON      
             LogFile.WriteHeapInfo("CreateFlowTask: end");
+    #endif
+}
+
+
+void DeleteMainFlowTask()
+{
+    #ifdef DEBUG_DETAIL_ON      
+        ESP_LOGD(TAG, "DeleteMainFlowTask: xHandletask_autodoFlow: %ld", (long) xHandletask_autodoFlow);
+    #endif
+    if( xHandletask_autodoFlow != NULL )
+    {
+        vTaskDelete(xHandletask_autodoFlow);
+        xHandletask_autodoFlow = NULL;
+    }
+    #ifdef DEBUG_DETAIL_ON      
+    	ESP_LOGD(TAG, "Killed: xHandletask_autodoFlow");
     #endif
 }
 

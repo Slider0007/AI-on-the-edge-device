@@ -20,6 +20,15 @@
 #endif //ENABLE_INFLUXDB
 
 
+enum flowStateEvent {
+	MULTIPLE_ERROR_IN_ROW = -2,
+	SINGLE_ERROR = -1,
+	NONE,
+	SINGLE_DEVIATION,
+	MULTIPLE_DEVIATION_IN_ROW
+};
+
+
 class ClassFlowControll : public ClassFlow
 {
 	protected:
@@ -49,9 +58,10 @@ class ClassFlowControll : public ClassFlow
 		bool SetupModeActive;
 		bool readParameterDone;
 		
-		bool aktflowerror;
 		std::string aktstatus;
 		std::string aktstatusWithTime;
+		int flowStateErrorInRow;
+		int flowStateDeviationInRow;
 
 public:
 	ClassFlowControll();
@@ -66,7 +76,7 @@ public:
 	bool doFlowTakeImageOnly(std::string time);
 	
 	std::string TranslateAktstatus(std::string _input);
-	bool getStatusSetupModus(){return SetupModeActive;};
+	bool getStatusSetupModus() {return SetupModeActive;};
 
 	std::string getNumbersName();
 	std::string getNumbersName(int _number);
@@ -81,8 +91,6 @@ public:
 	bool UpdateFallbackValue(std::string _newvalue, std::string _numbers);
 	std::string GetFallbackValue(std::string _number = "");	
 
-	std::string getJSON();
-
 	#ifdef ENABLE_MQTT
 	bool StartMQTTService();
 	#endif //ENABLE_MQTT
@@ -95,15 +103,16 @@ public:
 
 	std::string doSingleStep(std::string _stepname, std::string _host);
 
-	float getProcessingInterval();
+	float getProcessInterval();
 	bool isAutoStart();
 	bool isAutoStart(long &_interval);
 
 	std::string getActStatusWithTime();
 	std::string getActStatus();
 	void setActStatus(std::string _aktstatus);
-	void setActFlowError(bool _aktflowerror);
-	bool getActFlowError();
+	void setFlowStateError();
+	void clearFlowStateEventInRowCounter();
+	int getFlowStateErrorOrDeviation();
 	bool FlowStateEventOccured();
 	void PostProcessEventHandler();
 

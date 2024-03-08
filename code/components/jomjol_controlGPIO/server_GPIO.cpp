@@ -315,15 +315,12 @@ bool GpioHandler::readConfig()
         return false;
     }
 
-#ifdef ENABLE_MQTT
-//    std::string mainTopicMQTT = "";
+    #ifdef ENABLE_MQTT
     std::string mainTopicMQTT = mqttServer_getMainTopic();
     if (mainTopicMQTT.length() > 0)
-    {
-        mainTopicMQTT = mainTopicMQTT + "/GPIO";
-        ESP_LOGD(TAG, "MAINTOPICMQTT found");
-    }
-#endif // ENABLE_MQTT
+        mainTopicMQTT = mainTopicMQTT + "/device/gpio";
+    #endif // ENABLE_MQTT
+    
     bool registerISR = false;
     while (configFile.getNextLine(&line, disabledLine, eof) && !configFile.isNewParagraph(line))
     {
@@ -447,7 +444,7 @@ void GpioHandler::registerGpioUri()
     
     httpd_uri_t camuri = { };
     camuri.method    = HTTP_GET;
-    camuri.uri       = "/GPIO";
+    camuri.uri       = "/gpio";
     camuri.handler   = callHandleHttpRequest;
     camuri.user_ctx  = (void*)this;    
     httpd_register_uri_handler(_httpServer, &camuri);

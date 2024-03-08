@@ -167,7 +167,7 @@ void ClassFlowPostProcessing::handleMaxRateType(std::string _decsep, std::string
                 NUMBERS[j]->useMaxRateValue = false;
             }
             else {
-                NUMBERS[j]->rateType = rtRatePerProcessing;
+                NUMBERS[j]->rateType = rtRatePerInterval;
                 NUMBERS[j]->useMaxRateValue = true;
             }
 
@@ -375,12 +375,12 @@ void ClassFlowPostProcessing::InitNUMBERS()
         _number->isFallbackValueValid = false;
 
         _number->ratePerMin = 0;
-        _number->ratePerProcessing = 0; 
+        _number->ratePerInterval = 0; 
         _number->fallbackValue = 0;
         _number->actualValue = 0;
 
         _number->sRatePerMin = "";
-        _number->sRatePerProcessing = "";
+        _number->sRatePerInterval = "";
         _number->sRawValue = "";
         _number->sFallbackValue = "";   
         _number->sActualValue = "";
@@ -555,9 +555,9 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to be able to substitude N positions");
 
                 NUMBERS[j]->ratePerMin = 0;
-                NUMBERS[j]->ratePerProcessing = 0;
+                NUMBERS[j]->ratePerInterval = 0;
                 NUMBERS[j]->sRatePerMin =  to_stringWithPrecision(NUMBERS[j]->ratePerMin, NUMBERS[j]->decimalPlaceCount+1);
-                NUMBERS[j]->sRatePerProcessing = to_stringWithPrecision(NUMBERS[j]->ratePerProcessing, NUMBERS[j]->decimalPlaceCount);
+                NUMBERS[j]->sRatePerInterval = to_stringWithPrecision(NUMBERS[j]->ratePerInterval, NUMBERS[j]->decimalPlaceCount);
 
                 NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_001_NO_DATA_N_SUBST) + " | Raw: " + NUMBERS[j]->sRawValue;
                 NUMBERS[j]->sActualValue = "";
@@ -628,13 +628,13 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Rate calculation skipped, time delta between now and fallback value timestamp is zero");
                 }
                 
-                NUMBERS[j]->ratePerProcessing = NUMBERS[j]->actualValue - NUMBERS[j]->fallbackValue;
+                NUMBERS[j]->ratePerInterval = NUMBERS[j]->actualValue - NUMBERS[j]->fallbackValue;
 
                 double RatePerSelection;  
                     if (NUMBERS[j]->rateType == rtRatePerMin)
                         RatePerSelection = NUMBERS[j]->ratePerMin;
                     else
-                        RatePerSelection = NUMBERS[j]->ratePerProcessing; // If Rate check is off, use 'RatePerProcessing' for display only purpose (easier to interprete)
+                        RatePerSelection = NUMBERS[j]->ratePerInterval; // If Rate check is off, use 'ratePerInterval' for display only purpose (easier to interprete)
 
                 /* Check for rate too high */
                 if (NUMBERS[j]->useMaxRateValue) {
@@ -689,7 +689,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
             }
             else { // Fallback value is outdated or age indeterminable (could be the case after a reboot) -> force rates to zero
                 NUMBERS[j]->ratePerMin = 0;
-                NUMBERS[j]->ratePerProcessing = 0;
+                NUMBERS[j]->ratePerInterval = 0;
                 LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Fallback value outdated or age indeterminable");
             }
 
@@ -707,13 +707,13 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
             }
             else { // Value of actual reading is invalid, use fallback value and froce rates to zero
                 NUMBERS[j]->ratePerMin = 0;
-                NUMBERS[j]->ratePerProcessing = 0;
+                NUMBERS[j]->ratePerInterval = 0;
                 NUMBERS[j]->actualValue = NUMBERS[j]->fallbackValue;
             }
         }
         else { // FallbackValue usage disabled, no rate checking possible
             NUMBERS[j]->ratePerMin = 0;
-            NUMBERS[j]->ratePerProcessing = 0;
+            NUMBERS[j]->ratePerInterval = 0;
             NUMBERS[j]->fallbackValue = 0;
             NUMBERS[j]->sFallbackValue = "";
             NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID); 
@@ -721,7 +721,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
         /* Write output values */
         NUMBERS[j]->sRatePerMin =  to_stringWithPrecision(NUMBERS[j]->ratePerMin, NUMBERS[j]->decimalPlaceCount+1);
-        NUMBERS[j]->sRatePerProcessing = to_stringWithPrecision(NUMBERS[j]->ratePerProcessing, NUMBERS[j]->decimalPlaceCount);
+        NUMBERS[j]->sRatePerInterval = to_stringWithPrecision(NUMBERS[j]->ratePerInterval, NUMBERS[j]->decimalPlaceCount);
         NUMBERS[j]->sActualValue = to_stringWithPrecision(NUMBERS[j]->actualValue, NUMBERS[j]->decimalPlaceCount);
 
         /* Write log file entry */
@@ -803,7 +803,7 @@ void ClassFlowPostProcessing::WriteDataLog(int _index)
     
     LogFile.WriteToData(NUMBERS[_index]->sTimeProcessed, NUMBERS[_index]->name, 
                         NUMBERS[_index]->sRawValue, NUMBERS[_index]->sActualValue, NUMBERS[_index]->sFallbackValue, 
-                        NUMBERS[_index]->sRatePerMin, NUMBERS[_index]->sRatePerProcessing,
+                        NUMBERS[_index]->sRatePerMin, NUMBERS[_index]->sRatePerInterval,
                         NUMBERS[_index]->sValueStatus.substr(0,3), 
                         digital, analog);
     
@@ -1211,43 +1211,6 @@ std::string ClassFlowPostProcessing::getNumbersName()
     #endif
 
     return ret;
-}
-
-
-std::string ClassFlowPostProcessing::GetJSON(std::string _lineend)
-{
-    std::string json="{" + _lineend;
-
-    for (int i = 0; i < NUMBERS.size(); ++i)
-    {
-        json += "\"" + NUMBERS[i]->name + "\":"  + _lineend;
-
-        json += getJsonFromNumber(i, _lineend) + _lineend;
-
-        if ((i+1) < NUMBERS.size())
-            json += "," + _lineend;
-    }
-    json += "}";
-
-    return json;
-}
-
-
-std::string ClassFlowPostProcessing::getJsonFromNumber(int i, std::string _lineend) {
-	std::string json = "";
-
-	json += "  {" + _lineend;
-	json += "    \"actual_value\": \"" + NUMBERS[i]->sActualValue + "\"," + _lineend;
-	json += "    \"fallback_value\": \"" + NUMBERS[i]->sFallbackValue + "\"," + _lineend;
-	json += "    \"raw_value\": \"" + NUMBERS[i]->sRawValue + "\"," + _lineend;
-	json += "    \"value_status\": \"" + NUMBERS[i]->sValueStatus + "\"," + _lineend;
-	json += "    \"rate_per_min\": \"" + NUMBERS[i]->sRatePerMin + "\"," + _lineend;
-    json += "    \"rate_per_processing\": \"" + NUMBERS[i]->sRatePerProcessing + "\"," + _lineend;
-	json += "    \"timestamp_processed\": \"" + NUMBERS[i]->sTimeProcessed + "\"" + _lineend;
-
-	json += "  }" + _lineend;
-
-	return json;
 }
 
 

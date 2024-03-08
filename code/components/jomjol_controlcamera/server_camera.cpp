@@ -24,7 +24,7 @@ esp_err_t handler_camera(httpd_req_t *req)
 
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo = 
-        "00: Handler usage:<br>"
+        "Handler usage:<br>"
         "1. Set camera parameter:<br>"
         "-  '/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0& "
             "saturation=0&sharpness=1&exposurecontrolmode=0&autoexposurelevel=0&manualexposurevalue=1200& "

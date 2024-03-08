@@ -13,26 +13,19 @@
 extern ClassFlowControll flowctrl;
 
 
-void register_server_main_flow_task_uri(httpd_handle_t server);
-
-void CheckIsPlannedReboot();
-bool getIsPlannedReboot();
-
-void CreateMainFlowTask();
-void DeleteMainFlowTask();
-bool isSetupModusActive();
-
-void setTaskAutoFlowState(int _value);
-
-std::string getProcessStatus();
-int getFlowProcessingTime();
-int getFlowCycleCounter();
-
 #ifdef ENABLE_MQTT
 esp_err_t MQTTCtrlFlowStart(std::string _topic);
 #endif //ENABLE_MQTT
 
-esp_err_t GetRawJPG(httpd_req_t *req);
-esp_err_t GetJPG(std::string _filename, httpd_req_t *req);
+void setTaskAutoFlowState(int _value);
+
+std::string getProcessStatus();
+int getFlowCycleCounter();
+int getFlowProcessingTime();
+
+void CreateMainFlowTask();
+void DeleteMainFlowTask();
+
+void register_server_main_flow_task_uri(httpd_handle_t server);
 
 #endif //MAINFLOWCONTROL_H

@@ -124,10 +124,10 @@ Topic | Description | Output
 `[Main Topic]/[Sequence Name]/raw_value` | Raw value <br>The value before performing any post-processing | `146.539`
 `[Main Topic]/[Sequence Name]/value_status` | Value Status<br><br>Possible States:<br>`000 Valid`: Valid, no deviation <br>`E90 No data to substitute N`: No valid data to substitude N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `E91 Rate negative`
 `[Main Topic]/[Sequence Name]/rate_per_min` | Rate per minute<br>(Delta of the last two valid processed cycles and normalized to minute) | `0.000`
-`[Main Topic]/[Sequence Name]/rate_per_processing` | Rate per processing<br>(Delta of the last two valid processed cycles) | `0.000`
+`[Main Topic]/[Sequence Name]/rate_per_interval` | Rate per interval<br>(Delta of actual and last valid processed cycle) | `0.000`
 `[Main Topic]/[Sequence Name]/rate_per_time_unit` | Rate per HA time unit<br>(Delta of the last two valid processed cycles and normalized to time unit, e.g. minute. The time unit gets derived from Home Assistant [meter type](../../Configuration/Parameter/MQTT/MeterType.md)) | `0.000`
 `[Main Topic]/[Sequence Name]/timestamp_processed` | Timestamp of last processed cycle | `2024-02-02T16:59:24+0100`
-`[Main Topic]/[Sequence Name]/json` | Provide the following content in JSON notation: `actual_value`, `fallback_vaue`, `raw_value`, `value_status`, `rate_per_min`, `rate_per_processing`, `timestamp_processed` | `{"actual_value": "146.540", "fallback_value": "146.540", "raw_value": "146.539", "value_status": "E91 Rate negative", "rate_per_min": "0.0000", "rate_per_processing": "0.000", "timestamp_processed": "2024-02-02T20:13:54+0100"}`
+`[Main Topic]/[Sequence Name]/json` | Provide the following content in JSON notation: `actual_value`, `fallback_vaue`, `raw_value`, `value_status`, `rate_per_min`, `rate_per_interval`, `timestamp_processed` | `{"actual_value": "146.540", "fallback_value": "146.540", "raw_value": "146.539", "value_status": "E91 Rate negative", "rate_per_min": "0.0000", "rate_per_interval": "0.000", "timestamp_processed": "2024-02-02T20:13:54+0100"}`
 
 ---
 
