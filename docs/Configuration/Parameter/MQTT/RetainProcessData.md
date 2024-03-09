@@ -10,4 +10,4 @@
 ## Description
 
 Enable or disable [message retain flag](https://www.hivemq.com/blog/mqtt-essentials-part-8-retained-messages/)
-for process related data -> `[MainTopic]/process/data/`.
+for process related data -> `[Main Topic]/process/data/`.

@@ -9,7 +9,7 @@
 ## Description
 
 MQTT main topic where the data are published.<br>
-Check [MQTT API description](../../../API/MQTT/_OVERVIEW.md) for more details.
+Check MQTT API description for more details.
 
 !!! Note
     The results are pubished per number sequence: `[Main Topic]/[Number Sequence]/[Topic]`.<br>

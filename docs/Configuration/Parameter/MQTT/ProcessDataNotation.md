@@ -22,5 +22,5 @@ This parameter defines how the process data get provided.
 
 
 !!! Note
-    Using Home Assistant discovery topic with JSON notation is published even it's not selected with this parameter.
+    Using Home Assistant discovery, topic with JSON notation is published even it's not selected with this parameter.
 
