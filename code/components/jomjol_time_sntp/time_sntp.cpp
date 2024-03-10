@@ -154,7 +154,7 @@ std::string getServerName(void)
 
 
 /**
- * Load the TimeZone and TimeServer from the config file and initialize the NTP client
+ * Load the Time zone and Time server from the config file and initialize the NTP client
  * The RTC keeps the time after a restart (Except on Power On or Pin Reset) 
  * There should only be a minor correction through NTP
  */
@@ -216,7 +216,7 @@ bool setupTime()
         }
     }
 
-    // Timeserver disabled
+    // Time server disabled
     if (timeServer == "") {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time server deactivated, disable NTP client");
         useNtp = false;
@@ -242,16 +242,16 @@ bool setupTime()
     std::string sTimeString = ConvertTimeToString(now, "%Y-%m-%d %H:%M:%S");
 
     if (getTimeIsSet()) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is already set. Actual time: " + sTimeString);
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is set. Current time: " + sTimeString);
     }
     else {
         timeWasNotSetAtBoot = true;
         timeWasNotSetAtBoot_PrintStartBlock = true;
         
         if (useNtp)
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time not yet synchronized, still retry. Actual time: " + sTimeString);
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time not yet synced. Current time: " + sTimeString);
         else
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "No time synchronized configured. Actual time: " + sTimeString);
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Current time: " + sTimeString);
     }
 
     return true;
@@ -266,13 +266,13 @@ void setupTimeZone(std::string _timeZone)
     if (timeZone.compare(_timeZone) == 0)
         return;
 
-    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeZone gets adjusted");
+    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time zone gets adjusted");
     
     timeZone = _timeZone;
 
     if (_timeZone == "") {
         _timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeZone not set, using default: " + _timeZone);
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time zone not set, using default: " + _timeZone);
     }
 
     setTimeZone(_timeZone);
@@ -280,22 +280,22 @@ void setupTimeZone(std::string _timeZone)
 
 
 /**
- * TimeServer and init or restart NTP client
+ * Time server and init or restart NTP client
  */
 void setupTimeServer(std::string _timeServer)
 {
     if (timeServer.compare(_timeServer) == 0)
         return;
 
-    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeServer gets adjusted");
+    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time server gets adjusted");
 
     if (_timeServer == "") {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer deactivated, disabling NTP");
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time server deactivated, disabling NTP");
         useNtp = false;
         sntp_stop();
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer: " + _timeServer);
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time server: " + _timeServer);
         useNtp = true;
     }
 

@@ -306,7 +306,9 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgr
     /* Set decimal shift and number of decimal places in relation to extended resolution parameter */
     setDecimalShift();
 
-    if (UseFallbackValue && getTimeIsSet()) {
+    // Load fallback value only if valid system time is set
+    // If not already loaded here, force loading before first usage in function doFlow
+    if (UseFallbackValue && (!getUseNtp() || getTimeIsSet())) {
         LoadFallbackValue();
         fallbackValueLoaded = true;
     }
@@ -593,7 +595,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         #endif
 
         if (UseFallbackValue) {
-            /* Load FallbackValue if not yet loaded during init (due to missing valid system time)*/
+            /* Load fallback value if not yet loaded during init due to missing valid system time */
             if (!fallbackValueLoaded) {
                 LoadFallbackValue();
                 fallbackValueLoaded = true;
