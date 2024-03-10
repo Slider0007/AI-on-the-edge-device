@@ -66,15 +66,16 @@ void time_sync_notification_cb(struct timeval *tv)
 }
 
 
-bool time_manual_reset_sync(void)
+bool waitingForTimeSync(void)
 {
-    sntp_restart();
     int retry = 0;
     const int retry_count = 10;
+
     while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry < retry_count) {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Waiting for time sync - " + std::to_string(retry) + "/" + std::to_string(retry_count));
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
+
     if (retry >= retry_count)
         return false;
 

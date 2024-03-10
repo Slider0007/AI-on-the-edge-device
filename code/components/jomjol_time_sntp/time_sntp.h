@@ -28,7 +28,7 @@ bool setupTime();
 void setupTimeZone(std::string _timeZone);
 void setupTimeServer(std::string _timeServer);
 
-bool time_manual_reset_sync(void);
+bool waitingForTimeSync(void);
 
 
 #endif //TIMESNTP_H

@@ -251,8 +251,8 @@ extern "C" void app_main(void)
 
     // manual reset the time
     // ********************************************
-    if (!time_manual_reset_sync())
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Manual Time Sync failed during startup" );
+    if (!waitingForTimeSync())
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial time sync failed, still retry" );
    
     // Init external PSRAM
     // ********************************************
