@@ -79,8 +79,6 @@ extern "C" void app_main(void)
         ESP_ERROR_CHECK( heap_trace_init_standalone(trace_record, NUM_RECORDS) );
     #endif
         
-    TickType_t xDelay;
-        
     #ifdef DISABLE_BROWNOUT_DETECTOR
         WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
     #endif
@@ -120,6 +118,14 @@ extern "C" void app_main(void)
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "==================== Start ======================");
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "=================================================");
 
+    // SD card: Create further mandatory directories (if not already existing)
+    // Correct creation of these folders will be checked with function "SDCardCheckFolderFilePresence"
+    // ********************************************
+    MakeDir("/sdcard/firmware");         // mandatory for OTA firmware update
+    MakeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marker
+    MakeDir("/sdcard/demo");             // mandatory for demo mode
+    MakeDir("/sdcard/config/certs");     // mandatory for TLS encryption
+
     // SD card: basic R/W check
     // ********************************************
     int iSDCardStatus = SDCardCheckRW();
@@ -135,26 +141,6 @@ extern "C" void app_main(void)
         }
         setSystemStatusFlag(SYSTEM_STATUS_SDCARD_CHECK_BAD); // reduced web interface going to be loaded
     }
-
-    // Migrate parameter in config.ini to new naming (firmware 15.0 and newer)
-    // ********************************************
-    migrateConfiguration();
-
-    // Init time (as early as possible, but SD card needs to be initialized)
-    // ********************************************
-    setupTime();    // NTP time service: Status of time synchronization will be checked after every cycle (server_tflite.cpp)
-
-    // Set CPU Frequency (default: 160Mhz)
-    // ********************************************
-    setCPUFrequency();
-
-    // SD card: Create further mandatory directories (if not already existing)
-    // Correct creation of these folders will be checked with function "SDCardCheckFolderFilePresence"
-    // ********************************************
-    MakeDir("/sdcard/firmware");         // mandatory for OTA firmware update
-    MakeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marker
-    MakeDir("/sdcard/demo");             // mandatory for demo mode
-    MakeDir("/sdcard/config/certs");     // mandatory for TLS encryption
 
     // Check for updates
     // Note: OTA status check only necessary if OTA rollback feature is enabled
@@ -214,6 +200,15 @@ extern "C" void app_main(void)
         ESP_ERROR_CHECK( heap_trace_start(HEAP_TRACE_LEAKS) );
     #endif
 
+    // Migrate parameter in config.ini to new naming (firmware 15.0 and newer)
+    // Do migration task before first read of config.ini
+    // ********************************************
+    migrateConfiguration();
+
+    // Set CPU Frequency (default: 160Mhz)
+    // ********************************************
+    setCPUFrequency();
+
     // Read WLAN parameter and start WIFI
     // ********************************************
     int iWLANStatus = LoadWlanFromFile(WLAN_CONFIG_FILE);
@@ -234,15 +229,6 @@ extern "C" void app_main(void)
         return; // No way to continue with empty SSID
     }
 
-    xDelay = 2000 / portTICK_PERIOD_MS;
-    ESP_LOGD(TAG, "main: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
-    vTaskDelay( xDelay );
-
-    // manual reset the time
-    // ********************************************
-    if (!time_manual_reset_sync())
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Manual Time Sync failed during startup" );
-
     // Set log level for wifi component to WARN level (default: INFO; only relevant for serial console)
     // ********************************************
     esp_log_level_set("wifi", ESP_LOG_WARN);
@@ -258,6 +244,15 @@ extern "C" void app_main(void)
             ESP_LOGD(TAG, "Himem mem check %s", himem_memory_check().c_str());
         #endif
     #endif
+
+    // Init time (as early as possible, but SD card needs to be initialized and wifi needs to be connected)
+    // ********************************************
+    setupTime();    // NTP time service: Status of time synchronization will be checked after every cycle (server_tflite.cpp)
+
+    // manual reset the time
+    // ********************************************
+    if (!time_manual_reset_sync())
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Manual Time Sync failed during startup" );
    
     // Init external PSRAM
     // ********************************************
