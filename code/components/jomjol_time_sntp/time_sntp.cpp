@@ -222,7 +222,7 @@ bool setupTime()
         useNtp = false;
     }
 
-    // Set timezone in any case, even no time source is selected.
+    // Set time zone in any case, even no time source is selected.
     setTimeZone(timeZone);
     
     if (useNtp) {
@@ -241,25 +241,22 @@ bool setupTime()
     time(&now);
     std::string sTimeString = ConvertTimeToString(now, "%Y-%m-%d %H:%M:%S");
 
-    if (getTimeIsSet()) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is set. Current time: " + sTimeString);
-    }
-    else {
+    if (!getTimeIsSet()) {
         timeWasNotSetAtBoot = true;
         timeWasNotSetAtBoot_PrintStartBlock = true;
         
         if (useNtp)
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time not yet synced. Current time: " + sTimeString);
-        else
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Current time: " + sTimeString);
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time not yet synced");
     }
+
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Current time: " + sTimeString);
 
     return true;
 }
 
 
 /**
- * Update TimeZone
+ * Update Time zone
  */
 void setupTimeZone(std::string _timeZone)
 {
