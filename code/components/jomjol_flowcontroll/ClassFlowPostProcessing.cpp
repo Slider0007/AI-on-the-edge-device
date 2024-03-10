@@ -26,6 +26,7 @@ ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, C
     presetFlowStateHandler(true);
 
     UseFallbackValue = true;
+    fallbackValueLoaded = false;
     UpdateFallbackValue = false;
     FallbackValueAgeStartup = 60;
     IgnoreLeadingNaN = false;
