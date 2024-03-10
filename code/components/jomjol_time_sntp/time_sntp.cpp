@@ -155,6 +155,8 @@ std::string getServerName(void)
 
 /**
  * Load the TimeZone and TimeServer from the config file and initialize the NTP client
+ * The RTC keeps the time after a restart (Except on Power On or Pin Reset) 
+ * There should only be a minor correction through NTP
  */
 bool setupTime()
 {
@@ -231,8 +233,9 @@ bool setupTime()
         sntp_init();
     }
 
-    /* The RTC keeps the time after a restart (Except on Power On or Pin Reset) 
-     * There should only be a minor correction through NTP */
+    // Wait for time sync to ensure start with proper time
+    if (!waitingForTimeSync())
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial time sync failed, still retry" );
 
     // Get current time from RTC
     time_t now;
