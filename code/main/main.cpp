@@ -247,7 +247,7 @@ extern "C" void app_main(void)
 
     // Init time (as early as possible, but SD card needs to be initialized and wifi needs to be connected)
     // ********************************************
-    setupTime();    // NTP time service: Status of time synchronization will be checked after every cycle (server_tflite.cpp)
+    setupTime();    // Setup system time / NTP client: Status of time synchronization will be checked after every cycle (server_tflite.cpp)
 
     // Init external PSRAM
     // ********************************************

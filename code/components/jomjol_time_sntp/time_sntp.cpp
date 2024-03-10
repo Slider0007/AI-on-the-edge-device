@@ -72,7 +72,7 @@ bool waitingForTimeSync(void)
     const int retry_count = 10;
 
     while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry < retry_count) {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Waiting for time sync - " + std::to_string(retry) + "/" + std::to_string(retry_count));
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Waiting for time sync - " + std::to_string(retry) + "/" + std::to_string(retry_count));
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 
@@ -163,7 +163,7 @@ bool setupTime()
     ConfigFile configFile = ConfigFile(CONFIG_FILE); 
 
     if (!configFile.ConfigFileExists()){
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file - exit setupTime()");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file, exit setupTime()");
         return false;
     }
 
@@ -195,22 +195,22 @@ bool setupTime()
         if (toUpper(splitted[0]) == "TIMEZONE") {
             if (splitted.size() <= 1) { // parameter part is empty, use default time zone
                 timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeZone not set, using default: " + timeZone);
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time zone not set, use default: " + timeZone);
             }
             else {
                 timeZone = splitted[1];
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeZone: " + timeZone);
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time zone: " + timeZone);
             }
         }
 
         if (toUpper(splitted[0]) == "TIMESERVER") {
             if (splitted.size() <= 1) { // parameter part is empty, use default time server
                 timeServer = "pool.ntp.org";
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "TimeServer not set, use default: " + timeServer);
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time server not set, use default: " + timeServer);
             }
             else {
                 timeServer = splitted[1];
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer: " + timeServer);
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time server: " + timeServer);
                 useNtp = true;
             }
         }
@@ -218,7 +218,7 @@ bool setupTime()
 
     // Timeserver disabled
     if (timeServer == "") {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "TimeServer deactivated, disabling NTP");
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time server deactivated, disable NTP client");
         useNtp = false;
     }
 
@@ -226,16 +226,15 @@ bool setupTime()
     setTimeZone(timeZone);
     
     if (useNtp) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Configure NTP client");        
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Start NTP client");        
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
         sntp_setservername(0, timeServer.c_str());
         sntp_set_time_sync_notification_cb(time_sync_notification_cb);
         sntp_init();
-    }
 
-    // Wait for time sync to ensure start with proper time
-    if (!waitingForTimeSync())
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Initial time sync failed, still retry" );
+        // Wait for time sync to ensure start with proper time
+        waitingForTimeSync();
+    }
 
     // Get current time from RTC
     time_t now;
@@ -243,15 +242,16 @@ bool setupTime()
     std::string sTimeString = ConvertTimeToString(now, "%Y-%m-%d %H:%M:%S");
 
     if (getTimeIsSet()) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is already set: " + sTimeString);
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is already set. Actual time: " + sTimeString);
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "The local time is unknown, starting with " + sTimeString);
         timeWasNotSetAtBoot = true;
         timeWasNotSetAtBoot_PrintStartBlock = true;
         
         if (useNtp)
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Once the NTP server provides a time, we will switch to that one");
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time not yet synchronized, still retry. Actual time: " + sTimeString);
+        else
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "No time synchronized configured. Actual time: " + sTimeString);
     }
 
     return true;
