@@ -314,7 +314,7 @@ void setupTimeServer(std::string _timeServer)
             sntp_restart();
         }
 
-        if (!time_manual_reset_sync())
+        if (!waitingForTimeSync())
             LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time sync failed. Continue anyway");
     }
 }
