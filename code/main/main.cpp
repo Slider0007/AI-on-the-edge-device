@@ -623,6 +623,7 @@ void migrateConfiguration(void)
             if (isInString(configLines[i], "MeterType") && !isInString(configLines[i], "HAMeterType")) {
                 migrated = migrated | replaceString(configLines[i], "MeterType =", "HAMeterType ="); // Rename it
                 migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                migrated = migrated | replaceString(configLines[i], "HAMeterType = other", "HAMeterType = water_m3"); // Enable it
             }
             
             if (configLines[i].rfind("Topic", 0) != std::string::npos) { // only if string starts with "Topic" (Was the naming in very old version)

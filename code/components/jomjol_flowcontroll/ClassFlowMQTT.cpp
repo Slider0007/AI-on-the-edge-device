@@ -132,7 +132,10 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         }
 
         if ((toUpper(splitted[0]) == "HARETAINDISCOVERY") && (splitted.size() > 1)) {
-            HADiscoveryConfig.HARetainDiscoveryTopics = std::stoi(splitted[1]);
+            if (toUpper(splitted[1]) == "TRUE")
+                HADiscoveryConfig.HARetainDiscoveryTopics = true;
+            else
+                HADiscoveryConfig.HARetainDiscoveryTopics = false;
         }
         
         if ((toUpper(splitted[0]) == "HAMETERTYPE") && (splitted.size() > 1)) {
