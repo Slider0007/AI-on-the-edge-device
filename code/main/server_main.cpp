@@ -94,7 +94,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         #endif
 
-        if (cJSON_AddStringToObject(cJSONObject, "ntp_syncstatus", getNTPSyncStatus()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "ntp_syncstatus", getNTPSyncStatus().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "current_time", getCurrentTimeString(TIME_FORMAT_OUTPUT).c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -263,7 +263,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
     #endif
 
     else if (type.compare("ntp_syncstatus") == 0) {
-        httpd_resp_sendstr(req, getNTPSyncStatus());
+        httpd_resp_sendstr(req, getNTPSyncStatus().c_str());
         return ESP_OK;        
     }
     else if (type.compare("device_starttime") == 0) {
