@@ -188,8 +188,7 @@ bool mqttServer_publishDeviceStatus(int _qos)
 
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "heap", jsonData, _qos, false);
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "sd_partition_free", getSDCardFreePartitionSpace(), _qos, false);
-    retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "ntp_syncstatus", getUseNtp() ? 
-                            (getTimeWasSetOnce() ? "Synchronized" : "Sync In Progress") : "Disabled", _qos, false); 
+    retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "ntp_syncstatus", getNTPSyncStatus().c_str(), _qos, false); 
 
     if (!retVal) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to publish device status");
