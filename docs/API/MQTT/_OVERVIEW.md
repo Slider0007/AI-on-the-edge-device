@@ -7,7 +7,7 @@ The device is capable to register to a MQTT broker to publish data and subscribe
 
 ### Parametrization
 The MQTT service has to be enabled and configured properly via web interface (`Settings` > `Configuration` > section `MQTT`). 
-The following parameter are minimum required: `URI`, `Main Topic`, `Client ID` ti use MQTT API.
+The following parameter are minimum required to use MQTT API: : `URI`, `Main Topic`, `Client ID`
 
 
 ### Main Topic

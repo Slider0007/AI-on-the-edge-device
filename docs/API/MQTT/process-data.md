@@ -33,9 +33,9 @@ Parameter `Process Data Notation`: `JSON` or `JSON + Topics`
 
 | JSON Property             | Description                 | Output
 |:--------------------------|:----------------------------|:--------------     
-| `json`.`actual_value`     | Actual value | `146.540`
-| `json`.`fallback_value`   | Fallback value<br>(Latest valid result) | `146.540`
-| `json`.`raw_value`        | Raw value <br>The value before performing any post-processing | `146.539`
+| `json`.`actual_value`     | Actual value                | `146.540`
+| `json`.`fallback_value`   | Fallback value              | `146.540`
+| `json`.`raw_value`        | Raw value                   | `146.539`
 | `json`.`value_status`     | Value Status<br><br>Possible States:<br>`000 Valid`: Valid, no deviation <br>`E90 No data to substitute N`: No valid data to substitude N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `E91 Rate negative`
 | `json`.`rate_per_minute`  | Rate per minute<br>(Delta of actual and last valid processed cycle + normalized to minute) | `0.000`
 | `json`.`rate_per_interval` | Rate per interval<br>(Delta of actual and last valid processed cycle) | `0.000`
@@ -54,8 +54,8 @@ Parameter `Process Data Notation`: `JSON` or `JSON + Topics`
 | Topic                     | Description                 | Output
 |:--------------------------|:----------------------------|:--------------   
 | `actual_value`            | Actual value                | `146.540`
-| `fallback_value`          | Fallback value<br>(Latest valid result) | `146.540`
-| `raw_value`               | Raw value <br>The value before performing any post-processing | `146.539`
+| `fallback_value`          | Fallback value              | `146.540`
+| `raw_value`               | Raw value                   | `146.539`
 | `value_status`            | Value Status<br><br>Possible States:<br>`000 Valid`: Valid, no deviation <br>`E90 No data to substitute N`: No valid data to substitude N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `E91 Rate negative`
 | `rate_per_minute`         | Rate per minute<br>(Delta of actual and last valid processed cycle + normalized to minute) | `0.000`
 | `rate_per_interval`       | Rate per interval<br>(Delta of actual and last valid processed cycle) | `0.000`
