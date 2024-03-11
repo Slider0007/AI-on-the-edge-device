@@ -110,6 +110,19 @@ bool getTimeIsSet(void)
 }
 
 
+std::string getNTPSyncStatus(void)
+{
+    if (useNtp) {
+        if (getTimeIsSet())
+            return "Synchronized";
+        else
+            return "Not Synchronized";
+    }
+
+    return "Disabled";
+}
+
+
 bool getUseNtp(void)
 {
     return useNtp;

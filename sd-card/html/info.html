@@ -528,7 +528,7 @@
 				document.getElementById("ntp_syncstatus").value = _jsonData.ntp_syncstatus
 				if (_jsonData.ntp_syncstatus == "Synchronized")
 					addClassToElement("ntp_syncstatus", "badge-success");
-				else if (_jsonData.ntp_syncstatus == "Sync In Progress")
+				else if (_jsonData.ntp_syncstatus == "Not Synchronized")
 					addClassToElement("ntp_syncstatus", "badge-warning");
 				else if (_jsonData.ntp_syncstatus == "Disabled")
 					addClassToElement("ntp_syncstatus", "badge-disabled");
