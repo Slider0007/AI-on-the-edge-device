@@ -232,7 +232,7 @@ bool setupTime()
         timeWasNotSetAtBoot_PrintStartBlock = true;
         
         if (useNtp)
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time not yet synchronized");
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time not yet synchronized");
     }
 
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Current time: " + sTimeString);
@@ -301,6 +301,6 @@ void setupTimeServer(std::string _timeServer)
         waitingForTimeSync();
 
         if (!getTimeIsSet())      
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time not yet synchronized");
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time not yet synchronized");
     }
 }

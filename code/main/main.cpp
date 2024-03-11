@@ -126,6 +126,21 @@ extern "C" void app_main(void)
     MakeDir("/sdcard/demo");             // mandatory for demo mode
     MakeDir("/sdcard/config/certs");     // mandatory for TLS encryption
 
+    // Check for updates
+    // Note: OTA status check only necessary if OTA rollback feature is enabled
+    // ********************************************
+    #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
+    CheckOTAPartitionState();
+    #endif
+    CheckOTAUpdate();
+
+    // Start SoftAP for initial remote setup
+    // Note: Start AP if no wlan.ini and/or config.ini available, e.g. SD card empty; function does not exit anymore until reboot
+    // ********************************************
+    #ifdef ENABLE_SOFTAP
+        CheckStartAPMode(); 
+    #endif
+
     // SD card: basic R/W check
     // ********************************************
     int iSDCardStatus = SDCardCheckRW();
@@ -141,21 +156,6 @@ extern "C" void app_main(void)
         }
         setSystemStatusFlag(SYSTEM_STATUS_SDCARD_CHECK_BAD); // reduced web interface going to be loaded
     }
-
-    // Check for updates
-    // Note: OTA status check only necessary if OTA rollback feature is enabled
-    // ********************************************
-    #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    CheckOTAPartitionState();
-    #endif
-    CheckOTAUpdate();
-
-    // Start SoftAP for initial remote setup
-    // Note: Start AP if no wlan.ini and/or config.ini available, e.g. SD card empty; function does not exit anymore until reboot
-    // ********************************************
-    #ifdef ENABLE_SOFTAP
-        CheckStartAPMode(); 
-    #endif
 
     // SD card: Check presence of some mandatory folders / files
     // ********************************************
@@ -206,6 +206,7 @@ extern "C" void app_main(void)
     migrateConfiguration();
 
     // Set CPU Frequency (default: 160Mhz)
+    // Start before WLAN init to avoid frequency changes after WLAN init
     // ********************************************
     setCPUFrequency();
 
@@ -232,7 +233,12 @@ extern "C" void app_main(void)
     // Set log level for wifi component to WARN level (default: INFO; only relevant for serial console)
     // ********************************************
     esp_log_level_set("wifi", ESP_LOG_WARN);
-  
+
+    // Init time (as early as possible, but wifi needs to be connected to sync time. no hardware clock available)
+    // Status of time sync will be checked after every cycle (server_tflite.cpp)
+    // ********************************************
+    setupTime();
+
     #ifdef HEAP_TRACING_MAIN_WIFI
         ESP_ERROR_CHECK( heap_trace_stop() );
         heap_trace_dump(); 
@@ -244,10 +250,6 @@ extern "C" void app_main(void)
             ESP_LOGD(TAG, "Himem mem check %s", himem_memory_check().c_str());
         #endif
     #endif
-
-    // Init time (as early as possible, but SD card needs to be initialized and wifi needs to be connected)
-    // ********************************************
-    setupTime();    // Setup system time / NTP client: Status of time synchronization will be checked after every cycle (server_tflite.cpp)
 
     // Init external PSRAM
     // ********************************************
