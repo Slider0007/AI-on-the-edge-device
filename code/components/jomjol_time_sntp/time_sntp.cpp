@@ -27,6 +27,7 @@ static std::string timeServer = "";
 static bool useNtp = true;
 static bool timeWasNotSetAtBoot = false;
 static bool timeWasNotSetAtBoot_PrintStartBlock = false;
+static bool isTimeSynchonized = false;
 
 static void setTimeZone(std::string _tzstring);
 static std::string getServerName(void);
@@ -62,6 +63,7 @@ void timeSyncNotificationCallback(struct timeval *tv)
     }
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time is synced with NTP server " +
             getServerName() + ": " + getCurrentTimeString("%Y-%m-%d %H:%M:%S"));
+    isTimeSynchonized = true;
 }
 
 
@@ -101,19 +103,17 @@ bool getTimeIsSet(void)
     localtime_r(&now, &timeinfo);
 
     // Is time set? If not, tm_year will be (1970 - 1900).
-    if ((timeinfo.tm_year < (2022 - 1900))) {
+    if ((timeinfo.tm_year < (2024 - 1900)))
         return false;
-    }
-    else {
+    else
         return true;
-    }
 }
 
 
 std::string getNTPSyncStatus(void)
 {
     if (useNtp) {
-        if (getTimeIsSet())
+        if (isTimeSynchonized)
             return "Synchronized";
         else
             return "Not Synchronized";
@@ -241,23 +241,24 @@ bool setupTime()
         sntp_init();
 
         // Wait for time sync to ensure start with proper time
-        waitingForTimeSync();
+        if (!waitingForTimeSync() || !getTimeIsSet()) {
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time not yet synchronized");
+            isTimeSynchonized = false;
+        }
     }
-
-    // Get current time from RTC
-    time_t now;
-    time(&now);
-    std::string sTimeString = ConvertTimeToString(now, "%Y-%m-%d %H:%M:%S");
+    else {
+        isTimeSynchonized = false;
+    }
 
     if (!getTimeIsSet()) {
         timeWasNotSetAtBoot = true;
         timeWasNotSetAtBoot_PrintStartBlock = true;
-        
-        if (useNtp)
-            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time not yet synchronized");
     }
 
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Current time: " + sTimeString);
+    // Get current time
+    time_t now;
+    time(&now);
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Current time: " + ConvertTimeToString(now, "%Y-%m-%d %H:%M:%S"));
 
     return true;
 }
@@ -320,9 +321,13 @@ void setupTimeServer(std::string _timeServer)
             sntp_restart();
         }
 
-        waitingForTimeSync();
-
-        if (!getTimeIsSet())      
+        // Wait for time sync to ensure start with proper time
+        if (!waitingForTimeSync() || !getTimeIsSet()) {
             LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time not yet synchronized");
+            isTimeSynchonized = false;
+        }
+    }
+    else {
+        isTimeSynchonized = false;
     }
 }
