@@ -1,5 +1,29 @@
 # Changelog
 
+## [16.2.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.3-SLFork...v16.2.0-SLFork) (2024-03-11)
+
+
+### Features
+
+* **camera:** Support additional camera features ([#141](https://github.com/Slider0007/AI-on-the-edge-device/issues/141)) ([96b2d05](https://github.com/Slider0007/AI-on-the-edge-device/commit/96b2d0599e6fdd0b24eea16ab06e6fe33bef423e))
+
+
+### Bug Fixes
+
+* **process init:** Load fallback value only with valid system time ([#149](https://github.com/Slider0007/AI-on-the-edge-device/issues/149)) ([deca53f](https://github.com/Slider0007/AI-on-the-edge-device/commit/deca53f1a8545efb67bbdc26c2ed6888ef4efc22))
+
+
+### Refactoring / Style Changes
+
+* **webui:** Refactor reboot to ensure reliable user feedback ([#147](https://github.com/Slider0007/AI-on-the-edge-device/issues/147)) ([f9f6ad6](https://github.com/Slider0007/AI-on-the-edge-device/commit/f9f6ad677001e8a42939ef5b4b99c9dac644943d))
+
+
+### Other Changes
+
+* **build:** Add action to delete old workflow runs ([#144](https://github.com/Slider0007/AI-on-the-edge-device/issues/144)) ([2abf1f1](https://github.com/Slider0007/AI-on-the-edge-device/commit/2abf1f196204e944192e62c04624aad1bc5787f9))
+* **webui:** Include API docs in WebUI ([#143](https://github.com/Slider0007/AI-on-the-edge-device/issues/143)) ([ed7bfd5](https://github.com/Slider0007/AI-on-the-edge-device/commit/ed7bfd5ec7798b8d0718e1d0dd9d9bd973454987))
+* **webui:** Optimize web cache control settings ([#145](https://github.com/Slider0007/AI-on-the-edge-device/issues/145)) ([95a6d7e](https://github.com/Slider0007/AI-on-the-edge-device/commit/95a6d7eb636e800a8742f336acd8f7f99abe259d))
+
 ## [16.1.3-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.2-SLFork...v16.1.3-SLFork) (2024-02-13)
 
 
