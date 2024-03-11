@@ -31,7 +31,8 @@ Further details can be found in the respective REST API endpoint description.
 | /                                    | WebUI (Redirected to `index.html`)                 | HTML        | 
 
 
-*Endpoints which are marked as deprecated will be completely removed (functionality merged in another endpoint) or modified in upcoming major release. Check changelog for breaking changes.
+*Endpoints which are marked as deprecated will be completely removed (functionality merged in another endpoint) or 
+modified in upcoming major release. Check changelog for breaking changes.
 
 ### Migration notes (Removed / updated endpoints)
 Check migration notes for migrated or removed REST API endpoints: [Migration notes](xxx_migration_notes.md)

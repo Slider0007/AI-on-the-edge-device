@@ -424,18 +424,18 @@ bool mqtt_handler_flow_start(std::string _topic, char* _data, int _data_len)
 bool mqtt_handler_set_fallbackvalue(std::string _topic, char* _data, int _data_len) 
 {
     //ESP_LOGD(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
-    //example: {"numbersname": "main", "value": 12345.1234567}
+    //example: {"sequence": "main", "value": 12345.1234567}
 
     if (_data_len > 0) {    // Check if data length > 0
         cJSON *jsonData = cJSON_Parse(_data);
-        cJSON *numbersname = cJSON_GetObjectItemCaseSensitive(jsonData, "numbersname");
+        cJSON *sequenceName = cJSON_GetObjectItemCaseSensitive(jsonData, "sequence");
         cJSON *value = cJSON_GetObjectItemCaseSensitive(jsonData, "value");
 
-        if (cJSON_IsString(numbersname) && (numbersname->valuestring != NULL)) {    // Check if numbersname is valid
+        if (cJSON_IsString(sequenceName) && (sequenceName->valuestring != NULL)) {    // Check if sequenceName is valid
             if (cJSON_IsNumber(value)) {   // Check if value is a number
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handler_set_fallbackvalue called: numbersname: " + std::string(numbersname->valuestring) + 
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handler_set_fallbackvalue called: sequence: " + std::string(sequenceName->valuestring) + 
                                                                                          ", value: " + std::to_string(value->valuedouble));
-                if (flowctrl.UpdateFallbackValue(std::to_string(value->valuedouble), std::string(numbersname->valuestring))) {
+                if (flowctrl.UpdateFallbackValue(std::to_string(value->valuedouble), std::string(sequenceName->valuestring))) {
                     cJSON_Delete(jsonData);
                     return true;
                 }
@@ -445,7 +445,7 @@ bool mqtt_handler_set_fallbackvalue(std::string _topic, char* _data, int _data_l
             }
         }
         else {
-            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "handler_set_fallbackvalue: numbersname not a valid string (\"numbersname\": \"main\")");
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "handler_set_fallbackvalue: sequence not a valid string (\"sequence\": \"main\")");
         }
         cJSON_Delete(jsonData);
     }

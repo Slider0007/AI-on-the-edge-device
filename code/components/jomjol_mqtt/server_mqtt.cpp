@@ -97,8 +97,6 @@ bool mqttServer_publishDeviceInfo(int _qos)
             retVal = false;
         if (cJSON_AddStringToObject(cJSONObjectHardwareSDCard, "partition_size", getSDCardPartitionSize().c_str()) == NULL)
             retVal = false;
-        if (cJSON_AddStringToObject(cJSONObjectHardwareSDCard, "partition_free", getSDCardFreePartitionSpace().c_str()) == NULL)
-            retVal = false;
     }
 
     char *jsonString = cJSON_PrintBuffered(cJSONObject, 384, 1); // Print to predefined buffer, avoid dynamic allocations
