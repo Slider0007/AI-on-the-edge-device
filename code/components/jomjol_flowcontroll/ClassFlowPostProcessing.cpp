@@ -26,6 +26,7 @@ ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, C
     presetFlowStateHandler(true);
 
     UseFallbackValue = true;
+    fallbackValueLoaded = false;
     UpdateFallbackValue = false;
     FallbackValueAgeStartup = 60;
     IgnoreLeadingNaN = false;
@@ -305,8 +306,11 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgr
     /* Set decimal shift and number of decimal places in relation to extended resolution parameter */
     setDecimalShift();
 
-    if (UseFallbackValue) {
+    // Load fallback value only if valid system time is set
+    // If not already loaded here, force loading before first usage in function doFlow
+    if (UseFallbackValue && (!getUseNtp() || getTimeIsSet())) {
         LoadFallbackValue();
+        fallbackValueLoaded = true;
     }
 
     return true;
@@ -591,6 +595,11 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         #endif
 
         if (UseFallbackValue) {
+            /* Load fallback value if not yet loaded during init due to missing valid system time */
+            if (!fallbackValueLoaded) {
+                LoadFallbackValue();
+                fallbackValueLoaded = true;
+            }
             /* Is fallbackValue valid (== not outdated) */
             if (NUMBERS[j]->isFallbackValueValid) {
                 /* Update fallbackValue */

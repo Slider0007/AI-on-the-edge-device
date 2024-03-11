@@ -14,6 +14,7 @@ class ClassFlowPostProcessing : public ClassFlow
     protected:
         std::vector<NumberPost*> NUMBERS;
         bool UseFallbackValue;
+        bool fallbackValueLoaded;
         bool UpdateFallbackValue;
         int FallbackValueAgeStartup; 
         bool IgnoreLeadingNaN;

@@ -123,34 +123,6 @@ extern "C" void app_main(void)
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "==================== Start ======================");
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "=================================================");
 
-    // SD card: basic R/W check
-    // ********************************************
-    int iSDCardStatus = SDCardCheckRW();
-    if (iSDCardStatus < 0) {
-        if (iSDCardStatus <= -1 && iSDCardStatus >= -2) { // write error
-            StatusLED(SDCARD_CHECK, 1, true);
-        }
-        else if (iSDCardStatus <= -3 && iSDCardStatus >= -5) { // read error
-            StatusLED(SDCARD_CHECK, 2, true);
-        }
-        else if (iSDCardStatus == -6) { // delete error
-            StatusLED(SDCARD_CHECK, 3, true);
-        }
-        setSystemStatusFlag(SYSTEM_STATUS_SDCARD_CHECK_BAD); // reduced web interface going to be loaded
-    }
-
-    // Migrate parameter in config.ini to new naming (firmware 15.0 and newer)
-    // ********************************************
-    migrateConfiguration();
-
-    // Init time (as early as possible, but SD card needs to be initialized)
-    // ********************************************
-    setupTime();    // NTP time service: Status of time synchronization will be checked after every cycle (server_tflite.cpp)
-
-    // Set CPU Frequency (default: 160Mhz)
-    // ********************************************
-    setCPUFrequency();
-
     // SD card: Create further mandatory directories (if not already existing)
     // Correct creation of these folders will be checked with function "SDCardCheckFolderFilePresence"
     // ********************************************
@@ -173,6 +145,22 @@ extern "C" void app_main(void)
     #ifdef ENABLE_SOFTAP
         CheckStartAPMode(); 
     #endif
+
+    // SD card: basic R/W check
+    // ********************************************
+    int iSDCardStatus = SDCardCheckRW();
+    if (iSDCardStatus < 0) {
+        if (iSDCardStatus <= -1 && iSDCardStatus >= -2) { // write error
+            StatusLED(SDCARD_CHECK, 1, true);
+        }
+        else if (iSDCardStatus <= -3 && iSDCardStatus >= -5) { // read error
+            StatusLED(SDCARD_CHECK, 2, true);
+        }
+        else if (iSDCardStatus == -6) { // delete error
+            StatusLED(SDCARD_CHECK, 3, true);
+        }
+        setSystemStatusFlag(SYSTEM_STATUS_SDCARD_CHECK_BAD); // reduced web interface going to be loaded
+    }
 
     // SD card: Check presence of some mandatory folders / files
     // ********************************************
@@ -217,6 +205,16 @@ extern "C" void app_main(void)
         ESP_ERROR_CHECK( heap_trace_start(HEAP_TRACE_LEAKS) );
     #endif
 
+    // Migrate parameter in config.ini to new naming (firmware 15.0 and newer)
+    // Do migration task before first read of config.ini
+    // ********************************************
+    migrateConfiguration();
+
+    // Set CPU Frequency (default: 160Mhz)
+    // Start before WLAN init to avoid frequency changes after WLAN init
+    // ********************************************
+    setCPUFrequency();
+
     // Read WLAN parameter and start WIFI
     // ********************************************
     int iWLANStatus = LoadWlanFromFile(WLAN_CONFIG_FILE);
@@ -237,19 +235,15 @@ extern "C" void app_main(void)
         return; // No way to continue with empty SSID
     }
 
-    TickType_t xDelay = 2000 / portTICK_PERIOD_MS;
-    ESP_LOGD(TAG, "main: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
-    vTaskDelay( xDelay );
-
-    // manual reset the time
-    // ********************************************
-    if (!time_manual_reset_sync())
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Manual Time Sync failed during startup" );
-
     // Set log level for wifi component to WARN level (default: INFO; only relevant for serial console)
     // ********************************************
     esp_log_level_set("wifi", ESP_LOG_WARN);
-  
+
+    // Init time (as early as possible, but wifi needs to be connected to sync time. no hardware clock available)
+    // Status of time sync will be checked after every cycle (server_tflite.cpp)
+    // ********************************************
+    setupTime();
+
     #ifdef HEAP_TRACING_MAIN_WIFI
         ESP_ERROR_CHECK( heap_trace_stop() );
         heap_trace_dump(); 
@@ -261,7 +255,7 @@ extern "C" void app_main(void)
             ESP_LOGD(TAG, "Himem mem check %s", himem_memory_check().c_str());
         #endif
     #endif
-   
+
     // Init external PSRAM
     // ********************************************
     esp_err_t PSRAMStatus = esp_psram_init();
