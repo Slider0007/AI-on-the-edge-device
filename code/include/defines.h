@@ -181,7 +181,7 @@
 #define READOUT_TYPE_RAWVALUE                4
 #define READOUT_TYPE_VALUE_STATUS            5
 #define READOUT_TYPE_RATE_PER_MIN            6
-#define READOUT_TYPE_RATE_PER_INTERVAL     7
+#define READOUT_TYPE_RATE_PER_INTERVAL       7
 
 
 //ClassFlowMQTT
