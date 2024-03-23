@@ -434,7 +434,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
 
         if (cJSON_AddStringToObject(cJSONObject, "api_name", APIName) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "number_sequences", std::to_string(flowctrl.getNumbersSize()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "number_sequences", flowctrl.getNumbersSize()) == NULL)
             retVal = ESP_FAIL;
 
         cJSON *cJSONObjectTimestampProcessed = cJSON_AddObjectToObject(cJSONObject, "timestamp_processed");
@@ -599,23 +599,21 @@ esp_err_t handler_process_data(httpd_req_t *req)
 
         if (cJSON_AddStringToObject(cJSONObject, "process_status", getProcessStatus().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_interval", 
-                                    to_stringWithPrecision(flowctrl.getProcessInterval(), 1).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "process_interval", (int)(flowctrl.getProcessInterval() * 10) / 10.0) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_time", std::to_string(getFlowProcessingTime()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "process_time", getFlowProcessingTime()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_state", flowctrl.getActStatusWithTime().c_str()) == NULL)
             retVal = ESP_FAIL;
 
         // 0: No error, -1: Error occured, -2: Multiple errors in a row, 1: Deviation occured, 2: Multiple deviaton in a row
-        if (cJSON_AddStringToObject(cJSONObject, "process_error", std::to_string(flowctrl.getFlowStateErrorOrDeviation()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "process_error", flowctrl.getFlowStateErrorOrDeviation()) == NULL)
             retVal = ESP_FAIL;
-
-        if (cJSON_AddStringToObject(cJSONObject, "device_uptime", std::to_string(getUptime()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "device_uptime", getUptime()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "cycle_counter", getFlowCycleCounter()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "wlan_rssi", std::to_string(get_WIFI_RSSI()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "wlan_rssi", get_WIFI_RSSI()) == NULL)
             retVal = ESP_FAIL;
 
         char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024 + flowctrl.getNumbersSize() * 512, 1); // Print with predefined buffer, avoid dynamic allocations

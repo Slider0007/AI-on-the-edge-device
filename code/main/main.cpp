@@ -313,7 +313,7 @@ extern "C" void app_main(void)
     // Print SD-Card info
     // ********************************************
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "SD card info: Name: " + getSDCardName() + ", Capacity: " + 
-                        getSDCardCapacity() + "MB, Free: " + getSDCardFreePartitionSpace() + "MB");
+            std::to_string(getSDCardCapacity()) + "MB, Free: " + std::to_string(getSDCardFreePartitionSpace()) + "MB");
 
 
     // Start webserver + register handler
