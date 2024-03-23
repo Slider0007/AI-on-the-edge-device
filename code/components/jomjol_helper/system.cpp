@@ -366,6 +366,13 @@ std::string getResetReason(void)
 }
 
 
+void SaveSDCardInfo(sdmmc_card_t* card)
+{
+	SDCardCid = card->cid;
+    SDCardCsd = card->csd;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 /* Source: https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/tree/lsmmc.c */
 /* SD Card Manufacturer Database */
@@ -505,7 +512,26 @@ std::string SDCardParseManufacturerIDs(int id)
 }
 
 
-std::string getSDCardPartitionSize(){
+std::string getSDCardManufacturer()
+{
+	std::string SDCardManufacturer = SDCardParseManufacturerIDs(SDCardCid.mfg_id);
+	//ESP_LOGD(TAG, "SD Card Manufacturer: %s", SDCardManufacturer.c_str());
+	
+	return (SDCardManufacturer + " (ID: " + std::to_string(SDCardCid.mfg_id) + ")");
+}
+
+
+std::string getSDCardName()
+{
+	char *SDCardName = SDCardCid.name;
+	//ESP_LOGD(TAG, "SD Card Name: %s", SDCardName); 
+
+	return std::string(SDCardName);
+}
+
+
+int getSDCardPartitionSize()
+{
 	FATFS *fs;
     uint32_t fre_clust, tot_sect;
 
@@ -515,11 +541,12 @@ std::string getSDCardPartitionSize(){
 
 	//ESP_LOGD(TAG, "%d MB total drive space (Sector size [bytes]: %d)", (int)tot_sect, (int)fs->ssize);
 
-	return std::to_string(tot_sect);
+	return tot_sect;
 }
 
 
-std::string getSDCardFreePartitionSpace(){
+int getSDCardFreePartitionSpace()
+{
 	FATFS *fs;
     uint32_t fre_clust, fre_sect;
   
@@ -529,11 +556,12 @@ std::string getSDCardFreePartitionSpace(){
 
     //ESP_LOGD(TAG, "%d MB free drive space (Sector size [bytes]: %d)", (int)fre_sect, (int)fs->ssize);
 
-	return std::to_string(fre_sect);
+	return fre_sect;
 }
 
 
-std::string getSDCardPartitionAllocationSize(){
+int getSDCardPartitionAllocationSize()
+{
 	FATFS *fs;
     uint32_t fre_clust, allocation_size;
   
@@ -543,43 +571,23 @@ std::string getSDCardPartitionAllocationSize(){
 
     //ESP_LOGD(TAG, "SD Card Partition Allocation Size: %d bytes", allocation_size);
 
-	return std::to_string(allocation_size);
+	return allocation_size;
 }
 
 
-void SaveSDCardInfo(sdmmc_card_t* card) {
-	SDCardCid = card->cid;
-    SDCardCsd = card->csd;
-}
-
-
-std::string getSDCardManufacturer(){
-	std::string SDCardManufacturer = SDCardParseManufacturerIDs(SDCardCid.mfg_id);
-	//ESP_LOGD(TAG, "SD Card Manufacturer: %s", SDCardManufacturer.c_str());
-	
-	return (SDCardManufacturer + " (ID: " + std::to_string(SDCardCid.mfg_id) + ")");
-}
-
-
-std::string getSDCardName(){
-	char *SDCardName = SDCardCid.name;
-	//ESP_LOGD(TAG, "SD Card Name: %s", SDCardName); 
-
-	return std::string(SDCardName);
-}
-
-
-std::string getSDCardCapacity(){
+int getSDCardCapacity()
+{
 	int SDCardCapacity = SDCardCsd.capacity / (1024/SDCardCsd.sector_size) / 1024;  // total sectors * sector size  --> Byte to MB (1024*1024)
 	//ESP_LOGD(TAG, "SD Card Capacity: %s", std::to_string(SDCardCapacity).c_str()); 
 
-	return std::to_string(SDCardCapacity);
+	return SDCardCapacity;
 }
 
 
-std::string getSDCardSectorSize(){
+int getSDCardSectorSize()
+{
 	int SDCardSectorSize = SDCardCsd.sector_size;
 	//ESP_LOGD(TAG, "SD Card Sector Size: %s bytes", std::to_string(SDCardSectorSize).c_str()); 
 
-	return std::to_string(SDCardSectorSize);
+	return SDCardSectorSize;
 }

@@ -53,7 +53,7 @@ The following data are available:
 ```
 {
     "api_name": "process_data:v2",
-    "number_sequences": "1",
+    "number_sequences": 1,
     "timestamp_processed": {
         "inline": "main\t2024-02-24T13:59:04+0100",
         "sequence": {
@@ -103,13 +103,13 @@ The following data are available:
         }
     },
     "process_status": "Processing (Automatic)",
-    "process_interval": "0.3",
-    "process_time": "15",
+    "process_interval": 2.0,
+    "process_time": 15,
     "process_state": "[13:59:17] Idle - Waiting for Autostart",
-    "process_error": "000: No process error",
-    "device_uptime": "496",
-    "cycle_counter": "4",
-    "wlan_rssi": "-60"
+    "process_error": 0,
+    "device_uptime": 496,
+    "cycle_counter": 4,
+    "wlan_rssi": -60
 }
 ```
 

@@ -58,11 +58,11 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "process_status", getProcessStatus().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_interval", to_stringWithPrecision(flowctrl.getProcessingInterval(),1).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "process_interval", (int)(flowctrl.getProcessingInterval() * 10) / 10.0) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "process_time", std::to_string(getFlowProcessingTime()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "process_time", getFlowProcessingTime()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "cycle_counter", std::to_string(getFlowCycleCounter()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "cycle_counter", getFlowCycleCounter()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "datalogging_sdcard_status", LogFile.GetDataLogToSD() ? "Enabled" : "Disabled") == NULL)
             retVal = ESP_FAIL;
@@ -99,13 +99,13 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "device_starttime", deviceStartTimestamp.c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "device_uptime", std::to_string(getUptime()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "device_uptime", getUptime()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "wlan_status", getWIFIisConnected() ? "Connected" : "Disconnected") == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "wlan_ssid", getSSID().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "wlan_rssi", std::to_string(get_WIFI_RSSI()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "wlan_rssi", get_WIFI_RSSI()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "mac_address", getMac().c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -123,45 +123,45 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "chip_model", getChipModel().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "chip_cores", std::to_string(getChipCoreCount()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "chip_cores", getChipCoreCount()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "chip_revision", getChipRevision().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "chip_frequency", std::to_string(esp_clk_cpu_freq()/1000000).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "chip_frequency", esp_clk_cpu_freq()/1000000) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "chip_temp", std::to_string((int)temperatureRead()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "chip_temp", (int)temperatureRead()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "camera_type", Camera.getCamType().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "camera_frequency", std::to_string(Camera.getCamFrequencyMhz()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "camera_frequency", Camera.getCamFrequencyMhz()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "sd_name", getSDCardName().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "sd_manufacturer", getSDCardManufacturer().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "sd_capacity", getSDCardCapacity().c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "sd_capacity", getSDCardCapacity()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "sd_sector_size", getSDCardSectorSize().c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "sd_sector_size", getSDCardSectorSize()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "sd_partition_alloc_size", getSDCardPartitionAllocationSize().c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "sd_partition_alloc_size", getSDCardPartitionAllocationSize()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "sd_partition_size", getSDCardPartitionSize().c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "sd_partition_size", getSDCardPartitionSize()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "sd_partition_free", getSDCardFreePartitionSpace().c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "sd_partition_free", getSDCardFreePartitionSpace()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_total_free", std::to_string(getESPHeapSizeTotalFree()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "heap_total_free", getESPHeapSizeTotalFree()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_free", std::to_string(getESPHeapSizeInternalFree()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_free", getESPHeapSizeInternalFree()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_largest_free", std::to_string(getESPHeapSizeInternalLargestFree()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_largest_free", getESPHeapSizeInternalLargestFree()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_internal_min_free", std::to_string(getESPHeapSizeInternalMinFree()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_min_free", getESPHeapSizeInternalMinFree()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_free", std::to_string(getESPHeapSizeSPIRAMFree()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_free", getESPHeapSizeSPIRAMFree()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_largest_free", std::to_string(getESPHeapSizeSPIRAMLargestFree()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_largest_free", getESPHeapSizeSPIRAMLargestFree()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_min_free", std::to_string(getESPHeapSizeSPIRAMMinFree()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_min_free", getESPHeapSizeSPIRAMMinFree()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "git_branch", libfive_git_branch()) == NULL)
             retVal = ESP_FAIL;
@@ -350,51 +350,51 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("sd_capacity") == 0) {
-        httpd_resp_sendstr(req, getSDCardCapacity().c_str());
+        httpd_resp_sendstr(req, std::to_string(getSDCardCapacity()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("sd_sector_size") == 0) {
-        httpd_resp_sendstr(req, getSDCardSectorSize().c_str());
+        httpd_resp_sendstr(req, std::to_string(getSDCardSectorSize()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("sd_partition_alloc_size") == 0) {
-        httpd_resp_sendstr(req, getSDCardPartitionAllocationSize().c_str());
+        httpd_resp_sendstr(req, std::to_string(getSDCardPartitionAllocationSize()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("sd_partition_size") == 0) {
-        httpd_resp_sendstr(req, getSDCardPartitionSize().c_str());
+        httpd_resp_sendstr(req, std::to_string(getSDCardPartitionSize()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("sd_partition_free") == 0) {
-        httpd_resp_sendstr(req, getSDCardFreePartitionSpace().c_str());
+        httpd_resp_sendstr(req, std::to_string(getSDCardFreePartitionSpace()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("heap_total_free") == 0) {
-        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeTotalFree())).c_str());
+        httpd_resp_sendstr(req, std::to_string(getESPHeapSizeTotalFree()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("heap_internal_free") == 0) {
-        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeInternalFree())).c_str());
+        httpd_resp_sendstr(req, std::to_string(getESPHeapSizeInternalFree()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("heap_internal_largest_free") == 0) {
-        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeInternalLargestFree())).c_str());
+        httpd_resp_sendstr(req, std::to_string(getESPHeapSizeInternalLargestFree()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("heap_internal_min_free") == 0) {
-        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeInternalMinFree())).c_str());
+        httpd_resp_sendstr(req, std::to_string(getESPHeapSizeInternalMinFree()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("heap_spiram_free") == 0) {
-        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeSPIRAMFree())).c_str());
+        httpd_resp_sendstr(req, std::to_string(getESPHeapSizeSPIRAMFree()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("heap_spiram_largest_free") == 0) {
-        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeSPIRAMLargestFree())).c_str());
+        httpd_resp_sendstr(req, std::to_string(getESPHeapSizeSPIRAMLargestFree()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("heap_spiram_min_free") == 0) {
-        httpd_resp_sendstr(req, (std::to_string(getESPHeapSizeSPIRAMMinFree())).c_str());
+        httpd_resp_sendstr(req, std::to_string(getESPHeapSizeSPIRAMMinFree()).c_str());
         return ESP_OK;        
     }
     #ifdef TASK_ANALYSIS_ON

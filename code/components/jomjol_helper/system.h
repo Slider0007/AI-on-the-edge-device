@@ -57,13 +57,13 @@ bool isSetSystemStatusFlag(SystemStatusFlag_t flag);
 std::string getResetReason(void);
 
 void SaveSDCardInfo(sdmmc_card_t* card);
-std::string getSDCardPartitionSize(void);
-std::string getSDCardFreePartitionSpace(void);
-std::string getSDCardPartitionAllocationSize(void);
 std::string SDCardParseManufacturerIDs(int);
 std::string getSDCardManufacturer(void);
 std::string getSDCardName(void);
-std::string getSDCardCapacity(void);
-std::string getSDCardSectorSize(void);
+int getSDCardPartitionSize(void);
+int getSDCardFreePartitionSpace(void);
+int getSDCardPartitionAllocationSize(void);
+int getSDCardCapacity(void);
+int getSDCardSectorSize(void);
 
 #endif //ESP_SYSTEM_H
