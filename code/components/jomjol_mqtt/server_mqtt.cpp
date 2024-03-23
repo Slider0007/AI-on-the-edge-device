@@ -69,11 +69,11 @@ bool mqttServer_publishDeviceInfo(int _qos)
     else {
         if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "chip_model", getChipModel().c_str()) == NULL)
             retVal = false;
-        if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "chip_cores", std::to_string(getChipCoreCount()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareBoard, "chip_cores", getChipCoreCount()) == NULL)
             retVal = false;
         if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "chip_revision", getChipRevision().c_str()) == NULL)
             retVal = false;
-        if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "chip_frequency", std::to_string(esp_clk_cpu_freq()/1000000).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareBoard, "chip_frequency", esp_clk_cpu_freq()/1000000) == NULL)
             retVal = false;
     }
 
@@ -84,7 +84,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
     else {
         if (cJSON_AddStringToObject(cJSONObjectHardwareCamera, "type", Camera.getCamType().c_str()) == NULL)
             retVal = false;
-        if (cJSON_AddStringToObject(cJSONObjectHardwareCamera, "frequency", std::to_string(Camera.getCamFrequencyMhz()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareCamera, "frequency", Camera.getCamFrequencyMhz()) == NULL)
             retVal = false;
     }
 
@@ -93,9 +93,9 @@ bool mqttServer_publishDeviceInfo(int _qos)
         retVal = false;
     }
     else {
-        if (cJSON_AddStringToObject(cJSONObjectHardwareSDCard, "capacity", getSDCardCapacity().c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareSDCard, "capacity", getSDCardCapacity()) == NULL)
             retVal = false;
-        if (cJSON_AddStringToObject(cJSONObjectHardwareSDCard, "partition_size", getSDCardPartitionSize().c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareSDCard, "partition_size", getSDCardPartitionSize()) == NULL)
             retVal = false;
     }
 
@@ -164,19 +164,19 @@ bool mqttServer_publishDeviceStatus(int _qos)
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
         return false;
     }
-    if (cJSON_AddStringToObject(cJSONObject, "heap_total_free", std::to_string(getESPHeapSizeTotalFree()).c_str()) == NULL)
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_total_free", getESPHeapSizeTotalFree()) == NULL)
         retVal = false;
-    if (cJSON_AddStringToObject(cJSONObject, "heap_internal_free", std::to_string(getESPHeapSizeInternalFree()).c_str()) == NULL)
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_free", getESPHeapSizeInternalFree()) == NULL)
         retVal = false;
-    if (cJSON_AddStringToObject(cJSONObject, "heap_internal_largest_free", std::to_string(getESPHeapSizeInternalLargestFree()).c_str()) == NULL)
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_largest_free", getESPHeapSizeInternalLargestFree()) == NULL)
         retVal = false;
-    if (cJSON_AddStringToObject(cJSONObject, "heap_internal_min_free", std::to_string(getESPHeapSizeInternalMinFree()).c_str()) == NULL)
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_min_free", getESPHeapSizeInternalMinFree()) == NULL)
         retVal = false;
-    if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_free", std::to_string(getESPHeapSizeSPIRAMFree()).c_str()) == NULL)
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_free", getESPHeapSizeSPIRAMFree()) == NULL)
         retVal = false;
-    if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_largest_free", std::to_string(getESPHeapSizeSPIRAMLargestFree()).c_str()) == NULL)
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_largest_free", getESPHeapSizeSPIRAMLargestFree()) == NULL)
         retVal = false;
-    if (cJSON_AddStringToObject(cJSONObject, "heap_spiram_min_free", std::to_string(getESPHeapSizeSPIRAMMinFree()).c_str()) == NULL)
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_min_free", getESPHeapSizeSPIRAMMinFree()) == NULL)
         retVal = false;
     
     char *jsonString = cJSON_PrintBuffered(cJSONObject, 256, 1); // Print to predefined buffer, avoid dynamic allocations
@@ -185,7 +185,7 @@ bool mqttServer_publishDeviceStatus(int _qos)
     cJSON_Delete(cJSONObject);
 
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "heap", jsonData, _qos, false);
-    retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "sd_partition_free", getSDCardFreePartitionSpace(), _qos, false);
+    retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "sd_partition_free", std::to_string(getSDCardFreePartitionSpace()), _qos, false);
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "ntp_syncstatus", getNTPSyncStatus().c_str(), _qos, false); 
 
     if (!retVal) {
