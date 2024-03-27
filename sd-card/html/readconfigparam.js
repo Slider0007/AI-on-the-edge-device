@@ -384,9 +384,6 @@ function ParseConfigReduced() {
      var aktline = 0;
 
      param = new Object();
-     category = new Object();
-
-     param = new Object();
      category = new Object(); 
 
      var catname = "TakeImage";
