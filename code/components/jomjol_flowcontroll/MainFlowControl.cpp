@@ -75,11 +75,13 @@ bool doInit(void)
         flowctrl.DeinitFlow();
         bRetVal = false;
     }
-    
+
     // Init GPIO handler
-    // Note: GPIO handler has to be initialized before MQTT init to ensure proper topic subscription
+    // Note: It has to be initialized before MQTT (topic subscription)
+    // and after flow init (MQTT main topic parameter)
     // ********************************************   
-    gpio_handler_init();
+    if (!gpio_handler_init())
+        bRetVal = false;
 
     // Init MQTT service
     // ********************************************   
@@ -96,12 +98,12 @@ bool doInit(void)
 
 
 #ifdef ENABLE_MQTT
-esp_err_t MQTTCtrlFlowStart(std::string _topic) 
+esp_err_t triggerFlowStartByMqtt(std::string _topic) 
 {
     if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART || 
         taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART) 
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Flow start triggered by MQTT topic " + _topic);  
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by MQTT topic " + _topic);  
         manualFlowStart = true;
 
         if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART)
@@ -111,16 +113,42 @@ esp_err_t MQTTCtrlFlowStart(std::string _topic)
              taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
              taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) 
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Flow start triggered by MQTT topic "+ _topic + " got scheduled");      
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by MQTT topic "+ _topic + " got scheduled");      
         manualFlowStart = true;
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Flow start triggered by MQTT topic " + _topic + ". Flow not initialized. Request rejected");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Cycle start triggered by MQTT topic " + _topic + ". Main task not initialized. Request rejected");
     }  
 
     return ESP_OK;
 }
 #endif //ENABLE_MQTT
+
+
+
+void triggerFlowStartByGpio()
+{
+    if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART || 
+        taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART) 
+    {
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by GPIO");  
+        manualFlowStart = true;
+
+        if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART)
+            xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state
+    }
+    else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING || 
+             taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
+             taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) 
+    {
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by GPIO got scheduled");      
+        manualFlowStart = true;
+    }
+    else {
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Cycle start triggered by GPIO. Main task not initialized. Request rejected");
+    }  
+}
+
 
 
 esp_err_t handler_cycle_start(httpd_req_t *req) 

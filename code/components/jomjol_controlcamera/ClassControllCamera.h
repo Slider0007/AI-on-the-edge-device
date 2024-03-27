@@ -72,7 +72,10 @@ class CCamera
         esp_err_t captureToHTTP(httpd_req_t *_req);
         esp_err_t captureToStream(httpd_req_t *_req, bool _flashlightOn);
 
-        void ledc_init(void);
+        #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+        void ledcInitFlashlightDefault(void);
+        #endif
+
         void setFlashIntensity(int _flashIntensity);
         void setFlashTime(int _flashTime);
         int getFlashTime();

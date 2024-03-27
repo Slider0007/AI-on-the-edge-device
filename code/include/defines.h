@@ -95,18 +95,12 @@
 
 //compiler optimization for tflite-micro-esp-examples
 #define XTENSA
-//#define CONFIG_IDF_TARGET_ARCH_XTENSA     //not needed with platformio/espressif32 @ 5.2.0
+//#define CONFIG_IDF_TARGET_ARCH_XTENSA // not needed with platformio/espressif32 @ 5.2.0
 
 
 //ClassControllCamera
-#define CAM_LIVESTREAM_REFRESHRATE 500      // Camera livestream feature: Waiting time in milliseconds to refresh image
-
-
-//ClassControllCamera + ClassFlowTakeImage
+#define CAM_LIVESTREAM_REFRESHRATE 500 // Camera livestream feature: Waiting time in milliseconds to refresh image
 #define DEMO_IMAGE_SIZE 30000 // Max size of demo image in bytes
-
-//server_GPIO
-#define __LEDGLOBAL
 
 
 //server_GPIO + server_file + SoftAP
@@ -119,7 +113,7 @@
 
 
 // server_file + Helper
-    #define FILE_PATH_MAX (255) //Max length a file path can have on storage
+#define FILE_PATH_MAX (255) //Max length a file path can have on storage
 
 
 //server_file +(ota_page.html + upload_script.html)
@@ -181,7 +175,7 @@
 #define READOUT_TYPE_RAWVALUE                4
 #define READOUT_TYPE_VALUE_STATUS            5
 #define READOUT_TYPE_RATE_PER_MIN            6
-#define READOUT_TYPE_RATE_PER_INTERVAL     7
+#define READOUT_TYPE_RATE_PER_INTERVAL       7
 
 
 //ClassFlowMQTT
@@ -292,6 +286,18 @@ CONFIG_WPA_11R_SUPPORT=n
 #endif // ENABLE_SOFTAP
 
 
+// Global flashlight definitions
+#define FLASHLIGHT_DEFAULT_LEDC_TIMER           LEDC_TIMER_1
+#define FLASHLIGHT_DEFAULT_LEDC_CHANNEL         LEDC_CHANNEL_1
+#define FLASHLIGHT_DEFAULT_FREQUENCY            (5000) // 5kHz
+#define FLASHLIGHT_DEFAULT_DUTY_RESOLUTION      LEDC_TIMER_13_BIT // 13 bit resolution --> 8192: 0 .. 8191
+#define FLASHLIGHT_DEFAULT_RESOLUTION_RANGE     ((1 << FLASHLIGHT_DEFAULT_DUTY_RESOLUTION) - 1) // 13 bit resolution --> 8192: 0 .. 8191
+#define FLASHLIGHT_DEFAULT                      "flashlight-default"
+#define FLASHLIGHT_PWM                          "flashlight-pwm"
+#define FLASHLIGHT_SMARTLED                     "flashlight-smartled"
+#define FLASHLIGHT_DIGITAL                      "flashlight-digital"
+
+
 //*************************************************************************
 // HARDWARE RELATED DEFINITIONS
 //*************************************************************************
@@ -323,6 +329,7 @@ CONFIG_WPA_11R_SUPPORT=n
     #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1                  // Only 1 line SD card operation is supported (hardware related)
 
     // SD card (operated with SDMMC peripheral)
+    //-------------------------------------------------
     #define GPIO_SDCARD_CLK                 GPIO_NUM_14
     #define GPIO_SDCARD_CMD                 GPIO_NUM_15
     #define GPIO_SDCARD_D0                  GPIO_NUM_2
@@ -332,17 +339,68 @@ CONFIG_WPA_11R_SUPPORT=n
     #endif
     #define GPIO_SDCARD_D3                  GPIO_NUM_13     // Needs to be high to init SD in MMC mode. After init GPIO can be used as spare GPIO
 
+
     // LEDs
+    //-------------------------------------------------
     #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_33     // Onboard red status LED
     #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_4      // Onboard flashlight LED
 
-    #define GPIO_FLASHLIGHT_DEFAULT_USE_LEDC                // Activate LEDC peripheral for PWM control
-    
     #ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
         #define GPIO_FLASHLIGHT_DEFAULT     GPIO_FLASHLIGHT_ONBOARD // Use onboard flashlight as default flashlight
     #else
-        #define GPIO_FLASHLIGHT_DEFAULT     GPIO_NUM_13     // Onboard flashlight cannot be used if SD card operated in 4-line mode -> Define GPIO13
+        #define GPIO_FLASHLIGHT_DEFAULT     GPIO_NUM_13     // Onboard flashlight cannot be used if SD card operated in 4-line mode -> Define e.g. GPIO13
     #endif
+
+    #define GPIO_FLASHLIGHT_DEFAULT_USE_PWM                 // Default flashlight LED (.e.g onboard LED) is PWM controlled
+    //#define GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED          // Default flashlight SmartLED (e.g. onboard WS2812X) controlled
+    
+    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
+        #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_TYPE       LED_WS2812 // Flashlight default: SmartLED type
+        #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_QUANTITY   1          // Flashlight default: SmartLED Quantity
+    #endif
+
+
+    // Spare GPIO
+    //-------------------------------------------------
+    // Options for usage defintion: 
+    // - 'spare': Free to use
+    // - 'restricted': Restricted usable (WebUI expert view)
+    // - 'flashlight-pwm' or 'flashlight-smartled' or 'flashlight-digital' (ON/OFF) -> Map to 'flashlight-default'
+    // --> ESP32CAM: flashlight-default -> flashlight-pwm (Onboard LED, PWM controlled)
+    //-------------------------------------------------
+    #define GPIO_SPARE_PIN_COUNT        6
+   
+    #define GPIO_SPARE_1                 GPIO_NUM_1             // Use carefully: UART pin for debug/logging
+    #define GPIO_SPARE_1_USAGE           "restricted: uart0-tx" // Only visible when expert mode is activated
+    
+    #define GPIO_SPARE_2                 GPIO_NUM_3             // Use carefully: UART pin for debug/logging
+    #define GPIO_SPARE_2_USAGE           "restricted: uart0-rx" // Only visible when expert mode is activated
+
+    #ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
+        #define GPIO_SPARE_3             GPIO_NUM_4             // Use carefully: flashlight-default
+        #if defined(GPIO_FLASHLIGHT_DEFAULT_USE_PWM)
+            #define GPIO_SPARE_3_USAGE    FLASHLIGHT_PWM        // Define flashlight-default as ...
+        #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
+            #define GPIO_SPARE_3_USAGE    FLASHLIGHT_SMARTLED   // Define flashlight-default as ...
+        #else
+            #define GPIO_SPARE_3_USAGE    FLASHLIGHT_DIGITAL    // Define flashlight-default as ...
+        #endif
+
+        #define GPIO_SPARE_4             GPIO_NUM_12
+        #define GPIO_SPARE_4_USAGE       "spare"
+    #else
+        #define GPIO_SPARE_3             GPIO_NUM_NC    // Not usable, in use for 'SD-card'
+        #define GPIO_SPARE_3_USAGE       ""      
+
+        #define GPIO_SPARE_4             GPIO_NUM_NC    // Not usable, in use for 'SD-card'
+        #define GPIO_SPARE_4_USAGE       ""
+    #endif
+    
+    #define GPIO_SPARE_5                 GPIO_NUM_13
+    #define GPIO_SPARE_5_USAGE           "spare"
+
+    #define GPIO_SPARE_6                 GPIO_NUM_NC     // Not defined spare position
+    #define GPIO_SPARE_6_USAGE           ""
 #else
     #error "define.h: No board type defined or type unknown"
 #endif //Board types
@@ -372,17 +430,5 @@ CONFIG_WPA_11R_SUPPORT=n
 #else
     #error "define.h: No camera model defined or model unknown"
 #endif //Camera models
-
-
-// GPIO_FLASHLIGHT_DEFAULT PWM definitions
-#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
-    #define LEDC_TIMER          LEDC_TIMER_1                // LEDC_TIMER_0 is used for camera
-    #define LEDC_MODE           LEDC_LOW_SPEED_MODE
-    #define LEDC_OUTPUT_IO      GPIO_FLASHLIGHT_DEFAULT     // Define the output GPIO of default flashlight
-    #define LEDC_CHANNEL        LEDC_CHANNEL_1              // LEDC_CHANNEL_0 is used for camera
-    #define LEDC_DUTY_RES       LEDC_TIMER_13_BIT           // Set duty resolution to 13 bits
-    #define LEDC_RESOLUTION     (1 << LEDC_TIMER_13_BIT) -1 // 13 bit resolution --> 8192: 0 .. 8191
-    #define LEDC_FREQUENCY      (5000)                      // Frequency in hertz. Set frequency at 5 kHz
-#endif //GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
 
 #endif //DEFINES_H

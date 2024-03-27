@@ -5,7 +5,7 @@ var category = {};       // Configuration category obejct
 var NUMBERS = [];        // Number sequences
 let REFERENCES = [];     // Alignment marker
 let tflite_list = "";    // TFLite model files as tab separated list
-
+let pinConfig = {};      // Board pin configuration
 
 async function getDataFileList()
 {
@@ -69,7 +69,35 @@ async function fetchTFLITEList()
 }
 
 
-async function loadConfig()
+function loadPinConfig()
+{
+     return new Promise(function (resolve, reject) {
+          var url = getDomainname() + '/gpio?task=gpio_config';
+
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+               if (this.readyState == 4) {
+                    if (this.status >= 200 && this.status < 300) {
+                         pinConfig = JSON.parse(xhttp.responseText);
+                         return resolve(pinConfig);
+                    }
+                    else {
+                         firework.launch("Loading GPIO pin config failed (Response status: " + this.status + 
+                                        "). Repeat action or check logs.", 'danger', 30000);
+                         console.error("Loading GPIO pin config failed. Response status: " + this.status);
+                         return reject("Loading GPIO pin config failed");
+                    }
+               }
+          };
+
+          xhttp.timeout = 10000;  // 10 seconds
+          xhttp.open("GET", url, true);
+          xhttp.send();
+     });
+}
+
+
+async function loadConfigIni()
 {
      return new Promise(function (resolve, reject) {
           var url = getDomainname() + '/fileserver/config/config.ini';
@@ -97,13 +125,21 @@ async function loadConfig()
 }
 
 
+async function loadConfig()
+{
+     // Ensure GPIO pin config and config.ini is loaded before continue
+     return Promise.all([loadPinConfig(), loadConfigIni()]);
+}
+
+
 function getConfig()
 {
      return config_gesamt;
 }
 
 
-function ParseConfig() {
+function ParseConfig()
+{
      config_split = config_gesamt.split("\n");
      var aktline = 0;
 
@@ -246,18 +282,8 @@ function ParseConfig() {
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddValue(param, catname, "IO0", 6, false, "", [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
-     ParamAddValue(param, catname, "IO1", 6, false, "",  [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
-     ParamAddValue(param, catname, "IO3", 6, false, "",  [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
-     ParamAddValue(param, catname, "IO4", 6, false, "",  [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
-     ParamAddValue(param, catname, "IO12", 6, false, "",  [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
-     ParamAddValue(param, catname, "IO13", 6, false, "",  [null, null, /^[0-9]*$/, null, null, /^[a-zA-Z0-9_-]*$/]);
-     ParamAddSingleValueWithPreset(param, catname, "LEDType", true, "WS2812");
-     ParamAddSingleValueWithPreset(param, catname, "LEDNumbers", true, "2");
-     ParamAddValue(param, catname, "LEDColor", 3);
-     param[catname]["LEDColor"]["value1"] = "50";
-     param[catname]["LEDColor"]["value2"] = "50";
-     param[catname]["LEDColor"]["value3"] = "50";
+     ParamAddGpioWithPreset(param, catname, [null, null, /^[0-9]*$/, null, null, null, 
+                              /^[0-9]*$/, /^[0-9]*$/, /^[0-9]*$/, /^[a-zA-Z0-9_-]*$/]);
 
      var catname = "AutoTimer";
      category[catname] = new Object(); 
@@ -358,21 +384,7 @@ function ParseConfigReduced() {
      var aktline = 0;
 
      param = new Object();
-     category = new Object(); 
-
-     var catname = "TakeImage";
-     category[catname] = new Object(); 
-     category[catname]["enabled"] = true;
-     category[catname]["found"] = true;
-     param[catname] = new Object();
-     ParamAddSingleValueWithPreset(param, catname, "ImageSize", true, "VGA");
-
-     var catname = "Alignment";
-     category[catname] = new Object(); 
-     category[catname]["enabled"] = true;
-     category[catname]["found"] = true;
-     param[catname] = new Object();
-     ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
+     category = new Object();
 
      var catname = "MQTT";
      category[catname] = new Object(); 
@@ -490,6 +502,54 @@ function ParamAddModelWithPreset(param, _cat, _param, _enabled)
 }
 
 
+/* Add a model parameter (no parameter which is used in a number sequence) and set to default value */
+function ParamAddGpioWithPreset(param, _cat, _checkRegExList = null)
+{
+     for (let i = 0; i < pinConfig.gpio.length; ++i) {
+          let _name = "IO" + pinConfig.gpio[i].name;
+          if (param[_cat][_name] == null || param[_cat][_name]["value1"] == "") {
+               param[_cat][_name] = new Object();
+               param[_cat][_name]["found"] = true;
+               param[_cat][_name]["enabled"] = false;
+               param[_cat][_name]["line"] = -1; 
+               param[_cat][_name]["anzParam"] = 13;
+               param[_cat][_name]["value1"] = "input-pullup";
+               param[_cat][_name]["value2"] = "cyclic-polling";
+               param[_cat][_name]["value3"] = "200";
+               param[_cat][_name]["value4"] = "5000";
+               param[_cat][_name]["value5"] = "false";
+               param[_cat][_name]["value6"] = "false";
+               param[_cat][_name]["value7"] = "WS2812";
+               param[_cat][_name]["value8"] = "1";
+               param[_cat][_name]["value9"] = "255";
+               param[_cat][_name]["value10"] = "255";
+               param[_cat][_name]["value11"] = "255";
+               param[_cat][_name]["value12"] = "100";
+               param[_cat][_name]["value13"] = "";
+               param[_cat][_name].checkRegExList = _checkRegExList;   
+          }
+     }
+}
+
+
+/* Add a model parameter (no parameter which is used in a number sequence) and set to default value */
+function ParamResetGpioValuesToDefault(param, _cat, _name)
+{
+     param[_cat][_name]["value1"] = "input-pulldown";
+     param[_cat][_name]["value2"] = "cyclic-polling";
+     param[_cat][_name]["value3"] = "10";
+     param[_cat][_name]["value4"] = "false";
+     param[_cat][_name]["value5"] = "false";
+     param[_cat][_name]["value6"] = "WS2812";
+     param[_cat][_name]["value7"] = "1";
+     param[_cat][_name]["value8"] = "255";
+     param[_cat][_name]["value9"] = "255";
+     param[_cat][_name]["value10"] = "255";
+     param[_cat][_name]["value11"] = "100";
+     param[_cat][_name]["value12"] = "";
+}
+
+
 function ParseConfigParamAll(_aktline, _catname){
      ++_aktline;
 
@@ -527,7 +587,7 @@ function ParamExtractValue(_param, _linesplit, _catname, _paramname, _aktline, _
           _param[_catname][_paramname]["anzpara"] = _anzvalue;
           for (var j = 1; j <= _anzvalue; ++j) {
                _param[_catname][_paramname]["value"+j] = _linesplit[j];
-               }
+          }
      }
 }
 
@@ -559,7 +619,7 @@ function ParamExtractValueAll(_param, _linesplit, _catname, _aktline, _iscom){
      
                     for (var j = 1; j <= _param[_catname][paramname]["anzParam"]; ++j) {
                          abc[_catname][paramname]["value"+j] = _linesplit[j];
-                         }
+                    }
                     if (abc["name"] == "default")
                     {
                     for (_num in NUMBERS)         // wert mit Default belegen

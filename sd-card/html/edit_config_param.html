@@ -105,11 +105,6 @@
 			color:rgb(122, 122, 122);
 		}
 
-		#GPIO_LEDColor_value1 #GPIO_LEDColor_value2 #GPIO_LEDColor_value3 {
-			width: 30px;
-			font-size: 1em;
-		}
-
 		.invalid-input {
 			background-color: #FFAA00;
 		}
@@ -120,6 +115,11 @@
 		}
 
 		input:invalid {
+			background-color: rgba(255, 0, 0, 0.25);
+			border: 1px solid red;
+		}
+
+		select:invalid {
 			background-color: rgba(255, 0, 0, 0.25);
 			border: 1px solid red;
 		}
@@ -219,9 +219,9 @@
 		}
 
 		details {
-				text-align: justify;
-				font-size: 1em;
-				margin-right: 10px;
+			text-align: justify;
+			font-size: 1em;
+			margin-right: 10px;
 		}
 	</style>
 
@@ -318,13 +318,23 @@
 				<input type="checkbox" id="TakeImage_RawImagesRetention_enabled" value="1" 
 								onclick='InvertEnableItem("TakeImage", "RawImagesRetention")'  >
 				<label for=TakeImage_RawImagesRetention_enabled>
-						<span id="TakeImage_RawImagesRetention_text"">Raw Images Retention</span></label>
+						<span id="TakeImage_RawImagesRetention_text">Raw Images Retention</span></label>
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_RawImagesRetention_value1" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
 			<td>$TOOLTIP_TakeImage_RawImagesRetention</td>
+		</tr>
+
+		<tr>		
+			<td class="indent1">
+				<span id="TakeImage_FlashlightGPIOMapping">Flashlight GPIO Mapping</span>
+			</td>
+			<td>
+				<span id="TakeImage_FlashlightGPIOMapping_value"></span>
+			</td>
+			<td>$TOOLTIP_TakeImage_FlashlightGPIOMapping</td>
 		</tr>
 
 		<tr>		
@@ -428,7 +438,7 @@
 		
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_Sharpness_text">Sharpness</class>
+				<span id="TakeImage_Sharpness_text">Sharpness</span>
 			</td>
 			<td>
 				<select id="TakeImage_Sharpness_value1">
@@ -447,7 +457,7 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_ExposureControlMode_text">Exposure Control Mode</class>
+				<span id="TakeImage_ExposureControlMode_text">Exposure Control Mode</span>
 			</td>
 			<td>
 				<select id="TakeImage_ExposureControlMode_value1" 
@@ -463,7 +473,7 @@
 
 		<tr class="TakeImage_ExposureControlModeAuto_parameter">
 			<td class="indent1">
-				<class id="TakeImage_AutoExposureLevel_text">Auto Exposure Level</class>
+				<span id="TakeImage_AutoExposureLevel_text">Auto Exposure Level</span>
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_AutoExposureLevel_value1" value="0" min="-2" max="2"
@@ -474,7 +484,7 @@
 
 		<tr class="TakeImage_ExposureControlModeManual_parameter">
 			<td class="indent1">
-				<class id="TakeImage_ManualExposureValue_text">Manual Exposure Value</class>
+				<span id="TakeImage_ManualExposureValue_text">Manual Exposure Value</span>
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_ManualExposureValue_value1" value="300" min="0" max="1200"
@@ -485,7 +495,7 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_GainControlMode_text">Gain Control Mode</class>
+				<span id="TakeImage_GainControlMode_text">Gain Control Mode</span>
 			</td>
 			<td>
 				<select id="TakeImage_GainControlMode_value1" 
@@ -499,7 +509,7 @@
 
 		<tr class="TakeImage_GainControlModeManual_parameter">
 			<td class="indent1">
-				<class id="TakeImage_ManualGainValue_text">Manual Gain Value</class>
+				<span id="TakeImage_ManualGainValue_text">Manual Gain Value</span>
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_ManualGainValue_value1" value="0" min="0" max="5"
@@ -510,7 +520,7 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_SpecialEffect_text">Special Effect</class>
+				<span id="TakeImage_SpecialEffect_text">Special Effect</span>
 			</td>
 			<td>
 				<select id="TakeImage_SpecialEffect_value1">
@@ -525,7 +535,7 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_MirrorImage_text">Mirror Image</class>
+				<span id="TakeImage_MirrorImage_text">Mirror Image</span>
 			</td>
 			<td>
 				<select id="TakeImage_MirrorImage_value1">
@@ -538,7 +548,7 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_FlipImage_text">Flip Image</class>
+				<span id="TakeImage_FlipImage_text">Flip Image</span>
 			</td>
 			<td>
 				<select id="TakeImage_FlipImage_value1">
@@ -551,7 +561,7 @@
 
 		<tr>
 			<td class="indent1">
-				<class id="TakeImage_ZoomMode_text">Zoom Mode</class>
+				<span id="TakeImage_ZoomMode_text">Zoom Mode</span>
 			</td>
 			<td>
 				<select id="TakeImage_ZoomMode_value1" 
@@ -567,7 +577,7 @@
 		<tr class="TakeImage_Zoom_parameter">
 
 			<td class="indent1">
-				<class id="TakeImage_ZoomOffsetX_text">Zoom Offset X</class>
+				<span id="TakeImage_ZoomOffsetX_text">Zoom Offset X</span>
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_ZoomOffsetX_value1" value="0" min="0" max="960" 
@@ -579,7 +589,7 @@
 		<tr class="TakeImage_Zoom_parameter">
 
 			<td class="indent1">
-				<class id="TakeImage_ZoomOffsetY_text">Zoom Offset Y</class>
+				<span id="TakeImage_ZoomOffsetY_text">Zoom Offset Y</span>
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_ZoomOffsetY_value1" value="0" min="0" max="720" 
@@ -1469,375 +1479,123 @@
 			</th>
 		</tr>
 
-		<!-- GPIO0 begin -->
-		<tr class="GPIO_IO0 GPIO_item expert">
-			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO0_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO0")'>
-				<label for=GPIO_IO0_enabled><span id="GPIO_IO0_text">GPIO0 Configuration</span></label>
-			</td>
-			<td>
-					<select id="GPIO_IO0_value1">
-						<option value="input">input</option>
-						<option value="input-pullup">input pullup</option>
-						<option value="input-pulldown">input pulldown</option>
-						<option value="output">output</option>
-					</select>
-			</td>
-			<td>$TOOLTIP_GPIO_IO0</td>
-		</tr>
-
-		<tr class="GPIO_IO0 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO0 GPIO_item">GPIO0 Use Interrupt</span>
-			</td>
-			<td>
-					<select id="GPIO_IO0_value2">
-						<option value="disabled">disabled</option>
-						<option value="rising-edge">rising edge</option>
-						<option value="falling-edge">falling edge</option>
-						<option value="rising-and-falling">rising and falling</option>
-						<option value="low-level-trigger">low level trigger</option>
-						<option value="high-level-trigger">high level trigger</option>
-					</select>	
-				</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO0 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO0 GPIO_item">GPIO0 PWM Duty Cycle Resolution</span>
-			</td>
-			<td>
-				<input required type="number" id="GPIO_IO0_value3" min="1" max="20"
-					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=20)) && 
-						(!validity.stepMismatch||(value=parseInt(this.value)));"><span class="GPIO_IO0 GPIO_item">Bits</span>
-			</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO0 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO0 GPIO_item">GPIO0 Enable MQTT</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO0_value4" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO0 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO0 GPIO_item">GPIO0 Enable REST API</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO0_value5" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO0 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO0 GPIO_item">GPIO0 Name</span>
-			</td>
-			<td><input type="text" id="GPIO_IO0_value6" ></td>
-			<td></td>
-		</tr>
-		<!-- GPIO0 end -->
-
-		<!-- GPIO1 begin -->
-		<tr class="GPIO_IO1 GPIO_item expert">
-			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO1_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO1")'>
-				<label for=GPIO_IO1_enabled><span id="GPIO_IO1_text">GPIO1 Configuration</span></label>
-			</td>
-			<td>
-					<select id="GPIO_IO1_value1">
-						<option value="input">input</option>
-						<option value="input-pullup">input pullup</option>
-						<option value="input-pulldown">input pulldown</option>
-						<option value="output">output</option>
-					</select>
-			</td>
-			<td>$TOOLTIP_GPIO_IO1</td>
-		</tr>
-
-		<tr class="GPIO_IO1 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO1 GPIO_item expert">GPIO1 Use Interrupt</span>
-			</td>
-			<td>
-				<select id="GPIO_IO1_value2">
-					<option value="disabled">disabled</option>
-					<option value="rising-edge" disabled>rising edge</option>
-					<option value="falling-edge" disabled>falling edge</option>
-					<option value="rising-and-falling">rising and falling</option>
-					<option value="low-level-trigger">low level trigger</option>
-					<option value="high-level-trigger">high level trigger</option>
-				</select>
-			</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO1 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO1 GPIO_item">GPIO1 PWM Duty Cycle Resolution</span>
-			</td>
-			<td><input required type="number" id="GPIO_IO1_value3" min="1" max="20"
-					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=20)) && 
-						(!validity.stepMismatch||(value=parseInt(this.value)));"><span class="GPIO_IO1 GPIO_item">Bits</span>
-			</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO1 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO1 GPIO_item">GPIO1 Enable MQTT</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO1_value4" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO1 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO1 GPIO_item">GPIO1 Enable REST API</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO1_value5" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO1 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO1 GPIO_item expert">GPIO1 Name</span>
-			</td>
-			<td><input type="text" id="GPIO_IO1_value6" ></td>
-			<td></td>
-		</tr>
-		<!-- GPIO1 end -->
-
-		<!-- GPIO3 begin -->
-		<tr class="GPIO_IO3 GPIO_item expert">
-			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO3_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO3")'>
-				<label for=GPIO_IO3_enabled><span id="GPIO_IO3_text">GPIO3 Configuration</span></label>
-			</td>
-			<td>
-				<select id="GPIO_IO3_value1">
-					<option value="input">input</option>
-					<option value="input-pullup">input pullup</option>
-					<option value="input-pulldown">input pulldown</option>
-					<option value="output">output</option>
-				</select>
-			</td>
-			<td>$TOOLTIP_GPIO_IO3</td>
-		</tr>
-
-		<tr class="GPIO_IO3 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO3 GPIO_item">GPIO3 Use Interrupt</span>
-			</td>
-			<td>
-				<select id="GPIO_IO3_value2">
-					<option value="disabled">disabled</option>
-					<option value="rising-edge" disabled>rising edge</option>
-					<option value="falling-edge" disabled>falling edge</option>
-					<option value="rising-and-falling">rising and falling</option>
-					<option value="low-level-trigger">low level trigger</option>
-					<option value="high-level-trigger">high level trigger</option>
-				</select>
-			</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO3 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO3 GPIO_item">GPIO3 PWM Duty Cycle Resolution</span>
-			</td>
-			<td><input required type="number" id="GPIO_IO3_value3" min="1" max="20"
-					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=20)) && 
-						(!validity.stepMismatch||(value=parseInt(this.value)));"><span class="GPIO_IO3 GPIO_item">Bits</span>
-			</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO3 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO3 GPIO_item">GPIO3 Enable MQTT</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO3_value4" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO3 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO3 GPIO_item">GPIO3 Enable REST API</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO3_value5" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO3 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO3 GPIO_item">GPIO3 Name</span>
-			</td>
-			<td><input type="text" id="GPIO_IO3_value6" ></td>
-			<td></td>
-		</tr>
-		<!-- GPIO3 end -->
-
-		<!-- GPIO4 begin -->
-		<tr class="GPIO_item" style="border-bottom: 0px;">
-			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO4_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO4")' checked>
-				<label for=GPIO_IO4_enabled><span id="GPIO_IO4_text">GPIO4 Configuration</span></label>
-			</td>
-			<td>
-				<select id="GPIO_IO4_value1">
-					<option value="input">input</option>
-					<option value="input-pullup">input pullup</option>
-					<option value="input-pulldown">input pulldown</option>
-					<option value="output">output</option>
-					<option value="built-in-led" selected>built-in led flash light</option>
-				</select>
-			</td>
-			<td>$TOOLTIP_GPIO_IO4</td>
-		</tr>
-
-		<tr class="GPIO_item" style="border-top: 0px;">
-			<td colspan="3" style="padding-left:28px">
-				<b>IMPORTANT NOTE:</b><br>
-				If you'd like to use the built-in flash LED in parallel with other GPIO functionality,
-				you have to explicitely activate the "built-in LED flash light" option on GPIO4. The light 
-				intensity control (PWM) of the LED flash light is not functional anymore (only 100%).
-			</td>
-		</tr>
-
-		<tr class="GPIO_IO4 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO4 GPIO_item">GPIO4 Use Interrupt</span>
-			</td>
-			<td>
-				<select id="GPIO_IO4_value2">
-					<option value="disabled">disabled</option>
-					<option value="rising-edge">rising edge</option>
-					<option value="falling-edge">falling edge</option>
-					<option value="rising-and-falling">rising and falling</option>
-					<option value="low-level-trigger">low level trigger</option>
-					<option value="high-level-trigger">high level trigger</option>
-				</select>	
-			</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO4 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO4 GPIO_item">GPIO4 PWM Duty Cycle Resolution</span>
-			</td>
-			<td><input required type="number" id="GPIO_IO4_value3" min="1" max="20"
-					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=20)) && 
-						(!validity.stepMismatch||(value=parseInt(this.value)));"><span class="GPIO_IO4 GPIO_item">Bits</span>
-			</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO4 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO4 GPIO_item">GPIO4 Enable MQTT</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO4_value4" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO4 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO4 GPIO_item">GPIO4 Enable REST API</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO4_value5" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO4 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO4 GPIO_item">GPIO4 Name</span>
-			</td>
-			<td><input type="text" id="GPIO_IO4_value6" ></td>
-			<td></td>
-		</tr>
-		<!-- GPIO4 end -->
-
-		<!-- GPIO12 begin -->
 		<tr class="GPIO_item">
 			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO12_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO12")'>
-				<label for=GPIO_IO12_enabled><span id="GPIO_IO12_text">GPIO12 Configuration</span></label>
+				<span id="GPIO_PinSelect_text">GPIO Selection</span>
 			</td>
 			<td>
-				<select id="GPIO_IO12_value1">
-					<option value="input">input</option>
-					<option value="input-pullup">input pullup</option>
-					<option value="input-pulldown">input pulldown</option>
-					<option value="output">output</option>
-					<option value="external-flash-ws281x" selected>external flash light ws281x controlled</option>
+				<select id="GPIO_PinSelect_value1" onclick="GpioPinSelectBeforeChange()" onchange='GpioPinSelectAfterChange()'>
 				</select>
 			</td>
-			<td>$TOOLTIP_GPIO_IO12</td>
-		</tr>
-
-		<tr class="GPIO_IO12 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO12 GPIO_item">GPIO12 Use Interrupt</span>
-			</td>
-			<td>
-				<select class="GPIO_IO12 GPIO_item" id="GPIO_IO12_value2">
-					<option value="disabled">disabled</option>
-					<option value="rising-edge">rising edge</option>
-					<option value="falling-edge">falling edge</option>
-					<option value="rising-and-falling">rising and falling</option>
-					<option value="low-level-trigger">low level trigger</option>
-					<option value="high-level-trigger">high level trigger</option>
-				</select>	
-			</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO12 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO12 GPIO_item">GPIO12 PWM Duty Cycle Resolution</span>
-			</td>
-			<td><input required type="number" id="GPIO_IO12_value3" min="1" max="20"
-					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=20)) && 
-						(!validity.stepMismatch||(value=parseInt(this.value)));"><span class="GPIO_IO12 GPIO_item">Bits</span>
-			</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO12 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO12 GPIO_item">GPIO12 Enable MQTT</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO12_value4" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO12 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO12 GPIO_item">GPIO12 Enable REST API</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO12_value5" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO12 GPIO_item">GPIO12 Name</span>
-			</td>
-			<td><input type="text" id="GPIO_IO12_value6" ></td>
-			<td></td>
+			<td>$TOOLTIP_GPIO_GPIOSelection</td>
 		</tr>
 
 		<tr class="GPIO_item">
-			<td class="indent1">
-				<span class="GPIO_IO12 GPIO_item" id="GPIO_LEDType_text">LED Type (NeoPixel)</span>
+			<td class="indent2">
+				<span id="GPIO_EnablePin_text">GPIO Enabled</span>
 			</td>
-			<td class="GPIO_IO12 GPIO_item">
-				<select class="GPIO_IO12 GPIO_item" id="GPIO_LEDType_value1">
+			<td>
+				<select id="GPIO_EnablePin_value1" onchange='setEnabled("GPIO_EnablePin_parameter", this.value == "true" ? true : false);'>
+					<option value="true">true</option>
+					<option value="false" selected>false</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_GPIO_GPIOEnabled</td>
+		</tr>
+
+		<tr class="GPIO_item GPIO_EnablePin_parameter">
+			<td class="indent2">
+				<span id="GPIO_IO_text1">GPIO Mode</span>
+				<span id="GPIO_RestrictedUsageText" style="display:none; color:red;"></span>
+			</td>
+			<td>
+				<select class="GPIO_EnablePin_parameter" id="GPIO_IO_value1" 
+					onchange='GpioPinSelectBeforeChange(); GpioPinSelectAfterChange();'>
+				</select>
+			</td>
+			<td>$TOOLTIP_GPIO_GPIOMode</td>
+		</tr>
+
+		<tr class="GPIO_item GPIO_EnablePin_parameter GPIO_ShowGPIOCaptureMode">
+			<td class="indent2">
+				<span id="GPIO_IO_text2">GPIO Capture Mode</span>
+			</td>
+			<td>
+				<select class="GPIO_EnablePin_parameter" id="GPIO_IO_value2" 
+					onchange='GpioCaptureModeChange();'>
+				</select>
+			</td>
+			<td>$TOOLTIP_GPIO_GPIOCaptureMode</td>
+		</tr>
+
+		<tr class="GPIO_item GPIO_EnablePin_parameter GPIO_ShowGPIODebounceTime">
+			<td class="indent2">
+				<span id="GPIO_IO_text3">GPIO Debounce Time</span>
+			</td>
+			<td>
+				<input required type="number" id="GPIO_IO_value3" min="0" max="5000"
+					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5000));">
+					<span class="GPIO_item">ms</span>
+			</td>
+			<td>$TOOLTIP_GPIO_GPIODebounceTime</td>
+		</tr>
+
+		<tr class="GPIO_item GPIO_EnablePin_parameter GPIO_ShowPWMFrequency">
+			<td class="indent2">
+				<span id="GPIO_IO_text4">GPIO PWM Frequency</span>
+			</td>
+			<td>
+				<input style="min-width:90px" required type="number" id="GPIO_IO_value4" min="1" max="1000000"
+					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=1000000));">
+					<span class="GPIO_item">Hz</span>
+			</td>
+			<td>$TOOLTIP_GPIO_GPIOPwmFrequency</td>
+		</tr>
+
+		<tr class="GPIO_item GPIO_EnablePin_parameter">
+			<td class="indent2">
+				<span id="GPIO_IO_text5">GPIO Expose To MQTT</span>
+			</td>
+			<td>
+				<select class="GPIO_EnablePin_parameter" id="GPIO_IO_value5">
+					<option value="true">true</option>
+					<option value="false" selected>false</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_GPIO_GPIOExposeToMQTT</td>
+		</tr>
+
+		<tr class="GPIO_item GPIO_EnablePin_parameter">
+			<td class="indent2">
+				<span id="GPIO_IO_text6">GPIO Expose To REST</span>
+			</td>
+			<td>
+				<select class="GPIO_EnablePin_parameter" id="GPIO_IO_value6">
+					<option value="true">true</option>
+					<option value="false" selected>false</option>
+				</select>
+			</td>
+			<td>$TOOLTIP_GPIO_GPIOExposeToREST</td>
+		</tr>
+
+		<tr class="GPIO_item GPIO_EnablePin_parameter">
+			<td class="indent2">
+				<span id="GPIO_IO_text13">GPIO Name</span>
+			</td>
+			<td><input type="text" id="GPIO_IO_value13"></td>
+			<td>$TOOLTIP_GPIO_GPIOName</td>
+		</tr>
+
+		<tr class="GPIO_item GPIO_EnablePin_parameter GPIO_ShowSmartLed">
+			<td class="indent2">
+				<span id="GPIO_IO_text7">LED Type</span>
+			</td>
+			<td>
+				<select class="GPIO_EnablePin_parameter" id="GPIO_IO_value7">
 					<option value="WS2812" selected>WS2812</option>
-					<option value="WS2812B">WS2812B</option>
+					<option value="WS2812B">WS2812B (universal)</option>
+					<option value="WS2812B-NEW">WS2812B (newer variant)</option>
+					<option value="WS2812B-OLD">WS2812B (older variant)</option>
 					<option value="SK6812">SK6812</option>
 					<option value="WS2813">WS2813</option>
 				</select>
@@ -1845,104 +1603,45 @@
 			<td>$TOOLTIP_GPIO_LEDType</td>
 		</tr>
 
-		<tr class="GPIO_item">
-			<td class="indent1">
-				<span class="GPIO_item" id="GPIO_LEDNumbers_text">Numbers of LEDs</span>
+		<tr class="GPIO_item GPIO_EnablePin_parameter GPIO_ShowSmartLed">
+			<td class="indent2">
+				<span id="GPIO_IO_text8">LED Quantity</span>
 			</td>
 			<td>
-				<input required type="number" name="name" id="GPIO_LEDNumbers_value1"  min="1"
+				<input required type="number" id="GPIO_IO_value8"  min="1"
 					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
-			<td>$TOOLTIP_GPIO_LEDNumbers</td>
+			<td>$TOOLTIP_GPIO_LEDQuantity</td>
 		</tr>
 
-		<tr class="GPIO_item">
-			<td class="indent1">
-				<span class="GPIO_item" id="GPIO_LEDColor_text">LED Color</span>
+		<tr class="GPIO_item GPIO_EnablePin_parameter GPIO_ShowSmartLed">
+			<td class="indent2">
+				<span id="GPIO_IO_text9">LED Color</span>
 			</td>
-			<td class="GPIO_item">
-				R <input required style="min-width:45px;width:45px;" type="number" class="GPIO_item" id="GPIO_LEDColor_value1"
+			<td>
+				R <input required style="min-width:45px;width:45px;" type="number" id="GPIO_IO_value9"
 						 min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
-				G <input required style="min-width:45px;width:45px" type="number" class="GPIO_item" id="GPIO_LEDColor_value2"
+				G <input required style="min-width:45px;width:45px" type="number" id="GPIO_IO_value10"
 						 min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
-				B <input required style="min-width:45px;width:45px" type="number" class="GPIO_item" id="GPIO_LEDColor_value3"
+				B <input required style="min-width:45px;width:45px" type="number" id="GPIO_IO_value11"
 						 min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_GPIO_LEDColor</td>
 		</tr>
-		<!-- GPIO12 end -->
 
-		<!-- GPIO13 begin -->
-		<tr class="GPIO_IO13 GPIO_item expert">
-			<td class="indent1">
-				<input type="checkbox" id="GPIO_IO13_enabled" value="1" onclick='InvertEnableItem("GPIO", "IO13")'>
-				<label for=GPIO_IO13_enabled><span id="GPIO_IO13_text">GPIO13 Configuration</span></label>
+		<tr class="GPIO_item GPIO_EnablePin_parameter GPIO_ShowSmartLed GPIO_ShowIntersityCorrection">
+			<td class="indent2">
+				<span id="GPIO_IO_text12">LED Intensity Correction Factor</span>
 			</td>
 			<td>
-					<select id="GPIO_IO13_value1">
-						<option value="input">input</option>
-						<option value="input-pullup">input pullup</option>
-						<option value="input-pulldown">input pulldown</option>
-						<option value="output">output</option>
-					</select>
+				<input required type="number" id="GPIO_IO_value12" min="1" max="100" step="1"
+					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=100));"><span>%</span>
 			</td>
-			<td>$TOOLTIP_GPIO_IO13</td>
+			<td>$TOOLTIP_GPIO_LEDIntensityCorrection</td>
 		</tr>
-
-		<tr class="GPIO_IO13 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO13 GPIO_item">GPIO13 Use Interrupt</span>
-			</td>
-			<td>
-					<select id="GPIO_IO13_value2">
-						<option value="disabled">disabled</option>
-						<option value="rising-edge" disabled>rising edge</option>
-						<option value="falling-edge" disabled>falling edge</option>
-						<option value="rising-and-falling">rising and falling</option>
-						<option value="low-level-trigger">low level trigger</option>
-						<option value="high-level-trigger">high level trigger</option>
-					</select>	
-				</td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO13 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO13 GPIO_item">GPIO13 PWM Duty Cycle Resolution</span>
-			</td>
-			<td><input required type="number" id="GPIO_IO13_value3" min="1" max="20"
-					oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=20)) && 
-						(!validity.stepMismatch||(value=parseInt(this.value)));"><span class="GPIO_IO13 GPIO_item">Bits</span></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO13 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO13 GPIO_item">GPIO13 Enable MQTT</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO13_value4" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO13 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO13 GPIO_item">GPIO13 Enable REST API</span>
-			</td>
-			<td><input type="checkbox" id="GPIO_IO13_value5" ></td>
-			<td></td>
-		</tr>
-
-		<tr class="GPIO_IO13 GPIO_item expert">
-			<td class="indent2">
-				<span class="GPIO_IO13 GPIO_item">GPIO13 Name</span>
-			</td>
-			<td><input type="text" id="GPIO_IO13_value6" ></td>
-			<td></td>
-		</tr>
-		<!-- GPIO13 end -->
 	</table>
 
 	
@@ -2239,7 +1938,8 @@
 		param,
 		category,
 		NUNBERSAkt = -1,
-		NUMBERS;
+		NUMBERS,
+		GpioSelected = -1;
 
 
 	function InitIndivParameter()
@@ -2345,6 +2045,99 @@
 					element.value = NUMBERS[_number][_cat][_name]["value"+j];
 				}
 			}
+		}
+		else if (_cat == "GPIO") {
+			document.getElementById("GPIO_EnablePin_value1").value = _param[_cat][_name]["enabled"] ? "true" : "false";
+			setEnabled("GPIO_EnablePin_parameter", document.getElementById("GPIO_EnablePin_value1").value == "true" ? true : false);
+
+			for (var j = 1; j <= anzpara; ++j) {
+				let element = document.getElementById("GPIO_IO_value"+j);
+				if (element.tagName.toLowerCase() == "select") {
+					var textToFind = _param[_cat][_name]["value"+j];
+					if (textToFind == undefined)
+						continue;
+					
+					_isFound = false;
+					element.selectedIndex = -1;
+					for (var i = 0; i < element.options.length; i++) {
+						if (element.options[i].value.toLowerCase() === textToFind.toLowerCase()) {
+							element.selectedIndex = i;
+							_isFound = true;
+							break;
+						}
+					}
+
+					if (!_isFound) {
+						_zw_txt = "Section: " + _cat + ", Parameter: " + _name + ": Invalid parametrization. " +
+								  "Automatic preset with default values. Please verify parameter configuration.";
+						firework.launch(_zw_txt, 'warning', 10000);
+						ParamResetGpioValuesToDefault(param, _cat, _name);
+						GpioConfigCheck();
+						break;
+					}
+				}
+				else if (element.tagName.toLowerCase() == "input") {
+					element.value = _param[_cat][_name]["value"+j];
+
+					if (element.value == "")
+						element.placeholder = "gpioX";
+				}
+				else {
+					element.value = _param[_cat][_name]["value"+j];
+				}
+			}
+
+			if (_category[_cat]["enabled"] == true) {
+				let pwm = false;
+				let smartled = false;
+				for (let i = 0 ; i < pinConfig.gpio.length; ++i) {
+					if (pinConfig.gpio[i].usage == "flashlight-pwm")
+						pwm = true;
+					if (pinConfig.gpio[i].usage == "flashlight-smartled")
+						smartled = true;
+				}
+
+				if ((pwm && _param[_cat][_name]["value1"] == "flashlight-default") || 
+					_param[_cat][_name]["value1"] == "flashlight-pwm" ||
+					_param[_cat][_name]["value1"] == "output-pwm"
+				)
+					setVisible("GPIO_ShowPWMFrequency", true);
+				else
+					setVisible("GPIO_ShowPWMFrequency", false);
+	
+				if (_param[_cat][_name]["value1"] == "input" ||
+					_param[_cat][_name]["value1"] == "input-pullup" ||
+					_param[_cat][_name]["value1"] == "input-pulldown") 
+				{
+					setVisible("GPIO_ShowGPIOCaptureMode", true);
+
+					if (_param[_cat][_name]["value2"] != "cyclic-polling")
+						setVisible("GPIO_ShowGPIODebounceTime", true);
+					else
+						setVisible("GPIO_ShowGPIODebounceTime", false);
+				}
+				else {
+					setVisible("GPIO_ShowGPIOCaptureMode", false);
+					setVisible("GPIO_ShowGPIODebounceTime", false);
+				}
+
+				if (_param[_cat][_name]["value1"] == "flashlight-smartled" ||
+					(smartled && _param[_cat][_name]["value1"]["value1"] == "flashlight-default")
+				)
+					setVisible("GPIO_ShowSmartLed", true);
+				else
+					setVisible("GPIO_ShowSmartLed", false);
+
+				
+				if (_param[_cat][_name]["value1"].substring(0,10) == "flashlight" && 
+					_param[_cat][_name]["value1"] != "flashlight-digital"
+				)
+					setVisible("GPIO_ShowIntersityCorrection", true);
+				else
+					setVisible("GPIO_ShowIntersityCorrection", false);
+			}
+
+			return;
 		}
 		else {
 			if (_optional) {
@@ -2562,6 +2355,29 @@
 				}
 			}
 		}
+		else if (_cat == "GPIO") {
+			_param[_cat][_name]["enabled"] = document.getElementById("GPIO_EnablePin_value1").value == "true" ? true : false;			
+
+			for (var j = 1; j <= _param[_cat][_name]["anzParam"]; ++j) {
+				let element = document.getElementById("GPIO_IO_value"+j);
+				if (element.tagName.toLowerCase() == "select") {
+					_param[_cat][_name]["value"+j] = element.selectedIndex > -1 ? element.options[element.selectedIndex].value : "";
+				}
+				else if ((element.getAttribute("type") != null) && (element.getAttribute("type").toLowerCase() == "checkbox")) {
+					_param[_cat][_name]["value"+j] = element.checked;
+				}
+				else {
+					if ((_param[_cat][_name].checkRegExList != null) && (_param[_cat][_name].checkRegExList[j-1] != null)) {
+						if (!element.value.match(_param[_cat][_name].checkRegExList[j-1])) {
+							element.classList.add("invalid-input");
+						} else {
+							element.classList.remove("invalid-input");
+						}
+					}
+					_param[_cat][_name]["value"+j] = element.value;
+				}
+			}
+		}
 		else
 		{	
 			if (_optional) {	// If checkbox is avaiable -> set by selection
@@ -2640,14 +2456,14 @@
 		document.getElementById("Category_MQTT_enabled").checked = category["MQTT"]["enabled"];
 		setVisible("MQTTItem", category["MQTT"]["enabled"]);
 
-		document.getElementById("Category_GPIO_enabled").checked = category["GPIO"]["enabled"];
-		setVisible("GPIO_item", category["GPIO"]["enabled"]);
-
 		document.getElementById("Category_InfluxDB_enabled").checked = category["InfluxDB"]["enabled"];
 		setVisible("InfluxDBv1Item", category["InfluxDB"]["enabled"]);
 
 		document.getElementById("Category_InfluxDBv2_enabled").checked = category["InfluxDBv2"]["enabled"];
 		setVisible("InfluxDBv2Item", category["InfluxDBv2"]["enabled"]);
+
+		document.getElementById("Category_GPIO_enabled").checked = category["GPIO"]["enabled"];
+		setVisible("GPIO_item", category["GPIO"]["enabled"]);
 
 		WriteParameter(param, category, "TakeImage", "RawImagesLocation", true);
 		WriteParameter(param, category, "TakeImage", "RawImagesRetention", true);
@@ -2725,17 +2541,9 @@
 		WriteParameter(param, category, "InfluxDBv2", "TLSEncryption", false);
 		WriteParameter(param, category, "InfluxDBv2", "TLSCACert", false);
 		WriteParameter(param, category, "InfluxDBv2", "TLSClientCert", false);
-		WriteParameter(param, category, "InfluxDBv2", "TLSClientKey", false);	
+		WriteParameter(param, category, "InfluxDBv2", "TLSClientKey", false);
 
-		WriteParameter(param, category, "GPIO", "IO0", true);
-		WriteParameter(param, category, "GPIO", "IO1", true);
-		WriteParameter(param, category, "GPIO", "IO3", true);
-		WriteParameter(param, category, "GPIO", "IO4", true);
-		WriteParameter(param, category, "GPIO", "IO12", true);
-		WriteParameter(param, category, "GPIO", "IO13", true);
-		WriteParameter(param, category, "GPIO", "LEDType", false);
-		WriteParameter(param, category, "GPIO", "LEDNumbers", false);
-		WriteParameter(param, category, "GPIO", "LEDColor", false);
+		// GPIO values are getting updated by GpioPinSelectAfterChange()
 
 		WriteParameter(param, category, "AutoTimer", "AutoStart", false);	
 		WriteParameter(param, category, "AutoTimer", "Interval", false);
@@ -2767,6 +2575,7 @@
 		setEnabled("TakeImage_Zoom_parameter", document.getElementById("TakeImage_ZoomMode_value1").value > 0 ? true : false);
 		setEnabled("MQTT_TLSEncryption_parameter", document.getElementById("MQTT_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("MQTT_HomeassistantDiscovery_parameter", document.getElementById("MQTT_HomeassistantDiscovery_value1").value == "true" ? true : false);
+		setEnabled("GPIO_EnablePin_parameter", document.getElementById("GPIO_EnablePin_value1").value == "true" ? true : false);
 		setEnabled("InfluxDB_TLSEncryption_parameter", document.getElementById("InfluxDB_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("InfluxDBv2_TLSEncryption_parameter", document.getElementById("InfluxDBv2_TLSEncryption_value1").value == "true" ? true : false);
 		setEnabled("WebUI_OverviewAutoRefresh_parameter", document.getElementById("WebUI_OverviewAutoRefresh_value1").value == "true" ? true : false);
@@ -2901,22 +2710,7 @@
 		ReadParameter(param, "InfluxDBv2", "TLSClientCert", false);
 		ReadParameter(param, "InfluxDBv2", "TLSClientKey", false);
 
-		ReadParameter(param, "GPIO", "IO0", true);
-		ReadParameter(param, "GPIO", "IO1", true);
-		ReadParameter(param, "GPIO", "IO3", true);
-		ReadParameter(param, "GPIO", "IO4", true);
-		ReadParameter(param, "GPIO", "IO12", true);
-		ReadParameter(param, "GPIO", "IO13", true);
-		ReadParameter(param, "GPIO", "LEDType", false);
-		ReadParameter(param, "GPIO", "LEDNumbers", false);
-		ReadParameter(param, "GPIO", "LEDColor", false);
-		// Folgende Zeilen sind für Abwärtskompatibität < v9.0.0 notwendig (manchmal parameter auskommentiert)
-		param["GPIO"]["LEDType"]["enabled"] = true;
-		param["GPIO"]["LEDNumbers"]["enabled"] = true;
-		param["GPIO"]["LEDColor"]["enabled"] = true;
-		param["GPIO"]["LEDType"]["found"] = true;
-		param["GPIO"]["LEDNumbers"]["found"] = true;
-		param["GPIO"]["LEDColor"]["found"] = true;
+		ReadParameter(param, "GPIO", "IO" + GpioSelected, false); // Update last selected pin before saving
 
 		ReadParameter(param, "AutoTimer", "AutoStart", false);
 		ReadParameter(param, "AutoTimer", "Interval", false);
@@ -2963,8 +2757,12 @@
 		category["GPIO"]["enabled"] = document.getElementById("Category_GPIO_enabled").checked;
 
 		UpdateInput();
+
 		var sel = document.getElementById("Numbers_value1");
 		UpdateInputIndividual(sel);
+
+		sel = document.getElementById("GPIO_PinSelect_value1");
+		updateInputGpio(sel);
 	}
 
 
@@ -2985,22 +2783,14 @@
 			document.getElementById("Edit_Config_Direct").style.display = "none"; 
 		}
 
+		getGPIOPins();
+		GpioPinSelectAfterChange();
+
 		const expert = document.querySelectorAll(".expert");
 		for (var i = 0; i < expert.length; i++) {
 			expert[i].style.display = _style_pur;
-	//		document.getElementById(expert[i].id).style = _style;
+			//document.getElementById(expert[i].id).style = _style;
 		}
-
-		// Enable / Disable die Optionen in den Menues für die Auswahl. Falls kein Expertenmodus soll nur ein Wert (built-in-led oder externan-flash-ws281x) möglich sein
-		Array.from(document.querySelector("#GPIO_IO4_value1").options).forEach(function(option_element) {
-			if (option_element.value != "built-in-led")
-				option_element.hidden = _hidden;
-		});	
-
-		Array.from(document.querySelector("#GPIO_IO12_value1").options).forEach(function(option_element) {
-			if (option_element.value != "external-flash-ws281x")
-				option_element.hidden = _hidden;
-		});
 	}
 
 
@@ -3060,6 +2850,162 @@
 	}
 
 
+	function updateInputGpio(sel)
+	{
+		if (GpioSelected != -1)
+			ReadParameter(param, "GPIO", "IO" + sel.value, false);
+
+		GpioSelected = sel.value;
+		WriteParameter(param, category, "GPIO", "IO" + sel.value, false);
+	}
+
+
+	function GpioPinSelectBeforeChange()
+	{
+		let sel = document.getElementById("GPIO_PinSelect_value1");
+		ReadParameter(param, "GPIO", "IO" + sel.value, false);
+	}
+
+
+	function GpioPinSelectAfterChange()
+	{
+		let sel = document.getElementById("GPIO_PinSelect_value1");
+		GpioSelected = sel.value;
+		getGPIOPinMode(GpioSelected);
+		updateGPIOExpertView(GpioSelected);
+		WriteParameter(param, category, "GPIO", "IO" + GpioSelected, false);
+	}
+
+
+	function updateGPIOExpertView(selected_pin)
+	{
+		let elements = document.getElementsByClassName("GPIO_item");
+		for (var i = 0; i < pinConfig.gpio.length; ++i) {
+			if (pinConfig.gpio[i].name == selected_pin) {
+				for (j = 0; j < elements.length; ++j) {
+					if (pinConfig.gpio[i].usage.substring(0,10) == "restricted") {
+						elements[j].classList.add("expert");
+						document.getElementById("GPIO_RestrictedUsageText").style.display = "";
+						document.getElementById("GPIO_RestrictedUsageText").innerText = "[Default: " + 
+											pinConfig.gpio[i].usage.substring(12).replace(/\-/g, " ") + "]";
+					}
+					else {
+						elements[j].classList.remove("expert");
+						document.getElementById("GPIO_RestrictedUsageText").style.display = "none";
+					}
+				}
+				break;	// If selected pin is found, stop further searching
+			}
+		}
+	}
+
+
+	function GpioCaptureModeChange()
+	{
+		if (document.getElementById("GPIO_IO_value1").value == "input" ||
+			document.getElementById("GPIO_IO_value1").value == "input-pullup" ||
+			document.getElementById("GPIO_IO_value1").value == "input-pulldown") 
+		{
+			if (document.getElementById("GPIO_IO_value2").value != "cyclic-polling")
+				setVisible("GPIO_ShowGPIODebounceTime", true);
+			else
+				setVisible("GPIO_ShowGPIODebounceTime", false);
+		}
+	}
+
+
+	function getGPIOPins()
+	{
+		let _indexGpio = document.getElementById("GPIO_PinSelect_value1");
+		while (_indexGpio.length)
+		_indexGpio.remove(0);
+
+		for (let i = 0; i < pinConfig.gpio.length; ++i) {
+			if (pinConfig.gpio[i].usage.substring(0,10) !== "restricted" || document.getElementById("ExpertModus_enabled").checked) {
+				let option = document.createElement("option");
+				option.text = "GPIO" + pinConfig.gpio[i].name;
+				option.value = pinConfig.gpio[i].name;
+				_indexGpio.add(option);
+			}
+		}
+		_indexGpio.selectedIndex = 0;
+	}
+
+
+	function getGPIOPinMode(selected_pin)
+	{
+		let _indexGpioMode = document.getElementById("GPIO_IO_value1");
+		while (_indexGpioMode.length)
+		_indexGpioMode.remove(0);
+
+		// Check all pins to find selected pin
+		for (var i = 0; i < pinConfig.gpio.length; ++i) {
+			if (pinConfig.gpio[i].name == selected_pin) {
+				if (pinConfig.gpio[i].usage.substring(0,10) == "flashlight") { // Special case: Default flashlight GPIO
+					// Add mode flashlight-default
+					let option = document.createElement("option");
+					option.text = "flashlight default";
+					option.value = "flashlight-default";
+					_indexGpioMode.add(option);
+
+					// Add all modes exluding option which is mapped to flashlight-default (depending on defined GPIO usage)
+					for (let pinMode = 0; pinMode < pinConfig.default_config.gpio_modes.length; ++pinMode) {
+						if (pinConfig.gpio[i].usage != pinConfig.default_config.gpio_modes[pinMode]) {
+							let option = document.createElement("option");
+							option.text = pinConfig.default_config.gpio_modes[pinMode].replace(/\-/g, " ");
+							option.value = pinConfig.default_config.gpio_modes[pinMode];
+							_indexGpioMode.add(option);
+						}
+					}
+
+					if (category["GPIO"]["enabled"] == false)
+						document.getElementById("TakeImage_FlashlightGPIOMapping_value").innerText = 
+								"Default [GPIO" + pinConfig.gpio[i].name + "]";
+					else
+						document.getElementById("TakeImage_FlashlightGPIOMapping_value").innerText = "Customized [GPIO Section]";
+				}
+				else {
+					// Add all modes without option which is mapped to flashlight-default
+					for (let pinMode = 0; pinMode < pinConfig.default_config.gpio_modes.length; ++pinMode) {
+						let option = document.createElement("option");
+						option.text = pinConfig.default_config.gpio_modes[pinMode].replace(/\-/g, " ");
+						option.value = pinConfig.default_config.gpio_modes[pinMode];
+						_indexGpioMode.add(option);
+					}
+				}
+				break;
+			}
+		}
+
+		getGPIOPinInterrupt(selected_pin)
+	}
+
+
+	function getGPIOPinInterrupt(selected_pin)
+	{
+		let _indexGpioIntr = document.getElementById("GPIO_IO_value2");
+		while (_indexGpioIntr.length)
+		_indexGpioIntr.remove(0);
+
+		// Add all interrupt modes which are listed as defaults
+		for (let i = 0; i < pinConfig.default_config.gpio_interrupt.length; ++i) {
+			let option = document.createElement("option");
+			option.text = pinConfig.default_config.gpio_interrupt[i].replace(/\-/g, " ");
+			option.value = pinConfig.default_config.gpio_interrupt[i];
+			_indexGpioIntr.add(option);
+		}
+	}
+
+	
+	function GpioConfigCheck()
+	{
+		for (let i = 0; i < pinConfig.gpio.length; ++i) {
+			getGPIOPinMode(pinConfig.gpio[i].name);
+			WriteParameter(param, category, "GPIO", "IO" + pinConfig.gpio[i].name, false);
+		}
+	}
+
+
 	/* hash #description open the details part of the page */
 	function openDescription() 
 	{
@@ -3080,6 +3026,7 @@
 
 		UpdateInput();
 		UpdateInputIndividual();
+		GpioConfigCheck();
 		UpdateExpertModus();
 
 		document.getElementById("divloading").style.display = 'none'; // Hide loading indicator

@@ -183,7 +183,9 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         }  
     }
 
-    Camera.ledc_init(); // PWM init needs to be done here due to parameter reload (camera class not to be deleted completely)
+    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+    Camera.ledcInitFlashlightDefault(); // PWM init needs to be done here due to parameter reload (camera class not to be deleted completely)
+    #endif
     Camera.setFlashIntensity(flashIntensity);
     Camera.setFlashTime(flashTime);
     Camera.setCameraFrequency(cameraFrequency);

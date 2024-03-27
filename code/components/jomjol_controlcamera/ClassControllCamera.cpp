@@ -75,40 +75,56 @@ static camera_config_t camera_config = {
 };
 
 
-void CCamera::ledc_init(void)
+#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+void CCamera::ledcInitFlashlightDefault(void)
 {
-    // Prepare and then apply the LEDC PWM timer configuration
+    // Prepare GPIO for flashlight default
+    gpio_config_t conf = { };
+    conf.pin_bit_mask = 1LL << GPIO_FLASHLIGHT_DEFAULT;
+    conf.mode = GPIO_MODE_OUTPUT;
+    gpio_config(&conf);
+    
+    // Prepare LEDC PWM timer configuration
     ledc_timer_config_t ledc_timer = { };
 
-    ledc_timer.speed_mode       = LEDC_MODE;
-    ledc_timer.timer_num        = LEDC_TIMER;
-    ledc_timer.duty_resolution  = LEDC_DUTY_RES;
-    ledc_timer.freq_hz          = LEDC_FREQUENCY;   // Set output frequency at 5 kHz
-    ledc_timer.clk_cfg          = LEDC_AUTO_CLK;
+    ledc_timer.speed_mode       = LEDC_LOW_SPEED_MODE;
+    ledc_timer.timer_num        = FLASHLIGHT_DEFAULT_LEDC_TIMER; // Use TIMER 1 (TIMER0: camera)
+    ledc_timer.duty_resolution  = FLASHLIGHT_DEFAULT_DUTY_RESOLUTION; // 13 bit
+    ledc_timer.freq_hz          = FLASHLIGHT_DEFAULT_FREQUENCY; // Use output frequency at 5 kHz
+    ledc_timer.clk_cfg          = LEDC_USE_APB_CLK;
 
-    ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+    esp_err_t retVal = ledc_timer_config(&ledc_timer);
 
-    // Prepare and then apply the LEDC PWM channel configuration
+    if (retVal != ESP_OK)
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to init LEDC timer " + 
+                    std::to_string((int)FLASHLIGHT_DEFAULT_LEDC_TIMER) + ", Error: " +intToHexString(retVal));
+
+    // Prepare LEDC PWM channel configuration
     ledc_channel_config_t ledc_channel = { };
 
-    ledc_channel.speed_mode     = LEDC_MODE;
-    ledc_channel.channel        = LEDC_CHANNEL;
-    ledc_channel.timer_sel      = LEDC_TIMER;
+    ledc_channel.speed_mode     = LEDC_LOW_SPEED_MODE;
+    ledc_channel.channel        = FLASHLIGHT_DEFAULT_LEDC_CHANNEL; // CH0: Camera, CH2 - CH7: GPIO
+    ledc_channel.timer_sel      = FLASHLIGHT_DEFAULT_LEDC_TIMER; // Use TIMER 1 (TIMER0: camera)
     ledc_channel.intr_type      = LEDC_INTR_DISABLE;
-    ledc_channel.gpio_num       = LEDC_OUTPUT_IO;
+    ledc_channel.gpio_num       = GPIO_FLASHLIGHT_DEFAULT; // Use default flashlight GPIO pin
     ledc_channel.duty           = 0; // Set duty to 0%
     ledc_channel.hpoint         = 0;
 
-    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
+    retVal = ledc_channel_config(&ledc_channel);
+
+    if (retVal != ESP_OK)
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to init LEDC channel " + 
+                    std::to_string((int)FLASHLIGHT_DEFAULT_LEDC_CHANNEL) + ", Error: " +intToHexString(retVal));
 }
+#endif
 
 
 CCamera::CCamera()
 {
     cameraInitSuccessful = false;
 
-    camParameter.flashTime = 2000; // flashTime in ms
-    camParameter.flashIntensity = 4095;
+    camParameter.flashTime = 2000; // Flash time in ms
+    camParameter.flashIntensity = 0; // Flash intensity [0 .. 100%]
 
     camParameter.actualResolution = FRAMESIZE_VGA;
     camParameter.actualQuality = 12;
@@ -129,8 +145,8 @@ CCamera::CCamera()
 
     demoMode = false;
 
-    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
-        ledc_init();   
+    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+    ledcInitFlashlightDefault();
     #endif
 }
 
@@ -584,18 +600,14 @@ bool CCamera::setMirrorFlip(bool _mirror, bool _flip)
 
 void CCamera::setFlashIntensity(int _flashIntensity)
 {
-    _flashIntensity = std::min(_flashIntensity, 100);
-    _flashIntensity = std::max(_flashIntensity, 0);
-    camParameter.flashIntensity = ((_flashIntensity * LEDC_RESOLUTION) / 100);
-    ESP_LOGD(TAG, "Set flashIntensity to %d of %d", camParameter.flashIntensity, LEDC_RESOLUTION); // @TODO: LOGD
+    camParameter.flashIntensity = std::min(std::max(0, _flashIntensity), 100);
 }
 
 
 /* Set flash time in milliseconds */
 void CCamera::setFlashTime(int _flashTime)
 {
-    camParameter.flashTime = std::max(_flashTime, 0);
-    ESP_LOGD(TAG, "Set flashTime to %d", camParameter.flashTime); // @TODO: LOGD
+    camParameter.flashTime = std::max(0, _flashTime);
 }
 
 
@@ -905,35 +917,43 @@ esp_err_t CCamera::captureToStream(httpd_req_t *_req, bool _flashlightOn)
 void CCamera::setFlashlight(bool _status)
 {
     GpioHandler* gpioHandler = gpio_handler_get();
-    if ((gpioHandler != NULL) && (gpioHandler->isEnabled())) {
-        ESP_LOGD(TAG, "GPIO handler enabled: Trigger flashlight by GPIO handler");
-        gpioHandler->flashLightEnable(_status);
+    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
+    if (gpioHandler != NULL) {
+        gpioHandler->gpioFlashlightControl(_status, camParameter.flashIntensity);
+    }
+    #else
+    if (gpioHandler != NULL && gpioHandler->gpioHandlerIsEnabled()) {
+        gpioHandler->gpioFlashlightControl(_status, camParameter.flashIntensity);
     }
     else {
-    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_LEDC
-        if (_status) {
-            ESP_LOGD(TAG, "Default flashlight turn on with PWM %d", camParameter.flashIntensity);
-            ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, camParameter.flashIntensity));
-            // Update duty to apply the new value
-            ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
-        }
-        else {
-            ESP_LOGD(TAG, "Default flashlight turn off PWM");
-            ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, 0));
-            ESP_ERROR_CHECK(ledc_update_duty(LEDC_MODE, LEDC_CHANNEL));
-        }
-    #else
-        // Init the GPIO
-        esp_rom_gpio_pad_select_gpio(FLASH_GPIO);
-        // Set the GPIO as a push/pull output 
-        gpio_set_direction(GPIO_FLASHLIGHT_DEFAULT, GPIO_MODE_OUTPUT);  
+        #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+            if (_status) {
+                int intensityValue = (camParameter.flashIntensity * FLASHLIGHT_DEFAULT_RESOLUTION_RANGE) / 100;
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Default flashlight PWM: GPIO" + 
+                                    std::to_string((int)GPIO_FLASHLIGHT_DEFAULT) + ", State: 1, Intensity: " + 
+                                    std::to_string(intensityValue) + "/" +  std::to_string(FLASHLIGHT_DEFAULT_RESOLUTION_RANGE));
+                
+                ledc_set_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL, intensityValue);
+                ledc_update_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL); // Update duty to apply the new value
+            }
+            else {
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Default flashlight PWM: GPIO" + 
+                                    std::to_string((int)GPIO_FLASHLIGHT_DEFAULT) + ", State: 0");
+                
+                ledc_set_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL, 0);
+                ledc_update_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL);
+            }
+        #else
+            esp_rom_gpio_pad_select_gpio(GPIO_FLASHLIGHT_DEFAULT); // Init the GPIO
+            gpio_set_direction(GPIO_FLASHLIGHT_DEFAULT, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output 
 
-        if (_status)  
-            gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 1);
-        else
-            gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 0);
-    #endif
+            if (_status)  
+                gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 1);
+            else
+                gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 0);
+        #endif
     }
+    #endif
 }
 
 
