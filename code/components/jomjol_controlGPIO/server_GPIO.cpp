@@ -300,8 +300,8 @@ int GpioHandler::readConfig()
             }
 
             int frequency = std::stoi(splitted[4].c_str());
-            if (frequency < 1 || frequency > 1000000) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "readConfig: Frequency out of range (1Hz .. 1MHz)");
+            if (frequency < 5 || frequency > 1000000) {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "readConfig: Frequency out of range (5Hz .. 1MHz)");
                 return -1;
             }
 
