@@ -386,6 +386,23 @@ function ParseConfigReduced() {
      param = new Object();
      category = new Object();
 
+     param = new Object();
+     category = new Object(); 
+
+     var catname = "TakeImage";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "ImageSize", true, "VGA");
+
+     var catname = "Alignment";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
+
      var catname = "MQTT";
      category[catname] = new Object(); 
      category[catname]["enabled"] = false;
@@ -535,18 +552,19 @@ function ParamAddGpioWithPreset(param, _cat, _checkRegExList = null)
 /* Add a model parameter (no parameter which is used in a number sequence) and set to default value */
 function ParamResetGpioValuesToDefault(param, _cat, _name)
 {
-     param[_cat][_name]["value1"] = "input-pulldown";
+     param[_cat][_name]["value1"] = "input-pullup";
      param[_cat][_name]["value2"] = "cyclic-polling";
-     param[_cat][_name]["value3"] = "10";
-     param[_cat][_name]["value4"] = "false";
+     param[_cat][_name]["value3"] = "200";
+     param[_cat][_name]["value4"] = "5000";
      param[_cat][_name]["value5"] = "false";
-     param[_cat][_name]["value6"] = "WS2812";
-     param[_cat][_name]["value7"] = "1";
-     param[_cat][_name]["value8"] = "255";
+     param[_cat][_name]["value6"] = "false";
+     param[_cat][_name]["value7"] = "WS2812";
+     param[_cat][_name]["value8"] = "1";
      param[_cat][_name]["value9"] = "255";
      param[_cat][_name]["value10"] = "255";
-     param[_cat][_name]["value11"] = "100";
-     param[_cat][_name]["value12"] = "";
+     param[_cat][_name]["value11"] = "255";
+     param[_cat][_name]["value12"] = "100";
+     param[_cat][_name]["value13"] = "";
 }
 
 

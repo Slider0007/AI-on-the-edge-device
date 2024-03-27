@@ -257,8 +257,8 @@ int GpioHandler::readConfig()
         // Special case: Flashlight default uses SmartLED functionality -> init smartLED functionality only
         for (int i= 0; i < GPIO_SPARE_PIN_COUNT; ++i) {
             if (strcmp(gpio_spare_usage[i], FLASHLIGHT_SMARTLED) == 0) {
-                GpioPin* gpioPin = new GpioPin((gpio_num_t)gpio_spare[i], "gpio" + std::string(gpio_spare[i]).c_str(), 
-                                        GPIO_PIN_MODE_FLASHLIGHT_SMARTLED, GPIO_INTR_DISABLE, 10, false, false, "", 
+                GpioPin* gpioPin = new GpioPin((gpio_num_t)gpio_spare[i], ("gpio" + std::to_string((int)gpio_spare[i])).c_str(), 
+                                        GPIO_PIN_MODE_FLASHLIGHT_SMARTLED, GPIO_INTR_DISABLE, 200, 5000, false, false, "", 
                                         GPIO_FLASHLIGHT_DEFAULT_SMARTLED_TYPE, GPIO_FLASHLIGHT_DEFAULT_SMARTLED_QUANTITY, 
                                         Rgb{255,255,255}, 100);
                 (*gpioMap)[(gpio_num_t)gpio_spare[i]] = gpioPin;
@@ -696,8 +696,6 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     if (httpd_req_get_url_query_str(req, query, 200) == ESP_OK) {
-        ESP_LOGI(TAG, "Query: %s", query);
-
         if (httpd_query_key_value(query, "task", value, sizeof(value)) == ESP_OK) {
             task = std::string(value);
         }

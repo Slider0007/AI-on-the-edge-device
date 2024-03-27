@@ -687,7 +687,9 @@ void migrateConfiguration(void)
         }
 
         if (section == "[GPIO]") {
-
+            migrated = migrated | replaceString(configLines[i], "LEDType", "#UNUSED"); // Invalidate LEDType
+            migrated = migrated | replaceString(configLines[i], "LEDNumbers", "#UNUSED"); // Invalidate LEDNumbers
+            migrated = migrated | replaceString(configLines[i], "LEDColor", "#UNUSED"); // Invalidate LEDColor
         }
 
         if (section == "[DataLogging]") {

@@ -364,7 +364,7 @@ CONFIG_WPA_11R_SUPPORT=n
     //-------------------------------------------------
     // Options for usage defintion: 
     // - 'spare': Free to use
-    // - 'restricted': Restricted usable (WebUI expert view)
+    // - 'restricted: usage': Restricted usable (WebUI expert view)
     // - 'flashlight-pwm' or 'flashlight-smartled' or 'flashlight-digital' (ON/OFF) -> Map to 'flashlight-default'
     // --> ESP32CAM: flashlight-default -> flashlight-pwm (Onboard LED, PWM controlled)
     //-------------------------------------------------
