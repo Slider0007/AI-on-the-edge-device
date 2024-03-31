@@ -33,11 +33,11 @@ The following data are available:
 | `rate_per_minute`.`sequence`         | Rate per minute per sequence<br>(Delta between actual and last valid processed value (Fallback Value) + additionally normalized to a minute)<br><br>Notes:<br>- Tab separated listing<br>- Output of multiple sequences possible | `main`:`0.0000`
 | `rate_per_interval`.`inline`       | Rate per interval<br>(Delta between actual and last valid processed value (Fallback Value))<br><br>Notes:<br>- Tab separated listing<br>- Output of multiple sequences possible | `main\t0.0000`
 | `rate_per_interval`.`sequence`     | Rate per interval per serquence<br>(Delta between actual and last valid processed value (Fallback Value))<br><br>Notes:<br>- Output of multiple sequences possible | `main`:`0.0000`
-| `process_status`                     | Process Status<br><br>Possible states:<br>- `Processing (Automatic)`<br>- `Processing (Triggered Only)`<br>- `Not Processing / Not Ready` | `Processing (Automatic)`
+| `process_status`                     | Process Status<br><br>Possible States:<br>- `Processing (Automatic)`:  Timer-controlled automatic processing<br>- `Processing (Triggered Only)`: Manual triggered processing only<br>- `Not Processing / Not Ready`: Initializing / Initialization failed | `Processing (Automatic)`
 | `process_interval`                   | Process Interval [min]                              | `2.0`
 | `process_time`                       | Process Time [sec]                                  | `25`
 | `process_state`                      | Process State                                       | `[11:01:42] Idle - Waiting for Autostart`
-| `process_error`                      | Process Error State<br><br>Possible states:<br>- `0`: No error<br>- `-1`: Single process error<br>- `-2`: Three process errors in a row | `0`
+| `process_error`                      | Process Error State<br>- Error definition: Process error with cycle abortion, e.g. alignment failed<br>- Deviation definition: Process deviation with cycle continuation, e.g. rate limit exceeded<br><br>Possible States:<br>- `0`: No error/deviation<br>- `-1`: One error occured<br>- `-2`: Multiple process errors in a row<br>- `1`: One process deviation occured<br>- `2`: Multiple process deviations in a row | `0`
 | `device_uptime`                      | Device Uptime [sec]                                 | `496`
 | `cycle_counter`                      | Number of processed cycles                          | `64`
 | `wlan_rssi`                          | WLAN Signal Strength [dBm]                          | `-58`

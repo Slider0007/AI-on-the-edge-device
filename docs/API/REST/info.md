@@ -16,9 +16,9 @@ The following infos are available:
 | JSON Property / HTML query `type=`   | Description                                        | Output
 |:-------------------------------------|:---------------------------------------------------|:-----------------------
 | `api_name`                           | Name of the API                                    | `info:v2`
-| `process_status`                     | Process Status<br><br>Possible states:<br>- `Processing (Automatic)`<br>- `Processing (Triggered Only)`<br>- `Not Processing / Not Ready` | `Processing (Automatic)`
-| `process_interval`                   | Processing Interval [min]                          | `2.0`
-| `process_time`                       | Processing Time [sec]                              | `25`
+| `process_status`                     | Process Status<br><br>Possible States:<br>- `Processing (Automatic)`:  Timer-controlled automatic processing<br>- `Processing (Triggered Only)`: Manual triggered processing only<br>- `Not Processing / Not Ready`: Initializing / Initialization failed | `Processing (Automatic)`
+| `process_interval`                   | Process Interval [min]                             | `2.0`
+| `process_time`                       | Process Time [sec]                                 | `25`
 | `cycle_counter`                      | Process Cycle Counter                              | `64`
 | `datalogging_sdcard_status`          | Datalogging Status<br><br>Possible states:<br>- `Enabled`<br>- `Disabled` | `Enabled`
 | `mqtt_status`                        | MQTT Status<br><br>Possible states:<br>- `Connected (Encrypted)`<br>- `Connected`<br>- `Disconnected`<br>- `Disabled` | `Connected`
