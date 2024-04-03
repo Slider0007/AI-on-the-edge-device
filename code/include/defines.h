@@ -299,21 +299,21 @@ CONFIG_WPA_11R_SUPPORT=n
 // Define BOARD type
 // Define ENV_BOARD_TYPE in platformio.ini
 //************************************
-#if ENV_BOARD_TYPE && ENV_BOARD_TYPE == 1
+#if ENV_BOARD_TYPE == 1
 #define BOARD_AITHINKER_ESP32CAM
+#define BOARD_TYPE_NAME      "ESP32-CAM"
 #else
 #error "Board type (ENV_BOARD_TYPE) not defined"
-#define BOARD_AITHINKER_ESP32CAM
+#define BOARD_TYPE_NAME      "Board unknown"
 #endif
 
 // Define CAMERA model
 // Define ENV_CAMERA_MODEL in platformio.ini
 //************************************
-#if ENV_CAMERA_MODEL && ENV_CAMERA_MODEL == 1
+#if ENV_CAMERA_MODEL == 1
 #define CAMERA_AITHINKER_ESP32CAM_OV2640
 #else
 #error "Camera model (ENV_CAMERA_MODEL) not defined"
-#define CAMERA_AITHINKER_ESP32CAM_OV2640
 #endif
 
 

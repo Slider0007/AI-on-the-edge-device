@@ -121,6 +121,8 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "hostname", getHostname().c_str()) == NULL)
             retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "board_type", getBoardType().c_str()) == NULL)
+            retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "chip_model", getChipModel().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddNumberToObject(cJSONObject, "chip_cores", getChipCoreCount()) == NULL)
@@ -311,6 +313,10 @@ esp_err_t handler_get_info(httpd_req_t *req)
     }
     else if (type.compare("hostname") == 0) {
         httpd_resp_sendstr(req, getHostname().c_str());
+        return ESP_OK;        
+    }
+    else if (type.compare("board_type") == 0) {
+        httpd_resp_sendstr(req, getBoardType().c_str());
         return ESP_OK;        
     }
     else if (type.compare("chip_model") == 0) {

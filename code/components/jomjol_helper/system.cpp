@@ -19,6 +19,12 @@ sdmmc_cid_t SDCardCid;
 sdmmc_csd_t SDCardCsd;
 
 
+std::string getBoardType(void)
+{
+	return std::string(BOARD_TYPE_NAME);
+}
+
+
 std::string getChipModel(void)
 {
     esp_chip_info_t chipInfo;

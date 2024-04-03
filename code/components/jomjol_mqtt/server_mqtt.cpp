@@ -67,6 +67,8 @@ bool mqttServer_publishDeviceInfo(int _qos)
         retVal = false;
     }
     else {
+        if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "board_type", getBoardType().c_str()) == NULL)
+            retVal = false;
         if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "chip_model", getChipModel().c_str()) == NULL)
             retVal = false;
         if (cJSON_AddNumberToObject(cJSONObjectHardwareBoard, "chip_cores", getChipCoreCount()) == NULL)

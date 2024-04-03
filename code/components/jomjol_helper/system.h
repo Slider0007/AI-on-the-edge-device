@@ -6,6 +6,7 @@
 #include "sdmmc_cmd.h"
 
 
+std::string getBoardType(void);
 std::string getChipModel(void);
 int getChipCoreCount(void);
 std::string getChipRevision(void);
