@@ -38,6 +38,7 @@ The following infos are available:
 | `gateway_address`                    | Device Gateway Address                             | `192.168.1.1`
 | `dns_address`                        | Device DNS Address                                 | `192.168.1.1`
 | `hostname`                           | Device Network Hostname                            | `watermeter`
+| `board_type`                         | Board Type                                  | `ESP32CAM`
 | `chip_model`                         | Device SOC Chip Model                              | `ESP32`
 | `chip_cores`                         | Device SOC Chip Cores                              | `2`
 | `chip_revision`                      | Device SOC Chip Revision                           | `1.0`
