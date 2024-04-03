@@ -1976,8 +1976,8 @@
 			    <span id="AutoTimer_Interval_text" style="color:black;">Process Interval</span>
 			</td>
 			<td>
-				<input required type="number" id="AutoTimer_Interval_value1" min="1" step="0.1"
-					oninput="(!validity.rangeUnderflow||(value=1)) && 
+				<input required type="number" id="AutoTimer_Interval_value1" min="0.1" step="0.1"
+					oninput="(!validity.rangeUnderflow||(value=0.1)) && 
 						     (!validity.stepMismatch||(value=parseInt(this.value)));">Minutes
 			</td>
 			<td>$TOOLTIP_AutoTimer_Interval</td>

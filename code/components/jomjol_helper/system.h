@@ -11,7 +11,6 @@ std::string getChipModel(void);
 int getChipCoreCount(void);
 std::string getChipRevision(void);
 void printDeviceInfo(void);
-//std::string get_device_info(void);
 
 std::string getIDFVersion(void);
 

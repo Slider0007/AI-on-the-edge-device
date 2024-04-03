@@ -3,6 +3,7 @@
 
 #include "esp_pm.h"
 #include "esp_chip_info.h"
+#include "hal/efuse_hal.h"
 #include "esp_vfs_fat.h"
 
 #include "configFile.h"
@@ -54,15 +55,15 @@ int getChipCoreCount(void)
 {
     esp_chip_info_t chipInfo;
     esp_chip_info(&chipInfo);
+	
     return (int)chipInfo.cores;
 }
 
 
 std::string getChipRevision(void)
 {
-	esp_chip_info_t chipInfo;
-    esp_chip_info(&chipInfo);
-	return to_stringWithPrecision(chipInfo.revision / 100.0, 2);
+	return std::to_string(efuse_hal_get_major_chip_version() * 100) + 
+		    "." + std::to_string(efuse_hal_get_minor_chip_version());
 }
 
 
@@ -71,61 +72,11 @@ void printDeviceInfo(void)
     esp_chip_info_t chipInfo;
     esp_chip_info(&chipInfo);
     
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device info: Model: " + getChipModel() + 
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device info: Board: " + getBoardType() + 
+										   ", SOC: " + getChipModel() + 
                                            ", Cores: " + std::to_string(chipInfo.cores) + 
                                            ", Revision: " + getChipRevision());
 }
-
-
-/*std::string get_device_info()
-{
-    esp_chip_info_t chip_info;
-    esp_chip_info(&chip_info);
-    
-    std::string espInfoResultStr = "";
-    char aMsgBuf[40];
-
-    espInfoResultStr += "Device Info:";
-    espInfoResultStr += "---------------\n";
-    espInfoResultStr += "Chip Model: " + std::string(GetChipModel()) +"\n";
-    sprintf(aMsgBuf,"Chip Revision: %d\n", chip_info.revision);
-    espInfoResultStr += std::string(aMsgBuf);
-    sprintf(aMsgBuf,"CPU Cores: %d\n", chip_info.cores);
-    espInfoResultStr += std::string(aMsgBuf);
-    sprintf(aMsgBuf,"Flash Memory: %dMB\n", spi_flash_get_chip_size()/(1024*1024));
-    espInfoResultStr += std::string(aMsgBuf);
-    if(chip_info.features & CHIP_FEATURE_WIFI_BGN)
-        //espInfoResultStr += "Base MAC: " + std::string(getMac()) +"\n";
-        espInfoResultStr += "ESP-IDF version: " + std::string(esp_get_idf_version()) +"\n";
-    if((chip_info.features & CHIP_FEATURE_WIFI_BGN) || (chip_info.features & CHIP_FEATURE_BT) ||
-       (chip_info.features & CHIP_FEATURE_BLE) || (chip_info.features & CHIP_FEATURE_EMB_FLASH))
-    {
-        espInfoResultStr += "Characteristics:\n";
-        if(chip_info.features & CHIP_FEATURE_WIFI_BGN)
-            espInfoResultStr += "    WiFi 2.4GHz\n";
-        if(chip_info.features & CHIP_FEATURE_BT)
-            espInfoResultStr += "    Bluetooth Classic\n";
-        if(chip_info.features & CHIP_FEATURE_BLE)
-            espInfoResultStr += "    Bluetooth Low Energy\n";
-        if(chip_info.features & CHIP_FEATURE_EMB_FLASH)
-            espInfoResultStr += "    Embedded Flash memory\n";
-        else
-           espInfoResultStr += "    External Flash memory\n";
-    }
-
-    #ifdef USE_HIMEM_IF_AVAILABLE
-        sprintf(aMsgBuf,"spiram size %u\n", esp_psram_get_size());
-        espInfoResultStr += std::string(aMsgBuf);
-        sprintf(aMsgBuf,"himem free %u\n", esp_himem_get_free_size());
-        espInfoResultStr += std::string(aMsgBuf);
-        sprintf(aMsgBuf,"himem phys %u\n", esp_himem_get_phys_size());
-        espInfoResultStr += std::string(aMsgBuf);
-        sprintf(aMsgBuf,"himem reserved %u\n", esp_himem_reserved_area_size());
-        espInfoResultStr += std::string(aMsgBuf);
-    #endif
-    
-    return espInfoResultStr; 
-}*/
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
