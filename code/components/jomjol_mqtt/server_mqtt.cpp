@@ -157,7 +157,7 @@ bool mqttServer_publishDeviceStatus(int _qos)
     retVal &= MQTTPublish(mqttConfig.mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, _qos, false);
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "device_uptime", std::to_string(getUptime()), _qos, false);
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "wlan_rssi", std::to_string(get_WIFI_RSSI()), _qos, false);
-    retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "chip_temp", to_stringWithPrecision(temperatureRead(), 0), _qos, false);
+    retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "chip_temp", to_stringWithPrecision(getSOCTemperature(), 0), _qos, false);
 
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {

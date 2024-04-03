@@ -306,6 +306,12 @@ extern "C" void app_main(void)
         }
     }
 
+    // Init SOC temperature sensor (if supported by hardware)
+    // ********************************************
+    #ifdef SOC_TEMP_SENSOR_SUPPORTED
+    initSOCTemperatureSensor();
+    #endif
+
     // Print Device info
     // ********************************************
     printDeviceInfo();

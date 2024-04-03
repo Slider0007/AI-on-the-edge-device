@@ -130,7 +130,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "chip_frequency", std::to_string(esp_clk_cpu_freq()/1000000).c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "chip_temp", std::to_string((int)temperatureRead()).c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "chip_temp", std::to_string((int)getSOCTemperature()).c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "camera_type", Camera.getCamType().c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -331,7 +331,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("chip_temp") == 0) {
-        httpd_resp_sendstr(req, std::to_string((int)temperatureRead()).c_str());
+        httpd_resp_sendstr(req, std::to_string((int)getSOCTemperature()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("camera_type") == 0) {

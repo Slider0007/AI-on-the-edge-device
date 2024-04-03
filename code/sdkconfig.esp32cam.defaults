@@ -1,0 +1,56 @@
+################################################## 
+# Application specific configuration
+# Edit this file instead of sdkconfig.esp32cam!
+# After editing make sure to explicitly delete 
+# sdkconfig.esp32cam to apply your changes!
+##################################################
+
+#
+# Serial flasher config
+#
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+CONFIG_ESPTOOLPY_FLASHSIZE_DETECT=y
+
+
+#
+# Partition Table
+#
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+CONFIG_PARTITION_TABLE_MD5=y
+
+
+#
+# Common ESP-related
+# 
+CONFIG_ESP_ERR_TO_NAME_LOOKUP=n
+CONFIG_ESP_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
+
+
+#
+# Chip revision
+#
+CONFIG_ESP32_REV_MIN_0=y
+
+
+#
+# SPI RAM config
+#
+CONFIG_SPIRAM_SIZE=-1
+CONFIG_SPIRAM_SPEED_40M=y
+CONFIG_SPIRAM_BOOT_INIT=y
+CONFIG_SPIRAM_USE_MALLOC=y
+CONFIG_SPIRAM_MEMTEST=y
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=8192
+#CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y => Leads to memory fragmentation, see https://github.com/jomjol/AI-on-the-edge-device/issues/2200
+CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL=131072
+CONFIG_SPIRAM_CACHE_WORKAROUND=y
+CONFIG_SPIRAM_IGNORE_NOTFOUND=y
+CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
+
+#force disable HIMEM as not used in default config, can be enabled with [env:esp32cam-himem]
+#free 256kb of internal memory : I (2112) esp_himem: Initialized. Using last 8 32KB address blocks for bank switching on 4352 KB of physical memory.
+CONFIG_SPIRAM_BANKSWITCH_ENABLE=n

@@ -4,6 +4,7 @@
 #include "esp_pm.h"
 #include "esp_chip_info.h"
 #include "esp_vfs_fat.h"
+#include "driver/temperature_sensor.h"
 
 #include "configFile.h"
 #include "Helper.h"
@@ -25,22 +26,17 @@ std::string getChipModel(void)
     esp_chip_info(&chipInfo);
 
     switch((int)chipInfo.model) {
-        case 0 : return (char*)"ESP8266";
         case (int)esp_chip_model_t::CHIP_ESP32 : return std::string("ESP32");
-        case (int)esp_chip_model_t::CHIP_ESP32S2 : return std::string("ESP32-S2");
-        case (int)esp_chip_model_t::CHIP_ESP32S3 : return std::string("ESP32-S3");
-        case (int)esp_chip_model_t::CHIP_ESP32C3 : return std::string("ESP32-C3");
-        case 6 : return std::string("ESP32-H4");
-        case 12 : return std::string("ESP32-C2");
-        case 13 : return std::string("ESP32-C6");
-        //case (int)esp_chip_model_t::CHIP_ESP32H4 : return std::string("ESP32-H4");
-        //case (int)esp_chip_model_t::CHIP_ESP32C2 : return std::string("ESP32-C2");
-        //case (int)esp_chip_model_t::CHIP_ESP32C6 : return std::string("ESP32-C6");
-        //case (int)esp_chip_model_t::CHIP_ESP32H2 : return std::string("ESP32-H2");
-        case 16 : return std::string("ESP32-H2");
+        case (int)esp_chip_model_t::CHIP_ESP32S2 : return std::string("ESP32S2");
+        case (int)esp_chip_model_t::CHIP_ESP32C3 : return std::string("ESP32C3");
+		case (int)esp_chip_model_t::CHIP_ESP32S3 : return std::string("ESP32S3");
+        case (int)esp_chip_model_t::CHIP_ESP32C2 : return std::string("ESP32C2");
+        //case (int)esp_chip_model_t::CHIP_ESP32C6 : return std::string("ESP32C6");
+        case (int)esp_chip_model_t::CHIP_ESP32H2 : return std::string("ESP32H2");
         //case (int)esp_chip_model_t::CHIP_POSIX_LINUX : return std::string("CHIP_POSIX_LINUX");
     }
-    return std::string("Chip unknown");
+
+    return std::string("Chip model unknown");
 }
 
 
@@ -130,19 +126,70 @@ std::string getIDFVersion(void)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// CPU Temp
-extern "C" uint8_t temprature_sens_read();
-float temperatureRead()
+// SOC temperature sensor
+#if defined(SOC_TEMP_SENSOR_SUPPORTED)
+static float socTemperature = -1;
+
+void taskSocTemp(void *pvParameter)
 {
-    return (temprature_sens_read() - 32) / 1.8;
+	temperature_sensor_handle_t socTempSensor = NULL;
+	temperature_sensor_config_t socTempSensorConfig = TEMPERATURE_SENSOR_CONFIG_DEFAULT(20, 100);
+    temperature_sensor_install(&socTempSensorConfig, &socTempSensor);
+    temperature_sensor_enable(socTempSensor);
+	
+	while(1) {
+		if (temperature_sensor_get_celsius(socTempSensor, &socTemperature) != ESP_OK) {
+			socTemperature = -1;
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(5000));
+	}
 }
+
+
+void initSOCTemperatureSensor()
+{
+	// Create a dedicated task to ensure access temperature ressource only from a single source
+	BaseType_t xReturned = xTaskCreate(&taskSocTemp, "taskSocTemp", 2048, NULL, tskIDLE_PRIORITY+1, NULL);
+
+	if( xReturned != pdPASS ) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create taskSocTemp");
+    }
+}
+
+
+float getSOCTemperature()
+{
+	return socTemperature;
+}
+#elif defined(CONFIG_IDF_TARGET_ESP32) // Inofficial support of vanilla ESP32. Value might be unreliable
+extern "C" uint8_t temprature_sens_read();
+
+float getSOCTemperature()
+{
+	return (temprature_sens_read() - 32) / 1.8;
+}
+#else
+#warning "SOC temperature sensor not supported"
+float getSOCTemperature()
+{
+	return -1.0;
+}
+#endif
 
 
 bool setCPUFrequency(void)
 {
     ConfigFile configFile = ConfigFile(CONFIG_FILE); 
     std::string cpuFrequency = "160";
-    esp_pm_config_esp32_t pm_config; 
+
+	#ifdef CONFIG_IDF_TARGET_ESP32
+    	esp_pm_config_esp32_t pm_config; 
+	#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+    	esp_pm_config_esp32s3_t pm_config;
+	#else
+		#error "esp_pm_config_* not defined"
+	#endif
 
     if (!configFile.ConfigFileExists()){
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file - exit setCpuFrequency");

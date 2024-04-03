@@ -1244,7 +1244,7 @@ void task_autodoFlow(void *pvParameter)
             LogFile.RemoveOldDataLog();
  
             // CPU Temp -> Logfile
-            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "CPU Temperature: " + std::to_string((int)temperatureRead()) + "°C");
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "CPU Temperature: " + std::to_string((int)getSOCTemperature()) + "°C");
             
             // WIFI Signal Strength (RSSI) -> Logfile
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "WIFI Signal (RSSI): " + std::to_string(get_WIFI_RSSI()) + "dBm");

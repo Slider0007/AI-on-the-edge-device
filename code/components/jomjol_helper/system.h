@@ -14,7 +14,10 @@ void printDeviceInfo(void);
 
 std::string getIDFVersion(void);
 
-float temperatureRead();
+#ifdef SOC_TEMP_SENSOR_SUPPORTED
+void initSOCTemperatureSensor();
+#endif
+float getSOCTemperature();
 
 bool setCPUFrequency(void);
 
