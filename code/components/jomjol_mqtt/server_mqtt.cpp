@@ -685,7 +685,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
         payload += std::string(", \"dev\": {")  +
             "\"ids\":[\"" + nodeID + "\"],"  +
             "\"name\":\"" + nodeID + "\","  +
-            "\"mdl\":\"AI-on-the-Edge device\","  +
+            "\"mdl\":\"AI-on-the-Edge device [" + getBoardType() + "]\","  +
             "\"mf\":\"AI-on-the-Edge\","  +
             "\"sw\":\"" + firmwareVersion + " [SLFork]\","  +
             "\"cu\":\"http://" + getIPAddress() + "\"}";
