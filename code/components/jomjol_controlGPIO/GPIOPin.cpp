@@ -123,7 +123,7 @@ void GpioPin::init()
         // Subcribe to [mainTopic]/device/gpio/[GpioName]/ctrl/state
         std::function<bool(std::string, char*, int)> func = std::bind(&GpioPin::mqttControlPinState, this, std::placeholders::_1, 
                                                                         std::placeholders::_2, std::placeholders::_3);
-        MQTTregisterSubscribeFunction(mqttTopic + "/ctrl/state", func);
+        MQTTregisterSubscribeFunction(mqttTopic + "/ctrl", func);
     }
     #endif //ENABLE_MQTT
 }
@@ -215,7 +215,7 @@ bool GpioPin::mqttPublishPinState(int _pwmDuty)
             retVal = false;
         
         if (mode == GPIO_PIN_MODE_OUTPUT_PWM || mode == GPIO_PIN_MODE_FLASHLIGHT_PWM) {
-            if (cJSON_AddNumberToObject(cJSONObject, "state", _pwmDuty) == NULL)
+            if (cJSON_AddNumberToObject(cJSONObject, "pwm_duty", _pwmDuty) == NULL)
                 retVal = false;
         }
         

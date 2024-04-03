@@ -305,28 +305,28 @@ CONFIG_WPA_11R_SUPPORT=n
 // Define BOARD type
 // Define ENV_BOARD_TYPE in platformio.ini
 //************************************
-#if ENV_BOARD_TYPE && ENV_BOARD_TYPE == 1
+#if ENV_BOARD_TYPE == 1
 #define BOARD_AITHINKER_ESP32CAM
+#define BOARD_TYPE_NAME      "ESP32-CAM"
 #else
 #error "Board type (ENV_BOARD_TYPE) not defined"
-#define BOARD_AITHINKER_ESP32CAM
+#define BOARD_TYPE_NAME      "Board unknown"
 #endif
 
 // Define CAMERA model
 // Define ENV_CAMERA_MODEL in platformio.ini
 //************************************
-#if ENV_CAMERA_MODEL && ENV_CAMERA_MODEL == 1
+#if ENV_CAMERA_MODEL == 1
 #define CAMERA_AITHINKER_ESP32CAM_OV2640
 #else
 #error "Camera model (ENV_CAMERA_MODEL) not defined"
-#define CAMERA_AITHINKER_ESP32CAM_OV2640
 #endif
 
 
 // Board types
 //************************************
 #ifdef BOARD_AITHINKER_ESP32CAM
-    #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1                  // Only 1 line SD card operation is supported (hardware related)
+    #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1                  // Set 1 line SD card operation
 
     // SD card (operated with SDMMC peripheral)
     //-------------------------------------------------
@@ -368,39 +368,39 @@ CONFIG_WPA_11R_SUPPORT=n
     // - 'flashlight-pwm' or 'flashlight-smartled' or 'flashlight-digital' (ON/OFF) -> Map to 'flashlight-default'
     // --> ESP32CAM: flashlight-default -> flashlight-pwm (Onboard LED, PWM controlled)
     //-------------------------------------------------
-    #define GPIO_SPARE_PIN_COUNT        6
-   
-    #define GPIO_SPARE_1                 GPIO_NUM_1             // Use carefully: UART pin for debug/logging
-    #define GPIO_SPARE_1_USAGE           "restricted: uart0-tx" // Only visible when expert mode is activated
-    
-    #define GPIO_SPARE_2                 GPIO_NUM_3             // Use carefully: UART pin for debug/logging
-    #define GPIO_SPARE_2_USAGE           "restricted: uart0-rx" // Only visible when expert mode is activated
+    #define GPIO_SPARE_PIN_COUNT            6
+
+    #define GPIO_SPARE_1                    GPIO_NUM_1              // Use carefully: UART pin for debug/logging
+    #define GPIO_SPARE_1_USAGE              "restricted: uart0-tx"  // Only visible when expert mode is activated
+
+    #define GPIO_SPARE_2                    GPIO_NUM_3              // Use carefully: UART pin for debug/logging
+    #define GPIO_SPARE_2_USAGE              "restricted: uart0-rx"  // Only visible when expert mode is activated
 
     #ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
-        #define GPIO_SPARE_3             GPIO_NUM_4             // Use carefully: flashlight-default
+        #define GPIO_SPARE_3                GPIO_FLASHLIGHT_DEFAULT // Use carefully: flashlight-default
         #if defined(GPIO_FLASHLIGHT_DEFAULT_USE_PWM)
-            #define GPIO_SPARE_3_USAGE    FLASHLIGHT_PWM        // Define flashlight-default as ...
+            #define GPIO_SPARE_3_USAGE      FLASHLIGHT_PWM          // Define flashlight-default as ...
         #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
-            #define GPIO_SPARE_3_USAGE    FLASHLIGHT_SMARTLED   // Define flashlight-default as ...
+            #define GPIO_SPARE_3_USAGE      FLASHLIGHT_SMARTLED     // Define flashlight-default as ...
         #else
-            #define GPIO_SPARE_3_USAGE    FLASHLIGHT_DIGITAL    // Define flashlight-default as ...
+            #define GPIO_SPARE_3_USAGE      FLASHLIGHT_DIGITAL      // Define flashlight-default as ...
         #endif
 
-        #define GPIO_SPARE_4             GPIO_NUM_12
-        #define GPIO_SPARE_4_USAGE       "spare"
+        #define GPIO_SPARE_4                GPIO_NUM_12
+        #define GPIO_SPARE_4_USAGE          "spare"
     #else
-        #define GPIO_SPARE_3             GPIO_NUM_NC    // Not usable, in use for 'SD-card'
-        #define GPIO_SPARE_3_USAGE       ""      
+        #define GPIO_SPARE_3                GPIO_NUM_NC    // Not usable, in use for 'SD-card'
+        #define GPIO_SPARE_3_USAGE          ""      
 
-        #define GPIO_SPARE_4             GPIO_NUM_NC    // Not usable, in use for 'SD-card'
-        #define GPIO_SPARE_4_USAGE       ""
+        #define GPIO_SPARE_4                GPIO_NUM_NC    // Not usable, in use for 'SD-card'
+        #define GPIO_SPARE_4_USAGE          ""
     #endif
-    
-    #define GPIO_SPARE_5                 GPIO_NUM_13
-    #define GPIO_SPARE_5_USAGE           "spare"
 
-    #define GPIO_SPARE_6                 GPIO_NUM_NC     // Not defined spare position
-    #define GPIO_SPARE_6_USAGE           ""
+    #define GPIO_SPARE_5                    GPIO_NUM_13
+    #define GPIO_SPARE_5_USAGE              "spare"
+
+    #define GPIO_SPARE_6                    GPIO_NUM_NC     // Not defined spare position
+    #define GPIO_SPARE_6_USAGE              ""
 #else
     #error "define.h: No board type defined or type unknown"
 #endif //Board types
