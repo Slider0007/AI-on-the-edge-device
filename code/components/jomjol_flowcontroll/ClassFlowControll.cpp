@@ -720,7 +720,7 @@ void ClassFlowControll::PostProcessEventHandler()
             if (FlowStatePublishEvent[i]->ClassName.compare(FlowControlPublish[j]->name()) == 0) {
                 LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateEvaluationEvent[i]->ClassName + "-> doPostProcessEventHandling"); 
                 FlowControlPublish[j]->doPostProcessEventHandling();
-                FlowControll[j]->presetFlowStateHandler(true); // Reinit after processing
+                FlowControlPublish[j]->presetFlowStateHandler(true); // Reinit after processing
             }
         }
     }
