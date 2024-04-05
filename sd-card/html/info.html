@@ -259,6 +259,12 @@
 			<h3>Device</h3>
 		</tr>
 		<tr>
+			<td>Board</td>
+			<td>
+				<output id="board_type"></output>
+			</td>
+		</tr>
+		<tr>
 			<td>Model</td>
 			<td>
 				<output id="chip_model"></output>
@@ -562,9 +568,10 @@
 				document.getElementById("ipv4_address").value = _jsonData.ipv4_address;
 				document.getElementById("netmask_address").value = _jsonData.netmask_address;
 				document.getElementById("gateway_address").value = _jsonData.gateway_address;
-				document.getElementById("dns_address").value = _jsonData.dns_address;
-				
+				document.getElementById("dns_address").value = _jsonData.dns_address;			
 				document.getElementById("hostname").value =_jsonData.hostname;
+
+				document.getElementById("board_type").value = _jsonData.board_type;
 				document.getElementById("chip_model").value = _jsonData.chip_model;
 				document.getElementById("chip_cores").value = _jsonData.chip_cores;
 				document.getElementById("chip_revision").value = _jsonData.chip_revision;

@@ -23,7 +23,8 @@ The following device status topics gets published during the `Publish To MQTT` s
 - Notation: JSON
 
 | JSON Property               | Description                 | Output
-|:----------------------------|:----------------------------|:--------------     
+|:----------------------------|:----------------------------|:--------------
+| `board`.`board_type`        | Board Type                  | `ESP32CAM`  
 | `board`.`chip_model`        | Device SOC Model            | `ESP32`
 | `board`.`chip_cores`        | Device SOC Cores            | `2`
 | `board`.`chip_revision`     | Device SOC Silicon Revision | `1.00`

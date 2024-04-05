@@ -15,7 +15,7 @@ GPIO pins can be controlled by publishing data to the following topic.
 
 | Topic                                | Description                 | Payload
 |:-------------------------------------|:----------------------------|:--------------     
-`[MainTopic]/device/gpio/[GPIO Name]` | Control GPIO Pin State | `HIGH`: `true` or `1`<br>`LOW`: `false` or `0`
+|`[MainTopic]/device/gpio/[GPIO Name]` | Control GPIO Pin State      | `HIGH`: `true` or `1`<br>`LOW`: `false` or `0`
 
 ---
 

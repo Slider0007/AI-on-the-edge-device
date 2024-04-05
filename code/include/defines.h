@@ -307,10 +307,10 @@ CONFIG_WPA_11R_SUPPORT=n
 //************************************
 #if ENV_BOARD_TYPE == 1
 #define BOARD_AITHINKER_ESP32CAM
-#define BOARD_TYPE_NAME      "ESP32-CAM"
+#define BOARD_TYPE_NAME      "ESP32CAM"
 #elif ENV_BOARD_TYPE == 2
 #define BOARD_XIAO_ESP32S3
-#define BOARD_TYPE_NAME      "XIAO ESP32S3 Sense"
+#define BOARD_TYPE_NAME      "XIAO-ESP32S3-Sense"
 #else
 #error "Board type (ENV_BOARD_TYPE) not defined"
 #define BOARD_TYPE_NAME      "Board unknown"
