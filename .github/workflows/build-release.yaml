@@ -129,7 +129,7 @@ jobs:
     - name: OTA update package - Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "update__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        name: "AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         path: ./update
 
     #########################################################################################
@@ -159,7 +159,7 @@ jobs:
     - name: Manual setup package - Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "manual-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        name: "AI-on-the-edge-device__manual-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         path: ./manual_setup
 
     #########################################################################################
@@ -185,7 +185,7 @@ jobs:
     - name: Remote setup package - Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "remote-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        name: "AI-on-the-edge-device__remote-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         path: ./remote_setup
 
     #########################################################################################
@@ -208,7 +208,7 @@ jobs:
     - name: Debug files package - Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "debug-files__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        name: "AI-on-the-edge-device__debug-files__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         path: ./debug
 
 
@@ -252,16 +252,16 @@ jobs:
       run: |
         rm -rf release 
         mkdir -p release
-        cd "update__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        cd "AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         zip -r ../release/AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
-        cd "manual-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        cd "AI-on-the-edge-device__manual-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         zip -r ../release/AI-on-the-edge-device__manual-setup__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
-        cd "remote-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        cd "AI-on-the-edge-device__remote-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         zip -r ../release/AI-on-the-edge-device__remote-setup__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
-        cd "debug-files__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        cd "AI-on-the-edge-device__debug-files__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         zip -r ../release/AI-on-the-edge-device__debug-files__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
 
