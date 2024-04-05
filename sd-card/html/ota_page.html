@@ -42,21 +42,33 @@
     <ul>
         <li>*.zip &rarr; Content gets extracted to the SD card root folder</li>
         <li>*.bin &rarr; Firmware gets flashed to the device program flash</li>
-        <li>*.tfl/tflite &rarr; Tensorflow models gets copied to your SD card/config folder</li>
+        <li>*.tfl/tflite &rarr; Tensorflow model gets copied to your SD card/config folder</li>
     </ul>
 
     <br>
 
-    <p><b>Recommended procedure to update the complete system:</b></p>
-    <b>Use the <i>AI-on-the-edge-device__update__*.zip</i> file from the github project repository</b><br>
+    <p><b>Recommended procedure to update the complete device over the air:</b></p>
+    <b>Use update package (<i>*__update__{board type}__*.zip</i>) from 
+    <a href="https://github.com/Slider0007/AI-on-the-edge-device/releases" target="_blank">github release page</a></b>
+    <br>
     Note: Using this, firmware + SD card gets updated, configuration remains unchanged
 
-    <br>
+    <br><br><br>
+
+    <table>
+        <tr>
+            <td>
+                <span><b>Detected Board Type: </b</span>
+                <span id="board_type"><b>Unknown</b</span>
+            </td>
+        </tr>
+    </table>
+
     <br>
 
     <form id="upload_form" enctype="multipart/form-data" method="post">
-        <input type="file" accept=".bin,.zip,.tfl,.tflite" name="file_selector" id="file_selector" onchange="validate_file()"><br><br>
-
+        <input type="file" accept=".bin,.zip,.tfl,.tflite" name="file_selector" id="file_selector" onchange="validate_file()">
+        <br><br>
         <button class="button" id="start_OTA_button" type="button" onclick="start_OTA()" disabled>Upload And Install</button>
         <br><br>
         <progress id="progressBar" value="0" max="100" style="width:600px;"></progress>
@@ -68,15 +80,17 @@
 <script src="common.js?v=$COMMIT_HASH"></script>
 <script>
     var domainname = getDomainname();
-    
     var action_runtime = 0;
     
     /* Max size of an individual file. Make sure this
     * value is same as that set in server_file.c */
     var MAX_FILE_SIZE = 8000*1024;
     var MAX_FILE_SIZE_STR = "8MB";
+
+    getBoardType();
     
-    function validate_file() {
+    function validate_file()
+    {
         document.getElementById("start_OTA_button").disabled = true;
 
         var fileInput = document.getElementById("file_selector").files;
@@ -95,8 +109,8 @@
         } else if (filename.length == 0) {
             firework.launch('File path on server is not set!', 'danger', 30000);
             return;
-        } else if (filename.length > 100) {
-            firework.launch('Filename is too long! Max 100 characters.', 'danger', 30000);
+        } else if (filename.length > 120) {
+            firework.launch('Filename is too long! Max 120 characters.', 'danger', 30000);
             return;
         } else if (filename.indexOf(' ') >= 0) {
             firework.launch('Filename can not have spaces!', 'danger', 30000);
@@ -109,29 +123,28 @@
             return;
         }
 
-        /* Check if the fillename matches our expected pattern
-            *  - AI-on-the-edge-device__update__*.zip
-            *  - firmware__*.bin
-            *  - *.ftl
-            *  - *.tflite 
-            *  - firmware.bin */
-        if ( /(^AI-on-the-edge-device__update__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename) || // OK
-            ( /(^AI-on-the-edge-device__firmware)[a-zRC0-9()_\-.]*(\.bin$)/i.test(filename)) ||
-            ( /[a-zRC0-9()_\-.]*(\.tfl$)/i.test(filename)) ||
-            ( /[a-zRC0-9()_\-.]*(\.tflite$)/i.test(filename)) ||
-                filename == "firmware.bin")
-        {
-            firework.launch("The selected file matches the expected name pattern. Press 'Upload and Install' to continue.", "success", 5000);
+        // Check if the filename is valid
+        if (/(^AI-on-the-edge-device__update__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename)) {
+            if (document.getElementById("board_type").value == filename.split("__")[2]) { // Check if board type of filename matches
+                firework.launch("Press 'Upload and Install' to perform the OTA update", "success", 5000);
+            }
+            else {
+                firework.launch("The selected OTA package does not match the detected board type. Please select proper OTA package " +
+                                "or press 'Upload and Install' to continue on own risk", "warning", 10000);
+            }
         }
-        /* Following filenames are acceptiod but not prefered:
-            * - *.bin
-            * - *.zip */
+        else if (/[a-zRC0-9()_\-.]*(\.tfl$)/i.test(filename) || /[a-zRC0-9()_\-.]*(\.tflite$)/i.test(filename)) {
+            firework.launch("Press 'Upload and Install' to install TFLite model", "success", 5000);
+        }
+        else if (filename == "firmware.bin") {
+            firework.launch("Press 'Upload and Install' to install MCU firmware", "success", 5000);
+        }
         else if (filename.endsWith(".zip") || filename.endsWith(".bin")) { // Warning but still accepted
-            firework.launch("The selected file does not fully match the expected name pattern. Press 'Upload and Install' to continue anyway.", "warning", 10000);
+            firework.launch("The selected file does not fully match the expected name pattern. " +
+                            "Press 'Upload and Install' to continue on own risk", "warning", 10000);
         }
-        /* Any other file name format is not accepted */
-        else { // invalid
-            firework.launch("The selected file does not match the expected name pattern. 'Upload and Install' not possible.", "danger", 30000);
+        else {
+            firework.launch("The selected file does not match the expected name pattern. Please select vaild file", "danger", 10000);
             return;
         }
 
@@ -139,7 +152,30 @@
     }
 
 
-    function start_OTA() {
+    function getBoardType()
+    {
+        let url = getDomainname() + '/info?type=board_type';
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    document.getElementById("board_type").innerHTML = xhttp.responseText;
+                }
+                else {
+                    firework.launch("Loading board type failed (Response status: " + this.status + 
+                                    "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Loading board type failed. Response status: " + this.status);
+                }
+            }
+        };
+
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    }
+
+
+    function start_OTA()
+    {
         document.getElementById("start_OTA_button").disabled = true;
 
         var file_name = document.getElementById("file_selector").value;
@@ -152,14 +188,16 @@
     }
 
 
-    function doRebootAfterUpdate() {
+    function doRebootAfterUpdate()
+    {
         var xhttp = new XMLHttpRequest();
         xhttp.open("GET", "/reboot", true);
         xhttp.send();
     }
 
 
-    function prepareOnServer() {
+    function prepareOnServer()
+    {
         document.getElementById("status").innerText = "Status: Preparing device...";
 
         var xhttp = new XMLHttpRequest();
@@ -187,7 +225,8 @@
     }
 
 
-    function extract() {
+    function extract()
+    {
         document.getElementById("status").innerText = "Status: Processing on device...";
 
         var xhttp = new XMLHttpRequest();
@@ -246,12 +285,14 @@
     }
 
 
-    function _(el) {
+    function _(el)
+    {
         return document.getElementById(el);
     }
 
 
-    function upload() {
+    function upload()
+    {
         document.getElementById("status").innerText = "Status: Uploading...";
 
         var upload_path = "/upload/firmware/" + filePath;
@@ -270,7 +311,8 @@
     }
 
 
-    function progressHandler(event) {
+    function progressHandler(event)
+    {
         _("loaded_n_total").innerHTML = "Uploaded " + (event.loaded / 1024 / 1024).toFixed(2) + 
                 " MB of " + (event.total / 1024/ 1024).toFixed(2) + " MB";
         var percent = (event.loaded / event.total) * 100;
@@ -279,7 +321,8 @@
     }
 
 
-    function completeHandler(event) {
+    function completeHandler(event)
+    {
         _("status").innerHTML = "Status: " + event.target.responseText;
         _("progressBar").value = 0; //will clear progress bar after successful upload
         _("loaded_n_total").innerHTML = "";
@@ -288,14 +331,16 @@
     }
 
 
-    function errorHandler(event) {
+    function errorHandler(event)
+    {
         _("status").innerHTML = "Status: Upload Failed";
         firework.launch('Upload failed!', 'danger', 30000);
         document.getElementById("file_selector").disabled = false;
     }
 
 
-    function abortHandler(event) {
+    function abortHandler(event)
+    {
         _("status").innerHTML = "Status: Upload Aborted";
         firework.launch('Upload aborted!', 'danger', 30000);
         document.getElementById("file_selector").disabled = false;
