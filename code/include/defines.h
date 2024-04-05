@@ -323,7 +323,7 @@ CONFIG_WPA_11R_SUPPORT=n
 //************************************
 #if ENV_CAMERA_MODEL == 1
 #define CAMERA_AITHINKER_ESP32CAM_OV2640
-#elif ENV_BOARD_TYPE == 2
+#elif ENV_CAMERA_MODEL == 2
 #define CAMERA_XIAO_ESP32S3_SENSE_OV2640
 #else
 #error "Camera model (ENV_CAMERA_MODEL) not defined"

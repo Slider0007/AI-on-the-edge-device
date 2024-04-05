@@ -91,17 +91,18 @@ jobs:
     - name: Build firmware
       run: cd code; platformio run -e ${{ matrix.plat }}
 
-    - name: Prepare WebUI (Generate parameter tooltips + Update hash)
+    - name: Prepare WebUI (Generate parameter tooltips, API docs and update hash)
       run: |
-        rm -rf ./html
-        mkdir ./html
-        
         python -m pip install markdown
         python ./tools/parameter-tooltip-generator/generate-param-doc-tooltips.py
         
+        python ./tools/docs-generator/generate-api-docs.py
+
+        rm -rf ./html
+        mkdir ./html
         cp -r ./sd-card/html/* ./html/
 
-        echo "Replacing variables..."
+        echo "Update hash..."
         cd ./html; find . -type f -exec sed -i 's/$COMMIT_HASH/${{ steps.vars.outputs.sha_short }}/g' {} \;
 
     #########################################################################################
