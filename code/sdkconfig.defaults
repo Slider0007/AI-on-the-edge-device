@@ -1,8 +1,8 @@
 ################################################## 
-# Application specific configuration
-# Edit this file instead of sdkconfig.esp32cam!
+# Application specific and global configuration
+# Edit this file instead of sdkconfig.{board_type}!
 # After editing make sure to explicitly delete 
-# sdkconfig.esp32cam to apply your changes!
+# sdkconfig.{board_type} to apply your changes!
 ##################################################
 
 #
