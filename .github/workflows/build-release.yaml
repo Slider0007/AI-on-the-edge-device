@@ -203,7 +203,6 @@ jobs:
         mkdir -p ./debug
         
         cp -f "./code/.pio/build/${{ matrix.plat }}/firmware.elf" "debug/firmware.elf"
-        cp -f "./code/sdkconfig.defaults" "debug/sdkconfig.defaults"
         cp -f "./code/sdkconfig.${{ matrix.plat }}" "debug/sdkconfig.${{ matrix.plat }}"
 
     - name: Debug files package - Upload artifact
