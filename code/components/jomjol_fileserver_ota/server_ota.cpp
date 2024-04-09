@@ -592,16 +592,15 @@ void hard_restart()
 
 void task_reboot(void *DeleteMainFlow)
 {
-    // write a reboot, to identify a reboot by purpouse
+    // Write a reboot, to identify a reboot by purpouse
     FILE* pfile = fopen("/sdcard/reboot.txt", "w");
     std::string _s_zw= "reboot";
     fwrite(_s_zw.c_str(), strlen(_s_zw.c_str()), 1, pfile);
     fclose(pfile);
 
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
-
+    // Kill main task if executed in extra task, if not don't kill parent task to force reboot
     if ((bool)DeleteMainFlow) {
-        DeleteMainFlowTask();  // Kill main task if executed in extra task, if not don't kill parent task
+        DeleteMainFlowTask();
     }
 
     /* Stop service tasks */
@@ -615,9 +614,10 @@ void task_reboot(void *DeleteMainFlow)
     StatusLEDOff();
     esp_camera_deinit();
 
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
     WIFIDestroy();
 
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
     esp_restart();      // Reset type: CPU reset (Reset both CPUs)
 
     vTaskDelay(5000 / portTICK_PERIOD_MS);
@@ -665,7 +665,6 @@ esp_err_t handler_reboot(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
-
     httpd_resp_sendstr(req, "Reboot initiated");
     
     doReboot();
