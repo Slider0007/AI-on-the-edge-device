@@ -718,7 +718,7 @@ void ClassFlowControll::PostProcessEventHandler()
     for (int i = 0; i < FlowStatePublishEvent.size(); ++i) {
         for (int j = 0; j < FlowControlPublish.size(); ++j) {
             if (FlowStatePublishEvent[i]->ClassName.compare(FlowControlPublish[j]->name()) == 0) {
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStateEvaluationEvent[i]->ClassName + "-> doPostProcessEventHandling"); 
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, FlowStatePublishEvent[i]->ClassName + "-> doPostProcessEventHandling"); 
                 FlowControlPublish[j]->doPostProcessEventHandling();
                 FlowControlPublish[j]->presetFlowStateHandler(true); // Reinit after processing
             }
