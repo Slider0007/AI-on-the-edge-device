@@ -192,14 +192,18 @@ void task_ota_update(void *pvParameter)
     if (filetype == "ZIP") {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Processing ZIP file: " + file_name_update);
         std::string retval = unzip_ota(file_name_update, "/sdcard/");
-    	LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Files unzipped");
-
         if (retval.length() > 0) {
-            if (retval != "ERROR") {
+            if (retval == "ERROR") {
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to unzip files. Update process failed");
+            }
+            else {
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Found firmware.bin");
                 if (!ota_update_firmware(retval))
-                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Firmware update failed");
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to update firmware. Update process failed");
             }
+        }
+        else {
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Files unzipped");
         }
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Reboot to finalize update process");
         doRebootOTA();
@@ -416,7 +420,7 @@ std::string unzip_ota(std::string _in_zip_file, std::string _root_folder)
     size_t uncomp_size;
     mz_zip_archive zip_archive;
     void* p;
-    char archive_filename[64];
+    char archive_filename[256];
     std::string zw = "";
     std::string retVal = "";   // return string "ERROR" -> FAILURE | return string != "ERROR" -> firmware filename
 
@@ -441,15 +445,17 @@ std::string unzip_ota(std::string _in_zip_file, std::string _root_folder)
         sprintf(archive_filename, file_stat.m_filename);
         
         if (!file_stat.m_is_directory) {
-        // Try to extract all the files to the heap.
+            // Extract file to heap
+            // IMPORTANT NOTE -> miniz v3.x crashes here with ESP32S3, more details --> miniz changelog
             p = mz_zip_reader_extract_file_to_heap(&zip_archive, archive_filename, &uncomp_size, 0);
             if (!p) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "unzip_ota: mz_zip_reader_extract_file_to_heap() failed on file " + std::string(archive_filename));
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "unzip_ota: mz_zip_reader_extract_file_to_heap() failed | file: " + 
+                                                         std::string(archive_filename));
                 mz_zip_reader_end(&zip_archive);
                 return "ERROR";
             }
 
-            // Save to File
+            // Save content to file
             zw = std::string(archive_filename);
             ESP_LOGD(TAG, "archive filename: %s", zw.c_str());
 
@@ -494,7 +500,7 @@ std::string unzip_ota(std::string _in_zip_file, std::string _root_folder)
             }
 
             if (isokay) {
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "unzip_ota: File successfull: " + std::string(archive_filename));
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "unzip_ota: File successful: " + std::string(archive_filename));
             }
             else {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "unzip_ota: File failed: " + std::string(archive_filename));
