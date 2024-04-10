@@ -227,7 +227,7 @@ bool GpioPin::mqttPublishPinState(int _pwmDuty)
         retVal &= MQTTPublish(mqttTopic + "/state", jsonData, 1);
 
         if (!retVal) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to publish device status");
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "GPIO" + std::to_string((int)gpio) + ": Failed to publish state to MQTT broker");
             return false;
         }
     }

@@ -1582,7 +1582,7 @@
 			<td class="indent2">
 				<span id="GPIO_IO_text13">GPIO Name</span>
 			</td>
-			<td><input type="text" id="GPIO_IO_value13"></td>
+			<td><input type="text" id="GPIO_IO_value13" placeholder="gpioX"></td>
 			<td>$TOOLTIP_GPIO_GPIOName</td>
 		</tr>
 
@@ -2075,12 +2075,6 @@
 						GpioConfigCheck();
 						break;
 					}
-				}
-				else if (element.tagName.toLowerCase() == "input") {
-					element.value = _param[_cat][_name]["value"+j];
-
-					if (element.value == "")
-						element.placeholder = "gpioX";
 				}
 				else {
 					element.value = _param[_cat][_name]["value"+j];
