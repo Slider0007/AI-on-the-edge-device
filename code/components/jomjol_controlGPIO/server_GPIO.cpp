@@ -279,7 +279,10 @@ int GpioHandler::readConfig()
     while (configFile.getNextLine(&line, disabledLine, eof) && !configFile.isNewParagraph(line)) {
         splitted = ZerlegeZeile(line);
 
-        if ((splitted[0].rfind("IO", 0) == 0) && (splitted.size() >= 13)) {
+        if (splitted[0].find_first_of("IO") > 0) // Parameter disabled
+            continue;
+
+        if (splitted.size() >= 13) { // Parameter enabled and enough parameter detected
             gpio_num_t gpioNr = (gpio_num_t)std::stoi(splitted[0].substr(2, 2).c_str());
 
             gpio_pin_mode_t pinMode = resolvePinMode(toLower(splitted[1]));
@@ -367,7 +370,7 @@ int GpioHandler::readConfig()
             (*gpioMap)[gpioNr] = gpioPin;
         }
         else {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "readConfig: Parameter set incomplete, check configuration");
+            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "readConfig: " + splitted[0] + ": Parameter set incomplete");
             return -1;
         }
     }
@@ -806,7 +809,16 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
         }
 
         if (task.compare("get_state") == 0) {
-            requestedGpioState = std::to_string((*gpioMap)[gpioNum]->getPinState());
+            requestedGpioState = "{ \"state\": " + std::to_string((*gpioMap)[gpioNum]->getPinState());
+            
+            if ((*gpioMap)[gpioNum]->getMode() == GPIO_PIN_MODE_OUTPUT_PWM ||
+                (*gpioMap)[gpioNum]->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM)
+            {
+                requestedGpioState += ", \"pwm_duty\": " + std::to_string(ledc_get_duty(LEDC_LOW_SPEED_MODE, 
+                                                (*gpioMap)[gpioNum]->getLedcChannel()));
+            }
+
+            requestedGpioState += " }";
 
             httpd_resp_set_type(req, "text/plain");
             httpd_resp_sendstr(req, requestedGpioState.c_str());

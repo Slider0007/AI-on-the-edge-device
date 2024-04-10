@@ -158,13 +158,13 @@ esp_err_t GpioPin::setPinState(bool _value, gpio_set_source _setSource)
     }
 
     pinState = _value;
-    gpio_set_level(gpio, _value);
+    esp_err_t retVal = gpio_set_level(gpio, _value);
 
     #ifdef ENABLE_MQTT
     mqttPublishPinState();
     #endif //ENABLE_MQTT
 
-    return ESP_OK;
+    return retVal;
 }
 
 
@@ -186,7 +186,7 @@ esp_err_t GpioPin::setPinState(bool _value, int _intensity, gpio_set_source _set
     }
 
     #ifdef ENABLE_MQTT
-    mqttPublishPinState((int)ledc_get_duty(LEDC_LOW_SPEED_MODE, ledcChannel));
+    mqttPublishPinState(_intensity);
     #endif //ENABLE_MQTT
 
     return ESP_OK;
@@ -227,7 +227,7 @@ bool GpioPin::mqttPublishPinState(int _pwmDuty)
         retVal &= MQTTPublish(mqttTopic + "/state", jsonData, 1);
 
         if (!retVal) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to publish device status");
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "GPIO" + std::to_string((int)gpio) + ": Failed to publish state to MQTT broker");
             return false;
         }
     }
@@ -240,47 +240,61 @@ bool GpioPin::mqttControlPinState(std::string _topic, char* _data, int _data_len
     //ESP_LOGI(TAG, "mqttControlPinStateHandler: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
     //example: {"state": 1, "pwm_duty": 1024}
 
-    if (_data_len > 0) {    // Check if data length > 0
-        cJSON *jsonData = cJSON_Parse(_data);
-        cJSON *pinState = cJSON_GetObjectItemCaseSensitive(jsonData, "state");
-        cJSON *pwmDuty = cJSON_GetObjectItemCaseSensitive(jsonData, "pwm_duty");
+    if (_data_len == 0) {    // Check if data length > 0
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "mqttControlPinStateHandler: Handler called, but no data received");
+        return false;
+    }
 
+    cJSON *jsonData = cJSON_Parse(_data);
+    cJSON *pinState = cJSON_GetObjectItemCaseSensitive(jsonData, "state");
+
+    if (mode == GPIO_PIN_MODE_OUTPUT) {
         if (cJSON_IsNumber(pinState)) {    // Check if pinState is a number
-            if (cJSON_IsNumber(pwmDuty)) {   // Check if pwmDuty is available
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "mqttControlPinStateHandler: state: " + std::to_string(pinState->valueint) + 
-                                                                                  ", pwm_duty: " + std::to_string(pwmDuty->valueint));
-                esp_err_t retVal = setPinState(pinState->valueint, pwmDuty->valueint, GPIO_SET_SOURCE_MQTT);
-                if (retVal != ESP_OK) {
-                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "mqttControlPinStateHandler: GPIO" + std::to_string((int)gpio) + 
-                                                            " failed to set state | Error: " + intToHexString(retVal));
-                    cJSON_Delete(jsonData);
-                    return false;
-                }
+            LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "mqttControlPinStateHandler: state: " + std::to_string(pinState->valueint));
+            esp_err_t retVal = setPinState(pinState->valueint, GPIO_SET_SOURCE_MQTT);
+            if (retVal == ESP_OK) {
                 cJSON_Delete(jsonData);
                 return true;
-            }
+            } 
             else {
-                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "mqttControlPinStateHandler: state: " + std::to_string(pinState->valueint));
-                esp_err_t retVal = setPinState(pinState->valueint, GPIO_SET_SOURCE_MQTT);
-                if (retVal != ESP_OK) {
-                    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "mqttControlPinStateHandler: GPIO" + std::to_string((int)gpio) + 
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mqttControlPinStateHandler: GPIO" + std::to_string((int)gpio) + 
                         " failed to set state | Error: " + intToHexString(retVal));
-                    cJSON_Delete(jsonData);
-                    return false;
-                } 
-                cJSON_Delete(jsonData);
-                return true;
             }
         }
         else {
             LogFile.WriteToFile(ESP_LOG_WARN, TAG, "mqttControlPinStateHandler: state not a valid number (\"state\": 1)");
         }
-        cJSON_Delete(jsonData);
+    }
+    else if (mode == GPIO_PIN_MODE_OUTPUT_PWM) {
+        if (cJSON_IsNumber(pinState)) {    // Check if pinState is a number
+            cJSON *pwmDuty = cJSON_GetObjectItemCaseSensitive(jsonData, "pwm_duty");
+            if (cJSON_IsNumber(pwmDuty)) {   // Check if pwmDuty is a number
+                LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "mqttControlPinStateHandler: state: " + std::to_string(pinState->valueint) + 
+                                                                                ", pwm_duty: " + std::to_string(pwmDuty->valueint));
+                esp_err_t retVal = setPinState(pinState->valueint, pwmDuty->valueint, GPIO_SET_SOURCE_MQTT);
+                if (retVal == ESP_OK) {
+                    cJSON_Delete(jsonData);
+                    return true;
+                }
+                else {
+                    LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "mqttControlPinStateHandler: GPIO" + std::to_string((int)gpio) + 
+                                        " failed to set state | Error: " + intToHexString(retVal));
+                }
+            }
+            else {
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "mqttControlPinStateHandler: pwm_duty not a valid number (\"pwm_duty\": 1024)");
+            }
+        }
+        else {
+            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "mqttControlPinStateHandler: state not a valid number (\"state\": 1)");
+        }
+        
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "mqttControlPinStateHandler: handler called, but no data received");
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "mqttControlPinStateHandler: Wrong pin mode, GPIO cannot be controlled)");
     }
 
+    cJSON_Delete(jsonData);
     return false;
 }
 #endif //ENABLE_MQTT

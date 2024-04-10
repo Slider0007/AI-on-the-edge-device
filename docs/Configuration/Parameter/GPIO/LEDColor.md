@@ -2,15 +2,21 @@
 
 |                   | WebUI               | Config.ini
 |:---               |:---                 |:----
-| Parameter Name    | LED Color           | LEDColor
-| Default Value     | Red: `150`<br>Green: `150`<br>Blue: `150` | `150 150 150`
-| Input Options     | Red: `0` (0%) .. `255` (100%)<br>Green: `0` (0%) .. `255` (100%)<br>Blue: `0` (0%) .. `255` (100%) | Red: `0` .. `255`<br>Green: `0` .. `255`<br>Blue: `0` .. `255`
+| Parameter Name    | LED Color           | IOx: 9-11. parameter (RGB)
+| Default Value     | Red: `255`<br>Green: `255`<br>Blue: `255` | `255 255 255`
+| Input Options     | Red: `0` .. `255`<br>Green: `0` .. `255`<br>Blue: `0` .. `255` | Red: `0` .. `255`<br>Green: `0` .. `255`<br>Blue: `0` .. `255`
 
 
 ## Description
 
-Set color of the external LEDs connected to GPIO12.
+Define desired color of the smart LEDs (RGB: additive color model)
 
 
-!!! Note
-    In parameter group GPIO12, configuartion needs to be set to `external flash light ws281x controlled`.
+
+!!! __Tip__
+    White color: Set all three components to 255 (Red: 255 | Green: 255 | Blue: 255)
+
+
+!!! __Tip__
+    Adjust to the desired color only. Intensity adjustments can be controlled by 
+    parameter `Take Image -> Flash Intensity` and `LED Intensity Correction Factor`.
