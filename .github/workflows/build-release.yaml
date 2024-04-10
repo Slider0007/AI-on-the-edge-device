@@ -89,6 +89,7 @@ jobs:
     - name: Prepare WebUI (Generate parameter tooltips, API docs and update hash)
       run: |
         python -m pip install markdown
+        python -m pip install python-markdown-math
         python ./tools/parameter-tooltip-generator/generate-param-doc-tooltips.py
         python ./tools/docs-generator/generate-api-docs.py
 
