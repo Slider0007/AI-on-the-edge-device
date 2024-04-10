@@ -31,7 +31,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
         markdownFileContent = markdownFileHandle.read()
 
     # Convert markdown files to HTML file
-    htmlTooltip = markdown.markdown(markdownFileContent, extensions=['admonition', 'tables', 'mdx-math'])
+    htmlTooltip = markdown.markdown(markdownFileContent, extensions=['admonition', 'tables', 'mdx_math'])
 
     # Make all links to be opened in a new page
     htmlTooltip = htmlTooltip.replace("a href", "a target=_blank href")
