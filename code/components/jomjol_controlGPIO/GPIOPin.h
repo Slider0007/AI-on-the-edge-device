@@ -91,6 +91,7 @@ class GpioPin
         bool getHttpAccess() { return httpAccess; };
 
         void setLedcChannel (ledc_channel_t _ledcChannel) { ledcChannel = _ledcChannel; };
+        ledc_channel_t getLedcChannel () { return ledcChannel; };
         void setSmartLed(SmartLed* _smartLed) { smartLed = _smartLed; };
         SmartLed* getSmartLed() { return smartLed; };
         LedType getLEDType() { return LEDType; };

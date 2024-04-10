@@ -28,11 +28,11 @@ GPIO operation mode
 | `trigger cycle start`     | input<br>(pullup enabled) | Trigger a cycle start
 
 
-!!! Tip
+!!! __Tip__
     All flashlight modes are fully controlled by process cycle, no external manipulation can be done.
 
 
-!!! Tip
+!!! __Tip__
     `Flashlight digital` / `Flashlight pwm` act like an output and are activated while 
     flashlight is requested by process (before image gets taken). This could potentially 
     be used to control any mechanism to activate display before image gets taken.

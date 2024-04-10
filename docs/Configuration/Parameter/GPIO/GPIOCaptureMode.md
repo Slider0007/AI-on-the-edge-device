@@ -22,7 +22,7 @@ This defines how the selected GPIO input is captured internally.
 | `interrupt rising falling` | Capture GPIO input state when a rising or falling edge of signal is detected
 
 
-!!! Tip
+!!! __Tip__
     To debounce the GPIO input, use any interrupt capture mode. 
     Debounce time can be defined with parameter `GPIO Debounce Time`.
 

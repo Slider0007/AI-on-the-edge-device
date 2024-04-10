@@ -13,5 +13,5 @@
 Enable GPIO state request by REST API calls
 
 
-!!! Tip
+!!! __Tip__
     Syntax of REST API calls -> see REST API description

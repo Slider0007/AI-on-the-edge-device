@@ -13,9 +13,9 @@
 Enable publishing GPIO state to MQTT broker
 
 
-!!! Note
+!!! __Note__
     MQTT functionality has to be enabled -> see section `MQTT`
 
 
-!!! Tip
+!!! __Tip__
     Overview of MQTT topics -> see MQTT API description

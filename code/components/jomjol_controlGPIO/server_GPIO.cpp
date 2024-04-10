@@ -809,7 +809,16 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
         }
 
         if (task.compare("get_state") == 0) {
-            requestedGpioState = std::to_string((*gpioMap)[gpioNum]->getPinState());
+            requestedGpioState = "{ \"state\": " + std::to_string((*gpioMap)[gpioNum]->getPinState());
+            
+            if ((*gpioMap)[gpioNum]->getMode() == GPIO_PIN_MODE_OUTPUT_PWM ||
+                (*gpioMap)[gpioNum]->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM)
+            {
+                requestedGpioState += ", \"pwm_duty\": " + std::to_string(ledc_get_duty(LEDC_LOW_SPEED_MODE, 
+                                                (*gpioMap)[gpioNum]->getLedcChannel()));
+            }
+
+            requestedGpioState += " }";
 
             httpd_resp_set_type(req, "text/plain");
             httpd_resp_sendstr(req, requestedGpioState.c_str());
