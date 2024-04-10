@@ -13,10 +13,10 @@ Define desired color of the smart LEDs (RGB: additive color model)
 
 
 
-!!! __Tip__
+!!! Tip
     White color: Set all three components to 255 (Red: 255 | Green: 255 | Blue: 255)
 
 
-!!! __Tip__
+!!! Tip
     Adjust to the desired color only. Intensity adjustments can be controlled by 
     parameter `Take Image -> Flash Intensity` and `LED Intensity Correction Factor`.
