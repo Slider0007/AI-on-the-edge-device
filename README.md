@@ -37,10 +37,10 @@ As a result, you get the digitized value of your meter. There are several option
 
 
 ## Supported Hardware
-| Board Type                                                                     | SOC      | Remarks                          
+| Board Type                                                                     | SOC      | Remarks                         
 |:---                                                                            |:---      |:--- 
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | Only boards with > 4MB RAM
-| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | No onboard flashlight LED
+| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | Only boards with >4MB RAM supported
+| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | No onboard illumination<br>-> Separate illumination (PWM controlable LED / Intelligent LED) necessary
 
 
 ## Device Installation
@@ -67,8 +67,10 @@ A possibly already available development version (upcoming release version) can 
 
 ### 3. Install MCU Part Of Firmware
 Initially the MCU of the device has to be flashed via a direct USB connection. Further updates can be performed directly over the air (OTA). <br>
-For initial installation, use content of `AI-on-the-edge-device__manual-setup__*.zip`.<br>
-NOTE: OTA updates will be performed with `AI-on-the-edge-device__update__*.zip` package.
+For initial installation, use content of `AI-on-the-edge-device__manual-setup__{Board Type}__*.zip`.<br>
+NOTE: OTA updates will be performed with `AI-on-the-edge-device__update__{Board Type}__*.zip` package.
+
+<b>IMPORTANT:</b> Make sure to use correct firmware package for your board type.
 
 There are different ways to flash the microcontroller:
 - [Espressif Flash Tool](https://www.espressif.com/sites/default/files/tools/flash_download_tool_3.9.5.zip)<br>
