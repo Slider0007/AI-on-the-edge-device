@@ -11,5 +11,5 @@
 Name which is used as MQTT topic name
 
 
-!!! __Note__
+!!! Note
     If parameter is empty, default name (gpioX) is used, e.g. gpio1

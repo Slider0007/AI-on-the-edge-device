@@ -25,7 +25,7 @@
 #include "CImageBasis.h"
 #include "ClassLogFile.h"
 #include "server_ota.h"
-#include "server_GPIO.h"
+#include "GpioControl.h"
 #include "MainFlowControl.h"
 
 
@@ -153,11 +153,10 @@ CCamera::CCamera()
 
 void CCamera::powerResetCamera()
 {
-    #if PWDN_GPIO_NUM == (-1) // Use reset only if pin is available
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Power pin not defined. Hardware power reset not available");
-        return;
+    #if PWDN_GPIO_NUM == -1 // Use reset only if pin is available
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "No power down pin availbale to reset camera");
     #else
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Reset camera by power cycling");
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Resetting camera by power down");
     gpio_config_t conf;
     conf.intr_type = GPIO_INTR_DISABLE;
     conf.pin_bit_mask = 1LL << PWDN_GPIO_NUM;

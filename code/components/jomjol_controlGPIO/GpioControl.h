@@ -1,5 +1,5 @@
-#ifndef SERVER_GPIO_H
-#define SERVER_GPIO_H
+#ifndef GPIO_CONTROL_H
+#define GPIO_CONTROL_H
 
 #include "../../include/defines.h"
 
@@ -10,7 +10,7 @@
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 
-#include "GPIOPin.h"
+#include "GpioPin.h"
 
 
 class GpioHandler
@@ -66,4 +66,4 @@ void gpio_handler_deinit();
 void gpio_handler_destroy();
 GpioHandler* gpio_handler_get();
 
-#endif //SERVER_GPIO_H
+#endif //GPIO_CONTROL_H

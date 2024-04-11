@@ -1,4 +1,4 @@
-#include "server_GPIO.h"
+#include "GpioControl.h"
 
 #include <string>
 #include <functional>
@@ -23,7 +23,7 @@
 #endif //ENABLE_MQTT
 
 
-static const char *TAG = "GPIO";
+static const char *TAG = "GPIOCTRL";
 
 static GpioHandler *gpioHandler = NULL;
 QueueHandle_t gpio_queue_handle = NULL;

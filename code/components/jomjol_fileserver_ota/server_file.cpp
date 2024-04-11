@@ -27,7 +27,7 @@ extern "C" {
 #include "ClassLogFile.h"
 #include "MainFlowControl.h"
 #include "server_help.h"
-#include "server_GPIO.h"
+#include "GpioControl.h"
 #include "Helper.h"
 
 #ifdef ENABLE_MQTT

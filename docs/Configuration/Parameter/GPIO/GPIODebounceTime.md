@@ -15,5 +15,5 @@ GPIO debounce time to avoid to many capture events due to any signal flicker
 of e.g. while pressing a push button (only for GPIO input modes)
 
 
-!!! __Note__
+!!! Note
     Debouncing is removing unwanted input noise from buttons, switches or other user input.

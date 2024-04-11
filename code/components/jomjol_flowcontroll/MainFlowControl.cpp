@@ -18,7 +18,7 @@
 #include "time_sntp.h"
 #include "ClassControllCamera.h"
 #include "ClassLogFile.h"
-#include "server_GPIO.h"
+#include "GpioControl.h"
 #include "server_file.h"
 #include "read_wlanini.h"
 #include "connect_wlan.h"
