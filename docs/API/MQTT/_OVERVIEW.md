@@ -32,3 +32,6 @@ Further details can be found in the respective MQTT API topic cluster descriptio
 
 *MQTT topics which are marked as deprecated will be completely removed (functionality merged in another endpoint) or 
 modified in upcoming major release. Check changelog for breaking changes.
+
+### Migration notes (Moved or updated topics)
+Check migration notes for migrated MQTT topics: [Migration notes](xxx_migration_notes.md)
