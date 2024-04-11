@@ -27,7 +27,7 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/rel
 #endif //ENABLE_MQTT
 
 #include "MainFlowControl.h"
-#include "server_GPIO.h"
+#include "GpioControl.h"
 #include "ClassControllCamera.h"
 #include "connect_wlan.h"
 #include "ClassLogFile.h"

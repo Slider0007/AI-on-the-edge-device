@@ -25,7 +25,7 @@
 #include "CImageBasis.h"
 #include "ClassLogFile.h"
 #include "server_ota.h"
-#include "server_GPIO.h"
+#include "GpioControl.h"
 #include "MainFlowControl.h"
 
 

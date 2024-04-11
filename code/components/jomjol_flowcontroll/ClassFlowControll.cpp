@@ -22,7 +22,7 @@ extern "C" {
 #include "server_ota.h"
 #include "server_help.h"
 #include "MainFlowControl.h"
-#include "server_GPIO.h"
+#include "GpioControl.h"
 
 #ifdef ENABLE_MQTT
     #include "interface_mqtt.h"

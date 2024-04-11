@@ -1,10 +1,10 @@
-#include "GPIOPin.h"
+#include "GpioPin.h"
 
 #include <functional>
 #include "freertos/queue.h"
 #include "cJSON.h"
 
-#include "server_GPIO.h"
+#include "GpioControl.h"
 #include "ClassLogFile.h"
 #include "Helper.h"
 #include "MainFlowControl.h"
@@ -14,7 +14,7 @@
 #endif //ENABLE_MQTT
 
 
-static const char *TAG = "GPIO_PIN";
+static const char *TAG = "GPIOPIN";
 
 extern QueueHandle_t gpio_queue_handle;
 

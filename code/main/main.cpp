@@ -38,7 +38,7 @@
 #include "server_ota.h"
 #include "time_sntp.h"
 #include "configFile.h"
-#include "server_GPIO.h"
+#include "GpioControl.h"
 #include "server_camera.h"
 
 #ifdef ENABLE_MQTT
