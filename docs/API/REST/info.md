@@ -100,6 +100,7 @@ The following infos are available:
     "gateway_address": "192.168.1.1",
     "dns_address": "192.168.1.1",
     "hostname": "watermeter",
+    "board_type": "ESP32CAM",
     "chip_model": "ESP32",
     "chip_cores": 2,
     "chip_revision": "1.00",

@@ -30,6 +30,7 @@ Usage Details
         "state": 0
     }
     ```
+
 2. `[MainTopic]/device/gpio/[GPIOName]/ctrl`: Set GPIO output state and PWM duty (only applicaple for mode `Output PWM`)<br>
     Payload (needs to be provided in JSON notation):
     - `state:` GPIO State [`1` or `0`]
@@ -37,7 +38,6 @@ Usage Details
       - Duty Resolution is derived from configured PWM frequency, e.g. 5Khz frequency -> 13 Bit<br>
         - Formula: log2(APB CLK Frequency / Desired Frequency) = log2(80000000 / 5000) = 13.966<br>
         - Maximum resolution is limited to 14 Bit due to compability reasons (e.g. ESP32S3)
-
     - Example:
     ```
     {
