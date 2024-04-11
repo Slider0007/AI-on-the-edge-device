@@ -131,7 +131,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddNumberToObject(cJSONObject, "chip_frequency", esp_clk_cpu_freq()/1000000) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "chip_temp", std::to_string((int)getSOCTemperature()).c_str()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObject, "chip_temp", (int)getSOCTemperature()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "camera_type", Camera.getCamType().c_str()) == NULL)
             retVal = ESP_FAIL;

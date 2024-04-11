@@ -482,7 +482,7 @@ CONFIG_WPA_11R_SUPPORT=n
 //************************************
 #ifdef CAMERA_AITHINKER_ESP32CAM_OV2640
     #define PWDN_GPIO_NUM       GPIO_NUM_32
-    #define RESET_GPIO_NUM      (-1)
+    #define RESET_GPIO_NUM      -1
     #define XCLK_GPIO_NUM       GPIO_NUM_0
     #define SIOD_GPIO_NUM       GPIO_NUM_26
     #define SIOC_GPIO_NUM       GPIO_NUM_27
@@ -500,8 +500,8 @@ CONFIG_WPA_11R_SUPPORT=n
     #define PCLK_GPIO_NUM       GPIO_NUM_22
 
 #elif defined(CAMERA_XIAO_ESP32S3_SENSE_OV2640)
-    #define PWDN_GPIO_NUM       (-1)
-    #define RESET_GPIO_NUM      (-1)
+    #define PWDN_GPIO_NUM       -1
+    #define RESET_GPIO_NUM      -1
     #define XCLK_GPIO_NUM       GPIO_NUM_10
     #define SIOD_GPIO_NUM       GPIO_NUM_40
     #define SIOC_GPIO_NUM       GPIO_NUM_39
