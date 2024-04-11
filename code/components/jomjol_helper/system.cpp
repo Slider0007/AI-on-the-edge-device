@@ -62,7 +62,7 @@ int getChipCoreCount(void)
 
 std::string getChipRevision(void)
 {
-	return std::to_string(efuse_hal_get_major_chip_version() * 100) + 
+	return std::to_string(efuse_hal_get_major_chip_version()) + 
 		    "." + std::to_string(efuse_hal_get_minor_chip_version());
 }
 
