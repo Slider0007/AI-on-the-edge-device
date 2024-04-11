@@ -399,6 +399,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .icon = "wifi",
         .unit = "dBm",
         .deviceClass = "signal_strength",
+        .stateClass = "measurement",
         .entityCategory = "diagnostic"
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -501,7 +502,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .icon = "gauge",
             .unit = valueUnit,
             .deviceClass = meterType,
-            .stateClass = "total_increasing"
+            .stateClass = (*numberSequences)[i]->allowNegativeRates ? "measurement" : "total_increasing"
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -514,6 +515,8 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Fallback Value",
             .icon = "gauge",
             .unit = valueUnit,
+            .deviceClass = meterType,
+            .stateClass = "measurement",
             .entityCategory = "diagnostic"
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -527,6 +530,8 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Raw Value",
             .icon = "gauge",
             .unit = valueUnit,
+            .deviceClass = meterType,
+            .stateClass = "measurement",
             .entityCategory = "diagnostic"
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -552,7 +557,6 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Rate",
             .icon = "swap-vertical",
             .unit = rateUnit,
-            //.deviceClass = meterType,
             .stateClass = "measurement"
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -566,7 +570,6 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Rate / Interval",
             .icon = "arrow-expand-vertical",
             .unit = valueUnit != "" ? valueUnit + "/" + to_stringWithPrecision(processingInterval, 1) + "min" : "",
-            //.deviceClass = meterType,
             .stateClass = "measurement"
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
