@@ -172,7 +172,7 @@ bool ClassFlowMQTT::ReadParameter(FILE* pfile, std::string& aktparamgraph)
                 mqttServer_setMeterType("energy", "GJ", "h", "GJ/h");
             }
             else {
-                mqttServer_setMeterType("none", "", "", "");
+                mqttServer_setMeterType("", "", "", "");
             }
         }
     }
