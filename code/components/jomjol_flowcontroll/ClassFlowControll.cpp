@@ -855,7 +855,7 @@ void ClassFlowControll::AnalogDrawROI(CImageBasis *_zw)
 bool ClassFlowControll::StartMQTTService() 
 {
     if (flowMQTT == NULL) // Service disabled
-        return true;
+        return false;
     
     return flowMQTT->Start(AutoInterval);
 }
