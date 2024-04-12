@@ -177,6 +177,8 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "build_time", build_time()) == NULL)
             retVal = ESP_FAIL;
+        if (cJSON_AddNumberToObject(cJSONObject, "config_file_version", getConfigFileVersion()) == NULL)
+            retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "idf_version", getIDFVersion().c_str()) == NULL)
             retVal = ESP_FAIL;
 

@@ -86,6 +86,13 @@ std::string getIDFVersion(void)
 }
 
 
+int getConfigFileVersion(void)
+{
+	return (int)CONFIG_FILE_VERSION;
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 // CPU Temp
 extern "C" uint8_t temprature_sens_read();

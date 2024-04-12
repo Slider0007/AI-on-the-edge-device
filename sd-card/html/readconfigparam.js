@@ -107,8 +107,12 @@ function ParseConfig() {
      config_split = config_gesamt.split("\n");
      var aktline = 0;
 
-     //param = new Object();
-     //category = new Object(); 
+     var catname = "ConfigFile";
+     category[catname] = new Object(); 
+     category[catname]["enabled"] = true;
+     category[catname]["found"] = true;
+     param[catname] = new Object();
+     ParamAddSingleValueWithPreset(param, catname, "Version", true, "0");
 
      var catname = "TakeImage";
      category[catname] = new Object(); 

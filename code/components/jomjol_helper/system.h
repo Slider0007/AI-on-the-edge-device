@@ -13,6 +13,7 @@ std::string getChipRevision(void);
 void printDeviceInfo(void);
 
 std::string getIDFVersion(void);
+int getConfigFileVersion(void);
 
 float temperatureRead();
 

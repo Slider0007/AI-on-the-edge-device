@@ -450,6 +450,12 @@
 			</td>
 		</tr>
 		<tr>
+			<td>Config File Version</td>
+			<td>
+				<output id="config_file_version"></output>
+			</td>
+		</tr>
+		<tr>
 			<td>ESP-IDF Version</td>
 			<td>
 				<output id="idf_version"></output>
@@ -613,6 +619,7 @@
 				const HTMLVersionString = HTMLVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" + 
 									HTMLVersionCommit + "\" target=\"_blank\">" + HTMLVersionCommit + "</a>)";
 				document.getElementById("html_version").innerHTML = HTMLVersionString;
+				document.getElementById("config_file_version").value = _jsonData.config_file_version;
 
 				document.getElementById("idf_version").value = _jsonData.idf_version;
 			}
