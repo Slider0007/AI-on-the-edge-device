@@ -518,7 +518,7 @@ void migrateConfiguration(void)
                 if (section == sectionConfigFile) {
                     if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion), 
                                                      "Version = " + std::to_string(configFileVersion+1))) {
-                        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Migrate config.ini: v" + std::to_string(configFileVersion) + 
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) + 
                                                                                 " > v" + std::to_string(configFileVersion+1));
                         migrated = true;
                     }
