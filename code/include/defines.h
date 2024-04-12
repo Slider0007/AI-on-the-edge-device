@@ -2,6 +2,14 @@
 #define DEFINES_H
 
 //**************************************************************************************
+// Define config file version for config.ini (sd-card/config/config.ini)
+// Needs to be increased whenever config.ini gets modified and migration is necessary
+// Add migration routine in main.cpp --> migrateConfiguration()
+//**************************************************************************************
+#define CONFIG_FILE_VERSION      1
+
+
+//**************************************************************************************
 // ENABLE/DISABLE SOFTWARE MODULE
 //**************************************************************************************
 

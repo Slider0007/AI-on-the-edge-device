@@ -34,7 +34,7 @@ extern std::string deviceStartTimestamp;
 
 esp_err_t handler_get_info(httpd_req_t *req)
 {
-    const char* APIName = "info:v2"; // API name and version
+    const char* APIName = "info:v3"; // API name and version
     char _query[200];
     char _valuechar[30];    
     std::string type;
@@ -176,6 +176,8 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "html_version", getHTMLversion().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "build_time", build_time()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddNumberToObject(cJSONObject, "config_file_version", getConfigFileVersion()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "idf_version", getIDFVersion().c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -448,6 +450,10 @@ esp_err_t handler_get_info(httpd_req_t *req)
     }
     else if (type.compare("build_time") == 0) {
         httpd_resp_sendstr(req, build_time());
+        return ESP_OK;        
+    }
+    else if (type.compare("config_file_version") == 0) {
+        httpd_resp_sendstr(req, std::to_string(getConfigFileVersion()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("idf_version") == 0) {

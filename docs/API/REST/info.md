@@ -66,6 +66,7 @@ The following infos are available:
 | `firmware_version`                   | MCU Firmware Version                               | `Develop: HEAD (Commit: 3d7fed3)` 
 | `html_version`                       | WebUI / HTML Version                               | `Develop: HEAD (Commit: 3d7fed3)` 
 | `build_time`                         | Firmware Build Time                                | `2024-01-23T21:32:23+0000` 
+| `config_file_version`                | Config File Version (Requested by firmware)        | `1` 
 | `idf_version`                        | Espressif ESP IDF Development Framework Version    | `5.0.2` 
 
 1. JSON:
@@ -128,6 +129,7 @@ The following infos are available:
     "firmware_version": "Develop: HEAD (Commit: 3d7fed3)",
     "html_version": "Develop: HEAD (Commit: 3d7fed3)",
     "build_time": "2024-01-23T21:32:23+0000",
+    "config_file_version": 1,
     "idf_version": "5.0.2"
 }
 ```
