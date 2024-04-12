@@ -453,7 +453,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("config_file_version") == 0) {
-        httpd_resp_sendstr(req, std::to_string(getConfigFileVersion()));
+        httpd_resp_sendstr(req, std::to_string(getConfigFileVersion()).c_str());
         return ESP_OK;        
     }
     else if (type.compare("idf_version") == 0) {
