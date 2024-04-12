@@ -510,7 +510,7 @@ void migrateConfiguration(void)
 
             //*************************************************************************************************
             // Migrate from version 1 to version 2
-            // Migrate GPIO section due to PR for GPIO rework which is part of v17.x
+            // Migrate GPIO section due to PR#154 (complete refactoring of GPIO) which is part of v17.x
             //*************************************************************************************************
             if (configFileVersion == 1) {
                 // Update config version
