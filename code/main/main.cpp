@@ -509,10 +509,38 @@ void migrateConfiguration(void)
             */
 
             //*************************************************************************************************
+            // Migrate from version 1 to version 2
+            // Migrate GPIO section due to PR for GPIO rework which is part of v17.x
+            //*************************************************************************************************
+            if (configFileVersion == 1) {
+                // Update config version
+                // ---------------------
+                if (section == sectionConfigFile) {
+                    if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion), 
+                                                     "Version = " + std::to_string(configFileVersion+1))) {
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) + 
+                                                                                " > v" + std::to_string(configFileVersion+1));
+                        migrated = true;
+                    }
+                }
+
+                // Migrate parameter
+                // ---------------------
+                if (section == "[GPIO]") {                   
+                    // Erase complete section content due to major change in parameter usage
+                    // Section will be filled again by WebUI after save config initially
+                    if (configLines[i].find("[GPIO]") == std::string::npos && !configLines[i].empty()) {
+                        configLines.erase(configLines.begin()+i);
+                        i--; // One element removed, check same position again
+                    }
+                }
+            }
+
+            //*************************************************************************************************
             // Migrate from version 0 to version 1
             // Version 0: All config file versions before 17.x
             //*************************************************************************************************
-            if (configFileVersion == 0) {
+            else if (configFileVersion == 0) {
                 // Update config version
                 // ---------------------
                 if (section == sectionConfigFile) {

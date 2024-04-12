@@ -6,7 +6,7 @@
 // Needs to be increased whenever config.ini gets modified and migration is necessary
 // Add migration routine in main.cpp --> migrateConfiguration()
 //**************************************************************************************
-#define CONFIG_FILE_VERSION      1
+#define CONFIG_FILE_VERSION      2
 
 
 //**************************************************************************************
