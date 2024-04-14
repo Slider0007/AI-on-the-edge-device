@@ -9,4 +9,4 @@
 
 ## Description
 
-LED type of smart LEDs
+LED type of smartLEDs

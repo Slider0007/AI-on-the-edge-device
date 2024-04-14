@@ -82,6 +82,13 @@ std::string getIDFVersion(void)
 }
 
 
+int getConfigFileVersion(void)
+{
+	return (int)CONFIG_FILE_VERSION;
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 // SOC temperature sensor
 #if defined(SOC_TEMP_SENSOR_SUPPORTED)

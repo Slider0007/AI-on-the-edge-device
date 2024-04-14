@@ -120,7 +120,7 @@ void GpioPin::init()
 
     #ifdef ENABLE_MQTT
     if (mqttAccess && (mode == GPIO_PIN_MODE_OUTPUT || mode == GPIO_PIN_MODE_OUTPUT_PWM)) {
-        // Subcribe to [mainTopic]/device/gpio/[GpioName]/ctrl/state
+        // Subcribe to [mainTopic]/device/gpio/[GpioName]/ctrl
         std::function<bool(std::string, char*, int)> func = std::bind(&GpioPin::mqttControlPinState, this, std::placeholders::_1, 
                                                                         std::placeholders::_2, std::placeholders::_3);
         MQTTregisterSubscribeFunction(mqttTopic + "/ctrl", func);

@@ -13,6 +13,7 @@ std::string getChipRevision(void);
 void printDeviceInfo(void);
 
 std::string getIDFVersion(void);
+int getConfigFileVersion(void);
 
 #ifdef SOC_TEMP_SENSOR_SUPPORTED
 void initSOCTemperatureSensor();

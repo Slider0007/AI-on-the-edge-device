@@ -12,7 +12,6 @@
 Define desired color of the smart LEDs (RGB: additive color model)
 
 
-
 !!! Tip
     White color: Set all three components to 255 (Red: 255 | Green: 255 | Blue: 255)
 

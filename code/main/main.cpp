@@ -460,301 +460,363 @@ esp_err_t initSDCard()
 
 void migrateConfiguration(void)
 {
-    bool migrated = false;
-
     if (!FileExists(CONFIG_FILE)) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Config file seems to be missing");
         return;	
     }
 
+    const std::string sectionConfigFile= "[ConfigFile]";
+    bool configSectionFound = false;
+    int actualConfigFileVersion = 0;
+
+    bool migrated = false;
     std::string section = "";
-	std::ifstream ifs(CONFIG_FILE);
-  	std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-	
-    /* Split config file it array of lines */
-    std::vector<std::string> configLines = splitString(content);
 
-    /* Process each line */
+    // Read config file
+    std::ifstream ifs(CONFIG_FILE);
+    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+    std::vector<std::string> configLines = splitString(content); // Split config file in array of lines
+
+    // Read config file version
     for (int i = 0; i < configLines.size(); i++) {
-        //ESP_LOGI(TAG, "Line %d: %s", i, configLines[i].c_str());
+        if (configLines[i] == sectionConfigFile) {
+            configSectionFound = true;
 
-        if (configLines[i].find("[") != std::string::npos) { // Start of new section
-            section = configLines[i];
-            replaceString(section, ";", "", false); // Remove possible semicolon (just for the string comparison)
-            //ESP_LOGI(TAG, "New section: %s", section.c_str());
+            std::vector<std::string> splitted = ZerlegeZeile(configLines[i+1]);
+            if (toUpper(splitted[0]) == "VERSION") {
+                actualConfigFileVersion = stoi(splitted[1]);
+            }
+            break;
         }
+    }
 
-        /* Migrate parameters as needed
-         * For all boolean and further more parameter, we make them enabled all the time now:
-         *  1. If they where disabled, set them to their default value
-         *  2. Enable them
-         * Notes:
-         * The migration has some simplifications:
-         *  - Case Sensitiveness must be like in the initial config.ini
-         *  - No Whitespace after a semicollon
-         *  - Only one whitespace before/after the equal sign
-         */
-        if (section == "[MakeImage]") {
-            migrated = migrated | replaceString(configLines[i], "[MakeImage]", "[TakeImage]"); // Rename the section itself
-        }
-
-        if (section == "[MakeImage]" || section == "[TakeImage]") {
-            migrated = migrated | replaceString(configLines[i], "LogImageLocation", "RawImagesLocation");
-            migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "RawImagesRetention");
-
-            migrated = migrated | replaceString(configLines[i], "WaitBeforeTakingPicture", "FlashTime"); // Rename
-            migrated = migrated | replaceString(configLines[i], "LEDIntensity", "FlashIntensity"); // Rename
-
-            migrated = migrated | replaceString(configLines[i], "FixedExposure", "UNUSED"); // Mark as unused
-
-            migrated = migrated | replaceString(configLines[i], ";Demo = true", ";Demo = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";Demo", "Demo"); // Enable it
-        }
-
-        if (section == "[Alignment]") {
-            if (isInString(configLines[i], "AlignmentAlgo") && isInString(configLines[i], ";")) { // It is the parameter "AlignmentAlgo" and it is commented out
-                migrated = migrated | replaceString(configLines[i], "highAccuracy", "default"); // Set it to its default value and enable it
-                migrated = migrated | replaceString(configLines[i], "fast", "default"); // Set it to its default value and enable it
-                migrated = migrated | replaceString(configLines[i], "off", "default"); // Set it to its default value and enable it
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+    // If no [Config] section is available, add section and set config version to zero
+    if (!configSectionFound) {
+        configLines.insert(configLines.begin(), ""); // 3rd line
+        configLines.insert(configLines.begin(), "Version = 0"); //2nd line 
+	    configLines.insert(configLines.begin(), sectionConfigFile); // 1st line
+        migrated = true;
+    }
+    
+     // Process every version iteration beginning from actual version
+	for (int configFileVersion = actualConfigFileVersion; configFileVersion < (int)CONFIG_FILE_VERSION; configFileVersion++) {     
+        // Process each line of config
+        for (int i = 0; i < configLines.size(); i++) {
+            if (configLines[i].find("[") != std::string::npos) { // Detect start of new section
+                section = configLines[i];
+                replaceString(section, ";", "", false); // Remove possible semicolon (just for the string comparison)
             }
 
-            migrated = migrated | replaceString(configLines[i], ";FlipImageSize = true", ";FlipImageSize = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";FlipImageSize", "FlipImageSize"); // Enable it
+            /* Notes:
+            * The migration has some simplifications:
+            *  - Case sensitiveness must be like in the config.ini
+            *  - No whitespace after a semicollon
+            *  - Only one whitespace before/after the equal sign
+            */
 
-            migrated = migrated | replaceString(configLines[i], "InitialMirror", "UNUSED"); // Mark as unused
-        }
-
-        if (section == "[Digits]") {
-            if (isInString(configLines[i], "CNNGoodThreshold")) { // It is the parameter "CNNGoodThreshold"
-                migrated = migrated | replaceString(configLines[i], "0.5", "0.0");
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-            migrated = migrated | replaceString(configLines[i], "LogImageLocation", "ROIImagesLocation");
-            migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "ROIImagesRetention");
-        }
-
-        if (section == "[Analog]") {
-            migrated = migrated | replaceString(configLines[i], "LogImageLocation", "ROIImagesLocation");
-            migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "ROIImagesRetention");
-            migrated = migrated | replaceString(configLines[i], "CNNGoodThreshold", ";UNUSED_PARAMETER"); // This parameter is no longer used          
-            migrated = migrated | replaceString(configLines[i], "ExtendedResolution", ";UNUSED_PARAMETER"); // This parameter is no longer used
-        }
-
-        if (section == "[PostProcessing]") {
-            migrated = migrated | replaceString(configLines[i], ";PreValueUse = true", ";PreValueUse = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";PreValueUse", "PreValueUse"); // Enable it
-            migrated = migrated | replaceString(configLines[i], "PreValueUse", "FallbackValueUse"); // Rename it
-
-            migrated = migrated | replaceString(configLines[i], ";PreValueAgeStartup", "PreValueAgeStartup"); // Enable it
-            migrated = migrated | replaceString(configLines[i], "PreValueAgeStartup", "FallbackValueAgeStartup");
-
-            migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency = true", ";CheckDigitIncreaseConsistency = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency", "CheckDigitIncreaseConsistency"); // Enable it
-
-            if (isInString(configLines[i], "DecimalShift") && isInString(configLines[i], ";")) { // It is the parameter "DecimalShift" and it is commented out
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            /* AllowNegativeRates has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "AllowNegativeRates") && isInString(configLines[i], ";")) { // It is the parameter "AllowNegativeRates" and it is commented out
-                migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            if (isInString(configLines[i], "AnalogDigitalTransitionStart") && isInString(configLines[i], ";")) { // It is the parameter "AnalogDigitalTransitionStart" and it is commented out
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            /* MaxRateType has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "MaxRateType")) { // It is the parameter "MaxRateType"
-                if (isInString(configLines[i], ";")) { // if disabled
-                    migrated = migrated | replaceString(configLines[i], "= Off", "= RatePerMin"); // Convert it to its default value
-                    migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its default value
-                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerMin"); // Convert it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            //*************************************************************************************************
+            // Migrate from version 1 to version 2
+            // Migrate GPIO section due to PR#154 (complete refactoring of GPIO) which is part of v17.x
+            //*************************************************************************************************
+            if (configFileVersion == 1) {
+                // Update config version
+                // ---------------------
+                if (section == sectionConfigFile) {
+                    if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion), 
+                                                     "Version = " + std::to_string(configFileVersion+1))) {
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) + 
+                                                                                " > v" + std::to_string(configFileVersion+1));
+                        migrated = true;
+                    }
                 }
-                else {
-                    migrated = migrated | replaceString(configLines[i], "= Off", "= RateOff"); // Convert it to its new name
-                    migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its new name
-                    migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerInterval"); // Convert it to its new name
+
+                // Migrate parameter
+                // ---------------------
+                if (section == "[GPIO]") {                   
+                    // Erase complete section content due to major change in parameter usage
+                    // Section will be filled again by WebUI after save config initially
+                    if (configLines[i].find("[GPIO]") == std::string::npos && !configLines[i].empty()) {
+                        configLines.erase(configLines.begin()+i);
+                        i--; // One element removed, check same position again
+                    }
                 }
             }
 
-            if (isInString(configLines[i], "MaxRateValue") && isInString(configLines[i], ";")) { // It is the parameter "MaxRateValue" and it is commented out
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+            //*************************************************************************************************
+            // Migrate from version 0 to version 1
+            // Version 0: All config file versions before 17.x
+            //*************************************************************************************************
+            else if (configFileVersion == 0) {
+                // Update config version
+                // ---------------------
+                if (section == sectionConfigFile) {
+                    if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion), 
+                                                     "Version = " + std::to_string(configFileVersion+1))) {
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) + 
+                                                                                " > v" + std::to_string(configFileVersion+1));
+                        migrated = true;
+                    }
+                }
+
+                // Migrate parameter
+                // ---------------------
+                if (section == "[MakeImage]") {
+                    migrated = migrated | replaceString(configLines[i], "[MakeImage]", "[TakeImage]"); // Rename the section itself
+                }
+
+                if (section == "[MakeImage]" || section == "[TakeImage]") {
+                    migrated = migrated | replaceString(configLines[i], "LogImageLocation", "RawImagesLocation");
+                    migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "RawImagesRetention");
+
+                    migrated = migrated | replaceString(configLines[i], "WaitBeforeTakingPicture", "FlashTime"); // Rename
+                    migrated = migrated | replaceString(configLines[i], "LEDIntensity", "FlashIntensity"); // Rename
+
+                    migrated = migrated | replaceString(configLines[i], "FixedExposure", "UNUSED"); // Mark as unused
+
+                    migrated = migrated | replaceString(configLines[i], ";Demo = true", ";Demo = false"); // Set it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";Demo", "Demo"); // Enable it
+                }
+
+                if (section == "[Alignment]") {
+                    if (isInString(configLines[i], "AlignmentAlgo") && isInString(configLines[i], ";")) { // It is the parameter "AlignmentAlgo" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], "highAccuracy", "default"); // Set it to its default value and enable it
+                        migrated = migrated | replaceString(configLines[i], "fast", "default"); // Set it to its default value and enable it
+                        migrated = migrated | replaceString(configLines[i], "off", "default"); // Set it to its default value and enable it
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    migrated = migrated | replaceString(configLines[i], ";FlipImageSize = true", ";FlipImageSize = false"); // Set it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";FlipImageSize", "FlipImageSize"); // Enable it
+
+                    migrated = migrated | replaceString(configLines[i], "InitialMirror", "UNUSED"); // Mark as unused
+                }
+
+                if (section == "[Digits]") {
+                    if (isInString(configLines[i], "CNNGoodThreshold")) { // It is the parameter "CNNGoodThreshold"
+                        migrated = migrated | replaceString(configLines[i], "0.5", "0.0");
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+                    migrated = migrated | replaceString(configLines[i], "LogImageLocation", "ROIImagesLocation");
+                    migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "ROIImagesRetention");
+                }
+
+                if (section == "[Analog]") {
+                    migrated = migrated | replaceString(configLines[i], "LogImageLocation", "ROIImagesLocation");
+                    migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "ROIImagesRetention");
+                    migrated = migrated | replaceString(configLines[i], "CNNGoodThreshold", ";UNUSED_PARAMETER"); // This parameter is no longer used          
+                    migrated = migrated | replaceString(configLines[i], "ExtendedResolution", ";UNUSED_PARAMETER"); // This parameter is no longer used
+                }
+
+                if (section == "[PostProcessing]") {
+                    migrated = migrated | replaceString(configLines[i], ";PreValueUse = true", ";PreValueUse = false"); // Set it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";PreValueUse", "PreValueUse"); // Enable it
+                    migrated = migrated | replaceString(configLines[i], "PreValueUse", "FallbackValueUse"); // Rename it
+
+                    migrated = migrated | replaceString(configLines[i], ";PreValueAgeStartup", "PreValueAgeStartup"); // Enable it
+                    migrated = migrated | replaceString(configLines[i], "PreValueAgeStartup", "FallbackValueAgeStartup");
+
+                    migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency = true", ";CheckDigitIncreaseConsistency = false"); // Set it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency", "CheckDigitIncreaseConsistency"); // Enable it
+
+                    if (isInString(configLines[i], "DecimalShift") && isInString(configLines[i], ";")) { // It is the parameter "DecimalShift" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    /* AllowNegativeRates has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "AllowNegativeRates") && isInString(configLines[i], ";")) { // It is the parameter "AllowNegativeRates" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    if (isInString(configLines[i], "AnalogDigitalTransitionStart") && isInString(configLines[i], ";")) { // It is the parameter "AnalogDigitalTransitionStart" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    /* MaxRateType has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "MaxRateType")) { // It is the parameter "MaxRateType"
+                        if (isInString(configLines[i], ";")) { // if disabled
+                            migrated = migrated | replaceString(configLines[i], "= Off", "= RatePerMin"); // Convert it to its default value
+                            migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its default value
+                            migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerMin"); // Convert it to its default value
+                            migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                        }
+                        else {
+                            migrated = migrated | replaceString(configLines[i], "= Off", "= RateOff"); // Convert it to its new name
+                            migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its new name
+                            migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerInterval"); // Convert it to its new name
+                        }
+                    }
+
+                    if (isInString(configLines[i], "MaxRateValue") && isInString(configLines[i], ";")) { // It is the parameter "MaxRateValue" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    /* ExtendedResolution has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "ExtendedResolution") && isInString(configLines[i], ";")) { // It is the parameter "ExtendedResolution" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+                
+                    /* IgnoreLeadingNaN has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "IgnoreLeadingNaN") && isInString(configLines[i], ";")) { // It is the parameter "IgnoreLeadingNaN" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+                }
+
+                if (section == "[MQTT]") {
+                    migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
+                    migrated = migrated | replaceString(configLines[i], ";MainTopic", "MainTopic"); // Enable it
+                    migrated = migrated | replaceString(configLines[i], ";ClientID", "ClientID"); // Enable it
+
+                    if (isInString(configLines[i], "CACert") && !isInString(configLines[i], "TLSCACert")) {
+                        migrated = migrated | replaceString(configLines[i], "CACert =", "TLSCACert ="); // Rename it
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    if (isInString(configLines[i], "ClientCert") && !isInString(configLines[i], "TLSClientCert")) {
+                        migrated = migrated | replaceString(configLines[i], "ClientCert =", "TLSClientCert ="); // Rename it
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    if (isInString(configLines[i], "ClientKey") && !isInString(configLines[i], "TLSClientKey")) {
+                        migrated = migrated | replaceString(configLines[i], "ClientKey =", "TLSClientKey ="); // Rename it
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    migrated = migrated | replaceString(configLines[i], "SetRetainFlag", "RetainMessages"); // First rename it, enable it with its default value
+                    migrated = migrated | replaceString(configLines[i], ";RetainMessages = true", ";RetainMessages = false"); // Set it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";RetainMessages", "RetainMessages"); // Enable it
+                    migrated = migrated | replaceString(configLines[i], "RetainMessages", "RetainProcessData"); // Rename it
+
+                    migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery = true", ";HomeassistantDiscovery = false"); // Set it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery", "HomeassistantDiscovery"); // Enable it
+
+                    if (isInString(configLines[i], "MeterType") && !isInString(configLines[i], "HAMeterType")) {
+                        migrated = migrated | replaceString(configLines[i], "MeterType =", "HAMeterType ="); // Rename it
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                        migrated = migrated | replaceString(configLines[i], "HAMeterType = other", "HAMeterType = water_m3"); // Enable it
+                    }
+                    
+                    if (configLines[i].rfind("Topic", 0) != std::string::npos) { // only if string starts with "Topic" (Was the naming in very old version)
+                        migrated = migrated | replaceString(configLines[i], "Topic", "MainTopic");
+                    }
+                }
+
+                if (section == "[InfluxDB]") {
+                    if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    /* Measurement has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    /* Fieldname has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "Fieldname")) { // It is the parameter "Fieldname"
+                        migrated = migrated | replaceString(configLines[i], "Fieldname", "Field"); // Rename it to Field
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    /* Field has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it disabled
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+                }
+
+                if (section == "[InfluxDBv2]") {
+                    if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+                    if (isInString(configLines[i], "Database")) { // It is the parameter "Database"
+                        migrated = migrated | replaceString(configLines[i], "Database", "Bucket"); // Rename it to Bucket
+                    }
+                    
+                    /* Measurement has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    /* Fieldname has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "Fieldname")) { // It is the parameter "Fieldname"
+                        migrated = migrated | replaceString(configLines[i], "Fieldname", "Field"); // Rename it to Field
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    /* Field has a <NUMBER> as prefix! */
+                    if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it disabled
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+                }
+
+                if (section == "[DataLogging]") {
+                    /* DataLogActive is true by default! */
+                    migrated = migrated | replaceString(configLines[i], ";DataLogActive = false", ";DataLogActive = true"); // Set it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";DataLogActive", "DataLogActive"); // Enable it
+
+                    migrated = migrated | replaceString(configLines[i], "DataLogRetentionInDays", "DataFilesRetention");
+                }
+
+                if (section == "[AutoTimer]") {
+                    migrated = migrated | replaceString(configLines[i], ";AutoStart = true", ";AutoStart = false"); // Set it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";AutoStart", "AutoStart"); // Enable it
+
+                    migrated = migrated | replaceString(configLines[i], "Intervall", "Interval");
+                }
+
+                if (section == "[Debug]") {
+                    migrated = migrated | replaceString(configLines[i], "Logfile ", "LogLevel "); // Whitespace needed so it does not match `LogfileRetentionInDays`
+                    /* LogLevel (resp. LogFile) was originally a boolean, but we switched it to an int
+                    * For both cases (true/false), we set it to level 2 (WARNING) */
+                    migrated = migrated | replaceString(configLines[i], "LogLevel = true", "LogLevel = 2");
+                    migrated = migrated | replaceString(configLines[i], "LogLevel = false", "LogLevel = 2");
+                    
+                    migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "LogfilesRetention");
+                }
+
+                if (section == "[System]") {
+                    if (isInString(configLines[i], "TimeServer = undefined") && isInString(configLines[i], ";")) 
+                    { // It is the parameter "TimeServer" and is it disabled
+                        migrated = migrated | replaceString(configLines[i], "undefined", "pool.ntp.org");
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    if (isInString(configLines[i], "TimeZone") && isInString(configLines[i], ";")) { // It is the parameter "TimeZone" and it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+
+                    if (isInString(configLines[i], "Hostname") && isInString(configLines[i], ";")) { // It is the parameter "Hostname" and is it disabled
+                        migrated = migrated | replaceString(configLines[i], "undefined", "watermeter");
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+                                        
+                    migrated = migrated | replaceString(configLines[i], "RSSIThreashold", "RSSIThreshold");
+
+                    if (isInString(configLines[i], "CPUFrequency") && isInString(configLines[i], ";")) { // It is the parameter "CPUFrequency" and is it disabled
+                        migrated = migrated | replaceString(configLines[i], "240", "160");
+                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    }
+                    
+                    migrated = migrated | replaceString(configLines[i], "AutoAdjustSummertime", ";UNUSED_PARAMETER"); // This parameter is no longer used
+
+                    migrated = migrated | replaceString(configLines[i], ";SetupMode = true", ";SetupMode = false"); // Set it to its default value
+                    migrated = migrated | replaceString(configLines[i], ";SetupMode", "SetupMode"); // Enable it
+                }
             }
-
-            /* ExtendedResolution has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "ExtendedResolution") && isInString(configLines[i], ";")) { // It is the parameter "ExtendedResolution" and it is commented out
-                migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-        
-            /* IgnoreLeadingNaN has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "IgnoreLeadingNaN") && isInString(configLines[i], ";")) { // It is the parameter "IgnoreLeadingNaN" and it is commented out
-                migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-        }
-
-        if (section == "[MQTT]") {
-            migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
-            migrated = migrated | replaceString(configLines[i], ";MainTopic", "MainTopic"); // Enable it
-            migrated = migrated | replaceString(configLines[i], ";ClientID", "ClientID"); // Enable it
-
-            if (isInString(configLines[i], "CACert") && !isInString(configLines[i], "TLSCACert")) {
-                migrated = migrated | replaceString(configLines[i], "CACert =", "TLSCACert ="); // Rename it
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            if (isInString(configLines[i], "ClientCert") && !isInString(configLines[i], "TLSClientCert")) {
-                migrated = migrated | replaceString(configLines[i], "ClientCert =", "TLSClientCert ="); // Rename it
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            if (isInString(configLines[i], "ClientKey") && !isInString(configLines[i], "TLSClientKey")) {
-                migrated = migrated | replaceString(configLines[i], "ClientKey =", "TLSClientKey ="); // Rename it
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            migrated = migrated | replaceString(configLines[i], "SetRetainFlag", "RetainMessages"); // First rename it, enable it with its default value
-            migrated = migrated | replaceString(configLines[i], ";RetainMessages = true", ";RetainMessages = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";RetainMessages", "RetainMessages"); // Enable it
-            migrated = migrated | replaceString(configLines[i], "RetainMessages", "RetainProcessData"); // Rename it
-
-            migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery = true", ";HomeassistantDiscovery = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery", "HomeassistantDiscovery"); // Enable it
-
-            if (isInString(configLines[i], "MeterType") && !isInString(configLines[i], "HAMeterType")) {
-                migrated = migrated | replaceString(configLines[i], "MeterType =", "HAMeterType ="); // Rename it
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                migrated = migrated | replaceString(configLines[i], "HAMeterType = other", "HAMeterType = water_m3"); // Enable it
-            }
-            
-            if (configLines[i].rfind("Topic", 0) != std::string::npos) { // only if string starts with "Topic" (Was the naming in very old version)
-                migrated = migrated | replaceString(configLines[i], "Topic", "MainTopic");
-            }
-        }
-
-        if (section == "[InfluxDB]") {
-            if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is commented out
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            /* Measurement has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            /* Fieldname has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "Fieldname")) { // It is the parameter "Fieldname"
-                migrated = migrated | replaceString(configLines[i], "Fieldname", "Field"); // Rename it to Field
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            /* Field has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it disabled
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-        }
-
-        if (section == "[InfluxDBv2]") {
-            if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is commented out
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-            if (isInString(configLines[i], "Database")) { // It is the parameter "Database"
-                migrated = migrated | replaceString(configLines[i], "Database", "Bucket"); // Rename it to Bucket
-            }
-            
-            /* Measurement has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            /* Fieldname has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "Fieldname")) { // It is the parameter "Fieldname"
-                migrated = migrated | replaceString(configLines[i], "Fieldname", "Field"); // Rename it to Field
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            /* Field has a <NUMBER> as prefix! */
-            if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it disabled
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-        }
-
-        if (section == "[GPIO]") {
-            migrated = migrated | replaceString(configLines[i], "LEDType", "#UNUSED"); // Invalidate LEDType
-            migrated = migrated | replaceString(configLines[i], "LEDNumbers", "#UNUSED"); // Invalidate LEDNumbers
-            migrated = migrated | replaceString(configLines[i], "LEDColor", "#UNUSED"); // Invalidate LEDColor
-        }
-
-        if (section == "[DataLogging]") {
-            /* DataLogActive is true by default! */
-            migrated = migrated | replaceString(configLines[i], ";DataLogActive = false", ";DataLogActive = true"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";DataLogActive", "DataLogActive"); // Enable it
-
-            migrated = migrated | replaceString(configLines[i], "DataLogRetentionInDays", "DataFilesRetention");
-        }
-
-        if (section == "[AutoTimer]") {
-            migrated = migrated | replaceString(configLines[i], ";AutoStart = true", ";AutoStart = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";AutoStart", "AutoStart"); // Enable it
-
-            migrated = migrated | replaceString(configLines[i], "Intervall", "Interval");
-        }
-
-        if (section == "[Debug]") {
-            migrated = migrated | replaceString(configLines[i], "Logfile ", "LogLevel "); // Whitespace needed so it does not match `LogfileRetentionInDays`
-            /* LogLevel (resp. LogFile) was originally a boolean, but we switched it to an int
-             * For both cases (true/false), we set it to level 2 (WARNING) */
-            migrated = migrated | replaceString(configLines[i], "LogLevel = true", "LogLevel = 2");
-            migrated = migrated | replaceString(configLines[i], "LogLevel = false", "LogLevel = 2");
-            
-            migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "LogfilesRetention");
-        }
-
-        if (section == "[System]") {
-            if (isInString(configLines[i], "TimeServer = undefined") && isInString(configLines[i], ";")) 
-            { // It is the parameter "TimeServer" and is it disabled
-                migrated = migrated | replaceString(configLines[i], "undefined", "pool.ntp.org");
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            if (isInString(configLines[i], "TimeZone") && isInString(configLines[i], ";")) { // It is the parameter "TimeZone" and it is commented out
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-
-            if (isInString(configLines[i], "Hostname") && isInString(configLines[i], ";")) { // It is the parameter "Hostname" and is it disabled
-                migrated = migrated | replaceString(configLines[i], "undefined", "watermeter");
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-                                 
-            migrated = migrated | replaceString(configLines[i], "RSSIThreashold", "RSSIThreshold");
-
-            if (isInString(configLines[i], "CPUFrequency") && isInString(configLines[i], ";")) { // It is the parameter "CPUFrequency" and is it disabled
-                migrated = migrated | replaceString(configLines[i], "240", "160");
-                migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-            }
-            
-            migrated = migrated | replaceString(configLines[i], "AutoAdjustSummertime", ";UNUSED_PARAMETER"); // This parameter is no longer used
-
-            migrated = migrated | replaceString(configLines[i], ";SetupMode = true", ";SetupMode = false"); // Set it to its default value
-            migrated = migrated | replaceString(configLines[i], ";SetupMode", "SetupMode"); // Enable it
         }
     }
 
     if (migrated) { // At least one replacement happened
-        if (! RenameFile(CONFIG_FILE, CONFIG_FILE_BACKUP)) {
+        if (!RenameFile(CONFIG_FILE, CONFIG_FILE_BACKUP)) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create backup of config file");
             return;
         }

@@ -18,4 +18,4 @@ This potentially helps to align different intensity levels if multiple LED types
 !!! Note
     Generally, flashlight intensity is controlled with global `Flash Intensity` parameter in 
     section `Take Image`.<br>
-    Resulting intensity = Global `Flash Intensity` * Output specific `LED Intensity Correction`
+    Formula: Resulting intensity = Global `Flash Intensity` * Output specific `LED Intensity Correction`
