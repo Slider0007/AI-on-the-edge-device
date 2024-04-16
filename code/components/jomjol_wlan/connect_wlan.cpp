@@ -534,9 +534,9 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 		WIFIReconnectCnt = 0;
 
 		ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        esp_ip4addr_ntoa(&event->ip_info.ip, &wlan_config.ipaddress[0], IP4ADDR_STRLEN_MAX);
-		esp_ip4addr_ntoa(&event->ip_info.netmask, &wlan_config.netmask[0], IP4ADDR_STRLEN_MAX);
-		esp_ip4addr_ntoa(&event->ip_info.gw, &wlan_config.gateway[0], IP4ADDR_STRLEN_MAX);
+        esp_ip4addr_ntoa(&event->ip_info.ip, wlan_config.ipaddress, IP4ADDR_STRLEN_MAX);
+		esp_ip4addr_ntoa(&event->ip_info.netmask, wlan_config.netmask, IP4ADDR_STRLEN_MAX);
+		esp_ip4addr_ntoa(&event->ip_info.gw, wlan_config.gateway, IP4ADDR_STRLEN_MAX);
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Assigned IP: " + wlan_config.ipaddress);
 
 		#ifdef ENABLE_MQTT
