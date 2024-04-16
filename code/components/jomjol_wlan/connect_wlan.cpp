@@ -534,9 +534,9 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 		WIFIReconnectCnt = 0;
 
 		ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        esp_ip4addr_ntoa(&event->ip_info.ip, wlan_config.ipaddress.data(), IP4ADDR_STRLEN_MAX);
-		esp_ip4addr_ntoa(&event->ip_info.netmask, wlan_config.netmask.data(), IP4ADDR_STRLEN_MAX);
-		esp_ip4addr_ntoa(&event->ip_info.gw, wlan_config.gateway.data(), IP4ADDR_STRLEN_MAX);
+        wlan_config.ipaddress = std::string(esp_ip4addr_ntoa(&event->ip_info.ip));
+		wlan_config.netmask = std::string(esp_ip4addr_ntoa(&event->ip_info.netmask));
+		wlan_config.gateway = std::string(esp_ip4addr_ntoa(&event->ip_info.gw));
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Assigned IP: " + wlan_config.ipaddress);
 
 		#ifdef ENABLE_MQTT
@@ -601,7 +601,7 @@ esp_err_t wifi_init_sta(void)
 			return retval;
 		}
 
-		esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, wlan_config.dns.data(), IP4ADDR_STRLEN_MAX);
+		wlan_config.dns = std::string(esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip));
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Manual interface config | IP: " + wlan_config.ipaddress + 
 													", Netmask: " + wlan_config.netmask + 
 													", Gateway: " + wlan_config.gateway +
@@ -609,7 +609,7 @@ esp_err_t wifi_init_sta(void)
     }
 	else {
 		wlan_config.dhcp = true;
-		esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, wlan_config.dns.data(), IP4ADDR_STRLEN_MAX);
+		wlan_config.dns = std::string(esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip));
 		
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Automatic interface config | Use DHCP service");
 	}
