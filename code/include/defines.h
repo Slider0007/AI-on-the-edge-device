@@ -326,6 +326,7 @@ CONFIG_WPA_11R_SUPPORT=n
 #define BOARD_TYPE_NAME      "Board unknown"
 #endif
 
+
 // Define CAMERA model
 // Define ENV_CAMERA_MODEL in platformio.ini
 //************************************
