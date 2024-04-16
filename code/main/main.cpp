@@ -288,6 +288,17 @@ extern "C" void app_main(void)
                 StatusLED(PSRAM_INIT, 3, true);
             }
             else { // HEAP size OK --> continue to camera init
+                // Set SPIRAM memory category 
+                size_t SPIRAMFree = getESPHeapSizeSPIRAMFree();
+                if (SPIRAMFree >= 32000000)
+                    setSPIRAMCategory(SPIRAMCategory_32MB);
+                else if (SPIRAMFree >= 16000000)
+                    setSPIRAMCategory(SPIRAMCategory_16MB);
+                else if (SPIRAMFree >= 8000000)
+                    setSPIRAMCategory(SPIRAMCategory_8MB);
+                else
+                    setSPIRAMCategory(SPIRAMCategory_4MB);
+
                 // Init camera
                 // ********************************************
                 esp_err_t camStatus = Camera.initCam();

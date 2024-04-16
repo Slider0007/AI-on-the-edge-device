@@ -16,6 +16,7 @@ static const char* TAG = "SYSTEM";
 
 unsigned int systemStatus = 0;
 static bool isPlannedReboot = false;
+static SPIRAMCategory_t SPIRAMCategory = SPIRAMCategory_4MB;
 
 sdmmc_cid_t SDCardCid;
 sdmmc_csd_t SDCardCsd;
@@ -312,6 +313,18 @@ size_t getESPHimemReservedArea()
 	return esp_himem_reserved_area_size();
 }
 #endif
+
+
+void setSPIRAMCategory(SPIRAMCategory_t category)
+{
+	SPIRAMCategory = category;
+}
+
+
+SPIRAMCategory_t getSPIRAMCategory()
+{
+	return SPIRAMCategory;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////

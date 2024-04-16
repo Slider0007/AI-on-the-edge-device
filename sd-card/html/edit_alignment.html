@@ -167,7 +167,7 @@
         <tr>
             <td style="vertical-align:bottom;"><b>Reference Image</b></td>
             <td><input disabled style="float:right" class="button" type="button" id="updatemarker"
-                    value="Update Marker" onclick="onClickUpdateMarker()"></td>	
+                    value="Update Marker" onclick="RequestMarkerCut()"></td>	
             <td ><input disabled style="font-weight:bold; float:right" class="button" type="submit"
                     name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
             </td>
@@ -226,58 +226,20 @@
     }
 
 
-    function onClickUpdateMarker()
+    function RequestMarkerCut()
     {
-        var url = domainname + '/process_data?type=process_state';
+        firework.launch('Request marker update...', 'success', 2000, true);
+        MarkerROI[marker_selected]["x"] = document.getElementById("refx").value;
+        MarkerROI[marker_selected]["y"] = document.getElementById("refy").value; 
+        MarkerROI[marker_selected]["dx"] = document.getElementById("refdx").value;
+        MarkerROI[marker_selected]["dy"] = document.getElementById("refdy").value;
 
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4) {
-                if (this.status >= 200 && this.status < 300) {
-                    if (xhttp.responseText.split("] ")[1] == "Initialization - Delayed" ||
-                        xhttp.responseText.split("] ")[1] == "Initialization Failed" ||
-                        xhttp.responseText.split("] ")[1] == "Setup Mode" ||
-                        xhttp.responseText.split("] ")[1] == "Idle - No Autostart" ||
-                        xhttp.responseText.split("] ")[1] == "Idle - Waiting for Autostart")
-                    {
-                        firework.launch('Updating marker...', 'success', 2000, true);
-                        MarkerROI[marker_selected]["x"] = document.getElementById("refx").value;
-                        MarkerROI[marker_selected]["y"] = document.getElementById("refy").value; 
-                        MarkerROI[marker_selected]["dx"] = document.getElementById("refdx").value;
-                        MarkerROI[marker_selected]["dy"] = document.getElementById("refdy").value;
-                        RequestMarkerCut(MarkerROI[marker_selected], domainname);
-                    }
-                    else {
-                        var str = "Marker update only possible in any IDLE state. Wait a few moments and repeat action. " +
-                                    "[Actual State: " + xhttp.responseText.split("] ")[1] + "]";
-                        firework.launch(str, 'warning', 3000, true);
-                    }
-                }
-                else if (this.status == 403) {
-                    firework.launch("Marker update rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
-                    console.error("Marker update rejected. Process not (yet) initialized. Response status: " + this.status);  
-                }
-                else {
-                    firework.launch("Marker update failed (Response status: " + this.status + 
-                                    "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Marker update failed. Response status: " + this.status);  
-                }
-            }
-        };
-
-        xhttp.timeout = 10000;  // 10 seconds
-        xhttp.open("GET", url, true);
-        xhttp.send();
-    }
-
-
-    function RequestMarkerCut(zw, _domainname)
-    {
-        var filetarget = zw["name"].replace("/config/", "/img_tmp/");
-        var url = _domainname + "/editflow?task=cutref&in=/config/reference.jpg&out="+filetarget+"&x=" + 
-                zw["x"] + "&y="  + zw["y"] + "&dx=" + zw["dx"] + "&dy=" + zw["dy"];
+        let filetarget = MarkerROI[marker_selected]["name"].replace("/config/", "/img_tmp/");
+        let url = getDomainname() + "/editflow?task=cutref&in=/config/reference.jpg&out=" + filetarget + "&x=" + 
+                    MarkerROI[marker_selected]["x"] + "&y="  + MarkerROI[marker_selected]["y"] + "&dx=" + 
+                    MarkerROI[marker_selected]["dx"] + "&dy=" + MarkerROI[marker_selected]["dy"];
         
-        var xhttp = new XMLHttpRequest();
+        let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
@@ -289,6 +251,10 @@
                     document.getElementById("savemarker").disabled = false;
                     firework.launch("Marker update rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
                     console.error("Marker update rejected. Process not (yet) initialized. Response status: " + this.status);  
+                }
+                else if (this.status == 405) {
+                    firework.launch("Marker update only possible in any IDLE state. Wait a few moments and repeat action. [" +
+                                        xhttp.responseText.split(" | ")[1] + "]", 'warning', 3000, true);
                 }
                 else {
                     firework.launch("Marker update failed (Response status: " + this.status + 

@@ -319,7 +319,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 
 esp_err_t handler_editflow(httpd_req_t *req)
 {
-    const char* APIName = "editflow:v2"; // API name and version
+    const char* APIName = "editflow:v3"; // API name and version
     char _query[200];
     char _valuechar[30];
     std::string task;
@@ -341,17 +341,10 @@ esp_err_t handler_editflow(httpd_req_t *req)
         return get_tflite_file_handler(req);
     }
     else if (task.compare("copy") == 0) {
-        std::string in, out;
-
-        httpd_query_key_value(_query, "in", _valuechar, 30);
-        in = std::string(_valuechar);
-        httpd_query_key_value(_query, "out", _valuechar, 30);         
-        out = std::string(_valuechar);  
-
-        #ifdef DEBUG_DETAIL_ON       
-            ESP_LOGD(TAG, "in: %s", in.c_str());
-            ESP_LOGD(TAG, "out: %s", out.c_str());
-        #endif
+        httpd_query_key_value(_query, "in", _valuechar, sizeof(_valuechar));
+        std::string in = std::string(_valuechar);
+        httpd_query_key_value(_query, "out", _valuechar, sizeof(_valuechar));       
+        std::string out = std::string(_valuechar);
 
         in = "/sdcard" + in;
         out = "/sdcard" + out;
@@ -368,50 +361,45 @@ esp_err_t handler_editflow(httpd_req_t *req)
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
             return ESP_FAIL;
         }
+        // Interlock request for memory category 4MB due to memory limitation
+        else if (getSPIRAMCategory() == SPIRAMCategory_4MB && taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED, 
+                                ("E91: Request rejected, flow in process | Actual State: " + flowctrl.getActStatus()).c_str());
+            return ESP_FAIL; 
+        }
 
-        std::string in, out, zw;
-        int x, y, dx, dy;
+        httpd_query_key_value(_query, "in", _valuechar, sizeof(_valuechar));
+        std::string in = std::string(_valuechar);
 
-        httpd_query_key_value(_query, "in", _valuechar, 30);
-        in = std::string(_valuechar);
+        httpd_query_key_value(_query, "out", _valuechar, sizeof(_valuechar));         
+        std::string out = std::string(_valuechar);  
 
-        httpd_query_key_value(_query, "out", _valuechar, 30);         
-        out = std::string(_valuechar);  
+        httpd_query_key_value(_query, "x", _valuechar, sizeof(_valuechar));
+        int x = std::stoi(std::string(_valuechar));              
 
-        httpd_query_key_value(_query, "x", _valuechar, 30);
-        zw = std::string(_valuechar);  
-        x = stoi(zw);              
+        httpd_query_key_value(_query, "y", _valuechar, sizeof(_valuechar));
+        int y = std::stoi(std::string(_valuechar));              
 
-        httpd_query_key_value(_query, "y", _valuechar, 30);
-        zw = std::string(_valuechar);  
-        y = stoi(zw);              
+        httpd_query_key_value(_query, "dx", _valuechar, sizeof(_valuechar));
+        int dx = std::stoi(std::string(_valuechar));  
 
-        httpd_query_key_value(_query, "dx", _valuechar, 30);
-        zw = std::string(_valuechar);  
-        dx = stoi(zw);  
-
-        httpd_query_key_value(_query, "dy", _valuechar, 30);
-        zw = std::string(_valuechar);  
-        dy = stoi(zw);          
-
-        #ifdef DEBUG_DETAIL_ON       
-            ESP_LOGD(TAG, "in: %s", in.c_str());
-            ESP_LOGD(TAG, "out: %s", out.c_str());
-            ESP_LOGD(TAG, "x: %s", zw.c_str());
-            ESP_LOGD(TAG, "y: %s", zw.c_str());
-            ESP_LOGD(TAG, "dx: %s", zw.c_str());
-            ESP_LOGD(TAG, "dy: %s", zw.c_str());
-        #endif
+        httpd_query_key_value(_query, "dy", _valuechar, sizeof(_valuechar));
+        int dy = std::stoi(std::string(_valuechar));          
 
         in = "/sdcard" + in;    // --> img_tmp/reference.jpg
         out = "/sdcard" + out;  // --> img_tmp/refX.jpg
 
-        // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp)
-        STBIObjectPSRAM.name="rawImage";
-        STBIObjectPSRAM.usePreallocated = true;
-        STBIObjectPSRAM.PreallocatedMemory = flowctrl.getRawImage()->RGBImageGet();
-        STBIObjectPSRAM.PreallocatedMemorySize = flowctrl.getRawImage()->getMemsize();
-        CAlignAndCutImage* caic = new CAlignAndCutImage("cutref1", in, true);  // CImageBasis of reference.jpg will be created first (921kB RAM needed)
+        // 4MB RAM external SPIRAM are not sufficient to perform alignment marker update while processing cycle
+        // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp) and interlock operation at UI level
+        if (getSPIRAMCategory() == SPIRAMCategory_4MB) {
+            STBIObjectPSRAM.name="rawImage";
+            STBIObjectPSRAM.usePreallocated = true;
+            STBIObjectPSRAM.PreallocatedMemory = flowctrl.getRawImage()->RGBImageGet();
+            STBIObjectPSRAM.PreallocatedMemorySize = flowctrl.getRawImage()->getMemsize();
+        }
+        // Create element, be aware: CImageBasis of reference.jpg will be created first (921kB RAM needed)
+        CAlignAndCutImage* caic = new CAlignAndCutImage("cutref1", in, STBIObjectPSRAM.usePreallocated);
         caic->CutAndSave(out, x, y, dx, dy);
         delete caic;
 
@@ -421,7 +409,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
     }
     else {
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E91: Task not found");
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E92: Task not found");
         return ESP_FAIL;  
     }
 
