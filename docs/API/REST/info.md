@@ -32,7 +32,7 @@ The following infos are available:
 | `wlan_ssid`                          | WLAN SSID                                          | `IOTNETWORK`
 | `wlan_rssi`                          | WLAN Signal Strength [dBm]                         | `-58`
 | `mac_address`                        | Device MAC Address                                 | `41:23:D9:01:5E:AA`
-| `network_config`                     | Network Configuration<br><br>Possible states:<br>- `DHCP`<br>- `Manual`| `DHCP`
+| `network_config`                     | Network Configuration<br><br>Possible states:<br>- `DHCP`<br>- `Static`| `DHCP`
 | `ipv4_address`                       | Device IPv4 Address                                | `192.168.1.4`
 | `netmask_address`                    | Device Netmask Address                             | `255.255.255.0`
 | `gateway_address`                    | Device Gateway Address                             | `192.168.1.1`
