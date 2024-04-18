@@ -544,12 +544,12 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 			esp_netif_dns_info_t dns_info;
 			esp_netif_get_dns_info(event->esp_netif, ESP_NETIF_DNS_MAIN, &dns_info);
 			wlan_config.dns = std::string(esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, buf, sizeof(buf)));
-
-			LogFile.WriteToFile(ESP_LOG_INFO, TAG, "DHCP | IP: " + wlan_config.ipaddress + 
-														", Netmask: " + wlan_config.netmask + 
-														", Gateway: " + wlan_config.gateway +
-														", DNS: " + wlan_config.dns); 
 		}
+
+		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Assigned IP: " + wlan_config.ipaddress + 
+											", Netmask: " + wlan_config.netmask + 
+											", Gateway: " + wlan_config.gateway +
+											", DNS: " + wlan_config.dns); 
 
 		#ifdef ENABLE_MQTT
             if (getMQTTisEnabled()) {
@@ -612,14 +612,12 @@ esp_err_t wifi_init_sta(void)
 			return retval;
 		}
 
-		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Static | IP: " + wlan_config.ipaddress + 
-													", Netmask: " + wlan_config.netmask + 
-													", Gateway: " + wlan_config.gateway +
-													", DNS: " + wlan_config.dns); 
+		wlan_config.dhcp = false;
+		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Use static network config"); 
     }
 	else {
 		wlan_config.dhcp = true;
-		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Use DHCP");
+		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Use DHCP provided network config");
 	}
 
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
