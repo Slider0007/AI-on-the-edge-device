@@ -537,7 +537,7 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 		ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
 		wlan_config.ipaddress = std::string(esp_ip4addr_ntoa(&event->ip_info.ip, buf, sizeof(buf)));
 		wlan_config.netmask = std::string(esp_ip4addr_ntoa(&event->ip_info.netmask, buf, sizeof(buf)));
-		wlan_config.gateway = std::string(esp_ip4addr_ntoa(&event->ip_info.gw, buf, sizeof(buf));
+		wlan_config.gateway = std::string(esp_ip4addr_ntoa(&event->ip_info.gw, buf, sizeof(buf)));
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Assigned IP: " + wlan_config.ipaddress);
 
 		#ifdef ENABLE_MQTT
