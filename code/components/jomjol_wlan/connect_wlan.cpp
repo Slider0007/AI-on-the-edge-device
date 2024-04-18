@@ -533,12 +533,11 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
         WIFIConnected = true;
 		WIFIReconnectCnt = 0;
 
-		ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
 		char buf[20];
-        esp_ip4addr_ntoa(&event->ip_info.ip, buf, sizeof(buf));
-		wlan_config.ipaddress = std::string(buf);
-		esp_ip4addr_ntoa(&event->ip_info.netmask, wlan_config.netmask.data(), IP4ADDR_STRLEN_MAX);
-		esp_ip4addr_ntoa(&event->ip_info.gw, wlan_config.gateway.data(), IP4ADDR_STRLEN_MAX);
+		ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+		wlan_config.ipaddress = std::string(esp_ip4addr_ntoa(&event->ip_info.ip, buf, sizeof(buf)));
+		wlan_config.netmask = std::string(esp_ip4addr_ntoa(&event->ip_info.netmask, buf, sizeof(buf)));
+		wlan_config.gateway = std::string(esp_ip4addr_ntoa(&event->ip_info.gw, buf, sizeof(buf));
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Assigned IP: " + wlan_config.ipaddress);
 
 		#ifdef ENABLE_MQTT
@@ -568,6 +567,7 @@ esp_err_t wifi_init_sta(void)
     my_sta = esp_netif_create_default_wifi_sta();
 
     esp_netif_dns_info_t dns_info;
+	char buf[20];
 	
 	if (!wlan_config.ipaddress.empty() && !wlan_config.netmask.empty() && !wlan_config.gateway.empty())
     {	
@@ -603,7 +603,7 @@ esp_err_t wifi_init_sta(void)
 			return retval;
 		}
 
-		esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, wlan_config.dns.data(), IP4ADDR_STRLEN_MAX);
+		wlan_config.dns = std::string(esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, buf, sizeof(buf)));
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Manual interface config | IP: " + wlan_config.ipaddress + 
 													", Netmask: " + wlan_config.netmask + 
 													", Gateway: " + wlan_config.gateway +
@@ -611,7 +611,7 @@ esp_err_t wifi_init_sta(void)
     }
 	else {
 		wlan_config.dhcp = true;
-		esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, wlan_config.dns.data(), IP4ADDR_STRLEN_MAX);
+		wlan_config.dns = std::string(esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, buf, sizeof(buf)));
 		
 		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Automatic interface config | Use DHCP service");
 	}
