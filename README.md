@@ -37,10 +37,10 @@ As a result, you get the digitized value of your meter. There are several option
 
 
 ## Supported Hardware
-| Board Type                                                                     | SOC      | Remarks                         
-|:---                                                                            |:---      |:--- 
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | - Only boards with >4MB RAM are supported<br>- Beware of inferior quality Chinese clones
-| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | - No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) necessary<br>- Running quite hot, small heat sink recommended
+| Board Type                                                                     | SOC      | Firmware Release | Remarks                       
+|:---                                                                            |:---      |:---           |:--- 
+| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           | - Only boards with >4MB RAM are supported<br>- Beware of inferior quality Chinese clones
+| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |- No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) necessary<br>- Running quite hot, small heat sink recommended
 
 
 ## Device Installation
