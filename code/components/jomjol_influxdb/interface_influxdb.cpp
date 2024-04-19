@@ -131,7 +131,9 @@ void InfluxDBPublish(std::string _measurement, std::string _key, std::string _co
 {
     char* response_buffer = (char*) calloc_psram_heap(std::string(TAG) + "->response_buffer", 1, 
                             sizeof(char) * MAX_HTTP_OUTPUT_BUFFER, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    esp_http_client_config_t http_config = {
+    esp_http_client_config_t http_config = { };
+
+    http_config = {
        .user_agent = "ESP32 Meter reader",
        .method = HTTP_METHOD_POST,
        .event_handler = http_event_handler,
@@ -288,7 +290,9 @@ void InfluxDBv2Publish(std::string _measurement, std::string _key, std::string _
 {
     char* response_buffer = (char*) calloc_psram_heap(std::string(TAG) + "->response_buffer", 1, 
                             sizeof(char) * MAX_HTTP_OUTPUT_BUFFER, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    esp_http_client_config_t http_config = {
+    esp_http_client_config_t http_config = { };
+
+    http_config = {
        .user_agent = "ESP32 Meter reader",
        .method = HTTP_METHOD_POST,
        .event_handler = http_event_handler,
