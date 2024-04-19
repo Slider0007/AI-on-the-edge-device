@@ -654,7 +654,7 @@ esp_err_t wifi_init_sta(void)
 
 	wifi_config.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;		// Scan all channels instead of stopping after first match
 	wifi_config.sta.sort_method = WIFI_CONNECT_AP_BY_SIGNAL;	// Sort by signal strength and keep up to 4 best APs
-	//wifi_config.sta.failure_retry_cnt = 3;					// IDF version 5.0 will support this
+	wifi_config.sta.failure_retry_cnt = 5;						// Number of connection retries station will do before moving to next AP
 
 	#ifdef WLAN_USE_MESH_ROAMING
 	wifi_config.sta.rm_enabled = 1;		 // 802.11k (Radio Resource Management)
