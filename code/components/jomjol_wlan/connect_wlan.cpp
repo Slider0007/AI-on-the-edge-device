@@ -533,11 +533,23 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
         WIFIConnected = true;
 		WIFIReconnectCnt = 0;
 
-		ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        esp_ip4addr_ntoa(&event->ip_info.ip, &wlan_config.ipaddress[0], IP4ADDR_STRLEN_MAX);
-		esp_ip4addr_ntoa(&event->ip_info.netmask, &wlan_config.netmask[0], IP4ADDR_STRLEN_MAX);
-		esp_ip4addr_ntoa(&event->ip_info.gw, &wlan_config.gateway[0], IP4ADDR_STRLEN_MAX);
-		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Assigned IP: " + wlan_config.ipaddress);
+		if (wlan_config.dhcp) {
+			char buf[20];
+			ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+
+			wlan_config.ipaddress = std::string(esp_ip4addr_ntoa(&event->ip_info.ip, buf, sizeof(buf)));
+			wlan_config.netmask = std::string(esp_ip4addr_ntoa(&event->ip_info.netmask, buf, sizeof(buf)));
+			wlan_config.gateway = std::string(esp_ip4addr_ntoa(&event->ip_info.gw, buf, sizeof(buf)));
+
+			esp_netif_dns_info_t dns_info;
+			esp_netif_get_dns_info(event->esp_netif, ESP_NETIF_DNS_MAIN, &dns_info);
+			wlan_config.dns = std::string(esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, buf, sizeof(buf)));
+		}
+
+		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Assigned IP: " + wlan_config.ipaddress + 
+											", Netmask: " + wlan_config.netmask + 
+											", Gateway: " + wlan_config.gateway +
+											", DNS: " + wlan_config.dns); 
 
 		#ifdef ENABLE_MQTT
             if (getMQTTisEnabled()) {
@@ -564,8 +576,6 @@ esp_err_t wifi_init_sta(void)
 	}
 	
     my_sta = esp_netif_create_default_wifi_sta();
-
-    esp_netif_dns_info_t dns_info;
 	
 	if (!wlan_config.ipaddress.empty() && !wlan_config.netmask.empty() && !wlan_config.gateway.empty())
     {	
@@ -592,7 +602,8 @@ esp_err_t wifi_init_sta(void)
 			LogFile.WriteToFile(ESP_LOG_INFO, TAG, "No DNS address set, use gateway address as DNS");
 			 wlan_config.dns = wlan_config.gateway;
 		}
-     
+
+		esp_netif_dns_info_t dns_info;
         dns_info.ip.u_addr.ip4.addr = esp_ip4addr_aton(wlan_config.dns.c_str());
 
         retval = esp_netif_set_dns_info(my_sta, ESP_NETIF_DNS_MAIN, &dns_info);
@@ -601,17 +612,12 @@ esp_err_t wifi_init_sta(void)
 			return retval;
 		}
 
-		esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, &wlan_config.dns[0], IP4ADDR_STRLEN_MAX);
-		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Manual interface config | IP: " + wlan_config.ipaddress + 
-													", Netmask: " + wlan_config.netmask + 
-													", Gateway: " + wlan_config.gateway +
-													", DNS: " + wlan_config.dns); 
+		wlan_config.dhcp = false;
+		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Use static network config"); 
     }
 	else {
 		wlan_config.dhcp = true;
-		esp_ip4addr_ntoa((const esp_ip4_addr_t*)&dns_info.ip, &wlan_config.dns[0], IP4ADDR_STRLEN_MAX);
-		
-		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Automatic interface config | Use DHCP service");
+		LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Use DHCP provided network config");
 	}
 
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -648,7 +654,7 @@ esp_err_t wifi_init_sta(void)
 
 	wifi_config.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;		// Scan all channels instead of stopping after first match
 	wifi_config.sta.sort_method = WIFI_CONNECT_AP_BY_SIGNAL;	// Sort by signal strength and keep up to 4 best APs
-	//wifi_config.sta.failure_retry_cnt = 3;					// IDF version 5.0 will support this
+	wifi_config.sta.failure_retry_cnt = 5;						// Number of connection retries station will do before moving to next AP
 
 	#ifdef WLAN_USE_MESH_ROAMING
 	wifi_config.sta.rm_enabled = 1;		 // 802.11k (Radio Resource Management)

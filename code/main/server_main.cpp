@@ -109,7 +109,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "mac_address", getMac().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "network_config", getDHCPUsage() ? "DHCP" : "Manual") == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "network_config", getDHCPUsage() ? "DHCP" : "Static") == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "ipv4_address", getIPAddress().c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -294,7 +294,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;        
     }
     else if (type.compare("network_config") == 0) {
-        httpd_resp_sendstr(req, getDHCPUsage() ? "DHCP" : "Manual");
+        httpd_resp_sendstr(req, getDHCPUsage() ? "DHCP" : "Static");
         return ESP_OK;        
     }
     else if (type.compare("ipv4_address") == 0) {
