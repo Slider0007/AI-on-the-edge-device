@@ -1,5 +1,36 @@
 # Changelog
 
+## [17.0.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.2.0-SLFork...v17.0.0-SLFork) (2024-04-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **GPIO:** Complete rework of GPIO handler & Add additional features for GPIOs ([#154](https://github.com/Slider0007/AI-on-the-edge-device/issues/154))
+* **mqtt:** Complete rework of MQTT API & Add new content ([#151](https://github.com/Slider0007/AI-on-the-edge-device/issues/151))
+* **REST API:** Complete rework of REST API & WebUI 'info' page ([#85](https://github.com/Slider0007/AI-on-the-edge-device/issues/85))
+
+### Features
+
+* **GPIO:** Complete rework of GPIO handler & Add additional features for GPIOs ([#154](https://github.com/Slider0007/AI-on-the-edge-device/issues/154)) ([026c650](https://github.com/Slider0007/AI-on-the-edge-device/commit/026c650e819b6dc5ec83b77cfe1cdb51361ca45f))
+* **hardware:** Add support for board Seeed Studio XIAO ESP32S3 Sense ([#155](https://github.com/Slider0007/AI-on-the-edge-device/issues/155)) ([922ba2f](https://github.com/Slider0007/AI-on-the-edge-device/commit/922ba2fbfe75d2bdbdc8604051435566c587517e))
+* **mqtt:** Complete rework of MQTT API & Add new content ([#151](https://github.com/Slider0007/AI-on-the-edge-device/issues/151)) ([48ce862](https://github.com/Slider0007/AI-on-the-edge-device/commit/48ce862f64092d3caaa09ffe67f79ca75a23d538))
+* **REST API:** Complete rework of REST API & WebUI 'info' page ([#85](https://github.com/Slider0007/AI-on-the-edge-device/issues/85)) ([93353bb](https://github.com/Slider0007/AI-on-the-edge-device/commit/93353bb9cc499cf3ffe56790db06b57fa4541f71))
+
+
+### Bug Fixes
+
+* **wlan:** Fix IP config output (DHCP) + Enable connection retry ([#156](https://github.com/Slider0007/AI-on-the-edge-device/issues/156)) ([869013d](https://github.com/Slider0007/AI-on-the-edge-device/commit/869013d17041c7e7282e06666e15ff50cacaca9a))
+
+
+### Refactoring / Style Changes
+
+* **source code:** Remove trailing whitespaces ([#158](https://github.com/Slider0007/AI-on-the-edge-device/issues/158)) ([32608ac](https://github.com/Slider0007/AI-on-the-edge-device/commit/32608ac9c0bb151c250da3e7bca97ef7abf3816a))
+
+
+### Other Changes
+
+* **config file:** Add config file version tag ([#153](https://github.com/Slider0007/AI-on-the-edge-device/issues/153)) ([33258c5](https://github.com/Slider0007/AI-on-the-edge-device/commit/33258c5f9a0d2185931ea38afd2480a04d8e6a49))
+
 ## [16.2.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.3-SLFork...v16.2.0-SLFork) (2024-03-11)
 
 
