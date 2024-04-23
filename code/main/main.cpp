@@ -11,8 +11,8 @@
 #include "driver/sdmmc_host.h"
 
 #ifdef DISABLE_BROWNOUT_DETECTOR
-    #include "soc/soc.h" 
-    #include "soc/rtc_cntl_reg.h" 
+    #include "soc/soc.h"
+    #include "soc/rtc_cntl_reg.h"
 #endif
 
 #ifdef USE_HIMEM_IF_AVAILABLE
@@ -81,9 +81,9 @@ extern "C" void app_main(void)
         //register a buffer to record the memory trace
         ESP_ERROR_CHECK( heap_trace_init_standalone(trace_record, NUM_RECORDS) );
     #endif
-        
+
     deviceStartTimestamp = getCurrentTimeString(TIME_FORMAT_OUTPUT);
-        
+
     #ifdef DISABLE_BROWNOUT_DETECTOR
         WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
     #endif
@@ -93,10 +93,10 @@ extern "C" void app_main(void)
     #endif
 
     // ********************************************
-    // Highlight start of app_main 
+    // Highlight start of app_main
     // ********************************************
     ESP_LOGI(TAG, "================ Start app_main =================");
-    
+
     // Init NVS flash
     // ********************************************
     if (ESP_OK != initNVSFlash()) {
@@ -143,7 +143,7 @@ extern "C" void app_main(void)
     // Note: Start AP if no wlan.ini and/or config.ini available, e.g. SD card empty; function does not exit anymore until reboot
     // ********************************************
     #ifdef ENABLE_SOFTAP
-        CheckStartAPMode(); 
+        CheckStartAPMode();
     #endif
 
     // SD card: basic R/W check
@@ -175,19 +175,19 @@ extern "C" void app_main(void)
 
     if (getHTMLcommit().substr(0, 7) == "?")
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse WebUI version"));
- 
+
     if (getHTMLcommit().substr(0, 7) != std::string(GIT_REV).substr(0, 7)) { // Compare the first 7 characters of both hashes
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "WebUI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using AI-on-the-edge-device__update__*.zip");    
+        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using AI-on-the-edge-device__update__*.zip");
     }
 
     // Check reboot reason
     // ********************************************
     CheckIsPlannedReboot();
-    if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {  // If system reboot was not triggered by user and reboot was caused by execption 
+    if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {  // If system reboot was not triggered by user and reboot was caused by execption
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Device was rebooted due to a software exception! Log level is set to DEBUG until the next reboot. "
-                                               "Flow init is delayed by 5 minutes to check the logs or do an OTA update"); 
+                                               "Flow init is delayed by 5 minutes to check the logs or do an OTA update");
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Keep device running until crash occurs again and check logs after device is up again");
         LogFile.setLogLevel(ESP_LOG_DEBUG);
         setTaskAutoFlowState(FLOW_TASK_STATE_INIT_DELAYED);
@@ -198,9 +198,9 @@ extern "C" void app_main(void)
 
     #ifdef HEAP_TRACING_MAIN_START
         ESP_ERROR_CHECK( heap_trace_stop() );
-        heap_trace_dump(); 
+        heap_trace_dump();
     #endif
-    
+
     #ifdef HEAP_TRACING_MAIN_WIFI
         ESP_ERROR_CHECK( heap_trace_start(HEAP_TRACE_LEAKS) );
     #endif
@@ -246,8 +246,8 @@ extern "C" void app_main(void)
 
     #ifdef HEAP_TRACING_MAIN_WIFI
         ESP_ERROR_CHECK( heap_trace_stop() );
-        heap_trace_dump(); 
-    #endif   
+        heap_trace_dump();
+    #endif
 
     #ifdef USE_HIMEM_IF_AVAILABLE
         #ifdef DEBUG_HIMEM_MEMORY_CHECK
@@ -266,7 +266,7 @@ extern "C" void app_main(void)
     }
     else { // ESP_OK -> PSRAM init OK --> continue to check PSRAM size
         size_t psram_size = esp_psram_get_size();
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "PSRAM size: " + std::to_string(psram_size) + " byte (" + std::to_string(psram_size/1024/1024) + 
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "PSRAM size: " + std::to_string(psram_size) + " byte (" + std::to_string(psram_size/1024/1024) +
                                                "MB / " + std::to_string(psram_size/1024/1024*8) + "MBit)");
 
         // Check PSRAM size
@@ -288,7 +288,7 @@ extern "C" void app_main(void)
                 StatusLED(PSRAM_INIT, 3, true);
             }
             else { // HEAP size OK --> continue to camera init
-                // Set SPIRAM memory category 
+                // Set SPIRAM memory category
                 size_t SPIRAMFree = getESPHeapSizeSPIRAMFree();
                 if (SPIRAMFree >= 32000000)
                     setSPIRAMCategory(SPIRAMCategory_32MB);
@@ -326,18 +326,18 @@ extern "C" void app_main(void)
     // Print Device info
     // ********************************************
     printDeviceInfo();
-    
+
     // Print SD-Card info
     // ********************************************
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "SD card info: Name: " + getSDCardName() + ", Capacity: " + 
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "SD card info: Name: " + getSDCardName() + ", Capacity: " +
             std::to_string(getSDCardCapacity()) + "MB, Free: " + std::to_string(getSDCardFreePartitionSpace()) + "MB");
 
 
     // Start webserver + register handler
     // ********************************************
     ESP_LOGD(TAG, "starting servers");
-    server = start_webserver();   
-    register_server_camera_uri(server); 
+    server = start_webserver();
+    register_server_camera_uri(server);
     register_server_main_flow_task_uri(server);
     register_server_file_uri(server, "/sdcard");
     register_server_ota_sdcard_uri(server);
@@ -358,7 +358,7 @@ extern "C" void app_main(void)
     }
     // Critical error(s) occured which do not allow to continue with regular boot sequence.
     // Provding only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: server_main.cpp -> hello_main_handler()
-    else { 
+    else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed");
     }
 }
@@ -367,18 +367,18 @@ extern "C" void app_main(void)
 esp_err_t initNVSFlash()
 {
     ESP_LOGI(TAG, "Initializing NVS flash");
-    
+
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
-    
+
     if (ret != ESP_OK) {
         if (ret == ESP_ERR_NOT_FOUND) {
             ESP_LOGE(TAG, "NVS flash init failed. No NVS partition found");
             StatusLED(SDCARD_NVS_INIT, 4, true);
-        } 
+        }
         else if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
             ESP_LOGE(TAG, "NVS flash init failed. No free NVS pages found");
             StatusLED(SDCARD_NVS_INIT, 5, true);
@@ -435,7 +435,7 @@ esp_err_t initSDCard()
     // formatted in case when mounting fails.
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
-        .max_files = 12,                         // previously -> 2022-09-21: 5, 2023-01-02: 7 
+        .max_files = 12,                         // previously -> 2022-09-21: 5, 2023-01-02: 7
         .allocation_unit_size = 16 * 1024,
         .disk_status_check_enable = 0
     };
@@ -452,7 +452,7 @@ esp_err_t initSDCard()
         if (ret == ESP_FAIL) {
             ESP_LOGE(TAG, "Failed to mount FAT filesystem on SD card. Check SD card filesystem (only FAT supported) or try another card");
             StatusLED(SDCARD_NVS_INIT, 1, true);
-        } 
+        }
         else if (ret == 263) { // Error code: 0x107 --> usually: SD not found
             ESP_LOGE(TAG, "SD card init failed. Check if SD card is properly inserted into SD card slot or try another card");
             StatusLED(SDCARD_NVS_INIT, 2, true);
@@ -473,7 +473,7 @@ void migrateConfiguration(void)
 {
     if (!FileExists(CONFIG_FILE)) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Config file seems to be missing");
-        return;	
+        return;
     }
 
     const std::string sectionConfigFile= "[ConfigFile]";
@@ -504,13 +504,13 @@ void migrateConfiguration(void)
     // If no [Config] section is available, add section and set config version to zero
     if (!configSectionFound) {
         configLines.insert(configLines.begin(), ""); // 3rd line
-        configLines.insert(configLines.begin(), "Version = 0"); //2nd line 
+        configLines.insert(configLines.begin(), "Version = 0"); //2nd line
 	    configLines.insert(configLines.begin(), sectionConfigFile); // 1st line
         migrated = true;
     }
-    
+
      // Process every version iteration beginning from actual version
-	for (int configFileVersion = actualConfigFileVersion; configFileVersion < (int)CONFIG_FILE_VERSION; configFileVersion++) {     
+	for (int configFileVersion = actualConfigFileVersion; configFileVersion < (int)CONFIG_FILE_VERSION; configFileVersion++) {
         // Process each line of config
         for (int i = 0; i < configLines.size(); i++) {
             if (configLines[i].find("[") != std::string::npos) { // Detect start of new section
@@ -533,9 +533,9 @@ void migrateConfiguration(void)
                 // Update config version
                 // ---------------------
                 if (section == sectionConfigFile) {
-                    if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion), 
+                    if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion),
                                                      "Version = " + std::to_string(configFileVersion+1))) {
-                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) + 
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) +
                                                                                 " > v" + std::to_string(configFileVersion+1));
                         migrated = true;
                     }
@@ -543,7 +543,7 @@ void migrateConfiguration(void)
 
                 // Migrate parameter
                 // ---------------------
-                if (section == "[GPIO]") {                   
+                if (section == "[GPIO]") {
                     // Erase complete section content due to major change in parameter usage
                     // Section will be filled again by WebUI after save config initially
                     if (configLines[i].find("[GPIO]") == std::string::npos && !configLines[i].empty()) {
@@ -561,9 +561,9 @@ void migrateConfiguration(void)
                 // Update config version
                 // ---------------------
                 if (section == sectionConfigFile) {
-                    if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion), 
+                    if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion),
                                                      "Version = " + std::to_string(configFileVersion+1))) {
-                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) + 
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) +
                                                                                 " > v" + std::to_string(configFileVersion+1));
                         migrated = true;
                     }
@@ -614,7 +614,7 @@ void migrateConfiguration(void)
                 if (section == "[Analog]") {
                     migrated = migrated | replaceString(configLines[i], "LogImageLocation", "ROIImagesLocation");
                     migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "ROIImagesRetention");
-                    migrated = migrated | replaceString(configLines[i], "CNNGoodThreshold", ";UNUSED_PARAMETER"); // This parameter is no longer used          
+                    migrated = migrated | replaceString(configLines[i], "CNNGoodThreshold", ";UNUSED_PARAMETER"); // This parameter is no longer used
                     migrated = migrated | replaceString(configLines[i], "ExtendedResolution", ";UNUSED_PARAMETER"); // This parameter is no longer used
                 }
 
@@ -667,7 +667,7 @@ void migrateConfiguration(void)
                         migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
                     }
-                
+
                     /* IgnoreLeadingNaN has a <NUMBER> as prefix! */
                     if (isInString(configLines[i], "IgnoreLeadingNaN") && isInString(configLines[i], ";")) { // It is the parameter "IgnoreLeadingNaN" and it is commented out
                         migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
@@ -708,7 +708,7 @@ void migrateConfiguration(void)
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
                         migrated = migrated | replaceString(configLines[i], "HAMeterType = other", "HAMeterType = water_m3"); // Enable it
                     }
-                    
+
                     if (configLines[i].rfind("Topic", 0) != std::string::npos) { // only if string starts with "Topic" (Was the naming in very old version)
                         migrated = migrated | replaceString(configLines[i], "Topic", "MainTopic");
                     }
@@ -751,7 +751,7 @@ void migrateConfiguration(void)
                     if (isInString(configLines[i], "Database")) { // It is the parameter "Database"
                         migrated = migrated | replaceString(configLines[i], "Database", "Bucket"); // Rename it to Bucket
                     }
-                    
+
                     /* Measurement has a <NUMBER> as prefix! */
                     if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
@@ -790,12 +790,12 @@ void migrateConfiguration(void)
                     * For both cases (true/false), we set it to level 2 (WARNING) */
                     migrated = migrated | replaceString(configLines[i], "LogLevel = true", "LogLevel = 2");
                     migrated = migrated | replaceString(configLines[i], "LogLevel = false", "LogLevel = 2");
-                    
+
                     migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "LogfilesRetention");
                 }
 
                 if (section == "[System]") {
-                    if (isInString(configLines[i], "TimeServer = undefined") && isInString(configLines[i], ";")) 
+                    if (isInString(configLines[i], "TimeServer = undefined") && isInString(configLines[i], ";"))
                     { // It is the parameter "TimeServer" and is it disabled
                         migrated = migrated | replaceString(configLines[i], "undefined", "pool.ntp.org");
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
@@ -809,14 +809,14 @@ void migrateConfiguration(void)
                         migrated = migrated | replaceString(configLines[i], "undefined", "watermeter");
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
                     }
-                                        
+
                     migrated = migrated | replaceString(configLines[i], "RSSIThreashold", "RSSIThreshold");
 
                     if (isInString(configLines[i], "CPUFrequency") && isInString(configLines[i], ";")) { // It is the parameter "CPUFrequency" and is it disabled
                         migrated = migrated | replaceString(configLines[i], "240", "160");
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
                     }
-                    
+
                     migrated = migrated | replaceString(configLines[i], "AutoAdjustSummertime", ";UNUSED_PARAMETER"); // This parameter is no longer used
 
                     migrated = migrated | replaceString(configLines[i], ";SetupMode = true", ";SetupMode = false"); // Set it to its default value
@@ -832,7 +832,7 @@ void migrateConfiguration(void)
             return;
         }
 
-        FILE* pfile = fopen(CONFIG_FILE, "w");        
+        FILE* pfile = fopen(CONFIG_FILE, "w");
         for (int i = 0; i < configLines.size(); i++) {
             fwrite(configLines[i].c_str() , configLines[i].length(), 1, pfile);
             fwrite("\n" , 1, 1, pfile);

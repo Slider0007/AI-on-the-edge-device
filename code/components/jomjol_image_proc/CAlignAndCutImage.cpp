@@ -13,7 +13,7 @@
 
 static const char* TAG = "IMG_ALIGNCUT";
 
-//#define DEBUG_DETAIL_ON  
+//#define DEBUG_DETAIL_ON
 
 
 CAlignAndCutImage::CAlignAndCutImage(std::string _name, CImageBasis *_org, CImageBasis *_temp) : CImageBasis(_name)
@@ -24,9 +24,9 @@ CAlignAndCutImage::CAlignAndCutImage(std::string _name, CImageBasis *_org, CImag
     width = _org->width;
     height = _org->height;
     bpp = _org->bpp;
-    externalImage = true;   
+    externalImage = true;
 
-    islocked = false; 
+    islocked = false;
 
     ImageTMP = _temp;
 }
@@ -91,14 +91,14 @@ int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
         ESP_LOGI(TAG, "Align: dx1 %d, dy1 %d, dx2 %d, dy2 %d, angle dev %f", dx1, dy1, dx2, dy2, angle_deviation);
     #endif
 
-    if (fabs(angle_deviation) > 45 || abs(dx1) >= _temp1->search_x || abs(dy1) >= _temp1->search_y  || 
-                                      abs(dx2) >= _temp2->search_x || abs(dy2) >= _temp2->search_y) 
+    if (fabs(angle_deviation) > 45 || abs(dx1) >= _temp1->search_x || abs(dy1) >= _temp1->search_y  ||
+                                      abs(dx2) >= _temp2->search_x || abs(dy2) >= _temp2->search_y)
     {
-        _temp1->error_details = _temp2->error_details = "Angle dev: " + to_stringWithPrecision(angle_deviation, 1) + 
+        _temp1->error_details = _temp2->error_details = "Angle dev: " + to_stringWithPrecision(angle_deviation, 1) +
                             ", Ref0dx: " + std::to_string(dx1)+ ", Ref0dy: " + std::to_string(dy1) +
                             ", Ref1dx: " + std::to_string(dx2)+ ", Ref1dy: " + std::to_string(dy2);
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, _temp1->error_details);
-        
+
         return -1; // ALIGNMENT FAILED
     }
 
@@ -122,11 +122,11 @@ int IRAM_ATTR CAlignAndCutImage::Align(strRefInfo *_temp1, strRefInfo *_temp2)
         rt.Rotate(angle_deviation, width/2, height/2);
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Angle dev: " + to_stringWithPrecision(angle_deviation, 1) + 
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Angle dev: " + to_stringWithPrecision(angle_deviation, 1) +
                                 ", Ref0dx: " + std::to_string(dx1)+ ", Ref0dy: " + std::to_string(dy1) +
                                 ", Ref1dx: " + std::to_string(dx2)+ ", Ref1dy: " + std::to_string(dy2));
 
-    if (isSimilar1 && isSimilar2)   
+    if (isSimilar1 && isSimilar2)
         return 1; // FAST ALGO match
     else {
         return 0; // STANDARD ALGO done
@@ -169,7 +169,7 @@ void IRAM_ATTR CAlignAndCutImage::CutAndSave(std::string _template1, int x1, int
     #else
         stbi_write_bmp(_template1.c_str(), dx, dy, channels, odata);
     #endif
-    
+
 
     RGBImageRelease();
 

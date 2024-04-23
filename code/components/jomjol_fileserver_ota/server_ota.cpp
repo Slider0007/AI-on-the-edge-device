@@ -69,8 +69,8 @@ static bool ota_update_firmware(std::string fn)
     const esp_partition_t *configured = esp_ota_get_boot_partition();
     const esp_partition_t *running = esp_ota_get_running_partition();
 
-    if (configured != running) {        
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Configured OTA boot partition at offset " + std::to_string(configured->address) + 
+    if (configured != running) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Configured OTA boot partition at offset " + std::to_string(configured->address) +
                 ", but running from offset " + std::to_string(running->address));
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "This can happen if either the OTA boot data or preferred boot image become somehow corrupted.");
     }
@@ -90,8 +90,8 @@ static bool ota_update_firmware(std::string fn)
     }
 
     int binary_file_length = 0;
-    //deal with all receive packet 
-    bool image_header_was_checked = false;  
+    //deal with all receive packet
+    bool image_header_was_checked = false;
 
     int data_read = fread(ota_write_data, 1, SERVER_OTA_SCRATCH_BUFSIZE, f);
 
@@ -119,7 +119,7 @@ static bool ota_update_firmware(std::string fn)
                     if (last_invalid_app != NULL) {
                         if (memcmp(invalid_app_info.version, new_app_info.version, sizeof(new_app_info.version)) == 0) {
                             LogFile.WriteToFile(ESP_LOG_WARN, TAG, "New version is the same as invalid version");
-                            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Previously, there was an attempt to launch the firmware with " + 
+                            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Previously, there was an attempt to launch the firmware with " +
                                     std::string(invalid_app_info.version) + " version, but it failed");
                             LogFile.WriteToFile(ESP_LOG_WARN, TAG, "The firmware has been rolled back to the previous version");
                             infinite_loop();
@@ -148,7 +148,7 @@ static bool ota_update_firmware(std::string fn)
                 return false;
             }
         }
-                  
+
         err = esp_ota_write(update_handle, (const void *)ota_write_data, data_read);
         if (err != ESP_OK) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ota_update_firmware: esp_ota_write failed. Error: " + intToHexString(err));
@@ -158,7 +158,7 @@ static bool ota_update_firmware(std::string fn)
         binary_file_length += data_read;
         data_read = fread(ota_write_data, 1, SERVER_OTA_SCRATCH_BUFSIZE, f);
     }
-    fclose(f);  
+    fclose(f);
 
     ESP_LOGI(TAG, "Total written image length: %d", binary_file_length);
 
@@ -184,7 +184,7 @@ static bool ota_update_firmware(std::string fn)
 // OTA update: 2nd step
 void task_ota_update(void *pvParameter)
 {
-  	StatusLED(AP_OR_OTA, 1, true);  // Signaling an OTA update  
+  	StatusLED(AP_OR_OTA, 1, true);  // Signaling an OTA update
 
     std::string filetype = toUpper(getFileType(file_name_update));
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "File name: " + file_name_update + " | File type: " + filetype);
@@ -212,7 +212,7 @@ void task_ota_update(void *pvParameter)
        	LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Processing BIN file: " + file_name_update);
         if (!ota_update_firmware(file_name_update))
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Firmware update failed");
-        
+
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Reboot to finalize update process");
         doRebootOTA();
     }
@@ -316,7 +316,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "handler_ota_update");
     char _query[200];
     char _filename[100];
-    char _valuechar[30];    
+    char _valuechar[30];
     std::string fn = "/sdcard/firmware/";
     std::string _task = "";
     bool _file_del = false;
@@ -324,7 +324,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK) {
-        //ESP_LOGD(TAG, "Query: %s", _query);    
+        //ESP_LOGD(TAG, "Query: %s", _query);
         if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             //ESP_LOGD(TAG, "task is found: %s", _valuechar);
             _task = std::string(_valuechar);
@@ -344,7 +344,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
 
     if (_task.compare("emptyfirmwaredir") == 0) {
         deleteAllFilesInDirectory("/sdcard/firmware");
-        httpd_resp_sendstr(req, "Directory /sdcard/firmware deleted"); 
+        httpd_resp_sendstr(req, "Directory /sdcard/firmware deleted");
         return ESP_OK;
     }
 
@@ -369,13 +369,13 @@ esp_err_t handler_ota_update(httpd_req_t *req)
             fclose(pfile);
 
             httpd_resp_sendstr(req, "reboot"); // String needs to be started with "reboot" -> Trigger reboot from WebUI
-            return ESP_OK;  
+            return ESP_OK;
         }
 
         std::string zw = "task=update: No valid file (.zip, .bin, .tfl, .tlite)";
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, zw);
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, zw.c_str()); 
-        return ESP_FAIL;        
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, zw.c_str());
+        return ESP_FAIL;
     }
 
     else if (_task.compare("unziphtml") == 0) {
@@ -391,16 +391,16 @@ esp_err_t handler_ota_update(httpd_req_t *req)
 
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Web interface: Update completed");
         httpd_resp_sendstr(req, "Web interface: Update completed. No reboot required");
-        return ESP_OK;        
+        return ESP_OK;
     }
 
     if (_file_del) {
         if(!DeleteFile(fn)) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Deletetion failed. File does not exist: " + fn);
-            httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File deletion failed"); 
+            httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File deletion failed");
             return ESP_FAIL;
         }
-        
+
         std::string zw = "File deleted: " + fn;
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, zw);
         httpd_resp_sendstr(req, zw.c_str());
@@ -409,7 +409,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
 
     std::string zw = "No valid task/action: OTA handler called without any parameter";
     LogFile.WriteToFile(ESP_LOG_ERROR, TAG, zw);
-    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, zw.c_str()); 
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, zw.c_str());
     return ESP_FAIL;
 }
 
@@ -443,13 +443,13 @@ std::string unzip_ota(std::string _in_zip_file, std::string _root_folder)
         mz_zip_archive_file_stat file_stat;
         mz_zip_reader_file_stat(&zip_archive, i, &file_stat);
         sprintf(archive_filename, file_stat.m_filename);
-        
+
         if (!file_stat.m_is_directory) {
             // Extract file to heap
             // IMPORTANT NOTE -> miniz v3.x crashes here with ESP32S3, more details --> miniz changelog
             p = mz_zip_reader_extract_file_to_heap(&zip_archive, archive_filename, &uncomp_size, 0);
             if (!p) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "unzip_ota: mz_zip_reader_extract_file_to_heap() failed | file: " + 
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "unzip_ota: mz_zip_reader_extract_file_to_heap() failed | file: " +
                                                          std::string(archive_filename));
                 mz_zip_reader_end(&zip_archive);
                 return "ERROR";
@@ -483,7 +483,7 @@ std::string unzip_ota(std::string _in_zip_file, std::string _root_folder)
             uint writtenbytes = fwrite(p, 1, (uint)uncomp_size, fpTargetFile);
             fclose(fpTargetFile);
             mz_free(p);
-            
+
             bool isokay = true;
 
             if (writtenbytes != (uint)uncomp_size) {
@@ -553,7 +553,7 @@ void unzip(std::string _in_zip_file, std::string _target_directory)
             mz_zip_archive_file_stat file_stat;
             mz_zip_reader_file_stat(&zip_archive, i, &file_stat);
             sprintf(archive_filename, file_stat.m_filename);
- 
+
             // Try to extract all the files to the heap.
             p = mz_zip_reader_extract_file_to_heap(&zip_archive, archive_filename, &uncomp_size, 0);
             if (!p) {
@@ -582,7 +582,7 @@ void unzip(std::string _in_zip_file, std::string _target_directory)
 }
 
 
-void hard_restart() 
+void hard_restart()
 {
     esp_task_wdt_config_t twdt_config = {
         .timeout_ms = 1,
@@ -672,7 +672,7 @@ esp_err_t handler_reboot(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
     httpd_resp_sendstr(req, "Reboot initiated");
-    
+
     doReboot();
 
     return ESP_OK;
@@ -682,18 +682,18 @@ esp_err_t handler_reboot(httpd_req_t *req)
 void register_server_ota_sdcard_uri(httpd_handle_t server)
 {
     ESP_LOGI(TAG, "Registering URI handlers");
-    
+
     httpd_uri_t camuri = { };
     camuri.method    = HTTP_GET;
     camuri.uri       = "/ota";
     camuri.handler   = handler_ota_update;
-    camuri.user_ctx  = NULL;    
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.method    = HTTP_GET;
     camuri.uri       = "/reboot";
     camuri.handler   = handler_reboot;
-    camuri.user_ctx  = NULL;    
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
 }

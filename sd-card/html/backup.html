@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Backup/Restore Configuration</title>
 
-    <style>  
+    <style>
         h1 {font-size: 1.8em;}
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
@@ -21,7 +21,7 @@
             padding: 10px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
         }
 
         .button {
@@ -53,9 +53,9 @@
 <script src="FileSaver.min.js?v=$COMMIT_HASH"></script>
 <script>
 
-function startBackup() {  
+function startBackup() {
     document.getElementById("progress").innerHTML = "Creating backup...<br>\n";
-    
+
     // Get hostname
     try {
         var xhttp = new XMLHttpRequest();
@@ -67,10 +67,10 @@ function startBackup() {
         setStatus("<span style=\"color: red\">Failed to fetch hostname: " + err.message + "!</span>");
         return;
     }
-    
+
     // get date/time
     var dateTime = new Date().toJSON().slice(0,10) + "_" + new Date().toJSON().slice(11,19).replaceAll(":", "-");
-    
+
     zipFilename = hostname + "_" + dateTime + ".zip";
     //console.log(zipFilename);
 
@@ -80,23 +80,23 @@ function startBackup() {
             var xhttp = new XMLHttpRequest();
             xhttp.open("GET", getDomainname() + "/fileserver/config/", false);
             xhttp.send();
-            
+
             var parser = new DOMParser();
             var content = parser.parseFromString(xhttp.responseText, 'text/html');    }
         catch(err) {
             setStatus("Failed to fetch files list: " + err.message);
             return;
         }
-        
+
         const list = content.querySelectorAll("a");
-        
+
         var urls = [];
-        
+
         for (a of list) {
             url = a.getAttribute("href");
             urls.push(getDomainname() + url);
         }
-        
+
         // Pack as zip and download
         try {
             backup(urls, zipFilename);
@@ -187,7 +187,7 @@ function startBackup() {
 
         var zip = new JSZip();
 
-        for (var i = 0; i < urls.length; i++) {        
+        for (var i = 0; i < urls.length; i++) {
             zip.file(getFilenameFromUrl(urls[i]), filesData[i]);
         }
 

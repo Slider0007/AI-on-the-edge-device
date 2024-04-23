@@ -52,8 +52,8 @@ void *malloc_psram_heap_STBI(std::string name, size_t size, uint32_t caps)
     else {
         ptr = heap_caps_malloc(size, caps);
     }
-    
-          
+
+
     if (ptr != NULL) {
 	    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, name + ": Allocated: " + std::to_string(size));
 	}

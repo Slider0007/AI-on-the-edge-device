@@ -1,7 +1,7 @@
-################################################## 
+##################################################
 # Application and board specific configuration
 # Edit this file instead of sdkconfig.{board_type}!
-# After editing make sure to explicitly delete 
+# After editing make sure to explicitly delete
 # sdkconfig.{board_type} to apply your changes!
 ##################################################
 
@@ -25,7 +25,7 @@ CONFIG_PARTITION_TABLE_MD5=y
 
 #
 # Common ESP-related
-# 
+#
 CONFIG_ESP_ERR_TO_NAME_LOOKUP=n
 CONFIG_ESP_ALLOW_BSS_SEG_EXTERNAL_MEMORY=n
 

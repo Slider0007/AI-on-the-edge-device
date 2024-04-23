@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Data Graph</title>
@@ -20,7 +20,7 @@
             padding: 3px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
             margin-right: 10px;
             min-width: 100px;
             vertical-align: middle;
@@ -55,12 +55,12 @@
         }
     </style>
 
-    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>  
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
     <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
     <script src="firework.js?v=$COMMIT_HASH"></script>
     <script src='plotly-basic-2.18.2.min.js?v=$COMMIT_HASH'></script>
-    <script src="common.js?v=$COMMIT_HASH"></script> 
-    <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
+    <script src="common.js?v=$COMMIT_HASH"></script>
+    <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
     <script src="readconfigparam.js?v=$COMMIT_HASH"></script>
     <script>
         function addZero(i)
@@ -150,7 +150,7 @@
                     if (firstNonNaNIndex == (traceValue.y.length - 1)) {
                         console.log("No data available for 'value'!");
                     }
-                    else if (firstNonNaNIndex > 0) { // Replace all leading NaN with the first valid value 
+                    else if (firstNonNaNIndex > 0) { // Replace all leading NaN with the first valid value
                         console.log("The first leading values have all just NaN, replacing them with the value of",
                                 traceValue.y[firstNonNaNIndex], "at", traceValue.x[firstNonNaNIndex], "(Index:", firstNonNaNIndex, ")");
                         for(var i = 0; i < firstNonNaNIndex; i++) {
@@ -246,11 +246,11 @@
     <div>
         <input type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
         <label for=AutoRefreshEnabled><span id="AutoRefreshEnabled_text" style="color:black;">Auto Refresh</span></label>
-        <input required type="number" style="margin-left: 18px;" name="AutoRefreshTime" id="AutoRefreshTime"  min="1" step="1" value="60" 
+        <input required type="number" style="margin-left: 18px;" name="AutoRefreshTime" id="AutoRefreshTime"  min="1" step="1" value="60"
                 oninput="(!validity.rangeUnderflow||(value=1));" onchange="AutoRefreshContent();"> s
         <output style="margin-left:48px" id="timestamp" >Last Refresh:</output>
     </div>
-    <div style="margin-top:10px;margin-bottom:20px">       
+    <div style="margin-top:10px;margin-bottom:20px">
         <button class="button" onclick="run();">Refresh</button>
         <button class="button" onClick="window.location.href = 'data.html?v=$COMMIT_HASH'">Show Data Viewer</button>
         <button class="button" onClick="window.location.href = getDomainname() + '/fileserver/log/data/'">Show Data Files</button>
@@ -268,14 +268,14 @@
 
         for (var i = list_data.length - 1; i >= 0; --i) {
             var optionDig = document.createElement("option");
-            
+
             optionDig.text = list_data[i].substring(5, list_data[i].lastIndexOf('.'));
             optionDig.value = list_data[i];
             _indexDig.add(optionDig);
         }
     }
 
-  
+
     function parseNumberSequenceName()
     {
         var NumberSequence = getNumberSequences();
@@ -299,17 +299,17 @@
         ParseConfig();
         param = getConfigParameters();
         parseNumberSequenceName();
-        
+
 		document.getElementById("AutoRefreshEnabled").checked = param["WebUI"]["DataGraphAutoRefresh"]["value1"] == "true" ? true : false;
-		document.getElementById("AutoRefreshTime").value = param["WebUI"]["DataGraphAutoRefreshTime"]["value1"];   
-        
+		document.getElementById("AutoRefreshTime").value = param["WebUI"]["DataGraphAutoRefreshTime"]["value1"];
+
         autoRefreshTimeoutHandle = null; // Init auto refresh handle
         AutoRefreshContent();
     }
 
 
 	function AutoRefreshContent()
-	{	   
+	{
         if (document.getElementById("AutoRefreshEnabled").checked == true) { // Activated -> Set timeout
 
 			if (autoRefreshTimeoutHandle) { // Clear actual timeout handle

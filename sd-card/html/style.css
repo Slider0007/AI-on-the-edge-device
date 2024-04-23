@@ -3,8 +3,8 @@ body, html {
     min-width: 690px;
     height: 100vh;
     min-height: 100vh;
-    margin: 0px 0px 0px 2px; 
-    padding: 0; 
+    margin: 0px 0px 0px 2px;
+    padding: 0;
     font-family: arial;
     font-size: 100%;
     -webkit-text-size-adjust: 100%;
@@ -16,8 +16,8 @@ body, html {
     max-width: 689px;
     height: 150vh;
     min-height: 100vh;
-    margin: 0px 0px 0px 2px; 
-    padding: 0; 
+    margin: 0px 0px 0px 2px;
+    padding: 0;
     font-family: arial;
     font-size: 100%;
     -webkit-text-size-adjust: 100%;
@@ -26,9 +26,9 @@ body, html {
 }
 
 .main {
-    display: flex; 
-    width: 100%; 
-    height: 100%; 
+    display: flex;
+    width: 100%;
+    height: 100%;
     flex-direction: column;
     overflow: hidden;
     font-family: arial;
@@ -36,21 +36,21 @@ body, html {
 
 .iframe {
     flex: 1 1 auto;
-    margin: 5px 0px 8px 0px; 
-    padding: 0; 
+    margin: 5px 0px 8px 0px;
+    padding: 0;
     border: 0px solid #333; /* black */
     font-family: arial;
 }
 
 h1 {
-    font-size: 1.8em; 
+    font-size: 1.8em;
     margin-block-end: 0.2em;
 }
 
 h2 {
     font-size: 1.5em;
     margin-block-start: 0.0em;
-    margin-block-end: 0.2em; 
+    margin-block-end: 0.2em;
 }
 
 h3 {
@@ -197,9 +197,9 @@ p {
   transform: rotate(-45deg);
   position: absolute;
   right: 10px;
-  top: 20px;     
-  width:0px; 
-  height:0px; 
+  top: 20px;
+  width:0px;
+  height:0px;
 }
 
 .down {

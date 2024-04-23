@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Data Viewer</title>
@@ -69,13 +69,13 @@
         </div>
         </div>
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
-<script>  
+<script src="common.js?v=$COMMIT_HASH"></script>
+<script>
     function reload() {
         document.getElementById('data').innerHTML += "<b>Refreshing...</b>";
         window.scrollBy(0,document.body.scrollHeight);
         funcRequest(getDomainname() + '/data');
-    } 
+    }
 
     async function funcRequest(url){
         await fetch(url)

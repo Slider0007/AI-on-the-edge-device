@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Log Viewer</title>
@@ -68,13 +68,13 @@
     </div>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
-<script>  
+<script src="common.js?v=$COMMIT_HASH"></script>
+<script>
     function reload() {
         document.getElementById('log').innerHTML += "<b>Refreshing...</b>";
         window.scrollBy(0,document.body.scrollHeight);
         funcRequest(getDomainname() + '/log');
-    } 
+    }
 
 
     function processLogLine(line, index, arr) {

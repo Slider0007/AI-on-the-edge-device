@@ -29,7 +29,7 @@ def prepareRestApiMarkdown(markdownFile):
             markdownFileContent = markdownFileContent.replace("_OVERVIEW.md", "#overview-rest-api")
         elif (ReplaceLinkName == "xxx_migration_notes"):
             markdownFileContent = markdownFileContent.replace("xxx_migration_notes.md", "#migration-notes")
-        
+
         # Replace all links with local links
         markdownFileContent = markdownFileContent.replace(replaceLink, "#rest-api-endpoint-" + ReplaceLinkName)
 
@@ -39,7 +39,7 @@ def prepareRestApiMarkdown(markdownFile):
     # Update image paths
     if "./img/" in markdownFileContent:
         markdownFileContent = markdownFileContent.replace("./img/", "/")
-    
+
     return markdownFileContent
 
 
@@ -50,7 +50,7 @@ def prepareMqttApiMarkdown(markdownFile):
 
     linkPosEnd = markdownFileContent.find(".md)")
     while (linkPosEnd >= 0):
-        
+
         # Find markdown local links
         replaceLink = markdownFileContent[markdownFileContent.rfind("(", 0, linkPosEnd)+1:linkPosEnd+3]
         ReplaceLinkName = replaceLink.split("\\")[-1].replace(".md", "")
@@ -60,7 +60,7 @@ def prepareMqttApiMarkdown(markdownFile):
             markdownFileContent = markdownFileContent.replace("_OVERVIEW.md", "#overview-mqtt-api")
         elif (ReplaceLinkName == "xxx_migration_notes"):
             markdownFileContent = markdownFileContent.replace("xxx_migration_notes.md", "#migration-notes")
-        
+
         # Replace all links with local links
         markdownFileContent = markdownFileContent.replace(replaceLink, "#mqtt-api-" + ReplaceLinkName)
 
@@ -98,7 +98,7 @@ for folder in folders:
         elif (folder == "MQTT"):
             markdownMqttApi += prepareMqttApiMarkdown(file) # Merge files
             markdownMqttApi += "\n\n---\n" # Add a divider line
-    
+
     # Copy in API doc linked images to HTMl folder
     if os.path.exists(docsAPIRootFolder + "/" + folder + "/img"):
         files = sorted(filter(os.path.isfile, glob.glob(docsAPIRootFolder + "/" + folder + '/img/*')))

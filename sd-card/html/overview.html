@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
 	<meta charset="UTF-8">
 	<title>Overview</title>
@@ -50,7 +50,7 @@
 			border: 1px solid red;
 		}
 	</style>
-	
+
 	<script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
 </head>
 
@@ -71,7 +71,7 @@
 
 						</td>
 						<td style="padding:0px;">
-							<input required type="number" name="AutoRefreshTime" id="AutoRefreshTime" min="1" step="1" value="10" 
+							<input required type="number" name="AutoRefreshTime" id="AutoRefreshTime" min="1" step="1" value="10"
 							oninput="(!validity.rangeUnderflow||(value=2));" onchange="AutoRefreshContent();"> s
 						</td>
 					</tr>
@@ -87,49 +87,49 @@
 		</tr>
 		<tr>
 			<th class="th">Actual Value</th>
-		</tr> 
-		<tr>	
+		</tr>
+		<tr>
 			<td class="tg-2">
 				<div id="value"></div>
-			</td>	
+			</td>
 		</tr>
 		<tr>
 			<th class="th">Fallback Value</th>
-		</tr>	
-		<tr>	
+		</tr>
+		<tr>
 			<td class="tg-2">
 				<div id="fallback"></div>
-			</td>	
+			</td>
 		</tr>
 		<tr>
 			<th class="th">Raw Value</th>
-		</tr>	
-		<tr>	
+		</tr>
+		<tr>
 			<td class="tg-2">
 				<div id="raw"></div>
-			</td>	
+			</td>
 		</tr>
 		<tr>
 			<th class="th">Value Status</th>
-		</tr>	
-		<tr>	
+		</tr>
+		<tr>
 			<td class="tg-2">
 				<div id="status"></div>
-			</td>	
+			</td>
 		</tr>
 		<tr>
 			<th class="th">Process State</th>
-		</tr>	
-		<tr>	
+		</tr>
+		<tr>
 			<td class="tg-3">
 				<div id="statusflow" ></div>
 				<div id="processerror" style="color: rgb(255, 0, 0); font-weight: bold;"></div>
 			</td>
-		</tr>  
+		</tr>
 		<tr>
 			<th class="th">System Info</th>
-		</tr>	
-		<tr>	
+		</tr>
+		<tr>
 			<td>
 				<table>
 					<tr><td style="padding: 0px;">Device Uptime</td><td style="padding: 0px 20px"><output id="device_uptime"></output></td></tr>
@@ -141,7 +141,7 @@
 	</table>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="common.js?v=$COMMIT_HASH"></script>
 <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
 <script src="readconfigparam.js?v=$COMMIT_HASH"></script>
 <script>
@@ -162,7 +162,7 @@
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				const _jsonData = JSON.parse(xhttp.responseText);			
+				const _jsonData = JSON.parse(xhttp.responseText);
 				loadValue(_jsonData.actual_value.inline, "value", "border-collapse: collapse; width: 100%");
 				loadValue(_jsonData.fallback_value.inline, "fallback", "border-collapse: collapse; width: 100%");
 				loadValue(_jsonData.raw_value.inline, "raw", "border-collapse: collapse; width: 100%");
@@ -180,7 +180,7 @@
 		xhttp.send();
 	}
 
-	
+
 	function LoadROIImage()
 	{
 		var d = new Date();
@@ -189,7 +189,7 @@
 		var s = addZero(d.getSeconds());
 		$('#timestamp').html(h + ":" + m + ":" + s);
 
-		document.getElementById("img").src = loadImage(domainname + '/img_tmp/alg_roi.jpg?' + Math.floor((Math.random() * 1000000) + 1), 
+		document.getElementById("img").src = loadImage(domainname + '/img_tmp/alg_roi.jpg?' + Math.floor((Math.random() * 1000000) + 1),
 														'img_not_available.png?v=$COMMIT_HASH').src;
 	}
 
@@ -232,7 +232,7 @@
 		}
 		else {
 			for (var j = 0; j < _split.length; ++j) {
-				var _zer = ZerlegeZeile(_split[j], "\t");				
+				var _zer = ZerlegeZeile(_split[j], "\t");
 				if (_div == "status") {
 					if (_zer[1] != null && _zer[1].length > 0) {
 						if (_zer[1].substring(0,3) == "000")
@@ -249,13 +249,13 @@
 							_zer[1] = "";
 					}
 				}
-				
+
 				if (_zer.length == 1)
-					out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
-						_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\"> </td></tr>"; 
+					out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" +
+						_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\"> </td></tr>";
 				else
-					out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" + 
-						_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\" >" + _zer[1] + "</td></tr>"; 
+					out = out + "<tr><td style=\"width: 22%; padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\">" +
+						_zer[0] + "</td><td style=\"padding: 3px 5px; text-align: left; vertical-align:middle; border: 1px solid lightgrey\" >" + _zer[1] + "</td></tr>";
 			}
 			out = out + "</table>"
 		}
@@ -286,7 +286,7 @@
 
 
 	function loadWLANRSSI(_value)
-	{		
+	{
 		if (_value >= -55) {
 			$('#wlan_rssi').html("Excellent (" + _value + "dBm)");
 		}
@@ -306,12 +306,12 @@
 
 
 	function ManualRefreshContent()
-	{	
+	{
 		document.getElementById("manual_refresh_img_loading").style.display=""; // Display loading spinner as visual feedback
 
 		LoadProcessData();
 		LoadROIImage();
-		
+
 		setTimeout(function() { // Show loading spinner at least for 200ms
 			document.getElementById("manual_refresh_img_loading").style.display="none";
 		}, 200);
@@ -324,8 +324,8 @@
         param = getConfigParameters();
 
 		document.getElementById("AutoRefreshEnabled").checked = param["WebUI"]["OverviewAutoRefresh"]["value1"] == "true" ? true : false;
-		document.getElementById("AutoRefreshTime").value = param["WebUI"]["OverviewAutoRefreshTime"]["value1"];   
-        
+		document.getElementById("AutoRefreshTime").value = param["WebUI"]["OverviewAutoRefreshTime"]["value1"];
+
         autoRefreshTimeoutHandle = null; // Init auto refresh handle
         AutoRefreshContent();
     }
@@ -333,7 +333,7 @@
 
 
 	function AutoRefreshContent()
-	{	
+	{
 		if (document.getElementById("AutoRefreshEnabled").checked == true) { // Activated -> Set timeout
 
 			if (autoRefreshTimeoutHandle) { // Clear actual timeout handle
@@ -378,7 +378,7 @@
 		loadConfig().then(() => initAutoRefreshContent());
 	}
 
-	
+
 	init();
 
 </script>

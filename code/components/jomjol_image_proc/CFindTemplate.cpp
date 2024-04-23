@@ -10,7 +10,7 @@
 
 static const char* TAG = "IMG_FINDTEMPL";
 
-//#define DEBUG_DETAIL_ON  
+//#define DEBUG_DETAIL_ON
 
 
 bool IRAM_ATTR CFindTemplate::FindTemplate(strRefInfo *_ref, bool _noFast)
@@ -69,7 +69,7 @@ bool IRAM_ATTR CFindTemplate::FindTemplate(strRefInfo *_ref, bool _noFast)
             _ref->found_x = _ref->fastalg_x;
             _ref->found_y = _ref->fastalg_y;
 
-            //free_psram_heap(std::string(TAG) + _ref->image_file, rgb_template);  // Keep alignment image refImage in RAM   
+            //free_psram_heap(std::string(TAG) + _ref->image_file, rgb_template);  // Keep alignment image refImage in RAM
             return true;
         }
     }
@@ -121,8 +121,8 @@ bool IRAM_ATTR CFindTemplate::FindTemplate(strRefInfo *_ref, bool _noFast)
     // Print results
     std::string zw = "SADsum:" + std::to_string(SADsum) + ", X:"+ std::to_string(_ref->found_x) + ", Y:" + std::to_string(_ref->found_y);
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "STANDARD Algo results: " + zw);
-    
-    //free_psram_heap(std::string(TAG) + _ref->image_file, rgb_template);   // Keep alignment image refImage in RAM  
+
+    //free_psram_heap(std::string(TAG) + _ref->image_file, rgb_template);   // Keep alignment image refImage in RAM
     return false;
 }
 
@@ -142,20 +142,20 @@ bool IRAM_ATTR CFindTemplate::CalculateSimularities(strRefInfo* _ref)
             stbi_uc* p_tpl = rgb_template + (channels * (youter * tpl_width + xouter));
             for (int _ch = 0; _ch < channels; ++_ch)
             {
-                SADsum += labs(p_tpl[_ch] - p_org[_ch]);              
+                SADsum += labs(p_tpl[_ch] - p_org[_ch]);
                 anz++;
             }
         }
     }
-    
+
     // normalize by number of sums
     SADNorm = SADsum/anz;
 
     // Print results
-    std::string zw = "SADThreshold:" + std::to_string(_ref->fastalg_SADThreshold) + ", SADNorm:" + std::to_string(SADNorm) + 
+    std::string zw = "SADThreshold:" + std::to_string(_ref->fastalg_SADThreshold) + ", SADNorm:" + std::to_string(SADNorm) +
                      ", X:" + std::to_string(_ref->fastalg_x) + ", Y:" + std::to_string(_ref->fastalg_y);
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "FAST Algo results: " + zw);
-    
+
     // Evaluate results
     if (SADNorm <= _ref->fastalg_SADThreshold) {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "FAST Algo: Match found");

@@ -6,14 +6,14 @@ class UnderTestCNNGeneral : public ClassFlowCNNGeneral
     public:
         UnderTestCNNGeneral( ClassFlowAlignment *_flowalign, t_CNNType _cnntype) :
             ClassFlowCNNGeneral(_flowalign, "name", _cnntype) {};
-        
+
         using ClassFlowCNNGeneral::EvalAnalogToDigitTransition;
 };
 
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  * Transition = x.8 - x.2 here no transition in the test cases.
  * Offset = dig=x.n, ana= n.y: no offset, because both "n" are the same
  */
@@ -59,14 +59,14 @@ void test_analogToDigit_Standard()
 void test_analogToDigit_Transition()
 {
     UnderTestCNNGeneral* undertest = new UnderTestCNNGeneral(nullptr, Digital100);
-    
+
     // https://github.com/jomjol/AI-on-the-edge-device/issues/921#issuecomment-1222672175
     // Default: dig=3.9, ana=9.7 => erg=3
     // Transition = yes
     // Zero crossing = no
     // Offset = no
     TEST_ASSERT_EQUAL_INT(3,  undertest->EvalAnalogToDigitTransition(39, 97, 9, 92));
-  
+
     // without reference
     // Default: dig=4.0, ana=9.1 => erg=4
     // Transition = yes
@@ -89,7 +89,7 @@ void test_analogToDigit_Transition()
     // Transition = yes
     // Zero crossing = no
     // Offset = no
-    // Special feature: 
+    // Special feature:
     TEST_ASSERT_EQUAL_INT(5,  undertest->EvalAnalogToDigitTransition(59, 94, 9, 92));
 
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1110#issuecomment-1282168030

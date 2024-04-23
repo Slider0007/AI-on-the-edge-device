@@ -17,7 +17,7 @@
 
 static const char *TAG = "ALIGN";
 
-// #define DEBUG_DETAIL_ON  
+// #define DEBUG_DETAIL_ON
 
 
 void ClassFlowAlignment::SetInitialParameter(void)
@@ -71,7 +71,7 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
 
     while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph)) {
         splitted = ZerlegeZeile(aktparamgraph);
-        
+
         if ((toUpper(splitted[0]) == "ALIGNMENTALGO") && (splitted.size() > 1)) {
             if (toUpper(splitted[1]) == "HIGHACCURACY")
                 alg_algo = 1;
@@ -89,15 +89,15 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
                 LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, zw2);
             #endif
         }
-        
+
         if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1)) {
             search_x = std::stoi(splitted[1]);
-        } 
+        }
 
         if ((toUpper(splitted[0]) == "SEARCHFIELDY") && (splitted.size() > 1)) {
             search_y = std::stoi(splitted[1]);
         }
-    
+
         if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1)) {
             this->initalrotate = std::stof(splitted[1]);
         }
@@ -147,7 +147,7 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
             STBIObjectPSRAM.PreallocatedMemory = References[anz_ref].refImage->RGBImageGet();
             STBIObjectPSRAM.PreallocatedMemorySize = References[anz_ref].refImage->getMemsize();
 
-            if (!References[anz_ref].refImage->LoadFromFilePreallocated("refImage" + 
+            if (!References[anz_ref].refImage->LoadFromFilePreallocated("refImage" +
                                 std::to_string(anz_ref), References[anz_ref].image_file.c_str()))
             {
                 return false;
@@ -163,7 +163,7 @@ bool ClassFlowAlignment::ReadParameter(FILE* pfile, std::string& aktparamgraph)
                 img_width = Camera.image_height;
                 img_height = Camera.image_width;
             }
-            
+
             if (References[anz_ref].target_x < 1 || (References[anz_ref].target_x > (img_width - 1 - References[anz_ref].refImage->width))) {
                 LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (x). Check alignment marker");
                 return false;
@@ -200,11 +200,11 @@ std::string ClassFlowAlignment::getHTMLSingleStep(std::string host)
 }
 
 
-bool ClassFlowAlignment::doFlow(std::string time) 
+bool ClassFlowAlignment::doFlow(std::string time)
 {
     presetFlowStateHandler(false, time);
     if (AlgROI == NULL) { // AlgROI needs to be allocated before ImageTMP to avoid heap fragmentation
-        AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);     
+        AlgROI = (ImageData*)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
         if (AlgROI == NULL) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to allocate AlgROI");
             LogFile.WriteHeapInfo("ClassFlowAlignment-doFlow");
@@ -242,16 +242,16 @@ bool ClassFlowAlignment::doFlow(std::string time)
         ImageTMP->width = ImageTMP->height;
         ImageTMP->height = _zw;
     }
- 
+
     if ((initalrotate != 0) || flipImageSize) {
         if (References[0].alignment_algo == 4)  // alignment off: no initial rotation and no additional alignment algo
             initalrotate = 0;
-        
+
         if (use_antialiasing)
             rt.RotateAntiAliasing(initalrotate);
         else
             rt.Rotate(initalrotate);
-        
+
         if (SaveAllFiles)
             AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/rot.jpg"));
     }
@@ -264,7 +264,7 @@ bool ClassFlowAlignment::doFlow(std::string time)
         if (AlignRetval >= 0) {
             SaveReferenceAlignmentValues();
         }
-        else if (AlignRetval == -1) {   // Alignment failed         
+        else if (AlignRetval == -1) {   // Alignment failed
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Alignment by algorithm failed. Verify image rotation and alignment marker");
             setFlowStateHandlerEvent(-1); // Set error event code for post cycle error handler 'doPostProcessEventHandling'
         }
@@ -280,7 +280,7 @@ bool ClassFlowAlignment::doFlow(std::string time)
         }
         ImageTMP->writeToMemoryAsJPG((ImageData*)AlgROI, 90);
     }
-    
+
     if (SaveAllFiles) {
         AlignAndCutImage->SaveToFile(FormatFileName("/sdcard/img_tmp/alg.jpg"));
         ImageTMP->SaveToFile(FormatFileName("/sdcard/img_tmp/alg_roi.jpg"));
@@ -306,9 +306,9 @@ void ClassFlowAlignment::doPostProcessEventHandling()
             time(&actualtime);
 
             // Define path, e.g. /sdcard/log/debug/20230814/20230814-125528/ClassFlowAlignment
-            std::string destination = std::string(LOG_DEBUG_ROOT_FOLDER) + "/" + getFlowState()->ExecutionTime.DEFAULT_TIME_FORMAT_DATE_EXTR + "/" + 
+            std::string destination = std::string(LOG_DEBUG_ROOT_FOLDER) + "/" + getFlowState()->ExecutionTime.DEFAULT_TIME_FORMAT_DATE_EXTR + "/" +
                                         getFlowState()->ExecutionTime + "/" + getFlowState()->ClassName;
-            
+
             if (!MakeDir(destination))
                 return;
 
@@ -317,7 +317,7 @@ void ClassFlowAlignment::doPostProcessEventHandling()
             FILE* fpResult = fopen((destination + resultFileName).c_str(), "w");
             fwrite(References[0].error_details.c_str(), (References[0].error_details).length(), 1, fpResult);
             fclose(fpResult);
-            
+
             // Draw alignment marker and save image
             DrawRef(AlignAndCutImage);
             AlignAndCutImage->SaveToFile(FormatFileName(destination + "/alg_misalign.jpg"));
@@ -329,9 +329,9 @@ void ClassFlowAlignment::doPostProcessEventHandling()
 
 
 bool ClassFlowAlignment::SaveReferenceAlignmentValues()
-{ 
+{
     esp_err_t err = ESP_OK;
-    
+
     nvs_handle_t align_nvshandle;
     err = nvs_open("align", NVS_READWRITE, &align_nvshandle);
     if (err != ESP_OK) {
@@ -405,9 +405,9 @@ bool ClassFlowAlignment::LoadReferenceAlignmentValues(void)
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: Ref1fastalg_y - error code: " + std::to_string(err));
         return false;
     }
-    
+
     nvs_close(align_nvshandle);
-    
+
     return true;
 }
 
@@ -431,7 +431,7 @@ ClassFlowAlignment::~ClassFlowAlignment()
 {
     free_psram_heap("AlgROI", AlgROI);
     delete References[0].refImage;
-    delete References[1].refImage;  
+    delete References[1].refImage;
     delete ImageTMP;
     delete AlignAndCutImage;
 }

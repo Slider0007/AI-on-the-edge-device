@@ -11,7 +11,7 @@ scriptName = "generate-api-docs-localbuild.py"
 if len(sys.argv) > 1:
     scriptPath = sys.argv[1] + "/tools/docs-generator/"
     rootPath = sys.argv[1]
-    
+
 else:
     scriptPath = sys.argv[0].split(scriptName,1)[0]
     if scriptPath[0] == ".":
@@ -44,7 +44,7 @@ def prepareRestApiMarkdown(markdownFile):
             markdownFileContent = markdownFileContent.replace("_OVERVIEW.md", "#overview-rest-api")
         elif (ReplaceLinkName == "xxx_migration_notes"):
             markdownFileContent = markdownFileContent.replace("xxx_migration_notes.md", "#migration-notes")
-        
+
         # Replace all links with local links
         markdownFileContent = markdownFileContent.replace(replaceLink, "#rest-api-endpoint-" + ReplaceLinkName)
 
@@ -54,7 +54,7 @@ def prepareRestApiMarkdown(markdownFile):
     # Update image paths
     if "./img/" in markdownFileContent:
         markdownFileContent = markdownFileContent.replace("./img/", "/")
-    
+
     return markdownFileContent
 
 
@@ -65,7 +65,7 @@ def prepareMqttApiMarkdown(markdownFile):
 
     linkPosEnd = markdownFileContent.find(".md)")
     while (linkPosEnd >= 0):
-        
+
         # Find markdown local links
         replaceLink = markdownFileContent[markdownFileContent.rfind("(", 0, linkPosEnd)+1:linkPosEnd+3]
         ReplaceLinkName = replaceLink.split("\\")[-1].replace(".md", "")
@@ -75,7 +75,7 @@ def prepareMqttApiMarkdown(markdownFile):
             markdownFileContent = markdownFileContent.replace("_OVERVIEW.md", "#overview-mqtt-api")
         elif (ReplaceLinkName == "xxx_migration_notes"):
             markdownFileContent = markdownFileContent.replace("xxx_migration_notes.md", "#migration-notes")
-        
+
         # Replace all links with local links
         markdownFileContent = markdownFileContent.replace(replaceLink, "#mqtt-api-" + ReplaceLinkName)
 

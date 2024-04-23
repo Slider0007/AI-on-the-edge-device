@@ -32,7 +32,7 @@
             padding: 3px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
         }
 
         .invalid-input {
@@ -47,7 +47,7 @@
             padding: 3px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
             margin-right: 10px;
             min-width: 100px;
             vertical-align: middle;
@@ -56,7 +56,7 @@
         .button {
             padding: 5px 10px;
             width: 205px;
-            font-size: 16px;	
+            font-size: 16px;
         }
 
         table {
@@ -86,16 +86,16 @@
             Set the "Fallback Value" for consistency checks and substitution for N positions in number sequence.
         </p>
         <p>
-            The Fallback Value is the last successful valid reading of any processing cycle. The result of the the 
+            The Fallback Value is the last successful valid reading of any processing cycle. The result of the the
             actual processing cycle, as long it's a vaild result, will be promoted to the new "Fallback Value". If
             the result is not usable (e.g. rate negative, rate too high) the "Fallback Value" will not be updated.
-            If activated in configuration, the "Fallback Value" will be used in the following processing cycle to 
-            identify negtive rates and too high rates (MaxRateValue / MaxRateType) as well as for the "Check Digit 
+            If activated in configuration, the "Fallback Value" will be used in the following processing cycle to
+            identify negtive rates and too high rates (MaxRateValue / MaxRateType) as well as for the "Check Digit
             Increase Consistency" (configuration paramter, only for dig-class11 models) and for possible substitution
-            of any N positions in the "Raw Value" reading (only valid for dig-class11 models and dig-cont models). 
+            of any N positions in the "Raw Value" reading (only valid for dig-class11 models and dig-cont models).
         </p>
         <p>
-            The field to enter new "Fallback Value" is prefilled with actual "Raw Value" because it's the most likely 
+            The field to enter new "Fallback Value" is prefilled with actual "Raw Value" because it's the most likely
             use case. Nevertheless every other positive value can be set as new "Fallback Value".
         </p>
     </details>
@@ -132,22 +132,22 @@
             <td>
                 <input required type="number" id="myInput" name="myInput" min="0" oninput="(!validity.rangeUnderflow||(value=0));">
                 <button class="button" type="button" onclick="setFallbackValue()">Update Value</button>
-                <p style="padding-left: 5px;">NOTE: The current "Raw Value" is prefilled as 
+                <p style="padding-left: 5px;">NOTE: The current "Raw Value" is prefilled as
                     <br>the suggested new "Fallback Value"</p>
             </td>
-        </tr>	
+        </tr>
         <tr>
             <td id="result_text">"Fallback Value" updated to</td>
             <td>
                 <div id="result" style="padding-left:5px;"></div>
             </td>
-        </tr>	 
+        </tr>
     </table>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
-<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
-<script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
+<script src="common.js?v=$COMMIT_HASH"></script>
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
 <script>
     var domainname = getDomainname();
 
@@ -157,25 +157,25 @@
         firework.launch('Update \"Fallback Value\" ...', 'success', 2000, true);
         var inputVal = document.getElementById("myInput").value;
         var sel = document.getElementById("Numbers_value1");
-        var _number = sel.options[sel.selectedIndex].text;  
+        var _number = sel.options[sel.selectedIndex].text;
         inputVal = inputVal.replace(",", ".");
-        url = domainname + "/set_fallbackvalue?sequence=" + _number + "&value=" + inputVal     
+        url = domainname + "/set_fallbackvalue?sequence=" + _number + "&value=" + inputVal
 
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4) {
-                if (this.status >= 200 && this.status < 300) {       
+                if (this.status >= 200 && this.status < 300) {
                     document.getElementById("result").innerHTML=xhttp.responseText;
                     firework.launch('New \"Fallback Value\" set', 'success', 2000, true);
                 }
                 else if (this.status == 403) {
                     firework.launch("Setting new value rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
-                    console.error("Setting new value rejected. Process not (yet) initialized. Response status: " + this.status);  
+                    console.error("Setting new value rejected. Process not (yet) initialized. Response status: " + this.status);
                 }
                 else {
-                    firework.launch("Setting new value failed (Response status: " + this.status + 
+                    firework.launch("Setting new value failed (Response status: " + this.status +
                                     "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Setting new value failed. Response status: " + this.status);  
+                    console.error("Setting new value failed. Response status: " + this.status);
                 }
             }
         };
@@ -201,12 +201,12 @@
                 }
                 else if (this.status == 403) {
                     firework.launch("Sequence name request rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
-                    console.error("Sequence name request rejected. Process not (yet) initialized. Response status: " + this.status);  
+                    console.error("Sequence name request rejected. Process not (yet) initialized. Response status: " + this.status);
                 }
                 else {
-                    firework.launch("Sequence name request failed (Response status: " + this.status + 
+                    firework.launch("Sequence name request failed (Response status: " + this.status +
                                     "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Sequence name request failed. Response status: " + this.status);  
+                    console.error("Sequence name request failed. Response status: " + this.status);
                 }
             }
         }
@@ -236,12 +236,12 @@
                 }
                 else if (this.status == 403) {
                     firework.launch("Raw value request rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
-                    console.error("Raw value request rejected. Process not (yet) initialized. Response status: " + this.status);  
+                    console.error("Raw value request rejected. Process not (yet) initialized. Response status: " + this.status);
                 }
                 else {
-                    firework.launch("Raw value request failed (Response status: " + this.status + 
+                    firework.launch("Raw value request failed (Response status: " + this.status +
                                     "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Raw value request failed. Response status: " + this.status);  
+                    console.error("Raw value request failed. Response status: " + this.status);
                 }
             }
         }
@@ -274,7 +274,7 @@
             var option = document.createElement("option");
             option.text = NumberSequence[i]["name"];
             option.value = i;
-            _index.add(option); 
+            _index.add(option);
         }
 
         loadFallbackValue(domainname);
@@ -286,8 +286,8 @@
         ParseConfig();
         parseNumberSequenceName();
     }
-    
-    
+
+
     function init()
     {
         loadConfig().then(() => loadConfigData());

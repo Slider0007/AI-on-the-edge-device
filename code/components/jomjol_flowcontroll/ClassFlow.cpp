@@ -14,7 +14,7 @@ static const char *TAG = "CLASSFLOW";
 void ClassFlow::SetInitialParameter(void)
 {
 	ListFlowControll = NULL;
-	previousElement = NULL;	
+	previousElement = NULL;
 	disabled = false;
 }
 
@@ -45,14 +45,14 @@ ClassFlow::ClassFlow(void)
 
 ClassFlow::ClassFlow(std::vector<ClassFlow*> * lfc)
 {
-	SetInitialParameter();	
+	SetInitialParameter();
 	ListFlowControll = lfc;
 }
 
 
 ClassFlow::ClassFlow(std::vector<ClassFlow*> * lfc, ClassFlow *_prev)
 {
-	SetInitialParameter();	
+	SetInitialParameter();
 	ListFlowControll = lfc;
 	previousElement = _prev;
 }
@@ -73,7 +73,7 @@ void ClassFlow::presetFlowStateHandler(bool _init, std::string _time)
 
 
 void ClassFlow::setFlowStateHandlerEvent(int _eventCode)
-{	
+{
 	FlowState.isSuccessful = false;
 	FlowState.EventCode.push_back(_eventCode); // negative event code -> error; positive event code -> warning
 }

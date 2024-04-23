@@ -20,7 +20,7 @@ static const char* TAG = "INFLUXDB";
 void ClassFlowInfluxDB::SetInitialParameter(void)
 {
     presetFlowStateHandler(true);
-    flowpostprocessing = NULL;  
+    flowpostprocessing = NULL;
     previousElement = NULL;
     ListFlowControll = NULL;
 
@@ -36,7 +36,7 @@ void ClassFlowInfluxDB::SetInitialParameter(void)
 
     disabled = false;
     InfluxDBenable = false;
-}       
+}
 
 
 ClassFlowInfluxDB::ClassFlowInfluxDB()
@@ -88,7 +88,7 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if (!this->GetNextParagraph(pfile, aktparamgraph))
             return false;
 
-    if (toUpper(aktparamgraph).compare("[INFLUXDB]") != 0) 
+    if (toUpper(aktparamgraph).compare("[INFLUXDB]") != 0)
         return false;
 
     while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
@@ -110,7 +110,7 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if ((toUpper(_param) == "USER") && (splitted.size() > 1))
         {
             this->user = splitted[1];
-        } 
+        }
 
         if ((toUpper(_param) == "PASSWORD") && (splitted.size() > 1))
         {
@@ -120,7 +120,7 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
-                TLSEncryption = true;  
+                TLSEncryption = true;
             else
                 TLSEncryption = false;
         }
@@ -129,7 +129,7 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         {
             TLSCACertFilename = "/sdcard" + splitted[1];
         }
-        
+
         if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1))
         {
             TLSClientCertFilename = "/sdcard" + splitted[1];
@@ -144,25 +144,25 @@ bool ClassFlowInfluxDB::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         {
             handleMeasurement(splitted[0], splitted[1]);
         }
-        
+
         if (((toUpper(_param) == "FIELD")) && (splitted.size() > 1))
         {
             handleFieldname(splitted[0], splitted[1]);
         }
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init: URI: " + uri + ", Database: " + database + ", User: " + user + 
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init: URI: " + uri + ", Database: " + database + ", User: " + user +
                         ", Password: *****, TLS Encryption: " + std::to_string(TLSEncryption));
 
-    if ((uri.length() > 0) && (uri != "undefined") && (database.length() > 0) && (database != "undefined")) { 
-        InfluxDBenable = InfluxDBInit(uri, database, user, password, TLSEncryption, TLSCACertFilename, 
+    if ((uri.length() > 0) && (uri != "undefined") && (database.length() > 0) && (database != "undefined")) {
+        InfluxDBenable = InfluxDBInit(uri, database, user, password, TLSEncryption, TLSCACertFilename,
                                         TLSClientCertFilename, TLSClientKeyFilename);
-    } 
+    }
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or wrong parameter");
         InfluxDBenable = false;
     }
-   
+
     return InfluxDBenable;
 }
 
@@ -199,7 +199,7 @@ bool ClassFlowInfluxDB::doFlow(std::string zwtime)
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read post-processing data");
         return false;
     }
-      
+
     return true;
 }
 
@@ -207,7 +207,7 @@ bool ClassFlowInfluxDB::doFlow(std::string zwtime)
 void ClassFlowInfluxDB::doPostProcessEventHandling()
 {
     // Post cycle process handling can be included here. Function is called after processing cycle is completed
-    
+
 }
 
 
@@ -220,7 +220,7 @@ void ClassFlowInfluxDB::handleMeasurement(std::string _decsep, std::string _valu
         _digit = _decsep.substr(0, _pospunkt);
     else
         _digit = "default";
-    
+
     for (int j = 0; j < flowpostprocessing->GetNumbers()->size(); ++j) {
         if (_digit == "default" || (*flowpostprocessing->GetNumbers())[j]->name == _digit)
             (*flowpostprocessing->GetNumbers())[j]->MeasurementV1 = _value;
@@ -239,11 +239,11 @@ void ClassFlowInfluxDB::handleFieldname(std::string _decsep, std::string _value)
         _digit = _decsep.substr(0, _pospunkt);
     else
         _digit = "default";
-    
+
     for (int j = 0; j < flowpostprocessing->GetNumbers()->size(); ++j) {
         if (_digit == "default" || (*flowpostprocessing->GetNumbers())[j]->name == _digit)
             (*flowpostprocessing->GetNumbers())[j]->FieldV1 = _value;
-        
+
         //ESP_LOGI(TAG, "handleFieldname: Name: %s, Pospunkt: %d, value: %s", _digit.c_str(), _pospunkt, _value);
     }
 }

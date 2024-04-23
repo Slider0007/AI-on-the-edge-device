@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Analog ROI</title>
@@ -23,14 +23,14 @@
             padding: 3px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
         }
 
         input[type=text] {
             padding: 3px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
         }
 
         input:out-of-range {
@@ -42,7 +42,7 @@
             padding: 3px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
             margin-right: 10px;
             min-width: 100px;
             max-width: 100%;
@@ -95,11 +95,11 @@
 
     <h2>Analog ROI</h2>
     <details id="desc_details">
-        <summary><b>CLICK HERE</b> for usage description. Further documentation: 
+        <summary><b>CLICK HERE</b> for usage description. Further documentation:
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/ROI-Configuration/ target=_blank>ROI Configuration</a>
         </summary>
         <p>
-            <b>R</b>egion <b>O</b>f <b>I</b>nterest (ROI) for analog counter can be defined on this page. If no analog counter 
+            <b>R</b>egion <b>O</b>f <b>I</b>nterest (ROI) for analog counter can be defined on this page. If no analog counter
             needs to be processed, disable analog counter processing by deselecting <b>"Analog ROI Processing"</b>.
         </p>
         <p>
@@ -115,7 +115,7 @@
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/ROI-Configuration/ target=_blank>ROI Configuration</a>.
             With the drop down <b>"ROI"</b> the different ROIs in the respective number sequence can be selected.<br>
 
-            To create new ROIs use <b>"New ROI"</b>. The new ROIs are automatically named uniquely and in ascending order 
+            To create new ROIs use <b>"New ROI"</b>. The new ROIs are automatically named uniquely and in ascending order
             (e.g. ana1, ana2, ...). Deleting a ROI between exisitung ones will rename the remaining ROIs in ascending order
             without keeping any naming gap.
         </p>
@@ -124,10 +124,10 @@
             The position in the number sequence can be changed with the buttons <b>"Move Lower"</b> and <b>"Move Higher"</b>.
             The multiplication factor which is shown below the ROI drop down is the multiplication factor of pure position/order
             in number sequence and the factor right-hand side to this is the additionally corrected by decimal shift setting
-            (expert parameter: Decimal Shift, default: 0). 
+            (expert parameter: Decimal Shift, default: 0).
         </p>
         <p>
-            After the definition of analog ROIs is completed don't forget to save the new configuration with the button 
+            After the definition of analog ROIs is completed don't forget to save the new configuration with the button
             <b>"Save And Apply"</b>. The new configuration gets automatically applied. No reboot is required.
         </p>
     </details>
@@ -165,7 +165,7 @@
                 </select>
             </td>
             <td><input class="button" type="submit" id="newSequence" name="newSequence" value="New" onclick="onClickNewSequence()"></td>
-            <td><input class="button" type="submit" id="renameSequence" name="renameSequence" value="Rename" onclick="onClickRenameSequence()"></td> 
+            <td><input class="button" type="submit" id="renameSequence" name="renameSequence" value="Rename" onclick="onClickRenameSequence()"></td>
             <td><input class="button" type="submit" id="deleteSequence" name="deleteSequence" value="Delete" onclick="onClickDeleteSequence()"></td>
         </tr>
     </table>
@@ -185,14 +185,14 @@
             <td><input class="button" type="submit" id="newROI" name="newROI" onclick="onClickNewROI()" value="New"></td>
             <td><input class="button" type="submit" id="deleteROI" name="deleteROI" onclick="onClickDeleteROI()" value="Delete"></td>
         </tr>
-        <tr>       
+        <tr>
             <td class="multiplier">Multiplier: <output id="multiplier" name="multiplier"></output><br>
                 (only based on order)
             </td>
             <td class="multiplier">Multiplier: <output id="multiplier_decshift" name="multiplier_decshift"></output><br>
                 (order + decimal shift: <output id="decimalShift" name="decimalShift"></output>)
             </td>
-            <td><input class="button" type="submit" id="moveROIHigher" onclick="onClickMoveROIHigher()" value="Move Higher"></td> 
+            <td><input class="button" type="submit" id="moveROIHigher" onclick="onClickMoveROIHigher()" value="Move Higher"></td>
             <td><input class="button" type="submit" id="moveROILower" onclick="onClickMoveROILower()" value="Move Lower"></td>
         </tr>
     </table>
@@ -204,17 +204,17 @@
             <col span="1" style="width: 62%;">
         </colgroup>
         <tr>
-            <td>x: <input type="number" name="refx" id="refx" min=1 step=1 onchange="onValueManualChanged()" 
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>	  
-            <td>Δx: <input type="number" name="refdx" id="refdx" min=1 step=1 onchange="onValueManualChangedDx()" 
+            <td>x: <input type="number" name="refx" id="refx" min=1 step=1 onchange="onValueManualChanged()"
+                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
+            <td>Δx: <input type="number" name="refdx" id="refdx" min=1 step=1 onchange="onValueManualChangedDx()"
                         oninput="(!validity.rangeUnderflow||(value=1));"></td>
             <td><input type="checkbox" id="lockAspectRatio" name="lockAspectRatio" value="1" onclick="onClickLockAspectRatio()" checked>
                             <label for="lockAspectRatio"> Lock aspect ratio </label></td>
         </tr>
         <tr>
-            <td>y: <input type="number" name="refy" id="refy" min=1 step=1 onchange="onValueManualChanged()" 
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>	
-            <td>Δy: <input type="number" name="refdy" id="refdy" min=1 step=1 onchange="onValueManualChanged()" 
+            <td>y: <input type="number" name="refy" id="refy" min=1 step=1 onchange="onValueManualChanged()"
+                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
+            <td>Δy: <input type="number" name="refdy" id="refdy" min=1 step=1 onchange="onValueManualChanged()"
                         oninput="(!validity.rangeUnderflow||(value=1));"></td>
             <td><input type="checkbox" id="lockSizes" name="lockSizes" value="1" onclick="onClickLockSizes()" checked>
                             <label for="lockSizes"> Synchronize Δx and Δy</label></td>
@@ -238,7 +238,7 @@
         </colgroup>
         <tr>
             <td colspan="3" style="vertical-align: bottom;"><b>Reference Image</b></td>
-            <td><input disabled style="font-weight:bold;" class="button" type="submit" id="saveconfig" name="saveconfig" 
+            <td><input disabled style="font-weight:bold;" class="button" type="submit" id="saveconfig" name="saveconfig"
                         onclick="SaveToConfig()" value="Save And Apply"></td>
         </tr>
         <tr>
@@ -247,10 +247,10 @@
     </table>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="common.js?v=$COMMIT_HASH"></script>
 <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-<script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
-    
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
+
 <script>
     var canvas = document.getElementById('canvas'),
         context = canvas.getContext('2d'),
@@ -269,12 +269,12 @@
     function EnDisableAnalog()
     {
         isEnabled = document.getElementById("Category_Analog_enabled").checked;
-        
+
         sah1(document.getElementById("div1"), !isEnabled);
-        
+
         param_category["Analog"]["enabled"] = isEnabled;
         document.getElementById("saveconfig").disabled = false;
-        
+
         if (isEnabled) {
             RefreshROI();
         }
@@ -336,7 +336,7 @@
     function removeNumber(){
         if (confirm("The entire number sequence will be removed (digit + analog parts). " +
                     "To remove single ROI of the number sequence, use \"Delete ROI\" instead.\n" +
-                    "Do you really want to proceed?")) 
+                    "Do you really want to proceed?"))
         {
             var sel_sequence = document.getElementById("SequenceSelect");
             var sequence_name = sel_sequence.options[sel_sequence.selectedIndex].text;
@@ -344,7 +344,7 @@
             if (erg != "")
                 firework.launch(erg, 'danger', 30000);
             RefreshSequences();
-        }	    
+        }
     }
 
 
@@ -388,7 +388,7 @@
         }
 
         if (ROIInfo.length > 0)
-            erg = CreateROI(sequence_name, "analog", roi_index, roi_name, 15, 30, 
+            erg = CreateROI(sequence_name, "analog", roi_index, roi_name, 15, 30,
                             ROIInfo[roi_selected]["dx"], ROIInfo[roi_selected]["dy"], ROIInfo[roi_selected]["CCW"]=="true");
         else
             erg = CreateROI(sequence_name, "analog", roi_index, roi_name, 15, 30, 30, 30, false);
@@ -453,7 +453,7 @@
     function onClickLockSizes()
     {
         lockSizes = document.getElementById("lockSizes").checked;
-        RefreshROI(); 
+        RefreshROI();
     }
 
 
@@ -469,7 +469,7 @@
             ROIInfo[roi_selected]["CCW"] = "true";
         else
             ROIInfo[roi_selected]["CCW"] = "false";
-        
+
         RefreshROI();
     }
 
@@ -490,7 +490,7 @@
             }
 
             rect.startX = document.getElementById("refx").value;
-            rect.startY = document.getElementById("refy").value; 
+            rect.startY = document.getElementById("refy").value;
 
             RefreshDraw();
         }
@@ -515,8 +515,8 @@
             }
 
             rect.startX = document.getElementById("refx").value;
-            rect.startY = document.getElementById("refy").value; 
-            RefreshDraw();            
+            rect.startY = document.getElementById("refy").value;
+            RefreshDraw();
         }
         RefreshROI();
         document.getElementById("saveconfig").disabled = false;
@@ -561,10 +561,10 @@
         else if (CategoryInfo["Analog"]["enabled"] == true && CategoryInfo["Digits"]["enabled"] == false) { // Only Analog
             multiplier = ROIInfo.length - 1 - roi_selected;
             multiplier_decshift = fixedDecimals_decshift = multiplier + Number(decimalShift);
-            
+
             if (multiplier_decshift > 0)
                 fixedDecimals_decshift = 0;
-            
+
             if (fixedDecimals_decshift < 0) {
                 fixedDecimals_decshift = -1 * fixedDecimals_decshift;
             }
@@ -589,7 +589,7 @@
             var option = document.createElement("option");
             option.text = NumberSequence[i]["name"];
             option.value = i;
-            sel_sequence.add(option); 
+            sel_sequence.add(option);
 
             if (typeof _sel !== 'undefined') {
                 if (NumberSequence[i]["name"] == _sel)
@@ -617,18 +617,18 @@
             firework.launch('Analog ROI processing is disabled. Activate with checkbox if needed', 'warning', 5000);
             return;
         }
-        
+
         var sel_roi = document.getElementById("ROISelect");
 
         if (ROIInfo.length == 0) {
             firework.launch('No analog ROIs defined in selected number sequence', 'warning', 5000);
             document.getElementById("newROI").disabled = false;
             document.getElementById("deleteROI").disabled = true;
-            
+
             document.getElementById("ROISelect").disabled = true;
             sel_roi.selectedIndex = 0;
             sel_roi.options[sel_roi.selectedIndex].text = "N/A";
-            
+
             document.getElementById("multiplier").style.display = "none";
             document.getElementById("multiplier_decshift").style.display = "none";
             document.getElementById("refx").disabled = true;
@@ -662,10 +662,10 @@
             while (sel_roi.length){
                 sel_roi.remove(0);
             }
-            
+
             if (roi_selected > ROIInfo.length)
                 roi_selected = ROIInfo.length-1;
-            
+
             for (var i = 0; i < ROIInfo.length; ++i){
                 var option = document.createElement("option");
                 option.text = ROIInfo[i]["name"];
@@ -678,7 +678,7 @@
 
                 ROIPositionValidation(ROIInfo[i]);
             }
-            sel_roi.selectedIndex = roi_selected; 
+            sel_roi.selectedIndex = roi_selected;
         }
 
         document.getElementById("moveROIHigher").disabled = false;
@@ -692,15 +692,15 @@
         }
 
         ShowMultiplier();
-        
+
         document.getElementById("lockAspectRatio").checked = lockAspectRatio;
         document.getElementById("lockSizes").checked = lockSizes;
         document.getElementById("CCW").checked = ROIInfo[roi_selected]["CCW"] == "true";
-        
+
         document.getElementById("refx").value = ROIInfo[roi_selected]["x"];
-        document.getElementById("refy").value = ROIInfo[roi_selected]["y"];  
-        document.getElementById("refdx").value = ROIInfo[roi_selected]["dx"];  
-        document.getElementById("refdy").value = ROIInfo[roi_selected]["dy"];  
+        document.getElementById("refy").value = ROIInfo[roi_selected]["y"];
+        document.getElementById("refdx").value = ROIInfo[roi_selected]["dx"];
+        document.getElementById("refdy").value = ROIInfo[roi_selected]["dy"];
         rect.startX = ROIInfo[roi_selected]["x"];
         rect.startY = ROIInfo[roi_selected]["y"];
         rect.w = ROIInfo[roi_selected]["dx"];
@@ -716,7 +716,7 @@
         if (ROIInfo.length > 1) {
             for (var i = 1; i < (ROIInfo.length); ++i) { // 2nd .. last ROI
                 if (parseInt(ROIInfo[i].dx) != parseInt(ROIInfo[0].dx) ||
-                    parseInt(ROIInfo[i].dy) != parseInt(ROIInfo[0].dy)) { 
+                    parseInt(ROIInfo[i].dy) != parseInt(ROIInfo[0].dy)) {
                     all_dx_dy_Identical = false;
                     break;
                 }
@@ -875,24 +875,24 @@
                         var dx = parseInt(ROIInfo[i].dx) + parseInt(lw);
                         var dy = parseInt(ROIInfo[i].dy) + parseInt(lw);
                         context.strokeRect(x0, y0, dx, dy);
-                        
+
                         if (ROIInfo[i]["CCW"] != "true")
                             drawTextBG(context, ROIInfo[i]["name"], x0+dx/2-0.5, parseInt(ROIInfo[i].y), parseInt(rect.h), 2, false);
                         else
                             drawTextBG(context, ROIInfo[i]["name"] + " (CCW)", x0+dx/2-0.5, parseInt(ROIInfo[i].y), parseInt(rect.h), 2, false);
-                        
+
                         lw = 1;
                         var x0 = parseInt(ROIInfo[i].x) - parseInt(lw/2);
                         var y0 = parseInt(ROIInfo[i].y) - parseInt(lw/2);
                         var dx = parseInt(ROIInfo[i].dx) + parseInt(lw);
                         var dy = parseInt(ROIInfo[i].dy) + parseInt(lw);
-                        context.strokeRect(x0, y0, dx, dy); 
+                        context.strokeRect(x0, y0, dx, dy);
 
                         context.lineWidth = lw;
                         context.beginPath();
                         //context.arc(x0+dx/2, y0+dy/2, dx/2, 0, 2 * Math.PI); -> use ellispe instead; fix https://github.com/jomjol/AI-on-the-edge-device/issues/2403
                         context.ellipse(x0+dx/2, y0+dy/2, dx/2, dy/2, 0, 0, 2 * Math.PI);
-                        
+
                         context.moveTo(x0+dx/2, y0);
                         context.lineTo(x0+dx/2, y0+dy);
                         context.moveTo(x0, y0+dy/2);
@@ -924,8 +924,8 @@
             context.lineTo(x0+dx/2, y0+dy);
             context.moveTo(x0, y0+dy/2);
             context.lineTo(x0+dx, y0+dy/2);
-            context.stroke();   
-            
+            context.stroke();
+
             ROIInfo[roi_selected]["x"] = rect.startX;
             ROIInfo[roi_selected]["y"] = rect.startY;
             ROIInfo[roi_selected]["dx"] = rect.w;
@@ -933,7 +933,7 @@
         }
     }
 
-    
+
     function getCoords(elem) // crossbrowser version
     {
         var box = elem.getBoundingClientRect();
@@ -955,7 +955,7 @@
         rect.startX = e.pageX - zw.left;
         rect.startY = e.pageY - zw.top;
         document.getElementById("refx").value =  rect.startX;
-        document.getElementById("refy").value =  rect.startY;    
+        document.getElementById("refy").value =  rect.startY;
         drag = true;
     }
 
@@ -975,14 +975,14 @@
         document.getElementById("refdy").value = rect.h;
         document.getElementById("refx").value = rect.startX;
         document.getElementById("refy").value = rect.startY;
-        RefreshROI();    
+        RefreshROI();
     }
 
 
     function mouseMove(e)
     {
         if (drag) {
-            zw = getCoords(this)        
+            zw = getCoords(this)
 
             if (ROIInfo.length == 0) {
                 return;
@@ -1006,15 +1006,15 @@
             zw = getCoords(this);
             x = e.pageX - zw.left;
             y = e.pageY - zw.top;
-            
+
             context.lineWidth = 1;
             context.strokeStyle = "#00FF00";
-            context.beginPath(); 
+            context.beginPath();
             context.moveTo(0,y);
             context.lineTo(canvas.width, y);
             context.moveTo(x, 0);
             context.lineTo(x, canvas.height);
-            context.stroke();            
+            context.stroke();
         }
     }
 
@@ -1060,7 +1060,7 @@
     function loadConfigData()
     {
         ParseConfig();
-        param = getConfigParameters(); 
+        param = getConfigParameters();
         param_category = getConfigCategory();
 
         RefreshSequences();
@@ -1074,7 +1074,7 @@
     function init()
     {
         openDescription();
-        
+
         loadReferenceImage();
         loadConfig().then(() => loadConfigData());
     }

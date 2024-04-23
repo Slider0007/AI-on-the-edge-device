@@ -71,7 +71,7 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
         endsWith(filename, ".txt"))
     {
 
-        if (filename == "/sdcard/html/index.html") {    
+        if (filename == "/sdcard/html/index.html") {
             httpd_resp_set_hdr(req, "Cache-Control", "max-age=0");
         }
         else if (filename == "/sdcard/html/setup.html") {
@@ -108,8 +108,8 @@ esp_err_t send_file(httpd_req_t *req, std::string filename)
 
     /* Close file after sending complete */
     fclose(fd);
-    ESP_LOGD(TAG, "File sending complete");    
-    return ESP_OK;    
+    ESP_LOGD(TAG, "File sending complete");
+    return ESP_OK;
 }
 
 

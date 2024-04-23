@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
 	<meta charset="UTF-8">
 	<title>Reboot</title>
@@ -19,7 +19,7 @@
 		.button {
 			padding: 5px 10px;
 			width: 205px;
-			font-size: 16px;	
+			font-size: 16px;
 		}
 
 		table {
@@ -53,7 +53,7 @@
 		<span><b>The device is usually rebooted in 20 to 40 seconds<br>and then getting redirected to the overview page.</b></span>
 	</div>
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="common.js?v=$COMMIT_HASH"></script>
 <script>
 	function doReboot()
 	{
@@ -100,7 +100,7 @@
 
 					clearInterval(dotInterval);
 					clearInterval(checkInterval);
-					
+
 					document.getElementById("rebootRequest").style.display = "";
 					document.getElementById("rebootChecker").style.display = "none";
 				}

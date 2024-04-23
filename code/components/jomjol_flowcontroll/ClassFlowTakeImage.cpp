@@ -11,7 +11,7 @@
 #include "CImageBasis.h"
 #include "MainFlowControl.h"
 
-// #define DEBUG_DETAIL_ON 
+// #define DEBUG_DETAIL_ON
 
 static const char* TAG = "TAKEIMAGE";
 
@@ -26,7 +26,7 @@ void ClassFlowTakeImage::SetInitialParameter(void)
     timeImageTaken = 0;
     namerawimage = "/sdcard/img_tmp/raw.jpg";
     rawImage = NULL;
-}     
+}
 
 
 ClassFlowTakeImage::ClassFlowTakeImage(std::vector<ClassFlow*>* lfc) : ClassFlowImage(lfc, TAG)
@@ -101,7 +101,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if ((toUpper(splitted[0]) == "IMAGESIZE") && (splitted.size() > 1)) {
             imageSize = Camera.textToFramesize(splitted[1].c_str());
         }
- 
+
         if ((toUpper(splitted[0]) == "BRIGHTNESS") && (splitted.size() > 1)) {
             brightness = stoi(splitted[1]);
         }
@@ -159,11 +159,11 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if ((toUpper(splitted[0]) == "ZOOMMODE") && (splitted.size() > 1)) {
             zoomMode = std::stoi(splitted[1]);
         }
-        
+
         if ((toUpper(splitted[0]) == "ZOOMOFFSETX") && (splitted.size() > 1)) {
             zoomOffsetX = std::stoi(splitted[1]);
         }
-        
+
         if ((toUpper(splitted[0]) == "ZOOMOFFSETY") && (splitted.size() > 1)) {
             zoomOffsetY = std::stoi(splitted[1]);
         }
@@ -180,7 +180,7 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
                 SaveAllFiles = true;
             else
                 SaveAllFiles = false;
-        }  
+        }
     }
 
     #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
@@ -190,9 +190,9 @@ bool ClassFlowTakeImage::ReadParameter(FILE* pfile, std::string& aktparamgraph)
     Camera.setFlashTime(flashTime);
     Camera.setCameraFrequency(cameraFrequency);
     Camera.setSizeQuality(imageQuality, imageSize, zoomMode, zoomOffsetX, zoomOffsetY);
-    Camera.setImageManipulation(brightness, contrast, saturation, sharpness, exposureControlMode, autoExposureLevel, 
+    Camera.setImageManipulation(brightness, contrast, saturation, sharpness, exposureControlMode, autoExposureLevel,
                                 manualExposureValue, gainControlMode, manualGainValue, specialEffect, mirrorImage, flipImage);
-    
+
     image_width = Camera.image_width;
     image_height = Camera.image_height;
     rawImage = new CImageBasis("rawImage");
@@ -215,8 +215,8 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
 {
     presetFlowStateHandler(false, zwtime);
     std::string logPath = CreateLogFolder(zwtime);
- 
-    #ifdef DEBUG_DETAIL_ON  
+
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("ClassFlowTakeImage::doFlow - Start");
     #endif
 
@@ -225,7 +225,7 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
         return false;
     }
 
-    #ifdef DEBUG_DETAIL_ON  
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("ClassFlowTakeImage::doFlow - After takePictureWithFlash");
     #endif
 
@@ -233,7 +233,7 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
 
     RemoveOldLogs();
 
-    #ifdef DEBUG_DETAIL_ON  
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("ClassFlowTakeImage::doFlow - Done");
     #endif
 
@@ -269,7 +269,7 @@ bool ClassFlowTakeImage::takePictureWithFlash()
     }
 
     // in case the image is flipped, it must be reset here //
-    rawImage->width = image_width;          
+    rawImage->width = image_width;
     rawImage->height = image_height;
 
     if (Camera.captureToBasisImage(rawImage) != ESP_OK)
@@ -302,9 +302,9 @@ ImageData* ClassFlowTakeImage::SendRawImage()
 
     time(&timeImageTaken);
 
-    id = zw->writeToMemoryAsJPG();    
+    id = zw->writeToMemoryAsJPG();
     delete zw;
-    return id;  
+    return id;
 }
 
 

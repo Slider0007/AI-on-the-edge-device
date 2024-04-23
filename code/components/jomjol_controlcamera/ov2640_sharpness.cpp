@@ -101,14 +101,14 @@ static bool table_mask_write(sensor_t *_sensor, const uint8_t* _ptab)
         return false;
 
     while (1)
-    {   
+    {
         address = *pdata++;
         value = *pdata++;
         mask = *pdata++;
         if ((address == 0) && (value == 0) && (mask == 0))
             break;
         _sensor->set_reg(_sensor, address, mask, value);
-    }   
+    }
 
     return true;
 }

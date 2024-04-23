@@ -51,26 +51,26 @@ bool doInit(void)
     bool bRetVal = true;
 
     // Deinit main flow components before init all ressources again
-    // ********************************************   
+    // ********************************************
     flowctrl.DeinitFlow();
     //heap_caps_dump(MALLOC_CAP_SPIRAM);
 
     // Init cam if init not yet done.
     // Make sure this is called between deinit and init of flow components (avoid SPIRAM fragmentation)
-    // ********************************************   
-    if (!Camera.getcameraInitSuccessful()) { 
+    // ********************************************
+    if (!Camera.getcameraInitSuccessful()) {
         Camera.powerResetCamera();
-        esp_err_t camStatus = Camera.initCam(); 
+        esp_err_t camStatus = Camera.initCam();
 
         if (camStatus != ESP_OK) // Camera init failed
             return false;
-        
+
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Init camera successful");
         Camera.printCamInfo();
     }
 
     //  // Init main flow components
-    // ********************************************   
+    // ********************************************
     if (!flowctrl.InitFlow(CONFIG_FILE)) {
         flowctrl.DeinitFlow();
         bRetVal = false;
@@ -79,12 +79,12 @@ bool doInit(void)
     // Init GPIO handler
     // Note: It has to be initialized before MQTT (topic subscription)
     // and after flow init (MQTT main topic parameter)
-    // ********************************************   
+    // ********************************************
     if (!gpio_handler_init())
         bRetVal = false;
 
     // Init MQTT service
-    // ********************************************   
+    // ********************************************
     #ifdef ENABLE_MQTT
         if (!flowctrl.StartMQTTService())
             bRetVal = false;
@@ -98,27 +98,27 @@ bool doInit(void)
 
 
 #ifdef ENABLE_MQTT
-esp_err_t triggerFlowStartByMqtt(std::string _topic) 
+esp_err_t triggerFlowStartByMqtt(std::string _topic)
 {
-    if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART || 
-        taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART) 
+    if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART ||
+        taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART)
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by MQTT topic " + _topic);  
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by MQTT topic " + _topic);
         manualFlowStart = true;
 
         if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART)
             xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state
     }
-    else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING || 
+    else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING ||
              taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
-             taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) 
+             taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS)
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by MQTT topic "+ _topic + " got scheduled");      
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by MQTT topic "+ _topic + " got scheduled");
         manualFlowStart = true;
     }
     else {
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Cycle start triggered by MQTT topic " + _topic + ". Main task not initialized. Request rejected");
-    }  
+    }
 
     return ESP_OK;
 }
@@ -128,36 +128,36 @@ esp_err_t triggerFlowStartByMqtt(std::string _topic)
 
 void triggerFlowStartByGpio()
 {
-    if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART || 
-        taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART) 
+    if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART ||
+        taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART)
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by GPIO");  
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by GPIO");
         manualFlowStart = true;
 
         if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART)
             xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state
     }
-    else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING || 
+    else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING ||
              taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
-             taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) 
+             taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS)
     {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by GPIO got scheduled");      
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by GPIO got scheduled");
         manualFlowStart = true;
     }
     else {
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Cycle start triggered by GPIO. Main task not initialized. Request rejected");
-    }  
+    }
 }
 
 
 
-esp_err_t handler_cycle_start(httpd_req_t *req) 
+esp_err_t handler_cycle_start(httpd_req_t *req)
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
-    if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART || 
-        taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART || 
+    if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART ||
+        taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART ||
         flowctrl.getActStatus() == FLOW_INIT_FAILED) // Possibility to manual retrigger a cycle when init is already failed
     {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by REST API");
@@ -168,9 +168,9 @@ esp_err_t handler_cycle_start(httpd_req_t *req)
         if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART)
             xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state
     }
-    else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING || 
+    else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING ||
              taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
-             taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) 
+             taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS)
     {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by REST API got scheduled");
         const std::string zw = "002: Cycle start triggered by REST API got scheduled (" + getCurrentTimeString("%H:%M:%S") + ")";
@@ -210,7 +210,7 @@ esp_err_t handler_reload_config(httpd_req_t *req)
     else if (taskAutoFlowState == FLOW_TASK_STATE_INIT_DELAYED) {
         const std::string zw = "002: Abort waiting delay and continue with process initialization (" + getCurrentTimeString("%H:%M:%S") + ")";
         httpd_resp_send(req, zw.c_str(), zw.length());
-        xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state.      
+        xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state.
     }
     else if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART) {
         const std::string zw = "003: Abort waiting delay, reload config and reinitialize process(" + getCurrentTimeString("%H:%M:%S") + ")";
@@ -218,9 +218,9 @@ esp_err_t handler_reload_config(httpd_req_t *req)
         reloadConfig = true;
         xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state.
     }
-    else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING || 
+    else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING ||
              taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
-             taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) 
+             taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS)
     {
         LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Reload config and schedule process reinitialization");
         const std::string zw = "004: Reload config and reinitialization got scheduled (" + getCurrentTimeString("%H:%M:%S") + ")";
@@ -245,7 +245,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     }
 
     // Default usage message when handler gets called without any parameter
-    const std::string RESTUsageInfo = 
+    const std::string RESTUsageInfo =
         "Handler usage:<br>"
         "- To retrieve actual Fallback Value, please provide a number sequence name only, e.g. /set_fallbackvalue?sequence=main<br>"
         "- To set Fallback Value to a new value, please provide a number sequence name and a value, e.g. /set_fallbackvalue?sequence=main&value=1234.5678<br>"
@@ -270,7 +270,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
             sReturnMessage = "E91: Query parameter incomplete or not valid!<br> "
                              "Call /set_fallbackvalue to show REST API usage info and/or check documentation";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
-            return ESP_FAIL; 
+            return ESP_FAIL;
         }
 
         if (httpd_query_key_value(_query, "value", value, sizeof(value)) == ESP_OK) {
@@ -279,8 +279,8 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     }
     else {  // if no parameter is provided, print handler usage
         httpd_resp_send(req, RESTUsageInfo.c_str(), RESTUsageInfo.length());
-        return ESP_OK; 
-    }   
+        return ESP_OK;
+    }
 
     if (strlen(value) == 0) { // If no value is povided --> return actual FallbackValue
         sReturnMessage = flowctrl.GetFallbackValue(std::string(number_sequence));
@@ -294,11 +294,11 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     else {
         // New value is positive: Set FallbackValue to provided value and return value
         // New value is negative and actual RAW value is a valid number: Set FallbackValue to RAW value and return value
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "REST API handler_fallbackvalue called: numbersname: " + std::string(number_sequence) + 
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "REST API handler_fallbackvalue called: numbersname: " + std::string(number_sequence) +
                                                 ", value: " + std::string(value));
         if (!flowctrl.UpdateFallbackValue(value, number_sequence)) {
             sReturnMessage = "E93: Update request rejected. Please check device logs for more details";
-            httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());  
+            httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
             return ESP_FAIL;
         }
 
@@ -332,7 +332,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
     if (task.compare("api_name") == 0) {
         httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (task.compare("data") == 0) {
         return get_data_file_handler(req);
@@ -343,17 +343,17 @@ esp_err_t handler_editflow(httpd_req_t *req)
     else if (task.compare("copy") == 0) {
         httpd_query_key_value(_query, "in", _valuechar, sizeof(_valuechar));
         std::string in = std::string(_valuechar);
-        httpd_query_key_value(_query, "out", _valuechar, sizeof(_valuechar));       
+        httpd_query_key_value(_query, "out", _valuechar, sizeof(_valuechar));
         std::string out = std::string(_valuechar);
 
         in = "/sdcard" + in;
         out = "/sdcard" + out;
 
         CopyFile(in, out);
-        
+
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
-        httpd_resp_sendstr(req, "Copy Done"); 
+        httpd_resp_sendstr(req, "Copy Done");
     }
     else if (task.compare("cutref") == 0) {
         if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
@@ -364,28 +364,28 @@ esp_err_t handler_editflow(httpd_req_t *req)
         // Interlock request for memory category 4MB due to memory limitation
         else if (getSPIRAMCategory() == SPIRAMCategory_4MB && taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
             httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-            httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED, 
+            httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED,
                                 ("E91: Request rejected, flow in process | Actual State: " + flowctrl.getActStatus()).c_str());
-            return ESP_FAIL; 
+            return ESP_FAIL;
         }
 
         httpd_query_key_value(_query, "in", _valuechar, sizeof(_valuechar));
         std::string in = std::string(_valuechar);
 
-        httpd_query_key_value(_query, "out", _valuechar, sizeof(_valuechar));         
-        std::string out = std::string(_valuechar);  
+        httpd_query_key_value(_query, "out", _valuechar, sizeof(_valuechar));
+        std::string out = std::string(_valuechar);
 
         httpd_query_key_value(_query, "x", _valuechar, sizeof(_valuechar));
-        int x = std::stoi(std::string(_valuechar));              
+        int x = std::stoi(std::string(_valuechar));
 
         httpd_query_key_value(_query, "y", _valuechar, sizeof(_valuechar));
-        int y = std::stoi(std::string(_valuechar));              
+        int y = std::stoi(std::string(_valuechar));
 
         httpd_query_key_value(_query, "dx", _valuechar, sizeof(_valuechar));
-        int dx = std::stoi(std::string(_valuechar));  
+        int dx = std::stoi(std::string(_valuechar));
 
         httpd_query_key_value(_query, "dy", _valuechar, sizeof(_valuechar));
-        int dy = std::stoi(std::string(_valuechar));          
+        int dy = std::stoi(std::string(_valuechar));
 
         in = "/sdcard" + in;    // --> img_tmp/reference.jpg
         out = "/sdcard" + out;  // --> img_tmp/refX.jpg
@@ -405,12 +405,12 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
-        httpd_resp_sendstr(req, "CutImage Done"); 
+        httpd_resp_sendstr(req, "CutImage Done");
     }
     else {
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E92: Task not found");
-        return ESP_FAIL;  
+        return ESP_FAIL;
     }
 
     return ESP_OK;
@@ -427,10 +427,10 @@ esp_err_t handler_process_data(httpd_req_t *req)
 
     const char* APIName = "process_data:v2"; // API name and version
     char _query[200];
-    char _valuechar[30];    
+    char _valuechar[30];
     std::string type, number_sequence;
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
+    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             type = std::string(_valuechar);
         }
@@ -442,7 +442,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
         esp_err_t retVal = ESP_OK;
         std::string sReturnMessage;
         cJSON *cJSONObject = cJSON_CreateObject();
-        
+
         if (cJSONObject == NULL) {
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
             return ESP_FAIL;
@@ -466,7 +466,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             }
             else {
                 for(int i = 0; i < flowctrl.getNumbersSize(); i++) {
-                    if (cJSON_AddStringToObject(cJSONObjectTimestampProcessedSequence, flowctrl.getNumbersName(i).c_str(), 
+                    if (cJSON_AddStringToObject(cJSONObjectTimestampProcessedSequence, flowctrl.getNumbersName(i).c_str(),
                                                 flowctrl.getNumbersValue(i, READOUT_TYPE_TIMESTAMP_PROCESSED).c_str()) == NULL)
                     retVal = ESP_FAIL;
                 }
@@ -486,7 +486,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             }
             else {
                 for(int i = 0; i < flowctrl.getNumbersSize(); i++) {
-                    if (cJSON_AddStringToObject(cJSONObjectTimestampFallbackValueSequence, flowctrl.getNumbersName(i).c_str(), 
+                    if (cJSON_AddStringToObject(cJSONObjectTimestampFallbackValueSequence, flowctrl.getNumbersName(i).c_str(),
                                                 flowctrl.getNumbersValue(i, READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str()) == NULL)
                     retVal = ESP_FAIL;
                 }
@@ -506,13 +506,13 @@ esp_err_t handler_process_data(httpd_req_t *req)
             }
             else {
                 for(int i = 0; i < flowctrl.getNumbersSize(); i++) {
-                    if (cJSON_AddStringToObject(cJSONObjectActualValueSequence, flowctrl.getNumbersName(i).c_str(), 
+                    if (cJSON_AddStringToObject(cJSONObjectActualValueSequence, flowctrl.getNumbersName(i).c_str(),
                                                 flowctrl.getNumbersValue(i, READOUT_TYPE_VALUE).c_str()) == NULL)
                     retVal = ESP_FAIL;
                 }
             }
         }
-        
+
         cJSON *cJSONObjectFallbackValue = cJSON_AddObjectToObject(cJSONObject, "fallback_value");
         if (cJSONObjectFallbackValue == NULL) {
             retVal = ESP_FAIL;
@@ -526,7 +526,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             }
             else {
                 for(int i = 0; i < flowctrl.getNumbersSize(); i++) {
-                    if (cJSON_AddStringToObject(cJSONObjectFallbackValueSequence, flowctrl.getNumbersName(i).c_str(), 
+                    if (cJSON_AddStringToObject(cJSONObjectFallbackValueSequence, flowctrl.getNumbersName(i).c_str(),
                                                 flowctrl.getNumbersValue(i, READOUT_TYPE_FALLBACKVALUE).c_str()) == NULL)
                     retVal = ESP_FAIL;
                 }
@@ -546,7 +546,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             }
             else {
                 for(int i = 0; i < flowctrl.getNumbersSize(); i++) {
-                    if (cJSON_AddStringToObject(cJSONObjectRawValueSequence, flowctrl.getNumbersName(i).c_str(), 
+                    if (cJSON_AddStringToObject(cJSONObjectRawValueSequence, flowctrl.getNumbersName(i).c_str(),
                                                 flowctrl.getNumbersValue(i, READOUT_TYPE_RAWVALUE).c_str()) == NULL)
                     retVal = ESP_FAIL;
                 }
@@ -566,7 +566,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             }
             else {
                 for(int i = 0; i < flowctrl.getNumbersSize(); i++) {
-                    if (cJSON_AddStringToObject(cJSONObjectValueStatusSequence, flowctrl.getNumbersName(i).c_str(), 
+                    if (cJSON_AddStringToObject(cJSONObjectValueStatusSequence, flowctrl.getNumbersName(i).c_str(),
                                                 flowctrl.getNumbersValue(i, READOUT_TYPE_VALUE_STATUS).c_str()) == NULL)
                     retVal = ESP_FAIL;
                 }
@@ -586,7 +586,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             }
             else {
                 for(int i = 0; i < flowctrl.getNumbersSize(); i++) {
-                    if (cJSON_AddStringToObject(cJSONObjectRatePerMinSequence, flowctrl.getNumbersName(i).c_str(), 
+                    if (cJSON_AddStringToObject(cJSONObjectRatePerMinSequence, flowctrl.getNumbersName(i).c_str(),
                                                 flowctrl.getNumbersValue(i, READOUT_TYPE_RATE_PER_MIN).c_str()) == NULL)
                     retVal = ESP_FAIL;
                 }
@@ -606,7 +606,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             }
             else {
                 for(int i = 0; i < flowctrl.getNumbersSize(); i++) {
-                    if (cJSON_AddStringToObject(cJSONObjectRatePerIntervalSequence, flowctrl.getNumbersName(i).c_str(), 
+                    if (cJSON_AddStringToObject(cJSONObjectRatePerIntervalSequence, flowctrl.getNumbersName(i).c_str(),
                                                 flowctrl.getNumbersValue(i, READOUT_TYPE_RATE_PER_INTERVAL).c_str()) == NULL)
                     retVal = ESP_FAIL;
                 }
@@ -634,7 +634,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
 
         char *jsonString = cJSON_PrintBuffered(cJSONObject, 1024 + flowctrl.getNumbersSize() * 512, 1); // Print with predefined buffer, avoid dynamic allocations
         sReturnMessage = std::string(jsonString);
-        cJSON_free(jsonString);  
+        cJSON_free(jsonString);
         cJSON_Delete(cJSONObject);
 
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -654,11 +654,11 @@ esp_err_t handler_process_data(httpd_req_t *req)
 
     if (type.compare("api_name") == 0) {
         httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (type.compare("number_sequences") == 0) {
         httpd_resp_sendstr(req, std::to_string(flowctrl.getNumbersSize()).c_str());
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (type.compare("timestamp_processed") == 0) {
         if (number_sequence.empty()) {
@@ -673,8 +673,8 @@ esp_err_t handler_process_data(httpd_req_t *req)
                 return ESP_FAIL;
             }
             httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_TIMESTAMP_PROCESSED).c_str());
-            return ESP_OK;  
-        }    
+            return ESP_OK;
+        }
     }
     else if (type.compare("timestamp_fallbackvalue") == 0) {
         if (number_sequence.empty()) {
@@ -689,8 +689,8 @@ esp_err_t handler_process_data(httpd_req_t *req)
                 return ESP_FAIL;
             }
             httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_TIMESTAMP_FALLBACKVALUE).c_str());
-            return ESP_OK;  
-        }  
+            return ESP_OK;
+        }
     }
     else if (type.compare("actual_value") == 0) {
         if (number_sequence.empty()) {
@@ -705,7 +705,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
                 return ESP_FAIL;
             }
             httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE).c_str());
-            return ESP_OK;  
+            return ESP_OK;
         }
     }
     else if (type.compare("fallback_value") == 0) {
@@ -721,8 +721,8 @@ esp_err_t handler_process_data(httpd_req_t *req)
                 return ESP_FAIL;
             }
             httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_FALLBACKVALUE).c_str());
-            return ESP_OK;  
-        }   
+            return ESP_OK;
+        }
     }
     else if (type.compare("raw_value") == 0) {
         if (number_sequence.empty()) {
@@ -737,8 +737,8 @@ esp_err_t handler_process_data(httpd_req_t *req)
                 return ESP_FAIL;
             }
             httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_RAWVALUE).c_str());
-            return ESP_OK;  
-        }  
+            return ESP_OK;
+        }
     }
     else if (type.compare("value_status") == 0) {
         if (number_sequence.empty()) {
@@ -753,8 +753,8 @@ esp_err_t handler_process_data(httpd_req_t *req)
                 return ESP_FAIL;
             }
             httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_VALUE_STATUS).c_str());
-            return ESP_OK;  
-        }   
+            return ESP_OK;
+        }
     }
     else if (type.compare("rate_per_minute") == 0) {
         if (number_sequence.empty()) {
@@ -769,7 +769,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
                 return ESP_FAIL;
             }
             httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_RATE_PER_MIN).c_str());
-            return ESP_OK;  
+            return ESP_OK;
         }
     }
     else if (type.compare("rate_per_interval") == 0) {
@@ -785,24 +785,24 @@ esp_err_t handler_process_data(httpd_req_t *req)
                 return ESP_FAIL;
             }
             httpd_resp_sendstr(req, flowctrl.getNumbersValue(positon, READOUT_TYPE_RATE_PER_INTERVAL).c_str());
-            return ESP_OK;  
-        }   
+            return ESP_OK;
+        }
     }
     else if (type.compare("process_status") == 0) {
         httpd_resp_sendstr(req, getProcessStatus().c_str());
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (type.compare("process_interval") == 0) {
         httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessInterval(), 1).c_str());
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (type.compare("process_time") == 0) {
         httpd_resp_sendstr(req, std::to_string(getFlowProcessingTime()).c_str());
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (type.compare("process_state") == 0) {
         httpd_resp_sendstr(req, flowctrl.getActStatusWithTime().c_str());
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (type.compare("process_error") == 0) {
         // 000: No error, E01: Error occured, E02: Multiple errors in a row, 001: Deviation occured, 002: Multiple deviaton in a row
@@ -816,23 +816,23 @@ esp_err_t handler_process_data(httpd_req_t *req)
             httpd_resp_sendstr(req, "E01: Process error occured");
         else if (flowctrl.getFlowStateErrorOrDeviation() == 1)
             httpd_resp_sendstr(req, "001: Process deviation occured");
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (type.compare("device_uptime") == 0) {
         httpd_resp_sendstr(req, std::to_string(getUptime()).c_str());
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (type.compare("cycle_counter") == 0) {
         httpd_resp_sendstr(req, std::to_string(getFlowCycleCounter()).c_str());
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (type.compare("wlan_rssi") == 0) {
         httpd_resp_sendstr(req, std::to_string(get_WIFI_RSSI()).c_str());
-        return ESP_OK;        
+        return ESP_OK;
     }
     else {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E93: Parameter not found");
-        return ESP_FAIL;  
+        return ESP_FAIL;
     }
 }
 
@@ -841,10 +841,10 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
 {
     const char* APIName = "recognition_details:v1"; // API name and version
     char _query[100];
-    char _valuechar[30];    
+    char _valuechar[30];
     std::string type, zw;
-    
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
+
+    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             type = std::string(_valuechar);
         }
@@ -856,7 +856,7 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
     if (type.compare("api_name") == 0) {
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
+        return ESP_OK;
     }
 
     /*++++++++++++++++++++++++++++++++++++++++*/
@@ -1005,7 +1005,7 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
 }
 
 
-void setTaskAutoFlowState(int _value) 
+void setTaskAutoFlowState(int _value)
 {
     taskAutoFlowState = _value;
 }
@@ -1014,12 +1014,12 @@ void setTaskAutoFlowState(int _value)
 std::string getProcessStatus(void)
 {
     std::string process_status;
-    
-    if (flowctrl.isAutoStart() && (taskAutoFlowState >= 4 && taskAutoFlowState <= 7)) 
+
+    if (flowctrl.isAutoStart() && (taskAutoFlowState >= 4 && taskAutoFlowState <= 7))
         process_status = "Processing (Automatic)";
-    else if (!flowctrl.isAutoStart() && (taskAutoFlowState >= 3 && taskAutoFlowState <= 7)) 
+    else if (!flowctrl.isAutoStart() && (taskAutoFlowState >= 3 && taskAutoFlowState <= 7))
         process_status = "Processing (Triggered Only)";
-    else if (taskAutoFlowState >= 0 && taskAutoFlowState < 3) 
+    else if (taskAutoFlowState >= 0 && taskAutoFlowState < 3)
         process_status = "Not Processing / Not Ready";
     else
         process_status = "Status unknown: " + taskAutoFlowState;
@@ -1028,7 +1028,7 @@ std::string getProcessStatus(void)
 }
 
 
-int getFlowCycleCounter() 
+int getFlowCycleCounter()
 {
     return cycleCounter;
 }
@@ -1058,7 +1058,7 @@ void task_autodoFlow(void *pvParameter)
             flowctrl.setFlowStateError();
             // Right now, it's not possible to provide state via MQTT because mqtt service is not yet started
 
-            vTaskDelay(60*5000 / portTICK_PERIOD_MS); // Wait 5 minutes to give time to do an OTA update or fetch the log 
+            vTaskDelay(60*5000 / portTICK_PERIOD_MS); // Wait 5 minutes to give time to do an OTA update or fetch the log
 
             taskAutoFlowState = FLOW_TASK_STATE_INIT; // Continue to FLOW INIT
         }
@@ -1131,9 +1131,9 @@ void task_autodoFlow(void *pvParameter)
         }
 
         // AUTOSTART CHECK
-        // ********************************************      
+        // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART) {
-    
+
             if (!flowctrl.isAutoStart(auto_interval)) {
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_NO_AUTOSTART));
                 flowctrl.setActStatus(std::string(FLOW_IDLE_NO_AUTOSTART));
@@ -1150,12 +1150,12 @@ void task_autodoFlow(void *pvParameter)
                         taskAutoFlowState = FLOW_TASK_STATE_INIT;           // Return to state "FLOW INIT"
                         break;
                     }
-                    else if (manualFlowStart) { 
+                    else if (manualFlowStart) {
                         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Start process (manual trigger)");
-                        taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING; // Start manual triggered single cycle of "FLOW PROCESSING"  
+                        taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING; // Start manual triggered single cycle of "FLOW PROCESSING"
                         break;
                     }
-                }   
+                }
             }
             else {
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Start process (automatic trigger)");
@@ -1164,16 +1164,16 @@ void task_autodoFlow(void *pvParameter)
         }
 
         // IMAGE PROCESSING / EVALUATION
-        // ********************************************     
+        // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
-            // Clear separation between runs      
+            // Clear separation between runs
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "----------------------------------------------------------------");
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(++cycleCounter) + " started"); 
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(++cycleCounter) + " started");
             cycleStartTime = getUptime();
             fr_start = esp_timer_get_time();
-                   
+
             if (flowctrl.doFlowImageEvaluation(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
-                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Image evaluation completed (" + 
+                LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Image evaluation completed (" +
                                     std::to_string(getUptime() - cycleStartTime) + "s)");
             }
             else {
@@ -1184,11 +1184,11 @@ void task_autodoFlow(void *pvParameter)
         }
 
         // PUBLISH DATA / RESULTS
-        // ******************************************** 
-        else if (taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA) {  
+        // ********************************************
+        else if (taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA) {
 
             if (!flowctrl.doFlowPublishData(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Publish data process error occured"); 
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Publish data process error occured");
             }
             taskAutoFlowState = FLOW_TASK_STATE_ADDITIONAL_TASKS;           // Continue with TASKS after FLOW FINISHED
         }
@@ -1225,21 +1225,21 @@ void task_autodoFlow(void *pvParameter)
                 MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActStatus(), 1, false);
             #endif //ENABLE_MQTT
 
-            // Cleanup outdated log and data files (retention policy)  
+            // Cleanup outdated log and data files (retention policy)
             LogFile.RemoveOldLogFile();
             LogFile.RemoveOldDataLog();
- 
+
             // CPU Temp -> Logfile
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "CPU Temperature: " + std::to_string((int)getSOCTemperature()) + "°C");
-            
+
             // WIFI Signal Strength (RSSI) -> Logfile
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "WIFI Signal (RSSI): " + std::to_string(get_WIFI_RSSI()) + "dBm");
 
             processingTime = (int)(getUptime() - cycleStartTime);
             // Cycle finished -> Logfile
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(cycleCounter) + 
+            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(cycleCounter) +
                     " completed (" + std::to_string(processingTime) + "s)");
-           
+
             // Check if time is synchronized (if NTP is configured)
             if (getUseNtp() && !getTimeIsSet()) {
                 LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time server is configured, but time is not yet set");
@@ -1252,7 +1252,7 @@ void task_autodoFlow(void *pvParameter)
             #if (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES)
                 wifiRoamingQuery();
             #endif
-        
+
             // Scan channels and check if an AP with better RSSI is available, then disconnect and try to reconnect to AP with better RSSI
             // NOTE: Keep this at the end of this state, because scan is done in blocking mode and this takes ca. 1,5 - 2s.
             #ifdef WLAN_USE_ROAMING_BY_SCANNING
@@ -1260,7 +1260,7 @@ void task_autodoFlow(void *pvParameter)
             #endif
 
             // Check if triggerd reload config or manually triggered single cycle
-            // ********************************************    
+            // ********************************************
             if (taskAutoFlowState == FLOW_TASK_STATE_INIT) {
                 reloadConfig = false; // reload by post process event handler has higher prio
                 manualFlowStart = false; // Reload config has higher prio
@@ -1302,12 +1302,12 @@ void task_autodoFlow(void *pvParameter)
             {
                 const TickType_t xDelay = (auto_interval - fr_delta_ms)  / portTICK_PERIOD_MS;
                 ESP_LOGD(TAG, "Autoflow: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
-                vTaskDelay(xDelay);   
+                vTaskDelay(xDelay);
             }
 
             // Check if reload config is triggered by REST API
-            // ********************************************    
-            if (reloadConfig) {                     
+            // ********************************************
+            if (reloadConfig) {
                 reloadConfig = false;
                 manualFlowStart = false; // Reload config has higher prio
                 LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration");
@@ -1340,7 +1340,7 @@ void task_autodoFlow(void *pvParameter)
 
 void CreateMainFlowTask()
 {
-    #ifdef DEBUG_DETAIL_ON      
+    #ifdef DEBUG_DETAIL_ON
             LogFile.WriteHeapInfo("CreateFlowTask: start");
     #endif
 
@@ -1355,7 +1355,7 @@ void CreateMainFlowTask()
         flowctrl.setFlowStateError();
     }
 
-    #ifdef DEBUG_DETAIL_ON      
+    #ifdef DEBUG_DETAIL_ON
             LogFile.WriteHeapInfo("CreateFlowTask: end");
     #endif
 }
@@ -1363,7 +1363,7 @@ void CreateMainFlowTask()
 
 void DeleteMainFlowTask()
 {
-    #ifdef DEBUG_DETAIL_ON      
+    #ifdef DEBUG_DETAIL_ON
         ESP_LOGD(TAG, "DeleteMainFlowTask: xHandletask_autodoFlow: %ld", (long) xHandletask_autodoFlow);
     #endif
     if( xHandletask_autodoFlow != NULL )
@@ -1371,7 +1371,7 @@ void DeleteMainFlowTask()
         vTaskDelete(xHandletask_autodoFlow);
         xHandletask_autodoFlow = NULL;
     }
-    #ifdef DEBUG_DETAIL_ON      
+    #ifdef DEBUG_DETAIL_ON
     	ESP_LOGD(TAG, "Killed: xHandletask_autodoFlow");
     #endif
 }
@@ -1380,18 +1380,18 @@ void DeleteMainFlowTask()
 void register_server_main_flow_task_uri(httpd_handle_t server)
 {
     ESP_LOGI(TAG, "Registering URI handlers");
-    
+
     httpd_uri_t camuri = { };
     camuri.method    = HTTP_GET;
 
     camuri.uri       = "/cycle_start";
     camuri.handler   = handler_cycle_start;
-    camuri.user_ctx  = NULL; 
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/reload_config";
     camuri.handler   = handler_reload_config;
-    camuri.user_ctx  = NULL;    
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/set_fallbackvalue";
@@ -1401,7 +1401,7 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
 
     camuri.uri       = "/editflow";
     camuri.handler   = handler_editflow;
-    camuri.user_ctx  = NULL; 
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri       = "/process_data";
@@ -1411,6 +1411,6 @@ void register_server_main_flow_task_uri(httpd_handle_t server)
 
     camuri.uri       = "/recognition_details";
     camuri.handler   = handler_recognition_details;
-    camuri.user_ctx  = NULL; 
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 }

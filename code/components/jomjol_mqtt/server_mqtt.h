@@ -35,7 +35,7 @@ bool mqttServer_publishDeviceInfo(int _qos);
 bool mqttServer_publishDeviceStatus(int _qos);
 
 void mqttServer_setParameter(std::vector<NumberPost*>* _NUMBERS, float _processingInterval);
-void mqttServer_setMeterType(std::string _meterType, std::string _valueUnit, 
+void mqttServer_setMeterType(std::string _meterType, std::string _valueUnit,
                              std::string _timeUnit, std::string _rateUnit);
 std::string mqttServer_getMainTopic();
 std::string mqttServer_getTimeUnit();

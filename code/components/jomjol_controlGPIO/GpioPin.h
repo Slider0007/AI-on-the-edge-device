@@ -67,10 +67,10 @@ class GpioPin
         Rgb LEDColor;
 
         int intensityCorrection;
-    
+
     public:
-        GpioPin(gpio_num_t _gpio, const char* _name, gpio_pin_mode_t _mode, gpio_int_type_t _interruptType, 
-                int _debounceTime, int _frequency, bool _httpAccess, bool _mqttAccess, std::string _mqttTopic, 
+        GpioPin(gpio_num_t _gpio, const char* _name, gpio_pin_mode_t _mode, gpio_int_type_t _interruptType,
+                int _debounceTime, int _frequency, bool _httpAccess, bool _mqttAccess, std::string _mqttTopic,
                 LedType _LEDType, int _LEDQuantity, Rgb _LEDColor, int _intensityCorrection);
         ~GpioPin();
         void init();

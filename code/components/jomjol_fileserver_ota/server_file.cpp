@@ -52,7 +52,7 @@ esp_err_t get_data_file_handler(httpd_req_t *req)
 
     std::string _filename, _fileext;
     size_t pos = 0;
-    
+
     const char verz_name[] = "/sdcard/log/data";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -60,7 +60,7 @@ esp_err_t get_data_file_handler(httpd_req_t *req)
     httpd_resp_set_type(req, "text/plain");
 
     DIR *dir = opendir(verz_name);
-    while ((entry = readdir(dir)) != NULL) 
+    while ((entry = readdir(dir)) != NULL)
     {
         _filename = std::string(entry->d_name);
         ESP_LOGD(TAG, "File: %s", _filename.c_str());
@@ -96,7 +96,7 @@ esp_err_t get_tflite_file_handler(httpd_req_t *req)
 
     std::string _filename, _fileext;
     size_t pos = 0;
-    
+
     const char verz_name[] = "/sdcard/config";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -104,7 +104,7 @@ esp_err_t get_tflite_file_handler(httpd_req_t *req)
     httpd_resp_set_type(req, "text/plain");
 
     DIR *dir = opendir(verz_name);
-    while ((entry = readdir(dir)) != NULL) 
+    while ((entry = readdir(dir)) != NULL)
     {
         _filename = std::string(entry->d_name);
         ESP_LOGD(TAG, "File: %s", _filename.c_str());
@@ -162,7 +162,7 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
     if (!send_full_file) { // Send only last part of file
         ESP_LOGD(TAG, "Sending last %d bytes of the actual logfile", LOGFILE_LAST_PART_BYTES);
         long pos = 0;
-        
+
         /* Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/ */
         if (fseek(fd, 0, SEEK_END)) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to get to end of file");
@@ -173,10 +173,10 @@ static esp_err_t send_logfile(httpd_req_t *req, bool send_full_file)
             ESP_LOGD(TAG, "File contains %ld bytes", pos);
 
             // Calc start position -> either beginning of LAST PART (EOF - LAST_PART_BYTES) or beginning of file (pos = 0)
-            pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos); 
+            pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos);
 
             if (fseek(fd, pos, SEEK_SET)) { // Go to start position
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to go back " + 
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_logfile: Failed to go back " +
                                     std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
                 return ESP_FAIL;
             }
@@ -227,17 +227,17 @@ static esp_err_t handler_logfiles(httpd_req_t *req)
 {
     const char* APIName = "log:v2"; // API name and version
     char _query[100];
-    char _valuechar[30];    
+    char _valuechar[30];
     std::string type;
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
+    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             type = std::string(_valuechar);
         }
     }
 
     if (type.empty()) {
-        return send_logfile(req, false);    
+        return send_logfile(req, false);
     }
     else if (type.compare("full") == 0) {
         return send_logfile(req, true);
@@ -246,7 +246,7 @@ static esp_err_t handler_logfiles(httpd_req_t *req)
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
+        return ESP_OK;
     }
     else {
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -293,17 +293,17 @@ static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
             ESP_LOGD(TAG, "File contains %ld bytes", pos);
 
             // Calc start position -> either beginning of LAST PART (EOF - LAST_PART_BYTES) or beginning of file (pos = 0)
-            pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos); 
+            pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos);
 
             if (fseek(fd, pos, SEEK_SET)) { // Go to start position
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to go back " + 
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "send_datafile: Failed to go back " +
                                     std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
                 return ESP_FAIL;
             }
         }
 
         /* Find end of line */
-        while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART" 
+        while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART"
                           // (skip if start is from beginning of file to ensure first line is included)
             if (fgetc(fd) == '\n') {
                 break;
@@ -347,17 +347,17 @@ static esp_err_t handler_datafiles(httpd_req_t *req)
 {
     const char* APIName = "data:v2"; // API name and version
     char _query[100];
-    char _valuechar[30];    
+    char _valuechar[30];
     std::string type;
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {        
+    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             type = std::string(_valuechar);
         }
     }
 
     if (type.empty()) {
-        return send_datafile(req, false);    
+        return send_datafile(req, false);
     }
     else if (type.compare("full") == 0) {
         return send_datafile(req, true);
@@ -366,7 +366,7 @@ static esp_err_t handler_datafiles(httpd_req_t *req)
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
+        return ESP_OK;
     }
     else {
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -452,7 +452,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
 
     std::string _zw = std::string(dirpath);
     _zw = _zw.substr(8, _zw.length() - 8);
-    _zw = "/delete/" + _zw + "?task=deldircontent"; 
+    _zw = "/delete/" + _zw + "?task=deldircontent";
 
 
     /* Send file-list table definition and column labels */
@@ -479,7 +479,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
             strlcpy(entrypath + dirpath_len, entry->d_name, sizeof(entrypath) - dirpath_len);
             ESP_LOGD(TAG, "Entrypath: %s", entrypath);
             if (stat(entrypath, &entry_stat) == -1) {
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to read " + 
+                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to read " +
                                     std::string(entrytype) + ": " + std::string(entry->d_name));
                 continue;
             }
@@ -546,7 +546,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     ESP_LOGD(TAG, "uri: %s", req->uri);
 
     const char *filename = get_path_from_uri(filepath, ((struct file_server_data *)req->user_ctx)->base_path,
-                                             req->uri  + sizeof("/fileserver") - 1, sizeof(filepath));    
+                                             req->uri  + sizeof("/fileserver") - 1, sizeof(filepath));
 
     ESP_LOGD(TAG, "uri: %s, filename: %s, filepath: %s", req->uri, filename, filepath);
 
@@ -683,7 +683,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     }
 
     // +++++++++++++++++++++++
-    // Special case config.ini: Use config.tmp to save posted chunked web server data. 
+    // Special case config.ini: Use config.tmp to save posted chunked web server data.
     // Update config.ini only if data reception is successful -> Reduce data loss risk (e.g. network interruption during transfer)
     if (strcmp(filename, "/config/config.tmp") == 0 && stat(filepath, &file_stat) == 0) // Delete config.tmp if existing
         unlink(filepath);
@@ -763,7 +763,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "File reception completed");
 
     // +++++++++++++++++++++++
-    // Special case config.ini: Use config.tmp to save posted chunked web server data. 
+    // Special case config.ini: Use config.tmp to save posted chunked web server data.
     // Update config.ini only if data reception is successful -> Reduce data loss risk (e.g. network interruption during transfer)
     if (strcmp(filename, "/config/config.tmp") == 0) {
         unlink(CONFIG_FILE); // Delete config.ini
@@ -776,7 +776,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 	size_t found = zw;
 	while (zw != std::string::npos)
 	{
-		zw = directory.find("/", found+1);  
+		zw = directory.find("/", found+1);
 		if (zw != std::string::npos)
 			found = zw;
 	}
@@ -795,8 +795,8 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         strcmp(filename, "/config/reference.jpg") == 0 ||
         strcmp(filename, "/img_tmp/ref0.jpg") == 0 ||
         strcmp(filename, "/img_tmp/ref1.jpg") == 0 ||
-        strcmp(filename, "/img_tmp/reference.jpg") == 0 ) 
-    { 
+        strcmp(filename, "/img_tmp/reference.jpg") == 0 )
+    {
         httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
     }
     else {
@@ -820,18 +820,18 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
 
     //////////////////////////////////////////////////////////////
     char _query[200];
-    char _valuechar[30];    
+    char _valuechar[30];
     std::string fn = "/sdcard/firmware/";
     std::string _task;
     std::string directory;
-    std::string zw; 
+    std::string zw;
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK)
     {
         ESP_LOGD(TAG, "Query: %s", _query);
-        
+
         if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK)
         {
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Task: " + std::string(_valuechar));
@@ -864,7 +864,7 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         //        httpd_resp_set_status(req, "303 See Other");
         //        httpd_resp_set_hdr(req, "Location", directory.c_str());
         //        httpd_resp_sendstr(req, "File deleted successfully");
-        //        return ESP_OK;        
+        //        return ESP_OK;
     }
     else
     {
@@ -901,7 +901,7 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
             /* Delete file */
             unlink(filepath);
         }
-        
+
         /* Avoid redirect to root folder after deletion for system processed files */
         if (strcmp(filename, "/config/config.ini") == 0 ||
             strcmp(filename, "/config/ref0.jpg") == 0 ||
@@ -909,8 +909,8 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
             strcmp(filename, "/config/reference.jpg") == 0 ||
             strcmp(filename, "/img_tmp/ref0.jpg") == 0 ||
             strcmp(filename, "/img_tmp/ref1.jpg") == 0 ||
-            strcmp(filename, "/img_tmp/reference.jpg") == 0 ) 
-        { 
+            strcmp(filename, "/img_tmp/reference.jpg") == 0 )
+        {
             httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
         }
         else {
@@ -938,7 +938,7 @@ void register_server_file_uri(httpd_handle_t server, const char *base_path)
     /* Validate file storage base path */
     if (!base_path) {
         //if (!base_path || strcmp(base_path, "/spiffs") != 0) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File server base_path not set");   
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "File server base_path not set");
         //return ESP_ERR_INVALID_ARG;
     }
 

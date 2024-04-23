@@ -19,7 +19,7 @@ enum t_CNNType {
 
 
 struct t_ROI {
-    int posx, posy, deltax, deltay; 
+    int posx, posy, deltax, deltay;
     int CNNResult = -10;     // normalized to 0-99 (exception for class11: 0-10: 0-9+NaN), default: negative number equal to "-1.0"
     bool isRejected, CCW;
     std::string name;
@@ -62,7 +62,7 @@ struct NumberPost {
     t_RateType rateType;            // Parameter: Select Rate Checking Procedure
     float maxRateValue;             // Parameter: Max allowed rate
     double ratePerMin;              // Rate per minute (e.g. m3/min)
-    double ratePerInterval;         // Rate per interval, value delta between actual and fallback value, 
+    double ratePerInterval;         // Rate per interval, value delta between actual and fallback value,
                                     // e.g. dV/dT (actual value-fallbackvalue)/(actual processing timestamp-fallbackvalue processing timestamp)
 
     double fallbackValue;           // Fallback value, equal the last successful processed value (legacy name: prevalue)
@@ -72,15 +72,15 @@ struct NumberPost {
     std::string sTimeFallbackValue; // FallbackValue timestamp -> Time of last valid value
     std::string sRatePerMin;        // Rate per minute, based on time between last valid and actual reading
     std::string sRatePerInterval;   // Rate per interval, value delta between actual value and last valid value (fallback value)
-    std::string sRawValue;          // Raw value (possibly incl. N & leading 0)    
+    std::string sRawValue;          // Raw value (possibly incl. N & leading 0)
     std::string sActualValue;       // Value of actual valid reading, incl. post-processing corrections
     std::string sFallbackValue;     // Fallback value, equal to last valid reading (legacy name: prevalue)
     std::string sValueStatus;       // Value status
 
-    std::string FieldV1;            // Fieldname in InfluxDBv1  
+    std::string FieldV1;            // Fieldname in InfluxDBv1
     std::string MeasurementV1;      // Measurement in InfluxDBv1
 
-    std::string FieldV2;            // Fieldname in InfluxDBv2  
+    std::string FieldV2;            // Fieldname in InfluxDBv2
     std::string MeasurementV2;      // Measurement in InfluxDBv2
 
     general *digit_roi;             // Pointer to digit ROI struct

@@ -1,7 +1,7 @@
-################################################## 
+##################################################
 # Application specific and global configuration
 # Edit this file instead of sdkconfig.{board_type}!
-# After editing make sure to explicitly delete 
+# After editing make sure to explicitly delete
 # sdkconfig.{board_type} to apply your changes!
 ##################################################
 
@@ -138,7 +138,7 @@ CONFIG_FATFS_API_ENCODING_ANSI_OEM=y
 
 
 #
-# FreeRTOS 
+# FreeRTOS
 #
 CONFIG_FREERTOS_PLACE_FUNCTIONS_INTO_FLASH=n
 CONFIG_FREERTOS_PLACE_SNAPSHOT_FUNS_INTO_FLASH=n

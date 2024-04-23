@@ -44,12 +44,12 @@ bool mqttServer_publishDeviceInfo(int _qos)
 {
     if (!publishDeviceInfoScheduled)
         return true;
-    
+
     if (!getMQTTisConnected()) {
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip publish device info, not (yet) connected to broker");
         return false;
     }
-    
+
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publish device info");
 
     const std::string deviceInfoTopic = "/device/info/";
@@ -103,7 +103,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
 
     char *jsonString = cJSON_PrintBuffered(cJSONObject, 384, 1); // Print to predefined buffer, avoid dynamic allocations
     std::string jsonData = std::string(jsonString);
-    cJSON_free(jsonString);  
+    cJSON_free(jsonString);
     cJSON_Delete(cJSONObject);
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceInfoTopic + "hardware", jsonData, _qos, true);
 
@@ -119,10 +119,10 @@ bool mqttServer_publishDeviceInfo(int _qos)
         retVal = false;
     if (cJSON_AddStringToObject(cJSONObject, "mac_address", getMac().c_str()) == NULL)
         retVal = false;
-  
+
     jsonString = cJSON_PrintBuffered(cJSONObject, 256, 1); // Print to predefined buffer, avoid dynamic allocations
     jsonData = std::string(jsonString);
-    cJSON_free(jsonString);  
+    cJSON_free(jsonString);
     cJSON_Delete(cJSONObject);
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceInfoTopic + "network", jsonData, _qos, true);
 
@@ -150,7 +150,7 @@ bool mqttServer_publishDeviceStatus(int _qos)
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip publish device status, not (yet) connected to broker");
         return false;
     }
-    
+
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publish device status");
 
     const std::string deviceStatusTopic = "/device/status/";
@@ -180,15 +180,15 @@ bool mqttServer_publishDeviceStatus(int _qos)
         retVal = false;
     if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_min_free", getESPHeapSizeSPIRAMMinFree()) == NULL)
         retVal = false;
-    
+
     char *jsonString = cJSON_PrintBuffered(cJSONObject, 256, 1); // Print to predefined buffer, avoid dynamic allocations
     std::string jsonData = std::string(jsonString);
-    cJSON_free(jsonString);  
+    cJSON_free(jsonString);
     cJSON_Delete(cJSONObject);
 
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "heap", jsonData, _qos, false);
     retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "sd_partition_free", std::to_string(getSDCardFreePartitionSpace()), _qos, false);
-    retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "ntp_syncstatus", getNTPSyncStatus().c_str(), _qos, false); 
+    retVal &= MQTTPublish(mqttConfig.mainTopic + deviceStatusTopic + "ntp_syncstatus", getNTPSyncStatus().c_str(), _qos, false);
 
     if (!retVal) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to publish device status");
@@ -240,7 +240,7 @@ void mqttServer_schedulePublishHADiscovery()
 
 
 bool mqttServer_schedulePublishHADiscoveryFromMqtt(std::string _topic, char* _data, int _data_len)
-{ 
+{
     if (_data_len > 0) {    // Check if data length > 0
         if (strncmp("online", _data, _data_len) == 0) {
             publishHADiscoveryScheduled = true;
@@ -259,7 +259,7 @@ esp_err_t handler_mqtt(httpd_req_t *req)
     std::string task;
 
     // Default usage message when handler gets called without any parameter
-    const std::string RESTUsageInfo = 
+    const std::string RESTUsageInfo =
         "Handler usage:<br>"
         "1. Schedule publication of Home Assistant discovery MQTT topics:<br>"
         " - '/mqtt?task=publish_ha_discovery'<br>"
@@ -284,16 +284,16 @@ esp_err_t handler_mqtt(httpd_req_t *req)
 
     if (task.compare("api_name") == 0) {
         httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (task.compare("publish_ha_discovery") == 0) {
         publishHADiscoveryScheduled = true;
-        httpd_resp_sendstr(req, "001: Publication of HA discovery topics scheduled during state 'Publish to MQTT'");  
+        httpd_resp_sendstr(req, "001: Publication of HA discovery topics scheduled during state 'Publish to MQTT'");
         return ESP_OK;
     }
     else if (task.compare("publish_device_info") == 0) {
         publishDeviceInfoScheduled = true;
-        httpd_resp_sendstr(req, "002: Publication of device info topics scheduled during state 'Publish to MQTT'");  
+        httpd_resp_sendstr(req, "002: Publication of device info topics scheduled during state 'Publish to MQTT'");
         return ESP_OK;
     }
     else {
@@ -305,18 +305,18 @@ esp_err_t handler_mqtt(httpd_req_t *req)
 
 // Publish HA discovery topics (no retained)
 bool mqttServer_publishHADiscovery(int _qos)
-{  
+{
     if (!HADiscoveryConfig.HADiscoveryEnabled || !publishHADiscoveryScheduled) // Continue if enabled and scheduled
         return true;
-    
+
     if (!getMQTTisConnected()) {
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip publish HA discovery, not (yet) connected to broker");
         return false;
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publish HA discovery | Sensor device class: " + meterType + 
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Publish HA discovery | Sensor device class: " + meterType +
                                     ", Value unit: " + valueUnit + " , Rate unit: " + rateUnit);
-    
+
     publishHADiscoveryTopicDeviceInfo = true; // Publish full common device info data only once
     bool publishOK = true;
 
@@ -403,7 +403,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .entityCategory = "diagnostic"
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
-    
+
     HADiscoveryData = {};
     HADiscoveryData = {
         .topic = "/device/status/chip_temp",
@@ -661,7 +661,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
     // Signal a problem only if multiple process errors (-2) or process deviation (2) in row occured
     else if (_data->deviceClass == "problem" && _data->topicName == "process_error") // Special binary sensor
         payload += "\"val_tpl\":\"{{ 'ON' if '-2' in value or '2' in value else 'OFF'}}\",";
-    
+
     payload += "\"qos\":\"1\",";
 
     if (!_data->unit.empty())
@@ -676,7 +676,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
     if (!_data->entityCategory.empty())
         payload += "\"ent_cat\":\"" + _data->entityCategory + "\",";
 
-    payload += 
+    payload +=
         "\"avty_t\":\"~" + std::string(MQTT_STATUS_TOPIC) + "\""; // Use default values for available: "online" / not available: "offline"
 
     // Publish complete general device info only once
@@ -697,7 +697,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
         payload += std::string(", \"dev\": {")  +
             "\"ids\":[\"" + nodeID + "\"]}";
     }
-    
+
     payload += "}";
 
     if (MQTTPublish(configurationTopic, payload, _qos, HADiscoveryConfig.HARetainDiscoveryTopics)) {
@@ -711,13 +711,13 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
 void register_server_mqtt_uri(httpd_handle_t server)
 {
     ESP_LOGI(TAG, "Registering URI handlers");
-    
+
     httpd_uri_t uri = { };
     uri.method    = HTTP_GET;
     uri.uri       = "/mqtt";
     uri.handler   = handler_mqtt;
-    uri.user_ctx  = NULL;    
-    httpd_register_uri_handler(server, &uri); 
+    uri.user_ctx  = NULL;
+    httpd_register_uri_handler(server, &uri);
 }
 
 #endif //ENABLE_MQTT

@@ -27,8 +27,8 @@ class CFindTemplate : public CImageBasis
     private:
         uint8_t* rgb_template;
 
-        bool CalculateSimularities(strRefInfo *_ref);  
-    
+        bool CalculateSimularities(strRefInfo *_ref);
+
     public:
         int tpl_width, tpl_height, tpl_bpp;
 

@@ -73,7 +73,7 @@ bool waitingForTimeSync(void)
     const int retry_count = 10;
 
     while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry <= retry_count) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Waiting for time sync - " + std::to_string(retry) + 
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Waiting for time sync - " + std::to_string(retry) +
                                                "/" + std::to_string(retry_count));
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
@@ -88,7 +88,7 @@ bool waitingForTimeSync(void)
 void setTimeZone(std::string _tzstring)
 {
     setenv("TZ", _tzstring.c_str(), 1);
-    tzset();    
+    tzset();
     _tzstring = "Time zone set to " + _tzstring;
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, _tzstring);
 }
@@ -163,12 +163,12 @@ std::string getServerName(void)
 
 /**
  * Load the Time zone and Time server from the config file and initialize the NTP client
- * The RTC keeps the time after a restart (Except on Power On or Pin Reset) 
+ * The RTC keeps the time after a restart (Except on Power On or Pin Reset)
  * There should only be a minor correction through NTP
  */
 bool setupTime()
 {
-    ConfigFile configFile = ConfigFile(CONFIG_FILE); 
+    ConfigFile configFile = ConfigFile(CONFIG_FILE);
 
     if (!configFile.ConfigFileExists()) {
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file, exit setupTime()");
@@ -181,7 +181,7 @@ bool setupTime()
     bool eof = false;
 
     /* Load config from config file */
-    while ((!configFile.GetNextParagraph(line, disabledLine, eof) || 
+    while ((!configFile.GetNextParagraph(line, disabledLine, eof) ||
             (line.compare("[System]") != 0)) && !eof) {}
     if (eof) {
         timeServer = "pool.ntp.org";
@@ -195,7 +195,7 @@ bool setupTime()
         return false;
     }
 
-    while (configFile.getNextLine(&line, disabledLine, eof) && 
+    while (configFile.getNextLine(&line, disabledLine, eof) &&
             !configFile.isNewParagraph(line))
     {
         splitted = ZerlegeZeile(line, "=");
@@ -232,9 +232,9 @@ bool setupTime()
 
     // Set time zone in any case, even no time source is selected.
     setTimeZone(timeZone);
-    
+
     if (useNtp) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Init NTP service");        
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Init NTP service");
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
         sntp_setservername(0, timeServer.c_str());
         sntp_set_time_sync_notification_cb(timeSyncNotificationCallback);
@@ -273,7 +273,7 @@ void setupTimeZone(std::string _timeZone)
         return;
 
     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Time zone has been modified");
-    
+
     timeZone = _timeZone;
 
     if (_timeZone == "") {
@@ -307,7 +307,7 @@ void setupTimeServer(std::string _timeServer)
 
     timeServer = _timeServer;
 
-    if (useNtp) {    
+    if (useNtp) {
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
         sntp_setservername(0, timeServer.c_str());
         sntp_set_time_sync_notification_cb(timeSyncNotificationCallback);

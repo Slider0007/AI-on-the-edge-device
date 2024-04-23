@@ -3,7 +3,7 @@
 
 /**
  * @brief Testfall für Überprüfung allowNegatives
- * 
+ *
  */
 void testNegative()
 {
@@ -33,7 +33,7 @@ void testNegative()
     SetFallbackValue(underTestPost, fallbackValue_extended);
     result = process_doFlow(underTestPost);
     TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutStatus().c_str());
-    TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, 
+    TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended,
                                     getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
     delete underTestPost;
 
@@ -45,7 +45,7 @@ void testNegative()
     SetFallbackValue(underTestPost, fallbackValue_extended);
     result = process_doFlow(underTestPost);
     TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutStatus().c_str());
-    TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended, 
+    TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue_extended,
                                     getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
     delete underTestPost;
 
@@ -57,7 +57,7 @@ void testNegative()
     SetFallbackValue(underTestPost, fallbackValue_extended);
     result = process_doFlow(underTestPost);
     TEST_ASSERT_EQUAL_STRING("E91 Rate negative", underTestPost->getReadoutStatus().c_str());
-    TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue, 
+    TEST_ASSERT_EQUAL_STRING(to_stringWithPrecision(fallbackValue,
                                     getDecimalPlaceCount(underTestPost)).c_str(), result.c_str()); // Use Fallback value
     delete underTestPost;
 
@@ -78,7 +78,7 @@ void testNegative()
 
 /**
  * @brief Fehlerberichte aus Issues
- * 
+ *
  */
 void testNegative_Issues()
 {
@@ -87,14 +87,14 @@ void testNegative_Issues()
     std::vector<float> analogs = { };
     double fallbackValue_extended = 22018.080;
     double fallbackValue = 22018.08;
-    
+
     const char* expected = "22017.98";
 
     // https://github.com/jomjol/AI-on-the-edge-device/issues/2145#issuecomment-1461899094
     // extendResolution=false
     // value < fallbackValue
     // Prüfung eingeschaltet => Fehler
-    fallbackValue = 22018.08; // zu groß 
+    fallbackValue = 22018.08; // zu groß
     UnderTestPost* underTestPost = init_do_flow(analogs, digits, Digital100, false, false, -2);
     setAllowNegatives(underTestPost, false);
     SetFallbackValue(underTestPost, fallbackValue);

@@ -60,7 +60,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
         referenceImagePageContent = referenceImagePageHandle.read()
 
     # print("replacing $TOOLTIP_" + section + "_" + parameter + " with the tooltip content...")
-    referenceImagePageContent = referenceImagePageContent.replace("<td style=\"overflow:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>", 
+    referenceImagePageContent = referenceImagePageContent.replace("<td style=\"overflow:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>",
                                                                   "<td>" + htmlTooltip + "</td>")
 
     with open(docsMainFolder + "/" + referenceImagePage, 'w') as referenceImagePageHandle:

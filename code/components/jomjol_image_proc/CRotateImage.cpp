@@ -15,9 +15,9 @@ CRotateImage::CRotateImage(std::string _name, CImageBasis *_org, CImageBasis *_t
     width = _org->width;
     height = _org->height;
     bpp = _org->bpp;
-    externalImage = true;   
-    ImageTMP = _temp;   
-    ImageOrg = _org; 
+    externalImage = true;
+    ImageTMP = _temp;
+    ImageOrg = _org;
     islocked = false;
     doflip = _flip;
 }
@@ -119,7 +119,7 @@ void IRAM_ATTR CRotateImage::Rotate(float _angle, int _centerx, int _centery)
     {
         odata = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->odata", memsize, MALLOC_CAP_SPIRAM);
     }
-    
+
 
     int x_source, y_source;
     stbi_uc* p_target;
@@ -219,7 +219,7 @@ void IRAM_ATTR CRotateImage::RotateAntiAliasing(float _angle, int _centerx, int 
     {
         odata = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->odata", memsize, MALLOC_CAP_SPIRAM);
     }
-    
+
 
     int x_source_1, y_source_1, x_source_2, y_source_2;
     float x_source, y_source;

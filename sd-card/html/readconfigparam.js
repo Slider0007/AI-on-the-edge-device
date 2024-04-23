@@ -10,7 +10,7 @@ let pinConfig = {};      // Board pin configuration
 async function getDataFileList()
 {
     return new Promise(function (resolve, reject) {
-        var url = getDomainname() + '/editflow?task=data';     
+        var url = getDomainname() + '/editflow?task=data';
 
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
@@ -23,7 +23,7 @@ async function getDataFileList()
                         return resolve(datalist);
                     }
                     else {
-                        firework.launch("Data files request failed (Response status: " + this.status + 
+                        firework.launch("Data files request failed (Response status: " + this.status +
                                 "). Repeat action or check logs.", 'danger', 30000);
                         console.error("Data files request failed. Response status: " + this.status);
                         return reject("Data files request failed");
@@ -54,7 +54,7 @@ async function fetchTFLITEList()
                         return resolve(tflite_list);
                 }
                 else {
-                        firework.launch("TFLite files request failed (Response status: " + this.status + 
+                        firework.launch("TFLite files request failed (Response status: " + this.status +
                                 "). Repeat action or check logs.", 'danger', 30000);
                         console.error("TFLite files request failed. Response status: " + this.status);
                         return reject("TFLite files request failed");
@@ -82,7 +82,7 @@ function loadPinConfig()
                          return resolve(pinConfig);
                     }
                     else {
-                         firework.launch("Loading GPIO pin config failed (Response status: " + this.status + 
+                         firework.launch("Loading GPIO pin config failed (Response status: " + this.status +
                                         "). Repeat action or check logs.", 'danger', 30000);
                          console.error("Loading GPIO pin config failed. Response status: " + this.status);
                          return reject("Loading GPIO pin config failed");
@@ -110,7 +110,7 @@ async function loadConfigIni()
                          return resolve(config_gesamt);
                     }
                     else {
-                         firework.launch("Loading config.ini failed (Response status: " + this.status + 
+                         firework.launch("Loading config.ini failed (Response status: " + this.status +
                                         "). Repeat action or check logs.", 'danger', 30000);
                          console.error("Loading config.ini failed. Response status: " + this.status);
                          return reject("Loading config.ini failed");
@@ -144,14 +144,14 @@ function ParseConfig()
      var aktline = 0;
 
      var catname = "ConfigFile";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "Version", true, "0");
 
      var catname = "TakeImage";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
@@ -177,32 +177,32 @@ function ParseConfig()
      ParamAddSingleValueWithPreset(param, catname, "ZoomMode", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "ZoomOffsetX", true, "0");
      ParamAddSingleValueWithPreset(param, catname, "ZoomOffsetY", true, "0");
-     ParamAddSingleValueWithPreset(param, catname, "Demo", true, "false");    
+     ParamAddSingleValueWithPreset(param, catname, "Demo", true, "false");
 
      var catname = "Alignment";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "AlignmentAlgo", true, "Default");
      ParamAddSingleValueWithPreset(param, catname, "SearchFieldX", true, "20");
-     ParamAddSingleValueWithPreset(param, catname, "SearchFieldY", true, "20");     
+     ParamAddSingleValueWithPreset(param, catname, "SearchFieldY", true, "20");
      ParamAddSingleValueWithPreset(param, catname, "InitialRotate", true, "0.0");
      ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "SaveDebugInfo", true, "false");
 
      var catname = "Digits";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddModelWithPreset(param, catname, "Model", true);
-     ParamAddSingleValueWithPreset(param, catname, "CNNGoodThreshold", true, "0.0"); 
+     ParamAddSingleValueWithPreset(param, catname, "CNNGoodThreshold", true, "0.0");
      ParamAddSingleValueWithPreset(param, catname, "ROIImagesLocation", false, "/log/digit");
      ParamAddSingleValueWithPreset(param, catname, "ROIImagesRetention", false, "5");
 
      var catname = "Analog";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
@@ -211,7 +211,7 @@ function ParseConfig()
      ParamAddSingleValueWithPreset(param, catname, "ROIImagesRetention", false, "5");
 
      var catname = "PostProcessing";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
@@ -228,7 +228,7 @@ function ParseConfig()
      ParamAddSingleValueWithPreset(param, catname, "SaveDebugInfo", true, "false");
 
      var catname = "MQTT";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
@@ -250,7 +250,7 @@ function ParseConfig()
      ParamAddSingleValueWithPreset(param, catname, "HAMeterType", true, "water_m3");
 
      var catname = "InfluxDB";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
@@ -266,7 +266,7 @@ function ParseConfig()
      ParamAddValue(param, catname, "Field", 1, true, "undefined");
 
      var catname = "InfluxDBv2";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
@@ -282,31 +282,31 @@ function ParseConfig()
      ParamAddValue(param, catname, "Field", 1, true, "undefined");
 
      var catname = "GPIO";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
-     ParamAddGpioWithPreset(param, catname, [null, null, /^[0-9]*$/, null, null, null, 
+     ParamAddGpioWithPreset(param, catname, [null, null, /^[0-9]*$/, null, null, null,
                               /^[0-9]*$/, /^[0-9]*$/, /^[0-9]*$/, /^[a-zA-Z0-9_-]*$/]);
 
      var catname = "AutoTimer";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "AutoStart", true, "true");
-     ParamAddSingleValueWithPreset(param, catname, "Interval", true, "5.0");     
+     ParamAddSingleValueWithPreset(param, catname, "Interval", true, "5.0");
 
      var catname = "DataLogging";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "DataLogActive", true, "true");
-     ParamAddSingleValueWithPreset(param, catname, "DataFilesRetention", true, "5");     
+     ParamAddSingleValueWithPreset(param, catname, "DataFilesRetention", true, "5");
 
      var catname = "Debug";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
@@ -315,19 +315,19 @@ function ParseConfig()
      ParamAddSingleValueWithPreset(param, catname, "DebugFilesRetention", true, "5");
 
      var catname = "System";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = false;
      param[catname] = new Object();
-     ParamAddSingleValueWithPreset(param, catname, "TimeServer", true, "pool.ntp.org");   
+     ParamAddSingleValueWithPreset(param, catname, "TimeServer", true, "pool.ntp.org");
      ParamAddSingleValueWithPreset(param, catname, "TimeZone", true, "CET-1CEST,M3.5.0,M10.5.0/3");
-     ParamAddSingleValueWithPreset(param, catname, "Hostname", true, "watermeter");   
-     ParamAddSingleValueWithPreset(param, catname, "RSSIThreshold", false, "-75");   
+     ParamAddSingleValueWithPreset(param, catname, "Hostname", true, "watermeter");
+     ParamAddSingleValueWithPreset(param, catname, "RSSIThreshold", false, "-75");
      ParamAddSingleValueWithPreset(param, catname, "CPUFrequency", true, "160");
      ParamAddSingleValueWithPreset(param, catname, "SetupMode", true, "true");
 
      var catname = "WebUI";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
@@ -335,7 +335,7 @@ function ParseConfig()
      ParamAddSingleValueWithPreset(param, catname, "OverviewAutoRefreshTime", true, "10");
      ParamAddSingleValueWithPreset(param, catname, "DataGraphAutoRefresh", true, "false");
      ParamAddSingleValueWithPreset(param, catname, "DataGraphAutoRefreshTime", true, "60");
-     
+
 
      while (aktline < config_split.length) {
           for (var cat in category) {
@@ -347,7 +347,7 @@ function ParseConfig()
                zw = cat.toUpperCase();
                zw1 = "[" + zw + "]";
                zw2 = ";[" + zw + "]";
-               
+
                if ((config_split[aktline].trim().toUpperCase() == zw1) || (config_split[aktline].trim().toUpperCase() == zw2)) {
                     if (config_split[aktline].trim().toUpperCase() == zw1) {
                          category[cat]["enabled"] = true;
@@ -358,7 +358,7 @@ function ParseConfig()
                     continue;
                }
           }
-          
+
           aktline++;
      }
 
@@ -388,31 +388,31 @@ function ParseConfigReduced() {
      var aktline = 0;
 
      param = new Object();
-     category = new Object(); 
+     category = new Object();
 
      var catname = "TakeImage";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "ImageSize", true, "VGA");
 
      var catname = "Alignment";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "FlipImageSize", true, "false");
 
      var catname = "MQTT";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = false;
      category[catname]["found"] = true;
      param[catname] = new Object();
      ParamAddSingleValueWithPreset(param, catname, "HomeassistantDiscovery", true, "false");
 
      var catname = "WebUI";
-     category[catname] = new Object(); 
+     category[catname] = new Object();
      category[catname]["enabled"] = true;
      category[catname]["found"] = false;
      param[catname] = new Object();
@@ -428,7 +428,7 @@ function ParseConfigReduced() {
                     aktline++;
                     continue;
                }
-               
+
                zw = cat.toUpperCase();
                zw1 = "[" + zw + "]";
                zw2 = ";[" + zw + "]";
@@ -450,10 +450,10 @@ function ParseConfigReduced() {
 
 function ParamAddValue(param, _cat, _param, _anzParam = 1, _isNUMBER = false, _defaultValue = "", _checkRegExList = null)
 {
-     param[_cat][_param] = new Object(); 
+     param[_cat][_param] = new Object();
      param[_cat][_param]["found"] = false;
      param[_cat][_param]["enabled"] = false;
-     param[_cat][_param]["line"] = -1; 
+     param[_cat][_param]["line"] = -1;
      param[_cat][_param]["anzParam"] = _anzParam;
      param[_cat][_param]["defaultValue"] = _defaultValue;   // Parameter only used for numbers sequences
      param[_cat][_param]["Numbers"] = _isNUMBER;
@@ -469,7 +469,7 @@ function ParamAddSingleValueWithPreset(param, _cat, _param, _enabled, _value)
           param[_cat][_param]["found"] = true;
           param[_cat][_param]["enabled"] = _enabled;
           param[_cat][_param]["value1"] = _value;
-          param[_cat][_param]["line"] = -1; 
+          param[_cat][_param]["line"] = -1;
           param[_cat][_param]["anzParam"] = 1;
           param[_cat][_param]["defaultValue"] = "";   // Parameter only used for numbers sequences
           param[_cat][_param]["Numbers"] = false;
@@ -485,7 +485,7 @@ function ParamAddModelWithPreset(param, _cat, _param, _enabled)
           param[_cat][_param] = new Object();
           param[_cat][_param]["found"] = true;
           param[_cat][_param]["enabled"] = _enabled;
-          param[_cat][_param]["line"] = -1; 
+          param[_cat][_param]["line"] = -1;
           param[_cat][_param]["anzParam"] = 1;
           param[_cat][_param]["defaultValue"] = "";   // Parameter only used for number sequences
           param[_cat][_param]["Numbers"] = false;
@@ -495,7 +495,7 @@ function ParamAddModelWithPreset(param, _cat, _param, _enabled)
                filter = "/dig";
           else if (_cat == "Analog")
                filter = "/ana";
-          
+
 
           for (var i = 0; i < tflite_list.length; ++i) {
                if (tflite_list[i].includes(filter)) {
@@ -529,7 +529,7 @@ function ParamAddGpioWithPreset(param, _cat, _checkRegExList = null)
                param[_cat][_name] = new Object();
                param[_cat][_name]["found"] = true;
                param[_cat][_name]["enabled"] = false;
-               param[_cat][_name]["line"] = -1; 
+               param[_cat][_name]["line"] = -1;
                param[_cat][_name]["anzParam"] = 13;
                param[_cat][_name]["value1"] = "input-pullup";
                param[_cat][_name]["value2"] = "cyclic-polling";
@@ -544,7 +544,7 @@ function ParamAddGpioWithPreset(param, _cat, _checkRegExList = null)
                param[_cat][_name]["value11"] = "255";
                param[_cat][_name]["value12"] = "100";
                param[_cat][_name]["value13"] = "";
-               param[_cat][_name].checkRegExList = _checkRegExList;   
+               param[_cat][_name].checkRegExList = _checkRegExList;
           }
      }
 }
@@ -572,8 +572,8 @@ function ParamResetGpioValuesToDefault(param, _cat, _name)
 function ParseConfigParamAll(_aktline, _catname){
      ++_aktline;
 
-     while ((_aktline < config_split.length) 
-            && !(config_split[_aktline][0] == "[") 
+     while ((_aktline < config_split.length)
+            && !(config_split[_aktline][0] == "[")
             && !((config_split[_aktline][0] == ";") && (config_split[_aktline][1] == "["))) {
           var _input = config_split[_aktline];
           let [isCom, input] = isCommented(_input);
@@ -593,8 +593,8 @@ function ParseConfigParamAll(_aktline, _catname){
           }
 
           ++_aktline;
-     }    
-     return _aktline; 
+     }
+     return _aktline;
 }
 
 function ParamExtractValue(_param, _linesplit, _catname, _paramname, _aktline, _iscom, _anzvalue = 1){
@@ -635,7 +635,7 @@ function ParamExtractValueAll(_param, _linesplit, _catname, _aktline, _iscom){
                     abc[_catname][paramname] = new Object;
                     abc[_catname][paramname]["found"] = true;
                     abc[_catname][paramname]["enabled"] = !_iscom;
-     
+
                     for (var j = 1; j <= _param[_catname][paramname]["anzParam"]; ++j) {
                          abc[_catname][paramname]["value"+j] = _linesplit[j];
                     }
@@ -699,8 +699,8 @@ function WriteConfigININew()
                     {
                          text = NUMBERS[_num]["name"] + "." + name;
 
-                         var text = text + " =" 
-                         
+                         var text = text + " ="
+
                          for (var j = 1; j <= param[cat][name]["anzParam"]; ++j) {
                               if (!(typeof NUMBERS[_num][cat][name]["value"+j] == 'undefined'))
                                    text = text + " " + NUMBERS[_num][cat][name]["value"+j];
@@ -713,8 +713,8 @@ function WriteConfigININew()
                }
                else
                {
-                    var text = name + " =" 
-                    
+                    var text = name + " ="
+
                     for (var j = 1; j <= param[cat][name]["anzParam"]; ++j) {
                          if (!(typeof param[cat][name]["value"+j] == 'undefined'))
                               text = text + " " + param[cat][name]["value"+j];
@@ -788,7 +788,7 @@ function isCommented(input)
                input = input.substr(1, input.length-1);
           };
           return [isComment, input];
-     }    
+     }
 
 
 function getConfigCategory() {
@@ -856,7 +856,7 @@ function getNUMBERS(_name, _type, _create = true)
                          _ret[_cat][_param] = new Object();
                          _ret[_cat][_param]["found"] = false;
                          _ret[_cat][_param]["enabled"] = false;
-                         _ret[_cat][_param]["anzParam"] = param[_cat][_param]["anzParam"]; 
+                         _ret[_cat][_param]["anzParam"] = param[_cat][_param]["anzParam"];
 
                     }
 
@@ -888,11 +888,11 @@ function getNumberSequences(){
 
 function CreateNumberSequence(_sequence_name)
 {
-     if ((_sequence_name.indexOf(".") >= 0) || (_sequence_name.indexOf(",") >= 0) || 
+     if ((_sequence_name.indexOf(".") >= 0) || (_sequence_name.indexOf(",") >= 0) ||
      (_sequence_name.indexOf(" ") >= 0) || (_sequence_name.indexOf("\"") >= 0)) {
           return "Number sequence name must not contain , . \" or a space";
      }
-     
+
      found = false;
      for (i = 0; i < NUMBERS.length; ++i) {
           if (NUMBERS[i]["name"] == _sequence_name)
@@ -928,17 +928,17 @@ function CreateNumberSequence(_sequence_name)
                          _ret[_cat][_param]["value1"] = param[_cat][_param]["defaultValue"];
 
                     }
-                    _ret[_cat][_param]["anzParam"] = param[_cat][_param]["anzParam"]; 
+                    _ret[_cat][_param]["anzParam"] = param[_cat][_param]["anzParam"];
 
                }
 
-     NUMBERS.push(_ret);               
+     NUMBERS.push(_ret);
      return "";
 }
 
 
 function RenameNumberSequence(_sequence_name_old, _sequence_name_new){
-     if ((_sequence_name_new.indexOf(".") >= 0) || (_sequence_name_new.indexOf(",") >= 0) || 
+     if ((_sequence_name_new.indexOf(".") >= 0) || (_sequence_name_new.indexOf(",") >= 0) ||
          (_sequence_name_new.indexOf(" ") >= 0) || (_sequence_name_new.indexOf("\"") >= 0))
      {
           return "Number sequence name must not contain , . \" or a space";
@@ -957,7 +957,7 @@ function RenameNumberSequence(_sequence_name_old, _sequence_name_new){
           return "Number sequence name is already existing, please choose another name";
 
      NUMBERS[index]["name"] = _sequence_name_new;
-     
+
      return "";
 }
 
@@ -965,7 +965,7 @@ function RenameNumberSequence(_sequence_name_old, _sequence_name_new){
 function DeleteNumberSequence(_sequence_name){
      if (NUMBERS.length == 1)
           return "One number sequence is mandatory. Therefore this cannot be deleted"
-     
+
 
      index = -1;
      for (i = 0; i < NUMBERS.length; ++i) {
@@ -990,7 +990,7 @@ function getROIInfo(_typeROI, _number){
      if (index != -1)
           return NUMBERS[index][_typeROI];
      else
-          return "";     
+          return "";
 }
 
 
@@ -1029,8 +1029,8 @@ function CreateROI(_sequence_name, _type, _pos, _roinew, _x, _y, _dx, _dy, _CCW)
 
 function RenameROI(_sequence_name, _type, _roi_name_old, _roi_name_new){
      if ((_roi_name_new.includes("=")) || (_roi_name_new.includes(".")) || (_roi_name_new.includes(":")) ||
-         (_roi_name_new.includes(",")) || (_roi_name_new.includes(";")) || (_roi_name_new.includes(" ")) || 
-         (_roi_name_new.includes("\""))) 
+         (_roi_name_new.includes(",")) || (_roi_name_new.includes(";")) || (_roi_name_new.includes(" ")) ||
+         (_roi_name_new.includes("\"")))
      {
           return "ROI name must not contain . : , ; = \" or space";
      }
@@ -1043,7 +1043,7 @@ function RenameROI(_sequence_name, _type, _roi_name_old, _roi_name_new){
                _indexnumber = j;
 
      if (_indexnumber == -1)
-          return "Number sequence not existing. ROI cannot be renamed"  
+          return "Number sequence not existing. ROI cannot be renamed"
 
      for (i = 0; i < NUMBERS[_indexnumber][_type].length; ++i) {
           if (NUMBERS[_indexnumber][_type][i]["name"] == _roi_name_old)
@@ -1056,6 +1056,6 @@ function RenameROI(_sequence_name, _type, _roi_name_old, _roi_name_new){
           return "ROI name is already existing";
 
      NUMBERS[_indexnumber][_type][index]["name"] = _roi_name_new;
-     
+
      return "";
 }

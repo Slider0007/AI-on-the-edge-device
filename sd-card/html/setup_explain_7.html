@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
     <title>AI on the edge</title>
@@ -19,7 +19,7 @@
         .button {
             padding: 5px 10px;
             width: 205px;
-            font-size: 16px;	
+            font-size: 16px;
         }
     </style>
 
@@ -36,7 +36,7 @@
         Congratulations! You have completed the initial setup and you are now ready to switch to the regular web interface!
     </p>
     <p>
-        Once you push the button below, the setup mode will be completed and the device will be automatically switch to 
+        Once you push the button below, the setup mode will be completed and the device will be automatically switch to
         regular web interface. If configuration is error free, the device will automatically start with first processing.
         It will take some time until you get the first reading.
     </p>
@@ -44,22 +44,22 @@
         <button class="button" onclick="completeSetup()">Complete Setup</button>
     </p>
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
-<script src="readconfigparam.js?v=$COMMIT_HASH"></script> 
-<script src="readconfigcommon.js?v=$COMMIT_HASH"></script> 
+<script src="common.js?v=$COMMIT_HASH"></script>
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
 
 <script>
 
     function reboot()
     {
-        ParseConfig();	
+        ParseConfig();
         param = getConfigParameters();
 
         param["System"]["SetupMode"]["enabled"] = true;
         param["System"]["SetupMode"]["value1"] = "false";
 
         WriteConfigININew();
-        SaveConfigToServer(getDomainname());  
+        SaveConfigToServer(getDomainname());
 
         firework.launch('Setup completed', 'success', 5000);
         setTimeout(function() {

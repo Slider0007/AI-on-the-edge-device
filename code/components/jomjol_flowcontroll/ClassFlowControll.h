@@ -38,7 +38,7 @@ class ClassFlowControll : public ClassFlow
 		std::vector<strFlowState*> FlowStatePublishEvent;
 
 		ClassFlowTakeImage* flowtakeimage;
-		ClassFlowAlignment* flowalignment;	
+		ClassFlowAlignment* flowalignment;
 		ClassFlowCNNGeneral* flowanalog;
 		ClassFlowCNNGeneral* flowdigit;
 		ClassFlowPostProcessing* flowpostprocessing;
@@ -49,15 +49,15 @@ class ClassFlowControll : public ClassFlow
 		ClassFlowInfluxDB* flowInfluxDB;
 		ClassFlowInfluxDBv2* flowInfluxDBv2;
 		#endif //ENABLE_INFLUXDB
-		
+
 		ClassFlow* CreateClassFlow(std::string _type);
-		void SetInitialParameter(void);	
+		void SetInitialParameter(void);
 
 		float AutoInterval;
 		bool AutoStart;
 		bool SetupModeActive;
 		bool readParameterDone;
-		
+
 		std::string aktstatus;
 		std::string aktstatusWithTime;
 		int flowStateErrorInRow;
@@ -70,11 +70,11 @@ public:
 	void DeinitFlow(void);
 	ClassFlow* getFlowClass(std::string _classname);
 
-	bool ReadParameter(FILE* pfile, std::string& aktparamgraph);	
+	bool ReadParameter(FILE* pfile, std::string& aktparamgraph);
 	bool doFlowImageEvaluation(std::string time);
 	bool doFlowPublishData(std::string time);
 	bool doFlowTakeImageOnly(std::string time);
-	
+
 	std::string TranslateAktstatus(std::string _input);
 	bool getStatusSetupModus() {return SetupModeActive;};
 
@@ -89,7 +89,7 @@ public:
 	std::string getReadout(bool _rawvalue, bool _noerror, int _number);
 
 	bool UpdateFallbackValue(std::string _newvalue, std::string _numbers);
-	std::string GetFallbackValue(std::string _number = "");	
+	std::string GetFallbackValue(std::string _number = "");
 
 	#ifdef ENABLE_MQTT
 	bool StartMQTTService();
@@ -117,7 +117,7 @@ public:
 	void PostProcessEventHandler();
 
 	std::vector<HTMLInfo*> GetAllDigital();
-	std::vector<HTMLInfo*> GetAllAnalog();	
+	std::vector<HTMLInfo*> GetAllAnalog();
 
 	t_CNNType GetTypeDigital();
 	t_CNNType GetTypeAnalog();

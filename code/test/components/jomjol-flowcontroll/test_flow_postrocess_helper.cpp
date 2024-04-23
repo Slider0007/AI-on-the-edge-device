@@ -8,7 +8,7 @@ static const char *TAG = "POSTPROC_TEST";
 
 UnderTestPost* setUpClassFlowPostprocessing(t_CNNType digType, t_CNNType anaType)
 {
-    
+
     ClassFlowCNNGeneral* _analog;
     ClassFlowCNNGeneral* _digit;
     std::vector<ClassFlow*> FlowControll;
@@ -20,18 +20,18 @@ UnderTestPost* setUpClassFlowPostprocessing(t_CNNType digType, t_CNNType anaType
 
     // Die Modeltypen werden gesetzt, da keine Modelle verwendet werden.
     _analog = new ClassFlowCNNGeneral(nullptr, "Analog", anaType);
-    
+
     _digit =  new ClassFlowCNNGeneral(nullptr, "Digit", digType);
 
     return new UnderTestPost(&FlowControll, _analog, _digit);
-  
+
 }
 
 
 std::string process_doFlow(UnderTestPost* _underTestPost)
 {
         std::string time;
- 
+
     // run test
     TEST_ASSERT_TRUE(_underTestPost->doFlow(time));
 
@@ -39,7 +39,7 @@ std::string process_doFlow(UnderTestPost* _underTestPost)
 }
 
 
-std::string process_doFlow(std::vector<float> analog, std::vector<float> digits, t_CNNType digType, 
+std::string process_doFlow(std::vector<float> analog, std::vector<float> digits, t_CNNType digType,
             bool checkConsistency, bool extendedResolution, int decimal_shift)
 {
     // setup the classundertest
@@ -57,7 +57,7 @@ std::string process_doFlow(std::vector<float> analog, std::vector<float> digits,
 }
 
 
-UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits, t_CNNType digType, 
+UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits, t_CNNType digType,
                 bool checkConsistency,  bool extendedResolution, int decimal_shift)
 {
     UnderTestPost* _undertestPost = setUpClassFlowPostprocessing(digType, Analogue100);
@@ -72,9 +72,9 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
             digitROI->name = name;
             if (digType != Digital)
                 digitROI->CNNResult = digits[i] * 10.0 + 0.1; // + 0.1 due to float to int rounding, will be truncated anyway
-            else 
+            else
                 digitROI->CNNResult = digits[i];
-            
+
             gen_digit->ROI.push_back(digitROI);
         }
     }
@@ -97,7 +97,7 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
     ESP_LOGD(TAG, "Setting up of ROIs completed.");
 
     _undertestPost->InitNUMBERS();
-   
+
     setConsitencyCheck(_undertestPost, checkConsistency);
     setExtendedResolution(_undertestPost, extendedResolution);
     setDecimalShift(_undertestPost, decimal_shift);
@@ -112,7 +112,7 @@ void SetFallbackValue(UnderTestPost* _underTestPost, double _fallbackValue)
 {
         if (_fallbackValue > 0) {
         ESP_LOGD(TAG, "fallbackValue=%f", _fallbackValue);
-        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();    
+        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             (*NUMBERS)[_n]->fallbackValue = _fallbackValue;
             (*NUMBERS)[_n]->isFallbackValueValid = true;
@@ -125,11 +125,11 @@ void SetFallbackValue(UnderTestPost* _underTestPost, double _fallbackValue)
 void setAllowNegatives(UnderTestPost* _underTestPost, bool _allowNegatives)
 {
         ESP_LOGD(TAG, "checkConsistency=true");
-        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();    
+        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             (*NUMBERS)[_n]->allowNegativeRates = _allowNegatives;
         }
-    
+
 }
 
 
@@ -137,7 +137,7 @@ void setConsitencyCheck(UnderTestPost* _underTestPost, bool _checkConsistency)
 {
         if (_checkConsistency) {
         ESP_LOGD(TAG, "checkConsistency=true");
-        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();    
+        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             (*NUMBERS)[_n]->checkDigitIncreaseConsistency = true;
         }
@@ -148,7 +148,7 @@ void setConsitencyCheck(UnderTestPost* _underTestPost, bool _checkConsistency)
 void setExtendedResolution(UnderTestPost* _underTestPost, bool _extendedResolution)
 {
     if (_extendedResolution ) {
-       std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();    
+       std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             (*NUMBERS)[_n]->isExtendedResolution = true;
         }
@@ -159,11 +159,11 @@ void setExtendedResolution(UnderTestPost* _underTestPost, bool _extendedResoluti
 void setDecimalShift(UnderTestPost* _underTestPost, int _decimal_shift)
 {
     if (_decimal_shift!=0) {
-        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();    
+        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             ESP_LOGD(TAG, "Setting decimal shift on number: %d to %d", _n, _decimal_shift);
             (*NUMBERS)[_n]->decimalShift = _decimal_shift;
-        }       
+        }
     }
 }
 
@@ -171,11 +171,11 @@ void setDecimalShift(UnderTestPost* _underTestPost, int _decimal_shift)
 void setAnalogdigitTransistionStart(UnderTestPost* _underTestPost, float _analogdigitTransistionStart)
 {
     if (_analogdigitTransistionStart!=0) {
-        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();    
+        std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             ESP_LOGD(TAG, "Setting decimal shift on number: %d to %f", _n, _analogdigitTransistionStart);
-            (*NUMBERS)[_n]->analogDigitalTransitionStart = _analogdigitTransistionStart; 
-        }       
+            (*NUMBERS)[_n]->analogDigitalTransitionStart = _analogdigitTransistionStart;
+        }
     }
 }
 

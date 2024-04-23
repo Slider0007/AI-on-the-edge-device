@@ -33,11 +33,11 @@ hash = str(round(time.time()*1000)) # timestamp in miliseconds
 for file in files:
     if not ".html" in file: # Skip non-HTML files
         continue
-    
+
     filename = os.getcwd() + "/" + file
     with open(filename) as file:
         content = file.read()
-    
+
     content = content.replace("$COMMIT_HASH", hash)
 
     with open(filename, 'w') as file:

@@ -1,6 +1,6 @@
 <html lang="en" xml:lang="en">
 <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <title>WLAN config</title>
 
     <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
@@ -50,13 +50,13 @@
         }
 
         var upload_path = "/upload/firmware/" + filePath; xhttp.open("POST", upload_path, true); xhttp.send(file);}
-    
-    
+
+
     function extract() {
         document.getElementById("status").innerText = "Status: Processing on device (takes up to 3 minutes)...";
-    
+
         var xhttp = new XMLHttpRequest();
-        /* first delete the old firmware */	
+        /* first delete the old firmware */
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4) {
                 stopProgressTimer();
@@ -65,7 +65,7 @@
                     document.getElementById("doUpdate").disabled = true;
                     document.getElementById("newfile").disabled = false;
                     document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax"; // Make sure after the reboot we go to the overview page
-    
+
                     if (xhttp.responseText.startsWith("reboot"))
                     {
                         doRebootAfterUpdate();
@@ -83,35 +83,35 @@
                 }
             }
         };
-    
+
         startProgressTimer("Extraction");
-    
-    
+
+
         var nameneu = document.getElementById("newfile").value;
         filePath = nameneu.split(/[\\\/]/).pop();
         var _toDo = domainname + "/ota?task=update&file=" + filePath;
         xhttp.open("GET", _toDo, true);
         xhttp.send();
     }
-    
-    
-    function startProgressTimer(step) {     
+
+
+    function startProgressTimer(step) {
         console.log(step + "...");
         document.getElementById('progress').innerHTML = "(0s)";
-        action_runtime = 0;    
+        action_runtime = 0;
         progressTimerHandle = setInterval(function() {
             action_runtime += 1;
-            console.log("Progress: " + action_runtime + "s");  
+            console.log("Progress: " + action_runtime + "s");
             document.getElementById('progress').innerHTML = "(" + action_runtime + "s)";
         }, 1000);
     }
-    
-    
-    function stopProgressTimer() {            
+
+
+    function stopProgressTimer() {
         clearInterval(progressTimerHandle);
         document.getElementById('progress').innerHTML = "";
     }
-  
+
 </script>
 
 </body>

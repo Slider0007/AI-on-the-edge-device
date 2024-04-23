@@ -49,7 +49,7 @@ class CCamera
 
     public:
         int image_height, image_width;
-        
+
         CCamera();
         ~CCamera();
         void freeMemoryOnly();
@@ -60,7 +60,7 @@ class CCamera
         void printCamInfo(void);
         void printCamConfig(void);
         bool getcameraInitSuccessful();
-        
+
         CameraParameter getCameraParameter();
         std::string getCamType(void);
         std::string getCamPID(void);
@@ -84,8 +84,8 @@ class CCamera
         void setCameraFrequency(int _frequency);
         void setSizeQuality(int _qual, framesize_t _resol, int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
         void setZoom(int _zoomMode, int _zoomOffsetX, int _zoomOffsetY);
-        bool setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, int _exposureControlMode, 
-                                  int _autoExposureLevel, int _manualExposureValue, int _gainControlMode, int _manualGainValue, 
+        bool setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, int _exposureControlMode,
+                                  int _autoExposureLevel, int _manualExposureValue, int _gainControlMode, int _manualGainValue,
                                   int _specialEffect, bool _mirror, bool _flip);
         bool setMirrorFlip(bool _mirror, bool _flip);
 

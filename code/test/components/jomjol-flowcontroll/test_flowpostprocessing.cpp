@@ -2,22 +2,22 @@
 
 
 /**
- * 
+ *
  * @brief Testet die doFlow-Methode von ClassFlowPostprocessing
  * digits[] - enthält die liste der vom Model zurückgegebenen Ergebnisse (class100/cont) in der Reihenfolge von links nach rechts
  * analog[] - enthält die Liste der Zeiger vom Model, wie bei den digits
  * expected - enthält das erwartete Ergebnis, wobei der Dezimalpunkt genau zwischen digits und analog ist.
- * 
+ *
  */
 void test_doFlowPP()
-{    
+{
     /*
-        * 
+        *
         * digit1 = 1.2
         * digit2 = 6.7
         * analog1 = 9.5
         * analog2 = 8.4
-        * 
+        *
         * Das Ergebnis sollte "16.984" sein. Bzw. 16.98 ohne Extended true
         */
     std::vector<float> digits = { 1.2, 6.7};
@@ -29,8 +29,8 @@ void test_doFlowPP()
 
     /*
         * https://github.com/jomjol/AI-on-the-edge-device/issues/921#issue-1344032217
-        * 
-        * Das Ergebnis sollte "376529.6" sein. 
+        *
+        * Das Ergebnis sollte "376529.6" sein.
         */
     digits = { 3.0, 7.0, 6.0, 5.0, 2.5, 9.6};
     analogs = { 6.4};
@@ -40,7 +40,7 @@ void test_doFlowPP()
 
     /*
         * https://github.com/jomjol/AI-on-the-edge-device/issues/921#issuecomment-1220365920
-        * 
+        *
         * Das Ergebnis sollte "167734.6" sein. Bzw. 16.98 ohne Extended true
         */
     digits = { 1.1, 6.0, 7.0, 7.0, 3.0, 4.6};
@@ -51,7 +51,7 @@ void test_doFlowPP()
 
     /*
         * https://github.com/jomjol/AI-on-the-edge-device/issues/919
-        * 
+        *
         * Das Ergebnis sollte "58.96889" sein. Bzw. 16.98 ohne Extended true
         */
     digits = { 5.0, 8.6};
@@ -62,7 +62,7 @@ void test_doFlowPP()
 
     /*
         * https://github.com/jomjol/AI-on-the-edge-device/issues/921#issuecomment-1222672175
-        * 
+        *
         * Das Ergebnis sollte "376529.6" sein. Bzw. 16.98 ohne Extended true
         */
     digits = { 2.9, 7.0, 6.8, 9.9, 8.0, 3.9};
@@ -102,7 +102,7 @@ void test_doFlowPP()
     analogs = { 7.1, 4.8, 8.3};
     expected = "199.748";
     result = process_doFlow(analogs, digits);
-    TEST_ASSERT_EQUAL_STRING(expected, result.c_str());     
+    TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
 }
 
 
@@ -167,7 +167,7 @@ void test_doFlowPP1()
     result = process_doFlow(analogs, digits);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
 
-    // Fehler bei V11.2.0 
+    // Fehler bei V11.2.0
     // https://github.com/jomjol/AI-on-the-edge-device/issues/921#issuecomment-1236119370
     digits = { 3.1, 9.1, 5.7};  // 9.1 führt zu falscher Erkennung eines unvollständigen Übergangs
     analogs = { 8.8, 6.1, 3.0, 2.0};
@@ -179,7 +179,7 @@ void test_doFlowPP1()
 
 void test_doFlowPP2()
 {
-    // Fehler bei V11.2.0 
+    // Fehler bei V11.2.0
     // https://github.com/jomjol/AI-on-the-edge-device/discussions/950#discussion-4338615
     std::vector<float> digits = { 1.0, 9.0, 9.0};  // Übergang wurde um 1 erhöht (200, statt 199)
     std::vector<float> analogs = { 7.1, 4.8, 8.3};
@@ -238,7 +238,7 @@ void test_doFlowPP2()
     analogs = { };
     expected = "123235";
     expected_extended= "123235.6";
-    
+
     // checkConsistency=true
     result = process_doFlow(analogs, digits, Digital100, false, false);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -252,7 +252,7 @@ void test_doFlowPP2()
     result = process_doFlow(analogs, digits, Digital100, false, true);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler bei V11.2.0 
+    // Fehler bei V11.2.0
     // https://github.com/jomjol/AI-on-the-edge-device/discussions/950#discussioncomment-3661982
     digits = { 3.0, 2.0, 4.1, 9.0, 4.0, 6.3, 9.2};  // 3249.459 als falsches Ergebnis
     analogs = { };
@@ -267,13 +267,13 @@ void test_doFlowPP2()
     result = process_doFlow(analogs, digits, Digital100, false, true, -3);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler bei V11.2.0 
+    // Fehler bei V11.2.0
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1020#issue-1375648891
     digits = { 0.0, 2.0, 6.1, 9.2};  // 259.9227 als falsches Ergebnis
     analogs = { 9.0, 2.5, 2.9, 7.2};
     expected = "269.9227";
     expected_extended= "269.92272";
-    
+
     // extendResolution=true
     result = process_doFlow(analogs, digits, Digital100, false, false);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -282,13 +282,13 @@ void test_doFlowPP2()
     result = process_doFlow(analogs, digits, Digital100, false, true);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler bei V11.3.1 
+    // Fehler bei V11.3.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1028#issuecomment-1250239481
     digits = { 1.1, 6.0, 9.1, 3.0, 5.3, 9.4};  // 169.3493 als falsches Ergebnis
     analogs = { 3.5};
     expected = "169.3593";
     expected_extended= "169.35935";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, -3);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -297,13 +297,13 @@ void test_doFlowPP2()
     result = process_doFlow(analogs, digits, Digital100, false, true, -3);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler bei V12.0.1 
+    // Fehler bei V12.0.1
     // Lokal
     digits = { 9.8, 9.8, 1.9, 0.9, 0.9, 9.9, 2.9, 4.8};  // 211.0345 als falsches Ergebnis
     analogs = { 5.5};
     expected = "211.0355";
     expected_extended= "211.03555";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, -3);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -312,13 +312,13 @@ void test_doFlowPP2()
     result = process_doFlow(analogs, digits, Digital100, false, true, -3);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler bei V12.0.1 
+    // Fehler bei V12.0.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1110#issuecomment-1277425333
     digits = { 2.2, 4.5, 5.9};  // 245.938 als falsches Ergebnis
     analogs = { 9.4, 3.8, 8.6};
     expected = "245.938";
     expected_extended= "245.9386";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, 0);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -327,13 +327,13 @@ void test_doFlowPP2()
     result = process_doFlow(analogs, digits, Digital100, false, true, 0);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler bei V12.0.1 
+    // Fehler bei V12.0.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1110#issuecomment-1277425333
     digits = { 2.2, 4.5, 5.9};  // 245.938 kein Fehler. Aber Grenzfall, deshalb mit als Test aufgenommen.
     analogs = { 9.4, 3.8, 8.6};
     expected = "245.938";
     expected_extended= "245.9386";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, 0);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -346,13 +346,13 @@ void test_doFlowPP2()
 
 void test_doFlowPP3()
 {
-    // Fehler bei V12.0.1 
+    // Fehler bei V12.0.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1110#issuecomment-1265523710
     std::vector<float> digits = { 2.0, 4.0, 6.8};  // 246.2045 als falsches Ergebnis
     std::vector<float> analogs = { 2.2, 0.1, 4.5};
     const char* expected = "247.204";
     const char* expected_extended= "247.2045";
-    
+
     // extendResolution=false
     std::string result = process_doFlow(analogs, digits, Digital100, false, false, 0);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -361,14 +361,14 @@ void test_doFlowPP3()
     result = process_doFlow(analogs, digits, Digital100, false, true, 0);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    
-    // Fehler bei V12.0.1 
+
+    // Fehler bei V12.0.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1110#issue-1391153343
     digits = { 1.0, 4.0, 2.0};  // 141.9269 als falsches Ergebnis
     analogs = { 9.2, 2.5, 6.8, 9.0};
     expected = "142.9269";
     expected_extended= "142.92690";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, 0);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -378,14 +378,14 @@ void test_doFlowPP3()
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
 
-    // Fehler bei V12.0.1 
+    // Fehler bei V12.0.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1110#issuecomment-1262626388
     digits = { 1.2, 6.8, 0.0, 0.0, 5.0, 2.8};  //170.05387 als falsches Ergebnis
     // letztes digit läuft mit analog zeiger mit. Hier nur lösbar mit setAnalogdigitTransistionStart=7.7
     analogs = { 8.7};
     expected = "170.0528";
     expected_extended= "170.05287";
-    
+
     // extendResolution=false
     UnderTestPost* undertestPost = init_do_flow(analogs, digits, Digital100, false, false, -3);
     setAnalogdigitTransistionStart(undertestPost, 7.7);
@@ -400,13 +400,13 @@ void test_doFlowPP3()
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
     delete undertestPost;
 
-    // Fehler bei rolling post V12.0.1 
+    // Fehler bei rolling post V12.0.1
     // lokal watermeter1
     digits = { 0.0, 0.0, 9.0, 1.0};  //90.88174 als falsches Ergebnis
     analogs = {9.0,  8.0, 1.8, 7.4};
     expected = "91.8817";
     expected_extended= "91.88174";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, 0);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -416,13 +416,13 @@ void test_doFlowPP3()
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
 
-    // Fehler bei rolling post V12.0.1 
+    // Fehler bei rolling post V12.0.1
     // lokal watermeter1
     digits = { 0.0, 0.0, 9.0, 1.9};  //91.38403 als falsches Ergebnis
     analogs = {3.6,  8.2, 3.2, 2.0};
     expected = "92.3832";
     expected_extended= "92.38320";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, 0);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -431,13 +431,13 @@ void test_doFlowPP3()
     result = process_doFlow(analogs, digits, Digital100, false, true, 0);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler  V11.3.0 
+    // Fehler  V11.3.0
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1143#issue-1400807695
     digits = { 7.0, 4.0, 7.0, 2.0, 7.0, 5.4, 9.4};  // 7472.749 als falsches Ergebnis
     analogs = {};
     expected = "7472.759";
     expected_extended= "7472.7594";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, -3);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -446,13 +446,13 @@ void test_doFlowPP3()
     result = process_doFlow(analogs, digits, Digital100, false, true, -3);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler  V12.0.1 
+    // Fehler  V12.0.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1143#issuecomment-1274434805
     digits = { 4.9, 6.9, 6.8};  // 576.8649 als falsches Ergebnis
     analogs = {8.6, 6.2, 5.0, 9.0};
     expected = "577.8649";
     expected_extended= "577.86490";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, 0);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -468,7 +468,7 @@ void test_doFlowPP3()
     analogs = {8.0};
     expected = "211.0358";
     expected_extended= "211.03580";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, -3);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -477,13 +477,13 @@ void test_doFlowPP3()
     result = process_doFlow(analogs, digits, Digital100, false, true, -3);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler  V12.0.1 
+    // Fehler  V12.0.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1143#issuecomment-1281231468
     digits = {  1.0, 1.9, 6.0};  // 125.923 als falsches Ergebnis
     analogs = {9.3, 2.3, 3.1};
     expected = "126.923";
     expected_extended= "126.9231";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, 0);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -492,13 +492,13 @@ void test_doFlowPP3()
     result = process_doFlow(analogs, digits, Digital100, false, true, 0);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler  V12.0.1 
+    // Fehler  V12.0.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1110#issuecomment-1282168030
     digits = {  3.0, 8.1, 5.9, 0.0, 5.0, 6.7};  // 386.05672 als richtiges Ergebnis. Letztes digit schein mit dem Analogzeiger mitzulaufen
     analogs = {7.2};
     expected = "386.0567";
     expected_extended= "386.05672";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false, -3);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -507,14 +507,14 @@ void test_doFlowPP3()
     result = process_doFlow(analogs, digits, Digital100, false, true, -3);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    // Fehler  V12.0.1 
+    // Fehler  V12.0.1
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1110#issuecomment-1282168030
-    digits = {  1.2, 7.0, 1.2, 2.0, 4.0, 1.8};  // 171.24278 als falsches Ergebnis. 
+    digits = {  1.2, 7.0, 1.2, 2.0, 4.0, 1.8};  // 171.24278 als falsches Ergebnis.
     // Test ist nur erfolgreich mit Veränderung des AnalogdigitTransistionStart
     analogs = {7.8};
     expected = "171.2417";
     expected_extended= "171.24178";
-    
+
     // extendResolution=false
     undertestPost = init_do_flow(analogs, digits, Digital100, false, false, -3);
     setAnalogdigitTransistionStart(undertestPost, 7.7);
@@ -533,14 +533,14 @@ void test_doFlowPP3()
 
 void test_doFlowPP4()
 {
-    // Fehler  V13.0.4 
+    // Fehler  V13.0.4
     // https://github.com/jomjol/AI-on-the-edge-device/issues/1503#issuecomment-1343335855
-    std::vector<float> digits = {  0.0, 0.0, 6.9, 1.0, 6.6};  // 716.0199 als falsches Ergebnis. 
+    std::vector<float> digits = {  0.0, 0.0, 6.9, 1.0, 6.6};  // 716.0199 als falsches Ergebnis.
     // Test ist nur erfolgreich mit Veränderung des AnalogdigitTransistionStart
     std::vector<float> analogs = {9.9, 1.8, 6.6, 5.8};
     const char* expected = "717.0165";
     const char* expected_extended= "717.01658";
-    
+
     // extendResolution=false
     std::string result = process_doFlow(analogs, digits, Digital100, false, false);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -558,7 +558,7 @@ void test_doFlowPP5()
     std::vector<float> analogs = {9.9, 9.4};
     const char* expected = "99.99";
     const char* expected_extended= "99.994";
-    
+
     // extendResolution=false
     std::string result = process_doFlow(analogs, digits, Digital100, false, false);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -567,12 +567,12 @@ void test_doFlowPP5()
     result = process_doFlow(analogs, digits, Digital100, false, true);
     TEST_ASSERT_EQUAL_STRING(expected_extended, result.c_str());
 
-    
+
     digits = {1.0, 9.9, 9.8};  // wrong result: 199.994
     analogs = {9.9, 9.4};
     expected = "99.99";
     expected_extended= "99.994";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -585,7 +585,7 @@ void test_doFlowPP5()
     analogs = {9.9, 9.4};
     expected = "99.99";
     expected_extended= "99.994";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
@@ -598,7 +598,7 @@ void test_doFlowPP5()
     analogs = {9.9, 0.1};
     expected = "100.00";
     expected_extended= "100.001";
-    
+
     // extendResolution=false
     result = process_doFlow(analogs, digits, Digital100, false, false);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());

@@ -48,7 +48,7 @@
 
 // Can also be set in platformio.ini with -D OPTION_TO_ACTIVATE
 // ****************************************************
-//#define DEBUG_DETAIL_ON 
+//#define DEBUG_DETAIL_ON
 //#define DEBUG_DISABLE_BROWNOUT_DETECTOR
 //#define DEBUG_ENABLE_PERFMON
 
@@ -60,7 +60,7 @@
 //#define TASK_ANALYSIS_ON
 
 /* Uncomment this to generate task list with stack sizes using the /heap handler
-    PLEASE BE AWARE: The following CONFIG parameters have to to be set in 
+    PLEASE BE AWARE: The following CONFIG parameters have to to be set in
     sdkconfig.defaults before use of this function is possible!!
     CONFIG_FREERTOS_USE_TRACE_FACILITY=1
     CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
@@ -125,15 +125,15 @@
 
 
 //server_file +(ota_page.html + upload_script.html)
-#define MAX_FILE_SIZE   (8000*1024) // 8 MB Max size of an individual file. Make sure this value 
+#define MAX_FILE_SIZE   (8000*1024) // 8 MB Max size of an individual file. Make sure this value
                                     // is same as that set in upload_script.html and ota_page.html!
 #define MAX_FILE_SIZE_STR "8MB"
-        
-#define LOGFILE_LAST_PART_BYTES 80 * 1024 // 80 kBytes  // Size of partial log file to return 
 
-#define SERVER_FILER_SCRATCH_BUFSIZE  4096 
+#define LOGFILE_LAST_PART_BYTES 80 * 1024 // 80 kBytes  // Size of partial log file to return
+
+#define SERVER_FILER_SCRATCH_BUFSIZE  4096
 #define SERVER_HELPER_SCRATCH_BUFSIZE  8192
-#define SERVER_OTA_SCRATCH_BUFSIZE  1024 
+#define SERVER_OTA_SCRATCH_BUFSIZE  1024
 
 
 //server_file + server_help
@@ -201,7 +201,7 @@
 //#define STB_IMAGE_IMPLEMENTATION
 //#define STB_IMAGE_WRITE_IMPLEMENTATION
 //#define STB_IMAGE_RESIZE_IMPLEMENTATION
-#define STBI_ONLY_JPEG // (save 2% of Flash, but breaks the alignment mark generation, see 
+#define STBI_ONLY_JPEG // (save 2% of Flash, but breaks the alignment mark generation, see
                        // https://github.com/jomjol/AI-on-the-edge-device/issues/1721)
 
 
@@ -212,7 +212,7 @@
 // connect_wlan.cpp
 //******************************
 /* WIFI roaming functionalities 802.11k+v (uses ca. 6kB - 8kB internal RAM; if SCAN CACHE activated: + 1kB / beacon)
-PLEASE BE AWARE: The following CONFIG parameters have to to be set in 
+PLEASE BE AWARE: The following CONFIG parameters have to to be set in
 sdkconfig.defaults before use of this function is possible!!
 CONFIG_WPA_11KV_SUPPORT=y
 CONFIG_WPA_SCAN_CACHE=n
@@ -221,7 +221,7 @@ CONFIG_WPA_11R_SUPPORT=n
 */
 //#define WLAN_USE_MESH_ROAMING   // 802.11v (BSS Transition Management) + 802.11k (Radio Resource Management)
                                   // (ca. 6kB - 8kB internal RAM neccessary)
-//#define WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES  // Client can send query to AP requesting 
+//#define WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES  // Client can send query to AP requesting
                                                                    // to roam (if RSSI lower than RSSI threshold)
 
 // WIFI roaming only client triggered by scanning the channels after each
@@ -369,7 +369,7 @@ CONFIG_WPA_11R_SUPPORT=n
 
     #define GPIO_FLASHLIGHT_DEFAULT_USE_PWM                 // Default flashlight LED (.e.g onboard LED) is PWM controlled
     //#define GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED          // Default flashlight SmartLED (e.g. onboard WS2812X) controlled
-    
+
     #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
         #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_TYPE       LED_WS2812 // Flashlight default: SmartLED type
         #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_QUANTITY   1          // Flashlight default: SmartLED Quantity
@@ -378,7 +378,7 @@ CONFIG_WPA_11R_SUPPORT=n
 
     // Spare GPIO
     //-------------------------------------------------
-    // Options for usage defintion: 
+    // Options for usage defintion:
     // - 'spare': Free to use
     // - 'restricted: usage': Restricted usable (WebUI expert view)
     // - 'flashlight-pwm' or 'flashlight-smartled' or 'flashlight-digital' (ON/OFF) -> Map to 'flashlight-default'
@@ -406,7 +406,7 @@ CONFIG_WPA_11R_SUPPORT=n
         #define GPIO_SPARE_4_USAGE          "spare"
     #else
         #define GPIO_SPARE_3                GPIO_NUM_NC    // Not usable, in use for 'SD-card'
-        #define GPIO_SPARE_3_USAGE          ""      
+        #define GPIO_SPARE_3_USAGE          ""
 
         #define GPIO_SPARE_4                GPIO_NUM_NC    // Not usable, in use for 'SD-card'
         #define GPIO_SPARE_4_USAGE          ""
@@ -440,7 +440,7 @@ CONFIG_WPA_11R_SUPPORT=n
 
     #define GPIO_FLASHLIGHT_DEFAULT_USE_PWM                 // Default flashlight LED is PWM controlled
     //#define GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED          // Default flashlight SmartLED (e.g. onboard WS2812X) controlled
-    
+
     #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
         #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_TYPE       LED_WS2812 // Flashlight default: SmartLED type
         #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_QUANTITY   1          // Flashlight default: SmartLED Quantity
@@ -449,14 +449,14 @@ CONFIG_WPA_11R_SUPPORT=n
 
     // Spare GPIO
     //-------------------------------------------------
-    // Options for usage defintion: 
+    // Options for usage defintion:
     // - 'spare': Free to use
     // - 'restricted: usage': Restricted usable (WebUI expert view)
     // - 'flashlight-pwm' or 'flashlight-smartled' or 'flashlight-digital' (ON/OFF) -> Map to 'flashlight-default'
     // --> ESP32CAM: flashlight-default -> flashlight-pwm (Onboard LED, PWM controlled)
     //-------------------------------------------------
     #define GPIO_SPARE_PIN_COUNT            6
-   
+
     #define GPIO_SPARE_1                    GPIO_FLASHLIGHT_DEFAULT // Flashlight default
     #if defined(GPIO_FLASHLIGHT_DEFAULT_USE_PWM)
         #define GPIO_SPARE_1_USAGE          FLASHLIGHT_PWM          // Define flashlight-default as ...
@@ -468,13 +468,13 @@ CONFIG_WPA_11R_SUPPORT=n
 
     #define GPIO_SPARE_2                    GPIO_NUM_2
     #define GPIO_SPARE_2_USAGE              "spare"
-    
+
     #define GPIO_SPARE_3                    GPIO_NUM_3
     #define GPIO_SPARE_3_USAGE              "spare"
 
     #define GPIO_SPARE_4                    GPIO_NUM_4
     #define GPIO_SPARE_4_USAGE              "spare"
-    
+
     #define GPIO_SPARE_5                    GPIO_NUM_5
     #define GPIO_SPARE_5_USAGE              "spare"
 

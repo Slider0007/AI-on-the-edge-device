@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
     <title>AI on the edge</title>
@@ -12,11 +12,11 @@
         p {font-size: 1em;}
 
         body, html {
-            width: 100%; 
-            height: 100%; 
+            width: 100%;
+            height: 100%;
             min-height: 800px;
-            margin: 0px 0px 0px 2px; 
-            padding: 0; 
+            margin: 0px 0px 0px 2px;
+            padding: 0;
             font-family: arial;
             width: -moz-fit-content;
             width: fit-content;
@@ -54,10 +54,10 @@
         }
 
         .main {
-            display: flex; 
-            width: 100%; 
-            height: 100%; 
-            flex-direction: column; 
+            display: flex;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
             overflow: hidden;
         }
     </style>
@@ -108,19 +108,19 @@
     </div>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="common.js?v=$COMMIT_HASH"></script>
 <script>
     var aktstep = 0;
     var setupCompleted = false;
     document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
     document.getElementById("progressBar").value = 0;
 
-    
+
     function clickStart()
     {
         aktstep = 0;
         setupCompleted = false;
-        document.getElementById('stream').src = "";     
+        document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
     }
@@ -130,7 +130,7 @@
     {
         setupCompleted = false;
         aktstep = 7;
-        document.getElementById('stream').src = "";     
+        document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
     }
@@ -142,7 +142,7 @@
         if (aktstep > 7) {
             aktstep = 7;
         }
-        document.getElementById('stream').src = "";     
+        document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
     }
@@ -154,7 +154,7 @@
         if (aktstep < 0) {
             aktstep = 0;
         }
-        document.getElementById('stream').src = "";     
+        document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
    }
@@ -187,7 +187,7 @@
             document.getElementById('explaincontent').style="height:155px;"
             document.getElementById('explaincontent').scrolling="yes"
             document.getElementById('explaincontent').src = 'setup_explain_1.html?v=$COMMIT_HASH';
-            
+
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
             document.getElementById("next").disabled = false;
@@ -294,7 +294,7 @@
 
             document.getElementById("progressBar").value = 6;
             setupCompleted = true;
-            break; 
+            break;
 
         case 7: // Setup completed / aborted
             document.getElementById('h_iframe').style="height:660px;"
@@ -304,7 +304,7 @@
             }
             else {
                 document.getElementById('maincontent').src = 'setup_explain_7_abort.html?v=$COMMIT_HASH';
-                document.getElementById("previous").disabled = true; 
+                document.getElementById("previous").disabled = true;
             }
 
             document.getElementById('h_iframe_explain').style.display = "none";
@@ -319,7 +319,7 @@
    }
 
 
-   function loadRSSI() 
+   function loadRSSI()
    {
 		var url = getDomainname() + '/info?type=wlan_rssi';
 
@@ -327,7 +327,7 @@
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				var _rsp = xhttp.responseText;
-				
+
 				if (_rsp >= -55) {
 					document.getElementById('rssi').value = ("WLAN Signal: Excellent (" + _rsp + "dBm)");
 				}
@@ -348,7 +348,7 @@
 
         xhttp.timeout = 10000;  // 10 seconds
 		xhttp.open("GET", url, true);
-		xhttp.send();		
+		xhttp.send();
 	}
 
 

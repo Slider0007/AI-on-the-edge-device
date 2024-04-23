@@ -26,13 +26,13 @@ class GpioHandler
 
         int readConfig();
         void clear();
-        
+
         gpio_num_t resolveSparePinNr(uint8_t _sparePinNr);
         gpio_pin_mode_t resolvePinMode(std::string input);
         std::string getPinModeDecription(gpio_pin_mode_t _mode);
         gpio_int_type_t resolveIntType(std::string input);
         std::string getPinInterruptDecription(gpio_int_type_t _type);
-    
+
     public:
         GpioHandler(std::string _configFileName, httpd_handle_t _httpServer);
         ~GpioHandler();
@@ -45,7 +45,7 @@ class GpioHandler
         ledc_timer_bit_t calcDutyResolution(int frequency);
         ledc_timer_t getFreeTimer(int _frequency);
 
-        void gpioPinInterrupt(GpioResult* gpioResult);  
+        void gpioPinInterrupt(GpioResult* gpioResult);
         void gpioInputStatePolling();
 
         void gpioFlashlightControl(bool _state, int _intensity);

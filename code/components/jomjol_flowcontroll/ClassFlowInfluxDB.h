@@ -20,10 +20,10 @@ class ClassFlowInfluxDB : public ClassFlow
         std::string TLSCACertFilename, TLSClientCertFilename, TLSClientKeyFilename;
         bool InfluxDBenable;
 
-        void SetInitialParameter(void);    
-        
-        void handleFieldname(std::string _decsep, std::string _value);   
-        void handleMeasurement(std::string _decsep, std::string _value);   
+        void SetInitialParameter(void);
+
+        void handleFieldname(std::string _decsep, std::string _value);
+        void handleMeasurement(std::string _decsep, std::string _value);
 
     public:
         ClassFlowInfluxDB();

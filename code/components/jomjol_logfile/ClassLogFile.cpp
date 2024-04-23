@@ -21,7 +21,7 @@ extern "C" {
 
 static const char *TAG = "LOGFILE";
 
-ClassLogFile LogFile(LOG_LOGS_ROOT_FOLDER, LOG_FILE_TIME_FORMAT, 
+ClassLogFile LogFile(LOG_LOGS_ROOT_FOLDER, LOG_FILE_TIME_FORMAT,
                      LOG_DATA_ROOT_FOLDER, DATA_FILE_TIME_FORMAT,
                      LOG_DEBUG_ROOT_FOLDER, DEBUG_FOLDER_TIME_FORMAT);
 
@@ -53,16 +53,16 @@ void ClassLogFile::WriteHeapInfo(std::string _id)
 }
 
 
-void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::string  _sRawValue, std::string _sValue, 
-                               std::string _sFallbackValue, std::string  _sRatePerMin, std::string  _sRatePerInterval, 
+void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::string  _sRawValue, std::string _sValue,
+                               std::string _sFallbackValue, std::string  _sRatePerMin, std::string  _sRatePerInterval,
                                std::string _sValueStatus, std::string _digital, std::string _analog)
 {
     //ESP_LOGD(TAG, "Start WriteToData");
     time_t rawtime;
 
     time(&rawtime);
-    std::string logpath = dataFileRootFolder + "/" + ConvertTimeToString(rawtime, datafile.c_str()); 
-    
+    std::string logpath = dataFileRootFolder + "/" + ConvertTimeToString(rawtime, datafile.c_str());
+
     FILE* pFile;
     std::string zwtime;
 
@@ -93,8 +93,8 @@ void ClassLogFile::WriteToData(std::string _timestamp, std::string _name, std::s
         fputs(_analog.c_str(), pFile);
         fputs("\n", pFile);
 
-        fclose(pFile);    
-    } 
+        fclose(pFile);
+    }
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to open data file: " + logpath);
     }
@@ -107,19 +107,19 @@ void ClassLogFile::setLogLevel(esp_log_level_t _logLevel)
     std::string levelText;
 
     // Print log level to log file
-    switch(_logLevel) {            
+    switch(_logLevel) {
         case ESP_LOG_WARN:
             levelText = "WARNING";
             break;
-            
+
         case ESP_LOG_INFO:
             levelText = "INFO";
             break;
-            
+
         case ESP_LOG_DEBUG:
             levelText = "DEBUG";
             break;
-    
+
         case ESP_LOG_ERROR:
         default:
             levelText = "ERROR";
@@ -200,7 +200,7 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
         ntpTime = ConvertTimeToString(rawtime, "%Y-%m-%dT%H:%M:%S");
     }
 
-    std::string loglevelString; 
+    std::string loglevelString;
     switch(level) {
         case  ESP_LOG_ERROR:
             loglevelString = "ERR";
@@ -230,7 +230,7 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
         if (fileNameDateNew != fileNameDate) { // Filename changed
             // Make sure each day gets its own logfile
             // Also we need to re-open it in case it needed to get closed for reading
-            std::string logpath = logFileRootFolder + "/" + fileNameDateNew; 
+            std::string logpath = logFileRootFolder + "/" + fileNameDateNew;
 
             ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
             logFileAppendHandle = fopen(logpath.c_str(), "a");
@@ -242,7 +242,7 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
             fileNameDate = fileNameDateNew;
         }
     #else
-        std::string logpath = logFileRootFolder + "/" + fileNameDateNew; 
+        std::string logpath = logFileRootFolder + "/" + fileNameDateNew;
         logFileAppendHandle = fopen(logpath.c_str(), "a");
         if (logFileAppendHandle == NULL) {
             ESP_LOGE(TAG, "WriteToFile: Failed to open logfile %s", logpath.c_str());
@@ -255,7 +255,7 @@ void ClassLogFile::WriteToFile(esp_log_level_t level, std::string tag, std::stri
     setvbuf(logFileAppendHandle, NULL, _IOFBF, 512);
 
     fputs(fullmessage.c_str(), logFileAppendHandle);
-    
+
     #ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING
         fflush(logFileAppendHandle);
         fsync(fileno(logFileAppendHandle));
@@ -297,7 +297,7 @@ std::string ClassLogFile::GetCurrentFileName()
     time_t rawtime;
 
     time(&rawtime);
-    std::string logpath = logFileRootFolder + "/" + ConvertTimeToString(rawtime, logfile.c_str()); 
+    std::string logpath = logFileRootFolder + "/" + ConvertTimeToString(rawtime, logfile.c_str());
 
     return logpath;
 }
@@ -338,16 +338,16 @@ void ClassLogFile::RemoveOldLogFile()
                     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Time was not set at boot, keep log file \'log_1970-01-01.txt\'");
                     notDeleted++;
                 }
-                else {          
+                else {
                     if (unlink(filepath.c_str()) == 0) {
                         deleted++;
-                    } 
+                    }
                     else {
                         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete file " + filepath);
                         notDeleted++;
                     }
                 }
-            } 
+            }
             else {
                 notDeleted++;
             }
@@ -390,7 +390,7 @@ void ClassLogFile::RemoveOldDataLog()
             //ESP_LOGI(TAG, "Compare data file: %s to %s", entry->d_name, cmpfilename.c_str());
             if ((strlen(entry->d_name) == cmpfilename.length()) && (strcmp(entry->d_name, cmpfilename.c_str()) < 0)) {
                 //ESP_LOGI(TAG, "delete data file: %s", entry->d_name);
-                std::string filepath = dataFileRootFolder + "/" + entry->d_name; 
+                std::string filepath = dataFileRootFolder + "/" + entry->d_name;
                 if (unlink(filepath.c_str()) == 0) {
                     deleted ++;
                 }
@@ -416,7 +416,7 @@ void ClassLogFile::RemoveOldDebugFiles()
     if (debugFilesRetentionInDays == 0) {
         return;
     }
-    
+
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete debug folder older than retention setting");
 
     DIR *dir = opendir(debugFileRootFolder.c_str());
@@ -440,11 +440,11 @@ void ClassLogFile::RemoveOldDebugFiles()
         if (entry->d_type == DT_DIR) {
             //ESP_LOGI(TAG, "Compare folder %s to %s", entry->d_name, cmpfolderame.c_str());
             if ((strlen(entry->d_name) == cmpfolderame.length()) && (strcmp(entry->d_name, cmpfolderame.c_str()) < 0)) {
-                std::string folderpath = debugFileRootFolder + "/" + entry->d_name; 
+                std::string folderpath = debugFileRootFolder + "/" + entry->d_name;
                 //ESP_LOGI(TAG, "Delete folder %s", folderpath.c_str());
                 if (removeFolder(folderpath.c_str(), TAG) > 0) {
                     deleted++;
-                } 
+                }
                 else {
                     LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete folder " + folderpath);
                     notDeleted ++;

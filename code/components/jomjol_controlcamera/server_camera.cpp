@@ -23,7 +23,7 @@ esp_err_t handler_camera(httpd_req_t *req)
     int flashtime = 0;
 
     // Default usage message when handler gets called without any parameter
-    const std::string RESTUsageInfo = 
+    const std::string RESTUsageInfo =
         "Handler usage:<br>"
         "1. Set camera parameter:<br>"
         "-  '/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0& "
@@ -45,7 +45,7 @@ esp_err_t handler_camera(httpd_req_t *req)
         if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             task = std::string(_valuechar);
         }
-        if (httpd_query_key_value(_query, "flashtime", _flashtime, sizeof(_flashtime)) == ESP_OK) {     
+        if (httpd_query_key_value(_query, "flashtime", _flashtime, sizeof(_flashtime)) == ESP_OK) {
             flashtime = std::max(0, atoi(_flashtime));
         }
         if (httpd_query_key_value(_query, "filename", _filename, sizeof(_filename)) == ESP_OK) {
@@ -60,11 +60,11 @@ esp_err_t handler_camera(httpd_req_t *req)
 
     if (task.compare("api_name") == 0) {
         httpd_resp_sendstr(req, APIName);
-        return ESP_OK;        
-    }  
+        return ESP_OK;
+    }
     else if (task.compare("set_parameter") == 0) {
         if (!Camera.getcameraInitSuccessful()) {
-            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, 
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN,
                                 "Camera not initialized: REST API /lighton not available");
             return ESP_ERR_NOT_FOUND;
         }
@@ -108,11 +108,11 @@ esp_err_t handler_camera(httpd_req_t *req)
             camParameter.specialEffect = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "mirror", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
+            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ?
                 camParameter.mirrorImage = true : camParameter.mirrorImage = false;
         }
         if (httpd_query_key_value(_query, "flip", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? 
+            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ?
                 camParameter.flipImage = true : camParameter.flipImage = false;
         }
         if (httpd_query_key_value(_query, "zoommode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
@@ -128,9 +128,9 @@ esp_err_t handler_camera(httpd_req_t *req)
         Camera.setFlashIntensity(camParameter.flashIntensity);
         Camera.setFlashTime(camParameter.flashTime);
         Camera.setZoom(camParameter.zoomMode, camParameter.zoomOffsetX, camParameter.zoomOffsetY);
-        Camera.setImageManipulation(camParameter.brightness, camParameter.contrast, camParameter.saturation, 
-                                    camParameter.sharpness, camParameter.exposureControlMode, camParameter.autoExposureLevel, 
-                                    camParameter.manualExposureValue, camParameter.gainControlMode, camParameter.manualGainValue, 
+        Camera.setImageManipulation(camParameter.brightness, camParameter.contrast, camParameter.saturation,
+                                    camParameter.sharpness, camParameter.exposureControlMode, camParameter.autoExposureLevel,
+                                    camParameter.manualExposureValue, camParameter.gainControlMode, camParameter.manualGainValue,
                                     camParameter.specialEffect, camParameter.mirrorImage, camParameter.flipImage);
 
         httpd_resp_sendstr(req, "001: Camera parameter set");
@@ -147,12 +147,12 @@ esp_err_t handler_camera(httpd_req_t *req)
         }
         else {
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Camera capture error");
-        } 
-        return result;        
+        }
+        return result;
     }
     else if (task.compare("capture_with_flashlight") == 0) {
         if (flashtime == 0) {
-            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, 
+            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
                 "E93: No flashtime provided, e.g. '/capture?task=capture_with_flashlight&flashtime=1000'");
             return ESP_FAIL;
         }
@@ -167,19 +167,19 @@ esp_err_t handler_camera(httpd_req_t *req)
         }
         else {
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Camera capture error");
-        } 
+        }
 
         return result;
     }
     else if (task.compare("capture_to_file") == 0) {
         if (flashtime == 0) {
-            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, 
+            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
                 "E93: No flashtime provided, e.g. '/capture?task=capture_to_file&flashtime=1000&filename=/img_tmp/test.jpg'");
             return ESP_FAIL;
         }
 
         if (fn.compare("/sdcard/") == 0) {
-            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, 
+            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
                 "E94: No destination provided, e.g. '/capture?task=capture_to_file&flashtime=1000&filename=/img_tmp/test.jpg'");
             return ESP_FAIL;
         }
@@ -194,18 +194,18 @@ esp_err_t handler_camera(httpd_req_t *req)
         }
         else {
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Camera capture error");
-        } 
+        }
         return result;
     }
     else if (task.compare("flashlight_on") == 0) {
         Camera.setFlashlight(true);
         httpd_resp_sendstr(req, "005: Flashlight on");
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (task.compare("flashlight_off") == 0) {
         Camera.setFlashlight(false);
         httpd_resp_sendstr(req, "006: Flashlight off");
-        return ESP_OK;        
+        return ESP_OK;
     }
     else if (task.compare("stream") == 0) {
         Camera.captureToStream(req, false);
@@ -230,9 +230,9 @@ void register_server_camera_uri(httpd_handle_t server)
 
     httpd_uri_t camuri = { };
     camuri.method    = HTTP_GET;
-  
+
     camuri.uri       = "/camera";
     camuri.handler   = handler_camera;
-    camuri.user_ctx  = NULL; 
+    camuri.user_ctx  = NULL;
     httpd_register_uri_handler(server, &camuri);
 }

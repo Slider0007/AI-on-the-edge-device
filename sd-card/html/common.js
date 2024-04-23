@@ -5,7 +5,7 @@
 */
 var DUTDeviceIP = "192.168.2.68";      // Set the IP of physical device under test
 var TestEnvironmentActive = false;
- 
+
 
 /* Returns the domainname with prepended protocol.
 * E.g. http://watermeter.fritz.box or http://192.168.1.5
@@ -15,7 +15,7 @@ function getDomainname()
     var domainname;
 
     // NOTE: The if condition cannot be used in this way: if (((host == "127.0.0.1") || (host == "localhost") || (host == ""))
-    //       This breaks access through a forwarded port: https://github.com/jomjol/AI-on-the-edge-device/issues/2681 
+    //       This breaks access through a forwarded port: https://github.com/jomjol/AI-on-the-edge-device/issues/2681
     if (window.location.hostname == "localhost") {
          console.log("Test environment active! Device IP: " + DUTDeviceIP);
          domainname = "http://" + DUTDeviceIP
@@ -42,17 +42,17 @@ function UpdatePage(_dosession = true){
     var zw = location.href;
     zw = zw.substring(0, zw.indexOf("?"));
     if (_dosession) {
-        window.location = zw + '?' + Math.floor((Math.random() * 1000000) + 1); 
+        window.location = zw + '?' + Math.floor((Math.random() * 1000000) + 1);
     }
     else {
-        window.location = zw; 
+        window.location = zw;
     }
 }
 
-        
+
 function LoadHostname()
 {
-    var url = getDomainname() + '/info?type=hostname';   
+    var url = getDomainname() + '/info?type=hostname';
 
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -77,7 +77,7 @@ var webUiVersion = "";
 function LoadFwVersion()
 {
     var url = getDomainname() + '/info?type=firmware_version';
-    
+
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
@@ -134,10 +134,10 @@ function compareVersions()
     arr = webUiVersion.split(" ");
     webUiHash = arr[arr.length - 1].substring(0, 7);
     //console.log("FW Hash: " + fWGitHash + ", Web UI Hash: " + webUiHash);
-    
+
     if (fWGitHash != webUiHash) {
-        firework.launch("Web interface version does not match the firmware version. " + 
-                        "It's strongly advised to use matching version. Check logs for more details.", 
+        firework.launch("Web interface version does not match the firmware version. " +
+                        "It's strongly advised to use matching version. Check logs for more details.",
                         'warning', 10000);
     }
 }

@@ -16,12 +16,12 @@ class ClassFlowPostProcessing : public ClassFlow
         bool UseFallbackValue;
         bool fallbackValueLoaded;
         bool UpdateFallbackValue;
-        int FallbackValueAgeStartup; 
+        int FallbackValueAgeStartup;
         bool IgnoreLeadingNaN;
         bool SaveDebugInfo;
 
         ClassFlowCNNGeneral* flowAnalog;
-        ClassFlowCNNGeneral* flowDigit;    
+        ClassFlowCNNGeneral* flowDigit;
         ClassFlowTakeImage *flowTakeImage;
 
         bool LoadFallbackValue(void);
@@ -36,11 +36,11 @@ class ClassFlowPostProcessing : public ClassFlow
 
         void handleDecimalShift(std::string _decsep, std::string _value);
         void handleMaxRateValue(std::string _decsep, std::string _value);
-        void handleDecimalExtendedResolution(std::string _decsep, std::string _value); 
+        void handleDecimalExtendedResolution(std::string _decsep, std::string _value);
         void handleMaxRateType(std::string _decsep, std::string _value);
         void handleAnalogDigitalTransitionStart(std::string _decsep, std::string _value);
         void handleAllowNegativeRate(std::string _decsep, std::string _value);
-        
+
         void WriteDataLog(int _index);
 
     public:

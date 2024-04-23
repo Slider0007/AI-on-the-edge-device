@@ -6,7 +6,7 @@ function reload_config()
      xhttp.onreadystatechange = function() {
           if (this.readyState == 4) {
                if (this.status >= 200 && this.status < 300) {
-                    if (xhttp.responseText.substring(0,3) == "001" || xhttp.responseText.substring(0,3) == "002" || 
+                    if (xhttp.responseText.substring(0,3) == "001" || xhttp.responseText.substring(0,3) == "002" ||
                          xhttp.responseText.substring(0,3) == "003")
                     {
                          firework.launch('Configuration updated and applied', 'success', 2000);
@@ -19,19 +19,19 @@ function reload_config()
                     }
                }
                else {
-                    firework.launch("Configuration update failed (Response status: " + this.status + 
+                    firework.launch("Configuration update failed (Response status: " + this.status +
                                     "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Configuration update failed. Response status: " + this.status);  
+                    console.error("Configuration update failed. Response status: " + this.status);
                }
           }
      };
-     
+
      xhttp.timeout = 10000;  // 10 seconds
      xhttp.open("GET", url, true);
      xhttp.send();
 }
 
-   
+
 function dataURLtoBlob(dataurl)
 {
      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
@@ -40,8 +40,8 @@ function dataURLtoBlob(dataurl)
           u8arr[n] = bstr.charCodeAt(n);
      }
      return new Blob([u8arr], {type:mime});
-}	
- 
+}
+
 
 async function FileCopyOnServer(_source, _target, _domainname = "", async = false)
 {
@@ -55,14 +55,14 @@ async function FileCopyOnServer(_source, _target, _domainname = "", async = fals
                          return resolve("Copy file request successful");
                     }
                     if (this.status > 400) {
-                         firework.launch("Copy file request failed (Response status: " + this.status + 
+                         firework.launch("Copy file request failed (Response status: " + this.status +
                                              "). Repeat action or check logs.", 'danger', 30000);
                          console.error("Copy file request failed. Response status: " + this.status);
                          return reject("Copy file request failed");
                     }
                }
           };
-     
+
           if (async)
                xhttp.timeout = 10000;  // 10 seconds
 
@@ -84,7 +84,7 @@ function FileDeleteOnServer(_filename, _domainname = "")
                     okay = true;
                }
                else {
-                    firework.launch("File delete request failed (Response status: " + this.status + 
+                    firework.launch("File delete request failed (Response status: " + this.status +
                                         "). Repeat action or check logs.", 'danger', 30000);
                     console.error("File delete request failed. Response status: " + this.status);
                     okay = false;
@@ -103,18 +103,18 @@ function FileSendContent(_content, _filename, _domainname = "")
 {
      var okay = false;
      var url = _domainname + "/upload" + _filename;
-     
-     var xhttp = new XMLHttpRequest();  
+
+     var xhttp = new XMLHttpRequest();
      xhttp.onreadystatechange = function() {
           if (xhttp.readyState == 4) {
                if (xhttp.status >= 200 && xhttp.status < 300) {
                     okay = true;
-               } 
+               }
                else if (xhttp.status == 0) {
 				firework.launch('File send request failed. Server closed the connection abruptly!', 'danger', 30000);
-               } 
+               }
                else {
-                    firework.launch("File send request failed (Response status: " + this.status + 
+                    firework.launch("File send request failed (Response status: " + this.status +
                                         "). Repeat action or check logs.", 'danger', 30000);
                     console.error("File send request failed. Response status: " + this.status);
                     okay = false;
@@ -125,20 +125,20 @@ function FileSendContent(_content, _filename, _domainname = "")
      xhttp.open("POST", url, false);
      xhttp.send(_content);
 
-     return okay;        
+     return okay;
 }
 
 
 function SaveCanvasToImage(_canvas, _filename, _delete = true, _domainname = "")
 {
      var JPEG_QUALITY=0.8;
-     var dataUrl = _canvas.toDataURL('image/jpeg', JPEG_QUALITY);	
+     var dataUrl = _canvas.toDataURL('image/jpeg', JPEG_QUALITY);
      var rtn = dataURLtoBlob(dataUrl);
 
      if (_delete) {
           FileDeleteOnServer(_filename, _domainname);
      }
-	
+
      FileSendContent(rtn, _filename, _domainname);
 }
 
@@ -155,11 +155,11 @@ function SaveConfigToServer(_domainname)
      for (var i = 0; i < config_split.length; ++i)
      {
           _config_gesamt = _config_gesamt + config_split[i] + "\n";
-     } 
+     }
 
      // Save to temporary file and then promote to config.ini on firmware level (server_file.cpp)
      // -> Reduce data loss risk (e.g. network connection got interrupted during data transfer)
-     FileSendContent(_config_gesamt, "/config/config.tmp", _domainname);       
+     FileSendContent(_config_gesamt, "/config/config.tmp", _domainname);
 }
 
 
@@ -168,7 +168,7 @@ function loadImage(url, altUrl)
 {
     var timer;
     function clearTimer() {
-        if (timer) {                
+        if (timer) {
             clearTimeout(timer);
             timer = null;
         }
@@ -191,7 +191,7 @@ function loadImage(url, altUrl)
         clearTimer();
     };
     img.src = url;
-    timer = setTimeout(function(theImg) { 
+    timer = setTimeout(function(theImg) {
         return function() {
             handleFail.call(theImg);
         };
@@ -206,16 +206,16 @@ function ZerlegeZeile(input, delimiter = " =\t\r")
 //          delimiter = " =,\t";
 
 
-     /* The input can have multiple formats: 
+     /* The input can have multiple formats:
           *  - key = value
           *  - key = value1 value2 value3 ...
           *  - key value1 value2 value3 ...
-          *  
+          *
           * Examples:
           *  - ImageSize = VGA
-          *  - IO0 = input disabled 10 false false 
+          *  - IO0 = input disabled 10 false false
           *  - main.dig1 28 144 55 100 false
-          * 
+          *
           * This causes issues eg. if a password key has a whitespace or equal sign in its value.
           * As a workaround and to not break any legacy usage, we enforce to only use the
           * equal sign, if the key is "password"
@@ -243,7 +243,7 @@ function ZerlegeZeile(input, delimiter = " =\t\r")
 
      return Output;
 
-}    
+}
 
 
 function findDelimiterPos(input, delimiter)
@@ -270,14 +270,14 @@ function findDelimiterPos(input, delimiter)
      return pos;
 }
 
-     
+
 
 function trim(istring, adddelimiter)
 {
      while ((istring.length > 0) && (adddelimiter.indexOf(istring[0]) >= 0)) {
           istring = istring.substr(1, istring.length-1);
      }
-     
+
      while ((istring.length > 0) && (adddelimiter.indexOf(istring[istring.length-1]) >= 0)) {
           istring = istring.substr(0, istring.length-1);
      }

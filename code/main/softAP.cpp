@@ -163,8 +163,8 @@ esp_err_t test_handler(httpd_req_t *req)
 
 esp_err_t reboot_handlerAP(httpd_req_t *req)
 {
-#ifdef DEBUG_DETAIL_ON     
-    LogFile.WriteHeapInfo("handler_ota_update - Start");    
+#ifdef DEBUG_DETAIL_ON
+    LogFile.WriteHeapInfo("handler_ota_update - Start");
 #endif
     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Trigger reboot due to firmware update.");
     doRebootOTA();
@@ -174,13 +174,13 @@ esp_err_t reboot_handlerAP(httpd_req_t *req)
 
 esp_err_t config_ini_handler(httpd_req_t *req)
 {
-#ifdef DEBUG_DETAIL_ON     
-    LogFile.WriteHeapInfo("handler_ota_update - Start");    
+#ifdef DEBUG_DETAIL_ON
+    LogFile.WriteHeapInfo("handler_ota_update - Start");
 #endif
 
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "config_ini_handler");
     char _query[400];
-    char _valuechar[100];    
+    char _valuechar[100];
     std::string fn = "/sdcard/firmware/";
     std::string _task = "";
     std::string ssid = "";
@@ -197,7 +197,7 @@ esp_err_t config_ini_handler(httpd_req_t *req)
     if (httpd_req_get_url_query_str(req, _query, 400) == ESP_OK)
     {
         ESP_LOGD(TAG, "Query: %s", _query);
-        
+
         if (httpd_query_key_value(_query, "ssid", _valuechar, 100) == ESP_OK)
         {
             ESP_LOGD(TAG, "ssid is found: %s", _valuechar);
@@ -260,7 +260,7 @@ esp_err_t config_ini_handler(httpd_req_t *req)
     text += "; ssid: Name of WLAN network (mandatory), e.g. \"WLAN-SSID\"\n";
     text += "; password: Password of WLAN network (mandatory), e.g. \"PASSWORD\"\n\n";
     fputs(text.c_str(), configfilehandle);
-    
+
     if (ssid.length())
         ssid = "ssid = \"" + ssid + "\"\n";
     else
@@ -340,7 +340,7 @@ esp_err_t config_ini_handler(httpd_req_t *req)
 
     std::string zw = "ota without parameter - should not be the case";
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_send(req, zw.c_str(), zw.length()); 
+    httpd_resp_send(req, zw.c_str(), zw.length());
 
     ESP_LOGD(TAG, "end config.ini");
 

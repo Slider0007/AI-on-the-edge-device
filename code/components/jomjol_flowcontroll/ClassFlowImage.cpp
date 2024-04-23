@@ -52,7 +52,7 @@ ClassFlowImage::ClassFlowImage(std::vector<ClassFlow*> * lfc, ClassFlow *_prev, 
 }
 
 
-std::string ClassFlowImage::CreateLogFolder(std::string time) 
+std::string ClassFlowImage::CreateLogFolder(std::string time)
 {
 	if (!isLogImage)
 		return "";
@@ -68,7 +68,7 @@ std::string ClassFlowImage::CreateLogFolder(std::string time)
 }
 
 
-void ClassFlowImage::LogImage(std::string _logPath, std::string _numbername, t_CNNType _type, int _value, std::string _time, CImageBasis *_img) 
+void ClassFlowImage::LogImage(std::string _logPath, std::string _numbername, t_CNNType _type, int _value, std::string _time, CImageBasis *_img)
 {
 	if (!isLogImage)
 		return;
@@ -77,7 +77,7 @@ void ClassFlowImage::LogImage(std::string _logPath, std::string _numbername, t_C
         LogFile.WriteToFile(ESP_LOG_ERROR, logTag, "LogImage: logPath empty");
         return;
     }
-	
+
 	char buf[10];
 
     if (_type == None) { // log with no label -> raw image
@@ -107,7 +107,7 @@ void ClassFlowImage::RemoveOldLogs()
 {
 	if (!isLogImage)
 		return;
-	
+
     if (imagesRetention == 0) {
         LogFile.WriteToFile(ESP_LOG_DEBUG, logTag, "RemoveOldLogs: Retention deactivated");
         return;
@@ -121,7 +121,7 @@ void ClassFlowImage::RemoveOldLogs()
         return;
     }
 
-    time_t rawtime;  
+    time_t rawtime;
     time(&rawtime);
     rawtime = addDays(rawtime, -imagesRetention + 1);
     //ESP_LOGI(TAG, "imagesRetention: %d", imagesRetention);
@@ -134,18 +134,18 @@ void ClassFlowImage::RemoveOldLogs()
 
     while ((entry = readdir(dir)) != NULL) {
 		if (entry->d_type == DT_DIR) {
-			//ESP_LOGD(TAG, "Compare folder %s to %s", entry->d_name, cmpfolderame.c_str());	
+			//ESP_LOGD(TAG, "Compare folder %s to %s", entry->d_name, cmpfolderame.c_str());
 			if ((strlen(entry->d_name) == cmpfolderame.length()) && (strcmp(entry->d_name, cmpfolderame.c_str()) < 0)) {
                 std::string folderpath = imagesLocation + "/" + entry->d_name;
                 //ESP_LOGI(TAG, "Delete folder %s", folderpath.c_str());
                 if (removeFolder(folderpath.c_str(), TAG) > 0) {
                     deleted++;
-                } 
+                }
                 else {
                     LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete folder " + folderpath);
                     notDeleted ++;
                 }
-			} 
+			}
             else {
                 notDeleted ++;
             }

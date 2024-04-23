@@ -12,7 +12,7 @@ scriptName = "generate-param-doc-tooltips-localbuild.py"
 if len(sys.argv) > 1:
     scriptPath = sys.argv[1] + "/tools/parameter-tooltip-generator/"
     rootPath = sys.argv[1]
-    
+
 else:
     scriptPath = sys.argv[0].split(scriptName,1)[0]
     if scriptPath[0] == ".":
@@ -77,7 +77,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
         referenceImagePageContent = referenceImagePageHandle.read()
 
     # print("replacing $TOOLTIP_" + section + "_" + parameter + " with the tooltip content...")
-    referenceImagePageContent = referenceImagePageContent.replace("<td style=\"overflow:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>", 
+    referenceImagePageContent = referenceImagePageContent.replace("<td style=\"overflow:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>",
                                                                   "<td>" + htmlTooltip + "</td>")
 
     with open(docsMainFolder + "/" + referenceImagePage, 'w') as referenceImagePageHandle:
@@ -90,14 +90,14 @@ print(scriptName + ": Generate tooltips")
 Generate a HTML tooltip for each markdown page
 """
 for folder in folders:
-    folder = folder.split("\\")[-1]  
+    folder = folder.split("\\")[-1]
 
     files = sorted(filter(os.path.isfile, glob.glob(parameterDocsFolder + "/" + folder + '/*')))
 
     if folder == "img":
         for file in files:
             shutil.copy2(file, docsMainFolder + "/")
-    
+
     else:
         for file in files:
             if not ".md" in file: # Skip non-markdown files

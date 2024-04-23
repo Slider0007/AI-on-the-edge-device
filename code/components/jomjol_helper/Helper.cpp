@@ -118,7 +118,7 @@ bool MakeDir(std::string path)
                 //Done!
                 bSuccess = true;
                 break;
-				
+
             default:
 				LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create folder: " + path + " (errno: " + std::to_string(errno) + ")");
                 bSuccess = false;
@@ -222,7 +222,7 @@ bool FileExists(std::string filename)
 		return false;
 	}
 	fclose(fpSourceFile);
-	return true;    
+	return true;
 }
 
 
@@ -239,7 +239,7 @@ bool DeleteFile(std::string fn)
 	fclose(fpSourceFile);
 
 	unlink(fn.c_str());
-	return true;    
+	return true;
 }
 
 
@@ -353,7 +353,7 @@ int mkdir_r(const char *dir, const mode_t mode) {
     char *p = NULL;
     struct stat sb;
     size_t len;
-    
+
     /* copy path */
     len = strnlen(dir, FILE_PATH_MAX);
     if (len == 0 || len == FILE_PATH_MAX) {
@@ -373,7 +373,7 @@ int mkdir_r(const char *dir, const mode_t mode) {
             return 0;
         }
     }
-    
+
     /* recursive mkdir */
     for(p = tmp + 1; *p; p++) {
         if(*p == '/') {
@@ -409,7 +409,7 @@ std::string toUpper(std::string in)
 {
 	for (int i = 0; i < in.length(); ++i)
 		in[i] = toupper(in[i]);
-	
+
 	return in;
 }
 
@@ -418,7 +418,7 @@ std::string toLower(std::string in)
 {
 	for (int i = 0; i < in.length(); ++i)
 		in[i] = tolower(in[i]);
-	
+
 	return in;
 }
 
@@ -457,7 +457,7 @@ int removeFolder(const char* folderPath, const char* logTag) {
 		}
     }
     closedir(dir);
-	
+
 	if (rmdir(folderPath) != 0) {
 		LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to delete folder " + std::string(folderPath));
 	}
@@ -485,7 +485,7 @@ void deleteAllFilesInDirectory(std::string _directory)
                 filename = _directory + "/" + std::string(entry->d_name);
                 LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Delete file: " + filename);
                 /* Delete file */
-                unlink(filename.c_str());    
+                unlink(filename.c_str());
             }
         }
     }
@@ -509,16 +509,16 @@ std::vector<std::string> HelperZerlegeZeile(std::string input, std::string _deli
 std::vector<std::string> ZerlegeZeile(std::string input, std::string delimiter)
 {
 	std::vector<std::string> Output;
-	/* The input can have multiple formats: 
+	/* The input can have multiple formats:
 	 *  - key = value
      *  - key = value1 value2 value3 ...
      *  - key value1 value2 value3 ...
-	 *  
+	 *
 	 * Examples:
 	 *  - ImageSize = VGA
-	 *  - IO0 = input disabled 10 false false 
+	 *  - IO0 = input disabled 10 false false
 	 *  - main.dig1 28 144 55 100 false
-	 * 
+	 *
 	 * This causes issues eg. if a password key has a whitespace or equal sign in its value.
 	 * As a workaround and to not break any legacy usage, we enforce to only use the
 	 * equal sign, if the key is "password"
@@ -562,10 +562,10 @@ std::string ReplaceString(std::string subject, const std::string& search,
 std::string to_stringWithPrecision(const double _value, int _decPlace = 6)
 {
 	std::ostringstream out;
-	
+
 	if (_decPlace < 0)
 		_decPlace = 0;
-	
+
     out.precision(_decPlace);
     out << std::fixed << _value;
     return out.str();
@@ -590,7 +590,7 @@ std::string getFormatedUptime(bool compact)
     int hours = int(floor((uptime - days * 3600*24) / (3600)));
     int minutes = int(floor((uptime - days * 3600*24 - hours * 3600) / (60)));
     int seconds = uptime - days * 3600*24 - hours * 3600 - minutes * 60;
-    
+
 	if (compact) {
 		snprintf(buf, sizeof(buf), "%dd%02dh%02dm%02ds", days, hours, minutes, seconds);
 	}
@@ -604,7 +604,7 @@ std::string getFormatedUptime(bool compact)
 
 const char* get404(void)
 {
-    return 
+    return
 "<pre>\n\n\n\n"
 "        _\n"
 "    .__(.)< ( oh oh! This page does not exist! )\n"
@@ -681,14 +681,14 @@ bool isInString(std::string& s, std::string const& toFind)
 
 std::vector<std::string> splitString(const std::string& str) {
     std::vector<std::string> tokens;
- 
+
     std::stringstream ss(str);
     std::string token;
 
     while (std::getline(ss, token, '\n')) {
         tokens.push_back(token);
     }
- 
+
     return tokens;
 }
 

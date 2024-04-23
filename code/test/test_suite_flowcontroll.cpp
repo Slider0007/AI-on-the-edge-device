@@ -32,23 +32,23 @@ esp_err_t initSDCard();
 
 
 /**
- * @brief Startup the test. Like a test-suite 
+ * @brief Startup the test. Like a test-suite
  * all test methods must be called here
  */
 void task_UnityTesting(void *pvParameter)
 {
     vTaskDelay( 5000 / portTICK_PERIOD_MS ); // 5s delay to ensure established serial connection
-    
+
     UNITY_BEGIN();
         printf("BEGIN TESTING -------------------------------------------------------------\n");
         RUN_TEST(test_getReadoutRawString);
         printf("---------------------------------------------------------------------------\n");
-        
+
         RUN_TEST(test_EvalAnalogNumber);
         printf("---------------------------------------------------------------------------\n");
         RUN_TEST(test_EvalDigitNumber);
         printf("---------------------------------------------------------------------------\n");
-        
+
         RUN_TEST(testNegative_Issues);
         printf("---------------------------------------------------------------------------\n");
         RUN_TEST(testNegative);
@@ -87,7 +87,7 @@ extern "C" void app_main()
         ESP_LOGE(TAG, "Device init aborted");
         return; // Stop here, NVS is needed for proper operation
     }
-    
+
     // Init SD card
     // ********************************************
     if (ESP_OK != initSDCard()) {
@@ -125,11 +125,11 @@ esp_err_t initNVSFlash()
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
-    
+
     if (ret != ESP_OK) {
         if (ret == ESP_ERR_NOT_FOUND) {
             ESP_LOGE(TAG, "NVS flash init failed. No NVS partition found");
-        } 
+        }
         else if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
             ESP_LOGE(TAG, "NVS flash init failed. No free NVS pages found");
         }
@@ -137,7 +137,7 @@ esp_err_t initNVSFlash()
             ESP_LOGE(TAG, "NVS flash init failed. Check error code");
         }
     }
-    
+
     return ret;
 }
 
@@ -184,7 +184,7 @@ esp_err_t initSDCard()
     // formatted in case when mounting fails.
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
-        .max_files = 12,                         // previously -> 2022-09-21: 5, 2023-01-02: 7 
+        .max_files = 12,                         // previously -> 2022-09-21: 5, 2023-01-02: 7
         .allocation_unit_size = 16 * 1024,
         .disk_status_check_enable = 0
     };
@@ -200,7 +200,7 @@ esp_err_t initSDCard()
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
             ESP_LOGE(TAG, "Failed to mount FAT filesystem on SD card. Check SD card filesystem (only FAT supported) or try another card");
-        } 
+        }
         else if (ret == 263) { // Error code: 0x107 --> usually: SD not found
             ESP_LOGE(TAG, "SD card init failed. Check if SD card is properly inserted into SD card slot or try another card");
         }

@@ -18,7 +18,7 @@
 static const char* TAG = "POSTPROC";
 
 
-//#define DEBUG_DETAIL_ON 
+//#define DEBUG_DETAIL_ON
 
 
 ClassFlowPostProcessing::ClassFlowPostProcessing(std::vector<ClassFlow*>* lfc, ClassFlowCNNGeneral *_analog, ClassFlowCNNGeneral *_digit)
@@ -62,7 +62,7 @@ void ClassFlowPostProcessing::handleDecimalExtendedResolution(std::string _decse
             else
                 NUMBERS[j]->isExtendedResolution = false;
 
-            #ifdef DEBUG_DETAIL_ON 
+            #ifdef DEBUG_DETAIL_ON
                 ESP_LOGI(TAG, "handleDecimalExtendedResolution: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), _pospunkt, NUMBERS[j]->isExtendedResolution);
             #endif
         }
@@ -84,8 +84,8 @@ void ClassFlowPostProcessing::handleDecimalShift(std::string _decsep, std::strin
         if (_digit == "default" || NUMBERS[j]->name == _digit) {
             NUMBERS[j]->decimalShift = stoi(_value);
 
-            #ifdef DEBUG_DETAIL_ON 
-                ESP_LOGI(TAG, "handleDecimalShift: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), 
+            #ifdef DEBUG_DETAIL_ON
+                ESP_LOGI(TAG, "handleDecimalShift: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(),
                             _pospunkt, NUMBERS[j]->decimalShift);
             #endif
         }
@@ -103,12 +103,12 @@ void ClassFlowPostProcessing::handleAnalogDigitalTransitionStart(std::string _de
     else
         _digit = "default";
 
-    for (int j = 0; j < NUMBERS.size(); ++j) {    
-        if (_digit == "default" || NUMBERS[j]->name == _digit) { 
+    for (int j = 0; j < NUMBERS.size(); ++j) {
+        if (_digit == "default" || NUMBERS[j]->name == _digit) {
             NUMBERS[j]->analogDigitalTransitionStart = (int) (stof(_value) * 10);
 
-            #ifdef DEBUG_DETAIL_ON 
-                ESP_LOGI(TAG, "handleAnalogDigitalTransitionStart: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), 
+            #ifdef DEBUG_DETAIL_ON
+                ESP_LOGI(TAG, "handleAnalogDigitalTransitionStart: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(),
                             _pospunkt, NUMBERS[j]->analogDigitalTransitionStart/10.0);
             #endif
         }
@@ -133,13 +133,13 @@ void ClassFlowPostProcessing::handleAllowNegativeRate(std::string _decsep, std::
             }
             else {
                 NUMBERS[j]->allowNegativeRates = false;
-                
+
                 if (!UseFallbackValue) // Fallback Value is mandatory to evaluate negative rates
-                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use negative rate evaluation"); 
+                    LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use negative rate evaluation");
             }
 
-            #ifdef DEBUG_DETAIL_ON 
-                ESP_LOGI(TAG, "handleAllowNegativeRate: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(), 
+            #ifdef DEBUG_DETAIL_ON
+                ESP_LOGI(TAG, "handleAllowNegativeRate: Name: %s, Pospunkt: %d, value: %d", _digit.c_str(),
                             _pospunkt, NUMBERS[j]->allowNegativeRates);
             #endif
         }
@@ -173,10 +173,10 @@ void ClassFlowPostProcessing::handleMaxRateType(std::string _decsep, std::string
             }
 
             if (NUMBERS[j]->useMaxRateValue && !UseFallbackValue) // Fallback Value is mandatory to evaluate rate limits
-                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use rate limit evaluation"); 
+                LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Activate parameter \'Use Fallback Value\' to use rate limit evaluation");
 
-            #ifdef DEBUG_DETAIL_ON 
-                ESP_LOGI(TAG, "handleMaxRateType: Name: %s, Pospunkt: %d, rateType: %d", _digit.c_str(), 
+            #ifdef DEBUG_DETAIL_ON
+                ESP_LOGI(TAG, "handleMaxRateType: Name: %s, Pospunkt: %d, rateType: %d", _digit.c_str(),
                             _pospunkt, NUMBERS[j]->rateType);
             #endif
         }
@@ -193,13 +193,13 @@ void ClassFlowPostProcessing::handleMaxRateValue(std::string _decsep, std::strin
         _digit = _decsep.substr(0, _pospunkt);
     else
         _digit = "default";
-    
+
     for (int j = 0; j < NUMBERS.size(); ++j) {
         if (_digit == "default" || NUMBERS[j]->name == _digit) {
             NUMBERS[j]->maxRateValue = stof(_value);
 
-            #ifdef DEBUG_DETAIL_ON 
-                ESP_LOGI(TAG, "handleMaxRateValue: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(), 
+            #ifdef DEBUG_DETAIL_ON
+                ESP_LOGI(TAG, "handleMaxRateValue: Name: %s, Pospunkt: %d, value: %f", _digit.c_str(),
                         _pospunkt, NUMBERS[j]->maxRateValue);
             #endif
         }
@@ -253,8 +253,8 @@ bool ClassFlowPostProcessing::ReadParameter(FILE* pfile, std::string& aktparamgr
                     NUMBERS[j]->checkDigitIncreaseConsistency = false;
                 }
             }
-        } 
-        
+        }
+
         if ((toUpper(_param) == "ALLOWNEGATIVERATES") && (splitted.size() > 1)) {
             handleAllowNegativeRate(splitted[0], splitted[1]);
         }
@@ -334,7 +334,7 @@ void ClassFlowPostProcessing::InitNUMBERS()
         flowAnalog->UpdateNameNumbers(&name_numbers);
     }
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "Anzahl NUMBERS: %d - DIGITS: %d, ANALOG: %d", name_numbers.size(), anzDIGIT, anzANALOG);
     #endif
 
@@ -343,11 +343,11 @@ void ClassFlowPostProcessing::InitNUMBERS()
         NumberPost *_number = new NumberPost;
 
         _number->name = name_numbers[_num];
-        
+
         _number->digit_roi = NULL;
         if (flowDigit)
             _number->digit_roi = flowDigit->FindGENERAL(name_numbers[_num]);
-        
+
         if (_number->digit_roi)
             _number->digitCount = _number->digit_roi->ROI.size();
         else
@@ -379,14 +379,14 @@ void ClassFlowPostProcessing::InitNUMBERS()
         _number->isFallbackValueValid = false;
 
         _number->ratePerMin = 0;
-        _number->ratePerInterval = 0; 
+        _number->ratePerInterval = 0;
         _number->fallbackValue = 0;
         _number->actualValue = 0;
 
         _number->sRatePerMin = "";
         _number->sRatePerInterval = "";
         _number->sRawValue = "";
-        _number->sFallbackValue = "";   
+        _number->sFallbackValue = "";
         _number->sActualValue = "";
         _number->sValueStatus = "";
 
@@ -394,8 +394,8 @@ void ClassFlowPostProcessing::InitNUMBERS()
     }
 
     for (int i = 0; i < NUMBERS.size(); ++i) {
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Number sequence: " + NUMBERS[i]->name + 
-                                                ", Digits: " + std::to_string(NUMBERS[i]->digitCount) + 
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Number sequence: " + NUMBERS[i]->name +
+                                                ", Digits: " + std::to_string(NUMBERS[i]->digitCount) +
                                                 ", Analogs: " + std::to_string(NUMBERS[i]->analogCount));
     }
 }
@@ -416,10 +416,10 @@ void ClassFlowPostProcessing::setDecimalShift()
         else if (!NUMBERS[j]->digit_roi && NUMBERS[j]->analog_roi) {
             if (NUMBERS[j]->isExtendedResolution && flowAnalog->CNNTypeWithExtendedResolution())
                 NUMBERS[j]->decimalShift -= 1;
-            
+
             NUMBERS[j]->decimalPlaceCount = -1*(NUMBERS[j]->decimalShift);
         }
-        // Digit numbers & analog pointer available 
+        // Digit numbers & analog pointer available
         else if (NUMBERS[j]->digit_roi && NUMBERS[j]->analog_roi) {
             NUMBERS[j]->decimalPlaceCount = NUMBERS[j]->analogCount - NUMBERS[j]->decimalShift;
 
@@ -427,7 +427,7 @@ void ClassFlowPostProcessing::setDecimalShift()
                 NUMBERS[j]->decimalPlaceCount += 1;
         }
 
-        #ifdef DEBUG_DETAIL_ON 
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "setDecimalShift: Sequence %i, decimalPlace %i, DecShift %i", j, NUMBERS[j]->decimalPlaceCount, NUMBERS[j]->decimalShift);
         #endif
     }
@@ -449,7 +449,7 @@ std::string ClassFlowPostProcessing::ShiftDecimal(std::string _value, int _decSh
     else {
         _value = _value.erase(_pos_dec_org, 1);
     }
-    
+
     _pos_dec_new = _pos_dec_org + _decShift;
 
     if (_pos_dec_new <= 0) {        // comma is before the first digit
@@ -463,8 +463,8 @@ std::string ClassFlowPostProcessing::ShiftDecimal(std::string _value, int _decSh
     if (_pos_dec_new > _value.length()){    // Comma should be after string (123 --> 1230)
         for (int i = _value.length(); i < _pos_dec_new; ++i){
             _value = _value.insert(_value.length(), "0");
-        }  
-        return _value;      
+        }
+        return _value;
     }
 
     std::string zw;
@@ -485,7 +485,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
     if (_timeProcessed == 0)
         time(&_timeProcessed);
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "Quantity of number sequences: %d", NUMBERS.size());
     #endif
 
@@ -497,7 +497,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         NUMBERS[j]->isActualValueConfirmed = true;
 
         /* Process analog numbers of sequence */
-        if (NUMBERS[j]->analog_roi) {      
+        if (NUMBERS[j]->analog_roi) {
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "doFlow: Get analog numbers");
             NUMBERS[j]->sRawValue = flowAnalog->getReadout(j, NUMBERS[j]->isExtendedResolution);
 
@@ -507,7 +507,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
             }
         }
 
-        #ifdef DEBUG_DETAIL_ON 
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "After analog->getReadout: RawValue %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
@@ -519,29 +519,29 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         if (NUMBERS[j]->digit_roi) {
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "doFlow: Get digit numbers");
             if (NUMBERS[j]->analog_roi) // If analog numbers available
-                NUMBERS[j]->sRawValue = flowDigit->getReadout(j, false, NUMBERS[j]->analog_roi->ROI[0]->CNNResult, resultPreviousNumberAnalog, 
+                NUMBERS[j]->sRawValue = flowDigit->getReadout(j, false, NUMBERS[j]->analog_roi->ROI[0]->CNNResult, resultPreviousNumberAnalog,
                                                                     NUMBERS[j]->analogDigitalTransitionStart) + NUMBERS[j]->sRawValue;
             else
                 NUMBERS[j]->sRawValue = flowDigit->getReadout(j, NUMBERS[j]->isExtendedResolution); // Extended resolution for digits only if no analog previous number
         }
 
-        #ifdef DEBUG_DETAIL_ON 
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "After digital->getReadout: RawValue %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
         /* Apply parametrized decimal shift */
         NUMBERS[j]->sRawValue = ShiftDecimal(NUMBERS[j]->sRawValue, NUMBERS[j]->decimalShift);
 
-        #ifdef DEBUG_DETAIL_ON 
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "After ShiftDecimal: RawValue %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
         /* Remove leading N */
-        if (IgnoreLeadingNaN)               
+        if (IgnoreLeadingNaN)
             while ((NUMBERS[j]->sRawValue.length() > 1) && (NUMBERS[j]->sRawValue[0] == 'N'))
                 NUMBERS[j]->sRawValue.erase(0, 1);
 
-        #ifdef DEBUG_DETAIL_ON 
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "After IgnoreLeadingNaN: RawValue %s", NUMBERS[j]->sRawValue.c_str());
         #endif
 
@@ -552,7 +552,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         if (findDelimiterPos(NUMBERS[j]->sActualValue, "N") != std::string::npos) {
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Substitude N positions for number sequence: " + NUMBERS[j]->name);
             if (UseFallbackValue && NUMBERS[j]->isFallbackValueValid) { // fallbackValue can be used to replace the N
-                NUMBERS[j]->sActualValue = SubstitudeN(NUMBERS[j]->sActualValue, NUMBERS[j]->fallbackValue); 
+                NUMBERS[j]->sActualValue = SubstitudeN(NUMBERS[j]->sActualValue, NUMBERS[j]->fallbackValue);
             }
             else { // fallbackValue not valid to replace any N
                 if (!UseFallbackValue)
@@ -567,7 +567,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 NUMBERS[j]->sActualValue = "";
                 NUMBERS[j]->isActualValueANumber = false;
                 NUMBERS[j]->isActualValueConfirmed = false;
-      
+
                 LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Sequence: " + NUMBERS[j]->name + ": Status: " + NUMBERS[j]->sValueStatus);
 
                 WriteDataLog(j);
@@ -575,22 +575,22 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
             }
         }
 
-        #ifdef DEBUG_DETAIL_ON 
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "After SubstitudeN: ActualValue %s", NUMBERS[j]->sActualValue.c_str());
         #endif
 
         /* Delete leading zeros (unless there is only one 0 left) */
         while ((NUMBERS[j]->sActualValue.length() > 1) && (NUMBERS[j]->sActualValue[0] == '0'))
             NUMBERS[j]->sActualValue.erase(0, 1);
-        
-        #ifdef DEBUG_DETAIL_ON 
+
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "After removeLeadingZeros: ActualValue %s", NUMBERS[j]->sActualValue.c_str());
         #endif
 
         /* Convert actual value to double interpretation */
         NUMBERS[j]->actualValue = std::stod(NUMBERS[j]->sActualValue);
 
-        #ifdef DEBUG_DETAIL_ON 
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "After converting to double: sActualValue: %s, actualValue: %f", NUMBERS[j]->sActualValue.c_str(), NUMBERS[j]->actualValue);
         #endif
 
@@ -609,19 +609,19 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 if (NUMBERS[j]->checkDigitIncreaseConsistency) {
                     if (flowDigit) {
                         if (flowDigit->getCNNType() != Digital)
-                            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models"); 
+                            LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models");
                         else {
                             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Check digit increase consistency for number sequence: " + NUMBERS[j]->name);
-                            NUMBERS[j]->actualValue = checkDigitConsistency(NUMBERS[j]->actualValue, NUMBERS[j]->decimalShift, 
+                            NUMBERS[j]->actualValue = checkDigitConsistency(NUMBERS[j]->actualValue, NUMBERS[j]->decimalShift,
                                                                             NUMBERS[j]->analog_roi != NULL, NUMBERS[j]->fallbackValue);
                         }
                     }
                     else {
-                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, no digit numbers configured"); 
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, no digit numbers configured");
                     }
                 }
 
-                #ifdef DEBUG_DETAIL_ON 
+                #ifdef DEBUG_DETAIL_ON
                     ESP_LOGI(TAG, "After checkDigitIncreaseConsistency: actualValue %f", NUMBERS[j]->actualValue);
                 #endif
 
@@ -636,10 +636,10 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     NUMBERS[j]->ratePerMin = 0;
                     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Rate calculation skipped, time delta between now and fallback value timestamp is zero");
                 }
-                
+
                 NUMBERS[j]->ratePerInterval = NUMBERS[j]->actualValue - NUMBERS[j]->fallbackValue;
 
-                double RatePerSelection;  
+                double RatePerSelection;
                     if (NUMBERS[j]->rateType == rtRatePerMin)
                         RatePerSelection = NUMBERS[j]->ratePerMin;
                     else
@@ -651,7 +651,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     if (abs(RatePerSelection) > abs((double)NUMBERS[j]->maxRateValue)) {
                         if (RatePerSelection < 0) {
                             NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_003_RATE_TOO_HIGH_NEG);
-                            
+
                             /* Update timestamp of fallback value to be prepared to identify next negative movement larger than max. rate threshold (diagnostic purpose) */
                             NUMBERS[j]->timeFallbackValue = NUMBERS[j]->timeProcessed;
                             NUMBERS[j]->sTimeFallbackValue = ConvertTimeToString(NUMBERS[j]->timeFallbackValue, TIME_FORMAT_OUTPUT);
@@ -660,17 +660,17 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                             NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_004_RATE_TOO_HIGH_POS);
                         }
 
-                        NUMBERS[j]->sValueStatus += " | Value: " + to_stringWithPrecision(NUMBERS[j]->actualValue, NUMBERS[j]->decimalPlaceCount) + 
-                                                    ", Fallback: " + NUMBERS[j]->sFallbackValue + 
+                        NUMBERS[j]->sValueStatus += " | Value: " + to_stringWithPrecision(NUMBERS[j]->actualValue, NUMBERS[j]->decimalPlaceCount) +
+                                                    ", Fallback: " + NUMBERS[j]->sFallbackValue +
                                                     ", Rate: " + to_stringWithPrecision(RatePerSelection, NUMBERS[j]->decimalPlaceCount);
-                         
-                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Sequence: " + NUMBERS[j]->name + ", Status: " + NUMBERS[j]->sValueStatus);           
+
+                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Sequence: " + NUMBERS[j]->name + ", Status: " + NUMBERS[j]->sValueStatus);
                         NUMBERS[j]->isActualValueConfirmed = false;
                         setFlowStateHandlerEvent(1); // Set warning event code for post cycle error handler 'doPostProcessEventHandling' (only warning level)
                     }
                 }
 
-                #ifdef DEBUG_DETAIL_ON 
+                #ifdef DEBUG_DETAIL_ON
                     ESP_LOGI(TAG, "After MaxRateCheck: actualValue %f", NUMBERS[j]->actualValue);
                 #endif
 
@@ -678,9 +678,9 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 if (!NUMBERS[j]->allowNegativeRates && NUMBERS[j]->isActualValueConfirmed) {
                     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Negative rate check for number sequence: " + NUMBERS[j]->name);
                     if (NUMBERS[j]->actualValue < NUMBERS[j]->fallbackValue) {
-                        NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_002_RATE_NEGATIVE);  
+                        NUMBERS[j]->sValueStatus  = std::string(VALUE_STATUS_002_RATE_NEGATIVE);
 
-                        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + NUMBERS[j]->name + ", Status: " + NUMBERS[j]->sValueStatus + 
+                        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + NUMBERS[j]->name + ", Status: " + NUMBERS[j]->sValueStatus +
                                                                 " | Value: " + std::to_string(NUMBERS[j]->actualValue) +
                                                                 ", Fallback: " + std::to_string(NUMBERS[j]->fallbackValue) +
                                                                 ", Rate: " + to_stringWithPrecision(RatePerSelection, NUMBERS[j]->decimalPlaceCount));
@@ -692,7 +692,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     }
                 }
 
-                #ifdef DEBUG_DETAIL_ON 
+                #ifdef DEBUG_DETAIL_ON
                     ESP_LOGI(TAG, "After allowNegativeRates: actualValue %f", NUMBERS[j]->actualValue);
                 #endif
             }
@@ -706,13 +706,13 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
             if (NUMBERS[j]->isActualValueANumber && NUMBERS[j]->isActualValueConfirmed) { // Value of actual reading is valid
                 // Save value as fallback value
                 NUMBERS[j]->fallbackValue = NUMBERS[j]->actualValue;
-                NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount);     
+                NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount);
                 NUMBERS[j]->timeFallbackValue = NUMBERS[j]->timeProcessed;
                 NUMBERS[j]->sTimeFallbackValue = ConvertTimeToString(NUMBERS[j]->timeFallbackValue, TIME_FORMAT_OUTPUT);
                 NUMBERS[j]->isFallbackValueValid = true;
                 UpdateFallbackValue = true;
 
-                NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID); 
+                NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID);
             }
             else { // Value of actual reading is invalid, use fallback value and froce rates to zero
                 NUMBERS[j]->ratePerMin = 0;
@@ -725,7 +725,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
             NUMBERS[j]->ratePerInterval = 0;
             NUMBERS[j]->fallbackValue = 0;
             NUMBERS[j]->sFallbackValue = "";
-            NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID); 
+            NUMBERS[j]->sValueStatus = std::string(VALUE_STATUS_000_VALID);
         }
 
         /* Write output values */
@@ -734,8 +734,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         NUMBERS[j]->sActualValue = to_stringWithPrecision(NUMBERS[j]->actualValue, NUMBERS[j]->decimalPlaceCount);
 
         /* Write log file entry */
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": Value: " + NUMBERS[j]->sActualValue + 
-                                                                  ", Rate per min: " + NUMBERS[j]->sRatePerMin + 
+        LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": Value: " + NUMBERS[j]->sActualValue +
+                                                                  ", Rate per min: " + NUMBERS[j]->sRatePerMin +
                                                                   ", Status: " + NUMBERS[j]->sValueStatus);
 
         WriteDataLog(j);
@@ -745,7 +745,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
     if (!FlowState.isSuccessful) // Return false if any error detected
         return false;
-    
+
     return true;
 }
 
@@ -760,13 +760,13 @@ void ClassFlowPostProcessing::doPostProcessEventHandling()
             time(&actualtime);
 
             // Define path, e.g. /sdcard/log/debug/20230814/20230814-125528/ClassFlowPostProcessing
-            std::string destination = std::string(LOG_DEBUG_ROOT_FOLDER) + "/" + getFlowState()->ExecutionTime.DEFAULT_TIME_FORMAT_DATE_EXTR + "/" + 
+            std::string destination = std::string(LOG_DEBUG_ROOT_FOLDER) + "/" + getFlowState()->ExecutionTime.DEFAULT_TIME_FORMAT_DATE_EXTR + "/" +
                                         getFlowState()->ExecutionTime + "/" + getFlowState()->ClassName;
 
             if (!MakeDir(destination))
                 return;
 
-            for (int j = 0; j < NUMBERS.size(); ++j) {       
+            for (int j = 0; j < NUMBERS.size(); ++j) {
                 std::string resultFileName = "/" + NUMBERS[j]->name + "_rate_too_high.txt";
 
                 // Save result in file
@@ -778,17 +778,17 @@ void ClassFlowPostProcessing::doPostProcessEventHandling()
                 if (NUMBERS[j]->digit_roi)
                     for (int i = 0; i < NUMBERS[j]->digit_roi->ROI.size(); ++i)
                         NUMBERS[j]->digit_roi->ROI[i]->image_org->SaveToFile(destination + "/" +
-                                    to_stringWithPrecision(NUMBERS[j]->digit_roi->ROI[i]->CNNResult/10.0, 1) + 
+                                    to_stringWithPrecision(NUMBERS[j]->digit_roi->ROI[i]->CNNResult/10.0, 1) +
                                     "_" + NUMBERS[j]->name + "_dig" + std::to_string(i+1) + ".jpg");
 
                 // Save analog ROIs
                 if (NUMBERS[j]->analog_roi)
                     for (int i = 0; i < NUMBERS[j]->analog_roi->ROI.size(); ++i)
                         NUMBERS[j]->analog_roi->ROI[i]->image_org->SaveToFile(destination + "/" +
-                                        to_stringWithPrecision(NUMBERS[j]->analog_roi->ROI[i]->CNNResult/10.0, 1) + 
+                                        to_stringWithPrecision(NUMBERS[j]->analog_roi->ROI[i]->CNNResult/10.0, 1) +
                                         "_" + NUMBERS[j]->name + "_ana" + std::to_string(i+1) + ".jpg");
             }
-            
+
             LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Rate too high, debug infos saved: " + destination);
         }
     }
@@ -800,24 +800,24 @@ void ClassFlowPostProcessing::WriteDataLog(int _index)
     if (!LogFile.GetDataLogToSD()) {
         return;
     }
-    
+
     std::string analog = "";
     std::string digital = "";
-    
+
     if (flowAnalog)
         analog = flowAnalog->getReadoutRawString(_index);
-    
+
     if (flowDigit)
         digital = flowDigit->getReadoutRawString(_index);
-    
-    LogFile.WriteToData(NUMBERS[_index]->sTimeProcessed, NUMBERS[_index]->name, 
-                        NUMBERS[_index]->sRawValue, NUMBERS[_index]->sActualValue, NUMBERS[_index]->sFallbackValue, 
+
+    LogFile.WriteToData(NUMBERS[_index]->sTimeProcessed, NUMBERS[_index]->name,
+                        NUMBERS[_index]->sRawValue, NUMBERS[_index]->sActualValue, NUMBERS[_index]->sFallbackValue,
                         NUMBERS[_index]->sRatePerMin, NUMBERS[_index]->sRatePerInterval,
-                        NUMBERS[_index]->sValueStatus.substr(0,3), 
+                        NUMBERS[_index]->sValueStatus.substr(0,3),
                         digital, analog);
-    
-    #ifdef DEBUG_DETAIL_ON 
-        ESP_LOGI(TAG, "WriteDataLog: %s, %s, %s, %s, %s", NUMBERS[_index]->sRawValue.c_str(), NUMBERS[_index]->sActualValue.c_str(), 
+
+    #ifdef DEBUG_DETAIL_ON
+        ESP_LOGI(TAG, "WriteDataLog: %s, %s, %s, %s, %s", NUMBERS[_index]->sRawValue.c_str(), NUMBERS[_index]->sActualValue.c_str(),
                             NUMBERS[_index]->sValueStatus.substr(0,3).c_str(), digital.c_str(), analog.c_str());
     #endif
 }
@@ -867,7 +867,7 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decilams
     {
         pot++;
     }
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         ESP_LOGD(TAG, "checkDigitConsistency: pot=%d, decimalShift=%d", pot, _decilamshift);
     #endif
     pot_max = ((int) log10(input)) + 1;
@@ -887,7 +887,7 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decilams
 
         if (no_nulldurchgang)
         {
-            if (aktdigit != olddigit) 
+            if (aktdigit != olddigit)
             {
                 input = input + ((float) (olddigit - aktdigit)) * pow(10, pot);     // New Digit is replaced by old Digit;
             }
@@ -899,7 +899,7 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decilams
                 input = input + ((float) (1)) * pow(10, pot);   // add 1 at the point
             }
         }
-        #ifdef DEBUG_DETAIL_ON 
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGD(TAG, "checkDigitConsistency: input=%f", input);
         #endif
         pot++;
@@ -915,7 +915,7 @@ std::string ClassFlowPostProcessing::GetFallbackValue(std::string _number)
     int index = -1;
 
     if (_number == "")
-        _number = "default"; 
+        _number = "default";
 
     for (int i = 0; i < NUMBERS.size(); ++i)
         if (NUMBERS[i]->name == _number)
@@ -932,7 +932,7 @@ std::string ClassFlowPostProcessing::GetFallbackValue(std::string _number)
 
 bool ClassFlowPostProcessing::SetFallbackValue(double _newvalue, std::string _numbersname)
 {
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "SetFallbackValue: %f, %s", _newvalue, _numbersname.c_str());
     #endif
 
@@ -965,7 +965,7 @@ bool ClassFlowPostProcessing::SetFallbackValue(double _newvalue, std::string _nu
             return true;
         }
     }
-    
+
     LogFile.WriteToFile(ESP_LOG_WARN, TAG, "SetFallbackValue: Numbersname not found or not valid");
     return false;   // No new value was set (e.g. wrong numbersname, no numbers at all)
 }
@@ -1046,12 +1046,12 @@ bool ClassFlowPostProcessing::LoadFallbackValue(void)
             }
         }
 
-        #ifdef DEBUG_DETAIL_ON 
+        #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "LoadFallbackValue: Sequence: %s, Time: %s, Value: %s", cName, cTime, cValue);
         #endif
 
         for (int j = 0; j < NUMBERS.size(); ++j)
-        {           
+        {
             if ((NUMBERS[j]->name).compare(std::string(cName)) == 0)
             {
                 time_t tStart;
@@ -1085,7 +1085,7 @@ bool ClassFlowPostProcessing::LoadFallbackValue(void)
                 }
                 else {
                     NUMBERS[j]->fallbackValue = stod(std::string(cValue));
-                    NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount + 1); // To be on the safe side, keep one digit more 
+                    NUMBERS[j]->sFallbackValue = to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount + 1); // To be on the safe side, keep one digit more
                     NUMBERS[j]->isFallbackValueValid = true;
                     LogFile.WriteToFile(ESP_LOG_INFO, TAG, NUMBERS[j]->name + ": Fallback value valid | Time: " + std::string(cTime));
                 }
@@ -1093,17 +1093,17 @@ bool ClassFlowPostProcessing::LoadFallbackValue(void)
         }
     }
     nvs_close(fallbackvalue_nvshandle);
-    
+
     return true;
 }
 
 
 bool ClassFlowPostProcessing::SaveFallbackValue()
-{ 
+{
     if (!UpdateFallbackValue)         // fallbackValue unchanged
         return false;
-    
-    esp_err_t err = ESP_OK;    
+
+    esp_err_t err = ESP_OK;
     nvs_handle_t fallbackvalue_nvshandle;
 
     err = nvs_open("fallbackvalue", NVS_READWRITE, &fallbackvalue_nvshandle);
@@ -1119,12 +1119,12 @@ bool ClassFlowPostProcessing::SaveFallbackValue()
     }
 
     for (int j = 0; j < NUMBERS.size(); ++j)
-    {           
-        #ifdef DEBUG_DETAIL_ON 
-            ESP_LOGI(TAG, "SaveFallbackValue: Sequence: %s, Time: %s, Value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->sTimeFallbackValue).c_str(), 
+    {
+        #ifdef DEBUG_DETAIL_ON
+            ESP_LOGI(TAG, "SaveFallbackValue: Sequence: %s, Time: %s, Value: %s", (NUMBERS[j]->name).c_str(), (NUMBERS[j]->sTimeFallbackValue).c_str(),
                         (to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount)).c_str());
         #endif
-        
+
         err = nvs_set_str(fallbackvalue_nvshandle, ("name" + std::to_string(j)).c_str(), (NUMBERS[j]->name).c_str());
         if (err != ESP_OK) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: nvs_set_str name - error code: " + std::to_string(err));
@@ -1135,7 +1135,7 @@ bool ClassFlowPostProcessing::SaveFallbackValue()
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: nvs_set_str timestamp - error code: " + std::to_string(err));
             return false;
         }
-        err = nvs_set_str(fallbackvalue_nvshandle, ("value" + std::to_string(j)).c_str(), 
+        err = nvs_set_str(fallbackvalue_nvshandle, ("value" + std::to_string(j)).c_str(),
                             (to_stringWithPrecision(NUMBERS[j]->fallbackValue, NUMBERS[j]->decimalPlaceCount)).c_str());
         if (err != ESP_OK) {
             LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "SaveFallbackValue: nvs_set_str fallbackvalue - error code: " + std::to_string(err));
@@ -1165,10 +1165,10 @@ std::string ClassFlowPostProcessing::getReadoutParam(bool _rawValue, bool _noerr
 {
     if (_rawValue)
         return NUMBERS[_number]->sRawValue;
-    
+
     if (_noerror)
         return NUMBERS[_number]->sActualValue;
-    
+
     return NUMBERS[_number]->sActualValue;
 }
 
@@ -1185,7 +1185,7 @@ std::string ClassFlowPostProcessing::getReadoutTimeStamp(int _number)
 }
 
 
-std::string ClassFlowPostProcessing::getReadoutStatus(int _number) 
+std::string ClassFlowPostProcessing::getReadoutStatus(int _number)
 {
     return NUMBERS[_number]->sValueStatus;
 }
@@ -1215,7 +1215,7 @@ std::string ClassFlowPostProcessing::getNumbersName()
             ret = ret + "\t";
     }
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "Result ClassFlowPostProcessing::getNumbersName: %s", ret.c_str());
     #endif
 

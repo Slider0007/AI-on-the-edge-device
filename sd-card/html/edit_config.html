@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
 	<meta charset="UTF-8">
 	<title>Edit Config</title>
@@ -19,7 +19,7 @@
 		.button {
 			padding: 5px 10px;
 			width: 220px;
-			font-size: 16px;	
+			font-size: 16px;
 		}
 
 		textarea {
@@ -52,12 +52,12 @@
 	</table>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="common.js?v=$COMMIT_HASH"></script>
 <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-<script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
 <script>
 	var canvas = document.getElementById('canvas'),
-		domainname = getDomainname(); 
+		domainname = getDomainname();
 
 
 	function loadConfigData()
@@ -81,7 +81,7 @@
 		}
 	}
 
-	
+
 	function init()
 	{
 		loadConfig().then(() => loadConfigData());
@@ -91,6 +91,6 @@
 	init();
 
 </script>
- 
+
 </body>
 </html>

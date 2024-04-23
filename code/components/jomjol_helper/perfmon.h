@@ -20,4 +20,4 @@ esp_err_t perfmon_start();
 
 #endif /* COMPONENTS_PERFMON_INCLUDE_PERFMON_H_ */
 
-#endif //DEBUG_ENABLE_PERFMON 
+#endif //DEBUG_ENABLE_PERFMON

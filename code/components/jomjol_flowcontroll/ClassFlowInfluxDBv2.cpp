@@ -20,14 +20,14 @@ static const char* TAG = "INFLUXDBV2";
 void ClassFlowInfluxDBv2::SetInitialParameter(void)
 {
     presetFlowStateHandler(true);
-    flowpostprocessing = NULL;  
+    flowpostprocessing = NULL;
     previousElement = NULL;
     ListFlowControll = NULL;
 
     uri = "";
     bucket = "";
-    dborg = "";  
-    dbtoken = "";  
+    dborg = "";
+    dbtoken = "";
     TLSEncryption = false;
     TLSCACertFilename = "";
     TLSClientCertFilename = "";
@@ -35,7 +35,7 @@ void ClassFlowInfluxDBv2::SetInitialParameter(void)
 
     disabled = false;
     InfluxDBenable = false;
-}       
+}
 
 
 ClassFlowInfluxDBv2::ClassFlowInfluxDBv2()
@@ -87,7 +87,7 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if (!this->GetNextParagraph(pfile, aktparamgraph))
             return false;
 
-    if (toUpper(aktparamgraph).compare("[INFLUXDBV2]") != 0) 
+    if (toUpper(aktparamgraph).compare("[INFLUXDBV2]") != 0)
         return false;
 
     while (this->getNextLine(pfile, &aktparamgraph) && !this->isNewParagraph(aktparamgraph))
@@ -119,7 +119,7 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1))
         {
             if (toUpper(splitted[1]) == "TRUE")
-                TLSEncryption = true;  
+                TLSEncryption = true;
             else
                 TLSEncryption = false;
         }
@@ -128,7 +128,7 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         {
             TLSCACertFilename = "/sdcard" + splitted[1];
         }
-        
+
         if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1))
         {
             TLSClientCertFilename = "/sdcard" + splitted[1];
@@ -142,7 +142,7 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         if (((toUpper(_param) == "MEASUREMENT")) && (splitted.size() > 1))
         {
             handleMeasurement(splitted[0], splitted[1]);
-        }              
+        }
 
         if (((toUpper(_param) == "FIELD")) && (splitted.size() > 1))
         {
@@ -150,20 +150,20 @@ bool ClassFlowInfluxDBv2::ReadParameter(FILE* pfile, std::string& aktparamgraph)
         }
     }
 
-    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init: URI: " + uri + ", Bucket: " + bucket + ", Org: " + dborg + 
+    LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Init: URI: " + uri + ", Bucket: " + bucket + ", Org: " + dborg +
                         ", Token: *****, TLS Encryption: " + std::to_string(TLSEncryption));
 
-    if ((uri.length() > 0 && (uri != "undefined")) && (bucket.length() > 0) && (bucket != "undefined") && 
-        (dborg.length() > 0) && (dborg != "undefined") && (dbtoken.length() > 0) && (dbtoken != "undefined")) 
-    { 
-        InfluxDBenable = InfluxDBv2Init(uri, bucket, dborg, dbtoken, TLSEncryption, TLSCACertFilename, 
+    if ((uri.length() > 0 && (uri != "undefined")) && (bucket.length() > 0) && (bucket != "undefined") &&
+        (dborg.length() > 0) && (dborg != "undefined") && (dbtoken.length() > 0) && (dbtoken != "undefined"))
+    {
+        InfluxDBenable = InfluxDBv2Init(uri, bucket, dborg, dbtoken, TLSEncryption, TLSCACertFilename,
                                             TLSClientCertFilename, TLSClientKeyFilename);
     }
     else {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or wrong parameter");
         InfluxDBenable = false;
     }
-   
+
     return InfluxDBenable;
 }
 
@@ -200,7 +200,7 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to read post-processing data");
         return false;
     }
-    
+
     return true;
 }
 
@@ -208,7 +208,7 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
 void ClassFlowInfluxDBv2::doPostProcessEventHandling()
 {
     // Post cycle process handling can be included here. Function is called after processing cycle is completed
-    
+
 }
 
 
@@ -221,7 +221,7 @@ void ClassFlowInfluxDBv2::handleMeasurement(std::string _decsep, std::string _va
         _digit = _decsep.substr(0, _pospunkt);
     else
         _digit = "default";
-    
+
     for (int j = 0; j < flowpostprocessing->GetNumbers()->size(); ++j) {
         if (_digit == "default" || (*flowpostprocessing->GetNumbers())[j]->name == _digit)
             (*flowpostprocessing->GetNumbers())[j]->MeasurementV2 = _value;
@@ -240,7 +240,7 @@ void ClassFlowInfluxDBv2::handleFieldname(std::string _decsep, std::string _valu
         _digit = _decsep.substr(0, _pospunkt);
     else
         _digit = "default";
-    
+
     for (int j = 0; j < flowpostprocessing->GetNumbers()->size(); ++j) {
         if (_digit == "default" || (*flowpostprocessing->GetNumbers())[j]->name == _digit)
             (*flowpostprocessing->GetNumbers())[j]->FieldV2 = _value;

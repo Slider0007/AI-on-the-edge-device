@@ -102,7 +102,7 @@ std::string himem_memory_check()
 		espInfoResultStr += "Himem check Done!\n";
 	}
 
-	return espInfoResultStr; 
+	return espInfoResultStr;
 
 }
 

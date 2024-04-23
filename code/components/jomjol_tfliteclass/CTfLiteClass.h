@@ -13,7 +13,7 @@ class CTfLiteClass
         tflite::MicroMutableOpResolver<10> microOpResolver;
         const tflite::Model* model;
         tflite::MicroInterpreter* interpreter;
-        TfLiteTensor* output = nullptr;            
+        TfLiteTensor* output = nullptr;
         int kTensorArenaSize;
         uint8_t *tensor_arena;
         unsigned char *modelfile = NULL;
@@ -28,13 +28,13 @@ class CTfLiteClass
     public:
         CTfLiteClass();
         ~CTfLiteClass();
-        void CTfLiteClassDeleteInterpreter();   
+        void CTfLiteClassDeleteInterpreter();
         bool LoadModel(std::string _fn);
         bool MakeAllocate();
         void GetInputTensorSize();
         bool LoadInputImageBasis(CImageBasis *rs);
         void Invoke();
-        int GetAnzOutPut(bool silent = true);        
+        int GetAnzOutPut(bool silent = true);
         int GetOutClassification(int _von = -1, int _bis = -1);
 
         int GetClassFromImageBasis(CImageBasis *rs);

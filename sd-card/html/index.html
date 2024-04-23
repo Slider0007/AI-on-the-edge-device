@@ -46,7 +46,7 @@
                 el.style.visibility = 'visible';
             });
         }
-        
+
         function getCookie(cname) {
             let name = cname + "=";
             let decodedCookie = decodeURIComponent(document.cookie);
@@ -153,7 +153,7 @@
     //console.log("Loading page: " + getCookie("page"));
     document.getElementById('maincontent').src = getCookie("page");
 
-    
+
     function manual_cycle_start()
     {
         var url = getDomainname() + '/cycle_start';
@@ -183,9 +183,9 @@
                     }
                 }
                 else {
-                    firework.launch("Cycle start request failed (Response status: " + this.status + 
+                    firework.launch("Cycle start request failed (Response status: " + this.status +
                                     "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Cycle start request failed. Response status: " + this.status);  
+                    console.error("Cycle start request failed. Response status: " + this.status);
                 }
             }
 		};
@@ -217,9 +217,9 @@
 				    firework.launch('Sending HA discovery topics scheduled. The sending will be processed in state "Publish to MQTT"', 'success', 5000);
 			    }
                 else {
-                    firework.launch("HA send discovery topics request failed (Response status: " + this.status + 
+                    firework.launch("HA send discovery topics request failed (Response status: " + this.status +
                                     "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("HA send discovery topics request failed. Response status: " + this.status);  
+                    console.error("HA send discovery topics request failed. Response status: " + this.status);
                 }
             }
 		};
@@ -232,7 +232,7 @@
 
     function start_livestream(streamFlashlight)
     {
-        if (streamPopup) 
+        if (streamPopup)
             streamPopup.close();
 
         if (streamFlashlight)

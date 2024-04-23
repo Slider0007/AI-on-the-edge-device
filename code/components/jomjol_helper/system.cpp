@@ -52,14 +52,14 @@ int getChipCoreCount(void)
 {
     esp_chip_info_t chipInfo;
     esp_chip_info(&chipInfo);
-	
+
     return (int)chipInfo.cores;
 }
 
 
 std::string getChipRevision(void)
 {
-	return std::to_string(efuse_hal_get_major_chip_version()) + 
+	return std::to_string(efuse_hal_get_major_chip_version()) +
 		    "." + std::to_string(efuse_hal_get_minor_chip_version());
 }
 
@@ -68,10 +68,10 @@ void printDeviceInfo(void)
 {
     esp_chip_info_t chipInfo;
     esp_chip_info(&chipInfo);
-    
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device info: Board: " + getBoardType() + 
-										   ", SOC: " + getChipModel() + 
-                                           ", Cores: " + std::to_string(chipInfo.cores) + 
+
+    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Device info: Board: " + getBoardType() +
+										   ", SOC: " + getChipModel() +
+                                           ", Cores: " + std::to_string(chipInfo.cores) +
                                            ", Revision: " + getChipRevision());
 }
 
@@ -101,7 +101,7 @@ void taskSocTemp(void *pvParameter)
 	temperature_sensor_config_t socTempSensorConfig = TEMPERATURE_SENSOR_CONFIG_DEFAULT(20, 100);
     temperature_sensor_install(&socTempSensorConfig, &socTempSensor);
     temperature_sensor_enable(socTempSensor);
-	
+
 	while(1) {
 		if (temperature_sensor_get_celsius(socTempSensor, &socTemperature) != ESP_OK) {
 			socTemperature = -1;
@@ -145,11 +145,11 @@ float getSOCTemperature()
 
 bool setCPUFrequency(void)
 {
-    ConfigFile configFile = ConfigFile(CONFIG_FILE); 
+    ConfigFile configFile = ConfigFile(CONFIG_FILE);
     std::string cpuFrequency = "160";
 
 	#ifdef CONFIG_IDF_TARGET_ESP32
-    	esp_pm_config_esp32_t pm_config; 
+    	esp_pm_config_esp32_t pm_config;
 	#elif defined(CONFIG_IDF_TARGET_ESP32S3)
     	esp_pm_config_esp32s3_t pm_config;
 	#else
@@ -168,7 +168,7 @@ bool setCPUFrequency(void)
 
 
     /* Load config from config file */
-    while ((!configFile.GetNextParagraph(line, disabledLine, eof) || 
+    while ((!configFile.GetNextParagraph(line, disabledLine, eof) ||
             (line.compare("[System]") != 0)) && !eof) {}
     if (eof) {
         return false;
@@ -178,7 +178,7 @@ bool setCPUFrequency(void)
         return false;
     }
 
-    while (configFile.getNextLine(&line, disabledLine, eof) && 
+    while (configFile.getNextLine(&line, disabledLine, eof) &&
             !configFile.isNewParagraph(line)) {
         splitted = ZerlegeZeile(line);
 
@@ -250,7 +250,7 @@ std::string getESPHeapInfo(){
 	espInfoResultStr += std::string(aMsgBuf);
 	sprintf(aMsgBuf," | Int Min Free: %ld", (long) (aMinFreeInternalHeapSize));
 	espInfoResultStr += std::string(aMsgBuf);
-	
+
 	return 	espInfoResultStr;
 }
 
@@ -261,19 +261,19 @@ size_t getESPHeapSizeTotalFree()
 }
 
 
-size_t getESPHeapSizeInternalFree() 
+size_t getESPHeapSizeInternalFree()
 {
 	return heap_caps_get_free_size(MALLOC_CAP_8BIT| MALLOC_CAP_INTERNAL);
 }
 
 
-size_t getESPHeapSizeInternalLargestFree() 
+size_t getESPHeapSizeInternalLargestFree()
 {
 	return heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 }
 
 
-size_t getESPHeapSizeInternalMinFree() 
+size_t getESPHeapSizeInternalMinFree()
 {
 	return heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
 }
@@ -285,13 +285,13 @@ size_t getESPHeapSizeSPIRAMFree()
 }
 
 
-size_t getESPHeapSizeSPIRAMLargestFree() 
+size_t getESPHeapSizeSPIRAMLargestFree()
 {
 	return heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
 }
 
 
-size_t getESPHeapSizeSPIRAMMinFree() 
+size_t getESPHeapSizeSPIRAMMinFree()
 {
 	return heap_caps_get_minimum_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
 }
@@ -299,17 +299,17 @@ size_t getESPHeapSizeSPIRAMMinFree()
 
 #ifdef USE_HIMEM_IF_AVAILABLE
 size_t getESPHimemTotal()
-{ 
+{
 	return esp_himem_get_phys_size();
 }
 
 size_t getESPHimemFree()
-{ 
+{
 	return esp_himem_get_free_size();
 }
 
 size_t getESPHimemReservedArea()
-{ 
+{
 	return esp_himem_reserved_area_size();
 }
 #endif
@@ -384,7 +384,7 @@ std::string getResetReason(void)
 		case ESP_RST_SDIO: reasonText = "SDIO"; break;       //!< Reset over SDIO
 
 		case ESP_RST_UNKNOWN:   //!< Reset reason can not be determined
-		default: 
+		default:
 			reasonText = "Unknown";
 	}
     return reasonText;
@@ -406,7 +406,7 @@ void CheckIsPlannedReboot()
 }
 
 
-bool getIsPlannedReboot() 
+bool getIsPlannedReboot()
 {
     return isPlannedReboot;
 }
@@ -541,7 +541,7 @@ struct SDCard_Manufacturer_database database[] = {
 
 
 /* Parse SD Card Manufacturer Database */
-std::string SDCardParseManufacturerIDs(int id) 
+std::string SDCardParseManufacturerIDs(int id)
 {
 	unsigned int id_cnt = sizeof(database) / sizeof(struct SDCard_Manufacturer_database);
 	std::string ret_val = "";
@@ -562,7 +562,7 @@ std::string getSDCardManufacturer()
 {
 	std::string SDCardManufacturer = SDCardParseManufacturerIDs(SDCardCid.mfg_id);
 	//ESP_LOGD(TAG, "SD Card Manufacturer: %s", SDCardManufacturer.c_str());
-	
+
 	return (SDCardManufacturer + " (ID: " + std::to_string(SDCardCid.mfg_id) + ")");
 }
 
@@ -570,7 +570,7 @@ std::string getSDCardManufacturer()
 std::string getSDCardName()
 {
 	char *SDCardName = SDCardCid.name;
-	//ESP_LOGD(TAG, "SD Card Name: %s", SDCardName); 
+	//ESP_LOGD(TAG, "SD Card Name: %s", SDCardName);
 
 	return std::string(SDCardName);
 }
@@ -595,7 +595,7 @@ int getSDCardFreePartitionSpace()
 {
 	FATFS *fs;
     uint32_t fre_clust, fre_sect;
-  
+
     /* Get volume information and free clusters of drive 0 */
     f_getfree("0:", (DWORD *)&fre_clust, &fs);
     fre_sect = (fre_clust * fs->csize) / 1024 /(1024/SDCardCsd.sector_size);	//corrected by SD Card sector size (usually 512 bytes) and convert to MB
@@ -610,7 +610,7 @@ int getSDCardPartitionAllocationSize()
 {
 	FATFS *fs;
     uint32_t fre_clust, allocation_size;
-  
+
     /* Get volume information and free clusters of drive 0 */
     f_getfree("0:", (DWORD *)&fre_clust, &fs);
     allocation_size = fs->ssize;
@@ -624,7 +624,7 @@ int getSDCardPartitionAllocationSize()
 int getSDCardCapacity()
 {
 	int SDCardCapacity = SDCardCsd.capacity / (1024/SDCardCsd.sector_size) / 1024;  // total sectors * sector size  --> Byte to MB (1024*1024)
-	//ESP_LOGD(TAG, "SD Card Capacity: %s", std::to_string(SDCardCapacity).c_str()); 
+	//ESP_LOGD(TAG, "SD Card Capacity: %s", std::to_string(SDCardCapacity).c_str());
 
 	return SDCardCapacity;
 }
@@ -633,7 +633,7 @@ int getSDCardCapacity()
 int getSDCardSectorSize()
 {
 	int SDCardSectorSize = SDCardCsd.sector_size;
-	//ESP_LOGD(TAG, "SD Card Sector Size: %s bytes", std::to_string(SDCardSectorSize).c_str()); 
+	//ESP_LOGD(TAG, "SD Card Sector Size: %s bytes", std::to_string(SDCardSectorSize).c_str());
 
 	return SDCardSectorSize;
 }

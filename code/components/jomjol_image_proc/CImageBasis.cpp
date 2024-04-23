@@ -27,14 +27,14 @@ uint8_t * CImageBasis::RGBImageLock(int _waitmaxsec)
 {
     if (islocked)
     {
-        #ifdef DEBUG_DETAIL_ON   
+        #ifdef DEBUG_DETAIL_ON
                 ESP_LOGD(TAG, "Image is locked: sleep for: %ds", _waitmaxsec);
         #endif
         TickType_t xDelay;
         xDelay = 1000 / portTICK_PERIOD_MS;
         for (int i = 0; i <= _waitmaxsec; ++i)
         {
-            vTaskDelay( xDelay ); 
+            vTaskDelay( xDelay );
             if (!islocked)
                 break;
         }
@@ -65,7 +65,7 @@ void writejpghelp(void *context, void *data, int size)
     ImageData* _zw = (ImageData*) context;
     uint8_t *voidstart = _zw->data;
     uint8_t *datastart = (uint8_t*) data;
-    
+
     if ((_zw->size < MAX_JPG_SIZE)) {   // Abort copy to prevent buffer overflow
         voidstart += _zw->size;
 
@@ -99,7 +99,7 @@ ImageData* CImageBasis::writeToMemoryAsJPG(const int quality)
 void CImageBasis::writeToMemoryAsJPG(ImageData* i, const int quality)
 {
     ImageData* ii = new ImageData;
-    
+
     RGBImageLock();
     stbi_write_jpg_to_func(writejpghelp, ii, width, height, channels, rgb_image, quality);
     RGBImageRelease();
@@ -131,11 +131,11 @@ inline void writejpgtohttphelp(void *context, void *data, int size)
             ESP_LOGE(TAG, "File sending failed");
             _send->res = ESP_FAIL;
         }
-        _send->size = 0;      
+        _send->size = 0;
     }
     std::memcpy((void*) (&(_send->buf[0]) + _send->size), data, size);
     _send->size+= size;
-} 
+}
 
 
 esp_err_t CImageBasis::SendJPGtoHTTP(httpd_req_t *_req, const int quality)
@@ -151,14 +151,14 @@ esp_err_t CImageBasis::SendJPGtoHTTP(httpd_req_t *_req, const int quality)
     if (ii.size > 0) {
         if (httpd_resp_send_chunk(_req, (char*) ii.buf, ii.size) != ESP_OK) { // still send the rest
             ESP_LOGE(TAG, "File sending failed");
-            ii.res = ESP_FAIL;  
+            ii.res = ESP_FAIL;
         }
     }
 
     RGBImageRelease();
 
     return ii.res;
-}  
+}
 
 
 bool CImageBasis::CopyFromMemory(uint8_t* _source, int _size)
@@ -302,7 +302,7 @@ void CImageBasis::drawLine(int x1, int y1, int x2, int y2, int r, int g, int b, 
                 if (isInImage(_x, _y))
                     setPixelColor(_x, _y, r, g, b);
         }
-    
+
     RGBImageRelease();
 }
 
@@ -362,7 +362,7 @@ CImageBasis::CImageBasis(std::string _name)
     rgb_image = NULL;
     width = 0;
     height = 0;
-    channels = 0;    
+    channels = 0;
     islocked = false;
 }
 
@@ -376,7 +376,7 @@ bool CImageBasis::CreateEmptyImage(int _width, int _height, int _channels)
 
     RGBImageLock();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CreateEmptyImage");
     #endif
 
@@ -392,7 +392,7 @@ bool CImageBasis::CreateEmptyImage(int _width, int _height, int _channels)
         return false;
     }
 
-    stbi_uc* p_source;    
+    stbi_uc* p_source;
 
     for (int x = 0; x < width; ++x)
         for (int y = 0; y < height; ++y)
@@ -417,7 +417,7 @@ bool CImageBasis::CreateEmptyImage(int _width, int _height, int _channels, int a
 
     RGBImageLock();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CreateEmptyImage");
     #endif
 
@@ -433,7 +433,7 @@ bool CImageBasis::CreateEmptyImage(int _width, int _height, int _channels, int a
         return false;
     }
 
-    stbi_uc* p_source;    
+    stbi_uc* p_source;
 
     for (int x = 0; x < width; ++x)
         for (int y = 0; y < height; ++y)
@@ -451,7 +451,7 @@ bool CImageBasis::CreateEmptyImage(int _width, int _height, int _channels, int a
 
 void CImageBasis::EmptyImage()
 {
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("EmptyImage");
     #endif
 
@@ -483,7 +483,7 @@ bool CImageBasis::LoadFromMemory(stbi_uc *_buffer, int len)
     rgb_image = stbi_load_from_memory(_buffer, len, &width, &height, &channels, 3);
     bpp = channels;
     ESP_LOGD(TAG, "Image loaded from memory: %d, %d, %d", width, height, channels);
-    
+
     if (rgb_image == NULL)
     {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFromMemory: Image loading failed");
@@ -508,7 +508,7 @@ bool CImageBasis::LoadFromMemoryPreallocated(stbi_uc *_buffer, int len)
     rgb_image = stbi_load_from_memory(_buffer, len, &width, &height, &channels, 3);
     bpp = channels;
     ESP_LOGD(TAG, "Image loaded from memory: %d, %d, %d", width, height, channels);
-    
+
     if (rgb_image == NULL)
     {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadFromMemoryPreallocated: Image loading failed");
@@ -540,7 +540,7 @@ bool CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "No preallocation found");
     }
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis-LoadFromFilePreallocated - Start");
     #endif
 
@@ -552,16 +552,16 @@ bool CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image
         RGBImageRelease();
         return false;
     }
-    
+
     RGBImageRelease();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         std::string zw = "CImageBasis LoadFromFilePreallocated after load " + _image;
         ESP_LOGI(TAG, "%s", zw.c_str());
         ESP_LOGI(TAG, "w %d, h %d, b %d, c %d", width, height, bpp, channels);
     #endif
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis-LoadFromFilePreallocated - done");
     #endif
 
@@ -569,7 +569,7 @@ bool CImageBasis::LoadFromFilePreallocated(std::string _name, std::string _image
 }
 
 
-CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom) 
+CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom)
 {
     name = _name;
     islocked = false;
@@ -581,7 +581,7 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom)
 
     RGBImageLock();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_copyfrom - Start");
     #endif
 
@@ -600,13 +600,13 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom)
     memCopy(_copyfrom->rgb_image, rgb_image, memsize);
     RGBImageRelease();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_copyfrom - done");
     #endif
 }
 
 
-CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom, int add) 
+CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom, int add)
 {
     name = _name;
     islocked = false;
@@ -618,7 +618,7 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom, int add)
 
     RGBImageLock();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_copyfrom - Start");
     #endif
 
@@ -637,7 +637,7 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom, int add)
     memCopy(_copyfrom->rgb_image, rgb_image, memsize);
     RGBImageRelease();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_copyfrom - done");
     #endif
 }
@@ -655,7 +655,7 @@ CImageBasis::CImageBasis(std::string _name, int _width, int _height, int _channe
 
     RGBImageLock();
 
-     #ifdef DEBUG_DETAIL_ON 
+     #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_width,height,ch - Start");
     #endif
 
@@ -673,7 +673,7 @@ CImageBasis::CImageBasis(std::string _name, int _width, int _height, int _channe
 
     RGBImageRelease();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_width,height,ch - done");
     #endif
 }
@@ -694,7 +694,7 @@ CImageBasis::CImageBasis(std::string _name, std::string _image)
 
     RGBImageLock();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_image - Start");
     #endif
 
@@ -706,16 +706,16 @@ CImageBasis::CImageBasis(std::string _name, std::string _image)
         RGBImageRelease();
         return;
     }
-    
+
     RGBImageRelease();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         std::string zw = "CImageBasis after load " + _image;
         ESP_LOGD(TAG, "%s", zw.c_str());
         ESP_LOGD(TAG, "w %d, h %d, b %d, c %d", width, height, bpp, channels);
     #endif
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_image - done");
     #endif
 }
@@ -736,7 +736,7 @@ CImageBasis::CImageBasis(std::string _name, std::string _image, bool _externalIm
 
     RGBImageLock();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_image - Start");
     #endif
 
@@ -748,16 +748,16 @@ CImageBasis::CImageBasis(std::string _name, std::string _image, bool _externalIm
         RGBImageRelease();
         return;
     }
-    
+
     RGBImageRelease();
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         std::string zw = "CImageBasis after load " + _image;
         ESP_LOGD(TAG, "%s", zw.c_str());
         ESP_LOGD(TAG, "w %d, h %d, b %d, c %d", width, height, bpp, channels);
     #endif
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("CImageBasis_image - done");
     #endif
 }
@@ -799,7 +799,7 @@ void CImageBasis::Negative(void)
 void CImageBasis::Contrast(float _contrast)  //input range [-100..100]
 {
     stbi_uc* p_source;
-    
+
     float contrast = (_contrast/100) + 1;  //convert to decimal & shift range: [0..2]
     float intercept = 128 * (1 - contrast);
 
@@ -840,7 +840,7 @@ void CImageBasis::SaveToFile(std::string _imageout)
     if ((typ == "jpg") || (typ == "JPG")) {       // CAUTION PROBLEMATIC IN ESP32
         stbi_write_jpg(_imageout.c_str(), width, height, channels, rgb_image, 0);
     }
- 
+
     #ifndef STBI_ONLY_JPEG
     if ((typ == "bmp") || (typ == "BMP")) {
         stbi_write_bmp(_imageout.c_str(), width, height, channels, rgb_image);

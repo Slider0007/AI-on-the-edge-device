@@ -22,19 +22,19 @@ class ClassFlowAlignment : public ClassFlow
         bool SaveDebugInfo;
         bool SaveAllFiles;
         int AlignFAST_SADThreshold;
-    
+
         void SetInitialParameter(void);
         bool LoadReferenceAlignmentValues(void);
         bool SaveReferenceAlignmentValues(void);
         void doPostProcessEventHandling();
-    
+
     public:
         CImageBasis *ImageBasis;
         ImageData *AlgROI;
-        
+
         ClassFlowAlignment(std::vector<ClassFlow*>* lfc);
         virtual ~ClassFlowAlignment();
-    
+
         CAlignAndCutImage* GetAlignAndCutImage() {return AlignAndCutImage;};
         void DrawRef(CImageBasis *_zw);
         bool ReadParameter(FILE* pfile, std::string& aktparamgraph);

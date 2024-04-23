@@ -42,7 +42,7 @@
 		.button {
 			padding: 5px 10px;
 			width: 220px;
-			font-size: 1em;	
+			font-size: 1em;
 		}
 
 		input[type=number] {
@@ -75,7 +75,7 @@
 			padding: 3px 5px;
 			display: inline-block;
 			border: 1px solid #ccc;
-			font-size: 1em; 
+			font-size: 1em;
 			margin-right: 10px;
 			vertical-align: middle;
 		}
@@ -87,7 +87,7 @@
 			padding: 3px 5px;
 			display: inline-block;
 			border: 1px solid #ccc;
-			font-size: 1em; 
+			font-size: 1em;
 			margin-right: 10px;
 			vertical-align: middle;
 		}
@@ -160,7 +160,7 @@
 			padding-left: 10px;
 			padding-right: 10px;
 
-			border: solid black 1px; 
+			border: solid black 1px;
 
 			/* Position the tooltip */
 			position: absolute;
@@ -185,30 +185,30 @@
 
 		.tooltip .tooltiptext h1 { /* Tooltip headline, e.g. parameter name */
 			font-size: 1.5em;
-			margin-top: 0.2em !important; 
+			margin-top: 0.2em !important;
 			margin-bottom: 0.3em !important;
 		}
 
 		.tooltip .tooltiptext h2 { /* Tooltip sub-headline, e.g. description*/
 			font-size: 1.2em;
-			margin-top: 1em !important; 
+			margin-top: 1em !important;
 			margin-bottom: 0.3em !important;
 		}
 
-		.tooltip .tooltiptext h3 { 
+		.tooltip .tooltiptext h3 {
 			font-size: 1.05em;
-			margin-top: 1em !important; 
+			margin-top: 1em !important;
 			margin-bottom: 0.3em !important;
 		}
 
-		.tooltip .tooltiptext h4 { 
+		.tooltip .tooltiptext h4 {
 			font-size: 0.83em;
-			margin-top: 1em !important; 
+			margin-top: 1em !important;
 			margin-bottom: 0.3em !important;
 		}
 
 		.tooltip .tooltiptext p {
-			margin-top: 0.3em !important; 
+			margin-top: 0.3em !important;
 			margin-bottom: 0.3em !important;
 		}
 
@@ -239,15 +239,15 @@
         <summary><b>CLICK HERE</b> for usage description.
         </summary>
 		<p>
-			This page lists all available configuration parameters of the device. 
-			The description of each parameter can be shown by hovering over or by clicking the 
+			This page lists all available configuration parameters of the device.
+			The description of each parameter can be shown by hovering over or by clicking the
 			<img src="help.png" width="16"> icon.
 		</p>
-		<p>	
-			The page gets opened with the default view which should be sufficient for regular configuration tasks. 
+		<p>
+			The page gets opened with the default view which should be sufficient for regular configuration tasks.
 			Enabling the <b>"Expert View"</b> some expert parameters (light red background color) will be added to
-			the parameter list. Additionally the button <b>"Edit "Config.ini" File"</b> to edit the underlaying 
-			configuration file (config.ini) manually is now shown on top of the page. This function should be only 
+			the parameter list. Additionally the button <b>"Edit "Config.ini" File"</b> to edit the underlaying
+			configuration file (config.ini) manually is now shown on top of the page. This function should be only
 			used for special cases.
 		</p>
 		<p>
@@ -255,7 +255,7 @@
 			Disabling results in a disabled functionality.
 		</p>
 		<p>
-			Don't forget to save the changes with the button <b>"Save And Apply"</b> at the bottom of this page. 
+			Don't forget to save the changes with the button <b>"Save And Apply"</b> at the bottom of this page.
             The new configuration gets automatically applied. No reboot is required.
 		</p>
     </details>
@@ -274,11 +274,11 @@
 
 		<tr>
             <th colspan="3">Configuration View</th>
-		</tr> 
+		</tr>
 		<tr>
 			<td class="indent1">
 				<input style="margin-top:12px;margin-bottom:12px" type="checkbox" id="ExpertModus_enabled" value="1"  onclick='UpdateExpertModus()' >
-					<label for="ExpertModus_enabled">Expert View</label> 
+					<label for="ExpertModus_enabled">Expert View</label>
 			</td>
 			<td>
 				<button style="display:none;" class="button" id="Edit_Config_Direct" onclick="editConfigDirect()">Edit "Config.ini" File</button>
@@ -298,11 +298,11 @@
 
 		<tr>
 			<th colspan="3">Take Image</th>
-		</tr> 
+		</tr>
 
 		<tr class="expert">
 			<td class="indent1">
-				<input type="checkbox" id="TakeImage_RawImagesLocation_enabled" value="1" 
+				<input type="checkbox" id="TakeImage_RawImagesLocation_enabled" value="1"
 								onclick='InvertEnableItem("TakeImage", "RawImagesLocation")'  >
 				<label for=TakeImage_RawImagesLocation_enabled>
 						<span id="TakeImage_RawImagesLocation_text">Raw Images Location</span></label>
@@ -315,7 +315,7 @@
 
 		<tr class="expert">
 			<td class="indent1">
-				<input type="checkbox" id="TakeImage_RawImagesRetention_enabled" value="1" 
+				<input type="checkbox" id="TakeImage_RawImagesRetention_enabled" value="1"
 								onclick='InvertEnableItem("TakeImage", "RawImagesRetention")'  >
 				<label for=TakeImage_RawImagesRetention_enabled>
 						<span id="TakeImage_RawImagesRetention_text">Raw Images Retention</span></label>
@@ -327,7 +327,7 @@
 			<td>$TOOLTIP_TakeImage_RawImagesRetention</td>
 		</tr>
 
-		<tr>		
+		<tr>
 			<td class="indent1">
 				<span id="TakeImage_FlashlightGPIOMapping">Flashlight GPIO Mapping</span>
 			</td>
@@ -337,7 +337,7 @@
 			<td>$TOOLTIP_TakeImage_FlashlightGPIOMapping</td>
 		</tr>
 
-		<tr>		
+		<tr>
 			<td class="indent1">
 				<span id="TakeImage_FlashTime_text">Flash Time</span>
 			</td>
@@ -354,7 +354,7 @@
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_FlashIntensity_value1" min="0" max="100"
-					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100)) && 
+					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100)) &&
 						(!validity.stepMismatch||(value=parseInt(this.value)));">%
 			</td>
 			<td>$TOOLTIP_TakeImage_FlashIntensity</td>
@@ -381,7 +381,7 @@
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_ImageQuality_value1" min="8" max="63"
-					oninput="(!validity.rangeUnderflow||(value=8)) && (!validity.rangeOverflow||(value=63)) && 
+					oninput="(!validity.rangeUnderflow||(value=8)) && (!validity.rangeOverflow||(value=63)) &&
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_TakeImage_ImageQuality</td>
@@ -399,14 +399,14 @@
 			</td>
 			<td>$TOOLTIP_TakeImage_ImageSize</td>
 		</tr>
-			
+
 		<tr>
 			<td class="indent1">
 				<span id="TakeImage_Brightness_text">Brightness</span>
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_Brightness_value1" value="0" min="-2" max="2"
-					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
+					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) &&
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_TakeImage_Brightness</td>
@@ -418,7 +418,7 @@
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_Contrast_value1" value="0" min="-2" max="2"
-					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
+					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) &&
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_TakeImage_Contrast</td>
@@ -430,12 +430,12 @@
 			</td>
 			<td>
 				<input required type="number" id="TakeImage_Saturation_value1" value="0" min="-2" max="2"
-					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) && 
+					oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) &&
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_TakeImage_Saturation</td>
 		</tr>
-		
+
 		<tr>
 			<td class="indent1">
 				<span id="TakeImage_Sharpness_text">Sharpness</span>
@@ -460,7 +460,7 @@
 				<span id="TakeImage_ExposureControlMode_text">Exposure Control Mode</span>
 			</td>
 			<td>
-				<select id="TakeImage_ExposureControlMode_value1" 
+				<select id="TakeImage_ExposureControlMode_value1"
 						onchange='setEnabled("TakeImage_ExposureControlModeAuto_parameter", this.value > 0 ? true : false);
 						setEnabled("TakeImage_ExposureControlModeManual_parameter", this.value == 0 ? true : false);'>
                     <option value="0">Manual</option>
@@ -498,7 +498,7 @@
 				<span id="TakeImage_GainControlMode_text">Gain Control Mode</span>
 			</td>
 			<td>
-				<select id="TakeImage_GainControlMode_value1" 
+				<select id="TakeImage_GainControlMode_value1"
 						onchange='setEnabled("TakeImage_GainControlModeManual_parameter", this.value == 0 ? true : false);'>
                     <option value="0">Manual</option>
 					<option value="1" selected>Auto</option>
@@ -564,7 +564,7 @@
 				<span id="TakeImage_ZoomMode_text">Zoom Mode</span>
 			</td>
 			<td>
-				<select id="TakeImage_ZoomMode_value1" 
+				<select id="TakeImage_ZoomMode_value1"
 						onchange='setEnabled("TakeImage_Zoom_parameter", this.value > 0 ? true : false);'>
                     <option value="0" selected>Off</option>
 					<option value="1">Crop</option>
@@ -580,7 +580,7 @@
 				<span id="TakeImage_ZoomOffsetX_text">Zoom Offset X</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_ZoomOffsetX_value1" value="0" min="0" max="960" 
+				<input required type="number" id="TakeImage_ZoomOffsetX_value1" value="0" min="0" max="960"
 					oninput="(!validity.rangeOverflow||(value=960)) && (!validity.rangeUnderflow||(value=0));">Pixel
 			</td>
 			<td>$TOOLTIP_TakeImage_ZoomOffsetX</td>
@@ -592,7 +592,7 @@
 				<span id="TakeImage_ZoomOffsetY_text">Zoom Offset Y</span>
 			</td>
 			<td>
-				<input required type="number" id="TakeImage_ZoomOffsetY_value1" value="0" min="0" max="720" 
+				<input required type="number" id="TakeImage_ZoomOffsetY_value1" value="0" min="0" max="720"
 					oninput="(!validity.rangeOverflow||(value=720)) && (!validity.rangeUnderflow||(value=0));">Pixel
 			</td>
 			<td>$TOOLTIP_TakeImage_ZoomOffsetY</td>
@@ -640,7 +640,7 @@
 			</td>
 			<td>$TOOLTIP_Alignment_AlignmentAlgo</td>
 		</tr>
-		
+
 		<tr class="expert">
 			<td class="indent1">
 			    <span id="Alignment_SearchFieldX_text" style="color:black;">Search Field X</span>
@@ -669,7 +669,7 @@
 			</td>
 			<td>
 				<input required type="number" name="name" id="Alignment_InitialRotate_value1" min="-360.0" max="360.0" step="0.1"
-				oninput="(!validity.rangeUnderflow||(value=-360.0)) && (!validity.rangeOverflow||(value=360.0)) && 
+				oninput="(!validity.rangeUnderflow||(value=-360.0)) && (!validity.rangeOverflow||(value=360.0)) &&
 				(!validity.stepMismatch||(value=parseInt(this.value)));">Degree
 			</td>
 			<td>$TOOLTIP_Alignment_InitialRotate</td>
@@ -728,14 +728,14 @@
 			</td>
 			<td>$TOOLTIP_Digits_Model</td>
 		</tr>
-		
+
 		<tr class="DigitItem expert">
 			<td class="indent1">
 				<span id="Digits_CNNGoodThreshold_text" style="color:black;">CNN Good Threshold</span>
 			</td>
 			<td>
 				<input required type="number" id="Digits_CNNGoodThreshold_value1" min="0" max="1" step="0.01"
-					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1)) && 
+					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1)) &&
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_Digits_CNNGoodThreshold</td>
@@ -743,9 +743,9 @@
 
 		<tr class="DigitItem expert">
 			<td class="indent1">
-				<input type="checkbox" id="Digits_ROIImagesLocation_enabled" value="1" 
+				<input type="checkbox" id="Digits_ROIImagesLocation_enabled" value="1"
 								onclick='InvertEnableItem("Digits", "ROIImagesLocation")'>
-				<label for=Digits_ROIImagesLocation_enabled><span id="Digits_ROIImagesLocation_text" 
+				<label for=Digits_ROIImagesLocation_enabled><span id="Digits_ROIImagesLocation_text"
 								style="color:black;">ROI Images Location</span></label>
 			</td>
 			<td>
@@ -756,9 +756,9 @@
 
 		<tr class="DigitItem expert">
 			<td class="indent1">
-				<input type="checkbox" id="Digits_ROIImagesRetention_enabled" value="1" 
+				<input type="checkbox" id="Digits_ROIImagesRetention_enabled" value="1"
 								onclick='InvertEnableItem("Digits", "ROIImagesRetention")'>
-				<label for=Digits_ROIImagesRetention_enabled><span id="Digits_ROIImagesRetention_text" 
+				<label for=Digits_ROIImagesRetention_enabled><span id="Digits_ROIImagesRetention_text"
 								style="color:black;">ROI Images Retention</span></label>
 			</td>
 			<td>
@@ -789,7 +789,7 @@
 			<td class="indent1">
 			    <span id="Analog_Model_text" style="color:black;">Model</span>
 			</td>
-			<td> 
+			<td>
 				<select class="select_large" id="Analog_Model_value1">
 				</select>
 			</td>
@@ -798,7 +798,7 @@
 
 		<tr class="AnalogItem expert">
 			<td class="indent1">
-				<input type="checkbox" id="Analog_ROIImagesLocation_enabled" value="1" 
+				<input type="checkbox" id="Analog_ROIImagesLocation_enabled" value="1"
 								onclick='InvertEnableItem("Analog", "ROIImagesLocation")'>
 				<label for=Analog_ROIImagesLocation_enabled>
 							<span id="Analog_ROIImagesLocation_text" style="color:black;">ROI Images Location</span>
@@ -810,11 +810,11 @@
 
 		<tr class="AnalogItem expert">
 			<td class="indent1">
-				<input type="checkbox" id="Analog_ROIImagesRetention_enabled" value="1" 
+				<input type="checkbox" id="Analog_ROIImagesRetention_enabled" value="1"
 								onclick='InvertEnableItem("Analog", "ROIImagesRetention")'>
 				<label for=Analog_ROIImagesRetention_enabled>
 							<span id="Analog_ROIImagesRetention_text" style="color:black;">ROI Images Retention</span></label></td>
-			<td> 
+			<td>
 				<input required type="number" id="Analog_ROIImagesRetention_value1" min="0" step="1"
 					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">Days
 			</td>
@@ -875,7 +875,7 @@
 		<tr style="margin-top:12px">
 			<td class="indent1" style="padding-top:25px" colspan="3">
 				<b>Parameter per number sequence:</b>
-                <select 
+                <select
 					style="font-weight: bold; margin-left:15px" id="Numbers_value1" onchange="numberChanged()">
 				</select>
 			</td>
@@ -900,7 +900,7 @@
 			</td>
 			<td>
 				<input required type="number" id="PostProcessing_DecimalShift_value1" value="0" step="1" min="-9" max="9"
-					oninput="(!validity.rangeUnderflow||(value=-9)) && (!validity.rangeOverflow||(value=9)) && 
+					oninput="(!validity.rangeUnderflow||(value=-9)) && (!validity.rangeOverflow||(value=9)) &&
 						(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.DecimalShift</td>
@@ -911,8 +911,8 @@
 				<span id="PostProcessing_AnalogDigitalTransitionStart_text" style="color:black;">Analog/Digital Transition Start</span>
 			</td>
 			<td>
-				<input required type="number" id="PostProcessing_AnalogDigitalTransitionStart_value1" step="0.1" 
-					min="6.0" max="9.9" value="9.2" oninput="(!validity.rangeUnderflow||(value=6.0)) && 
+				<input required type="number" id="PostProcessing_AnalogDigitalTransitionStart_value1" step="0.1"
+					min="6.0" max="9.9" value="9.2" oninput="(!validity.rangeUnderflow||(value=6.0)) &&
 					(!validity.rangeOverflow||(value=9.9)) && (!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_PostProcessing_NUMBER.AnalogDigitalTransitionStart</td>
@@ -983,7 +983,7 @@
 		</tr>
 	</table>
 
-	
+
 	<!-- MQTT -->
 	<table class="table">
 		<colgroup>
@@ -1056,7 +1056,7 @@
 				<span id="MQTT_TLSEncryption_text" style="color:black;">TLS Encryption</span>
 			</td>
 			<td>
-				<select id="MQTT_TLSEncryption_value1" onchange='setEnabled("MQTT_TLSEncryption_parameter", 
+				<select id="MQTT_TLSEncryption_value1" onchange='setEnabled("MQTT_TLSEncryption_parameter",
 																 	this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
 					<option value="true">true</option>
@@ -1133,7 +1133,7 @@
 				<span id="MQTT_HomeassistantDiscovery_text">Enable Discovery</span>
 			</td>
 			<td>
-				<select id="MQTT_HomeassistantDiscovery_value1" onchange='setEnabled("MQTT_HomeassistantDiscovery_parameter", 
+				<select id="MQTT_HomeassistantDiscovery_value1" onchange='setEnabled("MQTT_HomeassistantDiscovery_parameter",
 																        	this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
 					<option value="true">true</option>
@@ -1214,7 +1214,7 @@
 				<label for=Category_InfluxDB_enabled>InfluxDB v1.x</label>
 			</th>
 		</tr>
-		
+
 		<tr class="InfluxDBv1Item">
 			<td class="indent1">
 				<span id="InfluxDB_Uri_text" style="color:black;">URI</span>
@@ -1262,7 +1262,7 @@
 				<span id="InfluxDB_TLSEncryption_text" style="color:black;">TLS Encryption</span>
 			</td>
 			<td>
-				<select id="InfluxDB_TLSEncryption_value1" onchange='setEnabled("InfluxDB_TLSEncryption_parameter", 
+				<select id="InfluxDB_TLSEncryption_value1" onchange='setEnabled("InfluxDB_TLSEncryption_parameter",
 						this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
 					<option value="true">true</option>
@@ -1309,7 +1309,7 @@
                 </select>
 			</td>
 		</tr>
-		
+
 		<tr class="InfluxDBv1Item">
 			<td class="indent2">
 				<span id="InfluxDB_Measurement_text" style="color:black;">Measurement</span>
@@ -1394,7 +1394,7 @@
 				<span id="InfluxDBv2_TLSEncryption_text" style="color:black;">TLS Encryption</span>
 			</td>
 			<td>
-				<select id="InfluxDBv2_TLSEncryption_value1" onchange='setEnabled("InfluxDBv2_TLSEncryption_parameter", 
+				<select id="InfluxDBv2_TLSEncryption_value1" onchange='setEnabled("InfluxDBv2_TLSEncryption_parameter",
 						this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
 					<option value="true">true</option>
@@ -1451,7 +1451,7 @@
 			</td>
 			<td>$TOOLTIP_InfluxDBv2_NUMBER.Measurement</td>
 		</tr>
-		
+
 		<tr class="InfluxDBv2Item">
 			<td class="indent2">
 				<span id="InfluxDBv2_Field_text" style="color:black;">Field</span>
@@ -1474,7 +1474,7 @@
 
 		<tr>
 			<th colspan="3">
-				<input type="checkbox" id="Category_GPIO_enabled" value="1" onclick='UpdateAfterCategoryCheck()'> 
+				<input type="checkbox" id="Category_GPIO_enabled" value="1" onclick='UpdateAfterCategoryCheck()'>
 				    <label for=Category_GPIO_enabled>GPIO (General Purpose Input / Output)</label>
 			</th>
 		</tr>
@@ -1509,7 +1509,7 @@
 				<span id="GPIO_RestrictedUsageText" style="display:none; color:red;"></span>
 			</td>
 			<td>
-				<select class="GPIO_EnablePin_parameter" id="GPIO_IO_value1" 
+				<select class="GPIO_EnablePin_parameter" id="GPIO_IO_value1"
 					onchange='GpioPinSelectBeforeChange(); GpioPinSelectAfterChange();'>
 				</select>
 			</td>
@@ -1521,7 +1521,7 @@
 				<span id="GPIO_IO_text2">GPIO Capture Mode</span>
 			</td>
 			<td>
-				<select class="GPIO_EnablePin_parameter" id="GPIO_IO_value2" 
+				<select class="GPIO_EnablePin_parameter" id="GPIO_IO_value2"
 					onchange='GpioCaptureModeChange();'>
 				</select>
 			</td>
@@ -1620,13 +1620,13 @@
 			</td>
 			<td>
 				R <input required style="min-width:45px;width:45px;" type="number" id="GPIO_IO_value9"
-						 min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
+						 min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) &&
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
 				G <input required style="min-width:45px;width:45px" type="number" id="GPIO_IO_value10"
-						 min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
+						 min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) &&
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
 				B <input required style="min-width:45px;width:45px" type="number" id="GPIO_IO_value11"
-						 min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) && 
+						 min="0" max="255" step="1" oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) &&
 							(!validity.stepMismatch||(value=parseInt(this.value)));">
 			</td>
 			<td>$TOOLTIP_GPIO_LEDColor</td>
@@ -1644,7 +1644,7 @@
 		</tr>
 	</table>
 
-	
+
 	<!-- Autotimer -->
 	<table class="table">
 		<colgroup>
@@ -1676,7 +1676,7 @@
 			</td>
 			<td>
 				<input required type="number" id="AutoTimer_Interval_value1" min="0.1" step="0.1"
-					oninput="(!validity.rangeUnderflow||(value=0.1)) && 
+					oninput="(!validity.rangeUnderflow||(value=0.1)) &&
 						     (!validity.stepMismatch||(value=parseInt(this.value)));">Minutes
 			</td>
 			<td>$TOOLTIP_AutoTimer_Interval</td>
@@ -1818,14 +1818,14 @@
 
 		<tr class="expert">
 			<td class="indent1">
-				<input type="checkbox" id="System_RSSIThreshold_enabled" value="1" 
+				<input type="checkbox" id="System_RSSIThreshold_enabled" value="1"
 							onclick='InvertEnableItem("System", "RSSIThreshold")'>
 				<label for=System_RSSIThreshold_enabled>
 						<span id="System_RSSIThreshold_text" style="color:black;">WIFI Roaming RSSI Threshold</span></label>
 			</td>
 			<td>
 				<input required type="number" name="name" id="System_RSSIThreshold_value1" min="-100" max="0" step="1"
-					oninput="(!validity.rangeUnderflow||(value=-100)) && (!validity.rangeOverflow||(value=0)) && 
+					oninput="(!validity.rangeUnderflow||(value=-100)) && (!validity.rangeOverflow||(value=0)) &&
 						(!validity.stepMismatch||(value=parseInt(this.value)));">dBm
 			</td>
 			<td>$TOOLTIP_System_RSSIThreshold</td>
@@ -1867,7 +1867,7 @@
 				<span id="WebUI_OverviewAutoRefresh_text" style="color:black;">Auto Refresh</span>
 			</td>
 			<td>
-				<select id="WebUI_OverviewAutoRefresh_value1" onchange='setEnabled("WebUI_OverviewAutoRefresh_parameter", 
+				<select id="WebUI_OverviewAutoRefresh_value1" onchange='setEnabled("WebUI_OverviewAutoRefresh_parameter",
 						this.value == "true" ? true : false);'>
 					<option value="false" >false</option>
 					<option value="true" selected>true</option>
@@ -1898,7 +1898,7 @@
 				<span id="WebUI_DataGraphAutoRefresh_text" style="color:black;">Auto Refresh</span>
 			</td>
 			<td>
-				<select id="WebUI_DataGraphAutoRefresh_value1" onchange='setEnabled("WebUI_DataGraphAutoRefresh_parameter", 
+				<select id="WebUI_DataGraphAutoRefresh_value1" onchange='setEnabled("WebUI_DataGraphAutoRefresh_parameter",
 						this.value == "true" ? true : false);'>
 					<option value="false" selected>false</option>
 					<option value="true">true</option>
@@ -1929,9 +1929,9 @@
 </div>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
-<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>  
-<script src="readconfigparam.js?v=$COMMIT_HASH"></script>  
+<script src="common.js?v=$COMMIT_HASH"></script>
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
 <script>
 	var canvas = document.getElementById('canvas'),
 		domainname = getDomainname(),
@@ -1975,7 +1975,7 @@
 			_indexInfluxv1.add(optionInfluxv1);
 
 		}
-		_index.selectedIndex = 0; 
+		_index.selectedIndex = 0;
 		_indexInflux.selectedIndex = 0;
 		_indexInfluxv1.selectedIndex = 0;
 	}
@@ -1989,14 +1989,14 @@
 		if (!results) return null;
 		if (!results[2]) return '';
 		return decodeURIComponent(results[2].replace(/\+/g, ' '));
-	}	
+	}
 
 
 	// Read parameter out of the variables and display in WebUI config page
 	function WriteParameter(_param, _category, _cat, _name, _optional, _number = -1){
 		let anzpara;
 		try {
-			anzpara = _param[_cat][_name].anzParam;	
+			anzpara = _param[_cat][_name].anzParam;
 		}
 		catch (error) {
 			firework.launch("Parameter '" + _name + "' in category '" + _cat + "' is unknown!", 'danger', 30000);
@@ -2010,8 +2010,8 @@
 			if (_optional) {
 				document.getElementById(_cat+"_"+_name+"_enabled").checked = NUMBERS[_number][_cat][_name]["enabled"];
 				for (var j = 1; j <= anzpara; ++j) {
-					document.getElementById(_cat+"_"+_name+"_value"+j).disabled = !NUMBERS[_number][_cat][_name]["enabled"];	
-				}		
+					document.getElementById(_cat+"_"+_name+"_value"+j).disabled = !NUMBERS[_number][_cat][_name]["enabled"];
+				}
 			}
 			document.getElementById(_cat+"_"+_name+"_text").style.color = "black"
 			setEnabled(_cat+"_"+_name, true);
@@ -2056,7 +2056,7 @@
 					var textToFind = _param[_cat][_name]["value"+j];
 					if (textToFind == undefined)
 						continue;
-					
+
 					_isFound = false;
 					element.selectedIndex = -1;
 					for (var i = 0; i < element.options.length; i++) {
@@ -2091,17 +2091,17 @@
 						smartled = true;
 				}
 
-				if ((pwm && _param[_cat][_name]["value1"] == "flashlight-default") || 
+				if ((pwm && _param[_cat][_name]["value1"] == "flashlight-default") ||
 					_param[_cat][_name]["value1"] == "flashlight-pwm" ||
 					_param[_cat][_name]["value1"] == "output-pwm"
 				)
 					setVisible("GPIO_ShowPWMFrequency", true);
 				else
 					setVisible("GPIO_ShowPWMFrequency", false);
-	
+
 				if (_param[_cat][_name]["value1"] == "input" ||
 					_param[_cat][_name]["value1"] == "input-pullup" ||
-					_param[_cat][_name]["value1"] == "input-pulldown") 
+					_param[_cat][_name]["value1"] == "input-pulldown")
 				{
 					setVisible("GPIO_ShowGPIOCaptureMode", true);
 
@@ -2122,8 +2122,8 @@
 				else
 					setVisible("GPIO_ShowSmartLed", false);
 
-				
-				if (_param[_cat][_name]["value1"].substring(0,10) == "flashlight" && 
+
+				if (_param[_cat][_name]["value1"].substring(0,10) == "flashlight" &&
 					_param[_cat][_name]["value1"] != "flashlight-digital"
 				)
 					setVisible("GPIO_ShowIntersityCorrection", true);
@@ -2137,8 +2137,8 @@
 			if (_optional) {
 				document.getElementById(_cat+"_"+_name+"_enabled").checked = _param[_cat][_name]["enabled"];
 				for (var j = 1; j <= anzpara; ++j) {
-					document.getElementById(_cat+"_"+_name+"_value"+j).disabled = !_param[_cat][_name]["enabled"];	
-				}		
+					document.getElementById(_cat+"_"+_name+"_value"+j).disabled = !_param[_cat][_name]["enabled"];
+				}
 			}
 			document.getElementById(_cat+"_"+_name+"_text").style.color = "black"
 			setEnabled(_cat+"_"+_name, true);
@@ -2149,7 +2149,7 @@
 					var textToFind = _param[_cat][_name]["value"+j];
 					if (textToFind == undefined)
 						continue;
-					
+
 					_isFound = false;
 					element.selectedIndex = -1;
 					for (var i = 0; i < element.options.length; i++) {
@@ -2171,17 +2171,17 @@
 				else {
 					element.value = _param[_cat][_name]["value"+j];
 				}
-			}	
+			}
 		}
 
 		///////////////// am Ende, falls Kategorie als gesamtes nicht ausgewählt --> deaktivieren
-		if (_category[_cat]["enabled"] == false) 
+		if (_category[_cat]["enabled"] == false)
 		{
 			if (_optional) {
 				document.getElementById(_cat+"_"+_name+"_enabled").disabled = true;
 				for (var j = 1; j <= anzpara; ++j) {
 					document.getElementById(_cat+"_"+_name+"_value"+j).disabled = true;
-				}	
+				}
 			}
 			document.getElementById(_cat+"_"+_name+"_text").style="color: gray;"
 			setEnabled(_cat+"_"+_name, false);
@@ -2208,7 +2208,7 @@
 		setEnabled(_cat + "_" + _param, _isOn);
 
 		for (var j = 1; j <= param[_cat][_param]["anzParam"]; ++j) {
-				document.getElementById(_cat+"_"+_param+"_value"+j).disabled = !_isOn;	
+				document.getElementById(_cat+"_"+_param+"_value"+j).disabled = !_isOn;
 				document.getElementById(_cat+"_"+_param+"_value"+j).style.color = _color;
 		}
 	}
@@ -2282,7 +2282,7 @@
 
 		if (_optional) {
 			document.getElementById(_cat+"_"+_name+"_enabled").disabled = !_status;
-			document.getElementById(_cat+"_"+_name+"_enabled").style.color = _color;	
+			document.getElementById(_cat+"_"+_name+"_enabled").style.color = _color;
 		}
 
 		if (_number == -1){
@@ -2304,8 +2304,8 @@
 		setEnabled(_cat+"_"+_name, _status);
 
 		for (var j = 1; j <= _param[_cat][_name]["anzParam"]; ++j) {
-				document.getElementById(_cat+"_"+_name+"_value"+j).disabled = !_status;	
-				document.getElementById(_cat+"_"+_name+"_value"+j).style.color = _color;	
+				document.getElementById(_cat+"_"+_name+"_value"+j).disabled = !_status;
+				document.getElementById(_cat+"_"+_name+"_value"+j).style.color = _color;
 		}
 	}
 
@@ -2323,7 +2323,7 @@
 				return;
 
 			if (_optional) {	// If checkbox is avaiable -> set by selection
-				NUMBERS[_number][_cat][_name]["enabled"] = document.getElementById(_cat+"_"+_name+"_enabled").checked;			
+				NUMBERS[_number][_cat][_name]["enabled"] = document.getElementById(_cat+"_"+_name+"_enabled").checked;
 			}
 			else {				// If no checkbox is available -> always enabled
 				NUMBERS[_number][_cat][_name]["enabled"] = true;
@@ -2350,7 +2350,7 @@
 			}
 		}
 		else if (_cat == "GPIO") {
-			_param[_cat][_name]["enabled"] = document.getElementById("GPIO_EnablePin_value1").value == "true" ? true : false;			
+			_param[_cat][_name]["enabled"] = document.getElementById("GPIO_EnablePin_value1").value == "true" ? true : false;
 
 			for (var j = 1; j <= _param[_cat][_name]["anzParam"]; ++j) {
 				let element = document.getElementById("GPIO_IO_value"+j);
@@ -2373,9 +2373,9 @@
 			}
 		}
 		else
-		{	
+		{
 			if (_optional) {	// If checkbox is avaiable -> set by selection
-				_param[_cat][_name]["enabled"] = document.getElementById(_cat+"_"+_name+"_enabled").checked;			
+				_param[_cat][_name]["enabled"] = document.getElementById(_cat+"_"+_name+"_enabled").checked;
 			}
 			else {				// If no checkbox is available -> always enabled
 				_param[_cat][_name]["enabled"] = true;
@@ -2399,7 +2399,7 @@
 					}
 					_param[_cat][_name]["value"+j] = element.value;
 				}
-			}		
+			}
 		}
 	}
 
@@ -2483,29 +2483,29 @@
         WriteParameter(param, category, "TakeImage", "ZoomOffsetY", false);
 		WriteParameter(param, category, "TakeImage", "Demo", false);
 
-		WriteParameter(param, category, "Alignment", "SearchFieldX", false);		
-		WriteParameter(param, category, "Alignment", "SearchFieldY", false);		
+		WriteParameter(param, category, "Alignment", "SearchFieldX", false);
+		WriteParameter(param, category, "Alignment", "SearchFieldY", false);
 		WriteParameter(param, category, "Alignment", "AlignmentAlgo", false);
 		WriteParameter(param, category, "Alignment", "InitialRotate", false);
 		WriteParameter(param, category, "Alignment", "FlipImageSize", false);
 		WriteParameter(param, category, "Alignment", "SaveDebugInfo", false);
 
 		WriteParameter(param, category, "Digits", "CNNGoodThreshold", false);
-		WriteParameter(param, category, "Digits", "ROIImagesLocation", true);		
-		WriteParameter(param, category, "Digits", "ROIImagesRetention", true);		
-		
-		WriteParameter(param, category, "Analog", "ROIImagesLocation", true);		
-		WriteParameter(param, category, "Analog", "ROIImagesRetention", true);		
-		
-		WriteParameter(param, category, "PostProcessing", "FallbackValueUse", false);		
-		WriteParameter(param, category, "PostProcessing", "FallbackValueAgeStartup", false);		
-		WriteParameter(param, category, "PostProcessing", "CheckDigitIncreaseConsistency", false);
-		WriteParameter(param, category, "PostProcessing", "SaveDebugInfo", false);	
+		WriteParameter(param, category, "Digits", "ROIImagesLocation", true);
+		WriteParameter(param, category, "Digits", "ROIImagesRetention", true);
 
-		WriteParameter(param, category, "MQTT", "Uri", false);	
-		WriteParameter(param, category, "MQTT", "MainTopic", false);	
-		WriteParameter(param, category, "MQTT", "ClientID", false);	
-		WriteParameter(param, category, "MQTT", "user", true);	
+		WriteParameter(param, category, "Analog", "ROIImagesLocation", true);
+		WriteParameter(param, category, "Analog", "ROIImagesRetention", true);
+
+		WriteParameter(param, category, "PostProcessing", "FallbackValueUse", false);
+		WriteParameter(param, category, "PostProcessing", "FallbackValueAgeStartup", false);
+		WriteParameter(param, category, "PostProcessing", "CheckDigitIncreaseConsistency", false);
+		WriteParameter(param, category, "PostProcessing", "SaveDebugInfo", false);
+
+		WriteParameter(param, category, "MQTT", "Uri", false);
+		WriteParameter(param, category, "MQTT", "MainTopic", false);
+		WriteParameter(param, category, "MQTT", "ClientID", false);
+		WriteParameter(param, category, "MQTT", "user", true);
 		WriteParameter(param, category, "MQTT", "password", true);
 		WriteParameter(param, category, "MQTT", "TLSEncryption", false);
 		WriteParameter(param, category, "MQTT", "TLSCACert", false);
@@ -2518,19 +2518,19 @@
 		WriteParameter(param, category, "MQTT", "HAStatusTopic", false);
 		WriteParameter(param, category, "MQTT", "HARetainDiscovery", false);
 		WriteParameter(param, category, "MQTT", "HAMeterType", false);
-		
-		WriteParameter(param, category, "InfluxDB", "Uri", false);	
-		WriteParameter(param, category, "InfluxDB", "Database", false);	
-		WriteParameter(param, category, "InfluxDB", "user", true);	
+
+		WriteParameter(param, category, "InfluxDB", "Uri", false);
+		WriteParameter(param, category, "InfluxDB", "Database", false);
+		WriteParameter(param, category, "InfluxDB", "user", true);
 		WriteParameter(param, category, "InfluxDB", "password", true);
 		WriteParameter(param, category, "InfluxDB", "TLSEncryption", false);
 		WriteParameter(param, category, "InfluxDB", "TLSCACert", false);
 		WriteParameter(param, category, "InfluxDB", "TLSClientCert", false);
 		WriteParameter(param, category, "InfluxDB", "TLSClientKey", false);
 
-		WriteParameter(param, category, "InfluxDBv2", "Uri", false);	
-		WriteParameter(param, category, "InfluxDBv2", "Bucket", false);	
-		WriteParameter(param, category, "InfluxDBv2", "Org", true);	
+		WriteParameter(param, category, "InfluxDBv2", "Uri", false);
+		WriteParameter(param, category, "InfluxDBv2", "Bucket", false);
+		WriteParameter(param, category, "InfluxDBv2", "Org", true);
 		WriteParameter(param, category, "InfluxDBv2", "Token", true);
 		WriteParameter(param, category, "InfluxDBv2", "TLSEncryption", false);
 		WriteParameter(param, category, "InfluxDBv2", "TLSCACert", false);
@@ -2539,11 +2539,11 @@
 
 		// GPIO values are getting updated by GpioPinSelectAfterChange()
 
-		WriteParameter(param, category, "AutoTimer", "AutoStart", false);	
+		WriteParameter(param, category, "AutoTimer", "AutoStart", false);
 		WriteParameter(param, category, "AutoTimer", "Interval", false);
 
-		WriteParameter(param, category, "DataLogging", "DataLogActive", false);	
-		WriteParameter(param, category, "DataLogging", "DataFilesRetention", false);	
+		WriteParameter(param, category, "DataLogging", "DataLogActive", false);
+		WriteParameter(param, category, "DataLogging", "DataFilesRetention", false);
 
 		WriteParameter(param, category, "Debug", "LogLevel", false);
 		WriteParameter(param, category, "Debug", "LogfilesRetention", false);
@@ -2589,7 +2589,7 @@
 		for (var i = 0; i < tflite_list.length; ++i) {
 			var optionDig = document.createElement("option");
 			var optionAna = document.createElement("option");
-			
+
 			var text = tflite_list[i].replace("/config/", "");
 
             if (tflite_list[i].includes("/dig")) { // Its a digit model, only show in the digital list box
@@ -2610,8 +2610,8 @@
 			}
 		}
 
-		WriteParameter(param, category, "Analog", "Model", false);		
-		WriteParameter(param, category, "Digits", "Model", false);		
+		WriteParameter(param, category, "Analog", "Model", false);
+		WriteParameter(param, category, "Digits", "Model", false);
 	}
 
 
@@ -2623,7 +2623,7 @@
 		category["InfluxDB"]["enabled"] = document.getElementById("Category_InfluxDB_enabled").checked;
 		category["InfluxDBv2"]["enabled"] = document.getElementById("Category_InfluxDBv2_enabled").checked;
 		category["GPIO"]["enabled"] = document.getElementById("Category_GPIO_enabled").checked;
-		
+
 		ReadParameter(param, "TakeImage", "RawImagesLocation", true);
 		ReadParameter(param, "TakeImage", "RawImagesRetention", true);
 		ReadParameter(param, "TakeImage", "FlashTime", false);
@@ -2648,7 +2648,7 @@
         ReadParameter(param, "TakeImage", "ZoomOffsetY", false);
 		ReadParameter(param, "TakeImage", "Demo", false);
 
-		ReadParameter(param, "Alignment", "SearchFieldX", false);	
+		ReadParameter(param, "Alignment", "SearchFieldX", false);
 		ReadParameter(param, "Alignment", "SearchFieldY", false);
 		ReadParameter(param, "Alignment", "AlignmentAlgo", false);
 		ReadParameter(param, "Alignment", "InitialRotate", false);
@@ -2708,7 +2708,7 @@
 
 		ReadParameter(param, "AutoTimer", "AutoStart", false);
 		ReadParameter(param, "AutoTimer", "Interval", false);
-		
+
 		ReadParameter(param, "DataLogging", "DataLogActive", false);
 		ReadParameter(param, "DataLogging", "DataFilesRetention", false);
 
@@ -2774,7 +2774,7 @@
 		}
 		else
 		{
-			document.getElementById("Edit_Config_Direct").style.display = "none"; 
+			document.getElementById("Edit_Config_Direct").style.display = "none";
 		}
 
 		getGPIOPins();
@@ -2804,7 +2804,7 @@
 			firework.launch('Save and apply configuration...', 'success', 2000, true);
 			setTimeout(function() {
 				reload_config();
-			}, 200);    
+			}, 200);
 		}
 	}
 
@@ -2816,7 +2816,7 @@
 			window.location.href = stringota;
 			window.location.assign(stringota);
 			window.location.replace(stringota);
-		}	
+		}
 	}
 
 
@@ -2880,7 +2880,7 @@
 					if (pinConfig.gpio[i].usage.substring(0,10) == "restricted") {
 						elements[j].classList.add("expert");
 						document.getElementById("GPIO_RestrictedUsageText").style.display = "";
-						document.getElementById("GPIO_RestrictedUsageText").innerText = "[Default: " + 
+						document.getElementById("GPIO_RestrictedUsageText").innerText = "[Default: " +
 											pinConfig.gpio[i].usage.substring(12).replace(/\-/g, " ") + "]";
 					}
 					else {
@@ -2898,7 +2898,7 @@
 	{
 		if (document.getElementById("GPIO_IO_value1").value == "input" ||
 			document.getElementById("GPIO_IO_value1").value == "input-pullup" ||
-			document.getElementById("GPIO_IO_value1").value == "input-pulldown") 
+			document.getElementById("GPIO_IO_value1").value == "input-pulldown")
 		{
 			if (document.getElementById("GPIO_IO_value2").value != "cyclic-polling")
 				setVisible("GPIO_ShowGPIODebounceTime", true);
@@ -2953,7 +2953,7 @@
 					}
 
 					if (category["GPIO"]["enabled"] == false)
-						document.getElementById("TakeImage_FlashlightGPIOMapping_value").innerText = 
+						document.getElementById("TakeImage_FlashlightGPIOMapping_value").innerText =
 								"Default [GPIO" + pinConfig.gpio[i].name + "]";
 					else
 						document.getElementById("TakeImage_FlashlightGPIOMapping_value").innerText = "Customized [GPIO Section]";
@@ -2990,7 +2990,7 @@
 		}
 	}
 
-	
+
 	function GpioConfigCheck()
 	{
 		for (let i = 0; i < pinConfig.gpio.length; ++i) {
@@ -3001,7 +3001,7 @@
 
 
 	/* hash #description open the details part of the page */
-	function openDescription() 
+	function openDescription()
 	{
 		if(window.location.hash) {
 			var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
@@ -3026,7 +3026,7 @@
 		document.getElementById("divloading").style.display = 'none'; // Hide loading indicator
 		document.getElementById("divcontent").style.display = ''; 	// Show parameter content
 	}
-	
+
 
 	async function init()
 	{
@@ -3045,6 +3045,6 @@
 	init();
 
 </script>
-	
+
 </body>
 </html>

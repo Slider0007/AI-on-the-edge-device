@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
     <title>AI on the edge</title>
@@ -19,7 +19,7 @@
         .button {
             padding: 5px 10px;
             width: 205px;
-            font-size: 16px;	
+            font-size: 16px;
         }
     </style>
 
@@ -33,7 +33,7 @@
     <h4>Initial setup aborted!</h4>
 
     <p>You have <b>aborted</b> the initial setup!</p>
-    <p>Once you push the button below, the setup mode will be ended and the device will be automatically switch to regular web interface. 
+    <p>Once you push the button below, the setup mode will be ended and the device will be automatically switch to regular web interface.
        Please be aware: The configuration of the device is not or only parly adapted to your needs! <br><br>
        Configuration can still be adapted / completed using regular web interface.
     </p>
@@ -42,15 +42,15 @@
         <button class="button" onclick="abortSetup()">Abort Setup</button>
     </p>
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
-<script src="readconfigparam.js?v=$COMMIT_HASH"></script> 
-<script src="readconfigcommon.js?v=$COMMIT_HASH"></script> 
+<script src="common.js?v=$COMMIT_HASH"></script>
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
 
 <script>
 
     function reboot()
     {
-        ParseConfig();	
+        ParseConfig();
         param = getConfigParameters();
         param["System"]["SetupMode"]["enabled"] = true;
         param["System"]["SetupMode"]["value1"] = "false";
@@ -70,10 +70,10 @@
             parent.location.href = stringota;
             parent.location.assign(stringota);
             parent.location.replace(stringota);
-        }, 7000);    
+        }, 7000);
     }
 
-    
+
     function abortSetup()
     {
         if (confirm("Do you want to abort the setup mode and switch to regular web interface?"))

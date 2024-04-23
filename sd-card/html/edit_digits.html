@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Digit ROI</title>
@@ -23,14 +23,14 @@
             padding: 3px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
         }
 
         input[type=text] {
             padding: 3px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
         }
 
         input:out-of-range {
@@ -42,7 +42,7 @@
             padding: 3px 5px;
             display: inline-block;
             border: 1px solid #ccc;
-            font-size: 16px; 
+            font-size: 16px;
             margin-right: 10px;
             min-width: 100px;
             max-width: 100%;
@@ -95,11 +95,11 @@
 
     <h2>Digit ROI</h2>
     <details id="desc_details">
-        <summary><b>CLICK HERE</b> for usage description. Further documentation: 
+        <summary><b>CLICK HERE</b> for usage description. Further documentation:
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/ROI-Configuration/ target=_blank>ROI Configuration</a>
         </summary>
         <p>
-            <b>R</b>egion <b>O</b>f <b>I</b>nterest (ROI) for digit numbers can be defined on this page. If no digit number 
+            <b>R</b>egion <b>O</b>f <b>I</b>nterest (ROI) for digit numbers can be defined on this page. If no digit number
             needs to be processed, disable digit number processing by deselecting <b>"Digit ROI Processing"</b>.
         </p>
         <p>
@@ -115,7 +115,7 @@
             <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/ROI-Configuration/ target=_blank>ROI Configuration</a>.
             With the drop down <b>"ROI"</b> the different ROIs in the respective number sequence can be selected.<br>
 
-            To create new ROIs use <b>"New ROI"</b>. The new ROIs are automatically named uniquely and in ascending order 
+            To create new ROIs use <b>"New ROI"</b>. The new ROIs are automatically named uniquely and in ascending order
             (e.g. dig1, dig2, ...). Deleting a ROI between exisitung ones will rename the remaining ROIs in ascending order
             without keeping any naming gap.
         </p>
@@ -124,10 +124,10 @@
             The position in the number sequence can be changed with the buttons <b>"Move Lower"</b> and <b>"Move Higher"</b>.
             The multiplication factor which is shown below the ROI drop down is the multiplication factor of pure position/order
             in number sequence and the factor right-hand side to this is the additionally corrected by decimal shift setting
-            (expert parameter: Decimal Shift, default: 0). 
+            (expert parameter: Decimal Shift, default: 0).
         </p>
         <p>
-            After the definition of digit ROIs is completed don't forget to save the new configuration with the button 
+            After the definition of digit ROIs is completed don't forget to save the new configuration with the button
             <b>"Save And Apply"</b>. The new configuration gets automatically applied. No reboot is required.
         </p>
     </details>
@@ -165,7 +165,7 @@
                 </select>
             </td>
             <td><input class="button" type="submit" id="newSequence" name="newSequence" value="New" onclick="onClickNewSequence()"></td>
-            <td><input class="button" type="submit" id="renameSequence" name="renameSequence" value="Rename" onclick="onClickRenameSequence()"></td> 
+            <td><input class="button" type="submit" id="renameSequence" name="renameSequence" value="Rename" onclick="onClickRenameSequence()"></td>
             <td><input class="button" type="submit" id="deleteSequence" name="deleteSequence" value="Delete" onclick="onClickDeleteSequence()"></td>
         </tr>
     </table>
@@ -185,14 +185,14 @@
             <td><input class="button" type="submit" id="newROI" name="newROI" onclick="onClickNewROI()" value="New"></td>
             <td><input class="button" type="submit" id="deleteROI" name="deleteROI" onclick="onClickDeleteROI()" value="Delete"></td>
         </tr>
-        <tr>       
+        <tr>
             <td class="multiplier">Multiplier: <output id="multiplier" name="multiplier"></output><br>
                 (only based on order)
             </td>
             <td class="multiplier">Multiplier: <output id="multiplier_decshift" name="multiplier_decshift"></output><br>
                 (order + decimal shift: <output id="decimalShift" name="decimalShift"></output>)
             </td>
-            <td><input class="button" type="submit" id="moveROIHigher" onclick="onClickMoveROIHigher()" value="Move Higher"></td> 
+            <td><input class="button" type="submit" id="moveROIHigher" onclick="onClickMoveROIHigher()" value="Move Higher"></td>
             <td><input class="button" type="submit" id="moveROILower" onclick="onClickMoveROILower()" value="Move Lower"></td>
         </tr>
     </table>
@@ -204,17 +204,17 @@
             <col span="1" style="width: 62%;">
         </colgroup>
         <tr>
-            <td>x: <input type="number" name="refx" id="refx" min=1 step=1 onchange="onValueManualChanged()" 
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>	  
-            <td>Δx: <input type="number" name="refdx" id="refdx" min=1 step=1 onchange="onValueManualChangedDx()" 
+            <td>x: <input type="number" name="refx" id="refx" min=1 step=1 onchange="onValueManualChanged()"
+                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
+            <td>Δx: <input type="number" name="refdx" id="refdx" min=1 step=1 onchange="onValueManualChangedDx()"
                         oninput="(!validity.rangeUnderflow||(value=1));"></td>
             <td><input type="checkbox" id="lockAspectRatio" name="lockAspectRatio" value="1" onclick="onClickLockAspectRatio()" checked>
                             <label for="lockAspectRatio"> Lock aspect ratio </label></td>
         </tr>
         <tr>
-            <td>y: <input type="number" name="refy" id="refy" min=1 step=1 onchange="onValueManualChanged()" 
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>	
-            <td>Δy: <input type="number" name="refdy" id="refdy" min=1 step=1 onchange="onValueManualChanged()" 
+            <td>y: <input type="number" name="refy" id="refy" min=1 step=1 onchange="onValueManualChanged()"
+                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
+            <td>Δy: <input type="number" name="refdy" id="refdy" min=1 step=1 onchange="onValueManualChanged()"
                         oninput="(!validity.rangeUnderflow||(value=1));"></td>
             <td><input type="checkbox" id="lockSizes" name="lockSizes" value="1" onclick="onClickLockSizes()" checked>
                             <label for="lockSizes"> Synchronize y, Δx and Δy</label></td>
@@ -248,7 +248,7 @@
     </table>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="common.js?v=$COMMIT_HASH"></script>
 <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
 <script src="readconfigparam.js?v=$COMMIT_HASH"></script>
 <script>
@@ -272,12 +272,12 @@
     function EnDisableDigits()
     {
         isEnabled = document.getElementById("Category_Digits_enabled").checked;
-        
+
         sah1(document.getElementById("div1"), !isEnabled);
-        
+
         param_category["Digits"]["enabled"] = isEnabled;
         document.getElementById("saveconfig").disabled = false;
-        
+
         if (isEnabled) {
             RefreshROI();
         }
@@ -340,7 +340,7 @@
     {
         if (confirm("The entire number sequence will be removed (digit + analog parts). " +
                     "To remove single ROI of the number sequence, use \"Delete ROI\" instead.\n" +
-                    "Do you really want to proceed?")) 
+                    "Do you really want to proceed?"))
         {
             var sel_sequence = document.getElementById("SequenceSelect");
             var sequence_name = sel_sequence.options[sel_sequence.selectedIndex].text;
@@ -348,7 +348,7 @@
             if (erg != "")
                 firework.launch(erg, 'danger', 30000);
             RefreshSequences();
-        }	    
+        }
     }
 
 
@@ -396,7 +396,7 @@
                 space = ROIInfo[1].x - parseInt(ROIInfo[0].x) - parseInt(ROIInfo[0].dx);
 
             var roi_x = parseInt(ROIInfo[sel_roi.length-1].x) + parseInt(ROIInfo[sel_roi.length-1].dx) + space;
-            
+
             erg = CreateROI(sequence_name, "digit", roi_index, roi_name, roi_x, parseInt(ROIInfo[sel_roi.length-1].y),
                             ROIInfo[sel_roi.length-1]["dx"], ROIInfo[sel_roi.length-1]["dy"], 0);
         }
@@ -463,7 +463,7 @@
     function onClickLockSizes()
     {
         lockSizes = document.getElementById("lockSizes").checked;
-        RefreshROI(); 
+        RefreshROI();
         onValueManualChangedSpace();
 
         if (!lockSizes) {
@@ -501,15 +501,15 @@
             }
 
             rect.startX = document.getElementById("refx").value;
-            rect.startY = document.getElementById("refy").value; 
+            rect.startY = document.getElementById("refy").value;
 
             RefreshDraw();
-            
+
             if (lockSpaceEquidistant) {
                 makeX_SpaceEquidistant();
             }
-              
-            RefreshDraw();  
+
+            RefreshDraw();
         }
         RefreshROI();
         document.getElementById("saveconfig").disabled = false;
@@ -532,13 +532,13 @@
             }
 
             rect.startX = document.getElementById("refx").value;
-            rect.startY = document.getElementById("refy").value; 
+            rect.startY = document.getElementById("refy").value;
 
             if (lockSpaceEquidistant) {
                 makeX_SpaceEquidistant();
             }
 
-            RefreshDraw();            
+            RefreshDraw();
         }
         RefreshROI();
         document.getElementById("saveconfig").disabled = false;
@@ -550,11 +550,11 @@
         if (!drag) {
            space = document.getElementById("space").value;
            onValueManualChanged();
-           RefreshDraw(); 
+           RefreshDraw();
         }
     }
 
-    
+
     // Make all X spaces equidistant
     function makeX_SpaceEquidistant()
     {
@@ -595,7 +595,7 @@
             var option = document.createElement("option");
             option.text = NumberSequence[i]["name"];
             option.value = i;
-            sel_sequence.add(option); 
+            sel_sequence.add(option);
 
             if (typeof _sel !== 'undefined') {
                 if (NumberSequence[i]["name"] == _sel)
@@ -622,18 +622,18 @@
             firework.launch('Digit ROI processing is disabled. Activate with checkbox if needed', 'warning', 5000);
             return;
         }
-        
+
         var sel_roi = document.getElementById("ROISelect");
 
         if (ROIInfo.length == 0) {
             firework.launch('No digit ROIs defined in selected number sequence', 'warning', 5000);
             document.getElementById("newROI").disabled = false;
             document.getElementById("deleteROI").disabled = true;
-            
+
             document.getElementById("ROISelect").disabled = true;
             sel_roi.selectedIndex = 0;
             sel_roi.options[sel_roi.selectedIndex].text = "N/A";
-            
+
             document.getElementById("multiplier").style.display = "none";
             document.getElementById("multiplier_decshift").style.display = "none";
             document.getElementById("refx").disabled = true;
@@ -667,10 +667,10 @@
             while (sel_roi.length){
                 sel_roi.remove(0);
             }
-            
+
             if (roi_selected > ROIInfo.length)
                 roi_selected = ROIInfo.length-1;
-            
+
             for (var i = 0; i < ROIInfo.length; ++i){
                 var option = document.createElement("option");
                 option.text = ROIInfo[i]["name"];
@@ -683,7 +683,7 @@
 
                 ROIPositionValidation(ROIInfo[i]);
             }
-            sel_roi.selectedIndex = roi_selected; 
+            sel_roi.selectedIndex = roi_selected;
         }
 
         document.getElementById("moveROIHigher").disabled = false;
@@ -697,7 +697,7 @@
         }
 
         ShowMultiplier();
-        
+
         document.getElementById("lockAspectRatio").checked = lockAspectRatio;
         document.getElementById("lockSizes").checked = lockSizes;
         document.getElementById("lockSpaceEquidistant").checked = lockSpaceEquidistant;
@@ -708,11 +708,11 @@
         else {
             document.getElementById("space").disabled = false;
         }
-        
+
         document.getElementById("refx").value = ROIInfo[roi_selected]["x"];
-        document.getElementById("refy").value = ROIInfo[roi_selected]["y"];  
-        document.getElementById("refdx").value = ROIInfo[roi_selected]["dx"];  
-        document.getElementById("refdy").value = ROIInfo[roi_selected]["dy"];  
+        document.getElementById("refy").value = ROIInfo[roi_selected]["y"];
+        document.getElementById("refdx").value = ROIInfo[roi_selected]["dx"];
+        document.getElementById("refdy").value = ROIInfo[roi_selected]["dy"];
         rect.startX = ROIInfo[roi_selected]["x"];
         rect.startY = ROIInfo[roi_selected]["y"];
         rect.w = ROIInfo[roi_selected]["dx"];
@@ -752,7 +752,7 @@
             for (var i = 1; i < (ROIInfo.length); ++i) { // 2nd .. last ROI
                 if (parseInt(ROIInfo[i].y) != parseInt(ROIInfo[0].y) ||
                     parseInt(ROIInfo[i].dx) != parseInt(ROIInfo[0].dx) ||
-                    parseInt(ROIInfo[i].dy) != parseInt(ROIInfo[0].dy)) { 
+                    parseInt(ROIInfo[i].dy) != parseInt(ROIInfo[0].dy)) {
                     all_y_dx_dy_Identical = false;
                     break;
                 }
@@ -867,7 +867,7 @@
         if (fixedDecimals_decshift < 0) {
             fixedDecimals_decshift = -1*fixedDecimals_decshift;
         }
-        
+
         document.getElementById("multiplier").value="x" + Number(10 ** multiplier).toFixed(0);
         document.getElementById("multiplier_decshift").value="x" + Number(10 ** multiplier_decshift).toFixed(fixedDecimals_decshift);
     }
@@ -954,9 +954,9 @@
                         var dx = parseInt(ROIInfo[i].dx) + parseInt(lw);
                         var dy = parseInt(ROIInfo[i].dy) + parseInt(lw);
                         context.strokeRect(x0, y0, dx, dy);
-                        
+
                         drawTextBG(context, ROIInfo[i]["name"], x0+dx/2, parseInt(ROIInfo[i].y), parseInt(rect.h), 2, false);
-    
+
                         lw = 1;
                         var x0 = parseInt(ROIInfo[i].x) - parseInt(lw/2);
                         var y0 = parseInt(ROIInfo[i].y) - parseInt(lw/2);
@@ -979,9 +979,9 @@
             var dx = parseInt(rect.w) + parseInt(lw);
             var dy = parseInt(rect.h) + parseInt(lw);
             context.strokeRect(x0, y0, dx, dy);
-            
+
             drawTextBG(context, ROIInfo[roi_selected]["name"], x0+dx/2, parseInt(rect.startY), parseInt(rect.h), 2, true);
-            
+
             context.lineWidth = 1;
             context.strokeRect(x0+dx*0.2, y0+dy*0.2, dx*0.6, dy*0.6);
 
@@ -990,8 +990,8 @@
             context.beginPath();
             context.moveTo(x0, y0+dy/2);
             context.lineTo(x0+dx, y0+dy/2);
-            context.stroke();   
-            
+            context.stroke();
+
             ROIInfo[roi_selected]["x"] = rect.startX;
             ROIInfo[roi_selected]["y"] = rect.startY;
             ROIInfo[roi_selected]["dx"] = rect.w;
@@ -999,7 +999,7 @@
         }
     }
 
-    
+
     function getCoords(elem) // crossbrowser version
     {
         var box = elem.getBoundingClientRect();
@@ -1021,7 +1021,7 @@
         rect.startX = e.pageX - zw.left;
         rect.startY = e.pageY - zw.top;
         document.getElementById("refx").value =  rect.startX;
-        document.getElementById("refy").value =  rect.startY;    
+        document.getElementById("refy").value =  rect.startY;
         drag = true;
     }
 
@@ -1041,14 +1041,14 @@
         document.getElementById("refdy").value = rect.h;
         document.getElementById("refx").value = rect.startX;
         document.getElementById("refy").value = rect.startY;
-        RefreshROI();    
+        RefreshROI();
     }
 
 
     function mouseMove(e)
     {
         if (drag) {
-            zw = getCoords(this)        
+            zw = getCoords(this)
 
             if (ROIInfo.length == 0) {
                 return;
@@ -1072,15 +1072,15 @@
             zw = getCoords(this);
             x = e.pageX - zw.left;
             y = e.pageY - zw.top;
-            
+
             context.lineWidth = 1;
             context.strokeStyle = "#00FF00";
-            context.beginPath(); 
+            context.beginPath();
             context.moveTo(0,y);
             context.lineTo(canvas.width, y);
             context.moveTo(x, 0);
             context.lineTo(x, canvas.height);
-            context.stroke();            
+            context.stroke();
         }
     }
 
@@ -1122,11 +1122,11 @@
         canvas.addEventListener('mousemove', mouseMove, false);
     }
 
-    
+
     function loadConfigData()
     {
         ParseConfig();
-        param = getConfigParameters(); 
+        param = getConfigParameters();
         param_category = getConfigCategory();
 
         RefreshSequences();
@@ -1140,7 +1140,7 @@
     function init()
     {
         openDescription();
-        
+
         loadReferenceImage();
         loadConfig().then(() => loadConfigData());
     }

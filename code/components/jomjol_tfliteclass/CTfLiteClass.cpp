@@ -19,7 +19,7 @@ float CTfLiteClass::GetOutputValue(int nr)
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "GetOutputValue failed");
         return -1000;
     }
-        
+
     int numeroutput = output2->dims->data[1];
     if ((nr+1) > numeroutput)
         return -1000;
@@ -161,7 +161,7 @@ void CTfLiteClass::Invoke()
 
 bool CTfLiteClass::LoadInputImageBasis(CImageBasis *rs)
 {
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("LoadInputImageBasis - Start");
     #endif
 
@@ -197,7 +197,7 @@ bool CTfLiteClass::LoadInputImageBasis(CImageBasis *rs)
                 input_data_ptr++;
             }
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("LoadInputImageBasis - done");
     #endif
 
@@ -254,7 +254,7 @@ bool CTfLiteClass::MakeAllocate()
 
 void CTfLiteClass::GetInputTensorSize()
 {
-#ifdef DEBUG_DETAIL_ON    
+#ifdef DEBUG_DETAIL_ON
     float *zw = input;
     int test = sizeof(zw);
     ESP_LOGD(TAG, "Input Tensor Dimension: %d", test);
@@ -265,8 +265,8 @@ void CTfLiteClass::GetInputTensorSize()
 bool CTfLiteClass::ReadFileToModel(std::string _fn)
 {
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Read TFLITE model file: " + _fn);
-    
-    #ifdef DEBUG_DETAIL_ON      
+
+    #ifdef DEBUG_DETAIL_ON
             LogFile.WriteHeapInfo("ReadFileToModel: start");
     #endif
 
@@ -277,7 +277,7 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
     }
 
     modelfile = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->modelfile", size, MALLOC_CAP_SPIRAM);
-  
+
 	  if(modelfile == NULL) {
         LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ReadFileToModel: Can't allocate enough memory: " + std::to_string(size));
         LogFile.WriteHeapInfo("ReadFileToModel: Allocation failed");
@@ -296,9 +296,9 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
         fclose(f);
         return false;
     }
-    fclose(f);     
+    fclose(f);
 
-    #ifdef DEBUG_DETAIL_ON 
+    #ifdef DEBUG_DETAIL_ON
         LogFile.WriteHeapInfo("ReadFileToModel: done");
     #endif
 
@@ -309,7 +309,7 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
 bool CTfLiteClass::LoadModel(std::string _fn)
 {
     LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "Loading TFLITE model");
-    
+
     if (!ReadFileToModel(_fn)) {
       LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "LoadModel: TFLITE model file reading failed");
       return false;
@@ -349,8 +349,8 @@ CTfLiteClass::CTfLiteClass()
 
 void CTfLiteClass::CTfLiteClassDeleteInterpreter()
 {
-    if (tensor_arena != nullptr) {  
-        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TFLITE arena - Used bytes: " + std::to_string(interpreter->arena_used_bytes())); 
+    if (tensor_arena != nullptr) {
+        LogFile.WriteToFile(ESP_LOG_DEBUG, TAG, "TFLITE arena - Used bytes: " + std::to_string(interpreter->arena_used_bytes()));
         free_psram_heap(std::string(TAG) + "->tensor_arena", tensor_arena);
         tensor_arena = nullptr;
     }
@@ -364,13 +364,13 @@ void CTfLiteClass::CTfLiteClassDeleteInterpreter()
 
 CTfLiteClass::~CTfLiteClass()
 {
-    if (tensor_arena != nullptr) {  
+    if (tensor_arena != nullptr) {
         free_psram_heap(std::string(TAG) + "->tensor_arena", tensor_arena);
     }
 
     if (interpreter != nullptr) {
         delete interpreter;
     }
-    
+
     free_psram_heap(std::string(TAG) + "->modelfile", modelfile);
-}        
+}

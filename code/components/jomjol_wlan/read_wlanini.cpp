@@ -53,7 +53,7 @@ int LoadWlanFromFile(std::string fn)
     fn = FormatFileName(fn);
     FILE* pFile = fopen(fn.c_str(), "r");
     if (pFile == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Unable to open file (read). Device init aborted"); 
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Unable to open file (read). Device init aborted");
         return -1;
     }
 
@@ -80,7 +80,7 @@ int LoadWlanFromFile(std::string fn)
 
             splitted = ZerlegeZeileWLAN(line, "=");
             splitted[0] = trim(splitted[0], " ");
-            
+
             if ((splitted.size() > 1) && (toUpper(splitted[0]) == "SSID")) {
                 tmp = trim(splitted[1]);
                 if ((tmp[0] == '"') && (tmp[tmp.length()-1] == '"')) {
@@ -102,7 +102,7 @@ int LoadWlanFromFile(std::string fn)
                 else {
                     LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Password: No password set");
                 }
-            }   
+            }
 
             else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "HOSTNAME")) {
                 tmp = trim(splitted[1]);
@@ -238,7 +238,7 @@ bool ChangeHostName(std::string fn, std::string _newhostname)
         line += "; This parameter can be configured via WebUI configuration\n";
         line += "; Default: \"watermeter\", if nothing is configured\n\n";
         line = "hostname = \"" + _newhostname + "\"\n";
-        updatedContent.push_back(line);        
+        updatedContent.push_back(line);
     }
 
     // Write updated content back to file
@@ -271,7 +271,7 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
     fn = FormatFileName(fn);
     pFile = fopen(fn.c_str(), "r+");
     if (pFile == NULL) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeRSSIThreshold: Unable to open file wlan.ini"); 
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "ChangeRSSIThreshold: Unable to open file wlan.ini");
         return false;
     }
 
@@ -304,7 +304,7 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
                 line = "";
             else
                 line = std::string(zw);
-            
+
             continue;
         }
 
@@ -312,9 +312,9 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
             line = "RSSIThreshold = " + std::to_string(_newrssithreshold) + "\n";
             found = true;
         }
-    
+
         updatedContent.push_back(line);
-    
+
         if (fgets(zw, sizeof(zw), pFile) == NULL)
             line = "";
         else
@@ -332,7 +332,7 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
         line += "; Note: This parameter can be configured via WebUI configuration\n";
         line += "; Default: 0 = Disable client requested roaming query\n\n";
         line += "RSSIThreshold = " + std::to_string(_newrssithreshold) + "\n";
-        updatedContent.push_back(line);        
+        updatedContent.push_back(line);
     }
 
     // Write updated content back to file
@@ -352,7 +352,7 @@ bool ChangeRSSIThreshold(std::string fn, int _newrssithreshold)
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "ChangeRSSIThreshold: RSSIThreshold set to " + std::to_string(wlan_config.rssi_threshold));
     else
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "WLAN roaming/channel scan (RSSIThreshold = 0) -> function disabled");
-    
+
     return true;
 }
 #endif

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xml:lang="en"> 
+<html lang="en" xml:lang="en">
 <head>
 	<meta charset="UTF-8">
 	<title>Info</title>
@@ -73,7 +73,7 @@
 		}
 	</style>
 
-	<script src="common.js?v=$COMMIT_HASH"></script> 
+	<script src="common.js?v=$COMMIT_HASH"></script>
 </head>
 
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
@@ -117,29 +117,29 @@
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
+		<tr>
 			<h3>Services</h3>
 		</tr>
 		<tr>
-			<td>Data Logging (SD Card) </td>	
+			<td>Data Logging (SD Card) </td>
 			<td class="td-badge">
 				<output class="badge" id="datalogging_sdcard_status"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>MQTT</td>	
+			<td>MQTT</td>
 			<td class="td-badge">
 				<output class="badge" id="mqtt_status"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>InfluxDB v1.x</td>	
+			<td>InfluxDB v1.x</td>
 			<td class="td-badge">
 				<output class="badge" id="influxdbv1_status"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>InfluxDB v2.x</td>	
+			<td>InfluxDB v2.x</td>
 			<td class="td-badge">
 				<output class="badge" id="influxdbv2_status"></output>
 			</td>
@@ -151,7 +151,7 @@
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
+		<tr>
 			<h3>Time</h3>
 		</tr>
 		<tr>
@@ -185,59 +185,59 @@
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
+		<tr>
 			<h3>Network</h3>
 		</tr>
 		<tr>
-			<td>WLAN Status</td>	
+			<td>WLAN Status</td>
 			<td class="td-badge">
 				<output class="badge" id="wlan_status"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>WLAN Name (SSID)</td>	
+			<td>WLAN Name (SSID)</td>
 			<td>
 				<output id="wlan_ssid"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>WLAN Signal (RSSI)</td>	
+			<td>WLAN Signal (RSSI)</td>
 			<td>
 				<output id="wlan_rssi"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>MAC Address</td>	
+			<td>MAC Address</td>
 			<td>
 				<output id="mac_address"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Network Configuration</td>	
+			<td>Network Configuration</td>
 			<td>
 				<output id="network_config"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>IPv4 Address</td>	
+			<td>IPv4 Address</td>
 			<td>
 				<output id="ipv4_address"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Netmask Address</td>	
+			<td>Netmask Address</td>
 			<td>
 				<output id="netmask_address"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Gateway Address</td>	
+			<td>Gateway Address</td>
 			<td>
 				<output id="gateway_address"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>DNS Address</td>	
+			<td>DNS Address</td>
 			<td>
 				<output id="dns_address"></output>
 			</td>
@@ -255,7 +255,7 @@
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
+		<tr>
 			<h3>Device</h3>
 		</tr>
 		<tr>
@@ -301,7 +301,7 @@
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
+		<tr>
 			<h3>Camera</h3>
 		</tr>
 		<tr>
@@ -323,7 +323,7 @@
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
+		<tr>
 			<h3>SD Card</h3>
 		</tr>
 		<tr>
@@ -363,7 +363,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td>Partition Free Space</td>	
+			<td>Partition Free Space</td>
 			<td>
 				<output id="sd_partition_free"></output>
 			</td>
@@ -375,47 +375,47 @@
 			<col span="1" style="width: 35%;">
 			<col span="1" style="width: 65%;">
 		</colgroup>
-		<tr>			
+		<tr>
 			<h3>Memory</h3>
 		</tr>
 		<tr>
-			<td>Total Free (Int + Ext)</td>	
+			<td>Total Free (Int + Ext)</td>
 			<td>
 				<output id="heap_total_free"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Ext. RAM - Free</td>	
+			<td>Ext. RAM - Free</td>
 			<td>
 				<output id="heap_spiram_free"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Ext. RAM - Largest Free Block</td>	
+			<td>Ext. RAM - Largest Free Block</td>
 			<td>
 				<output id="heap_spiram_largest_free"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Ext. RAM - Min Free</td>	
+			<td>Ext. RAM - Min Free</td>
 			<td>
 				<output id="heap_spiram_min_free"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Int. RAM - Free</td>	
+			<td>Int. RAM - Free</td>
 			<td>
 				<output id="heap_internal_free"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Int. RAM - Largest Free Block</td>	
+			<td>Int. RAM - Largest Free Block</td>
 			<td>
 				<output id="heap_internal_largest_free"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>Int. RAM - Min Free</td>	
+			<td>Int. RAM - Min Free</td>
 			<td>
 				<output id="heap_internal_min_free"></output>
 			</td>
@@ -478,13 +478,13 @@
 
 
 <script type="text/javascript">
-	function loadInfoData() 
+	function loadInfoData()
 	{
-		url = getDomainname() + '/info';     
+		url = getDomainname() + '/info';
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				const _jsonData = JSON.parse(xhttp.responseText);			
+				const _jsonData = JSON.parse(xhttp.responseText);
 				document.getElementById("process_status").value = _jsonData.process_status;
 				if (_jsonData.process_status.substr(0,10) == "Processing")
 					addClassToElement("process_status", "badge-success");
@@ -494,7 +494,7 @@
 				document.getElementById("process_interval").value = _jsonData.process_interval + " Minutes";
 				document.getElementById("process_time").value = _jsonData.process_time + " Seconds";
 				document.getElementById("cycle_counter").value = _jsonData.cycle_counter;
-				
+
 				document.getElementById("datalogging_sdcard_status").value = _jsonData.datalogging_sdcard_status;
 				if (_jsonData.datalogging_sdcard_status == "Enabled")
 					addClassToElement("datalogging_sdcard_status", "badge-success");
@@ -526,7 +526,7 @@
 					document.getElementById("influxdbv1_status").value += " (Unknown Status)"
 					addClassToElement("influxdbv1_status", "badge-error");
 				}
-				
+
 				document.getElementById("influxdbv2_status").value = _jsonData.influxdbv2_status;
 				if (_jsonData.influxdbv2_status.substring(0,7) == "Enabled")
 					addClassToElement("influxdbv2_status", "badge-success");
@@ -551,16 +551,16 @@
 
 				//Input format (ISO): 2023-10-23T14:26:34+0200
 				document.getElementById("device_starttime").value = _jsonData.device_starttime.substr(0,10) + " " +
-																	 _jsonData.device_starttime.substr(11,8) + " (UTC" +	
+																	 _jsonData.device_starttime.substr(11,8) + " (UTC" +
 																	 _jsonData.device_starttime.substr(19,5) + ")";
-				
+
 				//Input format (ISO): 2023-10-23T14:26:34+0200
 				document.getElementById("current_time").value = _jsonData.current_time.substr(0,10) + " " +
-												_jsonData.current_time.substr(11,8) + " (UTC" +	
-												_jsonData.current_time.substr(19,5) + ")";	
+												_jsonData.current_time.substr(11,8) + " (UTC" +
+												_jsonData.current_time.substr(19,5) + ")";
 
 				document.getElementById("device_uptime").value = formatUptime(_jsonData.device_uptime);
-	
+
 				document.getElementById("wlan_status").value = _jsonData.wlan_status;
 				if (_jsonData.wlan_status == "Connected")
 					addClassToElement("wlan_status", "badge-success");
@@ -574,7 +574,7 @@
 				document.getElementById("ipv4_address").value = _jsonData.ipv4_address;
 				document.getElementById("netmask_address").value = _jsonData.netmask_address;
 				document.getElementById("gateway_address").value = _jsonData.gateway_address;
-				document.getElementById("dns_address").value = _jsonData.dns_address;			
+				document.getElementById("dns_address").value = _jsonData.dns_address;
 				document.getElementById("hostname").value =_jsonData.hostname;
 
 				document.getElementById("board_type").value = _jsonData.board_type;
@@ -586,7 +586,7 @@
 
 				document.getElementById("camera_type").value = _jsonData.camera_type;
 				document.getElementById("camera_frequency").value = _jsonData.camera_frequency + "  Mhz";
-				
+
 				document.getElementById("sd_name").value = _jsonData.sd_name;
 				document.getElementById("sd_manufacturer").value = _jsonData.sd_manufacturer;
 				document.getElementById("sd_capacity").value = _jsonData.sd_capacity + " MB";
@@ -605,18 +605,18 @@
 
 				const FirmwareVersionSplit = _jsonData.firmware_version.split('Commit: ');
 				const FirmwareVersionCommit = FirmwareVersionSplit[1].substring(0, 7);
-				const FirmwareVersionString = FirmwareVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" + 
+				const FirmwareVersionString = FirmwareVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" +
 										FirmwareVersionCommit + "\" target=\"_blank\">" + FirmwareVersionCommit + "</a>)";
 				document.getElementById("firmware_version").innerHTML = FirmwareVersionString;
-				
+
 				//Input format (ISO): 2023-10-23T14:26:34+0000
 				document.getElementById("build_time").value = _jsonData.build_time.substr(0,10) + " " +
-												 _jsonData.build_time.substr(11,8) + " (UTC" +	
+												 _jsonData.build_time.substr(11,8) + " (UTC" +
 												 _jsonData.build_time.substr(19,5) + ")";
-				
+
 				const HTMLVersionSplit = _jsonData.html_version.split('Commit: ');
 				const HTMLVersionCommit = HTMLVersionSplit[1].substring(0, 7);
-				const HTMLVersionString = HTMLVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" + 
+				const HTMLVersionString = HTMLVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" +
 									HTMLVersionCommit + "\" target=\"_blank\">" + HTMLVersionCommit + "</a>)";
 				document.getElementById("html_version").innerHTML = HTMLVersionString;
 				document.getElementById("config_file_version").value = _jsonData.config_file_version;

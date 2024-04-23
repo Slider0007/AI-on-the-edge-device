@@ -45,8 +45,8 @@ class ClassLogFile
         void RemoveOldDataLog();
         void RemoveOldDebugFiles();
 
-        void WriteToData(std::string _timestamp, std::string _name, std::string  _sRawValue, std::string  _sValue, 
-                        std::string  _sFallbackValue, std::string  _sRatePerMin, std::string  _sRatePerInterval, 
+        void WriteToData(std::string _timestamp, std::string _name, std::string  _sRawValue, std::string  _sValue,
+                        std::string  _sFallbackValue, std::string  _sRatePerMin, std::string  _sRatePerInterval,
                         std::string  _sValueStatus, std::string  _digital, std::string  _analog);
 
 

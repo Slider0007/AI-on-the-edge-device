@@ -36,15 +36,15 @@ class CImageBasis
     public:
         uint8_t* rgb_image = NULL;
         int channels;
-        int width, height, bpp; 
+        int width, height, bpp;
 
         uint8_t * RGBImageLock(int _waitmaxsec = 60);
         void RGBImageRelease();
         uint8_t * RGBImageGet();
 
-        int getWidth() {return this->width;};   
-        int getHeight() {return this->height;};   
-        int getChannels() {return this->channels;};   
+        int getWidth() {return this->width;};
+        int getHeight() {return this->height;};
+        int getChannels() {return this->channels;};
         int getMemsize() {return this->memsize;};
         void drawRect(int x, int y, int dx, int dy, int r = 255, int g = 255, int b = 255, int thickness = 1);
         void drawLine(int x1, int y1, int x2, int y2, int r, int g, int b, int thickness = 1);
@@ -72,8 +72,8 @@ class CImageBasis
         CImageBasis(std::string name, CImageBasis *_copyfrom);
         CImageBasis(std::string _name, CImageBasis *_copyfrom, int add);
 
-        void Resize(int _new_dx, int _new_dy);        
-        void Resize(int _new_dx, int _new_dy, CImageBasis *_target);        
+        void Resize(int _new_dx, int _new_dy);
+        void Resize(int _new_dx, int _new_dy, CImageBasis *_target);
 
         bool LoadFromMemory(stbi_uc *_buffer, int len);
         bool LoadFromMemoryPreallocated(stbi_uc *_buffer, int len);
@@ -82,7 +82,7 @@ class CImageBasis
         ImageData* writeToMemoryAsJPG(const int quality = 90);
         void writeToMemoryAsJPG(ImageData* ii, const int quality = 90);
 
-        esp_err_t SendJPGtoHTTP(httpd_req_t *req, const int quality = 90);   
+        esp_err_t SendJPGtoHTTP(httpd_req_t *req, const int quality = 90);
 
         uint8_t GetPixelColor(int x, int y, int ch);
 
