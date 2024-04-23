@@ -312,10 +312,9 @@
 
 	function initAutoRefreshContent()
     {
-        loadConfig(getDomainname()); 
         ParseConfigReduced();
         param = getConfigParameters();
-        
+
 		document.getElementById("AutoRefreshEnabled").checked = param["WebUI"]["OverviewAutoRefresh"]["value1"] == "true" ? true : false;
 		document.getElementById("AutoRefreshTime").value = param["WebUI"]["OverviewAutoRefreshTime"]["value1"];   
         
@@ -368,7 +367,7 @@
 		document.getElementById("img").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // Preset with loading indicator
 		document.getElementById("manual_refresh_img_loading").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // Preset with loading indicator
 
-		initAutoRefreshContent();
+		loadConfig().then(() => initAutoRefreshContent());
 	}
 
 	

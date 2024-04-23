@@ -30,6 +30,8 @@ extern "C" {
 #include "server_help.h"
 #include "server_GPIO.h"
 #include "Helper.h"
+#include "cJSON.h"
+#include "cJSON_Utils.h"
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
@@ -308,6 +310,90 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
 }
 
 
+static esp_err_t get_directory_content(httpd_req_t *req, const char *dirpath, std::string _fileExtention)
+{
+    struct dirent *entry;
+    char dirpath_corrected[FILE_PATH_MAX];
+
+    strcpy(dirpath_corrected, dirpath);
+
+    file_server_data * server_data = (file_server_data *) req->user_ctx;
+    if ((strlen(dirpath_corrected)-1) > strlen(server_data->base_path)) // if dirpath is not mountpoint, the last "\" needs to be removed
+        dirpath_corrected[strlen(dirpath_corrected)-1] = '\0';
+
+    DIR *dir = opendir(dirpath_corrected);
+
+    if (!dir) {
+        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "http_resp_path_content: Failed to open directory: " + std::string(dirpath));
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E90: Failed to open directory");
+        return ESP_FAIL;
+    }
+
+    // Prepare JSON object
+    esp_err_t retVal = ESP_OK;
+    cJSON *cJSONObject, *files, *file;
+ 
+    cJSONObject = cJSON_CreateObject();
+    if (cJSONObject == NULL) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Error, JSON object cannot be created");
+        return ESP_FAIL;
+    }
+
+    if (cJSON_AddStringToObject(cJSONObject, "path", std::string(dirpath_corrected).c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(cJSONObject, "filter", _fileExtention.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (!cJSON_AddItemToObject(cJSONObject, "files", files = cJSON_CreateArray()))
+        retVal = ESP_FAIL;
+
+    /* Iterate over all files */
+    int numberOfFiles = 0;
+    while ((entry = readdir(dir)) != NULL) {
+         // No directories and hide file "wlan.ini" for security reasons
+        if (entry->d_type == DT_DIR || strcmp("wlan.ini", entry->d_name) == 0)
+            continue;
+        
+         // Filter files per file extention
+        if(!_fileExtention.empty())
+            if (getFileType(std::string(entry->d_name)) != toUpper(_fileExtention))
+                continue;
+        
+        // Add file to files array
+        if (!cJSON_AddItemToArray(files, file = cJSON_CreateObject()))
+            retVal = ESP_FAIL;
+        if (!cJSON_AddItemToObject(file, "name", cJSON_CreateString(entry->d_name)))
+            retVal = ESP_FAIL;
+        
+        // Determine number of files
+        numberOfFiles++;
+    }
+    closedir(dir);
+
+    // Add number of files
+    if (cJSON_AddNumberToObject(cJSONObject, "count", numberOfFiles) == NULL)
+        retVal = ESP_FAIL;
+
+    // Print JSON struct to buffer and hand over to std::string to avoid memory leakage
+    char *jsonString = cJSON_PrintBuffered(cJSONObject, 2048, 1); // Print to predefined buffer, avoid dynamic allocations
+    std::string sReturnMessage = std::string(jsonString);
+    cJSON_free(jsonString);  
+    cJSON_Delete(cJSONObject);
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "application/json");
+
+    if (retVal == ESP_OK) {
+        httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
+        return ESP_OK;
+    }
+    else {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while adding JSON elements");
+        return ESP_FAIL;
+    }
+}
+
+
 static esp_err_t send_datafile(httpd_req_t *req, bool send_full_file)
 {
     FILE *fd = NULL;
@@ -533,16 +619,25 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         if (buf_len > 1) {
             char buf[buf_len];
             if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
-                ESP_LOGI(TAG, "Found URL query => %s", buf);
-                char param[32];
+                ESP_LOGD(TAG, "Found URL query => %s", buf);
+                char param[128];
                 /* Get value of expected key from query string */
                 if (httpd_query_key_value(buf, "readonly", param, sizeof(param)) == ESP_OK) {
-                    ESP_LOGI(TAG, "Found URL query parameter => readonly=%s", param);
-                    readonly = param && strcmp(param,"true")==0;
+                    ESP_LOGD(TAG, "Found URL query parameter => readonly=%s", param);
+                    readonly = (strcmp(param, "true") == 0);       
+                }
+
+                if (httpd_query_key_value(buf, "json", param, sizeof(param)) == ESP_OK) {
+                    ESP_LOGD(TAG, "Found URL query parameter => json=%s", param);
+                    return get_directory_content(req, filepath, "");
+                }
+                
+                if (httpd_query_key_value(buf, "json_filtered", param, sizeof(param)) == ESP_OK) {
+                    ESP_LOGD(TAG, "Found URL query parameter => json_filtered=%s", param);
+                    return get_directory_content(req, filepath, std::string(param));
                 }
             }
         }
-
         ESP_LOGD(TAG, "uri: %s, filename: %s, filepath: %s", req->uri, filename, filepath);
         return http_resp_dir_html(req, filepath, filename, readonly);
     }

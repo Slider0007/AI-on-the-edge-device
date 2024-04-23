@@ -293,8 +293,6 @@
 
     function showReference(_param)
     {
-        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);
-
         if (_param["Alignment"]["InitialRotate"].value1 < 0) {
             document.getElementById("prerotateangle").value = Math.ceil(_param["Alignment"]["InitialRotate"].value1);
         }
@@ -331,9 +329,17 @@
         document.getElementById("mirror").disabled = true;
         document.getElementById("flip").disabled = true;
 
-        isActReference = true;                                  
+        isActReference = true;
+
+        loadReference();
+    }
+
+
+    function loadReference()
+    {
+        var url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);                              
         loadCanvas(url, false);
-    }	
+    }
 
 
     function UpdateInput()
@@ -609,19 +615,18 @@
 
 
     /* hash #description open the details part of the page */
-    function openDescription() {
-    if(window.location.hash) {
-        var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
-        if(hash == 'description')
-            document.getElementById("desc_details").open = true;
+    function openDescription()
+    {
+        if(window.location.hash) {
+            var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+            if(hash == 'description')
+                document.getElementById("desc_details").open = true;
         }
     }
 
 
-    function init() {
-        openDescription();
-        canvas.addEventListener('mousemove', mouseMove, false);    
-        loadConfig(getDomainname()); 
+    function loadConfigData()
+    {
         ParseConfig();
         param = getConfigParameters();
 
@@ -651,9 +656,18 @@
         }
 
         UpdateInput();
-        showReference(param); 
+        //showReference(param); 
     }
 
+
+    function init()
+    {
+        openDescription();
+        
+        canvas.addEventListener('mousemove', mouseMove, false);
+        loadReference();
+        loadConfig().then(() => loadConfigData());
+    }
 
     init();
 

@@ -59,9 +59,8 @@
 		domainname = getDomainname(); 
 
 
-	function LoadConfigNeu()
+	function loadConfigData()
 	{
-		loadConfig(domainname); 	
 		document.getElementById("inputTextToSave").value = getConfig();
 	}
 
@@ -82,8 +81,14 @@
 	}
 
 	
-	LoadConfigNeu();
-	
+	function init()
+	{
+		loadConfig().then(() => loadConfigData());
+	}
+
+
+	init();
+
 </script>
  
 </body>

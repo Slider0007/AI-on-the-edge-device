@@ -39,47 +39,48 @@
     </p>
 
     <p>
-        <button class="button" onclick="reboot()">Abort Setup</button>
+        <button class="button" onclick="abortSetup()">Abort Setup</button>
     </p>
 
-    <script src="common.js?v=$COMMIT_HASH"></script> 
-    <script src="readconfigparam.js?v=$COMMIT_HASH"></script> 
-    <script src="readconfigcommon.js?v=$COMMIT_HASH"></script> 
+<script src="common.js?v=$COMMIT_HASH"></script> 
+<script src="readconfigparam.js?v=$COMMIT_HASH"></script> 
+<script src="readconfigcommon.js?v=$COMMIT_HASH"></script> 
 
-    <script>
-   
-    function reboot() {
-        if (confirm("Do you want to abort the setup mode and switch to regular web interface?")) {
-            domainname = getDomainname(); 
-            if (!loadConfig(domainname)) {
-                firework.launch('Setup mode could not be deactivated! Please try again!', 'danger', 30000);
-                return;
-            } 
-            ParseConfig();	
-            param = getConfigParameters();
-            param["System"]["SetupMode"]["enabled"] = true;
-            param["System"]["SetupMode"]["value1"] = "false";
+<script>
 
-            WriteConfigININew();
-            SaveConfigToServer(domainname);    
+    function reboot()
+    {
+        ParseConfig();	
+        param = getConfigParameters();
+        param["System"]["SetupMode"]["enabled"] = true;
+        param["System"]["SetupMode"]["value1"] = "false";
 
-            firework.launch('Initial setup aborted', 'warning', 5000);
-            setTimeout(function() {
-                reload_config();
-            }, 200);
+        WriteConfigININew();
+        SaveConfigToServer(getDomainname());
 
-            firework.launch('Regular web interface gets loaded in a few seconds...', 'success', 10000);
-            setTimeout(function() {
-                var stringota = getDomainname();
-                parent.location = stringota;
-		        parent.location.href = stringota;
-		        parent.location.assign(stringota);
-                parent.location.replace(stringota);
-            }, 7000);    
-        }
+        firework.launch('Initial setup aborted', 'warning', 5000);
+        setTimeout(function() {
+            reload_config();
+        }, 200);
+
+        firework.launch('Regular web interface gets loaded in a few seconds...', 'success', 10000);
+        setTimeout(function() {
+            var stringota = getDomainname();
+            parent.location = stringota;
+            parent.location.href = stringota;
+            parent.location.assign(stringota);
+            parent.location.replace(stringota);
+        }, 7000);    
     }
 
-    </script>
+    
+    function abortSetup()
+    {
+        if (confirm("Do you want to abort the setup mode and switch to regular web interface?"))
+            loadConfig().then(() => reboot());
+    }
+
+</script>
 
 </body>
 </html>
