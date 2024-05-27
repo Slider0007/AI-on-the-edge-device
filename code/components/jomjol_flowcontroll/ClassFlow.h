@@ -60,7 +60,6 @@ class ClassFlow
     	virtual bool ReadParameter(FILE* pfile, std::string &aktparamgraph);
     	virtual bool doFlow(std::string time);
     	virtual std::string getHTMLSingleStep(std::string host);
-    	virtual std::string getReadout();
 
     	virtual std::string name() {return "ClassFlow";};
 };

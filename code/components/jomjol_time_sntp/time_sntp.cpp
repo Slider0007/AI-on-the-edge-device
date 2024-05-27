@@ -1,19 +1,9 @@
 #include "time_sntp.h"
 #include "../../include/defines.h"
 
-#include <string>
-#include <time.h>
-#include <sys/time.h>
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-
-#include "esp_system.h"
 #include "esp_log.h"
-#include "esp_attr.h"
-#include "esp_sleep.h"
 #include "esp_sntp.h"
+#include "esp_netif_sntp.h"
 
 #include "ClassLogFile.h"
 #include "configFile.h"
@@ -145,25 +135,25 @@ bool getTimeWasSetOnce(void)
 
 std::string getServerName(void)
 {
-    char buf[100];
+    char buf[128];
 
-    if (sntp_getservername(0)){
-        snprintf(buf, sizeof(buf), "%s", sntp_getservername(0));
+    if (esp_sntp_getservername(0)){
+        snprintf(buf, sizeof(buf), "%s", esp_sntp_getservername(0));
         return std::string(buf);
     }
-    else { // we have either IPv4 or IPv6 address
-        ip_addr_t const *ip = sntp_getserver(0);
+    else { // Use IPv4 or IPv6 address instead
+        ip_addr_t const *ip = esp_sntp_getserver(0);
         if (ipaddr_ntoa_r(ip, buf, sizeof(buf)) != NULL) {
             return std::string(buf);
         }
     }
-    return "";
+    return "Unknown SNTP server";
 }
 
 
 /**
- * Load the Time zone and Time server from the config file and initialize the NTP client
- * The RTC keeps the time after a restart (Except on Power On or Pin Reset)
+ * Load the time zone and time server from the config file and initialize the NTP client
+ * The RTC keeps the time after a restart (except on Power On or Pin Reset)
  * There should only be a minor correction through NTP
  */
 bool setupTime()
@@ -235,10 +225,9 @@ bool setupTime()
 
     if (useNtp) {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Init NTP service");
-        sntp_setoperatingmode(SNTP_OPMODE_POLL);
-        sntp_setservername(0, timeServer.c_str());
-        sntp_set_time_sync_notification_cb(timeSyncNotificationCallback);
-        sntp_init();
+        esp_sntp_config_t sntpConfig = ESP_NETIF_SNTP_DEFAULT_CONFIG(timeServer.c_str());
+        sntpConfig.sync_cb = timeSyncNotificationCallback;
+        esp_netif_sntp_init(&sntpConfig);
 
         // Wait for time sync to ensure start with proper time
         if (!waitingForTimeSync() || !getTimeIsSet()) {
@@ -298,7 +287,7 @@ void setupTimeServer(std::string _timeServer)
     if (_timeServer == "") {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "NTP service disabled");
         useNtp = false;
-        sntp_stop();
+        esp_netif_sntp_deinit();
     }
     else {
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Time server: " + _timeServer);
@@ -308,18 +297,13 @@ void setupTimeServer(std::string _timeServer)
     timeServer = _timeServer;
 
     if (useNtp) {
-        sntp_setoperatingmode(SNTP_OPMODE_POLL);
-        sntp_setservername(0, timeServer.c_str());
-        sntp_set_time_sync_notification_cb(timeSyncNotificationCallback);
+        setTimeZone(timeZone);
 
         LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Init NTP service");
-        if (!sntp_enabled()) {
-            setTimeZone(timeZone);
-            sntp_init();
-        }
-        else {
-            sntp_restart();
-        }
+        esp_netif_sntp_deinit();
+        esp_sntp_config_t sntpConfig = ESP_NETIF_SNTP_DEFAULT_CONFIG(timeServer.c_str());
+        sntpConfig.sync_cb = timeSyncNotificationCallback;
+        esp_netif_sntp_init(&sntpConfig);
 
         // Wait for time sync to ensure start with proper time
         if (!waitingForTimeSync() || !getTimeIsSet()) {

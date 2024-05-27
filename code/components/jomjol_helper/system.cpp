@@ -147,14 +147,7 @@ bool setCPUFrequency(void)
 {
     ConfigFile configFile = ConfigFile(CONFIG_FILE);
     std::string cpuFrequency = "160";
-
-	#ifdef CONFIG_IDF_TARGET_ESP32
-    	esp_pm_config_esp32_t pm_config;
-	#elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    	esp_pm_config_esp32s3_t pm_config;
-	#else
-		#error "esp_pm_config_* not defined"
-	#endif
+    esp_pm_config_t pm_config;
 
     if (!configFile.ConfigFileExists()){
         LogFile.WriteToFile(ESP_LOG_WARN, TAG, "No config file - exit setCpuFrequency");

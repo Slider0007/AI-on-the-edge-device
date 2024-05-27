@@ -484,8 +484,11 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 		}
 		else {
 			WIFIConnected = false;
-			if (disconn->reason == WIFI_REASON_NO_AP_FOUND) {
-				LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Disconnected (" + std::to_string(disconn->reason) + ", No AP)");
+			if (disconn->reason == WIFI_REASON_NO_AP_FOUND ||
+			    disconn->reason == WIFI_REASON_NO_AP_FOUND_W_COMPATIBLE_SECURITY ||
+				disconn->reason == WIFI_REASON_NO_AP_FOUND_IN_AUTHMODE_THRESHOLD ||
+				disconn->reason == WIFI_REASON_NO_AP_FOUND_IN_RSSI_THRESHOLD) {
+				LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Disconnected (" + std::to_string(disconn->reason) + ", No AP found)");
 				StatusLED(WLAN_CONN, 1, false);
 			}
 			else if (disconn->reason == WIFI_REASON_AUTH_EXPIRE ||
