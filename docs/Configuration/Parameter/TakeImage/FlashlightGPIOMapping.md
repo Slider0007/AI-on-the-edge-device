@@ -2,8 +2,9 @@
 
 ## Description
 
-Show flashlight GPIO mapping configuration
+Actual flashlight GPIO mapping configuration
 
 
 !!! Note
-    This is not a parameter. This is only for visualization purpose.
+    This is not a parameter. This is only for visualization purpose. 
+    Default GPIO mapping can be adapated using GPIO configuration section.
