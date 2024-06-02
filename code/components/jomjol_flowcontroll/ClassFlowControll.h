@@ -78,6 +78,7 @@ public:
 	std::string TranslateAktstatus(std::string _input);
 	bool getStatusSetupModus() {return SetupModeActive;};
 
+	const std::vector<NumberPost*> &getNumbers();
 	std::string getNumbersName();
 	std::string getNumbersName(int _number);
 	int getNumbersSize();

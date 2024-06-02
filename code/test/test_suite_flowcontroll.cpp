@@ -26,6 +26,7 @@
 #include "components/jomjol-flowcontroll/test_flow_pp_negative.cpp"
 #include "components/jomjol-flowcontroll/test_PointerEvalAnalogToDigitNew.cpp"
 #include "components/jomjol-flowcontroll/test_getReadoutRawString.cpp"
+#include "components/openmetrics/test_openmetrics.cpp"
 
 esp_err_t initNVSFlash();
 esp_err_t initSDCard();
@@ -70,6 +71,8 @@ void task_UnityTesting(void *pvParameter)
         RUN_TEST(test_doFlowPP4);
         printf("---------------------------------------------------------------------------\n");
         RUN_TEST(test_doFlowPP5);
+        printf("---------------------------------------------------------------------------\n");
+        RUN_TEST(test_openmetrics);
     UNITY_END();
 
     while(1);

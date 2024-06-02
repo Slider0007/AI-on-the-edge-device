@@ -19,6 +19,7 @@ esp_err_t triggerFlowStartByMqtt(std::string _topic);
 void triggerFlowStartByGpio();
 
 void setTaskAutoFlowState(int _value);
+int getTaskAutoFlowState();
 
 std::string getProcessStatus();
 int getFlowCycleCounter();

@@ -1011,6 +1011,12 @@ void setTaskAutoFlowState(int _value)
 }
 
 
+int getTaskAutoFlowState()
+{
+    return taskAutoFlowState;
+}
+
+
 std::string getProcessStatus(void)
 {
     std::string process_status;

@@ -862,6 +862,15 @@ bool ClassFlowControll::StartMQTTService()
 #endif //ENABLE_MQTT
 
 
+/**
+ * @returns a vector of all current sequences
+ **/
+const std::vector<NumberPost*> &ClassFlowControll::getNumbers()
+{
+    return *flowpostprocessing->GetNumbers();
+}
+
+
 /* Return all available numbers names (number sequences)*/
 std::string ClassFlowControll::getNumbersName()
 {

@@ -616,7 +616,7 @@ httpd_handle_t start_webserver(void)
     config.server_port = 80;
     config.ctrl_port = 32768;
     config.max_open_sockets = 5; //20210921 --> previously 7
-    config.max_uri_handlers = 20; // previously 42
+    config.max_uri_handlers = 21;
     config.max_resp_headers = 8;
     config.backlog_conn = 5;
     config.lru_purge_enable = true; // this cuts old connections if new ones are needed.

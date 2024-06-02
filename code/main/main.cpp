@@ -45,6 +45,8 @@
 #include "server_mqtt.h"
 #endif //ENABLE_MQTT
 
+#include "openmetrics.h"
+
 #include "Helper.h"
 #include "system.h"
 #include "statusled.h"
@@ -341,9 +343,12 @@ extern "C" void app_main(void)
     register_server_main_flow_task_uri(server);
     register_server_file_uri(server, "/sdcard");
     register_server_ota_sdcard_uri(server);
+
     #ifdef ENABLE_MQTT
-        register_server_mqtt_uri(server);
+    register_server_mqtt_uri(server);
     #endif //ENABLE_MQTT
+
+    register_openmetrics_uri(server);
 
     gpio_handler_create(server);
 
