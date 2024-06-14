@@ -2,17 +2,81 @@
 #include "../../include/defines.h"
 
 #include <esp_log.h>
+#include "esp_private/esp_clk.h"
 
 #include "MainFlowControl.h"
 #include "system.h"
 #include "connect_wlan.h"
+
+extern std::string getFwVersion(void);
 
 
 static const char *TAG = "OPENMETRICS";
 
 
 /**
- * create a singe metric from the given input
+ * Create a hardware info metric
+ **/
+std::string createHardwareInfoMetric(const std::string &metricNamePrefix)
+{
+    return "# HELP " + metricNamePrefix + "hardware_info Hardware info\n" +
+           "# TYPE " + metricNamePrefix + "hardware_info info\n" +
+           metricNamePrefix + "_hardware_info{board_type=\"" + getBoardType() +
+                                          "\",chip_model=\"" + getChipModel() +
+                                          "\",chip_cores=\"" + std::to_string(getChipCoreCount()) +
+                                          "\",chip_revision=\"" + getChipRevision() +
+                                          "\",chip_frequency=\"" + std::to_string(esp_clk_cpu_freq()/1000000) +
+                                          "\",camera_type=\"" + Camera.getCamType() +
+                                          "\",camera_frequency=\"" + std::to_string(Camera.getCamFrequencyMhz()) +
+                                          "\",sdcard_capacity=\"" + std::to_string(getSDCardCapacity()) +
+                                          "\",sdcard_partition_size=\"" + std::to_string(getSDCardPartitionSize()) + "\"} 1\n";
+}
+
+
+/**
+ * Create a network info metric
+ **/
+std::string createNetworkInfoMetric(const std::string &metricNamePrefix)
+{
+    return "# HELP " + metricNamePrefix + "network_info Network info\n" +
+           "# TYPE " + metricNamePrefix + "network_info info\n" +
+           metricNamePrefix + "_network_info{hostname=\"" + getHostname() +
+                                          "\",ipv4_address=\"" + getIPAddress() +
+                                          "\",mac_address=\"" + getMac() + "\"} 1\n";
+}
+
+
+/**
+ * Create a firmware info metric
+ **/
+std::string createFirmwareInfoMetric(const std::string &metricNamePrefix)
+{
+    return "# HELP " + metricNamePrefix + "firmware_info Firmware info\n" +
+           "# TYPE " + metricNamePrefix + "firmware_info info\n" +
+           metricNamePrefix + "_firmware_info{firmware_version=\"" + getFwVersion() + "\"} 1\n";
+}
+
+
+/**
+ * Create heap data metrics
+ **/
+std::string createHeapDataMetric(const std::string &metricNamePrefix)
+{
+    return "# HELP " + metricNamePrefix + "heap_info_bytes Heap info\n" +
+           "# UNIT " + metricNamePrefix + "heap_info_bytes bytes\n" +
+           "# TYPE " + metricNamePrefix + "heap_info_bytes gauge\n" +
+           metricNamePrefix + "heap_info_bytes{heap_total_free=\"" + std::to_string(getESPHeapSizeTotalFree()) + "\"\n" +
+           metricNamePrefix + "heap_info_bytes{heap_internal_free=\"" + std::to_string(getESPHeapSizeInternalFree()) + "\"\n" +
+           metricNamePrefix + "heap_info_bytes{heap_internal_largest_free=\"" + std::to_string(getESPHeapSizeInternalLargestFree()) + "\"\n" +
+           metricNamePrefix + "heap_info_bytes{heap_internal_min_free=\"" + std::to_string(getESPHeapSizeInternalMinFree()) + "\"\n" +
+           metricNamePrefix + "heap_info_bytes{heap_spiram_free=\"" + std::to_string(getESPHeapSizeSPIRAMFree()) + "\"\n" +
+           metricNamePrefix + "heap_info_bytes{heap_spiram_largest_free=\"" + std::to_string(getESPHeapSizeSPIRAMLargestFree()) + "\"\n" +
+           metricNamePrefix + "heap_info_bytes{heap_spiram_min_free=\"" + std::to_string(getESPHeapSizeSPIRAMMinFree()) + "\"\n";
+}
+
+
+/**
+ * Create a generic single metric
  **/
 std::string createMetric(const std::string &metricName, const std::string &help, const std::string &type, const std::string &value)
 {
@@ -23,12 +87,26 @@ std::string createMetric(const std::string &metricName, const std::string &help,
 
 
 /**
+ * Create a generic single metric with unit
+ **/
+std::string createMetricWithUnit(const std::string &metricName, const std::string &help, const std::string &type,
+                                 const std::string &unit, const std::string &value)
+{
+    return "# HELP " + metricName + "_" + unit + " " + help + "\n" +
+           "# UNIT " + metricName + "_" + unit + " " + unit + "\n" +
+           "# TYPE " + metricName + "_" + unit + " " + type + "\n" +
+           metricName + " " + value + "\n";
+}
+
+
+/**
  * Generate the MetricFamily from all available sequences
  * @returns the string containing the text wire format of the MetricFamily
  **/
-std::string createSequenceMetrics(std::string prefix, const std::vector<NumberPost *> &sequences)
+std::string createSequenceMetrics(const std::string &metricNamePrefix, const std::vector<NumberPost *> &sequences)
 {
-    std::string res;
+    std::string response = "# HELP " + metricNamePrefix + "_actual_value actual value of meter\n" +
+                           "# TYPE " + metricNamePrefix + "_actual_value gauge\n";
 
     for (const auto &sequence : sequences) {
         std::string sequenceName = sequence->name;
@@ -38,15 +116,24 @@ std::string createSequenceMetrics(std::string prefix, const std::vector<NumberPo
         replaceAll(sequenceName, "\\", "");
         replaceAll(sequenceName, "\"", "");
         replaceAll(sequenceName, "\n", "");
-        res += prefix + "_flow_value{sequence=\"" + sequenceName + "\"} " + sequence->sActualValue + "\n";
+        response += metricNamePrefix + "_actual_value{sequence=\"" + sequenceName + "\"} " + sequence->sActualValue + "\n";
     }
 
-    // prepend metadata if a valid metric was created
-    if (res.length() > 0) {
-        res = "# HELP " + prefix + "_flow_value current value of meter readout\n# TYPE " + prefix + "_flow_value gauge\n" + res;
+    response += "# HELP " + metricNamePrefix + "_rate_per_minute rate per minute of meter\n" +
+               "# TYPE " + metricNamePrefix + "_rate_per_minute gauge\n";
+
+    for (const auto &sequence : sequences) {
+        std::string sequenceName = sequence->name;
+
+        // except newline, double quote, and backslash (https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#abnf)
+        // to keep it simple, these characters are just removed from the label
+        replaceAll(sequenceName, "\\", "");
+        replaceAll(sequenceName, "\"", "");
+        replaceAll(sequenceName, "\n", "");
+        response += metricNamePrefix + "_rate_per_minute{sequence=\"" + sequenceName + "\"} " + sequence->sRatePerMin + "\n";
     }
 
-    return res;
+    return response;
 }
 
 
@@ -59,11 +146,11 @@ std::string createSequenceMetrics(std::string prefix, const std::vector<NumberPo
  *
  * The metric name prefix is 'ai_on_the_edge_device_'.
  *
- * example configuration for Prometheus (`prometheus.yml`):
+ * Example configuration for Prometheus (`prometheus.yml`):
  *
  *    - job_name: watermeter
  *      static_configs:
- *        - targets: ['watermeter.fritz.box']
+ *        - targets: ['192.168.1.4']
  *
 */
 esp_err_t handler_openmetrics(httpd_req_t *req)
@@ -77,28 +164,66 @@ esp_err_t handler_openmetrics(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain"); // application/openmetrics-text is not yet supported by prometheus so we use text/plain for now
 
-    const std::string metricNamePrefix = "ai_on_the_edge_device";
+    // Metric name prefix
+    const std::string metricNamePrefix = "ai_on_the_edge_device_";
 
-    // get current measurement values
-    std::string response = createSequenceMetrics(metricNamePrefix, flowctrl.getNumbers());
+    // Hardware (board, camera, sd-card) info
+    std::string response = createHardwareInfoMetric(metricNamePrefix);
+
+    // Network info
+    response += createNetworkInfoMetric(metricNamePrefix);
+
+    // Firmware info
+    response += createFirmwareInfoMetric(metricNamePrefix);
+
+    // Device uptime
+    response += createMetricWithUnit(metricNamePrefix + "device_uptime", "device uptime in seconds",
+                                    "gauge", "seconds", std::to_string((long)getUptime()));
+
+    // WLAN signal strength
+    response += createMetricWithUnit(metricNamePrefix + "wlan_rssi", "WLAN signal strength in dBm",
+                                    "gauge", "dBm", std::to_string(get_WIFI_RSSI()));
 
     // CPU temperature
-    response += createMetric(metricNamePrefix + "_cpu_temperature_celsius", "current cpu temperature in celsius", "gauge", std::to_string((int)getSOCTemperature()));
+    response += createMetricWithUnit(metricNamePrefix + "chip_temp", "CPU temperature in celsius",
+                                    "gauge", "celsius", std::to_string((int)getSOCTemperature()));
 
-    // WiFi signal strength
-    response += createMetric(metricNamePrefix + "_rssi_dbm", "current WiFi signal strength in dBm", "gauge", std::to_string(get_WIFI_RSSI()));
+    // Heap data
+    response += createHeapDataMetric(metricNamePrefix);
 
-    // memory info
-    response += createMetric(metricNamePrefix + "_memory_heap_free_bytes", "available heap memory", "gauge", std::to_string(getESPHeapSizeTotalFree()));
+    // SD card partition free
+    response += createMetricWithUnit(metricNamePrefix + "sd_partition_free", "Free SD partition size in bytes",
+                                    "gauge", "bytes", std::to_string(getSDCardFreePartitionSpace()));
 
-    // device uptime
-    response += createMetric(metricNamePrefix + "_uptime_seconds", "device uptime in seconds", "gauge", std::to_string((long)getUptime()));
+    // Process status
+    response += createMetric(metricNamePrefix + "process_status", "Device process status",
+                            "gauge", getProcessStatus());
 
-    // data aquisition round
-    response += createMetric(metricNamePrefix + "_cycles_total", "data aquisition cycles since device startup", "counter", std::to_string(getFlowCycleCounter()));
+    // Process state
+    response += createMetric(metricNamePrefix + "process_state", "Actual processing step",
+                            "gauge", flowctrl.getActStatus());
 
-    // the response always contains at least the metadata (HELP, TYPE) for the MetricFamily so no length check is needed
-    httpd_resp_send(req, response.c_str(), response.length());
+    // Process error state
+    response += createMetric(metricNamePrefix + "process_error", "Process error state",
+                            "counter", std::to_string(flowctrl.getFlowStateErrorOrDeviation()));
+
+    // Processing interval
+    response += createMetricWithUnit(metricNamePrefix + "process_interval", "processing interval",
+                            "counter", "seconds", to_stringWithPrecision(flowctrl.getProcessInterval(), 1));
+
+    // Processing time
+    response += createMetricWithUnit(metricNamePrefix + "process_time", "processing time of one cycle",
+                            "counter", "seconds", std::to_string(getFlowProcessingTime()));
+
+    // Process cycles
+    response += createMetric(metricNamePrefix + "cycle_counter", "process cycles since device startup",
+                            "counter", std::to_string(getFlowCycleCounter()));
+
+    // Actual measurement values
+    response += createSequenceMetrics(metricNamePrefix, flowctrl.getNumbers());
+
+    // The response always contains at least the metadata (HELP, TYPE) for the MetricFamily so no length check is needed
+    httpd_resp_sendstr(req, response.c_str());
 
     return ESP_OK;
 }
