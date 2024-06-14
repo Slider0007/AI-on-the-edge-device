@@ -20,8 +20,8 @@ static const char *TAG = "OPENMETRICS";
 std::string createHardwareInfoMetric(const std::string &metricNamePrefix)
 {
     return "# HELP " + metricNamePrefix + "hardware_info Hardware info\n" +
-           "# TYPE " + metricNamePrefix + "hardware_info info\n" +
-           metricNamePrefix + "_hardware_info{board_type=\"" + getBoardType() +
+           "# TYPE " + metricNamePrefix + "hardware_info gauge\n" +
+           metricNamePrefix + "hardware_info{board_type=\"" + getBoardType() +
                                           "\",chip_model=\"" + getChipModel() +
                                           "\",chip_cores=\"" + std::to_string(getChipCoreCount()) +
                                           "\",chip_revision=\"" + getChipRevision() +
@@ -39,8 +39,8 @@ std::string createHardwareInfoMetric(const std::string &metricNamePrefix)
 std::string createNetworkInfoMetric(const std::string &metricNamePrefix)
 {
     return "# HELP " + metricNamePrefix + "network_info Network info\n" +
-           "# TYPE " + metricNamePrefix + "network_info info\n" +
-           metricNamePrefix + "_network_info{hostname=\"" + getHostname() +
+           "# TYPE " + metricNamePrefix + "network_info gauge\n" +
+           metricNamePrefix + "network_info{hostname=\"" + getHostname() +
                                           "\",ipv4_address=\"" + getIPAddress() +
                                           "\",mac_address=\"" + getMac() + "\"} 1\n";
 }
@@ -52,8 +52,8 @@ std::string createNetworkInfoMetric(const std::string &metricNamePrefix)
 std::string createFirmwareInfoMetric(const std::string &metricNamePrefix)
 {
     return "# HELP " + metricNamePrefix + "firmware_info Firmware info\n" +
-           "# TYPE " + metricNamePrefix + "firmware_info info\n" +
-           metricNamePrefix + "_firmware_info{firmware_version=\"" + getFwVersion() + "\"} 1\n";
+           "# TYPE " + metricNamePrefix + "firmware_info gauge\n" +
+           metricNamePrefix + "firmware_info{firmware_version=\"" + getFwVersion() + "\"} 1\n";
 }
 
 
@@ -65,13 +65,13 @@ std::string createHeapDataMetric(const std::string &metricNamePrefix)
     return "# HELP " + metricNamePrefix + "heap_info_bytes Heap info\n" +
            "# UNIT " + metricNamePrefix + "heap_info_bytes bytes\n" +
            "# TYPE " + metricNamePrefix + "heap_info_bytes gauge\n" +
-           metricNamePrefix + "heap_info_bytes{heap_total_free=\"" + std::to_string(getESPHeapSizeTotalFree()) + "\"\n" +
-           metricNamePrefix + "heap_info_bytes{heap_internal_free=\"" + std::to_string(getESPHeapSizeInternalFree()) + "\"\n" +
-           metricNamePrefix + "heap_info_bytes{heap_internal_largest_free=\"" + std::to_string(getESPHeapSizeInternalLargestFree()) + "\"\n" +
-           metricNamePrefix + "heap_info_bytes{heap_internal_min_free=\"" + std::to_string(getESPHeapSizeInternalMinFree()) + "\"\n" +
-           metricNamePrefix + "heap_info_bytes{heap_spiram_free=\"" + std::to_string(getESPHeapSizeSPIRAMFree()) + "\"\n" +
-           metricNamePrefix + "heap_info_bytes{heap_spiram_largest_free=\"" + std::to_string(getESPHeapSizeSPIRAMLargestFree()) + "\"\n" +
-           metricNamePrefix + "heap_info_bytes{heap_spiram_min_free=\"" + std::to_string(getESPHeapSizeSPIRAMMinFree()) + "\"\n";
+           metricNamePrefix + "heap_info_bytes{type=\"heap_total_free\"} " + std::to_string(getESPHeapSizeTotalFree()) + "\n" +
+           metricNamePrefix + "heap_info_bytes{type=\"heap_internal_free\"} " + std::to_string(getESPHeapSizeInternalFree()) + "\n" +
+           metricNamePrefix + "heap_info_bytes{type=\"heap_internal_largest_free\"} " + std::to_string(getESPHeapSizeInternalLargestFree()) + "\n" +
+           metricNamePrefix + "heap_info_bytes{type=\"heap_internal_min_free\"} " + std::to_string(getESPHeapSizeInternalMinFree()) + "\n" +
+           metricNamePrefix + "heap_info_bytes{type=\"heap_spiram_free\"} " + std::to_string(getESPHeapSizeSPIRAMFree()) + "\n" +
+           metricNamePrefix + "heap_info_bytes{type=\"heap_spiram_largest_free\"} " +  std::to_string(getESPHeapSizeSPIRAMLargestFree()) + "\n" +
+           metricNamePrefix + "heap_info_bytes{type=\"heap_spiram_min_free\"} " + std::to_string(getESPHeapSizeSPIRAMMinFree()) + "\n";
 }
 
 
@@ -95,7 +95,7 @@ std::string createMetricWithUnit(const std::string &metricName, const std::strin
     return "# HELP " + metricName + "_" + unit + " " + help + "\n" +
            "# UNIT " + metricName + "_" + unit + " " + unit + "\n" +
            "# TYPE " + metricName + "_" + unit + " " + type + "\n" +
-           metricName + " " + value + "\n";
+           metricName + "_" + unit + " " + value + "\n";
 }
 
 
@@ -105,8 +105,7 @@ std::string createMetricWithUnit(const std::string &metricName, const std::strin
  **/
 std::string createSequenceMetrics(const std::string &metricNamePrefix, const std::vector<NumberPost *> &sequences)
 {
-    std::string response = "# HELP " + metricNamePrefix + "_actual_value actual value of meter\n" +
-                           "# TYPE " + metricNamePrefix + "_actual_value gauge\n";
+    std::string response;
 
     for (const auto &sequence : sequences) {
         std::string sequenceName = sequence->name;
@@ -116,11 +115,21 @@ std::string createSequenceMetrics(const std::string &metricNamePrefix, const std
         replaceAll(sequenceName, "\\", "");
         replaceAll(sequenceName, "\"", "");
         replaceAll(sequenceName, "\n", "");
-        response += metricNamePrefix + "_actual_value{sequence=\"" + sequenceName + "\"} " + sequence->sActualValue + "\n";
+
+        if (!sequence->sActualValue.empty())
+            response += metricNamePrefix + "actual_value{sequence=\"" + sequenceName + "\"} " + sequence->sActualValue + "\n";
     }
 
-    response += "# HELP " + metricNamePrefix + "_rate_per_minute rate per minute of meter\n" +
-               "# TYPE " + metricNamePrefix + "_rate_per_minute gauge\n";
+    // Return if no valid value is available
+    if (response.empty()) {
+        return response;
+    }
+
+    response += "# HELP " + metricNamePrefix + "actual_value Actual value of meter\n" +
+                "# TYPE " + metricNamePrefix + "actual_value gauge\n" + response;
+
+    response += "# HELP " + metricNamePrefix + "rate_per_minute Rate per minute of meter\n" +
+                "# TYPE " + metricNamePrefix + "rate_per_minute gauge\n";
 
     for (const auto &sequence : sequences) {
         std::string sequenceName = sequence->name;
@@ -130,7 +139,7 @@ std::string createSequenceMetrics(const std::string &metricNamePrefix, const std
         replaceAll(sequenceName, "\\", "");
         replaceAll(sequenceName, "\"", "");
         replaceAll(sequenceName, "\n", "");
-        response += metricNamePrefix + "_rate_per_minute{sequence=\"" + sequenceName + "\"} " + sequence->sRatePerMin + "\n";
+        response += metricNamePrefix + "rate_per_minute{sequence=\"" + sequenceName + "\"} " + sequence->sRatePerMin + "\n";
     }
 
     return response;
@@ -177,7 +186,7 @@ esp_err_t handler_openmetrics(httpd_req_t *req)
     response += createFirmwareInfoMetric(metricNamePrefix);
 
     // Device uptime
-    response += createMetricWithUnit(metricNamePrefix + "device_uptime", "device uptime in seconds",
+    response += createMetricWithUnit(metricNamePrefix + "device_uptime", "Device uptime in seconds",
                                     "gauge", "seconds", std::to_string((long)getUptime()));
 
     // WLAN signal strength
@@ -191,33 +200,25 @@ esp_err_t handler_openmetrics(httpd_req_t *req)
     // Heap data
     response += createHeapDataMetric(metricNamePrefix);
 
-    // SD card partition free
-    response += createMetricWithUnit(metricNamePrefix + "sd_partition_free", "Free SD partition size in bytes",
-                                    "gauge", "bytes", std::to_string(getSDCardFreePartitionSpace()));
-
-    // Process status
-    response += createMetric(metricNamePrefix + "process_status", "Device process status",
-                            "gauge", getProcessStatus());
-
-    // Process state
-    response += createMetric(metricNamePrefix + "process_state", "Actual processing step",
-                            "gauge", flowctrl.getActStatus());
+    // SD card partition free space
+    response += createMetricWithUnit(metricNamePrefix + "sd_partition_free", "Free SD partition space in MB",
+                                    "gauge", "MB", std::to_string(getSDCardFreePartitionSpace()));
 
     // Process error state
     response += createMetric(metricNamePrefix + "process_error", "Process error state",
-                            "counter", std::to_string(flowctrl.getFlowStateErrorOrDeviation()));
+                                    "gauge", std::to_string(flowctrl.getFlowStateErrorOrDeviation()));
 
     // Processing interval
-    response += createMetricWithUnit(metricNamePrefix + "process_interval", "processing interval",
-                            "counter", "seconds", to_stringWithPrecision(flowctrl.getProcessInterval(), 1));
+    response += createMetricWithUnit(metricNamePrefix + "process_interval", "Processing interval",
+                                    "gauge", "minutes", to_stringWithPrecision(flowctrl.getProcessInterval(), 1));
 
     // Processing time
-    response += createMetricWithUnit(metricNamePrefix + "process_time", "processing time of one cycle",
-                            "counter", "seconds", std::to_string(getFlowProcessingTime()));
+    response += createMetricWithUnit(metricNamePrefix + "process_time", "Processing time of one cycle",
+                                    "gauge", "seconds", std::to_string(getFlowProcessingTime()));
 
     // Process cycles
-    response += createMetric(metricNamePrefix + "cycle_counter", "process cycles since device startup",
-                            "counter", std::to_string(getFlowCycleCounter()));
+    response += createMetric(metricNamePrefix + "cycle_counter", "Process cycles since device startup",
+                                    "counter", std::to_string(getFlowCycleCounter()));
 
     // Actual measurement values
     response += createSequenceMetrics(metricNamePrefix, flowctrl.getNumbers());
