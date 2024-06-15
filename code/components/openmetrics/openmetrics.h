@@ -1,10 +1,8 @@
 #ifndef OPENMETRICS_H
 #define OPENMETRICS_H
 
-#include <string>
-#include <vector>
+#include <esp_http_server.h>
 
-#include "ClassFlowDefineTypes.h"
 
 void register_openmetrics_uri(httpd_handle_t server);
 
