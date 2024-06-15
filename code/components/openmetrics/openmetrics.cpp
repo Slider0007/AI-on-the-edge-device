@@ -143,7 +143,7 @@ std::string createSequenceMetrics(const std::string &metricNamePrefix, const std
 
     // Add metadata to value data if values are avialbale
     response = "# TYPE " + metricNamePrefix + "actual_value gauge\n" +
-                "# HELP " + metricNamePrefix + "actual_value Actual value of meter\n" + response;
+               "# HELP " + metricNamePrefix + "actual_value Actual value of meter\n" + response;
 
     // Add rate per minute
     response += "# TYPE " + metricNamePrefix + "rate_per_minute gauge\n" +
