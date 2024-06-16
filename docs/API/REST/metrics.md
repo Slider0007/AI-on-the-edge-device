@@ -5,118 +5,15 @@
 `http://IP-ADDRESS/metrics`
 
 
-Provides a set of metrics that can be scraped by prometheus or any OpenMetrics compatilble software.<br>
-
+Provides a set of metrics that can be scraped by prometheus or any OpenMetrics compatilble software. 
 The metrics are provided in text wire format based on [OpenMetrics specification](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md) 
 which is backward-compatible with [Prometheus text-based exposition format](https://github.com/prometheus/docs/blob/main/content/docs/instrumenting/exposition_formats.md).
 
 
-### Metric Name Design Approach
+### Metrics
+Metrics description > see Prometheus API description (docs/API/Prometheus-OpenMetrics)
 
-The MetricPrefix is hard-coded: `ai_on_the_edge_device`
-
-Generic metric name: `metricPrefix` + `metricName` + `_unit` (and/or `_total` for counter metric)
-Example: `ai_on_the_edge_device_uptime_seconds`
-
-
-#### Hardware Info Metric `ai_on_the_edge_device_hardware_info`
-
-All information are static and provided by labels. The metric value is set to `1`
-
-| Metric label        | Description                 | Output
-|:--------------------|:----------------------------|:--------------
-| `board_type`        | Board Type                  | `ESP32CAM`  
-| `chip_model`        | Device SOC Model            | `ESP32`
-| `chip_cores`        | Device SOC Cores            | `2`
-| `chip_revision`     | Device SOC Silicon Revision | `1.00`
-| `chip_frequency`    | Device SOC CPU Frequency    | `160`
-| `type`              | Camera Type                 | `OV2640`
-| `frequency`         | Camera Frequency [Mhz]      | `20`
-| `capacity`          | SD card capacity [MB]       | `29580`
-| `partition_size`    | SD card partition size [MB] | `29560`
-
-
-#### Network Info Metric `ai_on_the_edge_device_network_info`
-
-All information are static and provided by labels. The metric value is set to `1`
-
-| Metric label        | Description                 | Output
-|:--------------------|:----------------------------|:--------------     
-| `hostname`          | Device Hostname             | `watermetter`
-| `ipv4_address`      | Device IPv4 Address         | `192.168.1.x`
-| `mac_address`       | Device MAC Address          | `44:21:D8:04:DF:A8`
-
-
-#### Firmware Info Metric `ai_on_the_edge_device_firmware_info`
-
-All information are static and provided by labels. The metric value is set to `1`
-
-| Metric Label        | Description                 | Output
-|:--------------------|:----------------------------|:--------------     
-| `firmware_version`  | Firmware Version (MCU)      | `v17.0.0 (1234567)`
-
-
-#### Heap Data Metric `ai_on_the_edge_device_heap_data_bytes`
-
-All data are provided by labels. The metric label is called `heap_data`.
-
-Example: `ai_on_the_edge_device_heap_data_bytes{heap_data="heap_total_free"}`
-
-| Metric Label Values          | Description                 | Output
-|:-----------------------------|:----------------------------|:--------------     
-| `heap_total_free`            | Memory: Total Free (Int. + Ext.) [kB] | `3058639`
-| `heap_internal_free`         | Memory: Internal Free [kB]  | `75079`
-| `heap_internal_largest_free` | Memory: Internal Largest Free Block [kB] | `65536`
-| `heap_internal_min_free`     | Memory: Internal Minimum Free [kB] | `57647`
-| `heap_spiram_free`           | Memory: External Free [kB]  | `2409076`
-| `heap_spiram_largest_free`   | Memory: External Largest Free Block [kB] | `2359296`
-| `heap_spiram_min_free`       | Memory: External Minimum Free [kB] | `1359460`
-
-
-#### Further Device Status Metrics
-
-| Metric Name                                      | Description                 | Output
-|:-------------------------------------------------|:----------------------------|:--------------     
-| `ai_on_the_edge_device_device_uptime_seconds `   | Device Uptime [s]           | `147`
-| `ai_on_the_edge_device_wlan_rssi_dBm`            | WLAN Signal Strength [dBm]  | `-54`
-| `ai_on_the_edge_device_chip_temp_celsius`        | Device CPU Temperature (°C) | `45`
-| `ai_on_the_edge_device_sd_partition_free_megabytes`| SD Card: Free Partition Space | `29016`
-
-
-#### Process Status Metrics
-
-| Metric Name                                      | Description                 | Output
-|:-------------------------------------------------|:----------------------------|:--------------     
-| `ai_on_the_edge_device_process_interval_minutes` | Automatic Process Interval [min] | `2.0`
-| `ai_on_the_edge_device_process_time_seconds`     | Process Time [sec]          | `25`
-| `ai_on_the_edge_device_process_error`            | Process Error State<br>- Error definition: Process error with cycle abortion, e.g. alignment failed<br>- Deviation definition: Process deviation with cycle continuation, e.g. rate limit exceeded<br><br>Possible States:<br>- `0`: No error/deviation<br>- `-1`: One error occured<br>- `-2`: Multiple process errors in a row<br>- `1`: One process deviation occured<br>- `2`: Multiple process deviations in a row | `0`
-| `ai_on_the_edge_device_cycle_counter_total`      | Process Cycle Counter       | `64`
-
-
-#### Process Data Metrics
-
-Muliple sequence data is provided separately by label `sequence`.
-
-| Topic                     | Description                 | Output
-|:--------------------------|:----------------------------|:--------------   
-| `ai_on_the_edge_device_actual_value{sequence="[sequenceName]"}` | Actual value of [sequenceName] | `146.540`
-| `ai_on_the_edge_device_rate_per_minute{sequence="[sequenceName]"}`| Rate per minute<br>(Delta of actual and last valid processed cycle + normalized to minute) | `0.000`
-
-
-### Prometheus Scrape Config
-
-The following scrape config (add to `prometheus.yml`) can be used as an example to ingest available metrics with prometheus:
-
-```
-scrape_configs:
-  - job_name: watermeter
-    scrape_interval: 300s
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['192.168.1.4']
-```
-
-Example:
+### Example output
 
 ```
 # TYPE ai_on_the_edge_device_hardware_info gauge
