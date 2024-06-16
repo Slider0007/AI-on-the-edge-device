@@ -1,12 +1,12 @@
 #include <unity.h>
-#include "openmetrics.h"
+#include "openmetrics.cpp"
 
 
 void test_createMetric()
 {
     // simple happy path
-    const char *expected = "# HELP metric_name short description\n# TYPE metric_name gauge\nmetric_name 123.456\n";
-    std::string result = createMetric("metric_name", "short description", "gauge", "123.456");
+    const char *expected = "# TYPE metric_name gauge\n# HELP metric_name short description\nmetric_name 123.456\n";
+    std::string result = createMetric("metric_name", "gauge", "short description", "123.456");
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
 }
 
@@ -40,23 +40,33 @@ void test_createSequenceMetrics()
     NumberPost *number_1 = new NumberPost;
     number_1->name = "main";
     number_1->sActualValue = "123.456";
+    number_1->sRatePerMin = "0.001";
     sequences.push_back(number_1);
 
-    const std::string metricNamePrefix = "ai_on_the_edge_device";
-    const std::string metricName = metricNamePrefix + "_flow_value";
+    const std::string metricNamePrefix = "ai_on_the_edge_device_";
 
-    std::string expected1 = "# HELP " + metricName + " current value of meter readout\n# TYPE " + metricName + " gauge\n" +
-                             metricName + "{sequence=\"" + number_1->name + "\"} " + number_1->sActualValue + "\n";
+    std::string expected1 = "# TYPE " + metricNamePrefix + "actual_value gauge\n# HELP " + metricNamePrefix +
+                            "actual_value Actual value of meter\n" + metricNamePrefix + "actual_value{sequence=\"" +
+                            number_1->name + "\"} " + number_1->sActualValue + "\n" +
+                            "# TYPE " + metricNamePrefix + "rate_per_minute gauge\n# HELP " + metricNamePrefix +
+                            "rate_per_minute Rate per minute of meter\n" + metricNamePrefix + "rate_per_minute{sequence=\"" +
+                            number_1->name + "\"} " + number_1->sRatePerMin + "\n";
     TEST_ASSERT_EQUAL_STRING(expected1.c_str(), createSequenceMetrics(metricNamePrefix, sequences).c_str());
 
     NumberPost *number_2 = new NumberPost;
     number_2->name = "secondary";
     number_2->sActualValue = "1.0";
+    number_2->sRatePerMin = "0.0";
     sequences.push_back(number_2);
 
-    std::string expected2 = "# HELP " + metricName + " current value of meter readout\n# TYPE " + metricName + " gauge\n" +
-                             metricName + "{sequence=\"" + number_1->name + "\"} " + number_1->sActualValue + "\n" +
-                             metricName + "{sequence=\"" + number_2->name + "\"} " + number_2->sActualValue + "\n";
+    std::string expected2 = "# TYPE " + metricNamePrefix + "actual_value gauge\n# HELP " + metricNamePrefix +
+                            "actual_value Actual value of meter\n" + metricNamePrefix + "actual_value{sequence=\"" +
+                            number_1->name + "\"} " + number_1->sActualValue + "\n" + metricNamePrefix + "actual_value{sequence=\"" +
+                            number_2->name + "\"} " + number_2->sActualValue + "\n" +
+                            "# TYPE " + metricNamePrefix + "rate_per_minute gauge\n# HELP " + metricNamePrefix +
+                            "rate_per_minute Rate per minute of meter\n" + metricNamePrefix + "rate_per_minute{sequence=\"" +
+                            number_1->name + "\"} " + number_1->sRatePerMin + "\n" + metricNamePrefix + "rate_per_minute{sequence=\"" +
+                            number_2->name + "\"} " + number_2->sRatePerMin + "\n";
     TEST_ASSERT_EQUAL_STRING(expected2.c_str(), createSequenceMetrics(metricNamePrefix, sequences).c_str());
 }
 

@@ -3,7 +3,7 @@
 #include "esp_log.h"
 
 
-static const char *TAG = "POSTPROC_TEST";
+static const char *TAG_PPTEST = "POSTPROC_TEST";
 
 
 UnderTestPost* setUpClassFlowPostprocessing(t_CNNType digType, t_CNNType anaType)
@@ -30,7 +30,7 @@ UnderTestPost* setUpClassFlowPostprocessing(t_CNNType digType, t_CNNType anaType
 
 std::string process_doFlow(UnderTestPost* _underTestPost)
 {
-        std::string time;
+    std::string time;
 
     // run test
     TEST_ASSERT_TRUE(_underTestPost->doFlow(time));
@@ -44,7 +44,7 @@ std::string process_doFlow(std::vector<float> analog, std::vector<float> digits,
 {
     // setup the classundertest
     UnderTestPost* _undertestPost = init_do_flow(analog, digits, digType, checkConsistency, extendedResolution, decimal_shift);
-    ESP_LOGD(TAG, "SetupClassFlowPostprocessing completed.");
+    ESP_LOGD(TAG_PPTEST, "SetupClassFlowPostprocessing completed.");
 
     std::string time;
     // run test
@@ -94,7 +94,7 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
     } else {
         _undertestPost->flowAnalog = NULL;
     }
-    ESP_LOGD(TAG, "Setting up of ROIs completed.");
+    ESP_LOGD(TAG_PPTEST, "Setting up of ROIs completed.");
 
     _undertestPost->InitNUMBERS();
 
@@ -111,7 +111,7 @@ UnderTestPost* init_do_flow(std::vector<float> analog, std::vector<float> digits
 void SetFallbackValue(UnderTestPost* _underTestPost, double _fallbackValue)
 {
         if (_fallbackValue > 0) {
-        ESP_LOGD(TAG, "fallbackValue=%f", _fallbackValue);
+        ESP_LOGD(TAG_PPTEST, "fallbackValue=%f", _fallbackValue);
         std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             (*NUMBERS)[_n]->fallbackValue = _fallbackValue;
@@ -124,7 +124,7 @@ void SetFallbackValue(UnderTestPost* _underTestPost, double _fallbackValue)
 
 void setAllowNegatives(UnderTestPost* _underTestPost, bool _allowNegatives)
 {
-        ESP_LOGD(TAG, "checkConsistency=true");
+        ESP_LOGD(TAG_PPTEST, "checkConsistency=true");
         std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             (*NUMBERS)[_n]->allowNegativeRates = _allowNegatives;
@@ -136,7 +136,7 @@ void setAllowNegatives(UnderTestPost* _underTestPost, bool _allowNegatives)
 void setConsitencyCheck(UnderTestPost* _underTestPost, bool _checkConsistency)
 {
         if (_checkConsistency) {
-        ESP_LOGD(TAG, "checkConsistency=true");
+        ESP_LOGD(TAG_PPTEST, "checkConsistency=true");
         std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
             (*NUMBERS)[_n]->checkDigitIncreaseConsistency = true;
@@ -161,7 +161,7 @@ void setDecimalShift(UnderTestPost* _underTestPost, int _decimal_shift)
     if (_decimal_shift!=0) {
         std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
-            ESP_LOGD(TAG, "Setting decimal shift on number: %d to %d", _n, _decimal_shift);
+            ESP_LOGD(TAG_PPTEST, "Setting decimal shift on number: %d to %d", _n, _decimal_shift);
             (*NUMBERS)[_n]->decimalShift = _decimal_shift;
         }
     }
@@ -173,7 +173,7 @@ void setAnalogdigitTransistionStart(UnderTestPost* _underTestPost, float _analog
     if (_analogdigitTransistionStart!=0) {
         std::vector<NumberPost*>* NUMBERS = _underTestPost->GetNumbers();
         for (int _n = 0; _n < (*NUMBERS).size(); ++_n) {
-            ESP_LOGD(TAG, "Setting decimal shift on number: %d to %f", _n, _analogdigitTransistionStart);
+            ESP_LOGD(TAG_PPTEST, "Setting decimal shift on number: %d to %f", _n, _analogdigitTransistionStart);
             (*NUMBERS)[_n]->analogDigitalTransitionStart = _analogdigitTransistionStart;
         }
     }
