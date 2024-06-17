@@ -18,6 +18,7 @@ This project allows you to digitize your **analog** water, gas, power and other 
 - InfluxDB v1.x + v2.x
 - [MQTT v3.x](docs/API/MQTT/_OVERVIEW.md)
 - [REST API](docs/API/REST/_OVERVIEW.md)
+- [Prometheus/OpenMetrics exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)
 
 
 ## Workflow
