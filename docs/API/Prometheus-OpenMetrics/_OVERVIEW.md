@@ -1,7 +1,7 @@
 ## Overview: Prometheus API
 ### Prometheus / OpenMetrics telemetry data
 
-A set of metrics is exported via the `/metrics` REST API endpoint (see REST API description for more detailed metric infos). 
+A set of metrics is exported via the `/metrics` REST API endpoint (see also REST API description). 
 The metrics can be scraped by Prometheus or any OpenMetrics specification compatilble software.<br>
 
 The metrics are provided in text wire format based on [OpenMetrics specification](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md) 
@@ -27,10 +27,10 @@ All information are static and provided by labels. The metric value is set to `1
 | `chip_cores`        | Device SOC Cores            | `2`
 | `chip_revision`     | Device SOC Silicon Revision | `1.00`
 | `chip_frequency`    | Device SOC CPU Frequency    | `160`
-| `type`              | Camera Type                 | `OV2640`
-| `frequency`         | Camera Frequency [Mhz]      | `20`
-| `capacity`          | SD card capacity [MB]       | `29580`
-| `partition_size`    | SD card partition size [MB] | `29560`
+| `camera_type`       | Camera Type                 | `OV2640`
+| `camera_frequency`  | Camera Frequency [Mhz]      | `20`
+| `sdcard_capacity`   | SD card capacity [MB]       | `29580`
+| `sdcard_partition_size` | SD card partition size [MB] | `29560`
 
 
 #### 2. Network Info Metric `ai_on_the_edge_device_network_info`
