@@ -435,6 +435,8 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SDCARD_CLK                 GPIO_NUM_7
     #define GPIO_SDCARD_CMD                 GPIO_NUM_9
     #define GPIO_SDCARD_D0                  GPIO_NUM_8
+    #define GPIO_SDCARD_D1                  GPIO_NUM_NC
+    #define GPIO_SDCARD_D2                  GPIO_NUM_NC
     #define GPIO_SDCARD_D3                  GPIO_NUM_21     // Needs to be high to init with MMC mode. After init GPIO can be used as status LED
 
 
@@ -498,6 +500,9 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SDCARD_CLK                 GPIO_NUM_39
     #define GPIO_SDCARD_CMD                 GPIO_NUM_38
     #define GPIO_SDCARD_D0                  GPIO_NUM_40
+    #define GPIO_SDCARD_D1                  GPIO_NUM_NC
+    #define GPIO_SDCARD_D2                  GPIO_NUM_NC
+    #define GPIO_SDCARD_D3                  GPIO_NUM_NC
 
 
     // LEDs
