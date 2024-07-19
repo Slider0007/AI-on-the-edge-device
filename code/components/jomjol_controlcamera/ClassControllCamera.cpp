@@ -963,10 +963,17 @@ void CCamera::setStatusLED(bool _status)
         /* Set the GPIO as a push/pull output */
         gpio_set_direction(GPIO_STATUS_LED_ONBOARD, GPIO_MODE_OUTPUT);
 
+#ifdef GPIO_STATUS_LED_ONBOARD_ACTIVELOW
         if (!_status)
             gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
         else
             gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
+#else
+        if (_status)
+            gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
+        else
+            gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
+#endif
     }
 }
 

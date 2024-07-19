@@ -365,7 +365,8 @@ CONFIG_WPA_11R_SUPPORT=n
 
     // LEDs
     //-------------------------------------------------
-    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_33     // Onboard red status LED
+    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_33     // Onboard status LED (red, active low)
+    #define GPIO_STATUS_LED_ONBOARD_ACTIVELOW
     #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_4      // Onboard flashlight LED
 
     #ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
@@ -442,7 +443,8 @@ CONFIG_WPA_11R_SUPPORT=n
 
     // LEDs
     //-------------------------------------------------
-    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_21     // Onboard yellow status LED (USER LED)
+    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_21     // Onboard yellow status LED (USER LED, yellow, active low)
+    #define GPIO_STATUS_LED_ONBOARD_ACTIVELOW
     #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_NC     // No onboard flashlight available
 
     #define GPIO_FLASHLIGHT_DEFAULT         GPIO_NUM_1      // Default flashlight GPIO pin (can be modified by activiating GPIO functionality in WebUI)
@@ -507,7 +509,8 @@ CONFIG_WPA_11R_SUPPORT=n
 
     // LEDs
     //-------------------------------------------------
-    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_2     // Onboard status LED
+    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_2     // Onboard status LED (blue, active high)
+    //#define GPIO_STATUS_LED_ONBOARD_ACTIVELOW
     #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_48    // Onboard flashlight (WS2812)
 
     #define GPIO_FLASHLIGHT_DEFAULT         GPIO_FLASHLIGHT_ONBOARD // Default flashlight GPIO pin (can be modified by activiating GPIO functionality in WebUI)
