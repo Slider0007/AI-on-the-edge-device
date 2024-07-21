@@ -227,7 +227,8 @@ jobs:
       matrix:
         plat:
          - esp32cam
-         - esp32cam-debug
+         - xiao-esp32s3-sense
+         - freenove-esp32s3
 
     # Sets permissions of the GITHUB_TOKEN to allow downloading artifacts
     permissions:
