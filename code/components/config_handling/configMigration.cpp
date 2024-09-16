@@ -114,6 +114,9 @@ void migrateConfigurationIni(void)
                     renameFile("/sdcard/config/ref0.jpg", "/sdcard/config/marker1.jpg");
                     renameFile("/sdcard/config/ref1.jpg", "/sdcard/config/marker2.jpg");
 
+                    // Rename file to harmonize model name syntax
+                    renameFile("/sdcard/config/dig-class100-0168_s2_q.tflite", "/sdcard/config/dig-class100_0168_s2_q.tflite");
+
                     // Create model subfolder in /sdcard/config and move all models to subfolder
                     makeDir("/sdcard/config/models");
                     moveAllFilesWithFiletype("/sdcard/config", "/sdcard/config/models", "tfl");

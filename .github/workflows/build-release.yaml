@@ -182,7 +182,11 @@ jobs:
 
         rm -rf ./remote_setup/config/
         mkdir -p ./remote_setup/config/
+        mkdir -p ./remote_setup/config/models
+        mkdir -p ./remote_setup/config/certs
         cp ./sd-card/config/* ./remote_setup/config/ 2>/dev/null || true
+        cp ./sd-card/config/models/*.tfl ./remote_setup/config/models/ 2>/dev/null || true
+        cp ./sd-card/config/models/*.tflite ./remote_setup/config/models/ 2>/dev/null || true
 
     - name: Remote setup package - Upload artifact
       uses: actions/upload-artifact@v4
