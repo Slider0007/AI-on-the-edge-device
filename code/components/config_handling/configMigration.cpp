@@ -95,7 +95,9 @@ void migrateConfigurationIni(void)
         for (int i = 0; i < configLines.size(); i++) {
             if (configLines[i].find("[") != std::string::npos) { // Detect start of new section
                 section = configLines[i];
-                replaceString(section, ";", "", false); // Remove possible semicolon (just for the string comparison)
+                if (configFileVersion < 2) {
+                    replaceString(section, ";", "", false); // Remove possible semicolon (just for the string comparison)
+                }
             }
 
            //*************************************************************************************************
@@ -115,6 +117,7 @@ void migrateConfigurationIni(void)
                     renameFile("/sdcard/config/ref1.jpg", "/sdcard/config/marker2.jpg");
 
                     // Rename file to harmonize model name syntax
+                    renameFile("/sdcard/config/dig-class100-0167_s2_q.tflite", "/sdcard/config/dig-class100_0167_s2_q.tflite");
                     renameFile("/sdcard/config/dig-class100-0168_s2_q.tflite", "/sdcard/config/dig-class100_0168_s2_q.tflite");
 
                     // Create model subfolder in /sdcard/config and move all models to subfolder
@@ -423,8 +426,8 @@ void migrateConfigurationIni(void)
                         continue;
 
                     if ((toUpper(splitted[0]) == "URI") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->set()->sectionInfluxDBv2.uri =
-                            (splitted[1] == "mqtt://IP-ADDRESS:1883"  || splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->set()->sectionMqtt.uri =
+                            (splitted[1] == "mqtt://IP-ADDRESS:1883" || splitted[1] == "undefined" ? "" : splitted[1]);
                     }
                     if ((toUpper(splitted[0]) == "MAINTOPIC") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->set()->sectionMqtt.mainTopic = splitted[1];
@@ -532,7 +535,7 @@ void migrateConfigurationIni(void)
 
                     if ((toUpper(splitted[0]) == "URI") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->set()->sectionInfluxDBv1.uri =
-                            (splitted[1] == "http://IP-ADDRESS:PORT"  || splitted[1] == "undefined" ? "" : splitted[1]);
+                            (splitted[1] == "http://IP-ADDRESS:PORT" || splitted[1] == "undefined" ? "" : splitted[1]);
                     }
                     if (((toUpper(splitted[0]) == "DATABASE")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->set()->sectionInfluxDBv1.database = (splitted[1] == "undefined" ? "" : splitted[1]);
@@ -582,7 +585,7 @@ void migrateConfigurationIni(void)
 
                     if ((toUpper(splitted[0]) == "URI") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->set()->sectionInfluxDBv2.uri =
-                            (splitted[1] == "http://IP-ADDRESS:PORT"  || splitted[1] == "undefined" ? "" : splitted[1]);
+                            (splitted[1] == "http://IP-ADDRESS:PORT" || splitted[1] == "undefined" ? "" : splitted[1]);
                     }
                     if (((toUpper(splitted[0]) == "BUCKET")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->set()->sectionInfluxDBv2.bucket = (splitted[1] == "undefined" ? "" : splitted[1]);

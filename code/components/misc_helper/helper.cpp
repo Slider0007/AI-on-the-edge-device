@@ -361,8 +361,14 @@ void moveAllFilesWithFiletype(std::string sourceDir, std::string destinationDir,
         if (!(entry->d_type == DT_DIR)){
             if (getFileIsFiletype(std::string(entry->d_name), filetype)) {
                 std::string sourceFilename = sourceDir + "/" + std::string(entry->d_name);
-                LogFile.writeToFile(ESP_LOG_INFO, TAG, "Move file: " + sourceFilename);
-                renameFile(sourceFilename, destinationDir + "/" + std::string(entry->d_name));
+                std::string destFilename = destinationDir + "/" + std::string(entry->d_name);
+                if (!fileExists(destFilename)) { // Move source file if file not existing at destination
+                    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Move file: " + sourceFilename);
+                    renameFile(sourceFilename, destinationDir + "/" + std::string(entry->d_name));
+                }
+                else { // Delete source file if file is already existing at destination
+                    deleteFile(sourceFilename);
+                }
             }
         }
     }

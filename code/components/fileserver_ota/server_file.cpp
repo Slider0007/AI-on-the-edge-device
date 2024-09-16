@@ -515,11 +515,11 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
 
     /* Send HTML file header */
-    //httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>"); --> This is already part of 'file_server.html' file
+    //httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>"); --> This is already part of 'sys_fileserver.html' file
 
     /////////////////////////////////////////////////
     if (!readonly) {
-        FILE *fd = fopen("/sdcard/html/file_server.html", "r");
+        FILE *fd = fopen("/sdcard/html/sys_fileserver.html", "r");
 
         /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
         // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
@@ -533,7 +533,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
             if (chunksize > 0){
                 if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
                     fclose(fd);
-                    std::string msg_txt = "http_resp_dir_html: File sending failed: /sdcard/html/file_server.html";
+                    std::string msg_txt = "http_resp_dir_html: File sending failed: /sdcard/html/sys_fileserver.html";
                     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
                     /* Abort sending file */
                     httpd_resp_sendstr_chunk(req, NULL);
