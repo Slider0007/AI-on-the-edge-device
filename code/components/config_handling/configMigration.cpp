@@ -119,6 +119,9 @@ void migrateConfigurationIni(void)
                     moveAllFilesWithFiletype("/sdcard/config", "/sdcard/config/models", "tfl");
                     moveAllFilesWithFiletype("/sdcard/config", "/sdcard/config/models", "tflite");
 
+                    // Create backup subfolder to archive legacy config files (config.ini, wlan.ini)
+                    makeDir("/sdcard/config/backup");
+
                     // Migrate wlan.ini --> handled in config.json
                     migrateWlanIni();
 
