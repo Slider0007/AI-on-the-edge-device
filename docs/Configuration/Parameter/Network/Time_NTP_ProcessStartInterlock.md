@@ -1,0 +1,20 @@
+# Parameter: Process Start Interlock
+
+|                   | WebUI               | Firmware
+|:---               |:---                 |:----
+| Parameter Name    | Process Start Interlock | Processstartinterlock
+| Default Value     | `Enabled`           | `true`
+| Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
+
+
+## Description
+
+Process starts only with valid time to ensure proper and plausible result documentation. 
+
+
+!!! Note
+    The device looses the intenal system time after power loss. 
+    After reboot the time is kept in memory, though.
+
+!!! Tip
+    It's **strongly recommended** to use time synchronization and this interlock.

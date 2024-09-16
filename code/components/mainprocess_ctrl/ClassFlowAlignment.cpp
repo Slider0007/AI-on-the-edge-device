@@ -142,7 +142,7 @@ bool ClassFlowAlignment::doFlow(std::string time)
         imageTemp->height = _zw;
     }
 
-    float rotation = cfgDataPtr->initialRotation;
+    float rotation = cfgDataPtr->imageRotation;
     if ((rotation != 0) || cfgDataPtr->flipImageSize) {
         if (alignmentMarker[0].alignment_algo == ALIGNALGO_OFF)  // alignment off: no initial rotation and no additional alignment algo
             rotation = 0.0;

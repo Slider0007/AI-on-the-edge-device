@@ -1,0 +1,15 @@
+# Parameter: IP Address
+
+|                   | WebUI               | Firmware
+|:---               |:---                 |:----
+| Parameter Name    | IP Address          | ipaddress
+| Default Value     | empty               | empty
+
+
+## Description
+
+IP address of the device (network configuration: Static)
+
+
+!!! Note
+    The IP address must be unique the subnet the device shall be connected to.

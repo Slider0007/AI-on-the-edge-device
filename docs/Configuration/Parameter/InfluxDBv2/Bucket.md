@@ -1,9 +1,10 @@
 # Parameter: Bucket
 
-|                   | WebUI               | Config.ini
+|                   | WebUI               | Firmware
 |:---               |:---                 |:----
-| Parameter Name    | Bucket              | Bucket
-| Default Value     | `undefined`         | `undefined`
+| Parameter Name    | Bucket              | bucket
+| Default Value     | empty               | empty
+
 
 
 ## Description

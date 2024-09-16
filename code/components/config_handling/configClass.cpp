@@ -332,9 +332,9 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsNumber(objEl))
         cfgDataInternal.sectionImageAlignment.searchField.y = std::max(objEl->valueint, 1);
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "initialRotation");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "imagerotation");
     if (cJSON_IsString(objEl))
-        cfgDataInternal.sectionImageAlignment.initialRotation = std::clamp(std::stof(objEl->valuestring), (float)-180.0, (float)180.0);
+        cfgDataInternal.sectionImageAlignment.imageRotation = std::clamp(std::stof(objEl->valuestring), (float)-180.0, (float)180.0);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "flipimagesize");
     if (cJSON_IsBool(objEl))
@@ -850,13 +850,13 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         validatePath(cfgDataInternal.sectionMqtt.tls.clientKey, true);
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "retainprocessdata");
-    if (cJSON_IsBool(objEl))
-        cfgDataInternal.sectionMqtt.retainProcessData = objEl->valueint;
-
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "processdatanotation");
     if (cJSON_IsNumber(objEl))
         cfgDataInternal.sectionMqtt.processDataNotation = std::clamp(objEl->valueint, 0, 2);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "retainprocessdata");
+    if (cJSON_IsBool(objEl))
+        cfgDataInternal.sectionMqtt.retainProcessData = objEl->valueint;
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "discoveryenabled");
     if (cJSON_IsBool(objEl))
@@ -874,13 +874,13 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         validateStructure(cfgDataInternal.sectionMqtt.homeAssistant.statusTopic);
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "retaindiscovery");
-    if (cJSON_IsBool(objEl))
-        cfgDataInternal.sectionMqtt.homeAssistant.retainDiscovery = objEl->valueint;
-
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "metertype");
     if (cJSON_IsNumber(objEl))
         cfgDataInternal.sectionMqtt.homeAssistant.meterType = std::clamp(objEl->valueint, 0, 10);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "retaindiscovery");
+    if (cJSON_IsBool(objEl))
+        cfgDataInternal.sectionMqtt.homeAssistant.retainDiscovery = objEl->valueint;
 
 
     // InfluxDB v1.x
@@ -1442,7 +1442,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(searchField, "y", cfgDataInternal.sectionImageAlignment.searchField.y) == NULL)
         retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(imageAlignment, "initialrotation", to_stringWithPrecision(cfgDataInternal.sectionImageAlignment.initialRotation, 1).c_str()) ==
+    if (cJSON_AddStringToObject(imageAlignment, "imagerotation", to_stringWithPrecision(cfgDataInternal.sectionImageAlignment.imageRotation, 1).c_str()) ==
         NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddBoolToObject(imageAlignment, "flipimagesize", cfgDataInternal.sectionImageAlignment.flipImageSize) == NULL)
@@ -1650,9 +1650,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(mqttTls, "clientkey", cfgDataInternal.sectionMqtt.tls.clientKey.c_str()) == NULL)
         retVal = ESP_FAIL;
-    if (cJSON_AddBoolToObject(mqtt, "retainprocessdata", cfgDataInternal.sectionMqtt.retainProcessData) == NULL)
-        retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(mqtt, "processdatanotation", cfgDataInternal.sectionMqtt.processDataNotation) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddBoolToObject(mqtt, "retainprocessdata", cfgDataInternal.sectionMqtt.retainProcessData) == NULL)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(mqtt, "homeassistant", mqttHomeAssistant = cJSON_CreateObject()))
         retVal = ESP_FAIL;
@@ -1662,9 +1662,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(mqttHomeAssistant, "statustopic", cfgDataInternal.sectionMqtt.homeAssistant.statusTopic.c_str()) == NULL)
         retVal = ESP_FAIL;
-    if (cJSON_AddBoolToObject(mqttHomeAssistant, "retaindiscovery", cfgDataInternal.sectionMqtt.homeAssistant.retainDiscovery) == NULL)
+    if (cJSON_AddNumberToObject(mqttHomeAssistant, "metertype", cfgDataInternal.sectionMqtt.homeAssistant.meterType) == NULL)
         retVal = ESP_FAIL;
-    if (cJSON_AddNumberToObject(mqttHomeAssistant, "meterType", cfgDataInternal.sectionMqtt.homeAssistant.meterType) == NULL)
+    if (cJSON_AddBoolToObject(mqttHomeAssistant, "retaindiscovery", cfgDataInternal.sectionMqtt.homeAssistant.retainDiscovery) == NULL)
         retVal = ESP_FAIL;
 
 

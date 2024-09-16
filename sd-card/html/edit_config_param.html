@@ -31,7 +31,7 @@
 			text-align: left;
 			font-size: 1em;
 			background-color: lightgray;
-			padding: 5px;
+			padding: 10px;
 		}
 		.section {
 			padding: 1px 10px 1px 10px;
@@ -132,7 +132,7 @@
 		}
 
 		.expert {
-			background-color: #ffefef;
+			background-color: #ffefefb9;
 			font-size: 1em;
 		}
 
@@ -366,7 +366,7 @@
 			<td>
 				<span id="takeimage_flashlightgpiomapping_value"></span>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_takeimage_flashlightgpiomapping</td>
+			<td style="visibility:hidden">$TOOLTIP_takeimage_flashlight_gpiomapping</td>
 		</tr>
 
 		<tr>
@@ -902,7 +902,7 @@
 			<th>
 				<span>Digit ROI Processing</span>
 			</th>
-			<th colspan="2" class="section">
+			<th class="section">
 				<form id="digit_enabled_form">
 					<select style="font-weight:bold" class="classvisibility_init" name="digit.enabled" id="digit_enabled_value"
 							onchange="setClassVisibility('classvisibility_digit_enabled', this.value); $(digit_model_value).trigger('onchange')
@@ -1017,7 +1017,7 @@
 			<th>
 			    <span>Analog ROI Processing</span>
 			</th>
-			<th colspan="2" class="section">
+			<th class="section">
 				<form id="analog_enabled_form">
 					<select style="font-weight:bold" class="classvisibility_init" name="analog.enabled" id="analog_enabled_value"
 								onchange="setClassVisibility('classvisibility_analog_enabled', this.value);
@@ -1309,7 +1309,7 @@
 					</select>
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_postprocessing_savedebuginfo</td>
+			<td style="visibility:hidden">$TOOLTIP_postprocessing_debug_savedebuginfo</td>
 		</tr>
 	</table>
 
@@ -1326,7 +1326,7 @@
 			<th>
 			    <span>MQTT</span>
 			</th>
-			<th colspan="2" class="section">
+			<th class="section">
 				<form id="mqtt_enabled_form">
 					<select style="font-weight:bold" class="classvisibility_init" name="mqtt.enabled" id="mqtt_enabled_value"
 							onchange="setClassVisibility('classvisibility_mqtt_enabled', this.value);
@@ -1471,22 +1471,6 @@
 
 		<tr class="classvisibility_mqtt_enabled">
 			<td class="indent1">
-				<span>Retain Process Data</span>
-			</td>
-			<td>
-				<form id="mqtt_retainprocessdata_form">
-					<select name="mqtt.retainprocessdata" id="mqtt_retainprocessdata_value"
-							onchange="gatherChangedParameter(this.form)">
-						<option value="false">Disabled</option>
-						<option value="true" selected>Enabled</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_mqtt_retainprocessdata</td>
-		</tr>
-
-		<tr class="classvisibility_mqtt_enabled">
-			<td class="indent1">
 				<span>Process Data Notation</span>
 			</td>
 			<td>
@@ -1500,6 +1484,22 @@
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_mqtt_processdatanotation</td>
+		</tr>
+
+		<tr class="classvisibility_mqtt_enabled">
+			<td class="indent1">
+				<span>Retain Process Data</span>
+			</td>
+			<td>
+				<form id="mqtt_retainprocessdata_form">
+					<select name="mqtt.retainprocessdata" id="mqtt_retainprocessdata_value"
+							onchange="gatherChangedParameter(this.form)">
+						<option value="false">Disabled</option>
+						<option value="true" selected>Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_mqtt_retainprocessdata</td>
 		</tr>
 
 		<tr class="classvisibility_mqtt_enabled">
@@ -1534,7 +1534,7 @@
 
 		<tr class="classvisibility_mqtt_enabled classvisibility_mqtt_homeassistant_discoveryenabled">
 			<td class="indent2">
-				<span id="MQTT_HAStatusTopic_text">Home Assistant Status Topic</span>
+				<span id="MQTT_HAStatusTopic_text">Status Topic</span>
 			</td>
 			<td>
 				<form id="mqtt_homeassistant_statustopic_form">
@@ -1547,23 +1547,7 @@
 
 		<tr class="classvisibility_mqtt_enabled classvisibility_mqtt_homeassistant_discoveryenabled">
 			<td class="indent2">
-				<span>Retain Discovery Topics</span>
-			</td>
-			<td>
-				<form id="mqtt_homeassistant_retaindiscovery_form">
-					<select name="mqtt.homeassistant.retaindiscovery" id="mqtt_homeassistant_retaindiscovery_value"
-							onchange="gatherChangedParameter(this.form)">
-						<option value="false" selected>Disabled</option>
-						<option value="true">Enabled</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_mqtt_homeassistant_retaindiscovery</td>
-		</tr>
-
-		<tr class="classvisibility_mqtt_enabled classvisibility_mqtt_homeassistant_discoveryenabled">
-			<td class="indent2">
-				<span id="MQTT_HAMeterType_text">Home Assistant Meter Type</span>
+				<span id="MQTT_HAMeterType_text">Meter Type</span>
 			</td>
 			<td>
 				<form id="mqtt_homeassistant_metertype_form">
@@ -1586,6 +1570,22 @@
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_mqtt_homeassistant_metertype</td>
 		</tr>
+
+		<tr class="classvisibility_mqtt_enabled classvisibility_mqtt_homeassistant_discoveryenabled">
+			<td class="indent2">
+				<span>Retain Discovery Topics</span>
+			</td>
+			<td>
+				<form id="mqtt_homeassistant_retaindiscovery_form">
+					<select name="mqtt.homeassistant.retaindiscovery" id="mqtt_homeassistant_retaindiscovery_value"
+							onchange="gatherChangedParameter(this.form)">
+						<option value="false" selected>Disabled</option>
+						<option value="true">Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_mqtt_homeassistant_retaindiscovery</td>
+		</tr>
 	</table>
 
 
@@ -1601,7 +1601,7 @@
 			<th>
 			    <span>InfluxDB v1.x</span>
 			</th>
-			<th colspan="2" class="section">
+			<th class="section">
 				<form id="influxdbv1_enabled_form">
 					<select style="font-weight:bold" class="classvisibility_init" name="influxdbv1.enabled" id="influxdbv1_enabled_value"
 							onchange="setClassVisibility('classvisibility_influxdbv1_enabled', this.value);
@@ -1784,7 +1784,7 @@
 			<th>
 			    <span>InfluxDB v2.x</span>
 			</th>
-			<th colspan="2" class="section">
+			<th class="section">
 				<form id="influxdbv2_enabled_form">
 					<select style="font-weight:bold" class="classvisibility_init" name="influxdbv2.enabled" id="influxdbv2_enabled_value"
 							onchange="setClassVisibility('classvisibility_influxdbv2_enabled', this.value);
@@ -1962,7 +1962,7 @@
 			<th>
 			    <span>GPIO (General Purpose Input/Output)</span>
 			</th>
-			<th colspan="2" class="section">
+			<th class="section">
 				<form id="gpio_customizationenabled_form">
 					<select style="font-weight:bold" class="classvisibility_init"
 							name="gpio.customizationenabled" id="gpio_customizationenabled_value"
@@ -1989,7 +1989,7 @@
 					</select>
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_gpio_pinselect</td>
+			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_gpionumber</td>
 		</tr>
 
 		<tr class="classvisibility_gpio_customizationenabled classexpert_gpio">
@@ -2055,7 +2055,7 @@
 
 		<tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled gpio_show_debounce_time classexpert_gpio">
 			<td class="indent1">
-				<span>Debounce Time</span>
+				<span>Input Debounce Time</span>
 			</td>
 			<td>
 				<form class="form_gpio_config" id="gpio_gpiopin_0_inputdebouncetime_form">
@@ -2486,7 +2486,7 @@
 
 		<tr class="classvisibility_network_wlan_wlanroaming_enabled expert">
 			<td class="indent2">
-				<span>WLAN Roaming RSSI Threshold</span>
+				<span>RSSI Threshold</span>
 			</td>
 			<td>
 				<form id="network_wlan_wlanroaming_rssithreshold_form">

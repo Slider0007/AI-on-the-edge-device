@@ -206,7 +206,7 @@ struct CfgData {
         struct Debug {
             bool saveRawImages = false;
             std::string rawImagesLocation = "/log/source";
-            int rawImagesRetention = 5;
+            int rawImagesRetention = 3;
             bool saveAllFiles = false;
 
         } debug;
@@ -219,7 +219,7 @@ struct CfgData {
             int x = 20;
             int y = 20;
         } searchField;
-        float initialRotation = 0.0;
+        float imageRotation = 0.0;
         bool flipImageSize = false;
         struct Marker {
             int x = 1;
@@ -288,15 +288,14 @@ struct CfgData {
             std::string clientCert = "";
             std::string clientKey = "";
         } tls;
-        bool retainProcessData = false;
         int processDataNotation = PROCESSDATA_JSON;
+        bool retainProcessData = false;
         struct HomeAssistant {
             bool discoveryEnabled = false;
             std::string discoveryPrefix = "homeassistant";
             std::string statusTopic = "homeassistant/status";
-            bool retainDiscovery = false;
             int meterType = WATER_M3;
-
+            bool retainDiscovery = false;
         } homeAssistant;
     } sectionMqtt;
 

@@ -1,8 +1,8 @@
 # Parameter: Client ID
 
-|                   | WebUI               | Config.ini
+|                   | WebUI               | Firmware
 |:---               |:---                 |:----
-| Parameter Name    | Client ID           | ClientID
+| Parameter Name    | Client ID           | clientid
 | Default Value     | `watermeter`        | `watermeter`
 
 

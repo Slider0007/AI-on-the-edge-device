@@ -259,7 +259,7 @@ void migrateConfigurationIni(void)
                         ConfigClass::getInstance()->set()->sectionImageAlignment.searchField.y = std::stoi(splitted[1]);
                     }
                     if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->set()->sectionImageAlignment.initialRotation = std::stof(splitted[1]);
+                        ConfigClass::getInstance()->set()->sectionImageAlignment.imageRotation = std::stof(splitted[1]);
                     }
                     if ((toUpper(splitted[0]) == "FLIPIMAGESIZE") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "TRUE")

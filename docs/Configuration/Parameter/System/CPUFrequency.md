@@ -1,8 +1,8 @@
 # Parameter: CPU Frequency
 
-|                   | WebUI               | Config.ini
+|                   | WebUI               | Firmware
 |:---               |:---                 |:----
-| Parameter Name    | CPU Frequency | CPUFrequency
+| Parameter Name    | CPU Frequency       | cpufrequency
 | Default Value     | `160`               | `160`
 | Input Options     | `160`<br>`240`      | `160`<br>`240` 
 | Unit              | Mhz                 | Mhz
@@ -14,7 +14,7 @@
 
 ## Description
 
-Set the CPU Frequency.
+Set the CPU frequency.
 
 
 !!! Warning

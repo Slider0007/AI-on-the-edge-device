@@ -68,7 +68,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
 
     # print("replacing $TOOLTIP_" + section + "_" + parameter + " with the tooltip content...")
     configPageContent = configPageContent.replace("<th hidden>$TOOLTIP_" + section + "_" + parameter + "</th>",
-                                                    "<th>" + htmlTooltip + "</th>")
+                                                    "<th style=\"font-weight: unset;\">" + htmlTooltip + "</th>")
     configPageContent = configPageContent.replace("<td style=\"visibility:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>",
                                                     "<td>" + htmlTooltip + "</td>")
 
@@ -108,4 +108,4 @@ for folder in folders:
 
             parameter = file.split("\\")[-1].replace(".md", "")
             parameter = parameter.replace("<", "").replace(">", "")
-            generateHtmlTooltip(folder, parameter, file)
+            generateHtmlTooltip(folder.lower(), parameter.lower(), file)
