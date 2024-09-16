@@ -15,7 +15,7 @@ The following infos are available:
 
 | JSON Property / HTML query `type=`   | Description                                        | Output
 |:-------------------------------------|:---------------------------------------------------|:-----------------------
-| `api_name`                           | Name of the API                                    | `info:v2`
+| `api_name`                           | Name of the API                                    | `info:v4`
 | `process_status`                     | Process Status<br><br>Possible States:<br>- `Processing (Automatic)`:  Timer-controlled automatic processing<br>- `Processing (Triggered Only)`: Manual triggered processing only<br>- `Not Processing / Not Ready`: Initializing / Initialization failed | `Processing (Automatic)`
 | `process_interval`                   | Process Interval [min]                             | `2.0`
 | `process_time`                       | Process Time [sec]                                 | `25`
@@ -38,7 +38,7 @@ The following infos are available:
 | `gateway_address`                    | Device Gateway Address                             | `192.168.1.1`
 | `dns_address`                        | Device DNS Address                                 | `192.168.1.1`
 | `hostname`                           | Device Network Hostname                            | `watermeter`
-| `board_type`                         | Board Type                                  | `ESP32CAM`
+| `board_type`                         | Board Type                                         | `ESP32CAM`
 | `chip_model`                         | Device SOC Chip Model                              | `ESP32`
 | `chip_cores`                         | Device SOC Chip Cores                              | `2`
 | `chip_revision`                      | Device SOC Chip Revision                           | `1.0`
@@ -66,7 +66,7 @@ The following infos are available:
 | `firmware_version`                   | MCU Firmware Version                               | `Develop: HEAD (Commit: 3d7fed3)` 
 | `html_version`                       | WebUI / HTML Version                               | `Develop: HEAD (Commit: 3d7fed3)` 
 | `build_time`                         | Firmware Build Time                                | `2024-01-23T21:32:23+0000` 
-| `config_file_version`                | Config File Version (Requested by firmware)        | `1` 
+| `config_version`                     | Config Version                                     | `1` 
 | `idf_version`                        | Espressif ESP IDF Development Framework Version    | `5.0.2` 
 
 1. JSON:
@@ -78,7 +78,7 @@ The following infos are available:
     - Example: 
 ```
 {
-    "api_name": "info:v2",
+    "api_name": "info:v4",
     "process_status": "Processing (Automatic)",
     "process_interval": 2.0,
     "process_time": 19,
@@ -129,8 +129,8 @@ The following infos are available:
     "firmware_version": "Develop: HEAD (Commit: 3d7fed3)",
     "html_version": "Develop: HEAD (Commit: 3d7fed3)",
     "build_time": "2024-01-23T21:32:23+0000",
-    "config_file_version": 1,
-    "idf_version": "5.0.2"
+    "config_version": 3,
+    "idf_version": "5.1.2"
 }
 ```
 

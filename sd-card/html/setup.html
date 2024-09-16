@@ -63,7 +63,8 @@
     </style>
 
     <script>
-        function resizeIframe(obj) {
+        function resizeIframe(obj)
+        {
             obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 20 + 'px';
         }
     </script>
@@ -108,7 +109,7 @@
     </div>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script>
+<script src="global_common.js?v=$COMMIT_HASH"></script>
 <script>
     var aktstep = 0;
     var setupCompleted = false;
@@ -243,7 +244,7 @@
             break;
 
         case 4: // Digit ROIs
-            document.getElementById('maincontent').src = 'edit_digits.html?v=$COMMIT_HASH#description';
+            document.getElementById('maincontent').src = 'edit_digit.html?v=$COMMIT_HASH#description';
 
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:45px;"

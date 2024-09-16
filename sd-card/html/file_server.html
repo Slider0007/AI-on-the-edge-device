@@ -107,7 +107,7 @@
     </table>
 
 
-<script src="/common.js?v=$COMMIT_HASH"></script>
+<script src="/global_common.js?v=$COMMIT_HASH"></script>
 <script>
     function setpath() {
         var fileserverpraefix = "/fileserver";
@@ -189,7 +189,6 @@
     function checkAtRootLevel(res) {
         if (getPath() == "/fileserver/") { // Already at root level
             document.getElementById("dirup").disabled = true;
-            //console.log("Already on SD card root level!");
             return true;
         }
 
@@ -203,10 +202,7 @@
     }
 
     checkAtRootLevel();
-
-    //console.log("Current path: " + getPath().replace("/fileserver", ""));
     document.getElementById("currentpath").innerHTML = "Current path: <b>" + getPath().replace("/fileserver", "") + "</b>";
-
     document.cookie = "page=" + getPath() + ";path=/;SameSite=Lax";
 
 </script>

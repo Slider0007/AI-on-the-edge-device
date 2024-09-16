@@ -24,3 +24,5 @@ _deps
 code/edgeAI.code-workspace
 .DS_Store
 tools/parameter-tooltip-generator/AI-on-the-edge-device-docs
+images/Thumbs.db
+sd-card/html/Thumbs.db

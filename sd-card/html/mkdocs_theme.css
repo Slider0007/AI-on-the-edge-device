@@ -442,7 +442,7 @@ textarea {
 
 .fa-search:before,
 .icon-search:before {
-    content: ""
+    content: "\1F50E \FE0E"
 }
 
 .fa-envelope-o:before {
@@ -869,11 +869,11 @@ textarea {
 }
 
 .fa-eye:before {
-    content: ""
+    content: "\1F441"
 }
 
 .fa-eye-slash:before {
-    content: ""
+    content: ""
 }
 
 .fa-exclamation-triangle:before,

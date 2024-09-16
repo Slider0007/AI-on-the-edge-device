@@ -2,14 +2,6 @@
 #define DEFINES_H
 
 //**************************************************************************************
-// Define config file version for config.ini (sd-card/config/config.ini)
-// Needs to be increased whenever config.ini gets modified and migration is necessary
-// Add migration routine in main.cpp --> migrateConfiguration()
-//**************************************************************************************
-#define CONFIG_FILE_VERSION      2
-
-
-//**************************************************************************************
 // ENABLE/DISABLE SOFTWARE MODULE
 //**************************************************************************************
 
@@ -41,7 +33,6 @@
 
 
 
-
 //**************************************************************************************
 // GLOABL DEBUG FLAGS
 //**************************************************************************************
@@ -50,12 +41,9 @@
 // ****************************************************
 //#define DEBUG_DETAIL_ON
 //#define DEBUG_DISABLE_BROWNOUT_DETECTOR
-//#define DEBUG_ENABLE_PERFMON
 
 
 // Task memory analysis
-// Environment automatically sets be using the following:
-// 'pio run --environment esp32cam-task-analysis'
 // ****************************************************
 //#define TASK_ANALYSIS_ON
 
@@ -68,34 +56,6 @@
 */
 
 
-// HIMEM memory check
-// ****************************************************
-//#define DEBUG_HIMEM_MEMORY_CHECK
-// need [env:esp32cam-himem]
-//=> CONFIG_SPIRAM_BANKSWITCH_ENABLE=y
-//=> CONFIG_SPIRAM_BANKSWITCH_RESERVE=4
-
-// Use himem //https://github.com/jomjol/AI-on-the-edge-device/issues/1842
-#if (CONFIG_SPIRAM_BANKSWITCH_ENABLE)
-    #define USE_HIMEM_IF_AVAILABLE 1
-#endif
-
-
-// Memory leak tracing
-// Environment automatically sets be using the following:
-// 'pio run --environment esp32cam-task-analysis'
-// ****************************************************
-//#define HEAP_TRACING_MAIN_WIFI
-//#define HEAP_TRACING_MAIN_START
-//#define HEAP_TRACING_CLASS_FLOW_CNN_GENERAL_DO_ALING_AND_CUT
-
-// https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/heap_debug.html#heap-information
-// need CONFIG_HEAP_TRACING_STANDALONE=y or #define CONFIG_HEAP_TRACING_STANDALONE
-// all setup is predifined in [env:esp32cam-task-analysis]
-
-//#define HEAP_TRACING_MAIN_WIFI || HEAP_TRACING_MAIN_START //enable heap tracing per function in main.cpp
-
-
 
 //**************************************************************************************
 // GLOBAL GENERAL FLAGS
@@ -106,18 +66,22 @@
 //#define CONFIG_IDF_TARGET_ARCH_XTENSA // not needed with platformio/espressif32 @ 5.2.0
 
 
-//ClassControllCamera
+//ConfigClass
+#define CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE 32768 // Size of preallocated buffer for larger files (cJSON Object, JSON string buffer)
+
+
+//ClassControlCamera
 #define CAM_LIVESTREAM_REFRESHRATE 500 // Camera livestream feature: Waiting time in milliseconds to refresh image
 #define DEMO_IMAGE_SIZE 30000 // Max size of demo image in bytes
 
 
-//server_GPIO + server_file + SoftAP
-#define CONFIG_FILE "/sdcard/config/config.ini"
-#define CONFIG_FILE_BACKUP "/sdcard/config/config.bak"
+//server_GPIO + server_file + SoftAP + ClassFlowControl + Main + SoftAP
+#define CONFIG_PERSISTENCE_FILE "/sdcard/config/config.json" // Config persistence file for firmware v17.x and newer
 
-
-//ClassFlowControll + Main + SoftAP
-#define WLAN_CONFIG_FILE "/sdcard/wlan.ini"
+#define CONFIG_FILE_LEGACY "/sdcard/config/config.ini" // Config file for firmware v16.x and older
+#define CONFIG_FILE_BACKUP_LEGACY "/sdcard/config/backup/config_ini.bak"
+#define CONFIG_WIFI_FILE_LEGACY "/sdcard/wlan.ini"
+#define CONFIG_WIFI_FILE_BACKUP_LEGACY "/sdcard/config/backup/wlan_ini.bak"
 
 
 // server_file + Helper
@@ -131,8 +95,7 @@
 
 #define LOGFILE_LAST_PART_BYTES 80 * 1024 // 80 kBytes  // Size of partial log file to return
 
-#define SERVER_FILER_SCRATCH_BUFSIZE  4096
-#define SERVER_HELPER_SCRATCH_BUFSIZE  8192
+#define WEBSERVER_SCRATCH_BUFSIZE  4096
 #define SERVER_OTA_SCRATCH_BUFSIZE  1024
 
 
@@ -146,7 +109,7 @@
 #define OTA_URL_SIZE 256
 
 
-//ClassFlow + ClassFlowImage + server_tflite
+//ClassFlow + ClassLogImage + server_tflite
 #define DEFAULT_TIME_FORMAT             "%Y%m%d-%H%M%S"
 #define DEFAULT_TIME_FORMAT_DATE_EXTR   substr(0, 8)
 #define DEFAULT_TIME_FORMAT_HOUR_EXTR   substr(9, 2)
@@ -175,7 +138,7 @@
 #define FALLBACKVALUE_TIME_FORMAT_INPUT "%d-%d-%dT%d:%d:%d"
 
 
-//ClassFlowControll
+//ClassFlowControl
 #define READOUT_TYPE_TIMESTAMP_PROCESSED     0
 #define READOUT_TYPE_TIMESTAMP_FALLBACKVALUE 1
 #define READOUT_TYPE_VALUE                   2
@@ -239,7 +202,8 @@ CONFIG_WPA_11R_SUPPORT=n
 
 // ClassFlowPostProcessing.cpp: Post-Processing result value status
 #define VALUE_STATUS_000_VALID              "000 Valid"
-#define VALUE_STATUS_001_NO_DATA_N_SUBST    "E90 No data to substitute N"
+#define VALUE_STATUS_W01_EMPTY_DATA         "W01 Empty data"
+#define VALUE_STATUS_001_DATA_N_SUBST       "E90 No data to substitute N"
 #define VALUE_STATUS_002_RATE_NEGATIVE      "E91 Rate negative"
 #define VALUE_STATUS_003_RATE_TOO_HIGH_NEG  "E92 Rate too high (<)"
 #define VALUE_STATUS_004_RATE_TOO_HIGH_POS  "E93 Rate too high (>)"
@@ -263,15 +227,16 @@ CONFIG_WPA_11R_SUPPORT=n
 #define FLOW_FLOW_TASK_FAILED       "Flow Task Creation Failed"
 #define FLOW_INIT_DELAYED           "Initialization - Delayed"
 #define FLOW_INIT                   "Initialization"
+#define FLOW_INIT_WAITING_TIME_SYNC "Initialization - Waiting For Time Sync"
 #define FLOW_INIT_FAILED            "Initialization Failed"
 #define FLOW_SETUP_MODE             "Setup Mode"
 #define FLOW_IDLE_NO_AUTOSTART      "Idle - No Autostart"
-#define FLOW_IDLE_AUTOSTART         "Idle - Waiting for Autostart"
+#define FLOW_IDLE_AUTOSTART         "Idle - Waiting For Autostart"
 
 #define FLOW_TAKE_IMAGE             "Take Image"
 #define FLOW_ALIGNMENT              "Image Alignment"
-#define FLOW_PROCESS_DIGIT_ROI      "ROI Digitalization - Digit"
-#define FLOW_PROCESS_ANALOG_ROI     "ROI Digitalization - Analog"
+#define FLOW_PROCESS_DIGIT_ROI      "ROI Processing - Digit"
+#define FLOW_PROCESS_ANALOG_ROI     "ROI Processing - Analog"
 #define FLOW_POSTPROCESSING         "Post-Processing"
 #define FLOW_PUBLISH_MQTT           "Publish to MQTT"
 #define FLOW_PUBLISH_INFLUXDB       "Publish to InfluxDBv1"
@@ -287,10 +252,10 @@ CONFIG_WPA_11R_SUPPORT=n
 
 // SoftAP for initial setup process
 #ifdef ENABLE_SOFTAP
-    #define EXAMPLE_ESP_WIFI_SSID      "AI-on-the-Edge"
-    #define EXAMPLE_ESP_WIFI_PASS      ""
-    #define EXAMPLE_ESP_WIFI_CHANNEL   11
-    #define EXAMPLE_MAX_STA_CONN       1
+    #define AP_ESP_WIFI_SSID      "AI-on-the-Edge"
+    #define AP_ESP_WIFI_PASS      ""
+    #define AP_ESP_WIFI_CHANNEL   11
+    #define AP_MAX_STA_CONN       1
 #endif // ENABLE_SOFTAP
 
 
@@ -323,6 +288,7 @@ CONFIG_WPA_11R_SUPPORT=n
                                                     // This is used for OTA update package verification (converted to lower case)
 #else
 #error "Board type (ENV_BOARD_TYPE) not defined"
+#define BOARD_AITHINKER_ESP32CAM
 #define BOARD_TYPE_NAME      "Board unknown"
 #endif
 
@@ -335,6 +301,7 @@ CONFIG_WPA_11R_SUPPORT=n
 #elif ENV_CAMERA_MODEL == 2
 #define CAMERA_XIAO_ESP32S3_SENSE_OV2640
 #else
+#define CAMERA_AITHINKER_ESP32CAM_OV2640
 #error "Camera model (ENV_CAMERA_MODEL) not defined"
 #endif
 

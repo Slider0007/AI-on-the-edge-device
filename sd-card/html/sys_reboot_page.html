@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Reboot</title>
+
+	<style>
+		h1 {font-size: 1.8em;}
+		h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+		h3 {font-size: 1.2em;}
+		p {font-size: 1em;}
+
+        body, html {
+            font-size: 100%;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+		.button {
+			padding: 5px 10px;
+			width: 205px;
+			font-size: 16px;
+		}
+
+		table {
+			border: 0
+		}
+	</style>
+
+	<script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+    <script src="firework.js?v=$COMMIT_HASH"></script>
+</head>
+
+
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
+    <h2>Reboot</h2>
+
+	<div id="rebootRequest">
+		<h3>Do you really want to reboot now?</h3>
+
+		<table>
+			<tr>
+				<td>
+					<button class="button" id="reboot" type="button" onclick="doReboot()">Reboot</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<div id="rebootChecker" style="display: none">
+		<h3><span id="rebootCheckerText"><br><br>Status: Rebooting</span></h3>
+		<span><b>The device is usually rebooted in 20 to 40 seconds<br>and then getting redirected to the overview page.</b></span>
+	</div>
+
+<script src="global_common.js?v=$COMMIT_HASH"></script>
+<script>
+	function doReboot()
+	{
+        let xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+            if (xhttp.readyState == 4) {
+                if (xhttp.status == 200) {
+					document.getElementById("rebootRequest").style.display = "none";
+					document.getElementById("rebootChecker").style.display = "";
+					rebootChecker();
+				}
+				else {
+					firework.launch('Reboot request failed. Retry reboot or power cycle the device', 'danger', 30000);
+				}
+			}
+		}
+
+		xhttp.timeout = 10000;
+        xhttp.open("GET", getDomainname() + "/reboot", true);
+        xhttp.send();
+    }
+
+
+	function rebootChecker()
+	{
+		// Print every second a additional dot
+		let dotInterval = setInterval(function() {
+			document.getElementById('rebootCheckerText').innerHTML += ".";
+		}, 1000);
+
+		// Wait 10s until first request will be initiated
+		setTimeout(function() {
+			let checkCounter = 5; // Start after 10s
+			// Check every 2 seconds for availability
+			let checkInterval = setInterval(function() {
+				checkCounter += 1;
+				fetch(getDomainname(), {mode: 'no-cors'})
+					.then(r=>{
+						parent.location.href=('index.html');
+					});
+
+				if (checkCounter > 30) { // 30 x 2s -> 60s, but device still not ready
+					firework.launch("Reboot takes unusually long. Retry reboot or power cycle the device", 'danger', 30000);
+
+					clearInterval(dotInterval);
+					clearInterval(checkInterval);
+
+					document.getElementById("rebootRequest").style.display = "";
+					document.getElementById("rebootChecker").style.display = "none";
+				}
+			}, 2000);
+		}, 10000);
+	}
+
+</script>
+
+</body>
+</html>
