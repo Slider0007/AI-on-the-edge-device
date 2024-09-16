@@ -17,7 +17,7 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       upload_url: ${{ steps.release.outputs.upload_url }}
       version: "${{steps.release.outputs.major}}.${{steps.release.outputs.minor}}.${{steps.release.outputs.patch}}"
-      tag_name: ${{ steps.release.outputs.tag_name }} 
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -69,7 +69,7 @@ jobs:
             ~/.platformio/.cache
         key: platformio-${{ github.run_id }}
         restore-keys: platformio # This matches above key as it is only used as a prefix. It restores the nearest cache
-          
+
     - name: Cache PIO build files
       if: ${{ ! needs.prepare-release.outputs.release_created }} # do not use cached data when building a release
       uses: actions/cache@v4
@@ -77,7 +77,7 @@ jobs:
         path: ./code/.pio
         key: build-${{ matrix.plat }}-${{ github.run_id }}
         restore-keys: build-${{ matrix.plat }} # This matches above key as it is only used as a prefix. It restores the nearest cache
-          
+
     - name: Setup python environment
       uses: actions/setup-python@v5
       with:
@@ -95,7 +95,7 @@ jobs:
       run: |
         python -m pip install markdown
         python ./tools/parameter-tooltip-generator/generate-param-doc-tooltips.py
-        
+
         python ./tools/docs-generator/generate-api-docs.py
 
         rm -rf ./html
@@ -112,20 +112,21 @@ jobs:
     # Package contents:
     #  - /firmware.bin
     #  - (optional) /html/* (inkl. subfolders)
-    #  - (optional) /config/*.tflite
+    #  - (optional) /config/models/*.tflite
     #########################################################################################
     - name: OTA update package - Prepare artifact
       run: |
         rm -rf ./update
         mkdir -p ./update
         cp "./code/.pio/build/${{ matrix.plat }}/firmware.bin" "update/firmware.bin"
-        
+
         cp -r ./html ./update/
-        
+
         rm -rf ./update/config/
         mkdir -p ./update/config/
-        cp ./sd-card/config/*.tfl ./update/config/ 2>/dev/null || true
-        cp ./sd-card/config/*.tflite ./update/config/ 2>/dev/null || true
+        mkdir -p ./update/config/models
+        cp ./sd-card/config/models/*.tfl ./update/config/models/ 2>/dev/null || true
+        cp ./sd-card/config/models/*.tflite ./update/config/models/ 2>/dev/null || true
 
     - name: OTA update package - Upload artifact
       uses: actions/upload-artifact@v4
@@ -140,7 +141,7 @@ jobs:
     # Package contents:
     #  - /firmware.bin
     #  - /partitions.bin
-    #  - /bootloader.bin   
+    #  - /bootloader.bin
     #  - sd-card.zip (Content for sd-card -> extract to root folder)
     #########################################################################################
     - name: Manual setup package - Prepare artifact
@@ -152,11 +153,11 @@ jobs:
         cp -f "./code/.pio/build/${{ matrix.plat }}/firmware.bin" "manual_setup/firmware.bin"
         cp -f "./code/.pio/build/${{ matrix.plat }}/bootloader.bin" "manual_setup/bootloader.bin"
         cp -f "./code/.pio/build/${{ matrix.plat }}/partitions.bin" "manual_setup/partitions.bin"
-        
+
         rm -rf ./sd-card/html
         cp -r ./html ./sd-card/ # Overwrite the Web UI with the preprocessed files
         cd sd-card; zip -r ../manual_setup/sd-card.zip *; cd ..
-  
+
     - name: Manual setup package - Upload artifact
       uses: actions/upload-artifact@v4
       with:
@@ -176,9 +177,9 @@ jobs:
       run: |
         rm -rf ./remote_setup
         mkdir -p ./remote_setup
-        
+
         cp -r ./html ./remote_setup/
-        
+
         rm -rf ./remote_setup/config/
         mkdir -p ./remote_setup/config/
         cp ./sd-card/config/* ./remote_setup/config/ 2>/dev/null || true
@@ -201,7 +202,7 @@ jobs:
       run: |
         rm -rf ./debug
         mkdir -p ./debug
-        
+
         cp -f "./code/.pio/build/${{ matrix.plat }}/firmware.elf" "debug/firmware.elf"
         cp -f "./code/sdkconfig.${{ matrix.plat }}" "debug/sdkconfig.${{ matrix.plat }}"
 
@@ -216,7 +217,7 @@ jobs:
 ## Create release - PART 2: Upload release related artifacts
 #
 # Artifacts will gets uploaded to newly created release tag.
-#########################################################################################  
+#########################################################################################
   upload-release-artifacts:
     runs-on: ubuntu-latest
     needs: [prepare-release, build]
@@ -238,19 +239,19 @@ jobs:
       uses: actions/checkout@v4
       with:
         ref: ${{ needs.prepare-release.outputs.tag_name }}
-     
+
     - name: Set variables
       id: vars
       run: |
         echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
         echo "branch=$(echo ${{ github.ref_name }} | tr / __)" >> $GITHUB_OUTPUT
-    
+
     - name: Pull artifacts
       uses: actions/download-artifact@v4
-        
+
     - name: Prepare artifacts for release
       run: |
-        rm -rf release 
+        rm -rf release
         mkdir -p release
         cd "AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
         zip -r ../release/AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
