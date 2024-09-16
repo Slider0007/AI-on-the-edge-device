@@ -839,15 +839,15 @@
 			    <span>Image Rotation</span>
 			</td>
 			<td>
-				<form id="imagealignment_initialrotation_form">
+				<form id="imagealignment_imagerotation_form">
 					<input required type="number" min="-180.0" max="180.0" step="0.1" value="0.0"
-						name="imagealignment.initialrotation" id="imagealignment_initialrotation_value"
+						name="imagealignment.imagerotation" id="imagealignment_imagerotation_value"
 						onchange="gatherChangedParameter(this.form)"
 						oninput="(!validity.rangeUnderflow||(value=-180.0)) && (!validity.rangeOverflow||(value=180.0)) &&
 							(!validity.stepMismatch||(value=parseInt(this.value)));">Degree
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_imagealignment_initialrotation</td>
+			<td style="visibility:hidden">$TOOLTIP_imagealignment_imagerotation</td>
 		</tr>
 
 		<tr>

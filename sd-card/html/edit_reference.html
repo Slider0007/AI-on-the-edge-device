@@ -441,14 +441,14 @@
         </tr>
 
         <tr>
-            <td style="visibility:hidden">$TOOLTIP_imagealignment_rotate</td>
+            <td style="visibility:hidden">$TOOLTIP_imagealignment_imagerotation</td>
             <td>
                 <span>Image Rotation</span>
             </td>
             <td class="camParameter">
-				<form id="imagealignment_initialrotation_form">
+				<form id="imagealignment_imagerotation_form">
 					<input required type="number" min="-180.0" max="180.0" step="0.1" value="0.0"
-						name="imagealignment.initialrotation" id="imagealignment_initialrotation_value"
+						name="imagealignment.imagerotation" id="imagealignment_imagerotation_value"
 						onchange="drawRotated(); gatherChangedParameter(this.form)"
 						oninput="(!validity.rangeUnderflow||(value=-180.0)) && (!validity.rangeOverflow||(value=180.0)) &&
 							(!validity.stepMismatch||(value=this.value));">°
@@ -478,7 +478,7 @@
             <td>
             </td>
 
-            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_flashintensity</td>
+            <td style="visibility:hidden">$TOOLTIP_takeimage_flashlight_flashintensity</td>
             <td>
                 <span>Flash Intensity</span>
             </td>
@@ -715,7 +715,7 @@
         context.save();
 
         /* Handle rotation */
-        let degrees = parseFloat(document.getElementById("imagealignment_initialrotation_value").value);
+        let degrees = parseFloat(document.getElementById("imagealignment_imagerotation_value").value);
 
         if (isActReference) {
             context.drawImage(imageObj,0,0);
