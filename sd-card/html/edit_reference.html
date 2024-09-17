@@ -747,7 +747,7 @@
 
         context.save();
         context.lineWidth = 0.25;
-        context.strokeStyle = 'rgb(0, 153, 0)'; //'#00FF00';
+        context.strokeStyle = 'rgb(160, 160, 160)'; //'#00FF00';
 
         for (let i = h/2; i < h; i += 100) {
             context.moveTo(0, i);
@@ -788,6 +788,8 @@
                 drawRotated(false);
             }
 
+            canvas.addEventListener('mousemove', mouseMove, false);
+
             $("#img_loading").hide();
             $("#canvas").show();
 
@@ -797,7 +799,20 @@
                 restoreCamSettings();
         };
 
-        imageObj.src = loadImage(dataURL).src;
+        imageObj.onerror = function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.textBaseline = "top";
+            context.textAlign = "left";
+            context.font = "16px arial";
+            context.fillText("No image available", 10, 10);
+
+            canvas.removeEventListener('mousemove', mouseMove, false);
+
+            $("#img_loading").hide();
+            $("#canvas").show();
+        };
+
+        imageObj.src = dataURL;
     }
 
 
@@ -844,7 +859,7 @@
             document.getElementById("savereference").disabled = true;
 
             drawRotated(false);
-            //SaveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
+            SaveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
 
             saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => showReference());
 
@@ -896,7 +911,6 @@
         openDescription();
 
         $("#img_loading").attr("src", getDomainname() + '/img_loading.gif?v=$COMMIT_HASH');
-        canvas.addEventListener('mousemove', mouseMove, false);
 
         //if (noConfigInStorage())
 			loadConfig().then(() => loadConfigData());

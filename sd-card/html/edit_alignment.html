@@ -127,8 +127,7 @@
                 </select>
             </td>
             <td rowspan="3" style="vertical-align:top;">
-                Image<br>
-                <img style="padding-top:5px" id="marker_image" src="">
+                Image<br><img style="padding-top:5px" id="marker_image">
             <td rowspan="3" style="vertical-align:top;">
                 Histogram<br>
                 <canvas style="padding-top:5px" height="60" width="190" id="canvasHistogram"></canvas><br>
@@ -194,7 +193,7 @@
                     value="Update Marker" onclick="RequestMarkerCut()"></td>
             <td >
                 <input disabled style="font-weight:bold; float:right" class="button" type="submit"
-                    name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
+                    name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply" disabled>
             </td>
         </tr>
         <tr>
@@ -216,6 +215,8 @@
     let drag = false;
     let marker_selected = 0;
     let markerRoi;
+    let noReferenceImage = false;
+    let img1px = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
 
 
     function markerSelectionChanged()
@@ -314,12 +315,12 @@
         document.getElementById("marker_image").src = getDomainname() + "/fileserver" + filenameurl + "?" +
                                                         Math.floor((Math.random() * 1000000) + 1);
 
+        // Load x,y coordinates from config
+        rect.startX = document.getElementById("imagealignment_marker_x_value").value = markerRoi[marker_selected].x;
+        rect.startY = document.getElementById("imagealignment_marker_y_value").value = markerRoi[marker_selected].y;
+
         // Execute after marker image gets loaded
         document.getElementById("marker_image").onload = function () {
-            // Load x,y coordinates from config
-            rect.startX = document.getElementById("imagealignment_marker_x_value").value = markerRoi[marker_selected].x;
-            rect.startY = document.getElementById("imagealignment_marker_y_value").value = markerRoi[marker_selected].y;
-
             // Load ROI dx, dy data derived from image size
             rect.w = markerRoi[marker_selected].dx = document.getElementById("imagealignment_marker_dx_value").value = parseInt(this.width);
             rect.h = markerRoi[marker_selected].dy = document.getElementById("imagealignment_marker_dy_value").value = parseInt(this.height);
@@ -334,11 +335,19 @@
             RefreshDraw();
             HistogramUpdate();
         }
+
+        document.getElementById("marker_image").onerror = function () {
+            this.src=img1px; // Use 1px image if image loading failed
+            RefreshDraw();
+        }
     }
 
 
     function RefreshDraw()
     {
+        if (noReferenceImage)
+            return;
+
         // Draw reference image
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(imageObj, 0, 0);
@@ -423,10 +432,35 @@
             canvas.height = this.height;
             RefreshDraw();
 
+            canvas.addEventListener('mousedown', mouseDown, false);
+            canvas.addEventListener('mouseup', mouseUp, false);
+            canvas.addEventListener('mousemove', mouseMove, false);
+
+            noReferenceImage = false;
+
             $("#img_loading").hide();
             $("#canvas").show();
         };
-        imageObj.src = loadImage(dataURL).src;
+
+        imageObj.onerror = function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.textBaseline = "top";
+            context.textAlign = "left";
+            context.font = "16px arial";
+            context.fillText("No image available", 10, 10);
+
+            canvas.removeEventListener('mousedown', mouseDown, false);
+            canvas.removeEventListener('mouseup', mouseUp, false);
+            canvas.removeEventListener('mousemove', mouseMove, false);
+
+            noReferenceImage = true;
+            document.getElementById("updatemarker").disabled = true;
+
+            $("#img_loading").hide();
+            $("#canvas").show();
+        };
+
+        imageObj.src = dataURL;
     }
 
 
@@ -680,9 +714,6 @@
     function loadReferenceImage()
     {
         loadCanvas(getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
-        canvas.addEventListener('mousedown', mouseDown, false);
-        canvas.addEventListener('mouseup', mouseUp, false);
-        canvas.addEventListener('mousemove', mouseMove, false);
     }
 
 

@@ -45,11 +45,17 @@ bool ClassFlowAlignment::loadParameter()
         int x = 0, y = 0, channel = 0;
         std::string sIndex = std::to_string(i+1);
 
+        // Check availability of marker image before usage
+        if (!fileExists("/sdcard/config/marker" + sIndex + ".jpg")) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Alignmant marker image missing: '/sdcard/config/marker" + sIndex +
+            ".jpg' > Please update alignment marker");
+            return false;
+        }
+
         alignmentMarker[i].alignment_algo = cfgDataPtr->alignmentAlgo;
         alignmentMarker[i].search_x = cfgDataPtr->searchField.x;
         alignmentMarker[i].search_y = cfgDataPtr->searchField.y;
         alignmentMarker[i].fastalg_SADThreshold = alignFastSADThreshold;
-
 
         alignmentMarker[i].image_file = "/sdcard/config/marker" + sIndex + ".jpg";
         stbi_info(alignmentMarker[i].image_file.c_str(), &x, &y, &channel);

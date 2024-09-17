@@ -186,9 +186,8 @@
 		var m = addZero(d.getMinutes());
 		var s = addZero(d.getSeconds());
 		$('#timestamp').html(h + ":" + m + ":" + s);
-		document.getElementById("img").src = loadImage(domainname + '/img_tmp/alg_roi.jpg?' + Math.floor((Math.random() * 1000000) + 1)).src;
+		document.getElementById("img").src = domainname + '/img_tmp/alg_roi.jpg?' + Math.floor((Math.random() * 1000000) + 1);
 	}
-
 
 	function loadValue(_data, _div, _style)
 	{

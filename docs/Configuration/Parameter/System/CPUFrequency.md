@@ -17,8 +17,8 @@
 Set the CPU frequency.
 
 
-!!! Warning (Board ESP32CAM only)
-    **It is strongly recommended to use 160Mhz**<br>
+!!! Warning
+    Board ESP32CAM: **It is strongly recommended to use 160Mhz**<br>
     Setting it to 240Mhz will lead to a faster processing, but it requests a stronger power supply.
     Biggest drawback: Depending on the manufacturing quality of your device, system might generally run more
     unstable and WIFI performance could be bad / unstable.

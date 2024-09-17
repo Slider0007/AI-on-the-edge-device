@@ -1,5 +1,5 @@
 {
-	"general_comment": "Basic network configuration: Adapt for initial setup",
+	"usage_comment": "Initial manual setup - Basic network configuration: Copy config.json file to /config folder and adapt to your needs",
 	"network":	{
 		"wlan":	{
 			"ssid":	"",

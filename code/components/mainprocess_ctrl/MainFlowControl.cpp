@@ -357,13 +357,13 @@ esp_err_t handler_editflow(httpd_req_t *req)
         httpd_resp_sendstr(req, "Copy Done");
     }
     else if (task.compare("cutref") == 0) {
-        if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
+        if (taskAutoFlowState < FLOW_TASK_STATE_INIT_DELAYED) {
             httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
             return ESP_FAIL;
         }
         // Interlock request for memory category 4MB due to memory limitation
-        else if (getSPIRAMCategory() == SPIRAMCategory_4MB && taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
+        else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING && getSPIRAMCategory() == SPIRAMCategory_4MB) {
             httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
             httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED,
                                 ("E91: Request rejected, flow in process | Actual State: " + flowctrl.getActualProcessState()).c_str());
@@ -393,11 +393,14 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
         // 4MB RAM external SPIRAM are not sufficient to perform alignment marker update while processing cycle
         // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp) and interlock operation at UI level
-        if (getSPIRAMCategory() == SPIRAMCategory_4MB) {
+        if (taskAutoFlowState >= FLOW_TASK_STATE_IDLE_NO_AUTOSTART && getSPIRAMCategory() == SPIRAMCategory_4MB) {
             STBIObjectPSRAM.name="rawImage";
             STBIObjectPSRAM.usePreallocated = true;
             STBIObjectPSRAM.PreallocatedMemory = flowctrl.getRawImage()->getRgbImage();
             STBIObjectPSRAM.PreallocatedMemorySize = flowctrl.getRawImage()->getMemsize();
+        }
+        else {
+            STBIObjectPSRAM.usePreallocated = false;
         }
         // Create element, be aware: CImageBasis of reference.jpg will be created first (921kB RAM needed)
         CAlignAndCutImage* caic = new CAlignAndCutImage("cutref1", in, STBIObjectPSRAM.usePreallocated);
