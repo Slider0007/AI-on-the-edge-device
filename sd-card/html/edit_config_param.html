@@ -33,6 +33,7 @@
 			background-color: lightgray;
 			padding: 10px;
 		}
+
 		.section {
 			padding: 1px 10px 1px 10px;
 		}
@@ -156,7 +157,7 @@
 			min-width: 600px;
 			max-width: 600px;
 			width: 600px;
-			background-color: #dfdfdf;
+			background-color: #f1f1f1;
 
 			padding-top: 5px;
 			padding-bottom: 10px;
@@ -167,7 +168,7 @@
 
 			/* Position the tooltip */
 			position: absolute;
-			z-index: 1;
+			z-index: 99;
 			top: 100%;
 			left: 100%;
 			margin-left: -600px;
@@ -2087,22 +2088,6 @@
 
 		<tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled classexpert_gpio">
 			<td class="indent1">
-				<span>Pin Expose To MQTT</span>
-			</td>
-			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_exposetomqtt_form">
-					<select name="gpio.gpiopin.0.exposetomqtt" id="gpio_gpiopin_0_exposetomqtt_value"
-							onchange='gatherChangedParameter(this.form)'>
-						<option value="false">Disabled</option>
-						<option value="true" selected>Enabled</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_exposetomqtt</td>
-		</tr>
-
-		<tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled classexpert_gpio">
-			<td class="indent1">
 				<span>Pin Expose To REST</span>
 			</td>
 			<td>
@@ -2115,6 +2100,22 @@
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_exposetorest</td>
+		</tr>
+
+		<tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled classexpert_gpio">
+			<td class="indent1">
+				<span>Pin Expose To MQTT</span>
+			</td>
+			<td>
+				<form class="form_gpio_config" id="gpio_gpiopin_0_exposetomqtt_form">
+					<select name="gpio.gpiopin.0.exposetomqtt" id="gpio_gpiopin_0_exposetomqtt_value"
+							onchange='gatherChangedParameter(this.form)'>
+						<option value="false">Disabled</option>
+						<option value="true" selected>Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_exposetomqtt</td>
 		</tr>
 
 		<tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled classexpert_gpio">

@@ -1,6 +1,6 @@
 # Parameter: Home Assistant Status Topic	
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Home Assistant Status Topic | statustopic	
 | Default Value     | `homeassistant/status` | `homeassistant/status`

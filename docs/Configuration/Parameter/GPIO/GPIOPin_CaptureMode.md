@@ -1,6 +1,6 @@
 # Parameter: Pin Capture Mode
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Pin Capture Mode    | capturemode
 | Default Value     | `cyclic polling`    | `cyclic-polling`
@@ -23,6 +23,6 @@ This defines how the selected GPIO input is captured internally.
 
 
 !!! Tip
-    To debounce the GPIO input, use any interrupt capture mode. 
+    To debounce the GPIO input, use any interrupt capture mode.  
     Debounce time can be defined with parameter `Input Debounce Time`.
 

@@ -1,6 +1,6 @@
 # Parameter: DNS Server
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | DNS Server          | dnsserver
 | Default Value     | empty               | empty
@@ -8,5 +8,5 @@
 
 ## Description
 
-DNS server address which provides name resolution service (network configuration: Static)
+DNS server address which provides name resolution service (network configuration: Static).
 

@@ -1,6 +1,6 @@
 # Parameter: Exposure Control Mode
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Exposure Control Mode | exposurecontrolmode
 | Default Value     | `Auto`              | `1`
@@ -20,5 +20,5 @@ Set exposure control mode
 
 
 !!! Tip
-    This parameter should be set on the 'Reference Image' configuration page.
+    This parameter should be set on the 'Reference Image' configuration page. 
     There you have a visual feedback.

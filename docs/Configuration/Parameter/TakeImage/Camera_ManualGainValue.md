@@ -1,6 +1,6 @@
 # Parameter: Manual Gain Value
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Manual Gain Value   | manualgainvalue
 | Default Value     | `0`                 | `0`
@@ -14,5 +14,5 @@ but more noise and color distortion. This only applies when `Gain Control Mode`
 is set to `Manual`. 
 
 !!! Tip
-    This parameter should be set on the 'Reference Image' configuration page.
+    This parameter should be set on the 'Reference Image' configuration page. 
     There you have a visual feedback.

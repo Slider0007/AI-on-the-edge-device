@@ -1,6 +1,6 @@
 # Parameter: Automatic Process Interval
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Automatic Process Interval | automaticprocessinterval
 | Default Value     | `2.0`               | `2.0`

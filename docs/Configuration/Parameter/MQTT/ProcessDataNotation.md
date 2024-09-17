@@ -1,6 +1,6 @@
 # Parameter: Process Data Notation
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Process Data Notation | ProcessDataNotation
 | Default Value     | `JSON`              | `0`

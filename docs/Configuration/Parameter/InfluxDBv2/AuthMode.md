@@ -1,10 +1,10 @@
 # Parameter: Authentication
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Authentication      | authmode
-| Default Value     | `None`              | `0`
-| Input Options     | `Basic`<br>`TLS`    | `1` .. `2`
+| Default Value     | `Basic`             | `1`
+| Input Options     | `Basic`<br>`TLS` | `1`<br>`2`
 
 
 ## Description
@@ -19,4 +19,5 @@ Select authentication mode for InfluxDB authentication.
 
 
 !!! Note
-    The certificate files need to be copied to SD card folder `/config/certs` and configured correctly.
+    The certificate files need to be copied to SD card folder `/config/certs` 
+    and configured correctly.

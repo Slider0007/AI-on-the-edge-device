@@ -1,6 +1,6 @@
 # Parameter: Zoom Offset X
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Zoom Offset X       | zoomoffsetx
 | Default Value     | `0`                 | `0`

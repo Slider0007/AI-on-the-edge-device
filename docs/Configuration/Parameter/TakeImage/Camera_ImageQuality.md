@@ -1,6 +1,6 @@
 # Parameter: Image Quality
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Image Quality       | imagequality
 | Default Value     | `12`                | `12`

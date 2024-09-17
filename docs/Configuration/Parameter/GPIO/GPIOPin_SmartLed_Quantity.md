@@ -1,6 +1,6 @@
 # Parameter: LED Quantity
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | LED Quantity        | quantity
 | Default Value     | `1`                 | `1`

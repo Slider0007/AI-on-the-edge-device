@@ -1,6 +1,6 @@
 # Parameter: Data Files Retention
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Data Files Retention | datafilesretention
 | Default Value     | `30`                | `30`

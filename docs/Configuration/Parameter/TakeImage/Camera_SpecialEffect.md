@@ -1,6 +1,6 @@
 # Parameter: Special Effect
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Special Effect      | specialeffect
 | Default Value     | `None`              | `0`
@@ -22,5 +22,5 @@ Apply a special effect to the image
 
 
 !!! Tip
-    This parameter should be set on the 'Reference Image' configuration page.
+    This parameter should be set on the 'Reference Image' configuration page. 
     There you have a visual feedback.

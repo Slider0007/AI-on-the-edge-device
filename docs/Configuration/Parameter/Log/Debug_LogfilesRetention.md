@@ -1,6 +1,6 @@
 # Parameter: Log Files Retention
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Log Files Retention | logfilesretention
 | Default Value     | `5`                 | `5`

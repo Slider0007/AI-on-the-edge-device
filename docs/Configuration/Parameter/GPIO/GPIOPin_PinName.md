@@ -1,6 +1,6 @@
 # Parameter: Pin Name
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Pin Name            | pinname
 | Default Value     | empty -> `gpioX`    | empty

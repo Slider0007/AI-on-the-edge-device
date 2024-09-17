@@ -1,6 +1,6 @@
 # Parameter: Use Demo Images
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Use Demo Images     | Usedemoimages
 | Default Value     | `false`             | `false`

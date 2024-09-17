@@ -1,6 +1,6 @@
 # Parameter: Roaming
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Roaming             | enabled
 | Default Value     | `Disabled`          | `false`

@@ -1,6 +1,6 @@
 # Parameter: Pin Mode
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Pin Mode            | pinmode
 | Default Value     | `input-pullup`      | `input-pullup`
@@ -10,6 +10,7 @@
 ## Description
 
 GPIO operation mode
+
 
 ### Input Options
 
@@ -27,7 +28,7 @@ GPIO operation mode
 | `trigger cycle start`     | input<br>(pullup enabled) | Trigger a cycle start (by pulling signal to low)
 
 
-!!! Tip
+!!! Note
     All flashlight modes are fully controlled by process cycle, no external manipulation allowed.
 
 

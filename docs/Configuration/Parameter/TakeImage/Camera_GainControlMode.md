@@ -1,6 +1,6 @@
 # Parameter: Gain Control Mode
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Gain Control Mode   | gaincontrolmode
 | Default Value     | `Auto`              | `1`
@@ -19,5 +19,5 @@ Set sensor gain control mode
 
 
 !!! Tip
-    This parameter should be set on the 'Reference Image' configuration page.
+    This parameter should be set on the 'Reference Image' configuration page. 
     There you have a visual feedback.

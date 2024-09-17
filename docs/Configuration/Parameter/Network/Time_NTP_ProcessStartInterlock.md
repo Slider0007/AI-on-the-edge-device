@@ -1,6 +1,6 @@
 # Parameter: Process Start Interlock
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Process Start Interlock | Processstartinterlock
 | Default Value     | `Enabled`           | `true`
@@ -17,4 +17,4 @@ Process starts only with valid time to ensure proper and plausible result docume
     After reboot the time is kept in memory, though.
 
 !!! Tip
-    It's **strongly recommended** to use time synchronization and this interlock.
+    It's **recommended** to use time synchronization and this interlock.

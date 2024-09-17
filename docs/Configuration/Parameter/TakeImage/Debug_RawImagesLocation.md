@@ -1,6 +1,6 @@
 # Parameter: Raw Images Location
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Raw Images Location | rawimageslocation
 | Default Value     | `/log/source`       | `/log/source`

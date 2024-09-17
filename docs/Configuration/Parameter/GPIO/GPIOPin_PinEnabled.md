@@ -1,6 +1,6 @@
 # Parameter: Pin Status
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Pin Status          | pinenabled
 | Default Value     | `Disabled`          | `false`

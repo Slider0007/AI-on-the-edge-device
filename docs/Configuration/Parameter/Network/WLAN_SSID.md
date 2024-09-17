@@ -1,6 +1,6 @@
 # Parameter: SSID
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | SSID                | ssid
 | Default Value     | empty               | empty

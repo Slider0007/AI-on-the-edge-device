@@ -1,10 +1,10 @@
 # Parameter: Alignment Algorithm
 
-|                   | WebUI                   | Firmware
+|                   | WebUI                   | REST API
 |:---               |:---                     |:----
 | Parameter Name    | Alignment Algorithm     | alignmentalgo
 | Default Value     | `Rotation + Default Algo` | `0`
-| Input Options     | `Rotation + Default Algo`<br>`Rotation + High Accuracy Algo`<br>`Rotation + Fast Algo`<br>`Only Rotation`<br>`Off` | `0` .. `4`
+| Input Options     | `Rotation + Default Algo`<br>`Rotation + High Accuracy Algo`<br>`Rotation + Fast Algo`<br>`Only Rotation`<br>`Off` | `0`<br>`1`<br>`2`<br>`3`<br>`4`
 
 
 ## Description

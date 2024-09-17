@@ -1,6 +1,6 @@
 # Parameter: Raw Images Retention
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Raw Images Retention | RawImagesRetention
 | Default Value     | `3`                 | `3`

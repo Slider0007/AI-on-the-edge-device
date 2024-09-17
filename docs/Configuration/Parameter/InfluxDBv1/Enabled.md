@@ -1,6 +1,6 @@
 # Parameter: InfluxDBv1
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | InfluxDBv1          | enabled
 | Default Value     | `Disabled`          | `false`

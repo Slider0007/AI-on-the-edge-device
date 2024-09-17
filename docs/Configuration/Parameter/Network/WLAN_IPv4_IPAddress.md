@@ -1,6 +1,6 @@
 # Parameter: IP Address
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | IP Address          | ipaddress
 | Default Value     | empty               | empty
@@ -8,7 +8,7 @@
 
 ## Description
 
-IP address of the device (network configuration: Static)
+IP address of the device (network configuration: Static).
 
 
 !!! Note

@@ -1,6 +1,6 @@
 # Parameter: Max Rate Check Type
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Max Rate Check Type | [sequence].maxratechecktype
 | Default Value     | `Rate Per Minute`   | `1`

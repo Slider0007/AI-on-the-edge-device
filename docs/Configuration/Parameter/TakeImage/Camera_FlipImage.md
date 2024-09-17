@@ -1,6 +1,6 @@
 # Parameter: Flip Image
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Flip Image          | flipimage
 | Default Value     | `Disabled`          | `false`
@@ -13,5 +13,5 @@ Flip the image (e.g. at rotation angle: 0° -> top-to-bottom).
 
 
 !!! Tip
-    This parameter should be set on the 'Reference Image' configuration page.
+    This parameter should be set on the 'Reference Image' configuration page. 
     There you have a visual feedback.

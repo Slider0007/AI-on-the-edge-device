@@ -1,6 +1,6 @@
 # Parameter: Time Server
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Time Server         | timeserver
 | Default Value     | empty --> `pool.ntp.org` | empty
@@ -18,7 +18,7 @@ If this parameter is empty, `pool.ntp.org` will be used.
 
 
 !!! Tip
-    It's **strongly recommended** to use time synchronization. 
+    It's **recommended** to use time synchronization. 
     Most likely it's possible to set the address to the local IP of your router. 
     Many routers like FritzBox acts as a local NTP server.
 

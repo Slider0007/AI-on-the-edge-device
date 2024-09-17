@@ -1,6 +1,6 @@
 # Parameter: Pin PWM Frequency
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Pin PWM Frequency   | pwmfrequency
 | Default Value     | `5000`              | `5000`

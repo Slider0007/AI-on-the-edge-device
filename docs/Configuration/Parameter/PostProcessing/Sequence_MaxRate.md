@@ -1,6 +1,6 @@
 # Parameter: Max Rate
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Max Rate            | [sequence].maxrate
 | Default Value     | `0.1`               | `0.1`
@@ -10,7 +10,7 @@
 ## Description
 
 Maximum accepted rate / value delta (positive or negative) between actual value and fallback value (last valid reading). 
-If exceeded the value of the actual cycle going to be rejected and fallback value is used instead.<br>
+If exceeded the value of the actual cycle going to be rejected and fallback value is used instead. 
 Behaviour depending on the parameter of `Rate Check Type`.
 
 
@@ -24,6 +24,7 @@ Behaviour depending on the parameter of `Rate Check Type`.
 
 
 !!! Note
-    This parameter can to be set for each number sequence separately.
+    This parameter can to be set for each number sequence separately. 
     Use the drop down to choose the respective number sequence. 
-    A number sequence is a group of single digits and / or analog counter defined in digit and / or anlog ROI configuration screen.
+    A number sequence is a group of single digits and / or analog counter defined in digit and / 
+    or anlog ROI configuration screen.

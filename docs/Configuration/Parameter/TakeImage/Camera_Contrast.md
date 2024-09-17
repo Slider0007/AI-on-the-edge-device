@@ -1,6 +1,6 @@
 # Parameter: Contrast
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Contrast            | contrast
 | Default Value     | `0`                 | `0`

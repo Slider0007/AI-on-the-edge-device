@@ -1,6 +1,6 @@
 # Parameter: Subnet Mask
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Subnet Mask         | subnetmask
 | Default Value     | empty               | empty

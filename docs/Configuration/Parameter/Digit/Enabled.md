@@ -1,6 +1,6 @@
 # Parameter: Digit ROI Processing
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Digit ROI Processing | enabled
 | Default Value     | `Enabled`           | `true`

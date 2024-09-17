@@ -1,6 +1,6 @@
 # Parameter: Home Assistant Discovery
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Home Assistant Discovery | discoveryenabled
 | Default Value     | `Disabled`          | `false`
@@ -9,7 +9,7 @@
 
 ## Description
 
-Enable or disable the Home Assistant discovery.<br>
+Enable or disable the Home Assistant discovery. 
 Refer to MQTT API - Home Assistant desciption for more details about Home Assistant discovery topics.
 
 !!! Note

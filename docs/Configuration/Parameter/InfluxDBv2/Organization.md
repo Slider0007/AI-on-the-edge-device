@@ -1,6 +1,6 @@
 # Parameter: Organization
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Organization        | organization
 | Default Value     | empty               | empty

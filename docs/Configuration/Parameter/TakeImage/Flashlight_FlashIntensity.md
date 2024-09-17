@@ -1,6 +1,6 @@
 # Parameter: Flash Intensity
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Flash Intensity     | flashintensity
 | Default Value     | `50`                | `50`
@@ -14,5 +14,5 @@ Set the flash intensity (`0 - 100%`).
 
 
 !!! Tip
-    This parameter should be set on the 'Reference Image' configuration page.
+    This parameter should be set on the 'Reference Image' configuration page. 
     There you have a visual feedback. The intensity is not linear for a human eye.

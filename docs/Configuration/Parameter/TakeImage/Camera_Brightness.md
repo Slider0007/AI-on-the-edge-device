@@ -1,6 +1,6 @@
 # Parameter: Brightness
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Brightness          | brightness
 | Default Value     | `0`                 | `0`

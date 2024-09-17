@@ -1,6 +1,6 @@
 # Parameter: Username
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Username            | username
 | Default Value     | empty               | empty

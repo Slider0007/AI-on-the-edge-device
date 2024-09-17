@@ -1,6 +1,6 @@
 # Parameter: GPIO Customization
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | GPIO Customization  | customizationenabled
 | Default Value     | `Disabled`          | `false`

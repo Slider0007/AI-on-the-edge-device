@@ -1,10 +1,10 @@
 # Parameter: Network Configuration
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Network Configuration | networkconfig
 | Default Value     | `DHCP`              | `0`
-| Input Options     | `DHCP`<br>`Static`  | `0` .. `1`
+| Input Options     | `DHCP`<br>`Static`  | `0`<br>`1`
 
 
 ## Description

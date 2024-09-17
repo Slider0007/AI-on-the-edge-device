@@ -1,6 +1,6 @@
 # Parameter: Save ROI Images
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Save ROI Images     | saveroiimages
 | Default Value     | `Disabled`          | `false`

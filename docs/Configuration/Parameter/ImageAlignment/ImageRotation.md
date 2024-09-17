@@ -1,6 +1,6 @@
 # Parameter: Image Rotation
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Image Rotation      | imagerotation
 | Default Value     | `0.0`               | `0.0`

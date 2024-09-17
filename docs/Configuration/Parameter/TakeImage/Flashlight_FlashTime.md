@@ -1,6 +1,6 @@
 # Parameter: Flash Time
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Flash Time          | flashtime
 | Default Value     | `2.0`               | `2.0`

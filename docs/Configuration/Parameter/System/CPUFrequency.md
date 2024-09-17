@@ -1,6 +1,6 @@
 # Parameter: CPU Frequency
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | CPU Frequency       | cpufrequency
 | Default Value     | `160`               | `160`
@@ -17,7 +17,7 @@
 Set the CPU frequency.
 
 
-!!! Warning
+!!! Warning (Board ESP32CAM only)
     **It is strongly recommended to use 160Mhz**<br>
     Setting it to 240Mhz will lead to a faster processing, but it requests a stronger power supply.
     Biggest drawback: Depending on the manufacturing quality of your device, system might generally run more

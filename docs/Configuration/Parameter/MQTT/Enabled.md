@@ -1,6 +1,6 @@
 # Parameter: MQTT
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | MQTT                | enabled
 | Default Value     | `Disabled`          | `false`

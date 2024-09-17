@@ -1,6 +1,6 @@
 # Parameter: Pin Expose To REST
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Pin Expose To REST  | exposetorest
 | Default Value     | `Disabled`          | `false`

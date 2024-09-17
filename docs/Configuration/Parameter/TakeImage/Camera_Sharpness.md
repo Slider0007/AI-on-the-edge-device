@@ -1,6 +1,6 @@
 # Parameter: Sharpness
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Sharpness           | sharpness
 | Default Value     | `0`                 | `0`

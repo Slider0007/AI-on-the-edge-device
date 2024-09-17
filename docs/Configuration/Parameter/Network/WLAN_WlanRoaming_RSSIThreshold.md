@@ -1,6 +1,6 @@
 # Parameter: RSSI Threshold
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | RSSI Threshold      | rssithreshold
 | Default Value     | `-75`               | `-75`

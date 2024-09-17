@@ -1,6 +1,6 @@
 # Parameter: Save Raw Images
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Save Raw Images     | saverawimages
 | Default Value     | `Disabled`          | `false`

@@ -1,6 +1,6 @@
 # Parameter: Search Field Y
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Search Field Y      | searchfield.y
 | Default Value     | `20`                | `20`
@@ -14,7 +14,9 @@
 
 ## Description
 
-Target position top left of alignment marker set on "Alignment Marker" configuration page +/- SearchFieldY (pixels in Y direction): Area where the alignment pattern will be evaluated.  
+Target position top left of alignment marker set on "Alignment Marker" configuration 
+page +/- SearchFieldY (pixels in Y direction): Area where the alignment pattern 
+will be evaluated.  
 
 
 !!! Note

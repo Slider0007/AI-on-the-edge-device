@@ -1,6 +1,6 @@
 # Parameter: Client Key
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Client Key          | clientkey
 | Default Value     | empty               | empty

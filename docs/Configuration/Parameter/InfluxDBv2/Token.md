@@ -1,6 +1,6 @@
 # Parameter: Token
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Token               | token
 | Default Value     | empty               | empty
@@ -17,4 +17,4 @@ Token (similar to a password) for the InfluxDB authentication.
     empty parameter field, though.
 
 !!! Warning
-    The initial transmission is not encrypted and password is sent as cleartext. 
+    During initial transmission password is sent as cleartext. 

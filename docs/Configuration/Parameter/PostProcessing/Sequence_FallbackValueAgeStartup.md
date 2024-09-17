@@ -1,6 +1,6 @@
 # Parameter: Max. Age of Fallback Value
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Max. Age of Fallback Value | [sequence].fallbackvalueagestartup
 | Default Value     | `720`               | `720`
@@ -19,5 +19,5 @@ value reload timestamp after device boot.
 
 
 !!! Note
-    This helps to prevent using a not up-to-date last valid result after e.g. a longer period being offline.
+    This helps to prevent using a not up-to-date last valid result after e.g. a longer period being offline. 
     A too old last valid result (Fallback Value) will be updated with first new evaluated result.

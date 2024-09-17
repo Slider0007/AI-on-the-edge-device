@@ -1,6 +1,6 @@
 # Parameter: Saturation
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Saturation          | saturation
 | Default Value     | `0`                 | `0`
@@ -14,5 +14,5 @@ Set the saturation level of the image. Positive values increase saturation
 
 
 !!! Tip
-    This parameter should be set on the 'Reference Image' configuration page.
+    This parameter should be set on the 'Reference Image' configuration page. 
     There you have a visual feedback.

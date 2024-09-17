@@ -1,6 +1,6 @@
 # Parameter: Zoom Mode
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Zoom Mode           | zoommode
 | Default Value     | `Off`               | `0`

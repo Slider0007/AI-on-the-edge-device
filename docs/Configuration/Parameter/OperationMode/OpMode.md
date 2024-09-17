@@ -1,6 +1,6 @@
 # Parameter: Operation Mode
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Operation Mode | [sequence].maxratechecktype
 | Default Value     | `Automatic`         | `1`

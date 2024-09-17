@@ -1,6 +1,6 @@
 # Parameter: Analog ROI Processing
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Analog ROI Processing | enabled
 | Default Value     | `Enabled`           | `true`

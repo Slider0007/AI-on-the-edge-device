@@ -1,6 +1,6 @@
 # Parameter: Camera Frequency
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Camera Frequency    | camerafrequency
 | Default Value     | `20`                | `20`

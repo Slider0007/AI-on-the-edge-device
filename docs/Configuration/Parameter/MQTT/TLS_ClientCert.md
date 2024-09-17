@@ -1,6 +1,6 @@
 # Parameter: Client Certificate
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Client Certificate  | TLSClientCert
 | Default Value     | empty               | empty

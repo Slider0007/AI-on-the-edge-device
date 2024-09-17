@@ -1,6 +1,6 @@
 # Parameter: Client ID
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Client ID           | clientid
 | Default Value     | `watermeter`        | `watermeter`

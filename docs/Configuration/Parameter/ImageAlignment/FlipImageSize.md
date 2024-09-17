@@ -1,10 +1,10 @@
 # Parameter: Flip Image Size
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Flip Image Size     | FlipImageSize
-| Default Value     | `false`             | `false`
-| Input Options     | `false`<br>`true`   | `false`<br>`true` 
+| Parameter Name    | Flip Image Size     | flipimagesize
+| Default Value     | `Disabled`          | `false`
+| Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
 
 
 ## Description

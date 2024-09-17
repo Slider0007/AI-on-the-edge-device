@@ -1,6 +1,6 @@
 # Parameter: Debug Files Retention
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Debug Files Retention | debugfilesretention
 | Default Value     | `5`                 | `5`

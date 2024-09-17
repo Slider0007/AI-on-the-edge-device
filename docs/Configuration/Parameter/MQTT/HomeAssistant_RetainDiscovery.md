@@ -1,6 +1,6 @@
 # Parameter: Retain Discovery Topics
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Retain Discovery Topics | retaindiscovery
 | Default Value     | `Disabled`          | `false`

@@ -1,6 +1,6 @@
 # Parameter: Auto Exposure Level
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Auto Exposure Level | autoexposurelevel
 | Default Value     | `0`                 | `0`

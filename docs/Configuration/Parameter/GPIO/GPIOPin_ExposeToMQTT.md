@@ -1,6 +1,6 @@
 # Parameter: Pin Expose To MQTT
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Pin Expose To MQTT  | exposetomqtt
 | Default Value     | `Disabled`          | `false`

@@ -1,6 +1,6 @@
 # Parameter: Allow Negative Rate
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Allow Negative Rate | [sequence].allownegativerate
 | Default Value     | `Disabled`          | `false`

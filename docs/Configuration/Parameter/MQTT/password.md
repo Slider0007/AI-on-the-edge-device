@@ -1,6 +1,6 @@
 # Parameter: Password
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Password            | password
 | Default Value     | empty               | empty
@@ -18,4 +18,4 @@ Password for MQTT broker authentication.
     empty  parameter field, though.
 
 !!! Warning
-    The initial transmission is not encrypted and password is sent as cleartext. 
+    During initial transmission password is sent as cleartext. 

@@ -1,6 +1,6 @@
 # Parameter: Input Debounce Time
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Input Debounce Time | inputdebouncetime
 | Default Value     | `200`               | `200`

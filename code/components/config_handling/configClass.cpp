@@ -198,8 +198,8 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     if (init) { // Reload data from backup during initial boot
         cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "config"), "lastmodified");
-        if (cJSON_IsNumber(objEl))
-            cfgDataInternal.sectionConfig.lastModified = objEl->valueint;
+        if (cJSON_IsString(objEl))
+            cfgDataInternal.sectionConfig.lastModified = objEl->valuestring;
     }
     else { // Update timestamp whenever content gets updated
         cfgDataInternal.sectionConfig.lastModified = getCurrentTimeString(TIME_FORMAT_OUTPUT);

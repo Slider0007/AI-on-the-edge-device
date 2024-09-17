@@ -1,6 +1,6 @@
 # Parameter: Use Fallback Value
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Use Fallback Value  | [sequence].UseFallbackValue
 | Default Value     | `true`              | `true`

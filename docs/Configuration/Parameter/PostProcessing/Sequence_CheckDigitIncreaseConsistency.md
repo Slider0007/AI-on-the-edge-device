@@ -1,6 +1,6 @@
 # Parameter: Check Digit Increase Consistency
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Check Digit Increase Consistency | [sequence].checkdigitincreaseconsistency
 | Default Value     | `Disabled`          | `false`

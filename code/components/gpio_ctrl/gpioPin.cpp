@@ -202,7 +202,7 @@ int GpioPin::getPinState()
 #ifdef ENABLE_MQTT
 bool GpioPin::mqttPublishPinState(int _pwmDuty)
 {
-    if (mqttAccess) {
+    if (getMQTTisConnected() && mqttAccess) {
         cJSON *cJSONObject = cJSON_CreateObject();
         if (cJSONObject == NULL) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");

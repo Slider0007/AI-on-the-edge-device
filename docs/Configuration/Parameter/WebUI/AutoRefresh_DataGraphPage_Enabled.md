@@ -1,6 +1,6 @@
 # Parameter: Page Auto Refresh
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Auto Refresh        | enabled
 | Default Value     | `Disabled`          | `false`

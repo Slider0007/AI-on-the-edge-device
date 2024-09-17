@@ -1,6 +1,6 @@
 # Parameter: Refresh Time
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Refresh Time        | refreshtime
 | Default Value     | `60`                | `60`

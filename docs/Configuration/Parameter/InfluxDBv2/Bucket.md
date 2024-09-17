@@ -1,6 +1,6 @@
 # Parameter: Bucket
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Bucket              | bucket
 | Default Value     | empty               | empty

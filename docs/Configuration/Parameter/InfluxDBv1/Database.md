@@ -1,6 +1,6 @@
 # Parameter: Database
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Database            | database
 | Default Value     | empty               | empty

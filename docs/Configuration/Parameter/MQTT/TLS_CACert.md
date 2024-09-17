@@ -1,6 +1,6 @@
 # Parameter: CA Certificate
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | CA Certificate      | TLSCACert
 | Default Value     | empty               | empty

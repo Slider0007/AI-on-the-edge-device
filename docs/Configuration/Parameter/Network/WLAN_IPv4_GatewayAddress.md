@@ -1,6 +1,6 @@
 # Parameter: Gateway Address
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Gateway Address     | gatewayaddress
 | Default Value     | empty               | empty

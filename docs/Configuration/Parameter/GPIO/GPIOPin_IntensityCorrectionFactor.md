@@ -1,6 +1,6 @@
 # Parameter: LED Intensity Correction Factor
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | LED Intensity Correction Factor | intensitycorrectionfactor
 | Default Value     | `100`               | `100`
@@ -17,5 +17,5 @@ This potentially helps to align different intensity levels if multiple LED types
 
 !!! Note
     Generally, flashlight intensity is controlled with global `Flash Intensity` parameter in 
-    section `Take Image`.<br>
-    Formula: Resulting intensity = Global `Flash Intensity` * Output specific `LED Intensity Correction Factor`
+    section `Take Image`. Formula: Resulting intensity = Global `Flash Intensity` * 
+    Output specific `LED Intensity Correction Factor`

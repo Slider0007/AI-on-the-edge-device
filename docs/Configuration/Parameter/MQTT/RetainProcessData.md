@@ -1,6 +1,6 @@
 # Parameter: Retain Process Data
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Retain Process Data  RetainProcessData
 | Default Value     | `Disabled`          | `false`

@@ -1,6 +1,6 @@
 # Parameter: LED Color
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | LED Color           | colorredchannel, colorgreenchannel, colorbluechannel
 | Default Value     | R: `255`<br>G: `255`<br>B: `255` | `255`, `255`, `255`

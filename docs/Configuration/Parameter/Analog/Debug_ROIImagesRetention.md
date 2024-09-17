@@ -1,6 +1,6 @@
 # Parameter: ROI Images Retention
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | ROI Images Retention | roiimagesretention
 | Default Value     | `3`                 | `3`

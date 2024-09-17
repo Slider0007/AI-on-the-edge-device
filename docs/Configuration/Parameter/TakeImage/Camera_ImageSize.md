@@ -1,6 +1,6 @@
 # Parameter: Image Size
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Image Size          | imagesize
 | Default Value     | `VGA`               | `VGA`
@@ -17,5 +17,5 @@ Size of the raw camera image taken by the camera module.
 
 
 !!! Note
-    The camera module itself would support larger sizes than 640 x 480 pixel but it's not
+    The camera module itself would support larger sizes than 640 x 480 pixel but it's not 
     possible to process larger images due to RAM limitation. 

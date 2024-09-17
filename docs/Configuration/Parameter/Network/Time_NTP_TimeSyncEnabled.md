@@ -1,15 +1,10 @@
 # Parameter: Time Synchronization
 
-|                   | WebUI               | Firmware
+|                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Time Synchronization | timesyncenabled
 | Default Value     | `Enabled`           | `true`
-| Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
-
-
-!!! Warning
-    This is an **Expert Parameter**! Only change it if you understand what it does!
-
+| Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true`
 
 
 ## Description
@@ -24,6 +19,6 @@ time `01.01.1970 00:00:00` after boot.
     After reboot the time is kept in memory, though.
 
 !!! Tip
-    It's **strongly recommended** to use time synchronization. 
+    It's **recommended** to use time synchronization. 
     Most likely it's possible to set the address to the local IP of your router. 
     Many routers like FritzBox acts as a local NTP server.
