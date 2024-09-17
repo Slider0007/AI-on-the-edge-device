@@ -804,7 +804,7 @@
             context.textBaseline = "top";
             context.textAlign = "left";
             context.font = "16px arial";
-            context.fillText("No image available", 10, 10);
+            context.fillText("No reference image", 10, 10);
 
             canvas.removeEventListener('mousemove', mouseMove, false);
 
@@ -861,12 +861,12 @@
             drawRotated(false);
             SaveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
 
-            saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => showReference());
-
             firework.launch('Save and apply configuration...', 'success', 2000, true);
-            setTimeout(function() {
-                reloadConfig();
-            }, 1000);
+			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
+				setTimeout(function() {
+					reloadConfig();
+				}, 500);
+			});
         }
     }
 

@@ -124,7 +124,9 @@ jobs:
 
         rm -rf ./update/config/
         mkdir -p ./update/config/
+        mkdir -p ./update/config/default
         mkdir -p ./update/config/models
+        cp ./sd-card/config/default/* ./update/config/default/ 2>/dev/null || true
         cp ./sd-card/config/models/*.tfl ./update/config/models/ 2>/dev/null || true
         cp ./sd-card/config/models/*.tflite ./update/config/models/ 2>/dev/null || true
 
@@ -182,9 +184,11 @@ jobs:
 
         rm -rf ./remote_setup/config/
         mkdir -p ./remote_setup/config/
+        mkdir -p ./remote_setup/config/default
         mkdir -p ./remote_setup/config/models
         mkdir -p ./remote_setup/config/certs
         cp ./sd-card/config/* ./remote_setup/config/ 2>/dev/null || true
+        cp ./sd-card/config/default/* ./remote_setup/config/default/ 2>/dev/null || true
         cp ./sd-card/config/models/*.tfl ./remote_setup/config/models/ 2>/dev/null || true
         cp ./sd-card/config/models/*.tflite ./remote_setup/config/models/ 2>/dev/null || true
 

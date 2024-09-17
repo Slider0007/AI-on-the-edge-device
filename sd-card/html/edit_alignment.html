@@ -447,7 +447,7 @@
             context.textBaseline = "top";
             context.textAlign = "left";
             context.font = "16px arial";
-            context.fillText("No image available", 10, 10);
+            context.fillText("No reference image", 10, 10);
 
             canvas.removeEventListener('mousedown', mouseDown, false);
             canvas.removeEventListener('mouseup', mouseUp, false);
@@ -674,16 +674,16 @@
         if (confirm("Are you sure you want to save the new alignment marker configuration?")) {
             document.getElementById("savemarker").disabled = true;
 
-            saveConfig(JSON.stringify(jsonConfigModifiedDelta));
-
             // Copy alignment marker to config folder
             fileCopyOnServer("/img_tmp/marker1.jpg", "/config/marker1.jpg", getDomainname(), false);
             fileCopyOnServer("/img_tmp/marker2.jpg", "/config/marker2.jpg", getDomainname(), false);
 
             firework.launch('Save and apply configuration...', 'success', 2000, true);
-            setTimeout(function() {
-                reloadConfig();
-            }, 1000);
+			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
+				setTimeout(function() {
+					reloadConfig();
+				}, 500);
+			});
         }
     }
 

@@ -1092,14 +1092,15 @@
     function SaveToConfig()
     {
         if (confirm("Are you sure you want to save and apply the new digit ROI configuration?")) {
-            saveConfig(JSON.stringify(jsonConfigModifiedDelta));
             RefreshROI();
             document.getElementById("saveconfig").disabled = true;
 
             firework.launch('Save and apply configuration...', 'success', 2000, true);
-            setTimeout(function() {
-                reloadConfig();
-            }, 1000);
+			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
+				setTimeout(function() {
+					reloadConfig();
+				}, 500);
+			});
         }
     }
 

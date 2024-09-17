@@ -2941,15 +2941,16 @@
 	function saveConfigData()
 	{
 		if (confirm("Are you sure you want to save and apply the new configuration?")) {
-			saveConfig(JSON.stringify(jsonConfigModifiedDelta));
 			firework.launch('Save and apply configuration...', 'success', 2000, true);
 
-			setTimeout(function() {
-				reloadConfig();
+			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
 				setTimeout(function() {
-					init();
+					reloadConfig();
+					setTimeout(function() {
+						init();
+					}, 500);
 				}, 500);
-			}, 1000);
+			});
 		}
 	}
 

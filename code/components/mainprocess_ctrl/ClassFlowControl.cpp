@@ -734,7 +734,11 @@ bool ClassFlowControl::setFallbackValue(std::string _sequenceName, std::string _
 
 CImageBasis* ClassFlowControl::getRawImage()
 {
-    return flowtakeimage->rawImage;
+    if (flowtakeimage) {
+        return flowtakeimage->rawImage;
+    }
+
+    return NULL;
 }
 
 
@@ -744,8 +748,7 @@ esp_err_t ClassFlowControl::sendRawJPG(httpd_req_t *req)
         return flowtakeimage->sendRawJPG(req);
     }
     else {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "flowtakeimage not available: Raw image cannot be served");
-        return ESP_ERR_NOT_FOUND;
+        return cameraCtrl.captureToHTTP(req);
     }
 }
 

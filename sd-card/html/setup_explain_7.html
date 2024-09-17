@@ -50,18 +50,19 @@
 
     function reboot()
     {
+        firework.launch('Setup completed', 'success', 5000);
         jsonConfig = getConfigFromStorage(); // Get config
         jsonConfig.operationmode.opmode = 1;
-        saveConfig(JSON.stringify(jsonConfig));
 
-        firework.launch('Setup completed', 'success', 5000);
-        setTimeout(function() {
-            reloadConfig();
-        }, 1000);
+        saveConfig(JSON.stringify(jsonConfig)).then(() => {
+            setTimeout(function() {
+                reloadConfig();
+            }, 500);
+        });
 
         firework.launch('Regular web interface gets loaded in a few seconds...', 'success', 10000);
         setTimeout(function() {
-            var stringota = getDomainname();
+            let stringota = getDomainname();
             parent.location = stringota;
             parent.location.href = stringota;
             parent.location.assign(stringota);

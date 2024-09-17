@@ -54,7 +54,7 @@ esp_err_t getDataFileList(httpd_req_t *req)
 
     if (!dir) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getDataFileList: Failed to open directory: " + std::string(verz_name));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404()); // Respond with 404 Not Found
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory"); // Respond with 404 Not Found
         return ESP_FAIL;
     }
 
@@ -111,7 +111,7 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
 
     if (!dir) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getTfliteFileList: Failed to open directory: " + std::string(verz_name));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404()); // Respond with 404 Not Found
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory"); // Respond with 404 Not Found
         return ESP_FAIL;
     }
 
@@ -507,7 +507,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     if (!dir) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to open directory: " + std::string(dirpath));
         /* Respond with 404 Not Found */
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
         return ESP_FAIL;
     }
 
@@ -660,11 +660,11 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         if (buf_len > 1) {
             char buf[buf_len];
             if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
-                ESP_LOGI(TAG, "Found URL query => %s", buf);
+                ESP_LOGD(TAG, "Found URL query => %s", buf);
                 char param[32];
                 /* Get value of expected key from query string */
                 if (httpd_query_key_value(buf, "readonly", param, sizeof(param)) == ESP_OK) {
-                    ESP_LOGI(TAG, "Found URL query parameter => readonly=%s", param);
+                    ESP_LOGD(TAG, "Found URL query parameter => readonly=%s", param);
                     readonly = (strcmp(param, "true") == 0);
                 }
             }
@@ -674,19 +674,24 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         return http_resp_dir_html(req, filepath, filename, readonly);
     }
 
-    ESP_LOGI(TAG, "%s", filename);
+    ESP_LOGD(TAG, "%s", filename);
 
-    if (stat(filepath, &file_stat) == -1 || strcmp("/wlan.ini", filename) == 0 || strcmp("/config/backup/wlan_ini.bak", filename) == 0 ||
-        strcmp("/config/config.ini", filename) == 0 || strcmp("/config/backup/config_ini.bak", filename) == 0) { // Do not allow these files -> sensitive infos included
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "download_get_handler: File not found: " + std::string(filepath));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404()); // Respond with 404 Not Found
+    // Reject unavailable files and special files with sensitive data
+    if (stat(filepath, &file_stat) == -1 || strcmp("/wlan.ini", filepath) == 0 || strcmp("/config/backup/wlan_ini.bak", filepath) == 0 ||
+        strcmp("/config/config.ini", filepath) == 0 || strcmp("/config/backup/config_ini.bak", filepath) == 0) {
+        // Special case: Do not log special config files in log to avoid confusion because they are missing before initial setup
+        if (strcmp("/sdcard/config/reference.jpg", filepath) != 0 && strcmp("/sdcard/config/marker1.jpg", filepath) != 0 &&
+                                                                     strcmp("/sdcard/config/marker2.jpg", filepath) != 0) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "download_get_handler: File not found: " + std::string(filepath));
+        }
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File not found"); // Respond with 404 Not Found
         return ESP_FAIL;
     }
 
     fd = fopen(filepath, "r");
     if (!fd) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "download_get_handler: Failed to read file: " + std::string(filepath));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404()); // Respond with 404 Not Found
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to read file"); // Respond with 404 Not Found
         return ESP_FAIL;
     }
 

@@ -36,7 +36,7 @@ ClassFlowControl flowctrl;
 
 static TaskHandle_t xHandletask_autodoFlow = NULL;
 static bool bTaskAutoFlowCreated = false;
-static int taskAutoFlowState = FLOW_TASK_STATE_INIT;
+static int taskAutoFlowState = FLOW_TASK_STATE_SETUPMODE;
 static bool reloadConfig = false;
 static bool manualFlowStart = false;
 static long auto_interval = 0;
@@ -877,13 +877,41 @@ void task_autodoFlow(void *pvParameter)
     time_t cycleStartTime = 0;
     bTaskAutoFlowCreated = true;
 
-    while (true)
-    {
+    while (true) {
+        // SETUP MODE CHECK
+        // ********************************************
+        if (taskAutoFlowState == FLOW_TASK_STATE_SETUPMODE) {
+            if (flowctrl.getStatusSetupModus()) {
+                LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_SETUP_MODE));
+                flowctrl.setActualProcessState(std::string(FLOW_SETUP_MODE));
+                #ifdef ENABLE_MQTT
+                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
+                #endif //ENABLE_MQTT
+
+                while (true) {                              // Waiting for a REQUEST
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    if (reloadConfig) {
+                        reloadConfig = false;
+                        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration");
+
+                        ConfigClass::getInstance()->reinitConfig();
+                        if (!flowctrl.getStatusSetupModus()) {
+                            taskAutoFlowState = FLOW_TASK_STATE_INIT;       // Setup Mode done --> Do FLOW INIT
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                taskAutoFlowState = FLOW_TASK_STATE_INIT;       // Setup Mode done --> Do FLOW INIT
+            }
+        }
+
         // FLOW INITIALIZATION - DELAYED
         // Delay flow initialization if reboot was triggered by software exception
         // Note: Init and logging of the event is handled already in "main.cpp"
         // ********************************************
-        if (taskAutoFlowState == FLOW_TASK_STATE_INIT_DELAYED) {
+        else if (taskAutoFlowState == FLOW_TASK_STATE_INIT_DELAYED) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Process state: " + std::string(FLOW_INIT_DELAYED));
             flowctrl.setActualProcessState(std::string(FLOW_INIT_DELAYED));
             flowctrl.setFlowStateError();
@@ -923,7 +951,7 @@ void task_autodoFlow(void *pvParameter)
                     else if (manualFlowStart) { // Possibility to manual retrigger a cycle with manual start when init is already failed
                         manualFlowStart = false;
                         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Trigger: Start process (manual trigger)");
-                        taskAutoFlowState = FLOW_TASK_STATE_INIT;   // Repeat FLOW INIT
+                        taskAutoFlowState = FLOW_TASK_STATE_INIT;  // Repeat FLOW INIT
                         break;
                     }
                 }
@@ -950,41 +978,13 @@ void task_autodoFlow(void *pvParameter)
                 taskYIELD();
 
                 flowctrl.clearFlowStateEventInRowCounter();
-                taskAutoFlowState = FLOW_TASK_STATE_SETUPMODE;      // Continue to test if SETUP is ACTIVE
+                taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART; // Continue to test if AUTOSTART is TRUE
             }
         }
 
-        // SETUP MODE CHECK
-        // ********************************************
-        else if (taskAutoFlowState == FLOW_TASK_STATE_SETUPMODE) {
-
-            if (flowctrl.getStatusSetupModus())
-            {
-                LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_SETUP_MODE));
-                flowctrl.setActualProcessState(std::string(FLOW_SETUP_MODE));
-                #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
-                #endif //ENABLE_MQTT
-
-                while (true) {                              // Waiting for a REQUEST
-                    vTaskDelay(1000 / portTICK_PERIOD_MS);
-                    if (reloadConfig) {
-                        reloadConfig = false;
-                        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration");
-                        taskAutoFlowState = FLOW_TASK_STATE_INIT;       // Setup Mode done --> Do FLOW INIT
-                        break;
-                    }
-                }
-            }
-            else {
-                taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART;  // Continue to test if AUTOSTART is TRUE
-            }
-        }
-
-        // AUTOSTART CHECK
+        // AUTOSTART CHECK --> AUTOMATIC OR MANUAL MODE?
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART) {
-
             if (!flowctrl.isAutoStart(auto_interval)) {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_NO_AUTOSTART));
                 flowctrl.setActualProcessState(std::string(FLOW_IDLE_NO_AUTOSTART));
@@ -992,13 +992,13 @@ void task_autodoFlow(void *pvParameter)
                     MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
                 #endif //ENABLE_MQTT
 
-                while (true) {                              // Waiting for a REQUEST
+                while (true) { // Waiting for a REQUEST
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
                     if (reloadConfig) {
                         reloadConfig = false;
-                        manualFlowStart = false;    // Reload config has higher prio
+                        manualFlowStart = false; // Reload config has higher prio
                         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration");
-                        taskAutoFlowState = FLOW_TASK_STATE_INIT;           // Return to state "FLOW INIT"
+                        taskAutoFlowState = FLOW_TASK_STATE_INIT; // Return to state "FLOW INIT"
                         break;
                     }
                     else if (manualFlowStart) {
@@ -1010,7 +1010,7 @@ void task_autodoFlow(void *pvParameter)
             }
             else {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Start process (automatic trigger)");
-                taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING;         // Continue to state "FLOW PROCESSING"
+                taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING; // Continue to state "FLOW PROCESSING"
             }
         }
 
@@ -1149,8 +1149,7 @@ void task_autodoFlow(void *pvParameter)
             #endif //ENABLE_MQTT
 
             int64_t fr_delta_ms = (esp_timer_get_time() - fr_start) / 1000;
-            if (auto_interval > fr_delta_ms)
-            {
+            if (auto_interval > fr_delta_ms) {
                 const TickType_t xDelay = (auto_interval - fr_delta_ms)  / portTICK_PERIOD_MS;
                 ESP_LOGD(TAG, "Autoflow: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
                 vTaskDelay(xDelay);
