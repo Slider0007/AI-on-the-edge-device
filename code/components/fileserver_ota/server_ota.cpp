@@ -460,12 +460,17 @@ std::string unzipOTA(std::string _in_zip_file, std::string _root_folder)
             zw = std::string(archive_filename);
             ESP_LOGD(TAG, "archive filename: %s", zw.c_str());
 
-            // Redirect firmware.bin to /sdcard/firmware/, for other files use path structure of zip file
             if (toUpper(zw) == "FIRMWARE.BIN") {
+                // Redirect firmware.bin to /sdcard/firmware/
                 zw = _root_folder + "firmware/" + zw;
                 retVal = zw; // Return file for further processing
             }
+            else if (toUpper(zw) == "BOOTLOADER.BIN" || toUpper(zw) == "PARTITIONS.BIN" ) {
+                // Skip not needed binary files for OTA
+                continue;
+            }
             else {
+                // Other files use path structure of zip file
                 zw = _root_folder + zw;
             }
 

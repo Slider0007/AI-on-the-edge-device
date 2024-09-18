@@ -112,6 +112,10 @@ void migrateConfigurationIni(void)
                     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) +
                                 " > v" + std::to_string(configFileVersion+1) + " => Config will be handled in firmware + config.json");
 
+                    // Remove unused binary files
+                    deleteFile("/sdcard/bootloader.bin");
+                    deleteFile("/sdcard/partitions.bin");
+
                     // Rename marker files to new naming scheme
                     renameFile("/sdcard/config/ref0.jpg", "/sdcard/config/marker1.jpg");
                     renameFile("/sdcard/config/ref1.jpg", "/sdcard/config/marker2.jpg");

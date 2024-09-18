@@ -219,7 +219,8 @@ bool GpioPin::mqttPublishPinState(int _pwmDuty)
                 retVal = false;
         }
 
-        char *jsonChar = cJSON_Print(cJSONObject);
+        char *jsonChar = NULL;
+        jsonChar = cJSON_Print(cJSONObject);
         cJSON_Delete(cJSONObject);
 
         if (jsonChar != NULL) {

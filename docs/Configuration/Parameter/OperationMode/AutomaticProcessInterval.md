@@ -4,7 +4,7 @@
 |:---               |:---                 |:----
 | Parameter Name    | Automatic Process Interval | automaticprocessinterval
 | Default Value     | `2.0`               | `2.0`
-| Input Options     | `0.1` .. &infin;    | `1.0` .. &infin;
+| Input Options     | `0.1` .. &infin;    | `0.1` .. &infin;
 | Unit              | Minutes             | Minutes
 
 

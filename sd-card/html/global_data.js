@@ -347,7 +347,7 @@ function gatherChangedParameter(form, integer = false)
           deepSet(data, path, value, integer);
      }
      jsonConfigModifiedDelta = deepMergeObjects(jsonConfigModifiedDelta, data);
-     console.log(jsonConfigModifiedDelta)
+     //console.log(jsonConfigModifiedDelta)
 }
 
 
