@@ -5,8 +5,10 @@
 `http://IP-ADDRESS/config`
 
 
-Get and set process related configuration. Data is provided using JSON notation. 
-All configuration parameter are described in detail here (Repository `docs/Configuration/Parameter`) or in WebUI as parameter help text. 
+Get and set process related configuration parameter. The data is provided / needs to be 
+provided in JSON notation.<br> Parameter description for every single parameter is 
+located at github repository (`docs/Configuration/Parameter`) or can be displayed on 
+WebUI configuration page (question mark symbol next to each parameter). 
 
 - JSON: `/config`
 - HTML: `/config?task=reload`

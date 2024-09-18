@@ -38,20 +38,20 @@
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
     <h2>OTA Update</h2>
 
-    <p>The following file types are supported:</p>
+    <p>Supported files / file types:</p>
     <ul>
-        <li>*.zip &rarr; Content gets extracted to the SD card root folder</li>
-        <li>*.bin &rarr; Firmware gets flashed to the device program flash</li>
-        <li>*.tfl/tflite &rarr; Tensorflow model gets copied to your SD card/config folder</li>
+        <li>firmware.bin: Firmware is flashed to device flash storage</li>
+        <li>zip: Content is extracted to SD card root folder</li>
+        <li>tfl/tflite: Tensorflow model is copied to SD card /config/models folder</li>
     </ul>
 
     <br>
 
     <p><b>Recommended procedure to update the complete device over the air:</b></p>
-    <b>Use update package (<i>*__update__{board type}__*.zip</i>) from
+    <b>Use board specific firmware package (<i>*__{board type}__*.zip</i>) from
     <a href="https://github.com/Slider0007/AI-on-the-edge-device/releases" target="_blank">github release page</a></b>
     <br>
-    Note: Using this, firmware + SD card gets updated, configuration remains unchanged
+    Note: Firmware and SD card content gets updated, configuration remains unchanged.
 
     <br><br><br>
 
