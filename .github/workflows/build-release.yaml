@@ -145,7 +145,6 @@ jobs:
     #
     # Package contents:
     # - firmware.elf
-    # - sdkconfig.defaults
     # - sdkconfig.${{ matrix.plat }}
     #########################################################################################
     - name: Debug files package - Prepare artifact
@@ -159,7 +158,7 @@ jobs:
     - name: Debug files package - Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "AI-on-the-edge-device__debug-files__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        name: "AI-on-the-edge-device__${{ matrix.plat }}__debug-files__SLFork_${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}"
         path: ./debug
 
 
@@ -203,17 +202,11 @@ jobs:
       run: |
         rm -rf release
         mkdir -p release
-        cd "AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        zip -r ../release/AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
+        cd "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        zip -r ../release/AI-on-the-edge-device__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
-        cd "AI-on-the-edge-device__manual-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        zip -r ../release/AI-on-the-edge-device__manual-setup__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
-        cd ..
-        cd "AI-on-the-edge-device__remote-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        zip -r ../release/AI-on-the-edge-device__remote-setup__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
-        cd ..
-        cd "AI-on-the-edge-device__debug-files__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        zip -r ../release/AI-on-the-edge-device__debug-files__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
+        cd "AI-on-the-edge-device__${{ matrix.plat }}__debug-files__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        zip -r ../release/AI-on-the-edge-device__${{ matrix.plat }}__debug-files__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
 
     - name: Upload artifacts to release tag
