@@ -1204,7 +1204,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     else {
         if (init) {
             ssidEmpty = true; // If SSID is empty or no config provided, try to use saved data from NVS for SSID and password
-            LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: No SSID config, try to use SSID and password from NVS");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "parseConfig: No SSID config, try to use SSID and password from NVS");
         }
 
         loadDataFromNVS("wlan_ssid", cfgDataInternal.sectionNetwork.wlan.ssid);

@@ -93,7 +93,6 @@ class ClassFlowControl : public ClassFlow
     #endif // ENABLE_MQTT
 
     const std::vector<SequenceData *> &getSequenceData() const { return sequenceData; };
-    std::vector<SequenceData *> &getSequenceData() { return sequenceData; };
     std::string getSequenceResultInline(int type, std::string sequenceName = "");
 
     bool setFallbackValue(std::string _sequenceName, std::string _newvalue);
@@ -106,6 +105,9 @@ class ClassFlowControl : public ClassFlow
     // std::string doSingleStep(std::string _stepname, std::string _host); //@TODO
 
     std::string name() { return "ClassFlowControl"; };
+
+    // Only used for unity testing
+    std::vector<SequenceData *> &getSequenceData() { return sequenceData; };
 };
 
 #endif // CLASSFLOWCONTROL_H

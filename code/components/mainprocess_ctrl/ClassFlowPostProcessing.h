@@ -43,6 +43,9 @@ class ClassFlowPostProcessing : public ClassFlow
     bool setFallbackValue(double value, std::string _sequenceName);
 
     std::string name() { return "ClassFlowPostProcessing"; };
+
+    // Only used for unity testing
+    void setFallbackValueLoaded(bool value) { fallbackValueLoaded = value; };
 };
 
 #endif // CLASSFFLOWPOSTPROCESSING_H

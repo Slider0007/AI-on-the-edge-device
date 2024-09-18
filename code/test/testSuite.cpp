@@ -120,7 +120,7 @@ extern "C" void app_main()
 
     // Create dedicated testing task (heap size can be configured - large enough to handle a lot of testing cases)
     // ********************************************
-    xTaskCreate(&task_UnityTesting, "task_UnityTesting", 12 * 1024, NULL, tskIDLE_PRIORITY+2, NULL);
+    xTaskCreate(&task_UnityTesting, "task_UnityTesting", 64 * 1024, NULL, tskIDLE_PRIORITY+2, NULL);
 }
 
 

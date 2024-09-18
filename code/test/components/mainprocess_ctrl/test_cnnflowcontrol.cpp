@@ -22,20 +22,16 @@ void test_EvalAnalogNumber()
     UnderTestCNN undertest = UnderTestCNN(nullptr, "analog", CNNTYPE_DIGIT_CLASS100);
 
     // the 5.2 is already above 5.0 and the previous digit too (3)
-    printf("Test 5.2, 3\n");
     int result = undertest.evalAnalogNumber(FLOAT_AS_INT(5.2), 3);
     TEST_ASSERT_EQUAL(5, result);
 
     // the 5.2 is already above 5.0 and the previous digit not (9)
     // so the current digit shoult be reduced (4.9)
-    printf("Test 5.2, 9\n");
     TEST_ASSERT_EQUAL(4, undertest.evalAnalogNumber(FLOAT_AS_INT(5.2), 9));
 
-    printf("Test 4.4, 9\n");
     // the 4.4 (digital100) is not above 5  and the previous digit (analog) too (9.3)
     TEST_ASSERT_EQUAL(4, undertest.evalAnalogNumber(FLOAT_AS_INT(4.4), 9));
 
-    printf("Test 4.5, 9\n");
     // the 4.5 (digital100) is not above 5  and the previous digit (analog) too (9.6)
     TEST_ASSERT_EQUAL(4, undertest.evalAnalogNumber(FLOAT_AS_INT(4.5), 9));
 
@@ -64,19 +60,15 @@ void test_EvalDigitNumber()
     UnderTestCNN undertest = UnderTestCNN(nullptr, "digit", CNNTYPE_DIGIT_CLASS100);
 
     // the 5.2 and no previous should trunc to 5
-    printf("evalDigitNumber(5.2, 0, -1)\n");
     TEST_ASSERT_EQUAL(5, undertest.evalDigitNumber(FLOAT_AS_INT(5.2), 0, -1));
 
     // the 5.3 and no previous should trunc to 5
-    printf("evalDigitNumber(5.3, 0, -1)\n");
     TEST_ASSERT_EQUAL(5, undertest.evalDigitNumber(FLOAT_AS_INT(5.3), 0, -1));
 
-    printf("evalDigitNumber(5.7, 0, -1)\n");
     // the 5.7 and no previous should trunc to 5
     TEST_ASSERT_EQUAL(5, undertest.evalDigitNumber(FLOAT_AS_INT(5.7), 0, -1, false, FLOAT_AS_INT(9.2)));
 
     // the 5.8 and no previous should round to 6 (already in transition)
-    printf("evalDigitNumber(5.8, 8.0, 8, false, 8.0)\n");
     TEST_ASSERT_EQUAL(6, undertest.evalDigitNumber(FLOAT_AS_INT(5.8), FLOAT_AS_INT(8.0), 8, false, FLOAT_AS_INT(8.0)));
 
     // the 5.7 with previous and the previous between 0.3-0.7 should round up to 6

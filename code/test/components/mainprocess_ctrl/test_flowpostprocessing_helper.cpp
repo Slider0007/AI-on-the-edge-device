@@ -21,7 +21,7 @@ UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType)
     // Init sequence result data struct
     flowctrl.getSequenceData().clear();
     for (const auto &sequenceCfgData : ConfigClass::getInstance()->get()->sectionNumberSequences.sequence) {
-        SequenceData* sequence = new SequenceData;
+        SequenceData *sequence = new SequenceData{};
         sequence->sequenceId = sequenceCfgData.sequenceId;
         sequence->sequenceName = sequenceCfgData.sequenceName;
         flowctrl.getSequenceData().push_back(sequence);
@@ -30,35 +30,42 @@ UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType)
     return new UnderTestPost(takeimage, analog, digit);
 }
 
-//@TODO
+
 UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType,
                             bool extendedResolution, int decimalShift, bool checkDigitIncreaseConsistency)
 {
     UnderTestPost *_underTestPost = setUpClassFlowPostprocessing(digType, CNNTYPE_ANALOG_CLASS100);
 
     // Get sequenceData pointer
-    _underTestPost->sequenceDataPtr = flowctrl.getSequenceData().at(0);
+    _underTestPost->sequenceDataPtr = flowctrl.getSequenceData()[0];
 
     // Inject digit ROI
-    ConfigClass::getInstance()->get()->sectionDigit.sequence.at(0).roi.clear();
-    ConfigClass::getInstance()->get()->sectionDigit.sequence.at(0).roi.shrink_to_fit();
+    ConfigClass::getInstance()->get()->sectionDigit.sequence[0].roi.clear();
+    ConfigClass::getInstance()->get()->sectionDigit.sequence[0].roi.shrink_to_fit();
     _underTestPost->sequenceDataPtr->digitRoi.clear();
     _underTestPost->sequenceDataPtr->digitRoi.shrink_to_fit();
+
     if (digits.size() > 0) {
+        // Fill ROI to global config due to name request
         for (int i = 0; i < digits.size(); i++) {
             RoiElement roiEl = RoiElement{};
-            roiEl.roiName = "main_dig";// + std::to_string(i+1);
-            roiEl.x = roiEl.dx = roiEl.y = roiEl.dy = 0;
-            ConfigClass::getInstance()->get()->sectionDigit.sequence.at(0).roi.push_back(roiEl);
+            roiEl.roiName = "main_dig" + std::to_string(i+1);
+            ConfigClass::getInstance()->get()->sectionDigit.sequence[0].roi.push_back(roiEl);
+        }
 
-            RoiData roiDataEl = RoiData{};
-            roiDataEl.param = &ConfigClass::getInstance()->get()->sectionDigit.sequence.at(0).roi[i];
-            if (digType != CNNTYPE_DIGIT_CLASS11)
-                roiDataEl.CNNResult = (int)(digits[i] * 10.0 + 0.1); // + 0.1 due to float to int rounding, will be truncated anyway
-            else
-                roiDataEl.CNNResult = (int)digits[i];
+        // Set pointer to ROI config and inject CNN result
+        for (int i = 0; i < ConfigClass::getInstance()->get()->sectionDigit.sequence[0].roi.size(); i++) {
+            RoiData *roiEl = new RoiData{};
+            roiEl->param = &ConfigClass::getInstance()->get()->sectionDigit.sequence[0].roi[i];
 
-            _underTestPost->sequenceDataPtr->digitRoi.push_back(&roiDataEl);
+            if (digType != CNNTYPE_DIGIT_CLASS11) {
+                roiEl->CNNResult = (int)(digits[i] * 10.0 + 0.1); // + 0.1 due to float to int rounding, will be truncated anyway
+            }
+            else {
+                roiEl->CNNResult = (int)digits[i];
+            }
+
+            _underTestPost->sequenceDataPtr->digitRoi.push_back(roiEl);
         }
     }
     else {
@@ -67,18 +74,23 @@ UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs,
 
     // Inject analog ROI
     ConfigClass::getInstance()->get()->sectionAnalog.sequence[0].roi.clear();
-    ConfigClass::getInstance()->get()->sectionAnalog.sequence.at(0).roi.shrink_to_fit();
+    ConfigClass::getInstance()->get()->sectionAnalog.sequence[0].roi.shrink_to_fit();
     _underTestPost->sequenceDataPtr->analogRoi.clear();
     _underTestPost->sequenceDataPtr->analogRoi.shrink_to_fit();
-    if (analogs.size() > 0) {
-        for (int i = 0; i < analogs.size(); i++) {
-            RoiElement *roiEl = new RoiElement{};
-            roiEl->roiName = "main_ana";// + std::to_string(i+1));
-            roiEl->x = roiEl->dx = roiEl->y = roiEl->dy = 0;
-            ConfigClass::getInstance()->get()->sectionAnalog.sequence.at(0).roi.push_back(*roiEl);
 
+    if (analogs.size() > 0) {
+        // Fill ROI to global config due to name request
+        for (int i = 0; i < analogs.size(); i++) {
+            RoiElement roiEl = RoiElement{};
+            roiEl.roiName = "main_ana" + std::to_string(i+1);
+            ConfigClass::getInstance()->get()->sectionAnalog.sequence[0].roi.push_back(roiEl);
+        }
+
+        // Set pointer to ROI config and inject CNN result
+        for (int i = 0; i < ConfigClass::getInstance()->get()->sectionAnalog.sequence[0].roi.size(); i++) {
             RoiData *roiDataEl = new RoiData{};
-            roiDataEl->param = &ConfigClass::getInstance()->get()->sectionAnalog.sequence.at(0).roi[i];
+            roiDataEl->param = &ConfigClass::getInstance()->get()->sectionAnalog.sequence[0].roi[i];
+
             roiDataEl->CNNResult = (int)(analogs[i] * 10.0 + 0.1); // + 0.1 due to float to int rounding, will be truncated anyway
 
             _underTestPost->sequenceDataPtr->analogRoi.push_back(roiDataEl);
@@ -90,6 +102,8 @@ UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs,
 
     // Modify sequence post processing config
     ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].maxRateCheckType = RATE_CHECK_OFF; // Avoid rate check errors
+    _underTestPost->setFallbackValueLoaded(true); // Avoid loading fallbackvalue from NVS
+
     setDigitIncreaseConsistencyCheck(checkDigitIncreaseConsistency);
     setExtendedResolution(extendedResolution);
     setDecimalShift(decimalShift);

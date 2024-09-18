@@ -315,44 +315,38 @@ void checkOTAPartitionState(void)
 esp_err_t handler_ota_update(httpd_req_t *req)
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "handler_ota_update");
-    char _query[200];
-    char _filename[100];
-    char _valuechar[30];
+    char query[200];
+    char filename[100];
+    char valuechar[30];
     std::string fn = "/sdcard/firmware/";
-    std::string _task = "";
-    bool _file_del = false;
+    std::string task = "";
+    bool deleteFileRequest = false;
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
-    if (httpd_req_get_url_query_str(req, _query, 200) == ESP_OK) {
-        //ESP_LOGD(TAG, "Query: %s", _query);
-        if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            //ESP_LOGD(TAG, "task is found: %s", _valuechar);
-            _task = std::string(_valuechar);
+    if (httpd_req_get_url_query_str(req, query, 200) == ESP_OK) {
+        if (httpd_query_key_value(query, "task", valuechar, sizeof(valuechar)) == ESP_OK) {
+            task = std::string(valuechar);
         }
-
-        if (httpd_query_key_value(_query, "file", _filename, sizeof(_filename)) == ESP_OK) {
-            fn.append(_filename);
-            //ESP_LOGD(TAG, "File: %s", fn.c_str());
+        if (httpd_query_key_value(query, "file", filename, sizeof(filename)) == ESP_OK) {
+            fn.append(filename);
         }
-
-        if (httpd_query_key_value(_query, "delete", _filename, sizeof(_filename)) == ESP_OK) {
-            fn.append(_filename);
-            _file_del = true;
-            //ESP_LOGD(TAG, "Delete Default File: %s", fn.c_str());
+        if (httpd_query_key_value(query, "delete", filename, sizeof(filename)) == ESP_OK) {
+            fn.append(filename);
+            deleteFileRequest = true;
         }
     }
 
-    if (_task.compare("emptyfirmwaredir") == 0) {
+    if (task.compare("emptyfirmwaredir") == 0) {
         deleteAllFilesInDirectory("/sdcard/firmware");
         httpd_resp_sendstr(req, "Directory /sdcard/firmware deleted");
         return ESP_OK;
     }
 
-    else if (_task.compare("update") == 0) {
+    else if (task.compare("update") == 0) {
         std::string filetype = toUpper(getFileType(fn));
         if ((filetype == "TFLITE") || (filetype == "TFL")) {
-            std::string out = "/sdcard/config/" + getFileFullFileName(fn);
+            std::string out = "/sdcard/config/models/" + getFileFullFileName(fn);
             deleteFile(out);
             copyFile(fn, out);
             deleteFile(fn);
@@ -361,7 +355,6 @@ esp_err_t handler_ota_update(httpd_req_t *req)
             httpd_resp_sendstr(req, "Neural network file updated. No reboot required");
             return ESP_OK;
         }
-
         else if ((filetype == "ZIP") || (filetype == "BIN")) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "ZIP/BIN file: Reboot required to update");
 
@@ -379,7 +372,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    else if (_task.compare("unziphtml") == 0) {
+    else if (task.compare("unziphtml") == 0) {
         //ESP_LOGD(TAG, "Task unziphtml");
         std::string in, out, zw;
 
@@ -395,7 +388,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
         return ESP_OK;
     }
 
-    if (_file_del) {
+    if (deleteFileRequest) {
         if(!deleteFile(fn)) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Deletetion failed. File does not exist: " + fn);
             httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File deletion failed");
