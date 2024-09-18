@@ -159,9 +159,7 @@ esp_err_t sendFile(httpd_req_t *req, std::string filename)
 {
     FILE *fd = fopen(filename.c_str(), "r");
     if (!fd) {
-        //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendFile: Failed to read file: " + filename); //@TODO needed? HTML error enough?
-        /* Respond with 404 Not Found */
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404()); // Respond with 404 Not Found
         return ESP_FAIL;
     }
 

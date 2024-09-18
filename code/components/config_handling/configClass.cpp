@@ -1190,7 +1190,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
 
     // Network
-    /*objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "opmode"); //@TODO. NOt yet implemented
+    /*objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "opmode"); //@TODO. Not yet implemented
     if (cJSON_IsNumber(objEl))
         cfgDataInternal.sectionNetwork.wlan.enabled = objEl->valueint;*/
 

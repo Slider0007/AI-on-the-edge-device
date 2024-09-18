@@ -130,7 +130,7 @@ bool ClassFlowCNNGeneral::loadParameter()
             roi->imageRoiResized = new CImageBasis(roi->param->roiName, modelxsize, modelysize, modelchannel);
             roi->imageRoi = new CImageBasis(roi->param->roiName + "_org", roi->param->dx, roi->param->dy, STBI_rgb);
 
-            // Set image pointer in global struct as well //@TODO: Provide pointer to global struct also
+            // Set image pointer in global struct as well
             if (cnnname == "Digit") {
                 sequenceData[i]->digitRoi[j]->imageRoiResized = roi->imageRoiResized;
                 sequenceData[i]->digitRoi[j]->imageRoi = roi->imageRoi;
@@ -470,7 +470,7 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
     return true;
 }
 
-//@TODO: Switch logging back to DEBUG
+
 std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePreviousNumber, int resultPreviousNumber)
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout: Number sequence: " + sequence->sequenceName +

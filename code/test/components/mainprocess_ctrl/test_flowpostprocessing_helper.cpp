@@ -30,7 +30,7 @@ UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType)
     return new UnderTestPost(takeimage, analog, digit);
 }
 
-
+//@TODO
 UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType,
                             bool extendedResolution, int decimalShift, bool checkDigitIncreaseConsistency)
 {
