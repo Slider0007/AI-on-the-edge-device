@@ -12,6 +12,7 @@ Further details can be found in the respective REST API endpoint description.
 |:-------------------------------------|:---------------------------------------------------|:------------|:-----------
 | [/process_data](process_data.md)     | Process Data                                       | JSON + HTML | 
 | [/info](info.md)                     | Device Info + Process Status                       | JSON + HTML | 
+| [/config](config.md)                 | Device Configuration                               | JSON + HTML | 
 | [/metrics](metrics.md)               | Prometheus / OpenMetrics Data                      | HTML        | 
 | [/cycle_start](cycle_start.md)       | Trigger Cycle (Flow) Start                         | HTML        | 
 | [/reload_config](reload_config.md)   | Reload Configuration                               | HTML        | 
@@ -29,7 +30,7 @@ Further details can be found in the respective REST API endpoint description.
 | [/upload/](upload.md)                | File Upload (POST)                                 | HTML        | 
 | [/delete/](delete.md)                | File Deletion (POST)                               | HTML        | 
 | [/img_tmp/](img_tmp.md)              | Load Images From RAM                               | HTML        | 
-| /                                    | WebUI (Redirected to `index.html`)                 | HTML        | 
+| /                                    | WebUI (Redirected to `index.html` or `setup.html`) | HTML        | 
 
 
 *Endpoints which are marked as deprecated will be completely removed (functionality merged in another endpoint) or 

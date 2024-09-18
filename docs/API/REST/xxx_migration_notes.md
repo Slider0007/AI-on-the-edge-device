@@ -10,8 +10,8 @@ Mapping which new endpoint replaces functionality of removed endpoint:
 |:-------------------------------------|:---------------------------------------------------|:------------|:-----------
 | [/process_data](process_data.md)     | Process Data                                       | JSON + HTML | `/json`, `/value` 
 | [/info](info.md)                     | Device Info + Process Status                       | JSON + HTML | `/starttime`, `/uptime`, `/rssi`, `/sysinfo`, `/cpu_temperature`, `/heap` 
+| [/config](config.md)                 | Device Configuration                               | JSON + HTML | `/reload_config`
 | [/cycle_start](cycle_start.md)       | Trigger Cycle (Flow) Start                         | HTML        | 
-| [/reload_config](reload_config.md)   | Reload Configuration                               | HTML        | 
 | [/set_fallbackvalue](set_fallbackvalue.md) | Set Fallback Value                           | HTML        | 
 | [/editflow](editflow.md)             | Parametrization Helper                             | HTML        |
 | [/camera](camera.md)                 | Camera Capture, Stream, Parametrization + Flashlight| HTML       | `/editflow?task=test_take`, `/capture`, `/capture_with_flashlight`, `/save`, `/lighton`, `/lightoff`, `/stream`

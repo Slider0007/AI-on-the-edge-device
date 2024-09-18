@@ -87,7 +87,7 @@
 			padding-right: 10px;
 			border: solid black 1px;
 			position: absolute; /* Position the tooltip */
-			z-index: 1;
+			z-index: 99;
 			top: 100%;
 			margin-left: -40px;
 		}
@@ -154,18 +154,19 @@
         <summary><b>CLICK HERE</b> for usage description
         </summary>
         <p>
-            The reference image is the base image on which the alignment marker, digit ROIs and analog ROIs will be defined.
+            The reference image is the base image on which the alignment marker, digit ROIs and analog ROIs will be defined. It only serves
+            the need to have a visual feedback while defining alignment marker and ROIs. It is not used for any cycle processing task.
         </p>
         <p>
-            Firstly the actual saved reference image is shown. If you start with the setup from scratch a default image is shown
-            as placeholder. Use the button <b>"Create New Reference"</b> to start creation of your own reference image. After
+            If you start with the setup from scratch no reference image is available and only a textual info is shown. Otherwise the actual
+            saved reference image is shown. Use the button <b>"Create New Reference"</b> to start creating your own reference image. After
             selecting the button a new image will be taken using all configured parameter. With the button <b>"Update Image"</b>
             the image can be refreshed (still all parameter get applied to the new image).
         </p>
         <p>
             To have reliable evaluation processing a properly horizontal aligned evaluation area is mandatory. Using the parameter
-            "Image Rotation" and "Image Rotation (Fine-tune)" the image can be rotated in both directions. The resulting rotation
-            angle is used to prerotate the image before the alignment algorithm is processed to compensate only small misalignments.
+            "Image Rotation" the image can be rotated in both directions. The resulting rotation angle is used to prerotate the image
+            before the alignment algorithm is processed to compensate only small misalignments of rotataion or shift.
         </p>
         <p>
             After setting up your reference image don't forget to save the new configuration  with the button <b>"Save And Apply"</b>.
