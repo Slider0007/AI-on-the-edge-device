@@ -118,27 +118,27 @@ jobs:
     #########################################################################################
     - name: Firmware package - Prepare artifact
       run: |
-        rm -rf ./update
-        mkdir -p ./update
-        cp "./code/.pio/build/${{ matrix.plat }}/firmware.bin" "update/firmware.bin
-        cp -f "./code/.pio/build/${{ matrix.plat }}/bootloader.bin" "manual_setup/bootloader.bin"
-        cp -f "./code/.pio/build/${{ matrix.plat }}/partitions.bin" "manual_setup/partitions.bin""
+        rm -rf ./artifact
+        mkdir -p ./artifact
+        cp -f "./code/.pio/build/${{ matrix.plat }}/firmware.bin" "./artifact/firmware.bin"
+        cp -f "./code/.pio/build/${{ matrix.plat }}/bootloader.bin" "./artifact/bootloader.bin"
+        cp -f "./code/.pio/build/${{ matrix.plat }}/partitions.bin" "./artifact/partitions.bin"
 
-        cp -r ./html ./update/
+        cp -r ./html ./artifact/
 
-        rm -rf ./update/config/
-        mkdir -p ./update/config
-        mkdir -p ./update/config/templates
-        mkdir -p ./update/config/models
-        cp ./sd-card/config/templates/* ./update/config/templates/ 2>/dev/null || true
-        cp ./sd-card/config/models/*.tfl ./update/config/models/ 2>/dev/null || true
-        cp ./sd-card/config/models/*.tflite ./update/config/models/ 2>/dev/null || true
+        rm -rf ./artifact/config/
+        mkdir -p ./artifact/config
+        mkdir -p ./artifact/config/templates
+        mkdir -p ./artifact/config/models
+        cp ./sd-card/config/templates/* ./artifact/config/templates/ 2>/dev/null || true
+        cp ./sd-card/config/models/*.tfl ./artifact/config/models/ 2>/dev/null || true
+        cp ./sd-card/config/models/*.tflite ./artifact/config/models/ 2>/dev/null || true
 
     - name: Firmware package - Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}"
-        path: ./update
+        path: ./artifact
 
     #########################################################################################
     ## Create package with additional files for debugging purpose
