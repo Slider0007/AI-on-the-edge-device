@@ -124,7 +124,8 @@
         }
 
         // Check if the filename is valid
-        if (/(^AI-on-the-edge-device__update__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename)) {
+        if (/(^AI-on-the-edge-device__update__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename) ||
+            /(^AI-on-the-edge-device__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename)) {
             if ((document.getElementById("board_type").innerText).toLowerCase() == filename.split("__")[2]) { // Check if board type of filename matches
                 firework.launch("Press 'Upload and Install' to perform the OTA update", "success", 5000);
             }
