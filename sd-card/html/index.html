@@ -167,7 +167,7 @@
                         document.getElementById("maincontent").contentWindow.location.reload();
                     }
                     else {
-                        firework.launch("Cycle start request malformed. ResponseText: " + xhttp.responseText, 'danger', 30000);
+                        firework.launch("Cycle start rejected. Reason: " + xhttp.responseText, 'danger', 30000);
                     }
                 }
                 else {

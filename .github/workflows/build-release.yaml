@@ -107,7 +107,7 @@ jobs:
         cd ./html; find . -type f -exec sed -i 's/$COMMIT_HASH/${{ steps.vars.outputs.sha_short }}/g' {} \;
 
     #########################################################################################
-    ## Create firmware package for
+    ## Create firmware package
     # - Inital flashing using web installer, device's access point or serial console
     # - OTA update using WebUI
     #
@@ -123,6 +123,7 @@ jobs:
         cp -f "./code/.pio/build/${{ matrix.plat }}/firmware.bin" "./artifact/firmware.bin"
         cp -f "./code/.pio/build/${{ matrix.plat }}/bootloader.bin" "./artifact/bootloader.bin"
         cp -f "./code/.pio/build/${{ matrix.plat }}/partitions.bin" "./artifact/partitions.bin"
+        cp -f "./docs/Installation/Firmware/${{ matrix.plat }}.md" "./artifact/readme.md"
 
         cp -r ./html ./artifact/
 

@@ -201,6 +201,7 @@ esp_err_t handler_cycle_start(httpd_req_t *req)
 
     if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART ||
         taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART ||
+        flowctrl.getActualProcessState() == FLOW_INIT_WAITING_TIME_SYNC ||
         flowctrl.getActualProcessState() == FLOW_INIT_FAILED) // Possibility to manual retrigger a cycle when init is already failed
     {
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by REST API");
@@ -959,7 +960,8 @@ void task_autodoFlow(void *pvParameter)
             else {
                 // Waiting for NTP time sync to ensure process start with valid time
                 if (ConfigClass::getInstance()->get()->sectionNetwork.time.ntp.timeSyncEnabled &&
-                    ConfigClass::getInstance()->get()->sectionNetwork.time.ntp.processStartInterlock) {
+                    ConfigClass::getInstance()->get()->sectionNetwork.time.ntp.processStartInterlock)
+                {
                     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process start interlock: Waiting for time sync");
                     flowctrl.setActualProcessState(std::string(FLOW_INIT_WAITING_TIME_SYNC));
                     #ifdef ENABLE_MQTT
@@ -969,16 +971,28 @@ void task_autodoFlow(void *pvParameter)
 
                     while (true) { // Waiting for time sync
                         vTaskDelay(1000 / portTICK_PERIOD_MS);
-                        if (getTimeIsSynced() || manualFlowStart) { // Skip waiting state with flow start trigger
+                        if (reloadConfig) {
+                            reloadConfig = false;
+                            manualFlowStart = false; // Reload config has higher prio
+                            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Trigger: Reload configuration");
+                            taskAutoFlowState = FLOW_TASK_STATE_INIT; // Return to state "FLOW INIT"
+                            break;
+                        }
+                        else if (manualFlowStart) {
                             manualFlowStart = false;
+                            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Start process (manual trigger) without synced time");
+                            taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART; // Continue to test if AUTOSTART is TRUE
+                            break;
+                        }
+                        else if (getTimeIsSynced()) {
+                            taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART; // Continue to test if AUTOSTART is TRUE
                             break;
                         }
                     }
                 }
-                taskYIELD();
-
                 flowctrl.clearFlowStateEventInRowCounter();
-                taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART; // Continue to test if AUTOSTART is TRUE
+
+                taskYIELD();
             }
         }
 

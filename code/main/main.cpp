@@ -100,6 +100,7 @@ extern "C" void app_main(void)
     // SD card: Create further mandatory directories (if not already existing)
     // Correct creation of these folders will be checked with function "checkSdCardFolderFilePresence"
     // ********************************************
+    makeDir("/sdcard/config");           // mandatory for config handling
     makeDir("/sdcard/config/certs");     // mandatory for TLS encryption
     makeDir("/sdcard/config/models");    // mandatory for TFLite models
     makeDir("/sdcard/firmware");         // mandatory for OTA firmware update

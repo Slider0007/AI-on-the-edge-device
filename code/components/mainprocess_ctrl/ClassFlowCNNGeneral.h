@@ -9,6 +9,7 @@
 
 
 // Helper struct to multiuse class without adapting variable names
+// @TODO: Not ideal, could this be done more effcient, that helper not needed!?
 struct SequenceDataInternal {
     int sequenceId;                 // Sequence ID
     std::string sequenceName;       // Sequence Name
