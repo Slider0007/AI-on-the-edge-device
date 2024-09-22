@@ -7,11 +7,11 @@
    - Put your board into bootloader mode (IO0 grounded + board reset)
    - Three files to be flashed with correct flash offset
 
-      | Filename          | Offset                    | Description
-      |:---               |:---                       |:----
-      | bootloader.bin    | 0x0                       | Bootloader
-      | partitions.bin    | 0x8000                    | Partition definition
-      | firmware.bin      | 0x10000                   | User application
+      | Filename          | Offset      | Description
+      |:------------------|:------------|:------
+      | bootloader.bin    | 0x0         | Bootloader
+      | partitions.bin    | 0x8000      | Partition definition
+      | firmware.bin      | 0x10000     | User application
   
   - Use `Flash Download Tool` from Espressif or the console-based `esptool` to flash the files.
   Usage is described [here](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#flashing-using-the-flash-tool-from-espressif-gui).

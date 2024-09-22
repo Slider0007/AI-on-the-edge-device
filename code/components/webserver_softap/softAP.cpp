@@ -140,11 +140,11 @@ esp_err_t config_handler_AP(httpd_req_t *req)
 
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
         if (httpd_query_key_value(query, "ssid", valuechar, sizeof(valuechar)) == ESP_OK) {
-            ConfigClass::getInstance()->set()->sectionNetwork.wlan.ssid = urlDecode(std::string(valuechar));
+            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ssid = urlDecode(std::string(valuechar));
         }
 
         if (httpd_query_key_value(query, "pwd", valuechar, sizeof(valuechar)) == ESP_OK) {
-            ConfigClass::getInstance()->set()->sectionNetwork.wlan.password = urlDecode(std::string(valuechar));
+            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.password = urlDecode(std::string(valuechar));
         }
     }
     ConfigClass::getInstance()->persistConfig();

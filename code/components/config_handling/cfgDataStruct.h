@@ -73,7 +73,7 @@ enum GpioSmartledType {
 
 enum NetworkConfig {
     NETWORK_CONFIG_DHCP = 0,
-    NETWORK_CONFIG_STATICIP = 1,
+    NETWORK_CONFIG_STATIC = 1,
 };
 
 

@@ -12,13 +12,19 @@
 #include "CFindTemplate.h"
 
 
+/* Function calls
+* 1. Restore Config : readConfigFile()       > parseConfig > serializeConfig > writeConfigFile
+* 2. REST API Set   : setConfigRequest()     > parseConfig > serializeConfig > REST API Response
+* 3. REST API Get   : getConfigRequest()                   > serializeConfig > REST API Response
+* 4. Cfg Migration  : migrateConfiguration()                                 > writeConfigFile
+*/
+
 class ConfigClass
 {
   private:
-    // Config class init here instead of global variable + extern declaration
-    static ConfigClass cfgClass;
-    CfgData cfgDataInternal;
-    CfgData cfgData;
+    static ConfigClass cfgClass; // Config class init here instead of global variable + extern declaration
+    CfgData cfgDataTemp; // Keeps last parameter modifications, but not in use by process (gets promoted to active config by reinitConfig())
+    CfgData cfgData; // Keep active parameter configuration in use by process
 
     cJSON *cJsonObject = NULL;
     uint8_t *cJsonObjectBuffer = NULL;
@@ -40,18 +46,21 @@ class ConfigClass
     ~ConfigClass();
 
     void readConfigFile(bool unityTest = false, std::string unityTestData = "{}");
-    void reinitConfig(void) { cfgData = cfgDataInternal; };
-    void persistConfig() { serializeConfig(); writeConfigFile(); };
+    void reinitConfig(void) { cfgData = cfgDataTemp; };
+    void persistConfig(void) { serializeConfig(); writeConfigFile(); };
 
-    static ConfigClass *getInstance() { return &cfgClass; }
-    const CfgData *get() const { return &cfgData; };
-    CfgData *set() { return &cfgDataInternal; };
+    static ConfigClass *getInstance(void) { return &cfgClass; }
+    const CfgData *get(void) const { return &cfgData; };
 
     esp_err_t getConfigRequest(httpd_req_t *req);
     esp_err_t setConfigRequest(httpd_req_t *req);
 
-    /* Use only for testing purpose --> unity test */
-    CfgData *get() { return &cfgData; };
+    // Only for migration and internal parameter modification purpose
+    void initCfgTmp(void) { cfgDataTemp = {}; };
+    CfgData *cfgTmp(void) { return &cfgDataTemp; };
+
+    // Only for testing purpose --> unity test
+    CfgData *get(void) { return &cfgData; };
     char *getJsonBuffer(void) { return jsonBuffer; };
     /***********************************************/
 };

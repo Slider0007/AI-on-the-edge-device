@@ -601,7 +601,7 @@ esp_err_t initWifiStation(void)
 
     wifiStation = esp_netif_create_default_wifi_sta();
 
-	if (cfgDataPtr->wlan.ipv4.networkConfig == NETWORK_CONFIG_STATICIP) {
+	if (cfgDataPtr->wlan.ipv4.networkConfig == NETWORK_CONFIG_STATIC) {
 		LogFile.writeToFile(ESP_LOG_INFO, TAG, "Use static network config");
 
 		retVal = esp_netif_dhcpc_stop(wifiStation);	// Stop DHCP service
