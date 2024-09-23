@@ -29,7 +29,6 @@ class ClassFlowTakeImage : public ClassLogImage
     bool doFlow(std::string time);
     void doPostProcessEventHandling();
 
-    std::string getHTMLSingleStep(std::string host);
     time_t getTimeImageTaken();
     std::string getFileNameRawImage();
 

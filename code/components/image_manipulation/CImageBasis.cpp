@@ -20,6 +20,19 @@ static const char *TAG = "IMG_BASIS";
 bool jpgFileTooLarge = false;   // JPG creation verfication
 
 
+CImageBasis::~CImageBasis()
+{
+    rgbImageLock();
+
+    if (!externalImage) {
+        //stbi_image_free(rgb_image);
+        free_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ", " + std::to_string(memsize) + ")", rgb_image);
+    }
+
+    rgbImageRelease();
+}
+
+
 CImageBasis::CImageBasis(std::string _name)
 {
     name = _name;
@@ -52,8 +65,7 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom)
 
     rgb_image = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ")", memsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
-    if (rgb_image == NULL)
-    {
+    if (rgb_image == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImageBasis-Copyfrom: Can't allocate enough memory: " + std::to_string(memsize));
         LogFile.writeHeapInfo("CImageBasis-Copyfrom");
         rgbImageRelease();
@@ -89,8 +101,7 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom, int add)
 
     rgb_image = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ")", memsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
-    if (rgb_image == NULL)
-    {
+    if (rgb_image == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImageBasis-Copyfrom: Can't allocate enough memory: " + std::to_string(memsize));
         LogFile.writeHeapInfo("CImageBasis-Copyfrom");
         rgbImageRelease();
@@ -126,8 +137,7 @@ CImageBasis::CImageBasis(std::string _name, int _width, int _height, int _channe
 
     rgb_image = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ")", memsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
-    if (rgb_image == NULL)
-    {
+    if (rgb_image == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImageBasis-width,height,ch: Can't allocate enough memory: " + std::to_string(memsize));
         LogFile.writeHeapInfo("CImageBasis-width,height,ch");
         rgbImageRelease();
@@ -239,38 +249,25 @@ CImageBasis::CImageBasis(std::string _name, uint8_t* _rgb_image, int _channels, 
 }
 
 
-CImageBasis::~CImageBasis()
-{
-    rgbImageLock();
-
-    if (!externalImage) {
-        //stbi_image_free(rgb_image);
-        free_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ", " + std::to_string(memsize) + ")", rgb_image);
-    }
-
-    rgbImageRelease();
-}
-
-
 uint8_t * CImageBasis::rgbImageLock(int _waitmaxsec)
 {
-    if (islocked)
-    {
+    if (islocked) {
         #ifdef DEBUG_DETAIL_ON
                 ESP_LOGD(TAG, "Image is locked: sleep for: %ds", _waitmaxsec);
         #endif
         TickType_t xDelay;
         xDelay = 1000 / portTICK_PERIOD_MS;
-        for (int i = 0; i <= _waitmaxsec; ++i)
-        {
+        for (int i = 0; i <= _waitmaxsec; ++i) {
             vTaskDelay( xDelay );
-            if (!islocked)
+            if (!islocked) {
                 break;
+            }
         }
     }
 
-    if (islocked)
+    if (islocked) {
         return NULL;
+    }
 
     return rgb_image;
 }
@@ -311,8 +308,7 @@ bool CImageBasis::createEmptyImage(int _width, int _height, int _channels)
 
     rgb_image = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ")", memsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
-    if (rgb_image == NULL)
-    {
+    if (rgb_image == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "createEmptyImage: Can't allocate enough memory: " + std::to_string(memsize));
         LogFile.writeHeapInfo("createEmptyImage");
         rgbImageRelease();
@@ -321,13 +317,13 @@ bool CImageBasis::createEmptyImage(int _width, int _height, int _channels)
 
     stbi_uc* p_source;
 
-    for (int x = 0; x < width; ++x)
-        for (int y = 0; y < height; ++y)
-        {
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
             p_source = rgb_image + (channels * (y * width + x));
             for (int _channels = 0; _channels < channels; ++_channels)
                 p_source[_channels] = (uint8_t) 0;
         }
+    }
 
     rgbImageRelease();
 
@@ -352,8 +348,7 @@ bool CImageBasis::createEmptyImage(int _width, int _height, int _channels, int a
 
     rgb_image = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->CImageBasis (" + name + ")", memsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
-    if (rgb_image == NULL)
-    {
+    if (rgb_image == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "createEmptyImage: Can't allocate enough memory: " + std::to_string(memsize));
         LogFile.writeHeapInfo("createEmptyImage");
         rgbImageRelease();
@@ -362,13 +357,13 @@ bool CImageBasis::createEmptyImage(int _width, int _height, int _channels, int a
 
     stbi_uc* p_source;
 
-    for (int x = 0; x < width; ++x)
-        for (int y = 0; y < height; ++y)
-        {
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
             p_source = rgb_image + (channels * (y * width + x));
             for (int _channels = 0; _channels < channels; ++_channels)
                 p_source[_channels] = (uint8_t) 0;
         }
+    }
 
     rgbImageRelease();
 
@@ -386,13 +381,13 @@ void CImageBasis::emptyImage()
 
     rgbImageLock();
 
-    for (int x = 0; x < width; ++x)
-        for (int y = 0; y < height; ++y)
-        {
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
             p_source = rgb_image + (channels * (y * width + x));
             for (int _channels = 0; _channels < channels; ++_channels)
                 p_source[_channels] = (uint8_t) 0;
         }
+    }
 
     rgbImageRelease();
 }
@@ -411,8 +406,7 @@ bool CImageBasis::loadFromMemory(stbi_uc *_buffer, int len)
     bpp = channels;
     ESP_LOGD(TAG, "Image loaded from memory: %d, %d, %d", width, height, channels);
 
-    if (rgb_image == NULL)
-    {
+    if (rgb_image == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFromMemory: Image loading failed");
         LogFile.writeHeapInfo("loadFromMemory");
         return false;
@@ -436,8 +430,7 @@ bool CImageBasis::loadFromMemoryPreallocated(stbi_uc *_buffer, int len)
     bpp = channels;
     ESP_LOGD(TAG, "Image loaded from memory: %d, %d, %d", width, height, channels);
 
-    if (rgb_image == NULL)
-    {
+    if (rgb_image == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFromMemoryPreallocated: Image loading failed");
         LogFile.writeHeapInfo("loadFromMemoryPreallocated");
         return false;
@@ -499,7 +492,7 @@ bool CImageBasis::loadFromFilePreallocated(std::string _name, std::string _image
 bool CImageBasis::copyFromMemory(uint8_t* _source, int _size)
 {
     int gr = height * width * channels;
-    if (gr != _size) {           // Size does not fit
+    if (gr != _size) { // Size does not fit
         ESP_LOGE(TAG, "Cannot copy image from memory - sizes do not match: should be %d, but is %d", _size, gr);
         return false;
     }
@@ -546,14 +539,13 @@ void CImageBasis::setContrast(float _contrast)  //input range [-100..100]
 
     rgbImageLock();
 
-
-    for (int x = 0; x < width; ++x)
-        for (int y = 0; y < height; ++y)
-        {
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
             p_source = rgb_image + (channels * (y * width + x));
             for (int _channels = 0; _channels < channels; ++_channels)
                 p_source[_channels] = (uint8_t) std::min(255, std::max(0, (int) (p_source[_channels] * contrast + intercept)));
         }
+    }
 
     rgbImageRelease();
 }
@@ -616,7 +608,7 @@ void CImageBasis::saveToFile(std::string _imageout)
 
 void writeJPGHelper(void *context, void *data, int size)
 {
-//    ESP_LOGD(TAG, "Size all: %d, size %d", ((ImageData*)context)->size, size);
+    // ESP_LOGD(TAG, "Size all: %d, size %d", ((ImageData*)context)->size, size);
     ImageData* _zw = (ImageData*) context;
     uint8_t *voidstart = _zw->data;
     uint8_t *datastart = (uint8_t*) data;
@@ -624,8 +616,9 @@ void writeJPGHelper(void *context, void *data, int size)
     if ((_zw->size < MAX_JPG_SIZE)) {   // Abort copy to prevent buffer overflow
         voidstart += _zw->size;
 
-        for (int i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i) {
             *(voidstart + i) = *(datastart + i);
+        }
 
         _zw->size += size;
     }
@@ -680,8 +673,7 @@ struct SendJPGHTTP
 inline void writeJPGToHttpHelper(void *context, void *data, int size)
 {
     SendJPGHTTP* _send = (SendJPGHTTP*) context;
-    if ((_send->size + size) >= HTTP_BUFFER_SENT)     // data no longer fits in buffer
-    {
+    if ((_send->size + size) >= HTTP_BUFFER_SENT) { // data no longer fits in buffer
         if (httpd_resp_send_chunk(_send->req, _send->buf, _send->size) != ESP_OK) {
             ESP_LOGE(TAG, "File sending failed");
             _send->res = ESP_FAIL;
@@ -731,22 +723,24 @@ void CImageBasis::setPixelColor(int x, int y, int r, int g, int b)
     rgbImageLock();
     p_source = rgb_image + (channels * (y * width + x));
     p_source[0] = r;
-    if ( channels > 2)
-    {
+    if ( channels > 2) {
         p_source[1] = g;
         p_source[2] = b;
     }
+
     rgbImageRelease();
 }
 
 
 bool CImageBasis::isInImage(int x, int y)
 {
-    if ((x < 0) || (x > width - 1))
+    if ((x < 0) || (x > width - 1)) {
         return false;
+    }
 
-    if ((y < 0) || (y > height- 1))
+    if ((y < 0) || (y > height- 1)) {
         return false;
+    }
 
     return true;
 }
@@ -764,11 +758,15 @@ void CImageBasis::drawRect(int x, int y, int dx, int dy, int r, int g, int b, in
 
     rgbImageLock();
 
-    for (_thick = 0; _thick < thickness; _thick++)
-        for (_x = zwx1; _x <= zwx2; ++_x)
-            for (_y = zwy1; _y <= zwy2; _y++)
-                if (isInImage(_x, _y))
+    for (_thick = 0; _thick < thickness; _thick++) {
+        for (_x = zwx1; _x <= zwx2; ++_x) {
+            for (_y = zwy1; _y <= zwy2; _y++) {
+                if (isInImage(_x, _y)) {
                     setPixelColor(_x, _y - _thick, r, g, b);
+                }
+            }
+        }
+    }
 
     zwx1 = x - thickness + 1;
     zwx2 = x + dx + thickness - 1;
@@ -784,21 +782,29 @@ void CImageBasis::drawRect(int x, int y, int dx, int dy, int r, int g, int b, in
     zwx2 = x;
     zwy1 = y;
     zwy2 = y + dy;
-    for (_thick = 0; _thick < thickness; _thick++)
-        for (_x = zwx1; _x <= zwx2; ++_x)
-            for (_y = zwy1; _y <= zwy2; _y++)
-                if (isInImage(_x, _y))
+    for (_thick = 0; _thick < thickness; _thick++) {
+        for (_x = zwx1; _x <= zwx2; ++_x) {
+            for (_y = zwy1; _y <= zwy2; _y++) {
+                if (isInImage(_x, _y)) {
                     setPixelColor(_x - _thick, _y, r, g, b);
+                }
+            }
+        }
+    }
 
     zwx1 = x + dx;
     zwx2 = x + dx;
     zwy1 = y;
     zwy2 = y + dy;
-    for (_thick = 0; _thick < thickness; _thick++)
-        for (_x = zwx1; _x <= zwx2; ++_x)
-            for (_y = zwy1; _y <= zwy2; _y++)
-                if (isInImage(_x, _y))
+    for (_thick = 0; _thick < thickness; _thick++) {
+        for (_x = zwx1; _x <= zwx2; ++_x) {
+            for (_y = zwy1; _y <= zwy2; _y++) {
+                if (isInImage(_x, _y)) {
                     setPixelColor(_x + _thick, _y, r, g, b);
+                }
+            }
+        }
+    }
 
     rgbImageRelease();
 }
@@ -812,24 +818,24 @@ void CImageBasis::drawLine(int x1, int y1, int x2, int y2, int r, int g, int b, 
 
     rgbImageLock();
 
-    for (_thick = 0; _thick <= thickness; ++_thick)
-        for (_x = x1 - _thick; _x <= x2 + _thick; ++_x)
-        {
-            if (x2 == x1)
-            {
+    for (_thick = 0; _thick <= thickness; ++_thick) {
+        for (_x = x1 - _thick; _x <= x2 + _thick; ++_x) {
+            if (x2 == x1) {
                 _zwy1 = y1;
                 _zwy2 = y2;
             }
-            else
-            {
+            else {
                 _zwy1 = (y2 - y1) * (float)(_x - x1) / (float)(x2 - x1) + y1;
                 _zwy2 = (y2 - y1) * (float)(_x + 1 - x1) / (float)(x2 - x1) + y1;
             }
 
-            for (_y = _zwy1 - _thick; _y <= _zwy2 + _thick; _y++)
-                if (isInImage(_x, _y))
+            for (_y = _zwy1 - _thick; _y <= _zwy2 + _thick; _y++) {
+                if (isInImage(_x, _y)) {
                     setPixelColor(_x, _y, r, g, b);
+                }
+            }
         }
+    }
 
     rgbImageRelease();
 }
@@ -848,14 +854,15 @@ void CImageBasis::drawEllipse(int x1, int y1, int radx, int rady, int r, int g, 
 
     rgbImageLock();
 
-    for (aktrad = 0; aktrad <= (2 * M_PI); aktrad += deltarad)
-        for (_thick = 0; _thick < thickness; ++_thick)
-        {
+    for (aktrad = 0; aktrad <= (2 * M_PI); aktrad += deltarad) {
+        for (_thick = 0; _thick < thickness; ++_thick) {
             _x = sin(aktrad) * (radx + _thick) + x1;
             _y = cos(aktrad) * (rady + _thick) + y1;
-            if (isInImage(_x, _y))
+            if (isInImage(_x, _y)) {
                 setPixelColor(_x, _y, r, g, b);
+            }
         }
+    }
 
     rgbImageRelease();
 }
@@ -870,14 +877,15 @@ void CImageBasis::drawCircle(int x1, int y1, int rad, int r, int g, int b, int t
 
     rgbImageLock();
 
-    for (aktrad = 0; aktrad <= (2 * M_PI); aktrad += deltarad)
-        for (_thick = 0; _thick < thickness; ++_thick)
-        {
+    for (aktrad = 0; aktrad <= (2 * M_PI); aktrad += deltarad) {
+        for (_thick = 0; _thick < thickness; ++_thick) {
             _x = sin(aktrad) * (rad + _thick) + x1;
             _y = cos(aktrad) * (rad + _thick) + y1;
-            if (isInImage(_x, _y))
+            if (isInImage(_x, _y)) {
                 setPixelColor(_x, _y, r, g, b);
+            }
         }
+    }
 
     rgbImageRelease();
 }

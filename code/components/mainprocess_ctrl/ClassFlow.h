@@ -33,7 +33,6 @@ class ClassFlow
     	virtual bool loadParameter();
     	virtual bool doFlow(std::string time);
     	virtual void doPostProcessEventHandling();
-		virtual std::string getHTMLSingleStep(std::string host);
 
 		void presetFlowStateHandler(bool _init = false, std::string _time = "");
     	void setFlowStateHandlerEvent(int _eventCode = 0);

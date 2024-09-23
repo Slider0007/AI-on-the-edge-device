@@ -409,58 +409,6 @@ bool ClassFlowControl::doFlowTakeImageOnly(std::string time)
 }
 
 
-/*std::string ClassFlowControl::doSingleStep(std::string _stepname, std::string _host){ //@TODO still needed
-    std::string _classname = "";
-    std::string result = "";
-
-    ESP_LOGD(TAG, "Step %s start", _stepname.c_str());
-
-    if ((_stepname.compare("[TakeImage]") == 0) || (_stepname.compare(";[TakeImage]") == 0)){
-        _classname = "ClassFlowTakeImage";
-    }
-    if ((_stepname.compare("[Alignment]") == 0) || (_stepname.compare(";[Alignment]") == 0)){
-        _classname = "ClassFlowAlignment";
-    }
-    if ((_stepname.compare("[Digits") == 0) || (_stepname.compare(";[Digits]") == 0)) {
-        _classname = "ClassFlowCNNGeneral - Digit";
-    }
-    if ((_stepname.compare("[Analog]") == 0) || (_stepname.compare(";[Analog]") == 0)){
-        _classname = "ClassFlowCNNGeneral - Analog";
-    }
-    #ifdef ENABLE_MQTT
-    if ((_stepname.compare("[MQTT]") == 0) || (_stepname.compare(";[MQTT]") == 0)){
-        _classname = "ClassFlowMQTT";
-    }
-    #endif //ENABLE_MQTT
-
-    #ifdef ENABLE_INFLUXDB
-    if ((_stepname.compare("[InfluxDB]") == 0) || (_stepname.compare(";[InfluxDB]") == 0)){
-        _classname = "ClassFlowInfluxDBv1";
-    }
-    if ((_stepname.compare("[InfluxDBv2]") == 0) || (_stepname.compare(";[InfluxDBv2]") == 0)){
-        _classname = "ClassFlowInfluxDBv2";
-    }
-    #endif //ENABLE_INFLUXDB
-
-    for (int i = 0; i < FlowControlImage.size(); ++i)
-        if (FlowControlImage[i]->name().compare(_classname) == 0) {
-            if (!(FlowControlImage[i]->name().compare("ClassFlowTakeImage") == 0))      // if it is a TakeImage, the image does not need to be included, this happens automatically with the html query.
-                FlowControlImage[i]->doFlow("");
-            result = FlowControlImage[i]->getHTMLSingleStep(_host);
-        }
-
-    for (int i = 0; i < FlowControlPublish.size(); ++i)
-        if (FlowControlPublish[i]->name().compare(_classname) == 0) {
-            FlowControlPublish[i]->doFlow("");
-            result = FlowControlPublish[i]->getHTMLSingleStep(_host);
-        }
-
-    ESP_LOGD(TAG, "Step %s end", _stepname.c_str());
-
-    return result;
-}*/
-
-
 bool ClassFlowControl::flowStateEventOccured()
 {
     if (FlowStateEvaluationEvent.size() != 0 || FlowStatePublishEvent.size() != 0)

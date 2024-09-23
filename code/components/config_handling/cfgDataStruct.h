@@ -160,7 +160,9 @@ struct GpioElement {
 
 
 //************************************************
-// MAIN config struct
+// MAIN CONFIG STRUCT
+// ----------------------------------------------
+// Reminder: Do not forget to update unity tests!
 //************************************************
 struct CfgData {
     // Config File

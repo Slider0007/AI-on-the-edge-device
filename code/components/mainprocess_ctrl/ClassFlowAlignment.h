@@ -40,7 +40,6 @@ class ClassFlowAlignment : public ClassFlow
 
     CAlignAndCutImage *getAlignAndCutImage() { return alignAndCutImage; };
     bool getFlipImageSize();
-    std::string getHTMLSingleStep(std::string host);
 
     std::string name() { return "ClassFlowAlignment"; };
 };

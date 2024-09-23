@@ -26,15 +26,12 @@ CRotateImage::CRotateImage(std::string _name, CImageBasis *_org, CImageBasis *_t
 void IRAM_ATTR CRotateImage::mirrorImage(){
     int memsize = width * height * channels;
     uint8_t* odata;
-    if (imageTMP)
-    {
+    if (imageTMP) {
         odata = imageTMP->rgbImageLock();
     }
-    else
-    {
+    else {
         odata = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->odata", memsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     }
-
 
     int x_source, y_source;
     stbi_uc* p_target;
@@ -42,9 +39,8 @@ void IRAM_ATTR CRotateImage::mirrorImage(){
 
     rgbImageLock();
 
-    for (int x = 0; x < width; ++x)
-        for (int y = 0; y < height; ++y)
-        {
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
             p_target = odata + (channels * (y * width + x));
 
             x_source = width - x;
@@ -54,14 +50,16 @@ void IRAM_ATTR CRotateImage::mirrorImage(){
             for (int _channels = 0; _channels < channels; ++_channels)
                 p_target[_channels] = p_source[_channels];
         }
+    }
 
-    //    memcpy(rgb_image, odata, memsize);
+    // memcpy(rgb_image, odata, memsize);
     memCopy(odata, rgb_image, memsize);
     if (!imageTMP)
         free_psram_heap(std::string(TAG) + "->odata", odata);
 
-    if (imageTMP)
+    if (imageTMP) {
         imageTMP->rgbImageRelease();
+    }
 
     rgbImageRelease();
 }
@@ -75,22 +73,19 @@ void IRAM_ATTR CRotateImage::rotateImage(float _angle, int _centerx, int _center
     float y_center = _centery;
     _angle = _angle / 180 * M_PI;
 
-    if (doflip)
-    {
+    if (doflip) {
         org_width = width;
         org_height = height;
         height = org_width;
         width = org_height;
         x_center =  x_center - (org_width/2) + (org_height/2);
         y_center =  y_center + (org_width/2) - (org_height/2);
-        if (ImageOrg)
-        {
+        if (ImageOrg) {
             ImageOrg->height = height;
             ImageOrg->width = width;
         }
     }
-    else
-    {
+    else {
         org_width = width;
         org_height = height;
     }
@@ -103,23 +98,19 @@ void IRAM_ATTR CRotateImage::rotateImage(float _angle, int _centerx, int _center
     m[1][1] = m[0][0];
     m[1][2] = m[0][1] * x_center + (1 - m[0][0]) * y_center;
 
-    if (doflip)
-    {
+    if (doflip) {
         m[0][2] = m[0][2] + (org_width/2) - (org_height/2);
         m[1][2] = m[1][2] - (org_width/2) + (org_height/2);
     }
 
     int memsize = width * height * channels;
     uint8_t* odata;
-    if (imageTMP)
-    {
+    if (imageTMP) {
         odata = imageTMP->rgbImageLock();
     }
-    else
-    {
+    else {
         odata = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->odata", memsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     }
-
 
     int x_source, y_source;
     stbi_uc* p_target;
@@ -127,9 +118,8 @@ void IRAM_ATTR CRotateImage::rotateImage(float _angle, int _centerx, int _center
 
     rgbImageLock();
 
-    for (int x = 0; x < width; ++x)
-        for (int y = 0; y < height; ++y)
-        {
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
             p_target = odata + (channels * (y * width + x));
 
             x_source = int(m[0][0] * x + m[0][1] * y);
@@ -138,28 +128,27 @@ void IRAM_ATTR CRotateImage::rotateImage(float _angle, int _centerx, int _center
             x_source += int(m[0][2]);
             y_source += int(m[1][2]);
 
-            if ((x_source >= 0) && (x_source < org_width) && (y_source >= 0) && (y_source < org_height))
-            {
+            if ((x_source >= 0) && (x_source < org_width) && (y_source >= 0) && (y_source < org_height)) {
                 p_source = rgb_image + (channels * (y_source * org_width + x_source));
                 for (int _channels = 0; _channels < channels; ++_channels)
                     p_target[_channels] = p_source[_channels];
             }
-            else
-            {
+            else {
                 for (int _channels = 0; _channels < channels; ++_channels)
                     p_target[_channels] = 255;
             }
         }
+    }
 
     //    memcpy(rgb_image, odata, memsize);
     memCopy(odata, rgb_image, memsize);
 
-    if (!imageTMP)
-    {
+    if (!imageTMP) {
         free_psram_heap(std::string(TAG) + "->odata", odata);
     }
-    if (imageTMP)
+    if (imageTMP) {
         imageTMP->rgbImageRelease();
+    }
 
     rgbImageRelease();
 }
@@ -175,22 +164,19 @@ void IRAM_ATTR CRotateImage::rotateImageAntiAliasing(float _angle, int _centerx,
     float y_center = _centery;
     _angle = _angle / 180 * M_PI;
 
-    if (doflip)
-    {
+    if (doflip) {
         org_width = width;
         org_height = height;
         height = org_width;
         width = org_height;
         x_center =  x_center - (org_width/2) + (org_height/2);
         y_center =  y_center + (org_width/2) - (org_height/2);
-        if (ImageOrg)
-        {
+        if (ImageOrg) {
             ImageOrg->height = height;
             ImageOrg->width = width;
         }
     }
-    else
-    {
+    else {
         org_width = width;
         org_height = height;
     }
@@ -203,20 +189,17 @@ void IRAM_ATTR CRotateImage::rotateImageAntiAliasing(float _angle, int _centerx,
     m[1][1] = m[0][0];
     m[1][2] = m[0][1] * x_center + (1 - m[0][0]) * y_center;
 
-    if (doflip)
-    {
+    if (doflip) {
         m[0][2] = m[0][2] + (org_width/2) - (org_height/2);
         m[1][2] = m[1][2] - (org_width/2) + (org_height/2);
     }
 
     int memsize = width * height * channels;
     uint8_t* odata;
-    if (imageTMP)
-    {
+    if (imageTMP) {
         odata = imageTMP->rgbImageLock();
     }
-    else
-    {
+    else {
         odata = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->odata", memsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     }
 
@@ -229,9 +212,8 @@ void IRAM_ATTR CRotateImage::rotateImageAntiAliasing(float _angle, int _centerx,
 
     rgbImageLock();
 
-    for (int x = 0; x < width; ++x)
-        for (int y = 0; y < height; ++y)
-        {
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
             p_target = odata + (channels * (y * width + x));
 
             x_source = (m[0][0] * x + m[0][1] * y);
@@ -250,37 +232,35 @@ void IRAM_ATTR CRotateImage::rotateImageAntiAliasing(float _angle, int _centerx,
             quad_or = (x_source_2 - x_source) * (1-(y_source_2 - y_source));
             quad_ol = (1- (x_source_2 - x_source)) * (1-(y_source_2 - y_source));
 
-
-            if ((x_source_1 >= 0) && (x_source_2 < org_width) && (y_source_1 >= 0) && (y_source_2 < org_height))
-            {
+            if ((x_source_1 >= 0) && (x_source_2 < org_width) && (y_source_1 >= 0) && (y_source_2 < org_height)) {
                 p_source_ul = rgb_image + (channels * (y_source_1 * org_width + x_source_1));
                 p_source_ur = rgb_image + (channels * (y_source_1 * org_width + x_source_2));
                 p_source_or = rgb_image + (channels * (y_source_2 * org_width + x_source_1));
                 p_source_ol = rgb_image + (channels * (y_source_2 * org_width + x_source_2));
-                for (int _channels = 0; _channels < channels; ++_channels)
-                {
+                for (int _channels = 0; _channels < channels; ++_channels) {
                     p_target[_channels] = (int)((float)p_source_ul[_channels] * quad_ul
                                                 + (float)p_source_ur[_channels] * quad_ur
                                                 + (float)p_source_or[_channels] * quad_or
                                                 + (float)p_source_ol[_channels] * quad_ol);
                 }
             }
-            else
-            {
-                for (int _channels = 0; _channels < channels; ++_channels)
+            else {
+                for (int _channels = 0; _channels < channels; ++_channels) {
                     p_target[_channels] = 255;
+                }
             }
         }
+    }
 
-    //    memcpy(rgb_image, odata, memsize);
+    // memcpy(rgb_image, odata, memsize);
     memCopy(odata, rgb_image, memsize);
 
-    if (!imageTMP)
-    {
+    if (!imageTMP) {
         free_psram_heap(std::string(TAG) + "->odata", odata);
     }
-    if (imageTMP)
+    if (imageTMP) {
         imageTMP->rgbImageRelease();
+    }
 
     rgbImageRelease();
 }
@@ -288,30 +268,28 @@ void IRAM_ATTR CRotateImage::rotateImageAntiAliasing(float _angle, int _centerx,
 
 void IRAM_ATTR CRotateImage::rotateImage(float _angle)
 {
-//    ESP_LOGD(TAG, "width %d, height %d", width, height);
+    // ESP_LOGD(TAG, "width %d, height %d", width, height);
     rotateImage(_angle, width / 2, height / 2);
 }
 
+
 void CRotateImage::rotateImageAntiAliasing(float _angle)
 {
-//    ESP_LOGD(TAG, "width %d, height %d", width, height);
+    // ESP_LOGD(TAG, "width %d, height %d", width, height);
     rotateImageAntiAliasing(_angle, width / 2, height / 2);
 }
+
 
 void CRotateImage::translateImage(int _dx, int _dy)
 {
     int memsize = width * height * channels;
     uint8_t* odata;
-    if (imageTMP)
-    {
+    if (imageTMP) {
         odata = imageTMP->rgbImageLock();
     }
-    else
-    {
+    else {
         odata = (unsigned char*)malloc_psram_heap(std::string(TAG) + "->odata", memsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     }
-
-
 
     int x_source, y_source;
     stbi_uc* p_target;
@@ -319,39 +297,33 @@ void CRotateImage::translateImage(int _dx, int _dy)
 
     rgbImageLock();
 
-    for (int x = 0; x < width; ++x)
-        for (int y = 0; y < height; ++y)
-        {
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
             p_target = odata + (channels * (y * width + x));
 
             x_source = x - _dx;
             y_source = y - _dy;
 
-            if ((x_source >= 0) && (x_source < width) && (y_source >= 0) && (y_source < height))
-            {
+            if ((x_source >= 0) && (x_source < width) && (y_source >= 0) && (y_source < height)) {
                 p_source = rgb_image + (channels * (y_source * width + x_source));
                 for (int _channels = 0; _channels < channels; ++_channels)
                     p_target[_channels] = p_source[_channels];
             }
-            else
-            {
+            else {
                 for (int _channels = 0; _channels < channels; ++_channels)
                     p_target[_channels] = 255;
             }
         }
+    }
 
-    //    memcpy(rgb_image, odata, memsize);
+    // memcpy(rgb_image, odata, memsize);
     memCopy(odata, rgb_image, memsize);
-    if (!imageTMP)
-    {
+    if (!imageTMP) {
         free_psram_heap(std::string(TAG) + "->odata", odata);
     }
 
-    if (imageTMP)
-    {
+    if (imageTMP) {
         imageTMP->rgbImageRelease();
     }
     rgbImageRelease();
-
 }
-

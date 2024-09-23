@@ -253,9 +253,6 @@ void migrateConfigurationIni(void)
                     if ((toUpper(splitted[0]) == "FLIPIMAGESIZE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.flipImageSize = (toUpper(splitted[1]) == "TRUE");
                     }
-                    /*if ((toUpper(splitted[0]) == "ANTIALIASING") && (splitted.size() > 1)) { //@TODO
-                        useAntialiasing = (toUpper(splitted[1]) == "TRUE");
-                    }*/
                     if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.debug.saveDebugInfo = (toUpper(splitted[1]) == "TRUE");
                     }

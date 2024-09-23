@@ -719,7 +719,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     // Post-Processing
     // ***************************
-    // Disable Post-processing not implemented yet // @TODO
+    // Disable post-processing not yet implemented // @TODO FEATURE
     /*objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "postprocessing"), "enabled");
     if (cJSON_IsBool(objEl))
         cfgDataTemp.sectionPostProcessing.enabled = objEl->valueint;*/
@@ -743,7 +743,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
             if (sequenceEl == NULL)
                 continue;
 
-            // Disable Post-processing not implemented yet // @TODO
+            // Disable post-processing per sequence not yet implemented // @TODO FEATURE
             /*sequenceArrEl = cJSON_GetObjectItem(objArrEl, "enabled");
             if (cJSON_IsBool(sequenceArrEl))
                 sequenceEl->enabled = sequenceArrEl->valueint;*/
@@ -1190,7 +1190,8 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
 
     // Network
-    /*objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "opmode"); //@TODO. Not yet implemented
+    //@TODO FEATURE. WLAN operation modes not yet implemented
+    /*objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "opmode");
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionNetwork.wlan.enabled = objEl->valueint;*/
 
@@ -1569,7 +1570,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     cJSON *postprocessing, *postprocessingSequence, *postprocessingSequenceEl, *postprocessingDebug;
     if (!cJSON_AddItemToObject(cJsonObject, "postprocessing", postprocessing = cJSON_CreateObject()))
         retVal = ESP_FAIL;
-    // Disable Post-processing not implemented yet // @TODO
+    // Disable post-processing not yet implemented // @TODO FEATURE
     /*if (cJSON_AddBoolToObject(postprocessing, "enabled", cfgDataTemp.sectionPostProcessing.enabled) == NULL)
         retVal = ESP_FAIL;*/
     if (!cJSON_AddItemToObject(postprocessing, "sequence", postprocessingSequence = cJSON_CreateArray()))
@@ -1582,7 +1583,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         if (cJSON_AddStringToObject(postprocessingSequenceEl, "sequencename",
                                     cfgDataTemp.sectionPostProcessing.sequence[i].sequenceName.c_str()) == NULL)
             retVal = ESP_FAIL;
-        // Disable Post-processing not implemented yet // @TODO
+        // Disable post-processing per sequence not yet implemented // @TODO FEATURE
         /*if (cJSON_AddBoolToObject(postprocessingSequenceEl, "enabled",
                                     cfgDataTemp.sectionPostProcessing.sequence[i].enabled) == NULL)
             retVal = ESP_FAIL;*/
@@ -1823,7 +1824,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(network, "wlan", networkWlan = cJSON_CreateObject()))
         retVal = ESP_FAIL;
-    /*if (cJSON_AddNumberToObject(networkWlan, "opmode", cfgDataTemp.sectionNetwork.wlan.opmode) == NULL) //@TODO. Not yet implemented
+    /*if (cJSON_AddNumberToObject(networkWlan, "opmode", cfgDataTemp.sectionNetwork.wlan.opmode) == NULL) //@TODO FEATURE. Not yet implemented
         retVal = ESP_FAIL;*/
     if (cJSON_AddStringToObject(networkWlan, "ssid", cfgDataTemp.sectionNetwork.wlan.ssid.c_str()) == NULL)
         retVal = ESP_FAIL;

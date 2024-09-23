@@ -798,68 +798,12 @@ int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePrevi
 }
 
 
-std::string ClassFlowCNNGeneral::getHTMLSingleStep(std::string host)
-{
-    std::string result, zw;
-    std::vector<HTMLInfo *> htmlinfo;
-
-    result = "<p>Found ROIs: </p> <p><img src=\"" + host + "/img_tmp/alg_roi.jpg\"></p>\n";
-    result = result + "Analog Pointers: <p> ";
-
-    htmlinfo = GetHTMLInfo();
-    for (int i = 0; i < htmlinfo.size(); ++i) {
-        zw = to_stringWithPrecision(htmlinfo[i]->val, 1);
-        result = result + "<img src=\"" + host + "/img_tmp/" +  htmlinfo[i]->filename + "\"> " + zw;
-
-        delete htmlinfo[i];
-    }
-
-    return result;
-}
-
-
 bool ClassFlowCNNGeneral::cnnTypeAllowExtendedResolution()
 {
     if (cnnType == CNNTYPE_DIGIT_CLASS11)
         return false;
 
     return true;
-}
-
-
-std::vector<HTMLInfo *> ClassFlowCNNGeneral::GetHTMLInfo() //@TODO still needed
-{
-    std::vector<HTMLInfo *> result;
-
-    for (int i = 0; const auto &sequence : sequenceDataInternal) {
-        for (const auto &roi : sequence->roiData) {
-            if (saveAllFiles) {
-                if (roi->imageRoiResized) {
-                    roi->imageRoiResized->saveToFile(formatFileName("/sdcard/img_tmp/" + roi->param->roiName + ".jpg"));
-                }
-            }
-
-            HTMLInfo *zw = new HTMLInfo;
-
-            zw->name = sequence->sequenceName;
-            zw->position = i;
-            zw->filename = roi->param->roiName + ".jpg";
-            zw->filename_org = roi->param->roiName + "_org.jpg";
-
-            if (cnnType == CNNTYPE_DIGIT_CLASS11)
-                zw->val = roi->CNNResult;
-            else
-                zw->val = roi->CNNResult / 10.0;
-
-            zw->image = roi->imageRoiResized;
-            zw->image_org = roi->imageRoi;
-
-            result.push_back(zw);
-            i++;
-        }
-    }
-
-    return result;
 }
 
 

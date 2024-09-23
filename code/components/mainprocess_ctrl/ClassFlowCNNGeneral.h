@@ -9,7 +9,7 @@
 
 
 // Helper struct to multiuse class without adapting variable names
-// @TODO: Not ideal, could this be done more effcient, that helper not needed!?
+// @TODO: Not ideal, could this be done more effcient to avoid this helper?
 struct SequenceDataInternal {
     int sequenceId;                 // Sequence ID
     std::string sequenceName;       // Sequence Name
@@ -51,8 +51,6 @@ class ClassFlowCNNGeneral : public ClassLogImage
     void doPostProcessEventHandling();
 
     std::string getReadout(SequenceData *sequence, int _valuePreviousNumber = -1, int _resultPreviousNumber = -1);
-    std::string getHTMLSingleStep(std::string host);
-    std::vector<HTMLInfo *> GetHTMLInfo();
 
     void drawROI(CImageBasis *image);
 

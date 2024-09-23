@@ -58,12 +58,11 @@ extern struct strcJSON cJSONObjectPSRAM;
 
 void *malloc_psram_heap(std::string name, size_t size, uint32_t caps);
 void *malloc_psram_heap_STBI(std::string name, size_t size, uint32_t caps);
-void *remalloc_psram_heap(std::string name, size_t size, void* p, uint32_t caps);
+void *remalloc_psram_heap(std::string name, void* p, size_t size, uint32_t caps);
 void *calloc_psram_heap(std::string name, size_t n, size_t size, uint32_t caps);
 
 void free_psram_heap(std::string name, void *ptr);
 
 void *malloc_psram_heap_cjson(size_t size);
-void free_psram_heap_cjson(void *ptr);
 
 #endif //PSRAM_H_

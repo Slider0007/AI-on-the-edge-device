@@ -18,22 +18,23 @@ enum CNNType {
  };
 
 
-struct AlignmentMarker { //@TODO. Rename members
-    CImageBasis *refImage = NULL;
-    std::string image_file;
-    std::string error_details = "";
-    int alignment_algo = ALIGNALGO_DEFAULT; // 0 = "Default" (nur R-Kanal), 1 = "HighAccuracy" (RGB-Kanal), 2 = "Fast" (1.x RGB, dann isSimilar), 3= "only initial rotation", 4 = "off"
-    int target_x = 0;
-    int target_y = 0;
+struct AlignmentMarker {
+    CImageBasis *markerImage = NULL;
+    std::string markerImageFilename;
+    std::string errorMsg = "";
+    int alignmentAlgo = ALIGNALGO_DEFAULT;  // 0 = "Default" (nur R-Kanal), 1 = "HighAccuracy" (RGB-Kanal),
+                                            //2 = "Fast" (1.x RGB, dann isSimilar), 3= "only initial rotation", 4 = "off"
+    int targetX = 0;
+    int targetY = 0;
     int width = 0;
     int height = 0;
-    int found_x = 0;
-    int found_y = 0;
-    int search_x = 0;
-    int search_y = 0;
-    int fastalg_x = 0;
-    int fastalg_y = 0;
-    int fastalg_SADThreshold = 0;
+    int foundX = 0;
+    int foundY = 0;
+    int searchX = 0;
+    int searchY = 0;
+    int algoFastX = 0;
+    int algoFastY = 0;
+    int algoFastSADThreshold = 0;
 };
 
 
@@ -82,18 +83,4 @@ struct SequenceData {
     const struct InfluxDBPerSequence *paramInfluxDBv2 = NULL;
 };
 
-
-struct HTMLInfo //@TODO still needed?
-{
-	float val;
-	CImageBasis *image = NULL;
-	CImageBasis *image_org = NULL;
-	std::string filename;
-	std::string filename_org;
-	std::string name;
-	int position;
-};
-
-
 #endif
-

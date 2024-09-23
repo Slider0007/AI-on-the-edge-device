@@ -102,8 +102,6 @@ class ClassFlowControl : public ClassFlow
     esp_err_t getJPGStream(std::string _fn, httpd_req_t *req);
     esp_err_t sendRawJPG(httpd_req_t *req);
 
-    // std::string doSingleStep(std::string _stepname, std::string _host); //@TODO
-
     std::string name() { return "ClassFlowControl"; };
 
     // Only used for unity testing

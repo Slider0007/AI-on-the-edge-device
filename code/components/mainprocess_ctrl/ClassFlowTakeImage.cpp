@@ -120,13 +120,6 @@ void ClassFlowTakeImage::doPostProcessEventHandling()
 }
 
 
-std::string ClassFlowTakeImage::getHTMLSingleStep(std::string host)
-{
-    std::string result = "Raw Image: <br>\n<img src=\"" + host + "/img_tmp/raw.jpg\">\n";
-    return result;
-}
-
-
 bool ClassFlowTakeImage::takePictureWithFlash()
 {
     if (rawImage == NULL) {

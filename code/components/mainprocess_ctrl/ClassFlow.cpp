@@ -39,13 +39,6 @@ void ClassFlow::doPostProcessEventHandling()
 }
 
 
-std::string ClassFlow::getHTMLSingleStep(std::string host)
-{
-	// Handled in derived classes
-	return "";
-}
-
-
 void ClassFlow::presetFlowStateHandler(bool _init, std::string _time)
 {
     FlowState.ClassName = name();
