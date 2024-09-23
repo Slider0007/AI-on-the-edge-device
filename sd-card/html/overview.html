@@ -403,10 +403,14 @@
 		document.getElementById("img").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // Preset with loading indicator
 		document.getElementById("manual_refresh_img_loading").src = domainname + '/img_loading.gif?v=$COMMIT_HASH'; // Preset with loading indicator
 
-        //if (noConfigInStorage())
+        // @TODO. Check if config reloading can be avoided, because still up to date.
+        // Up to now reload config before every usage
+        /*if (noConfigInStorage())
 			loadConfig().then(() => initAutoRefreshContent());
-		//else
-		//	initAutoRefreshContent();
+		else
+            initAutoRefreshContent();
+        */
+        loadConfig().then(() => initAutoRefreshContent());
 	}
 
 

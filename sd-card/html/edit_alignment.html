@@ -720,10 +720,14 @@
         $("#img_loading").attr("src", getDomainname() + '/img_loading.gif?v=$COMMIT_HASH');
         loadReferenceImage();
 
-        //if (noConfigInStorage())
+        // @TODO. Check if config reloading can be avoided, because still up to date.
+        // Up to now reload config before every usage
+        /*if (noConfigInStorage())
 			loadConfig().then(() => loadConfigData());
-		//else
-        //    loadConfigData();
+		else
+            loadConfigData();
+        */
+        loadConfig().then(() => loadConfigData());
 
         document.getElementById("savemarker").disabled = true;
         document.getElementById("updatemarker").disabled = false;

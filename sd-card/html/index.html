@@ -323,10 +323,14 @@
         LoadFwVersion();
         LoadWebUiVersion();
 
-        //if (noConfigInStorage())
+        // @TODO. Check if config reloading can be avoided, because still up to date.
+        // Up to now reload config before every usage
+        /*if (noConfigInStorage())
             loadConfig().then(() => HA_send_discovery_visibililty());
-        //else
-        //    HA_send_discovery_visibililty();
+        else
+            HA_send_discovery_visibililty();
+        */
+        loadConfig().then(() => HA_send_discovery_visibililty());
 
         if (getCookie("page") == "" || getCookie("page") == "sys_reboot_page.html?v=$COMMIT_HASH") {
             document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax";
