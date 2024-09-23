@@ -1048,8 +1048,8 @@
 			<td>
 				<form id="analog_debug_roiimageslocation_form">
 					<input required type="text"
-						name="analog.debug.roiimageslocation" id="analog_debug_roiimageslocation_value"
-						placeholder="/log/analog" onchange="gatherChangedParameter(this.form)">
+						name="analog.debug.roiimageslocation" id="analog_debug_roiimageslocation_value" placeholder="/log/analog"
+						onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_analog_debug_roiimageslocation</td>
@@ -1086,7 +1086,7 @@
 		<tr style="margin-top:12px">
 			<td style="padding-top:25px"><b>Parameter per number sequence</b></td>
 			<td style="padding-top:25px" colspan="2">
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_sequencename_form">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_sequencename_form">
 					<select class="classvisibility_init" style="font-weight:bold"
 							name="postprocessing.sequence.0.sequencename" id="postprocessing_sequence_0_sequencename_value"
 							onchange="sequenceSelectAfterChange('postprocessing_per_sequence', this.id);
@@ -1102,11 +1102,11 @@
 				<span>Decimal Shift</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_decimalshift_form">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_decimalshift_form">
 					<input required type="number" min="-9" max="9" value="0"
 						name="postprocessing.sequence.0.decimalshift" id="postprocessing_sequence_0_decimalshift_value"
 						onchange="(!validity.rangeUnderflow||(value=-9)) && (!validity.rangeOverflow||(value=9));
-							gatherChangedParameter(this.form, true)">
+							gatherChangedParameter(this.form, true);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_decimalshift</td>
@@ -1117,11 +1117,12 @@
 				<span>Analog/Digit Sync Value</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_analogdigitsyncvalue_form">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_analogdigitsyncvalue_form">
 					<input required type="number" min="6.0" max="9.9" step="0.1" value="9.2"
 						name="postprocessing.sequence.0.analogdigitsyncvalue" id="postprocessing_sequence_0_analogdigitsyncvalue_value"
 						onchange="(!validity.rangeUnderflow||(value=6.0)) && (!validity.rangeOverflow||(value=9.9)) &&
-							(!validity.stepMismatch||(value=this.value));gatherChangedParameter(this.form)">
+							(!validity.stepMismatch||(value=this.value));gatherChangedParameter(this.form);
+							gatherChangedParameter(postprocessing_sequence_sequencename_form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_analogdigitsyncvalue</td>
@@ -1132,9 +1133,9 @@
 				<span>Extended Resolution</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_extendedresolution_form">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_extendedresolution_form">
 					<select name="postprocessing.sequence.0.extendedresolution" id="postprocessing_sequence_0_extendedresolution_value"
-							onchange="gatherChangedParameter(this.form)">
+							onchange="gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
 						<option value="false">Disabled</option>
 						<option value="true" selected>Enabled</option>
 					</select>
@@ -1148,9 +1149,9 @@
 				<span>Ignore Leading NaNs</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_ignoreleadingnan_form">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_ignoreleadingnan_form">
 					<select name="postprocessing.sequence.0.ignoreleadingnan" id="postprocessing_sequence_0_ignoreleadingnan_value"
-							onchange="gatherChangedParameter(this.form)">
+							onchange="gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
 						<option value="false">Disabled</option>
 						<option value="true" selected>Enabled</option>
 					</select>
@@ -1164,9 +1165,9 @@
 				<span>Check Digit Increase Consistency</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_checkdigitincreaseconsistency_form">
-					<select name="postprocessing.checkdigitincreaseconsistency" id="postprocessing_checkdigitincreaseconsistency_value"
-							onchange="gatherChangedParameter(this.form)">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_checkdigitincreaseconsistency_form">
+					<select name="postprocessing.sequence.0.checkdigitincreaseconsistency" id="postprocessing_sequence_0_checkdigitincreaseconsistency_value"
+							onchange="gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
 						<option value="false">Disabled</option>
 						<option value="true" selected>Enabled</option>
 					</select>
@@ -1177,30 +1178,14 @@
 
 		<tr>
 			<td class="indent1">
-				<span>Allow Negative Rate</span>
-			</td>
-			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_allownegativerate_form">
-					<select name="postprocessing.sequence.0.allownegativerate" id="postprocessing_sequence_0_allownegativerate_value"
-							onchange="gatherChangedParameter(this.form)">
-						<option value="false" selected>Disabled</option>
-						<option value="true">Enabled</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_allownegativerate</td>
-		</tr>
-
-		<tr>
-			<td class="indent1">
 				<span>Max Rate Check Type</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_maxratechecktype_form">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_maxratechecktype_form">
 					<select class="classvisibility_init"
 							name="postprocessing.sequence.0.maxratechecktype" id="postprocessing_sequence_0_maxratechecktype_value"
 							onchange="setClassVisibility('classvisibility_postprocessing_maxratechecktype', this.value > '0');
-								gatherChangedParameter(this.form, true)">
+								gatherChangedParameter(this.form, true);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
 						<option value="0" >No Rate Check</option>
 						<option value="1" selected>Rate Per Minute</option>
 						<option value="2">Rate Per Interval</option>
@@ -1215,14 +1200,30 @@
 				<span>Max Rate</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_maxrate_form">
-					<input required type="number" min="0.001" step="0.001" value="0.15"
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_maxrate_form">
+					<input required type="number" min="0.001" step="0.001" value="0.150"
 						name="postprocessing.sequence.0.maxrate" id="postprocessing_sequence_0_maxrate_value"
 						onchange="(!validity.rangeUnderflow||(value=0.001)) && (!validity.stepMismatch||(value=this.value));
-							gatherChangedParameter(this.form)">
+							gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_maxrate</td>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<span>Allow Negative Rate</span>
+			</td>
+			<td>
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_allownegativerate_form">
+					<select name="postprocessing.sequence.0.allownegativerate" id="postprocessing_sequence_0_allownegativerate_value"
+							onchange="gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+						<option value="false" selected>Disabled</option>
+						<option value="true">Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_allownegativerate</td>
 		</tr>
 
 		<tr class="expert">
@@ -1230,10 +1231,11 @@
 				<span>Use Fallback Value</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_usefallbackvalue_form">
-					<select name="postprocessing.sequence.0.usefallbackvalue" id="postprocessing_sequence_0_usefallbackvalue_value"
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_usefallbackvalue_form">
+					<select class="classvisibility_init"
+							name="postprocessing.sequence.0.usefallbackvalue" id="postprocessing_sequence_0_usefallbackvalue_value"
 							onchange="setClassVisibility('classvisibility_postprocessing_usefallbackvalue', this.value);
-										gatherChangedParameter(this.form)">
+								gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
 						<option value="false">Disabled</option>
 						<option value="true" selected>Enabled</option>
 					</select>
@@ -1247,10 +1249,11 @@
 				<span>Max. Age of Fallback Value</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_fallbackvalueagestartup_form">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_fallbackvalueagestartup_form">
 					<input required type="number" min="0" value="720"
 						name="postprocessing.sequence.0.fallbackvalueagestartup" id="postprocessing_sequence_0_fallbackvalueagestartup_value"
-						onchange="(!validity.rangeUnderflow||(value=0));gatherChangedParameter(this.form, true)">Minutes
+						onchange="(!validity.rangeUnderflow||(value=0));gatherChangedParameter(this.form, true);
+							gatherChangedParameter(postprocessing_sequence_sequencename_form)">Minutes
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_fallbackvalueagestartup</td>
@@ -1388,7 +1391,7 @@
 			</td>
 			<td>
 				<form id="mqtt_password_form">
-					<input type="password" name="mqtt.password" id="mqtt_password_value"
+					<input type="password" name="mqtt.password" id="mqtt_password_value" autocomplete="on"
 						onchange="gatherChangedParameter(this.form)">
 						<span toggle="#mqtt_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
 				</form>
@@ -1600,8 +1603,8 @@
 			</td>
 			<td>
 				<form id="influxdbv1_database_form">
-					<input required type="text" name="influxdbv1.database" id="influxdbv1_database_value"
-						placeholder="watermeter" onchange="gatherChangedParameter(this.form)">
+					<input required type="text" name="influxdbv1.database" id="influxdbv1_database_value" placeholder="watermeter"
+						onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv1_database</td>
@@ -1649,7 +1652,7 @@
 			</td>
 			<td>
 				<form id="influxdbv1_password_form">
-					<input type="password" name="influxdbv1.password" id="influxdbv1_password_value"
+					<input type="password" name="influxdbv1.password" id="influxdbv1_password_value" autocomplete="on"
 						onchange="gatherChangedParameter(this.form)">
 						<span toggle="#influxdbv1_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
 				</form>
@@ -1699,7 +1702,7 @@
 		<tr class="classvisibility_influxdbv1_enabled" style="margin-top:12px">
 			<td style="padding-top:25px"><b>Parameter per number sequence</b></td>
 			<td style="padding-top:25px" colspan="2">
-				<form class="influxdbv1_per_sequence" id="influxdbv1_sequence_0_sequencename_form">
+				<form class="influxdbv1_per_sequence" id="influxdbv1_sequence_sequencename_form">
 					<select class="classvisibility_init" style="font-weight:bold"
 							name="influxdbv1.sequence.0.sequencename" id="influxdbv1_sequence_0_sequencename_value"
 							onchange="sequenceSelectAfterChange('influxdbv1_per_sequence', this.id);gatherChangedParameter(this.form)">
@@ -1713,10 +1716,10 @@
 				<span>Measurement Name</span>
 			</td>
 			<td>
-				<form class="influxdbv1_per_sequence" id="influxdbv1_sequence_0_measurementname_form">
+				<form class="influxdbv1_per_sequence" id="influxdbv1_sequence_measurementname_form">
 					<input required type="text"
-						name="influxdbv1.sequence.0.measurementname" id="influxdbv1_sequence_0_measurementname_value"
-						placeholder="watermeter" onchange="gatherChangedParameter(this.form)">
+						name="influxdbv1.sequence.0.measurementname" id="influxdbv1_sequence_0_measurementname_value" placeholder="watermeter"
+						onchange="gatherChangedParameter(this.form);gatherChangedParameter(influxdbv1_sequence_sequencename_form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv1_sequence_measurementname</td>
@@ -1727,10 +1730,10 @@
 				<span >Field Name</span>
 			</td>
 			<td>
-				<form class="influxdbv1_per_sequence" id="influxdbv1_sequence_0_fieldname_form">
+				<form class="influxdbv1_per_sequence" id="influxdbv1_sequence_fieldname_form">
 					<input required type="text"
-						name="influxdbv1.sequence.0.fieldname" id="influxdbv1_sequence_0_fieldname_value"
-						placeholder="value" onchange="gatherChangedParameter(this.form)">
+						name="influxdbv1.sequence.0.fieldname" id="influxdbv1_sequence_0_fieldname_value" placeholder="value"
+						onchange="gatherChangedParameter(this.form);gatherChangedParameter(influxdbv1_sequence_sequencename_form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv1_sequence_fieldname</td>
@@ -1783,8 +1786,8 @@
 			</td>
 			<td>
 				<form id="influxdbv2_database_form">
-					<input required type="text" name="influxdbv2.bucket" id="influxdbv2_bucket_value"
-						placeholder="watermeter" onchange="gatherChangedParameter(this.form)">
+					<input required type="text" name="influxdbv2.bucket" id="influxdbv2_bucket_value" placeholder="watermeter"
+						onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_bucket</td>
@@ -1827,7 +1830,7 @@
 			</td>
 			<td>
 				<form id="influxdbv2_token_form">
-					<input type="password" name="influxdbv2.token" id="influxdbv2_token_value"
+					<input type="password" name="influxdbv2.token" id="influxdbv2_token_value" autocomplete="on"
 						onchange="gatherChangedParameter(this.form)">
 					<span toggle="#influxdbv2_token_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
 				</form>
@@ -1877,7 +1880,7 @@
 		<tr class="classvisibility_influxdbv2_enabled" style="margin-top:12px">
 			<td style="padding-top:25px"><b>Parameter per number sequence</b></td>
 			<td style="padding-top:25px" colspan="2">
-				<form class="influxdbv2_per_sequence" id="influxdbv2_sequence_0_sequencename_form">
+				<form class="influxdbv2_per_sequence" id="influxdbv2_sequence_sequencename_form">
 					<select class="classvisibility_init" style="font-weight:bold"
 							name="influxdbv2.sequence.0.sequencename" id="influxdbv2_sequence_0_sequencename_value"
 							onchange="sequenceSelectAfterChange('influxdbv2_per_sequence', this.id);gatherChangedParameter(this.form)">
@@ -1891,10 +1894,10 @@
 				<span>Measurement Name</span>
 			</td>
 			<td>
-				<form class="influxdbv2_per_sequence" id="influxdbv2_sequence_0_measurementname_form">
+				<form class="influxdbv2_per_sequence" id="influxdbv2_sequence_measurementname_form">
 					<input required type="text"
-						name="influxdbv2.sequence.0.measurementname" id="influxdbv2_sequence_0_measurementname_value"
-						placeholder="watermeter" onchange="gatherChangedParameter(this.form)">
+						name="influxdbv2.sequence.0.measurementname" id="influxdbv2_sequence_0_measurementname_value" placeholder="watermeter"
+						onchange="gatherChangedParameter(this.form);gatherChangedParameter(influxdbv2_sequence_sequencename_form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_sequence_measurementname</td>
@@ -1905,10 +1908,10 @@
 				<span >Field Name</span>
 			</td>
 			<td>
-				<form class="influxdbv2_per_sequence" id="influxdbv2_sequence_0_fieldname_form">
+				<form class="influxdbv2_per_sequence" id="influxdbv2_sequence_fieldname_form">
 					<input required type="text"
-						name="influxdbv2.sequence.0.fieldname" id="influxdbv2_sequence_0_fieldname_value"
-						placeholder="value" onchange="gatherChangedParameter(this.form)">
+						name="influxdbv2.sequence.0.fieldname" id="influxdbv2_sequence_0_fieldname_value" placeholder="value"
+						onchange="gatherChangedParameter(this.form);gatherChangedParameter(influxdbv2_sequence_sequencename_form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_sequence_fieldname</td>
@@ -1948,7 +1951,7 @@
 				<span style="font-weight:bold">Pin Selection</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_gpionumber_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_gpionumber_form">
 					<select style="font-weight:bold" class="classvisibility_init"
 							name="gpio.gpiopin.0.gpionumber" id="gpio_gpiopin_0_gpionumber_value"
 							onchange="gpioPinSelectAfterChange(); gatherChangedParameter(this.form, true)">
@@ -1963,7 +1966,7 @@
 				<span>Pin Status</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_pinenabled_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_pinenabled_form">
 					<select name="gpio.gpiopin.0.pinenabled" id="gpio_gpiopin_0_pinenabled_value"
 							onchange="setClassVisibility('classvisibility_gpio_gpiopin_pinenabled', this.value);
 								this.value == 'true' ? $('[id$=\'pinmode_value\']').trigger('onchange') : null;
@@ -1982,7 +1985,7 @@
 				<span id="gpio_gpiopin_pinmode_restrictedusagetext" style="display:none; color:red;"></span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_pinmode_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_pinmode_form">
 					<select name="gpio.gpiopin.0.pinmode" id="gpio_gpiopin_0_pinmode_value"
 							onchange='gpioPinModeChanged(); gatherChangedParameter(this.form)'>
 						<option value="flashlight-default">flashlight-default</option>
@@ -2006,7 +2009,7 @@
 				<span>Pin Capture Mode</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_capturemode_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_capturemode_form">
 					<select name="gpio.gpiopin.0.capturemode" id="gpio_gpiopin_0_capturemode_value"
 							onchange='gpioPinModeChanged(); gatherChangedParameter(this.form)'>
 						<option value="cyclic-polling" selected>cyclic-polling</option>
@@ -2024,7 +2027,7 @@
 				<span>Input Debounce Time</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_inputdebouncetime_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_inputdebouncetime_form">
 					<input required type="number" min="0" max="5000" value="500"
 						name="gpio.gpiopin.0.inputdebouncetime" id="gpio_gpiopin_0_inputdebouncetime_value"
 						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5000));
@@ -2039,7 +2042,7 @@
 				<span>Pin PWM Frequency</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_pwmfrequency_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_pwmfrequency_form">
 					<input style="min-width:90px" required type="number" min="5" max="1000000" value="5000"
 						name="gpio.gpiopin.0.pwmfrequency" id="gpio_gpiopin_0_pwmfrequency_value"
 						onchange="(!validity.rangeUnderflow||(value=5)) && (!validity.rangeOverflow||(value=1000000));
@@ -2054,7 +2057,7 @@
 				<span>Pin Expose To REST</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_exposetorest_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_exposetorest_form">
 					<select name="gpio.gpiopin.0.exposetorest" id="gpio_gpiopin_0_exposetorest_value"
 							onchange='gatherChangedParameter(this.form)'>
 						<option value="false">Disabled</option>
@@ -2070,7 +2073,7 @@
 				<span>Pin Expose To MQTT</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_exposetomqtt_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_exposetomqtt_form">
 					<select name="gpio.gpiopin.0.exposetomqtt" id="gpio_gpiopin_0_exposetomqtt_value"
 							onchange='gatherChangedParameter(this.form)'>
 						<option value="false">Disabled</option>
@@ -2086,7 +2089,7 @@
 				<span>Pin Name</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_pinname_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_pinname_form">
 					<input type="text" name="gpio.gpiopin.0.pinname" id="gpio_gpiopin_0_pinname_value" placeholder="gpioX"
 						onchange='gatherChangedParameter(this.form)'>
 				</form>
@@ -2099,7 +2102,7 @@
 				<span>LED Type</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_smartled_type_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_smartled_type_form">
 					<select name="gpio.gpiopin.0.smartled.type" id="gpio_gpiopin_0_smartled_type_value"
 							onchange='gatherChangedParameter(this.form, true)'>
 						<option value="0" selected>WS2812</option>
@@ -2119,7 +2122,7 @@
 				<span>LED Quantity</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_smartled_quantity_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_smartled_quantity_form">
 					<input required type="number" min="1" value="1"
 						name="gpio.gpiopin.0.smartled.quantity" id="gpio_gpiopin_0_smartled_quantity_value"
 						onchange="(!validity.rangeUnderflow||(value=1));gatherChangedParameter(this.form, true)">
@@ -2133,7 +2136,7 @@
 				<span>LED Color</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_smartled_color_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_smartled_color_form">
 					R <input required style="min-width:45px;width:45px;" type="number" min="0" max="255" value="255"
 							name="gpio.gpiopin.0.smartled.colorredchannel" id="gpio_gpiopin_0_smartled_colorredchannel_value"
 							onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255));
@@ -2158,7 +2161,7 @@
 				<span>LED Intensity Correction Factor</span>
 			</td>
 			<td>
-				<form class="form_gpio_config" id="gpio_gpiopin_0_intensitycorrectionfactor_form">
+				<form class="form_gpio_config" id="gpio_gpiopin_intensitycorrectionfactor_form">
 				<input required type="number" min="1" max="100" value="100"
 					name="gpio.gpiopin.0.intensitycorrectionfactor" id="gpio_gpiopin_0_intensitycorrectionfactor"
 					onchange="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=100));
@@ -2291,7 +2294,7 @@
 					id="wlan_reboot_note">Reboot required to apply changes!</span>
 			</td>
 		</tr>
-<!--- //@TODO. Not yet implemented
+<!--- //@TODO FEATURE. Not yet implemented
 		<tr class="expert">
 			<td class="indent1">
 				<span>Operation Mode</span>
@@ -2317,9 +2320,9 @@
 			</td>
 			<td>
 				<form id="network_wlan_ssid_form">
-					<input required type="text" name="network.wlan.ssid" id="network_wlan_ssid_value"
-						placeholder="SSID Name Access Point" onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
-						<!--<span toggle="#network_wlan_ssid_value" class="fa fa-fw fa-search field-icon"></span> //@TODO. Not yet implemented -->
+					<input required type="text" name="network.wlan.ssid" id="network_wlan_ssid_value" placeholder="SSID Name Access Point"
+						onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
+						<!--<span toggle="#network_wlan_ssid_value" class="fa fa-fw fa-search field-icon"></span> //@TODO FEATURE. Not yet implemented -->
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_ssid</td>
@@ -2331,7 +2334,7 @@
 			</td>
 			<td>
 				<form class="wrapper" id="network_wlan_password_form">
-					<input type="password" name="network.wlan.password" id="network_wlan_password_value"
+					<input type="password" name="network.wlan.password" id="network_wlan_password_value" autocomplete="on"
 						onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
 						<span toggle="#network_wlan_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
 				</form>
@@ -2345,14 +2348,14 @@
 			</td>
 			<td>
 				<form id="network_wlan_hostname_form">
-					<input required type="text" name="network.hostname" id="network_wlan_hostname_value"
-						placeholder="watermeter" onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
+					<input required type="text" name="network.hostname" id="network_wlan_hostname_value" placeholder="watermeter"
+						onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_hostname</td>
 		</tr>
 
-		<tr class="classvisibility_mqtt_enabled classvisibility_mqtt_homeassistant_discoveryenabled">
+		<tr>
 			<td class="indent1">
 				<span>Network Configuration</span>
 			</td>
@@ -2673,7 +2676,6 @@
 		}
 	});
 
-
 	function initGpioSection()
 	{
 		getGpioPins();
@@ -2906,7 +2908,7 @@
 	{
 		fillModelSelectionOptions(modelFileListObj);
 
-		jsonConfigModifiedDelta = {}; // Reset modified parameter container after subparameter visibilty is set
+		//jsonConfigModifiedDelta = {};
 		let jsonConfigKeyified = [];            // Config: array as key-value pairs
 		[jsonConfig, jsonConfigKeyified] = getConfigFromStorage(2); // Get config
 		parseCurrentParametrization(jsonConfigKeyified);
@@ -2915,6 +2917,7 @@
 		initGpioSection();
 
 		triggerClassElementOnChange("classvisibility_init");
+		jsonConfigModifiedDelta = {}; // Reset modified parameter container after subparameter visibilty is set.
 
 		$("#wlan_reboot_note").hide(); // Hide note
 		$("#divloading").hide(); // Hide loading indicator

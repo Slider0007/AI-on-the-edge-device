@@ -768,23 +768,23 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
             if (cJSON_IsBool(sequenceArrEl))
                 sequenceEl->checkDigitIncreaseConsistency = sequenceArrEl->valueint;
 
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "allownegativerate");
-            if (cJSON_IsBool(sequenceArrEl))
-                sequenceEl->allowNegativeRate = sequenceArrEl->valueint;
-
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "maxratechecktype");
             if (cJSON_IsNumber(sequenceArrEl))
                 sequenceEl->maxRateCheckType = std::clamp(sequenceArrEl->valueint, 0, 2);
 
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "maxRate");
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "maxrate");
             if (cJSON_IsString(sequenceArrEl))
-                sequenceEl->maxRate = std::max(std::stof(sequenceArrEl->valuestring), (float)0.01);
+                sequenceEl->maxRate = std::max(std::stof(sequenceArrEl->valuestring), (float)0.001);
+
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "allownegativerate");
+            if (cJSON_IsBool(sequenceArrEl))
+                sequenceEl->allowNegativeRate = sequenceArrEl->valueint;
 
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "usefallbackvalue");
             if (cJSON_IsBool(sequenceArrEl))
                 sequenceEl->useFallbackValue = sequenceArrEl->valueint;
 
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "fallbackValueAgeStartup");
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "fallbackvalueagestartup");
             if (cJSON_IsNumber(sequenceArrEl))
                 sequenceEl->fallbackValueAgeStartup = std::max(sequenceArrEl->valueint, 0);
         }
@@ -1086,7 +1086,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
               [](const GpioElement &x, const GpioElement &y) { return x.gpioNumber < y.gpioNumber; });
 
     // Gather gpio data
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "gpio"), "gpioPin");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "gpio"), "gpiopin");
     for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
         cJSON *objArrEl = cJSON_GetArrayItem(objEl, i);
         cJSON *arrEl;
@@ -1265,7 +1265,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsBool(objEl))
         cfgDataTemp.sectionNetwork.time.ntp.timeSyncEnabled = objEl->valueint;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"), "timeServer");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"), "timeserver");
     if (cJSON_IsString(objEl))
         cfgDataTemp.sectionNetwork.time.ntp.timeServer = objEl->valuestring;
 
@@ -1287,23 +1287,19 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     // WebUI
     // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "overviewpage"),
-                                "enabled");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "overviewpage"), "enabled");
     if (cJSON_IsBool(objEl))
         cfgDataTemp.sectionWebUi.AutoRefresh.overviewPage.enabled = objEl->valueint;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "overviewpage"),
-                                "refreshtime");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "overviewpage"), "refreshtime");
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionWebUi.AutoRefresh.overviewPage.refreshTime = std::max(objEl->valueint, 1);
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "datagraphpage"),
-                                "enabled");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "datagraphpage"), "enabled");
     if (cJSON_IsBool(objEl))
         cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.enabled = objEl->valueint;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "datagraphpage"),
-                                "refreshtime");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "datagraphpage"), "refreshtime");
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.refreshTime = std::max(objEl->valueint, 1);
 
@@ -1602,14 +1598,14 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         if (cJSON_AddBoolToObject(postprocessingSequenceEl, "checkdigitincreaseconsistency",
                                     cfgDataTemp.sectionPostProcessing.sequence[i].checkDigitIncreaseConsistency) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "allownegativerate",
-                                    cfgDataTemp.sectionPostProcessing.sequence[i].allowNegativeRate) == NULL)
-            retVal = ESP_FAIL;
         if (cJSON_AddNumberToObject(postprocessingSequenceEl, "maxratechecktype",
                                     cfgDataTemp.sectionPostProcessing.sequence[i].maxRateCheckType) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(postprocessingSequenceEl, "maxrate",
-                                    to_stringWithPrecision(cfgDataTemp.sectionPostProcessing.sequence[i].maxRate, 2).c_str()) == NULL)
+                                    to_stringWithPrecision(cfgDataTemp.sectionPostProcessing.sequence[i].maxRate, 3).c_str()) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "allownegativerate",
+                                    cfgDataTemp.sectionPostProcessing.sequence[i].allowNegativeRate) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddBoolToObject(postprocessingSequenceEl, "usefallbackvalue",
                                     cfgDataTemp.sectionPostProcessing.sequence[i].useFallbackValue) == NULL)

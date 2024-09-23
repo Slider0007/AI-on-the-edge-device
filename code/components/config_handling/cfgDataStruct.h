@@ -121,9 +121,9 @@ struct PostProcessingPerSequence {
     bool extendedResolution = true;
     bool ignoreLeadingNaN = false;
     bool checkDigitIncreaseConsistency = false;
-    bool allowNegativeRate = false;
     int maxRateCheckType = RATE_PER_MIN;
     float maxRate = 0.15;
+    bool allowNegativeRate = false;
     bool useFallbackValue = true;
     int fallbackValueAgeStartup = 720;
 };
