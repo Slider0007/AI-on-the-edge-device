@@ -571,8 +571,8 @@
 			<td>
 				<form id="takeimage_camera_gaincontrolmode_form">
 					<select class="classvisibility_init" name="takeimage.camera.gaincontrolmode" id="takeimage_camera_gaincontrolmode_value"
-							onchange='setClassVisibility("classvisibility_takeimage_gaincontrolmode_manual", this.value == 0);
-										gatherChangedParameter(this.form, true)'>
+							onchange="setClassVisibility('classvisibility_takeimage_gaincontrolmode_manual', this.value == 0);
+										gatherChangedParameter(this.form, true)">
 						<option value="0">Manual</option>
 						<option value="1" selected>Auto</option>
 					</select>

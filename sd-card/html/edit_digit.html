@@ -183,8 +183,12 @@
             <td colspan="2">
                 <select id="ROISelect" onchange="onROIChanged()"></select>
             </td>
-            <td><button class="button" id="newROI" onclick="onClickNewROI()">New</button></td>
-            <td><button class="button" id="deleteROI" onclick="onClickDeleteROI()">Delete</button></td>
+            <td>
+                <button class="button" id="newROI" onclick="onClickNewROI()">New</button>
+            </td>
+            <td>
+                <button class="button" id="deleteROI" onclick="onClickDeleteROI()">Delete</button>
+            </td>
         </tr>
         <tr>
             <td class="multiplier">
@@ -193,10 +197,14 @@
             </td>
             <td class="multiplier">
                 Multiplier: <output id="multiplier_decshift"></output><br>
-                (order + decimal shift: <output id="decimalShift" name="decimalShift"></output>)
+                (order + decimal shift: <output id="decimalShift"></output>)
             </td>
-            <td><button class="button" id="moveROIHigher" onclick="onClickMoveROIHigher()">Move Higher</button></td>
-            <td><button class="button" id="moveROILower" onclick="onClickMoveROILower()">Move Lower</button></td>
+            <td>
+                <button class="button" id="moveROIHigher" onclick="onClickMoveROIHigher()">Move Higher</button>
+            </td>
+            <td>
+                <button class="button" id="moveROILower" onclick="onClickMoveROILower()">Move Lower</button>
+            </td>
         </tr>
     </table>
 
@@ -207,27 +215,42 @@
             <col span="1" style="width: 62%;">
         </colgroup>
         <tr>
-            <td>x: <input type="number" name="refx" id="refx" min=1 step=1 onchange="onValueManualChanged()"
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
-            <td>Δx: <input type="number" name="refdx" id="refdx" min=1 step=1 onchange="onValueManualChangedDx()"
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
-            <td><input type="checkbox" id="lockAspectRatio" name="lockAspectRatio" value="1" onclick="onClickLockAspectRatio()" checked>
-                            <label for="lockAspectRatio"> Lock aspect ratio </label></td>
+            <td>
+                x: <input type="number" id="refx" min="1"
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
+            </td>
+            <td>
+                Δx: <input type="number" id="refdx" min="1"
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChangedDx()">
+            </td>
+            <td>
+                <input type="checkbox" id="lockAspectRatio" value="1" onclick="onClickLockAspectRatio()" checked>
+                            <label for="lockAspectRatio"> Lock aspect ratio</label>
+            </td>
         </tr>
         <tr>
-            <td>y: <input type="number" name="refy" id="refy" min=1 step=1 onchange="onValueManualChanged()"
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
-            <td>Δy: <input type="number" name="refdy" id="refdy" min=1 step=1 onchange="onValueManualChanged()"
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
-            <td><input type="checkbox" id="lockSizes" name="lockSizes" value="1" onclick="onClickLockSizes()" checked>
-                            <label for="lockSizes"> Synchronize y, Δx and Δy</label></td>
+            <td>
+                y: <input type="number" id="refy" min="1"
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
+            </td>
+            <td>
+                Δy: <input type="number" id="refdy" min="1"
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
+            </td>
+            <td>
+                <input type="checkbox" id="lockSizes" value="1" onclick="onClickLockSizes()" checked>
+                            <label for="lockSizes"> Synchronize y, Δx and Δy</label>
+            </td>
         </tr>
         <tr>
-            <td colspan="2"><input type="checkbox" id="showSelectedROIOnly" onclick="RefreshDraw()">
-                            <label for="showSelectedROIOnly"> Show selected ROI only</label></td>
-            <td><input type="checkbox" id="lockSpaceEquidistant" name="lockSpaceEquidistant" value="1" onclick="onClickLockSpaceEquidistant()" checked>
-                            <label for="lockSpaceEquidistant">Keep equidistance of <input style="margin-right:0px" type="number"
-                                    name="space" id="space" min=0 step=1 onchange="onValueManualChangedSpace()"> between all ROIs</label>
+            <td colspan="2">
+                <input type="checkbox" id="showSelectedROIOnly" onclick="RefreshDraw()">
+                    <label for="showSelectedROIOnly"> Show selected ROI only</label>
+            </td>
+            <td>
+                <input type="checkbox" id="lockSpaceEquidistant" value="1" onclick="onClickLockSpaceEquidistant()" checked>
+                    <label for="lockSpaceEquidistant">Keep equidistance of <input style="margin-right:0px" type="number" id="space" min="0"
+                                onchange="(!validity.rangeUnderflow||(value=0));onValueManualChangedSpace()"> between all ROIs</label>
             </td>
         </tr>
     </table>
@@ -241,9 +264,13 @@
             <col span="1" style="width: 26%;">
         </colgroup>
         <tr>
-            <td colspan="3" style="vertical-align: bottom;"><b>Reference Image</b></td>
-            <td><input disabled style="font-weight:bold;" class="button" type="submit" id="saveconfig" name="saveconfig"
-                        onclick="SaveToConfig()" value="Save And Apply"></td>
+            <td colspan="3" style="vertical-align: bottom;">
+                <b>Reference Image</b>
+            </td>
+            <td>
+                <input disabled style="font-weight:bold;" class="button" type="submit" id="saveconfig"
+                        onclick="SaveToConfig()" value="Save And Apply">
+            </td>
         </tr>
         <tr>
             <td colspan="4">

@@ -73,8 +73,8 @@
     <div>
         <input type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
         <label for=AutoRefreshEnabled><span id="AutoRefreshEnabled_text" style="color:black;">Auto Refresh</span></label>
-        <input required type="number" style="margin-left: 18px;" name="AutoRefreshTime" id="AutoRefreshTime"  min="1" step="1" value="60"
-                oninput="(!validity.rangeUnderflow||(value=1));" onchange="AutoRefreshContent();"> s
+        <input required type="number" style="margin-left: 18px;" id="AutoRefreshTime" min="1" value="60"
+                onchange="(!validity.rangeUnderflow||(value=1));AutoRefreshContent();"> s
         <output style="margin-left:48px" id="timestamp" >Last Refresh:</output>
     </div>
     <div style="margin-top:10px;margin-bottom:20px">

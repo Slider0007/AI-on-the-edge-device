@@ -182,10 +182,16 @@
             <col span="1" style="width: 33.3%;">
         </colgroup>
         <tr>
-            <td><input class="button" type="button" value="Show Actual Reference" onclick="showReference()"></td>
-            <td><input class="button" type="button" id="createreference" value="Create New Reference" onclick="loadRawImage(false)"></td>
+            <td>
+                <input class="button" type="button" value="Show Actual Reference" onclick="showReference()">
+            </td>
+            <td>
+                <input class="button" type="button" id="createreference" value="Create New Reference" onclick="loadRawImage(false)">
+            </td>
+            <td></td>
         </tr>
     </table>
+
     <table class="table">
         <colgroup>
             <col span="1" style="width: 5%;">
@@ -233,11 +239,10 @@
             </td>
             <td class="camParameter classvisibility_takeimage_zoommode">
                 <form id="takeimage_camera_zoomoffsetx_form">
-                    <input required style="clear:both" type="number" value="0" min="0" max="960" value="0"
+                    <input required style="clear:both" type="number" min="0" max="960" value="0"
                             name="takeimage.camera.zoomoffsetx" id="takeimage_camera_zoomoffsetx_value"
-                            onchange="gatherChangedParameter(this.form, true)"
-                            oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=960)) &&
-                                (!validity.stepMismatch||(value=parseInt(this.value)));">px
+                            onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=960));
+							gatherChangedParameter(this.form, true)">px
                 </form>
             </td>
 
@@ -262,11 +267,10 @@
             </td>
             <td class="camParameter classvisibility_takeimage_zoommode">
                 <form id="takeimage_camera_zoomoffsety_form">
-                    <input required style="clear:both" type="number" value="0" min="0" max="720" value="0"
+                    <input required style="clear:both" type="number" min="0" max="720" value="0"
                             name="takeimage.camera.zoomoffsety" id="takeimage_camera_zoomoffsety_value"
-                            onchange="gatherChangedParameter(this.form, true)"
-                            oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=720)) &&
-                                (!validity.stepMismatch||(value=parseInt(this.value)));">px
+                            onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=720));
+							gatherChangedParameter(this.form, true)">px
                 </form>
             </td>
 
@@ -321,7 +325,7 @@
                 <span>Flip Image</span>
             </td>
             <td class="camParameter">
-                <form id="takeimage_camera_mirrorimage_form">
+                <form id="takeimage_camera_flipimage_form">
 					<select name="takeimage.camera.flipimage" id="takeimage_camera_flipimage_value"
 							onchange="gatherChangedParameter(this.form)">
 						<option value="false" selected>Disabled</option>
@@ -417,12 +421,11 @@
                 <span>Manual Gain Value</span>
             </td>
             <td class="camParameter classvisibility_takeimage_gaincontrolmode_manual">
-				<form id="takeimage_camera_gaincontrolmode_form">
+				<form id="takeimage_camera_manualgainvalue_form">
 					<input required type="number" min="0" max="5" value="0"
 						name="takeimage.camera.manualgainvalue" id="takeimage_camera_manualgainvalue_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5));
+							gatherChangedParameter(this.form, true)">
 				</form>
             </td>
 
@@ -434,9 +437,8 @@
 				<form id="takeimage_camera_manualexposurevalue_form">
 					<input required type="number" min="0" max="1200" value="300"
 						name="takeimage.camera.manualexposurevalue" id="takeimage_camera_manualexposurevalue_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1200)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1200));
+							gatherChangedParameter(this.form, true)">
 				</form>
             </td>
         </tr>
@@ -450,9 +452,8 @@
 				<form id="imagealignment_imagerotation_form">
 					<input required type="number" min="-180.0" max="180.0" step="0.1" value="0.0"
 						name="imagealignment.imagerotation" id="imagealignment_imagerotation_value"
-						onchange="drawRotated(); gatherChangedParameter(this.form)"
-						oninput="(!validity.rangeUnderflow||(value=-180.0)) && (!validity.rangeOverflow||(value=180.0)) &&
-							(!validity.stepMismatch||(value=this.value));">°
+						onchange="(!validity.rangeUnderflow||(value=-180.0)) && (!validity.rangeOverflow||(value=180.0)) &&
+							(!validity.stepMismatch||(value=this.value));drawRotated();gatherChangedParameter(this.form)">°
 				</form>
             </td>
 
@@ -464,9 +465,9 @@
 				<form id="takeimage_flashlight_flashtime_form">
 					<input required type="number" min="100" step="100" value="2000"
 						name="takeimage.flashlight.flashtime" id="takeimage_flashlight_flashtime_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=100)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">ms
+						onchange="(!validity.rangeUnderflow||(value=100)) && (!validity.stepMismatch||(value=parseInt(this.value)));
+                            gatherChangedParameter(this.form, true)"
+						oninput="">ms
 				</form>
             </td>
         </tr>
@@ -476,8 +477,7 @@
             <td style="padding:0px 5px 0px 0px">
                 <span></span>
             </td>
-            <td>
-            </td>
+            <td></td>
 
             <td style="visibility:hidden">$TOOLTIP_takeimage_flashlight_flashintensity</td>
             <td>
@@ -487,9 +487,8 @@
 				<form id="takeimage_flashlight_flashintensity_form">
 					<input required type="number" min="0" max="100" value="50"
 						name="takeimage.flashlight.flashintensity" id="takeimage_flashlight_flashintensity_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">%
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100));
+							gatherChangedParameter(this.form, true)">%
 				</form>
             </td>
         </tr>
@@ -502,8 +501,11 @@
             <col span="1" style="width: 33.3%;">
         </colgroup>
         <tr>
-            <td style="vertical-align: bottom;"><b>Reference Image</b></td>
-            <td><input class="button" type="button" id="take" onclick="doTake(true)" value="Update Image">
+            <td style="vertical-align: bottom;">
+                <b>Reference Image</b>
+            </td>
+            <td>
+                <input class="button" type="button" id="take" onclick="doTake(true)" value="Update Image">
             <td>
                 <input style="font-weight:bold;" class="button" type="button" id="savereference"
                         value="Save And Apply" onclick="SaveReference()">

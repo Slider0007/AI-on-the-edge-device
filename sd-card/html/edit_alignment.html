@@ -141,18 +141,16 @@
         <tr>
             <td style="height:20px;padding-top: 10px; vertical-align: top;">
                 <form class="form_alignment_marker" id="imagealignment_marker_x_form">
-                    x: <input type="number"  min="1"
+                    x: <input type="number" min="1"
                         name="imagealignment.marker.0.x" id="imagealignment_marker_x_value"
-                        onchange="onValueManualChanged(); gatherChangedParameter(this.form, true)"
-                        oninput="(!validity.rangeUnderflow||(value=1))">
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged(); gatherChangedParameter(this.form, true)">
                 </form>
             </td>
             <td style="padding-top: 10px; vertical-align: top;">
                 <form class="form_alignment_marker" id="imagealignment_marker_dx_form">
-                    Δx: <input type="number"  min="1"
+                    Δx: <input type="number" min="1"
                         name="imagealignment.marker.0.dx" id="imagealignment_marker_dx_value"
-                        onchange="onValueManualChanged()"
-                        oninput="(!validity.rangeUnderflow||(value=1))">
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
                 </form>
             </td>
 
@@ -162,21 +160,19 @@
                 <form class="form_alignment_marker" id="imagealignment_marker_y_form">
                     y: <input type="number" min="1"
                         name="imagealignment.marker.0.y" id="imagealignment_marker_y_value"
-                        onchange="onValueManualChanged(); gatherChangedParameter(this.form, true)"
-                        oninput="(!validity.rangeUnderflow||(value=1))">
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged(); gatherChangedParameter(this.form, true)">
                 </form>
             </td>
             <td style="vertical-align: top;">
                 <form class="form_alignment_marker" id="imagealignment_marker_dy_form">
-                    Δy: <input type="number"  min="1"
+                    Δy: <input type="number" min="1"
                         name="imagealignment.marker.0.dy" id="imagealignment_marker_dy_value"
-                        onchange="onValueManualChanged()"
-                        oninput="(!validity.rangeUnderflow||(value=1))">
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
                 </form>
             </td>
         </tr>
         <tr>
-
+            <td colspan="4"></td>
         </tr>
     </table>
 
@@ -193,11 +189,11 @@
                     value="Update Marker" onclick="RequestMarkerCut()"></td>
             <td >
                 <input disabled style="font-weight:bold; float:right" class="button" type="submit"
-                    name="saveroi" id="savemarker" onclick="SaveToConfig()" value="Save And Apply" disabled>
+                    id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
             </td>
         </tr>
         <tr>
-            <td style="padding-right:0px; margin-right:0px" colspan="4">
+            <td colspan="3" style="padding-right:0px; margin-right:0px">
                 <img id="img_loading" hidden>
                 <canvas style="max-width: 100%" id="canvas" hidden></canvas>
             </td>

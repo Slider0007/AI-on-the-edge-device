@@ -5,15 +5,72 @@
 	<title>Overview</title>
 
 	<style>
-		.tg  {border-collapse:collapse;border-spacing:0;width:100%;min-width:600px;height:100%;}
-		.tg th{min-width:325px;width:325px;height:20px;font-size:16px;text-align:left;font-weight:bold;padding:5px 10px 5px 10px;
-					overflow:hidden;word-break:normal;background-color:lightgrey;}
-		.tg td{font-size:15px;padding:5px 10px 5px 10px;overflow:hidden;word-break:normal;}
-		.tg .tg-1{font-size:15px;vertical-align: top; padding-top:0px; font-family:Arial, Helvetica, sans-serif !important;}
-		.tg .tg-2{height:52px;font-size:15px;padding:3px 0px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
-		.tg .tg-3{height:45px;font-size:15px;padding:3px 10px 3px 10px;vertical-align:middle;font-family:Arial, Helvetica, sans-serif !important;}
-		.tg .tg-4{height:70px;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
-		.tg .tg-5{height:fit-content;font-size:15px;padding:5px 10px 5px 10px;vertical-align:text-top;font-family:Arial, Helvetica, sans-serif !important;}
+		.tg {
+			border-collapse:collapse;
+			border-spacing:0;
+			width:100%;
+			min-width:600px;
+			height:100%;
+		}
+
+		.tg th {
+			min-width:325px;
+			width:325px;
+			height:20px;
+			font-size:16px;
+			text-align:left;
+			font-weight:bold;
+			padding:5px 10px 5px 10px;
+			overflow:hidden;
+			word-break:normal;
+			background-color:lightgrey;
+		}
+
+		.tg td {
+			font-size:15px;
+			padding:5px 10px 5px 10px;
+			overflow:hidden;
+			word-break:normal;
+		}
+
+		.tg .tg-1 {
+			font-size:15px;
+			vertical-align:top;
+			padding-top:0px;
+			font-family:Arial, Helvetica, sans-serif !important;
+		}
+
+		.tg .tg-2 {
+			height:52px;
+			font-size:15px;
+			padding:3px 0px 3px 10px;
+			vertical-align:middle;
+			font-family:Arial, Helvetica, sans-serif !important;
+		}
+
+		.tg .tg-3 {
+			height:45px;
+			font-size:15px;
+			padding:3px 10px 3px 10px;
+			vertical-align:middle;
+			font-family:Arial, Helvetica, sans-serif !important;
+		}
+
+		.tg .tg-4 {
+			height:70px;
+			font-size:15px;
+			padding:5px 10px 5px 10px;
+			vertical-align:text-top;
+			font-family:Arial, Helvetica, sans-serif !important;
+		}
+
+		.tg .tg-5 {
+			height:fit-content;
+			font-size:15px;
+			padding:5px 10px 5px 10px;
+			vertical-align:text-top;
+			font-family:Arial, Helvetica, sans-serif !important;
+		}
 
 		body, html {
 			font-size: 100%;
@@ -73,8 +130,8 @@
 
 						</td>
 						<td style="padding:0px;">
-							<input required type="number" name="AutoRefreshTime" id="AutoRefreshTime" min="1" step="1" value="5"
-							oninput="(!validity.rangeUnderflow||(value=2));" onchange="AutoRefreshContent();"> s
+							<input required type="number" id="AutoRefreshTime" min="1" value="5"
+								onchange="(!validity.rangeUnderflow||(value=1));AutoRefreshContent();"> s
 						</td>
 					</tr>
 					<tr>

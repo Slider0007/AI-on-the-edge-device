@@ -128,16 +128,20 @@
             </td>
         </tr>
         <tr>
-            <td style="vertical-align: text-top; padding-top: 12px;">Enter new Fallback Value</td>
+            <td style="vertical-align: text-top; padding-top: 12px;">
+                Enter new Fallback Value
+            </td>
             <td>
-                <input required type="number" id="input_fallbackvalue" min="0" oninput="(!validity.rangeUnderflow||(value=0));">
+                <input required type="number" id="input_fallbackvalue" min="0" onchange="(!validity.rangeUnderflow||(value=0));">
                 <button class="button" type="button" onclick="setFallbackValue()">Update Value</button>
                 <p style="padding-left: 5px;">NOTE: The current Raw Value is prefilled as
                     <br>the suggested new Fallback Value</p>
             </td>
         </tr>
         <tr>
-            <td id="result_text">Fallback Value updated to</td>
+            <td id="result_text">
+                Fallback Value updated to
+            </td>
             <td>
                 <div id="result" style="padding-left:5px;"></div>
             </td>

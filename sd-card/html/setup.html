@@ -83,15 +83,15 @@
     <table>
         <tr>
             <td style="padding:10px">
-                <output id="rssi" name="rssi">WLAN Signal: </output>
+                <output id="rssi">WLAN Signal: </output>
             </td>
         </tr>
         <tr>
             <td>
-                <button class="button" id="restart" name="restart" onclick="clickStart()">Restart Setup</button>
-                <button class="button" id="previous" name="previous" onclick="clickPrevious()">Previous Step</button>
-                <button class="button" id="next" name="next" onclick="clickNext()">Next Step</button>
-                <button class="button" id="skip" name="skip" onclick="clickAbort()">Abort Setup</button>
+                <button class="button" id="restart" onclick="clickStart()">Restart Setup</button>
+                <button class="button" id="previous" onclick="clickPrevious()">Previous Step</button>
+                <button class="button" id="next" onclick="clickNext()">Next Step</button>
+                <button class="button" id="skip" onclick="clickAbort()">Abort Setup</button>
                 <span style="margin:0px; float:right;">Setup Progress:<br><progress id="progressBar" value="0" max="7" style="width:120px;"></progress></span>
             </td>
         </tr>
@@ -104,8 +104,8 @@
     </div>
 
     <div class="h_iframe" id="h_iframe">
-        <iframe style="padding-right:0px" name="maincontent" id ="maincontent" src="" onload="resizeIframe(this)" allowfullscreen></iframe>
-        <iframe name="stream" id ="stream" src="" allowfullscreen></iframe>
+        <iframe style="padding-right:0px" id ="maincontent" src="" onload="resizeIframe(this)" allowfullscreen></iframe>
+        <iframe id ="stream" src="" allowfullscreen></iframe>
     </div>
 
 
