@@ -215,12 +215,12 @@ extern "C" void app_main(void)
     // Init external PSRAM
     // ********************************************
     esp_err_t PSRAMStatus = esp_psram_init();
-    if (PSRAMStatus == ESP_FAIL) {  // ESP_FAIL -> Failed to init PSRAM
+    if (PSRAMStatus == ESP_FAIL) {  // Failed to init PSRAM
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "PSRAM init failed (" + std::to_string(PSRAMStatus) + ")! PSRAM not found or defective");
         setSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD);
         setStatusLed(PSRAM_INIT, 1, true);
     }
-    else { // ESP_OK -> PSRAM init OK --> continue to check PSRAM size
+    else { // PSRAM init not failed --> continue to check PSRAM size
         size_t psram_size = esp_psram_get_size();
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "PSRAM size: " + std::to_string(psram_size) + " byte (" + std::to_string(psram_size/1024/1024) +
                                                "MB / " + std::to_string(psram_size/1024/1024*8) + "MBit)");

@@ -39,7 +39,7 @@ static bool bTaskAutoFlowCreated = false;
 static int taskAutoFlowState = FLOW_TASK_STATE_SETUPMODE;
 static bool reloadConfig = false;
 static bool manualFlowStart = false;
-static long auto_interval = 0;
+static long automaticProcessInterval = 0;
 static int cycleCounter = 0;
 static int processingTime = 0;
 
@@ -390,7 +390,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         int dy = std::stoi(std::string(_valuechar));
 
         in = "/sdcard" + in;    // --> img_tmp/reference.jpg
-        out = "/sdcard" + out;  // --> img_tmp/refX.jpg
+        out = "/sdcard" + out;  // --> img_tmp/markerX.jpg
 
         // 4MB RAM external SPIRAM are not sufficient to perform alignment marker update while processing cycle
         // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp) and interlock operation at UI level
@@ -874,7 +874,7 @@ int getFlowProcessingTime()
 
 void task_autodoFlow(void *pvParameter)
 {
-    int64_t fr_start = 0;
+    int64_t cylceStartActualTime = 0;
     time_t cycleStartTime = 0;
     bTaskAutoFlowCreated = true;
 
@@ -999,7 +999,7 @@ void task_autodoFlow(void *pvParameter)
         // AUTOSTART CHECK --> AUTOMATIC OR MANUAL MODE?
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART) {
-            if (!flowctrl.isAutoStart(auto_interval)) {
+            if (!flowctrl.isAutoStart(automaticProcessInterval)) {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_NO_AUTOSTART));
                 flowctrl.setActualProcessState(std::string(FLOW_IDLE_NO_AUTOSTART));
                 #ifdef ENABLE_MQTT
@@ -1035,7 +1035,7 @@ void task_autodoFlow(void *pvParameter)
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "----------------------------------------------------------------");
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(++cycleCounter) + " started");
             cycleStartTime = getUptime();
-            fr_start = esp_timer_get_time();
+            cylceStartActualTime = esp_timer_get_time();
 
             if (flowctrl.doFlowImageEvaluation(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Image evaluation completed (" +
@@ -1162,11 +1162,9 @@ void task_autodoFlow(void *pvParameter)
                 MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
             #endif //ENABLE_MQTT
 
-            int64_t fr_delta_ms = (esp_timer_get_time() - fr_start) / 1000;
-            if (auto_interval > fr_delta_ms) {
-                const TickType_t xDelay = (auto_interval - fr_delta_ms)  / portTICK_PERIOD_MS;
-                ESP_LOGD(TAG, "Autoflow: sleep for: %ldms", (long) xDelay * CONFIG_FREERTOS_HZ/portTICK_PERIOD_MS);
-                vTaskDelay(xDelay);
+            int64_t processIntervalDeltaTime = (esp_timer_get_time() - cylceStartActualTime) / 1000;
+            if (automaticProcessInterval > processIntervalDeltaTime) {
+                vTaskDelay((automaticProcessInterval - processIntervalDeltaTime) / portTICK_PERIOD_MS);
             }
 
             // Check if reload config is triggered by REST API

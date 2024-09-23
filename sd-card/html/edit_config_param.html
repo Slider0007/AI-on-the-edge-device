@@ -310,9 +310,8 @@
 					<form id="operationmode_automaticprocessinterval_form">
 						<input required type="number" min="0.1" step="0.1" value="1.0"
 							name="operationmode.automaticprocessinterval" id="operationmode_automaticprocessinterval_value"
-							onchange="gatherChangedParameter(this.form)"
-							oninput="(!validity.rangeUnderflow||(value=0.1)) &&
-									(!validity.stepMismatch||(value=this.value));">Minutes
+							onchange="(!validity.rangeUnderflow||(value=0.1)) && (!validity.stepMismatch||(value=this.value));
+								gatherChangedParameter(this.form)">Minutes
 					</form>
 				</td>
 				<td style="visibility:hidden">$TOOLTIP_operationmode_automaticprocessinterval</td>
@@ -372,9 +371,8 @@
 				<form id="takeimage_flashlight_flashtime_form">
 					<input required type="number" min="100" step="100" value="2000"
 						name="takeimage.flashlight.flashtime" id="takeimage_flashlight_flashtime_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=100)) &&
-							(!validity.stepMismatch||(value=this.value));">Milliseconds
+						onchange="(!validity.rangeUnderflow||(value=100)) && (!validity.stepMismatch||(value=this.value));
+							gatherChangedParameter(this.form, true)">Milliseconds
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_flashlight_flashtime</td>
@@ -388,9 +386,8 @@
 				<form id="takeimage_flashlight_flashintensity_form">
 					<input required type="number" min="0" max="100" value="50"
 						name="takeimage.flashlight.flashintensity" id="takeimage_flashlight_flashintensity_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100)) &&
-							(!validity.stepMismatch||(value=this.value));">%
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100));
+							gatherChangedParameter(this.form, true)">%
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_flashlight_flashintensity</td>
@@ -428,9 +425,8 @@
 				<form id="takeimage_camera_imagequality_form">
 					<input required type="number" min="8" max="63" value="12"
 						name="takeimage.camera.imagequality" id="takeimage_camera_imagequality_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=8)) && (!validity.rangeOverflow||(value=63)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=8)) && (!validity.rangeOverflow||(value=63));
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_imagequality</td>
@@ -460,9 +456,8 @@
 				<form id="takeimage_camera_brightness_form">
 					<input required type="number" min="-2" max="2" value="0"
 						name="takeimage.camera.brightness" id="takeimage_camera_brightness_value"
-						onchange="gatherChangedParameter(this.form)"
-						oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2));
+							gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_brightness</td>
@@ -476,9 +471,8 @@
 				<form id="takeimage_camera_contrast_form">
 					<input required type="number" min="-2" max="2" value="0"
 						name="takeimage.camera.contrast" id="takeimage_camera_contrast_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2));
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_contrast</td>
@@ -492,9 +486,8 @@
 				<form id="takeimage_camera_saturation_form">
 					<input required type="number" min="-2" max="2" value="0"
 						name="takeimage.camera.saturation" id="takeimage_camera_saturation_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2));
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_saturation</td>
@@ -549,9 +542,8 @@
 				<form id="takeimage_camera_autoexposurelevel_form">
 					<input required type="number" min="-2" max="2" value="0"
 						name="takeimage.camera.autoexposurelevel" id="takeimage_camera_autoexposurelevel_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2));
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_autoexposurelevel</td>
@@ -565,9 +557,8 @@
 				<form id="takeimage_camera_manualexposurevalue_form">
 					<input required type="number" min="0" max="1200" value="300"
 						name="takeimage.camera.manualexposurevalue" id="takeimage_camera_manualexposurevalue_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1200)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1200));
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_manualexposurevalue</td>
@@ -598,9 +589,8 @@
 				<form id="takeimage_camera_manualgainvalue_form">
 					<input required type="number" min="0" max="5" value="0"
 						name="takeimage.camera.manualgainvalue" id="takeimage_camera_manualgainvalue_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5));
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_manualgainvalue</td>
@@ -683,9 +673,8 @@
 				<form id="takeimage_camera_zoomoffsetx_form">
 					<input required type="number" min="0" max="960" value="0"
 						name="takeimage.camera.zoomoffsetx" id="takeimage_camera_zoomoffsetx_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=960)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Pixel
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=960));
+							gatherChangedParameter(this.form, true)">Pixel
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_zoomoffsetx</td>
@@ -700,9 +689,8 @@
 				<form id="takeimage_camera_zoomoffsety_form">
 					<input required type="number" min="0" max="720" value="0"
 						name="takeimage.camera.zoomoffsety" id="takeimage_camera_zoomoffsety_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=720)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Pixel
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=720));
+							gatherChangedParameter(this.form, true)">Pixel
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_zoomoffsety</td>
@@ -752,10 +740,8 @@
 			<td>
 				<form id="takeimage_debug_rawimagesretention_form">
 					<input required type="number" min="0" value="5"
-						name="takeimage.debug.rawimagesretention" id="takeimage_debug_rawimagesretention_value"
-						placeholder="/log/source" onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Days
+						name="takeimage.debug.rawimagesretention" id="takeimage_debug_rawimagesretention_value" placeholder="/log/source"
+						onchange="(!validity.rangeUnderflow||(value=0));gatherChangedParameter(this.form, true)">Days
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_debug_rawimagesretention</td>
@@ -805,9 +791,7 @@
 				<form id="imagealignment_searchfield_x_form">
 					<input required type="number" min="1" value="20"
 						name="imagealignment.searchfield.x" id="imagealignment_searchfield_x_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=1)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Pixel
+						onchange="(!validity.rangeUnderflow||(value=1));gatherChangedParameter(this.form, true)">Pixel
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_imagealignment_searchfield_x</td>
@@ -821,9 +805,7 @@
 				<form id="imagealignment_searchfield_y_form">
 					<input required type="number" min="1" value="20"
 						name="imagealignment.searchfield.y" id="imagealignment_searchfield_y_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=1)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Pixel
+						onchange="(!validity.rangeUnderflow||(value=1));gatherChangedParameter(this.form, true)">Pixel
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_imagealignment_searchfield_y</td>
@@ -837,9 +819,8 @@
 				<form id="imagealignment_imagerotation_form">
 					<input required type="number" min="-180.0" max="180.0" step="0.1" value="0.0"
 						name="imagealignment.imagerotation" id="imagealignment_imagerotation_value"
-						onchange="gatherChangedParameter(this.form)"
-						oninput="(!validity.rangeUnderflow||(value=-180.0)) && (!validity.rangeOverflow||(value=180.0)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Degree
+						onchange="(!validity.rangeUnderflow||(value=-180.0)) && (!validity.rangeOverflow||(value=180.0)) &&
+							(!validity.stepMismatch||(value=this.value));gatherChangedParameter(this.form)">Degree
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_imagealignment_imagerotation</td>
@@ -937,9 +918,8 @@
 				<form id="digit_cnngoodthreshold_form">
 					<input required type="number" min="0" max="1" step="0.01" value="0.00"
 						name="digit.cnngoodthreshold" id="digit_cnngoodthreshold_value"
-						onchange="gatherChangedParameter(this.form)"
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1)) &&
+							(!validity.stepMismatch||(value=this.value));gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_digit_cnngoodthreshold</td>
@@ -989,10 +969,8 @@
 			<td>
 				<form id="digit_debug_roiimagesretention_form">
 					<input required type="number" min="0" value="5"
-						name="digit.debug.roiimagesretention" id="digit_debug_roiimagesretention_value"
-						placeholder="/log/digit" onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Days
+						name="digit.debug.roiimagesretention" id="digit_debug_roiimagesretention_value" placeholder="/log/digit"
+						onchange="(!validity.rangeUnderflow||(value=0));gatherChangedParameter(this.form, true)">Days
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_digit_debug_roiimagesretention</td>
@@ -1085,9 +1063,7 @@
 				<form id="analog_debug_roiimagesretention_form">
 					<input required type="number" min="0" value="5"
 						name="analog.debug.roiimagesretention" id="analog_debug_roiimagesretention_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Days
+						onchange="(!validity.rangeUnderflow||(value=0));gatherChangedParameter(this.form, true)">Days
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_analog_debug_roiimagesretention</td>
@@ -1129,9 +1105,8 @@
 				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_decimalshift_form">
 					<input required type="number" min="-9" max="9" value="0"
 						name="postprocessing.sequence.0.decimalshift" id="postprocessing_sequence_0_decimalshift_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=-9)) && (!validity.rangeOverflow||(value=9)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=-9)) && (!validity.rangeOverflow||(value=9));
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_decimalshift</td>
@@ -1145,9 +1120,8 @@
 				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_analogdigitsyncvalue_form">
 					<input required type="number" min="6.0" max="9.9" step="0.1" value="9.2"
 						name="postprocessing.sequence.0.analogdigitsyncvalue" id="postprocessing_sequence_0_analogdigitsyncvalue_value"
-						onchange="gatherChangedParameter(this.form)"
-						oninput="(!validity.rangeUnderflow||(value=6.0)) &&
-							(!validity.rangeOverflow||(value=9.9)) && (!validity.stepMismatch||(value=this.value));">
+						onchange="(!validity.rangeUnderflow||(value=6.0)) && (!validity.rangeOverflow||(value=9.9)) &&
+							(!validity.stepMismatch||(value=this.value));gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_analogdigitsyncvalue</td>
@@ -1244,9 +1218,8 @@
 				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_maxrate_form">
 					<input required type="number" min="0.001" step="0.001" value="0.15"
 						name="postprocessing.sequence.0.maxrate" id="postprocessing_sequence_0_maxrate_value"
-						onchange="gatherChangedParameter(this.form)"
-						oninput="(!validity.rangeUnderflow||(value=0.001)) &&
-							(!validity.stepMismatch||(value=this.value));">
+						onchange="(!validity.rangeUnderflow||(value=0.001)) && (!validity.stepMismatch||(value=this.value));
+							gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_maxrate</td>
@@ -1277,9 +1250,7 @@
 				<form class="postprocessing_per_sequence" id="postprocessing_sequence_0_fallbackvalueagestartup_form">
 					<input required type="number" min="0" value="720"
 						name="postprocessing.sequence.0.fallbackvalueagestartup" id="postprocessing_sequence_0_fallbackvalueagestartup_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Minutes
+						onchange="(!validity.rangeUnderflow||(value=0));gatherChangedParameter(this.form, true)">Minutes
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_fallbackvalueagestartup</td>
@@ -2056,9 +2027,8 @@
 				<form class="form_gpio_config" id="gpio_gpiopin_0_inputdebouncetime_form">
 					<input required type="number" min="0" max="5000" value="500"
 						name="gpio.gpiopin.0.inputdebouncetime" id="gpio_gpiopin_0_inputdebouncetime_value"
-						onchange='gatherChangedParameter(this.form, true)'
-						oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5000)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">ms
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5000));
+							gatherChangedParameter(this.form, true)">ms
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_inputdebouncetime</td>
@@ -2072,9 +2042,8 @@
 				<form class="form_gpio_config" id="gpio_gpiopin_0_pwmfrequency_form">
 					<input style="min-width:90px" required type="number" min="5" max="1000000" value="5000"
 						name="gpio.gpiopin.0.pwmfrequency" id="gpio_gpiopin_0_pwmfrequency_value"
-						onchange='gatherChangedParameter(this.form, true)'
-						oninput="(!validity.rangeUnderflow||(value=5)) && (!validity.rangeOverflow||(value=1000000)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Hz
+						onchange="(!validity.rangeUnderflow||(value=5)) && (!validity.rangeOverflow||(value=1000000));
+							gatherChangedParameter(this.form, true)">Hz
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_pwmfrequency</td>
@@ -2153,8 +2122,7 @@
 				<form class="form_gpio_config" id="gpio_gpiopin_0_smartled_quantity_form">
 					<input required type="number" min="1" value="1"
 						name="gpio.gpiopin.0.smartled.quantity" id="gpio_gpiopin_0_smartled_quantity_value"
-						onchange='gatherChangedParameter(this.form, true)'
-						oninput="(!validity.rangeUnderflow||(value=1)) && (!validity.stepMismatch||(value=parseInt(this.value)));">
+						onchange="(!validity.rangeUnderflow||(value=1));gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_smartled_quantity</td>
@@ -2168,21 +2136,18 @@
 				<form class="form_gpio_config" id="gpio_gpiopin_0_smartled_color_form">
 					R <input required style="min-width:45px;width:45px;" type="number" min="0" max="255" value="255"
 							name="gpio.gpiopin.0.smartled.colorredchannel" id="gpio_gpiopin_0_smartled_colorredchannel_value"
-							onchange='gatherChangedParameter(this.form, true)'
-							oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) &&
-								(!validity.stepMismatch||(value=parseInt(this.value)));">
+							onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255));
+								gatherChangedParameter(this.form, true)">
 
 					G <input required style="min-width:45px;width:45px" type="number" min="0" max="255" value="255"
 							name="gpio.gpiopin.0.smartled.colorgreenchannel" id="gpio_gpiopin_0_smartled_colorgreenchannel_value"
-							onchange='gatherChangedParameter(this.form, true)'
-							oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) &&
-								(!validity.stepMismatch||(value=parseInt(this.value)));">
+							onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255));
+								gatherChangedParameter(this.form, true)">
 
 					B <input required style="min-width:45px;width:45px" type="number" min="0" max="255" value="255"
 							name="gpio.gpiopin.0.smartled.colorbluechannel" id="gpio_gpiopin_0_smartled_colorbluechannel_value"
-							onchange='gatherChangedParameter(this.form, true)'
-						 	oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">
+							onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255));
+								gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_smartled_color</td>
@@ -2196,9 +2161,8 @@
 				<form class="form_gpio_config" id="gpio_gpiopin_0_intensitycorrectionfactor_form">
 				<input required type="number" min="1" max="100" value="100"
 					name="gpio.gpiopin.0.intensitycorrectionfactor" id="gpio_gpiopin_0_intensitycorrectionfactor"
-					onchange='gatherChangedParameter(this.form, true)'
-					oninput="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">%
+					onchange="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=100));
+						gatherChangedParameter(this.form, true)">%
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_intensitycorrectionfactor</td>
@@ -2249,9 +2213,7 @@
 				<form id="log_debug_logfilesretention_form">
 					<input required type="number" min="0" value="5"
 						name="log.debug.logfilesretention" id="log_debug_logfilesretention_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Days
+						onchange="(!validity.rangeUnderflow||(value=0));gatherChangedParameter(this.form, true)">Days
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_log_debug_logfilesretention</td>
@@ -2265,9 +2227,7 @@
 				<form id="log_debug_debuglogfilesretention_form">
 					<input required type="number" min="0" value="5"
 						name="log_debug_debugfilesretention" id="log_debug_debugfilesretention_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Days
+						onchange="(!validity.rangeUnderflow||(value=0));gatherChangedParameter(this.form, true)">Days
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_log_debug_debugfilesretention</td>
@@ -2303,9 +2263,7 @@
 				<form id="log_data_datafilesretention_form">
 					<input required type="number" min="0" value="30"
 						name="log.data.datafilesretention" id="log_data_datafilesretention_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=0)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Days
+						onchange="(!validity.rangeUnderflow||(value=0));gatherChangedParameter(this.form, true)">Days
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_log_data_datafilesretention</td>
@@ -2328,7 +2286,7 @@
 			<td style="padding-top:25px">
 				<b>WLAN Configuration</b>
 			</td>
-			<td style="padding-top:25px">
+			<td colspan="2" style="padding-top:25px">
 				<span style="font-weight:bold;color:red;display:none;"
 					id="wlan_reboot_note">Reboot required to apply changes!</span>
 			</td>
@@ -2487,9 +2445,8 @@
 				<form id="network_wlan_wlanroaming_rssithreshold_form">
 					<input required type="number" min="-100" max="0" value="-75"
 						name="network.wlan.wlanroaming.rssithreshold" id="network_wlan_wlanroaming_rssithreshold_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=-100)) && (!validity.rangeOverflow||(value=0)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">dBm
+						onchange="(!validity.rangeUnderflow||(value=-100)) && (!validity.rangeOverflow||(value=0));
+							gatherChangedParameter(this.form, true)">dBm
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_wlanroaming_rssithreshold</td>
@@ -2636,9 +2593,7 @@
 				<form id="webui_autorefresh_overviewpage_refreshtime_form">
 					<input required type="number" min="1" value="5"
 						name="webui.autorefresh.overviewpage.refreshtime" id="webui_autorefresh_overviewpage_refreshtime_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=1)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Seconds
+						onchange="(!validity.rangeUnderflow||(value=1));gatherChangedParameter(this.form, true)">Seconds
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_webui_autorefresh_overviewpage_refreshtime</td>
@@ -2676,9 +2631,7 @@
 				<form id="webui_autorefresh_datagraphpage_refreshtime_form">
 					<input required type="number" min="1" value="60"
 						name="webui.autorefresh.datagraphpage.refreshtime" id="webui_autorefresh_datagraphpage_refreshtime_value"
-						onchange="gatherChangedParameter(this.form, true)"
-						oninput="(!validity.rangeUnderflow||(value=1)) &&
-							(!validity.stepMismatch||(value=parseInt(this.value)));">Seconds
+						onchange="(!validity.rangeUnderflow||(value=1));gatherChangedParameter(this.form, true)">Seconds
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_webui_autorefresh_datagraphpage_refreshtime</td>
