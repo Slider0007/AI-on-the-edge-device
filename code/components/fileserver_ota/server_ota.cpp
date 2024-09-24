@@ -599,9 +599,11 @@ void task_reboot(void *DeleteMainFlow)
 {
     // Write a reboot, to identify a reboot by purpouse
     FILE* pfile = fopen("/sdcard/reboot.txt", "w");
-    std::string _s_zw= "reboot";
-    fwrite(_s_zw.c_str(), strlen(_s_zw.c_str()), 1, pfile);
-    fclose(pfile);
+    if (pfile) {
+        std::string zw= "reboot";
+        fwrite(zw.c_str(), strlen(zw.c_str()), 1, pfile);
+        fclose(pfile);
+    }
 
     // Kill main task if executed in extra task, if not don't kill parent task to force reboot
     if ((bool)DeleteMainFlow) {

@@ -97,6 +97,20 @@ void *malloc_psram_heap_cjson(size_t size)
     }
     else {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "cJSON: Failed to allocate in preallocated memory. Use default region");
+        cJSONObjectPSRAM.failedAllocation = true;
         return heap_caps_malloc(size, MALLOC_CAP_DEFAULT);
     }
+}
+
+
+void free_psram_heap_cjson(void *ptr)
+{
+    if (!cJSONObjectPSRAM.failedAllocation) {
+        cJSONObjectPSRAM.usedMemory = 0;
+    }
+    else {
+       heap_caps_free(ptr);
+    }
+
+    cJSONObjectPSRAM.failedAllocation = false;
 }

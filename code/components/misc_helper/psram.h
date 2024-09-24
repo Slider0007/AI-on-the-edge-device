@@ -52,6 +52,7 @@ struct strcJSON {
     uint8_t* preallocatedMemory = NULL;
     int preallocatedMemorySize = 0;
     int usedMemory = 0;
+    bool failedAllocation = false;
 };
 extern struct strcJSON cJSONObjectPSRAM;
 
@@ -64,5 +65,6 @@ void *calloc_psram_heap(std::string name, size_t n, size_t size, uint32_t caps);
 void free_psram_heap(std::string name, void *ptr);
 
 void *malloc_psram_heap_cjson(size_t size);
+void free_psram_heap_cjson(void *ptr);
 
 #endif //PSRAM_H_

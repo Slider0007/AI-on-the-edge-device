@@ -112,21 +112,28 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
         std::ifstream file(CONFIG_PERSISTENCE_FILE);
 
         if (file.good() && file.is_open()) {
-            ESP_LOGI(TAG, "readConfigFile: Config file found");
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "readConfigFile: Config file found");
             streamBuffer << file.rdbuf();
             file.close();
+        }
+        else {
+            if (file.is_open()) {
+               file.close();
+            }
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readConfigFile: Failed to open config file");
         }
     }
 
     // Check for empty content -> either empty file or no / bad file
     if (streamBuffer.rdbuf()->in_avail() == 0) {
-        ESP_LOGI(TAG, "readConfigFile: No persistent config found");
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "readConfigFile: No persistent config found");
         streamBuffer.str("{}"); // Ensure any content
     }
 
     // Modify hook to use SPIRAM for cJSON object
     cJSON_Hooks hooks;
     hooks.malloc_fn = malloc_psram_heap_cjson;
+    hooks.free_fn = free_psram_heap_cjson;
     cJSON_InitHooks(&hooks);
     cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
     cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
@@ -134,6 +141,10 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 
     // Parse content to cJSON object structure
     cJsonObject = cJSON_Parse(streamBuffer.str().c_str());
+    if (cJsonObject == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseConfig: Failed to parse JSON data | Fallback: Use default config");
+        // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started.
+    }
 
     // Parse config out of cJSON object structure
     parseConfig(NULL, true, unityTest);
@@ -158,7 +169,7 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
             }
 
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Config reception failed");
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "setConfig: Config reception failed");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Config reception failed");
             return ESP_FAIL;
         }
 
@@ -172,6 +183,7 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
     // Modify hook to use SPIRAM for cJSON object
     cJSON_Hooks hooks;
     hooks.malloc_fn = malloc_psram_heap_cjson;
+    hooks.free_fn = free_psram_heap_cjson;
     cJSON_InitHooks(&hooks);
     cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
     cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
@@ -179,6 +191,10 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
     // Parse content to cJSON object structure
     cJsonObject = cJSON_Parse(jsonBuffer);
+    if (cJsonObject == NULL) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Failed to parse JSON data, e.g. malformed notation");
+        return ESP_FAIL;
+    }
 
     // Parse config out of cJSON object structure
     return parseConfig(req);
@@ -187,9 +203,6 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
 esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 {
-    if (cJsonObject == NULL)
-        return ESP_FAIL;
-
     // Config Verison
     // ***************************
     cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "config"), "version");
@@ -1305,18 +1318,23 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     cJSON_InitHooks(NULL); // Reset cJSON hooks to default (cJSON_Delete -> not needed)
 
+    // Init active config struct with latest configuration data
     if (init) {
         cfgData = cfgDataTemp;
     }
 
-    if (serializeConfig(unityTest) != ESP_OK)
+    // Serialize config to provide feedback and/or store to JSON file
+    if (serializeConfig(unityTest) != ESP_OK) {
         return ESP_FAIL;
+    }
 
-    if (req) { // Response actual parameter to HTTP POST request
+    // Response actual config to HTTP POST request
+    if (req) {
         httpd_resp_set_status(req, HTTPD_200);
         httpd_resp_send(req, jsonBuffer, strlen(jsonBuffer));
     }
 
+    // Only for testing purpose
     if (!unityTest) {
         return writeConfigFile();
     }
@@ -1330,15 +1348,17 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     // Modify hook to use SPIRAM for cJSON object
     cJSON_Hooks hooks;
     hooks.malloc_fn = malloc_psram_heap_cjson;
+    hooks.free_fn = free_psram_heap_cjson;
     cJSON_InitHooks(&hooks);
     cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
     cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
     cJSONObjectPSRAM.usedMemory = 0;
 
     cJsonObject = cJSON_CreateObject();
-
-    if (cJsonObject == NULL)
+    if (cJsonObject == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "serializeConfig: Error while creating JSON object");
         return ESP_FAIL;
+    }
 
     esp_err_t retVal = ESP_OK;
 
@@ -1893,6 +1913,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     // Print to preallocted buffer
     if (!cJSON_PrintPreallocated(cJsonObject, jsonBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, unityTest ? 0 : 1))
         retVal = ESP_FAIL;
+
     cJSON_InitHooks(NULL); // Reset cJSON hooks to default (cJSON_Delete -> not needed)
 
     return retVal;
@@ -1909,7 +1930,7 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
         return ESP_OK;
     }
     else {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Error while serialize JSON data");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E93: Failed to serialize JSON data");
         return ESP_FAIL;
     }
 }
@@ -1920,6 +1941,7 @@ esp_err_t ConfigClass::writeConfigFile()
     std::ofstream file(CONFIG_PERSISTENCE_FILE);
 
     if (!file.good() || !file.is_open()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write JSON file");
         return ESP_FAIL;
     }
 
