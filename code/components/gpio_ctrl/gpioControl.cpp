@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "ClassLogFile.h"
-#include "configIni.h"
 #include "helper.h"
 
 #ifdef ENABLE_MQTT

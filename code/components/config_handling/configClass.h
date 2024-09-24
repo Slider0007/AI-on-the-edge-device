@@ -1,5 +1,5 @@
-#ifndef CFGCLASS_H
-#define CFGCLASS_H
+#ifndef CONFIGCLASS_H
+#define CONFIGCLASS_H
 
 #include <string>
 #include <vector>

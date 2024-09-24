@@ -21,7 +21,7 @@
 #include "time_sntp.h"
 
 
-static const char *TAG = "CONFIGCLASS";
+static const char *TAG = "CONFIG";
 
 ConfigClass ConfigClass::cfgClass;
 

@@ -5,7 +5,6 @@
 #include <algorithm>
 
 #include "configClass.h"
-#include "configIni.h"
 #include "helper.h"
 #include "ClassLogFile.h"
 #include "ClassControlCamera.h"
