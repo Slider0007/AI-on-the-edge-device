@@ -368,45 +368,38 @@ bool ClassFlowControl::doFlowPublishData(std::string time)
 }
 
 
-/*bool ClassFlowControl::doFlowTakeImageOnly(std::string time) //@TODO: Still needed?
+void ClassFlowControl::setFlowStateError()
 {
-    bool result = true;
-    FlowStateEvaluationEvent.clear();
-    FlowStateEvaluationEvent.shrink_to_fit();
+    flowStateErrorInRow++;
+    flowStateDeviationInRow = 0;
+}
 
-    for (int i = 0; i < FlowControlImage.size(); ++i) {
-        if (FlowControlImage[i]->name() == "ClassFlowTakeImage") {
-            setActualProcessState(translateActualProcessState(FlowControlImage[i]->name()));
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + getActualProcessState());
-            #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
-            #endif //ENABLE_MQTT
 
-            if (!FlowControlImage[i]->doFlow(time)) {
-                FlowStateEvaluationEvent.push_back(FlowControlImage[i]->getFlowState());
+void ClassFlowControl::clearFlowStateEventInRowCounter()
+{
+    flowStateErrorInRow = 0;
+    flowStateDeviationInRow = 0;
+}
 
-                for (int j = 0; j < FlowControlImage[i]->getFlowState()->EventCode.size(); j++) {
-                    if (FlowControlImage[i]->getFlowState()->EventCode[j] < 0) {
-                        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Process error in state: \"" + getActualProcessState() + "\"");
-                        flowStateErrorInRow++;
-                        flowStateDeviationInRow = 0;
-                        result = false;
-                        break;
-                    }
-                    else {
-                        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Process deviation in state: \"" + getActualProcessState() + "\"");
-                        flowStateDeviationInRow++;
-                        flowStateErrorInRow = 0;
-                    }
-                }
 
-                if (!result) // If an error occured, stop processing of further tasks
-                    break;
-            }
-        }
+int ClassFlowControl::getFlowStateErrorOrDeviation()
+{
+    if (flowStateErrorInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT) {
+        return MULTIPLE_ERROR_IN_ROW;
     }
-    return result;
-}*/
+    else if (flowStateDeviationInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT) {
+        return MULTIPLE_DEVIATION_IN_ROW;
+    }
+    else if (flowStateErrorInRow > 0) {
+        return SINGLE_ERROR;
+    }
+    else if (flowStateDeviationInRow > 0) {
+        return SINGLE_DEVIATION;
+    }
+    else {
+        return NONE;
+    }
+}
 
 
 bool ClassFlowControl::flowStateEventOccured()
@@ -537,40 +530,6 @@ std::string ClassFlowControl::translateActualProcessState(std::string classname)
 #endif //ENABLE_INFLUXDB
     else {
         return "Unkown State (" + classname + ")";
-    }
-}
-
-
-void ClassFlowControl::setFlowStateError()
-{
-    flowStateErrorInRow++;
-    flowStateDeviationInRow = 0;
-}
-
-
-void ClassFlowControl::clearFlowStateEventInRowCounter()
-{
-    flowStateErrorInRow = 0;
-    flowStateDeviationInRow = 0;
-}
-
-
-int ClassFlowControl::getFlowStateErrorOrDeviation()
-{
-    if (flowStateErrorInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT) {
-        return MULTIPLE_ERROR_IN_ROW;
-    }
-    else if (flowStateDeviationInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT) {
-        return MULTIPLE_DEVIATION_IN_ROW;
-    }
-    else if (flowStateErrorInRow > 0) {
-        return SINGLE_ERROR;
-    }
-    else if (flowStateDeviationInRow > 0) {
-        return SINGLE_DEVIATION;
-    }
-    else {
-        return NONE;
     }
 }
 
