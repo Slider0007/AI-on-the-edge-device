@@ -25,7 +25,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
     switch(evt->event_id)
     {
         case HTTP_EVENT_ERROR:
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "HTTP client: Error encountered");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Error event");
             break;
         case HTTP_EVENT_ON_CONNECTED:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Connected");
@@ -66,7 +66,7 @@ bool influxDBv2Init(const CfgData::SectionInfluxDBv2 *_cfgDataPtr)
 
         if (!cfgDataPtr->tls.caCert.empty()) { // TLS parameter activated and not empty
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv2 TLS: CA certificate file: " + cfgDataPtr->tls.caCert);
-            std::ifstream ifs(cfgDataPtr->tls.caCert);
+            std::ifstream ifs("/sdcard" + cfgDataPtr->tls.caCert);
             std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
             TLSCACert = content;
             if (TLSCACert.empty()) {
@@ -76,7 +76,7 @@ bool influxDBv2Init(const CfgData::SectionInfluxDBv2 *_cfgDataPtr)
 
         if (!cfgDataPtr->tls.clientCert.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv2 TLS: Client certificate file: " + cfgDataPtr->tls.clientCert);
-            std::ifstream cert_ifs(cfgDataPtr->tls.clientCert);
+            std::ifstream cert_ifs("/sdcard" + cfgDataPtr->tls.clientCert);
             std::string cert_content((std::istreambuf_iterator<char>(cert_ifs)), (std::istreambuf_iterator<char>()));
             TLSClientCert = cert_content;
             if (TLSClientCert.empty()) {
@@ -86,7 +86,7 @@ bool influxDBv2Init(const CfgData::SectionInfluxDBv2 *_cfgDataPtr)
 
         if (!cfgDataPtr->tls.clientKey.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv2 TLS: Client key file: " + cfgDataPtr->tls.clientKey);
-            std::ifstream key_ifs(cfgDataPtr->tls.clientKey);
+            std::ifstream key_ifs("/sdcard" + cfgDataPtr->tls.clientKey);
             std::string key_content((std::istreambuf_iterator<char>(key_ifs)), (std::istreambuf_iterator<char>()));
             TLSClientKey = key_content;
             if (TLSClientKey.empty()) {
@@ -105,7 +105,7 @@ bool influxDBv2Init(const CfgData::SectionInfluxDBv2 *_cfgDataPtr)
 }
 
 
-void influxDBv2Publish(const std::string &_measurement, const std::string &_key, const std::string &_content, const std::string &_timestamp)
+esp_err_t influxDBv2Publish(const std::string &_measurement, const std::string &_key, const std::string &_content, const std::string &_timestamp)
 {
     char* response_buffer = (char*) calloc_psram_heap(std::string(TAG) + "->response_buffer", 1,
                             sizeof(char) * MAX_HTTP_OUTPUT_BUFFER, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
@@ -138,6 +138,7 @@ void influxDBv2Publish(const std::string &_measurement, const std::string &_key,
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "influxDBv2Publish: Key: " + _key + ", Content: " + _content + ", Timestamp: " + _timestamp);
 
+    esp_err_t retVal = ESP_OK;
     std::string payload;
     char nowTimestamp[21];
 
@@ -179,20 +180,25 @@ void influxDBv2Publish(const std::string &_measurement, const std::string &_key,
     ESP_ERROR_CHECK(esp_http_client_set_post_field(http_client, payload.c_str(), payload.length()));
     //LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Payload post completed");
 
-    esp_err_t err = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(http_client));
+    retVal = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(http_client));
 
-    if( err == ESP_OK ) {
+    if (retVal == ESP_OK) {
         int status_code = esp_http_client_get_status_code(http_client);
-        if (status_code < 300)
+        if (status_code < 300) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Writing data successful. HTTP response status: " + std::to_string(status_code));
-        else
+        }
+        else {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Writing data rejected. HTTP response status: " + std::to_string(status_code));
+            retVal = ESP_FAIL;
+        }
     }
     else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "HTTP client: Request failed. Error: " + intToHexString(err));
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "HTTP client: Request failed. Error: " + intToHexString(retVal));
     }
     esp_http_client_cleanup(http_client);
     free_psram_heap(std::string(TAG) + "->response_buffer", response_buffer);
+
+    return retVal;
 }
 
 

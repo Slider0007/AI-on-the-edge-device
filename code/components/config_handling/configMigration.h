@@ -6,7 +6,7 @@
 
 
 void migrateConfiguration(void);
-void migrateConfigurationIni(void);
+void migrateConfigIni(void);
 void migrateWlanIni();
 std::vector<std::string> splitString(std::string input, std::string delimiter = " = \t");
 std::vector<std::string> splitStringWLAN(std::string input, std::string _delimiter = "");

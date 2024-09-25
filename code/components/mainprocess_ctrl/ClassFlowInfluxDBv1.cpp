@@ -87,8 +87,10 @@ bool ClassFlowInfluxDBv1::doFlow(std::string zwtime)
             continue;
         }
 
-        influxDBv1Publish(sequence->paramInfluxDBv1->measurementName, sequence->paramInfluxDBv1->fieldName,
-                            sequence->sActualValue, sequence->sTimeProcessed);
+        if (ESP_OK != influxDBv1Publish(sequence->paramInfluxDBv1->measurementName, sequence->paramInfluxDBv1->fieldName,
+                            sequence->sActualValue, sequence->sTimeProcessed)) {
+            setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
+        }
     }
 
     if (!getFlowState()->isSuccessful)

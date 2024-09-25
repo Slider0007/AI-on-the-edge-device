@@ -111,7 +111,6 @@ bool ClassFlowControl::loadParameter()
     reconfigureTime(cfgClassPtr->get()->sectionNetwork.time.ntp.timeSyncEnabled, cfgClassPtr->get()->sectionNetwork.time.ntp.timeServer,
                     cfgClassPtr->get()->sectionNetwork.time.timeZone);
 
-
     return true;
 }
 
@@ -269,12 +268,12 @@ void ClassFlowControl::deinitFlow(void)
 
     for (auto &sequence : sequenceData) {
         sequence->digitRoi.clear();
-        std::vector<RoiData *>().swap(sequence->digitRoi); // Ensure that memory gets freed (instead using shrink_to_fit())
+        std::vector<RoiData *>().swap(sequence->digitRoi); // Ensure that memory gets freed (instead shrink_to_fit())
         sequence->analogRoi.clear();
-        std::vector<RoiData *>().swap(sequence->analogRoi); // Ensure that memory gets freed (instead using shrink_to_fit())
+        std::vector<RoiData *>().swap(sequence->analogRoi); // Ensure that memory gets freed (instead shrink_to_fit())
     }
     sequenceData.clear();
-    std::vector<SequenceData *>().swap(sequenceData); // Ensure that memory gets freed (instead using shrink_to_fit())
+    std::vector<SequenceData *>().swap(sequenceData); // Ensure that memory gets freed (instead shrink_to_fit())
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Deinit flow completed");
     LogFile.writeHeapInfo("deinitFlow completed");
@@ -287,8 +286,7 @@ bool ClassFlowControl::doFlowImageEvaluation(std::string time)
     FlowStateEvaluationEvent.clear();
     FlowStateEvaluationEvent.shrink_to_fit();
 
-    for (int i = 0; i < FlowControlImage.size(); ++i)
-    {
+    for (int i = 0; i < FlowControlImage.size(); ++i) {
         #ifdef DEBUG_DETAIL_ON
             LogFile.writeHeapInfo("ClassFlowControl::doFlow: " + FlowControlImage[i]->name());
         #endif
@@ -304,21 +302,22 @@ bool ClassFlowControl::doFlowImageEvaluation(std::string time)
 
             for (int j = 0; j < FlowControlImage[i]->getFlowState()->EventCode.size(); j++) {
                 if (FlowControlImage[i]->getFlowState()->EventCode[j] < 0) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActualProcessState() + "\"");
+                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Process error in state: \"" + getActualProcessState() + "\"");
                     result = false;
                     flowStateErrorInRow++;
                     flowStateDeviationInRow = 0;
                     break;
                 }
-                else {
-                    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActualProcessState() + "\"");
+                else if (FlowControlImage[i]->getFlowState()->EventCode[j] > 0) {
+                    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Process deviation in state: \"" + getActualProcessState() + "\"");
                     flowStateDeviationInRow++;
                     flowStateErrorInRow = 0;
                 }
             }
 
-            if (!result) // If an error occured, stop processing of further tasks
+            if (!result) { // If an error occured, stop processing of further tasks
                 break;
+            }
         }
     }
     return result;
@@ -345,30 +344,31 @@ bool ClassFlowControl::doFlowPublishData(std::string time)
         if (!FlowControlPublish[i]->doFlow(time)) {
             FlowStatePublishEvent.push_back(FlowControlPublish[i]->getFlowState());
 
-            for (int j = 0; j < FlowControlImage[i]->getFlowState()->EventCode.size(); j++) {
-                if (FlowControlImage[i]->getFlowState()->EventCode[j] < 0) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActualProcessState() + "\"");
+            for (int j = 0; j < FlowControlPublish[i]->getFlowState()->EventCode.size(); j++) {
+                if (FlowControlPublish[i]->getFlowState()->EventCode[j] < 0) {
+                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Process error in state: \"" + getActualProcessState() + "\"");
                     result = false;
                     flowStateErrorInRow++;
                     flowStateDeviationInRow = 0;
                     break;
                 }
-                else {
-                    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActualProcessState() + "\"");
+                else if (FlowControlPublish[i]->getFlowState()->EventCode[j] > 0) {
+                    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Process deviation in state: \"" + getActualProcessState() + "\"");
                     flowStateDeviationInRow++;
                     flowStateErrorInRow = 0;
                 }
             }
 
-            if (!result) // If an error occured, stop processing of further tasks
+            if (!result) { // If an error occured, stop processing of further tasks
                 break;
+            }
         }
     }
     return result;
 }
 
 
-bool ClassFlowControl::doFlowTakeImageOnly(std::string time)
+/*bool ClassFlowControl::doFlowTakeImageOnly(std::string time) //@TODO: Still needed?
 {
     bool result = true;
     FlowStateEvaluationEvent.clear();
@@ -382,19 +382,19 @@ bool ClassFlowControl::doFlowTakeImageOnly(std::string time)
                 MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
             #endif //ENABLE_MQTT
 
-            if (!FlowControlPublish[i]->doFlow(time)) {
+            if (!FlowControlImage[i]->doFlow(time)) {
                 FlowStateEvaluationEvent.push_back(FlowControlImage[i]->getFlowState());
 
                 for (int j = 0; j < FlowControlImage[i]->getFlowState()->EventCode.size(); j++) {
                     if (FlowControlImage[i]->getFlowState()->EventCode[j] < 0) {
-                        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Error occured during processing of state \"" + getActualProcessState() + "\"");
+                        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Process error in state: \"" + getActualProcessState() + "\"");
                         flowStateErrorInRow++;
                         flowStateDeviationInRow = 0;
                         result = false;
                         break;
                     }
                     else {
-                        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Deviation occured during processing of state \"" + getActualProcessState() + "\"");
+                        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Process deviation in state: \"" + getActualProcessState() + "\"");
                         flowStateDeviationInRow++;
                         flowStateErrorInRow = 0;
                     }
@@ -406,15 +406,17 @@ bool ClassFlowControl::doFlowTakeImageOnly(std::string time)
         }
     }
     return result;
-}
+}*/
 
 
 bool ClassFlowControl::flowStateEventOccured()
 {
-    if (FlowStateEvaluationEvent.size() != 0 || FlowStatePublishEvent.size() != 0)
+    if (FlowStateEvaluationEvent.size() != 0 || FlowStatePublishEvent.size() != 0) {
         return true;
-    else
+    }
+    else {
         return false;
+    }
 }
 
 
@@ -429,7 +431,7 @@ void ClassFlowControl::postProcessEventHandler()
             }
         }
     }
-    // Reset of errors will be peformed before next flow starts --> functions doFlowImageEvaluation, doFlowTakeImageOnly
+    // Reset of errors will be peformed before next flow starts --> functions doFlowImageEvaluation
     // FlowStateEvaluationEvent.clear();
 
     for (int i = 0; i < FlowStatePublishEvent.size(); ++i) {
@@ -448,8 +450,9 @@ void ClassFlowControl::postProcessEventHandler()
 
 bool ClassFlowControl::getStatusSetupModus()
  {
-    if (cfgClassPtr->get()->sectionOperationMode.opMode == OPMODE_SETUP)
+    if (cfgClassPtr->get()->sectionOperationMode.opMode == OPMODE_SETUP) {
         return true;
+    }
 
     return false;
  }
@@ -463,8 +466,9 @@ float ClassFlowControl::getProcessInterval(void)
 
 bool ClassFlowControl::isAutoStart()
 {
-    if (cfgClassPtr->get()->sectionOperationMode.opMode == OPMODE_AUTO)
+    if (cfgClassPtr->get()->sectionOperationMode.opMode == OPMODE_AUTO) {
         return true;
+    }
 
     return false;
 }
@@ -474,8 +478,9 @@ bool ClassFlowControl::isAutoStart(long &_interval)
 {
     _interval = cfgClassPtr->get()->sectionOperationMode.automaticProcessInterval * 60 * 1000; // minutes -> ms
 
-    if (cfgClassPtr->get()->sectionOperationMode.opMode == OPMODE_AUTO)
+    if (cfgClassPtr->get()->sectionOperationMode.opMode == OPMODE_AUTO) {
         return true;
+    }
 
     return false;
 }
@@ -502,36 +507,37 @@ std::string ClassFlowControl::getActualProcessState()
 
 std::string ClassFlowControl::translateActualProcessState(std::string classname)
 {
-    if (classname.compare("ClassFlowTakeImage") == 0)
+    if (classname.compare("ClassFlowTakeImage") == 0) {
         return std::string(FLOW_TAKE_IMAGE);
-
-    else if (classname.compare("ClassFlowAlignment") == 0)
+    }
+    else if (classname.compare("ClassFlowAlignment") == 0) {
         return std::string(FLOW_ALIGNMENT);
-
-    else if (classname.compare("ClassFlowCNNGeneral - Digit") == 0)
+    }
+    else if (classname.compare("ClassFlowCNNGeneral - Digit") == 0) {
         return std::string(FLOW_PROCESS_DIGIT_ROI);
-
-    else if (classname.compare("ClassFlowCNNGeneral - Analog") == 0)
+    }
+    else if (classname.compare("ClassFlowCNNGeneral - Analog") == 0) {
         return std::string(FLOW_PROCESS_ANALOG_ROI);
-
-    else if (classname.compare("ClassFlowPostProcessing") == 0)
+    }
+    else if (classname.compare("ClassFlowPostProcessing") == 0) {
         return std::string(FLOW_POSTPROCESSING);
-
-    #ifdef ENABLE_MQTT
-    else if (classname.compare("ClassFlowMQTT") == 0)
+    }
+#ifdef ENABLE_MQTT
+    else if (classname.compare("ClassFlowMQTT") == 0) {
         return std::string(FLOW_PUBLISH_MQTT);
-    #endif //ENABLE_MQTT
-
-    #ifdef ENABLE_INFLUXDB
-    else if (classname.compare("ClassFlowInfluxDBv1") == 0)
+    }
+#endif //ENABLE_MQTT
+#ifdef ENABLE_INFLUXDB
+    else if (classname.compare("ClassFlowInfluxDBv1") == 0) {
         return std::string(FLOW_PUBLISH_INFLUXDB);
-
-    else if (classname.compare("ClassFlowInfluxDBv2") == 0)
+    }
+    else if (classname.compare("ClassFlowInfluxDBv2") == 0) {
         return std::string(FLOW_PUBLISH_INFLUXDB2);
-    #endif //ENABLE_INFLUXDB
-
-    else
+    }
+#endif //ENABLE_INFLUXDB
+    else {
         return "Unkown State (" + classname + ")";
+    }
 }
 
 
@@ -551,38 +557,46 @@ void ClassFlowControl::clearFlowStateEventInRowCounter()
 
 int ClassFlowControl::getFlowStateErrorOrDeviation()
 {
-    if (flowStateErrorInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT)
+    if (flowStateErrorInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT) {
         return MULTIPLE_ERROR_IN_ROW;
-    else if (flowStateDeviationInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT)
+    }
+    else if (flowStateDeviationInRow >= FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT) {
         return MULTIPLE_DEVIATION_IN_ROW;
-    else if (flowStateErrorInRow > 0)
+    }
+    else if (flowStateErrorInRow > 0) {
         return SINGLE_ERROR;
-    else if (flowStateDeviationInRow > 0)
+    }
+    else if (flowStateDeviationInRow > 0) {
         return SINGLE_DEVIATION;
-    else
+    }
+    else {
         return NONE;
+    }
 }
 
 
 void ClassFlowControl::drawDigitRoi(CImageBasis *image)
 {
-    if (flowdigit)
+    if (flowdigit) {
         flowdigit->drawROI(image);
+    }
 }
 
 
 void ClassFlowControl::drawAnalogRoi(CImageBasis *image)
 {
-    if (flowanalog)
+    if (flowanalog) {
         flowanalog->drawROI(image);
+    }
 }
 
 
 #ifdef ENABLE_MQTT
 bool ClassFlowControl::initMqttService()
 {
-    if (flowMQTT == NULL) // Service disabled
+    if (flowMQTT == NULL) { // Service disabled
         return true;
+    }
 
     return flowMQTT->initMqtt(cfgClassPtr->get()->sectionOperationMode.automaticProcessInterval);
 }
@@ -596,8 +610,9 @@ std::string ClassFlowControl::getSequenceResultInline(int type, std::string sequ
     std::string out = "";
 
     for (int i = 0; const auto &sequence : sequenceData) {
-        if (!sequenceName.empty() && sequence->sequenceName != sequenceName)
+        if (!sequenceName.empty() && sequence->sequenceName != sequenceName) {
             continue;
+        }
 
         out += sequence->sequenceName + "\t";
         switch (type) {
@@ -627,8 +642,9 @@ std::string ClassFlowControl::getSequenceResultInline(int type, std::string sequ
                 break;
         }
 
-        if (sequenceName.empty() && i < sequenceData.size()-1)
+        if (sequenceName.empty() && i < sequenceData.size() - 1) {
             out += "\r\n";
+        }
 
         i++;
     }
@@ -639,8 +655,7 @@ std::string ClassFlowControl::getSequenceResultInline(int type, std::string sequ
 
 std::string ClassFlowControl::getFallbackValue(std::string _sequenceName)
 {
-    if (flowpostprocessing)
-    {
+    if (flowpostprocessing) {
         return flowpostprocessing->getFallbackValue(_sequenceName);
     }
 
@@ -668,10 +683,12 @@ bool ClassFlowControl::setFallbackValue(std::string _sequenceName, std::string _
     }
 
     if (flowpostprocessing) {
-        if (flowpostprocessing->setFallbackValue(newValueAsDouble, _sequenceName))
+        if (flowpostprocessing->setFallbackValue(newValueAsDouble, _sequenceName)) {
             return true;
-        else
+        }
+        else {
             return false;
+        }
     }
     else {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setFallbackValue: ERROR - Class Post-Processing not initialized");
@@ -703,8 +720,6 @@ esp_err_t ClassFlowControl::sendRawJPG(httpd_req_t *req)
 
 esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
 {
-    ESP_LOGD(TAG, "ClassFlowControl::getJPGStream %s", _fn.c_str());
-
     #ifdef DEBUG_DETAIL_ON
         LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - Start");
     #endif
@@ -974,17 +989,14 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
         LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - before send");
     #endif
 
-    if (_send)
-    {
-        ESP_LOGD(TAG, "Sending file: %s", _fn.c_str());
+    if (_send) {
         setContentTypeFromFile(req, _fn.c_str());
         result = _send->sendJPGtoHTTP(req);
-        /* Respond with an empty chunk to signal HTTP response completion */
-        httpd_resp_send_chunk(req, NULL, 0);
-        ESP_LOGD(TAG, "File sending complete");
+        httpd_resp_send_chunk(req, NULL, 0); // Respond with an empty chunk to signal HTTP response completion
 
-        if (_sendDelete)
+        if (_sendDelete) {
             delete _send;
+        }
 
         _send = NULL;
     }

@@ -304,7 +304,7 @@ struct CfgData {
     // InfluxDB v1.x service
     struct SectionInfluxDBv1 {
         bool enabled = false;
-        std::string uri = ""; // e.g. http://192.168.x.x:8087
+        std::string uri = ""; // e.g. http://192.168.x.x:8086
         std::string database = "";
         int authMode = AUTH_NONE;
         std::string username = "";
@@ -320,7 +320,7 @@ struct CfgData {
     // InfluxDB v2.x service
     struct SectionInfluxDBv2 {
         bool enabled = false;
-        std::string uri = ""; // e.g. http://192.168.x.x:8087
+        std::string uri = ""; // e.g. http://192.168.x.x:8086
         std::string bucket = "";
         int authMode = AUTH_NONE;
         std::string organization = "";

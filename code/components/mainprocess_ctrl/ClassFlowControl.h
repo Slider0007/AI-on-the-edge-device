@@ -67,7 +67,7 @@ class ClassFlowControl : public ClassFlow
     bool loadParameter();
     bool doFlowImageEvaluation(std::string time);
     bool doFlowPublishData(std::string time);
-    bool doFlowTakeImageOnly(std::string time);
+    //bool doFlowTakeImageOnly(std::string time); //@TODO
 
     bool getStatusSetupModus();
     float getProcessInterval();

@@ -211,8 +211,9 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
     if (!retValData)
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Failed to publish process data");
 
-    if (!retValCommon || !retValStatus || !retValData) // If publishing of one of the clusters failed
-        return false;
+    if (!retValCommon || !retValStatus || !retValData) { // If publishing of one of the clusters failed
+        setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
+    }
 
     if (!getFlowState()->isSuccessful)
         return false;

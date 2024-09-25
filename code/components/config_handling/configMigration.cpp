@@ -16,14 +16,15 @@ static const char *TAG = "CFGMIGRATION";
 void migrateConfiguration(void)
 {
     // ********************************************************************************
-    // Legacy: Support config.ini as parameter management
-    // Config.ini paramter (config version 1 or 2) gets read out and gets migrated to new structure (version 3 and newer)
+    // Legacy: Support config.ini / wlan.ini migration
+    // Firmware version: v15.0 - v16.2, Config version: 0 - 2
     // ********************************************************************************
-    migrateConfigurationIni();
+    migrateConfigIni();
+
 
     // ********************************************************************************
-    // New JSON based config handling
-    // Structure located in cfgDataStruct.h
+    // Config based on JSON notation
+    // Firmware version: v17.x and newer, Config version: 3 and newer
     // ********************************************************************************
     bool migrated = false;
     ConfigClass::getInstance()->cfgTmp()->sectionConfig.desiredConfigVersion = 3; // Set to new version whenever to data structure was modified
@@ -42,14 +43,32 @@ void migrateConfiguration(void)
                 LogFile.writeToFile(ESP_LOG_WARN, TAG, "cfgData: Migrate v" + std::to_string(configFileVersion) +
                                                         " > v" + std::to_string(configFileVersion+1));
                 migrated = true;
+
+                // Update parameter
+                // ---------------------
+
             }
+    }
+
+    // Migration detected
+    if (migrated) {
+        deleteFile(CONFIG_PERSISTENCE_FILE_BACKUP);
+
+        if (!renameFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_BACKUP)) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create backup of config.json file");
+            return;
+        }
+
+        ConfigClass::getInstance()->persistConfig();
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config file migrated. Saved backup to " + std::string(CONFIG_PERSISTENCE_FILE_BACKUP));
     }
 }
 
 
-void migrateConfigurationIni(void)
+void migrateConfigIni(void)
 {
-    if (!fileExists(CONFIG_FILE_LEGACY)) { // No migration from config.ini needed
+    // No migration from config.ini needed
+    if (!fileExists(CONFIG_FILE_LEGACY)) {
         return;
     }
 
@@ -115,9 +134,10 @@ void migrateConfigurationIni(void)
                     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) +
                                 " > v" + std::to_string(configFileVersion+1) + " => Config will be handled in firmware + config.json");
 
-                    // Remove unused binary files
+                    // Remove unused binary files and readme file
                     deleteFile("/sdcard/bootloader.bin");
                     deleteFile("/sdcard/partitions.bin");
+                    deleteFile("/sdcard/readme.md");
 
                     // Rename marker files to new naming scheme
                     renameFile("/sdcard/config/ref0.jpg", "/sdcard/config/marker1.jpg");

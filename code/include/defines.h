@@ -77,6 +77,7 @@
 
 //server_GPIO + server_file + SoftAP + ClassFlowControl + Main + SoftAP
 #define CONFIG_PERSISTENCE_FILE "/sdcard/config/config.json" // Config persistence file for firmware v17.x and newer
+#define CONFIG_PERSISTENCE_FILE_BACKUP "/sdcard/config/backup/config_json.bak" // Config persistence backup file for firmware v17.x and newer
 
 #define CONFIG_FILE_LEGACY "/sdcard/config/config.ini" // Config file for firmware v16.x and older
 #define CONFIG_FILE_BACKUP_LEGACY "/sdcard/config/backup/config_ini.bak"

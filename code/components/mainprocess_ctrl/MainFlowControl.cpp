@@ -1042,7 +1042,7 @@ void task_autodoFlow(void *pvParameter)
                                     std::to_string(getUptime() - cycleStartTime) + "s)");
             }
             else {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Image evaluation process error occured");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Image evaluation: Process error occured");
             }
 
             taskAutoFlowState = FLOW_TASK_STATE_PUBLISH_DATA;               // Continue with TASKS after FLOW FINISHED
@@ -1053,7 +1053,7 @@ void task_autodoFlow(void *pvParameter)
         else if (taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA) {
 
             if (!flowctrl.doFlowPublishData(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Publish data process error occured");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Publish data: Process error occured");
             }
             taskAutoFlowState = FLOW_TASK_STATE_ADDITIONAL_TASKS;           // Continue with TASKS after FLOW FINISHED
         }
