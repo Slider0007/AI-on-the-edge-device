@@ -79,7 +79,7 @@ bool MQTTPublish(std::string _key, std::string _content, int _qos, bool _retainF
         return true;
     }
     else {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Publish skipped. Client not initalized / connected | Topic: " + _key);
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Skip publish request: Not connected to broker | Topic: " + _key);
         return false;
     }
 }

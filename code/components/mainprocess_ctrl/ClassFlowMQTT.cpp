@@ -104,8 +104,9 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
     bool retValCommon = true, retValStatus = true, retValData = true;
 
     if (!getMQTTisConnected()) {
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip publish, not (yet) connected to broker");
-        return true;
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip process state: Not connected to broker");
+        setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
+        return false;
     }
 
     // Publish device info / status + HA Discovery
@@ -212,7 +213,7 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Failed to publish process data");
 
     if (!retValCommon || !retValStatus || !retValData) { // If publishing of one of the clusters failed
-        setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
+        setFlowStateHandlerEvent(2); // Set warning event code, continue process flow
     }
 
     if (!getFlowState()->isSuccessful)
