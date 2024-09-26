@@ -36,15 +36,7 @@ bool isValidIpAddress(const char *ipAddress)
 }
 
 
-ConfigClass::ConfigClass()
-{
-    // Use preallocted buffer to avoid fragmentation and reduce internal RAM usage using SPIRAM
-    cJsonObjectBuffer = (uint8_t *)heap_caps_calloc(1, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    jsonBuffer = (char *)heap_caps_calloc(1, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-}
-
-
-ConfigClass::~ConfigClass()
+void ConfigClass::clearCfgDataTemp()
 {
     cfgDataTemp.sectionNumberSequences.sequence.clear();
     cfgDataTemp.sectionNumberSequences.sequence.shrink_to_fit();
@@ -68,7 +60,11 @@ ConfigClass::~ConfigClass()
     cfgDataTemp.sectionInfluxDBv2.sequence.shrink_to_fit();
     cfgDataTemp.sectionGpio.gpioPin.clear();
     cfgDataTemp.sectionGpio.gpioPin.shrink_to_fit();
+}
 
+
+void ConfigClass::clearCfgData()
+{
     cfgData.sectionNumberSequences.sequence.clear();
     cfgData.sectionNumberSequences.sequence.shrink_to_fit();
     for (auto &seq : cfgData.sectionDigit.sequence) {
@@ -91,6 +87,21 @@ ConfigClass::~ConfigClass()
     cfgData.sectionInfluxDBv2.sequence.shrink_to_fit();
     cfgData.sectionGpio.gpioPin.clear();
     cfgData.sectionGpio.gpioPin.shrink_to_fit();
+}
+
+
+ConfigClass::ConfigClass()
+{
+    // Use preallocted buffer to avoid fragmentation and reduce internal RAM usage using SPIRAM
+    cJsonObjectBuffer = (uint8_t *)heap_caps_calloc(1, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    jsonBuffer = (char *)heap_caps_calloc(1, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+}
+
+
+ConfigClass::~ConfigClass()
+{
+    clearCfgDataTemp();
+    clearCfgData();
 
     delete cJsonObjectBuffer;
     cJsonObjectBuffer = NULL;
@@ -105,8 +116,9 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 {
     std::stringstream streamBuffer;
 
-    if (unityTest) { // Inject test data
-        streamBuffer.str(unityTestData);
+    if (unityTest) { // Unity test
+        clearCfgDataTemp(); // Clear internal struct
+        streamBuffer.str(unityTestData); // Inject test data
     }
     else { // Read data from file
         std::ifstream file(CONFIG_PERSISTENCE_FILE);
@@ -143,7 +155,7 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
     cJsonObject = cJSON_Parse(streamBuffer.str().c_str());
     if (cJsonObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseConfig: Failed to parse JSON data | Fallback: Use default config");
-        // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started.
+        // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started to reconfigure.
     }
 
     // Parse config out of cJSON object structure
@@ -1175,7 +1187,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
         arrEl = cJSON_GetObjectItem(objArrEl, "intensitycorrectionfactor");
         if (cJSON_IsNumber(arrEl))
-            gpioElTemp->intensityCorrectionFactor = std::clamp(arrEl->valueint, 0, 100);
+            gpioElTemp->intensityCorrectionFactor = std::clamp(arrEl->valueint, 1, 100);
     }
 
 
@@ -1221,7 +1233,9 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "parseConfig: No SSID config, try to use SSID and password from NVS");
         }
 
-        loadDataFromNVS("wlan_ssid", cfgDataTemp.sectionNetwork.wlan.ssid);
+        if (!unityTest) {
+            loadDataFromNVS("wlan_ssid", cfgDataTemp.sectionNetwork.wlan.ssid);
+        }
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "password");
@@ -1230,7 +1244,9 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         saveDataToNVS("wlan_pw", cfgDataTemp.sectionNetwork.wlan.password);
     }
     else {
-        loadDataFromNVS("wlan_pw", cfgDataTemp.sectionNetwork.wlan.password);
+        if (!unityTest) {
+            loadDataFromNVS("wlan_pw", cfgDataTemp.sectionNetwork.wlan.password);
+        }
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "hostname");
@@ -1239,7 +1255,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ipv4"), "networkconfig");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = objEl->valueint;
+        cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = std::clamp(objEl->valueint, 0, 1);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ipv4"), "ipaddress");
     if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring))
@@ -2090,6 +2106,7 @@ esp_err_t handlerGetConfigRequest(httpd_req_t *req)
     else if (task.compare("reload") == 0) { // Load configuration and reinit process
         return triggerReloadConfig(req);
     }
+
     return ConfigClass::getInstance()->getConfigRequest(req); // Response with configuration
 }
 

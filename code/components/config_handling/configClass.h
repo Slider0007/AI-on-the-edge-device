@@ -62,6 +62,8 @@ class ConfigClass
     // Only for testing purpose --> unity test
     CfgData *get(void) { return &cfgData; };
     char *getJsonBuffer(void) { return jsonBuffer; };
+    void clearCfgData(void);
+    void clearCfgDataTemp(void);
     /***********************************************/
 };
 

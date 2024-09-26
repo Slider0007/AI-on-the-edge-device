@@ -15,7 +15,7 @@ UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType)
     ClassFlowCNNGeneral *analog = new ClassFlowCNNGeneral(NULL, "Analog", anaType);
 
     // Init default config (including sequence related config)
-    *ConfigClass::getInstance()->get() = {};
+    ConfigClass::getInstance()->clearCfgData();
     ConfigClass::getInstance()->readConfigFile(true);
 
     // Init sequence result data struct

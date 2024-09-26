@@ -13,14 +13,21 @@ WebUI configuration page (question mark symbol next to each parameter).
 - JSON: `/config`
 - HTML: `/config?task=reload`
 
-1. HTML query request to reload configuration and reinit process:
+1. HTML query request to show API name and version:
+    - Payload:
+      - `/config?task=api_name`
+    - Response:
+      - Content type: `HTML`
+      - Content: HTML query response, e.g. `config:v1`
+
+2. HTML query request to reload configuration and reinit process:
     - Payload:
       - `/config?task=reload`
     - Response:
       - Content type: `HTML`
       - Content: HTML query response
 
-2. Get config in JSON notation (GET handler)
+3. Get config in JSON notation (GET handler)
     - Payload:
       - No payload needed
     - Response:
@@ -28,7 +35,7 @@ WebUI configuration page (question mark symbol next to each parameter).
       - Content: JSON response
     - Example: see below
 
-3. Set config in JSON notation (POST handler)
+4. Set config in JSON notation (POST handler)
     - Payload:
       - Configuration in JSON notation
       - Setting only a single, some parameter or all parameter is supported
@@ -186,13 +193,13 @@ WebUI configuration page (question mark symbol next to each parameter).
 				"sequenceid":	0,
 				"sequencename":	"main",
 				"decimalshift":	0,
-				"analogdigitsyncvalue":	"7.9",
+				"analogdigitsyncvalue":	"9.2",
 				"extendedresolution":	true,
 				"ignoreleadingnan":	false,
 				"checkdigitincreaseconsistency":	false,
-				"allownegativerate":	false,
 				"maxratechecktype":	1,
-				"maxrate":	"0.10",
+				"maxrate":	"0.150",
+				"allownegativerate":	false,
 				"usefallbackvalue":	true,
 				"fallbackvalueagestartup":	720
 			}],
