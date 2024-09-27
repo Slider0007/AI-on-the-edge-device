@@ -38,10 +38,18 @@ As a result, you get the digitized value of your meter. There are several option
 
 
 ## Supported Hardware
+### Board
+
 | Board Type                                                                     | SOC      | Firmware Release | Remarks                       
-|:---                                                                            |:---      |:---           |:--- 
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           | - Only boards with >4MB RAM are supported<br>- Beware of inferior quality Chinese clones
-| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |- No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) necessary<br>- Running quite hot, small heat sink recommended
+|:---                                                                            |:---      |:---              |:--- 
+| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All              | - Only boards with >4MB RAM are supported<br>- Beware of inferior quality Chinese clones
+| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0    |- No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) necessary<br>- Running quite hot, small heat sink recommended
+| [Freenove ESP32S3 WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3  | $\ge$ v17.0.0 |- SOC and pin compatible Chinese clones supported
+
+### Camera
+| Camera Type                                                                    | Resolution           | Firmware Release | Remarks                       
+|:---                                                                            |:---                  |:---              |:--- 
+| [OV2640](https://www.arducam.com/ov2640/)                                      | 2MP (max. 1600x1200) | All              | - Officially EOL since 2009, but still very popular<br>- Pin and function compatible Chinese clones are supported
 
 
 ## Device Installation
@@ -68,8 +76,8 @@ A possibly already available development version (upcoming release version) can 
 
 ### 3. Install MCU Part Of Firmware
 Initially the MCU of the device has to be flashed via a direct USB connection. Further updates can be performed directly over the air (OTA). <br>
-For initial installation, use content of `AI-on-the-edge-device__manual-setup__{Board Type}__*.zip`.<br>
-NOTE: OTA updates will be performed with `AI-on-the-edge-device__update__{Board Type}__*.zip` package.
+For initial installation, use content of `AI-on-the-edge-device__manual-setup__{board type}__*.zip`.<br>
+NOTE: OTA updates will be performed with `AI-on-the-edge-device__update__{board type}__*.zip` package.
 
 <b>IMPORTANT:</b> Make sure to use correct firmware package for your board type.
 
@@ -81,9 +89,9 @@ See [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installa
 Note: Installation using web installer is not supported by this forked repo.
 
 ### 4. Install SD Card Content
-The SD card can be setup using the device's local WLAN hotspot after the MCU firmware got successfully installed  (`AI-on-the-edge-device__remote-setup__*.zip`). See the 
+The SD card can be setup using the device's local WLAN hotspot after the MCU firmware got successfully installed  (`AI-on-the-edge-device__remote-setup__{board type}__*.zip`). See the 
 [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#remote-setup-using-the-built-in-access-point) for details. For this to work, the SD card must be FAT formated (which is the default on a new SD card).<br>
-Alternatively the SD card still can be setup manually without using hotspot, see the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#3-sd-card) for details (`AI-on-the-edge-device__manual-setup__*.zip`).
+Alternatively the SD card still can be setup manually without using hotspot, see the [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#3-sd-card) for details (`AI-on-the-edge-device__manual-setup__{board type}__*.zip`).
 
 ⚠️ Do not use github source files in any case, use only release related zip package. Otherwise functionality cannot be fully guaranteed!
 

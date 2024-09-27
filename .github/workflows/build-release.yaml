@@ -41,7 +41,7 @@ jobs:
         plat:
          - esp32cam
          - xiao-esp32s3-sense
-         - freenove-esp32s3
+         - freenove-esp32s3-n16r8
     steps:
     - name: Checkout branch
       if: ${{ ! needs.prepare-release.outputs.release_created }}
@@ -228,7 +228,7 @@ jobs:
         plat:
          - esp32cam
          - xiao-esp32s3-sense
-         - freenove-esp32s3
+         - freenove-esp32s3-n16r8
 
     # Sets permissions of the GITHUB_TOKEN to allow downloading artifacts
     permissions:
@@ -255,16 +255,16 @@ jobs:
         rm -rf release
         mkdir -p release
         cd "AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        zip -r ../release/${{ matrix.plat }}/AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
+        zip -r ../release/AI-on-the-edge-device__update__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
         cd "AI-on-the-edge-device__manual-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        zip -r ../release/${{ matrix.plat }}/AI-on-the-edge-device__manual-setup__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
+        zip -r ../release/AI-on-the-edge-device__manual-setup__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
         cd "AI-on-the-edge-device__remote-setup__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        zip -r ../release/${{ matrix.plat }}/AI-on-the-edge-device__remote-setup__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
+        zip -r ../release/AI-on-the-edge-device__remote-setup__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
         cd "AI-on-the-edge-device__debug-files__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
-        zip -r ../release/${{ matrix.plat }}/AI-on-the-edge-device__debug-files__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
+        zip -r ../release/AI-on-the-edge-device__debug-files__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
 
     - name: Upload artifacts to release tag

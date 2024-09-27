@@ -324,7 +324,7 @@ CONFIG_WPA_11R_SUPPORT=n
 
 #elif ENV_BOARD_TYPE == 3
 #define BOARD_FREENOVE_ESP32S3
-#define BOARD_TYPE_NAME     "Freenove-ESP32S3"      // Keep Board type equal to main board environment name.
+#define BOARD_TYPE_NAME     "Freenove-ESP32S3-N16R8"// Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
 #else
 #error "Board type (ENV_BOARD_TYPE) not defined"
