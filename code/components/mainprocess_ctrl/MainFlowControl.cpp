@@ -990,8 +990,11 @@ void task_autodoFlow(void *pvParameter)
                         }
                     }
                 }
-                flowctrl.clearFlowStateEventInRowCounter();
+                else {
+                    taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART; // Continue to test if AUTOSTART is TRUE
+                }
 
+                flowctrl.clearFlowStateEventInRowCounter();
                 taskYIELD();
             }
         }
