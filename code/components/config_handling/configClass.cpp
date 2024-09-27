@@ -379,7 +379,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
             cfgDataTemp.sectionImageAlignment.marker[i].y = std::max(arrEl->valueint, 1);
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "debug"), "savedebuginfo");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "debug"), "savedebuginfo");
     if (cJSON_IsBool(objEl))
         cfgDataTemp.sectionImageAlignment.debug.saveDebugInfo = objEl->valueint;
 

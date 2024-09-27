@@ -17,14 +17,14 @@ void migrateConfiguration(void)
 {
     // ********************************************************************************
     // Legacy: Support config.ini / wlan.ini migration
-    // Firmware version: v15.0 - v16.2, Config version: 0 - 2
+    // Firmware version: v15.0 - v16.x, Config version: 0 - 2
     // ********************************************************************************
     migrateConfigIni();
 
 
     // ********************************************************************************
     // Config based on JSON notation
-    // Firmware version: v17.x and newer, Config version: 3 and newer
+    // Firmware version: v17.0 and newer, Config version: 3 and newer
     // ********************************************************************************
     bool migrated = false;
     ConfigClass::getInstance()->cfgTmp()->sectionConfig.desiredConfigVersion = 3; // Set to new version whenever to data structure was modified
@@ -134,10 +134,11 @@ void migrateConfigIni(void)
                     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) +
                                 " > v" + std::to_string(configFileVersion+1) + " => Config will be handled in firmware + config.json");
 
-                    // Remove unused binary files and readme file
+                    // Remove unused binary files, readme file and legacy config backup file
                     deleteFile("/sdcard/bootloader.bin");
                     deleteFile("/sdcard/partitions.bin");
                     deleteFile("/sdcard/readme.md");
+                    deleteFile("/sdcard/config/config.bak");
 
                     // Rename marker files to new naming scheme
                     renameFile("/sdcard/config/ref0.jpg", "/sdcard/config/marker1.jpg");
@@ -285,11 +286,8 @@ void migrateConfigIni(void)
                         idx++;
                     }
                 }
-                else if (section == "[Digits]") {
-                    if (configLines[i].starts_with(";"))
-                        ConfigClass::getInstance()->cfgTmp()->sectionDigit.enabled = false;
-                    else
-                        ConfigClass::getInstance()->cfgTmp()->sectionDigit.enabled = true;
+                else if (section == "[Digits]" || section == ";[Digits]") {
+                    ConfigClass::getInstance()->cfgTmp()->sectionDigit.enabled = !section.starts_with(";");
 
                     splitted = splitString(configLines[i+1]);
 
@@ -357,11 +355,8 @@ void migrateConfigIni(void)
                         }
                     }
                 }
-                else if (section == "[Analog]") {
-                    if (configLines[i].starts_with(";"))
-                        ConfigClass::getInstance()->cfgTmp()->sectionAnalog.enabled = false;
-                    else
-                        ConfigClass::getInstance()->cfgTmp()->sectionAnalog.enabled = true;
+                else if (section == "[Analog]" || section == ";[Analog]") {
+                    ConfigClass::getInstance()->cfgTmp()->sectionAnalog.enabled = !section.starts_with(";");
 
                     splitted = splitString(configLines[i+1]);
 
@@ -427,13 +422,7 @@ void migrateConfigIni(void)
 
                         for (auto &seqEl : ConfigClass::getInstance()->cfgTmp()->sectionPostProcessing.sequence) {
                             if (seqEl.sequenceName == toLower(splitted[0].substr(0, splitted[0].find_first_of(".")))) {
-                                if (parameter == "FALLBACKVALUEUSE" && (splitted.size() > 1)) {
-                                    seqEl.useFallbackValue = (toUpper(splitted[1]) == "TRUE");
-                                }
-                                else if (parameter == "FALLBACKVALUEAGESTARTUP" && (splitted.size() > 1)) {
-                                    seqEl.fallbackValueAgeStartup = std::stoi(splitted[1]);
-                                }
-                                else if (parameter == "ALLOWNEGATIVERATES" && (splitted.size() > 1)) {
+                                if (parameter == "ALLOWNEGATIVERATES" && (splitted.size() > 1)) {
                                     seqEl.allowNegativeRate = (toUpper(splitted[1]) == "TRUE");
                                 }
                                 else if (parameter == "DECIMALSHIFT" && (splitted.size() > 1)) {
@@ -473,11 +462,8 @@ void migrateConfigIni(void)
                         ConfigClass::getInstance()->cfgTmp()->sectionPostProcessing.debug.saveDebugInfo = (toUpper(splitted[1]) == "TRUE");
                     }
                 }
-                else if (section == "[MQTT]") {
-                    if (configLines[i].starts_with(";"))
-                        ConfigClass::getInstance()->cfgTmp()->sectionMqtt.enabled = false;
-                    else
-                        ConfigClass::getInstance()->cfgTmp()->sectionMqtt.enabled = true;
+                else if (section == "[MQTT]" || section == ";[MQTT]") {
+                    ConfigClass::getInstance()->cfgTmp()->sectionMqtt.enabled = !section.starts_with(";");
 
                     splitted = splitString(configLines[i+1]);
 
@@ -571,11 +557,8 @@ void migrateConfigIni(void)
                         }
                     }
                 }
-                else if (section == "[InfluxDB]") {
-                    if (configLines[i].starts_with(";"))
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.enabled = false;
-                    else
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.enabled = true;
+                else if (section == "[InfluxDB]" || section == ";[InfluxDB]") {
+                    ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.enabled = !section.starts_with(";");
 
                     splitted = splitString(configLines[i+1]);
 
@@ -628,11 +611,8 @@ void migrateConfigIni(void)
                         }
                     }
                 }
-                else if (section == "[InfluxDBv2]") {
-                    if (configLines[i].starts_with(";"))
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.enabled = false;
-                    else
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.enabled = true;
+                else if (section == "[InfluxDBv2]" || section == ";[InfluxDBv2]") {
+                    ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.enabled = !section.starts_with(";");
 
                     splitted = splitString(configLines[i+1]);
 
@@ -683,7 +663,7 @@ void migrateConfigIni(void)
                         }
                     }
                 }
-                else if (section == "[GPIO]") {
+                else if (section == "[GPIO]" || section == ";[GPIO]" ) {
                     // GPIO config migration is not implemented (depends on hardware) --> Needs to be configured from scratch
                 }
                 else if (section == "[AutoTimer]") {
