@@ -54,7 +54,7 @@ esp_err_t getDataFileList(httpd_req_t *req)
 
     if (!dir) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getDataFileList: Failed to open directory: " + std::string(verz_name));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory"); // Respond with 404 Not Found
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
         return ESP_FAIL;
     }
 
@@ -111,7 +111,7 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
 
     if (!dir) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getTfliteFileList: Failed to open directory: " + std::string(verz_name));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory"); // Respond with 404 Not Found
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
         return ESP_FAIL;
     }
 
@@ -158,8 +158,8 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
 esp_err_t sendFile(httpd_req_t *req, std::string filename)
 {
     FILE *fd = fopen(filename.c_str(), "r");
-    if (!fd) {
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404()); // Respond with 404 Not Found
+    if (fd == NULL) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
         return ESP_FAIL;
     }
 
@@ -167,11 +167,10 @@ esp_err_t sendFile(httpd_req_t *req, std::string filename)
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(fd, NULL, _IOFBF, 512);
 
-    ESP_LOGD(TAG, "Sending file: %s", filename.c_str());
+    ESP_LOGI(TAG, "Sending file: %s", filename.c_str());
     // httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
-    /* For all files with the following file extention tell
-       the webbrowser to cache them for a long period */
+    // For all files with the following file extention tell the webbrowser to cache them for a long period
     if (endsWith(filename, ".html") ||
         endsWith(filename, ".htm") ||
         endsWith(filename, ".css") ||
@@ -185,8 +184,8 @@ esp_err_t sendFile(httpd_req_t *req, std::string filename)
         endsWith(filename, ".png") ||
         endsWith(filename, ".md") ||
         endsWith(filename, ".webmanifest") ||
-        endsWith(filename, ".txt")) {
-
+        endsWith(filename, ".txt"))
+    {
         if (filename == "/sdcard/html/index.html") {
             httpd_resp_set_hdr(req, "Cache-Control", "max-age=0");
         }
@@ -212,9 +211,7 @@ esp_err_t sendFile(httpd_req_t *req, std::string filename)
             fclose(fd);
             std::string msg_txt = "sendFile: Failed to send file: " + filename;
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
-            /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
-            /* Respond with 500 Internal Server Error */
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
             return ESP_FAIL;
         }
@@ -243,7 +240,7 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
 
     fd = fopen(currentfilename.c_str(), "r");
     if (fd == NULL) {
-        //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
+        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
         httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
         return ESP_OK;
     }
@@ -300,9 +297,7 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
             fclose(fd);
             std::string msg_txt = "sendLogfile: File sending failed: " + currentfilename;
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
-            /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
-            /* Respond with 500 Internal Server Error */
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
             return ESP_FAIL;
         }
@@ -323,13 +318,13 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
 static esp_err_t handler_logfiles(httpd_req_t *req)
 {
     const char* APIName = "log:v2"; // API name and version
-    char _query[100];
-    char _valuechar[30];
+    char query[100];
+    char valuechar[30];
     std::string type;
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            type = std::string(_valuechar);
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        if (httpd_query_key_value(query, "type", valuechar, sizeof(valuechar)) == ESP_OK) {
+            type = std::string(valuechar);
         }
     }
 
@@ -420,9 +415,7 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
             fclose(fd);
             std::string msg_txt = "sendDatafile: File sending failed: " + currentfilename;
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
-            /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
-            /* Respond with 500 Internal Server Error */
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
             return ESP_FAIL;
         }
@@ -443,13 +436,13 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
 static esp_err_t handler_datafiles(httpd_req_t *req)
 {
     const char* APIName = "data:v2"; // API name and version
-    char _query[100];
-    char _valuechar[30];
+    char query[100];
+    char valuechar[30];
     std::string type;
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            type = std::string(_valuechar);
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        if (httpd_query_key_value(query, "type", valuechar, sizeof(valuechar)) == ESP_OK) {
+            type = std::string(valuechar);
         }
     }
 
@@ -474,9 +467,7 @@ static esp_err_t handler_datafiles(httpd_req_t *req)
 }
 
 
-/* Send HTTP response with a run-time generated html consisting of
- * a list of all files and folders under the requested path.
- */
+// Response with a run-time generated html consisting all files and folders of requested path
 static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const char* uripath, bool readonly)
 {
     char entrypath[FILE_PATH_MAX];
@@ -504,7 +495,6 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
 
     if (!dir) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to open directory: " + std::string(dirpath));
-        /* Respond with 404 Not Found */
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
         return ESP_FAIL;
     }
@@ -533,9 +523,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
                     fclose(fd);
                     std::string msg_txt = "http_resp_dir_html: File sending failed: /sdcard/html/sys_fileserver.html";
                     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
-                    /* Abort sending file */
                     httpd_resp_sendstr_chunk(req, NULL);
-                    /* Respond with 500 Internal Server Error */
                     httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
                     return ESP_FAIL;
                 }
@@ -635,7 +623,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
 }
 
 
-/* Handler to download a file kept on the server */
+// Handler to download a file from server (sd card)
 static esp_err_t download_get_handler(httpd_req_t *req)
 {
     char filepath[FILE_PATH_MAX];
@@ -647,7 +635,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 
     if (!filename) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "download_get_handler: Filename is too long");
-        httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "download_get_handler: Filename too long"); // Respond with 414 Error
+        httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "download_get_handler: Filename too long");
         return ESP_FAIL;
     }
 
@@ -672,24 +660,33 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         return http_resp_dir_html(req, filepath, filename, readonly);
     }
 
-    ESP_LOGD(TAG, "%s", filename);
+    ESP_LOGD(TAG, "download_get_handler: Filename: %s | Filepath: %s", filename, filepath);
 
-    // Reject unavailable files and special files with sensitive data
-    if (stat(filepath, &file_stat) == -1 || strcmp("/wlan.ini", filepath) == 0 || strcmp("/config/backup/wlan_ini.bak", filepath) == 0 ||
-        strcmp("/config/config.ini", filepath) == 0 || strcmp("/config/backup/config_ini.bak", filepath) == 0) {
-        // Special case: Do not log special config files in log to avoid confusion because they are missing before initial setup
-        if (strcmp("/sdcard/config/reference.jpg", filepath) != 0 && strcmp("/sdcard/config/marker1.jpg", filepath) != 0 &&
-                                                                     strcmp("/sdcard/config/marker2.jpg", filepath) != 0) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "download_get_handler: File not found: " + std::string(filepath));
+    // Reject unavailable files
+    if (stat(filepath, &file_stat) == -1) {
+        // Special case: Do not log special config files in log to avoid confusion because they are missing before finalizing initial setup
+        if (strcmp("/sdcard/config/reference.jpg", filepath) != 0 &&
+            strcmp("/sdcard/config/marker1.jpg", filepath) != 0 &&
+            strcmp("/sdcard/config/marker2.jpg", filepath) != 0)
+        {
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "download_get_handler: File not found: " + std::string(filepath));
         }
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File not found"); // Respond with 404 Not Found
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File not found");
+        return ESP_FAIL;
+    }
+
+    //  Reject special files with sensitive data
+    if (strcmp("/sdcard/wlan.ini", filepath) == 0 || strcmp("/sdcard/config/backup/wlan_ini.bak", filepath) == 0 ||
+        strcmp("/sdcard/config/config.ini", filepath) == 0 || strcmp("/sdcard/config/backup/config_ini.bak", filepath) == 0)
+    {
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "File request forbidden (sensitive data)");
         return ESP_FAIL;
     }
 
     fd = fopen(filepath, "r");
     if (!fd) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "download_get_handler: Failed to read file: " + std::string(filepath));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to read file"); // Respond with 404 Not Found
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to read file");
         return ESP_FAIL;
     }
 
@@ -717,9 +714,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
             fclose(fd);
             std::string msg_txt = "download_get_handler: File sending failed: " + std::string(filepath);
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
-            /* Abort sending file */
             httpd_resp_sendstr_chunk(req, NULL);
-            /* Respond with 500 Internal Server Error */
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
             return ESP_FAIL;
         }
@@ -735,7 +730,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 }
 
 
-/* Handler to upload a file onto the server */
+// Handler to upload a file to server (sd card)
 static esp_err_t upload_post_handler(httpd_req_t *req)
 {
     //LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "upload_post_handler");
@@ -750,7 +745,6 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
                                              req->uri + sizeof("/upload") - 1, sizeof(filepath));
     if (!filename) {
-        /* Respond with 413 Error */
         httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "upload_post_handler: Filename too long");
         return ESP_FAIL;
     }
@@ -758,14 +752,14 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     /* Filename cannot have a trailing '/' */
     if (filename[strlen(filename) - 1] == '/') {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: Invalid filename: " + std::string(filename));
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: Invalid filename"); // Respond with 400 Bad Request
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: Invalid filename");
         return ESP_FAIL;
     }
 
     /* File cannot be larger than a limit */
     if (req->content_len > MAX_FILE_SIZE) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File too large: " + std::to_string(req->content_len) + " bytes");
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File size must be less than " MAX_FILE_SIZE_STR); // Respond with 400 Bad Request
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File size must be less than " MAX_FILE_SIZE_STR);
         /* Return failure to close underlying connection else the
          * incoming file content will keep the socket busy */
         return ESP_FAIL;
@@ -773,14 +767,14 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
     if (stat(filepath, &file_stat) == 0) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File already exists: " + std::string(filepath));
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File already exists"); // Respond with 400 Bad Request
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File already exists");
         return ESP_FAIL;
     }
 
     fd = fopen(filepath, "w");
     if (!fd) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: Failed to create file: " + std::string(filepath));
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "upload_post_handler: Failed to create file"); // Respond with 500 Internal Server Error
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "upload_post_handler: Failed to create file");
         return ESP_FAIL;
     }
 
@@ -813,7 +807,6 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
             unlink(filepath);
 
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File reception failed");
-            /* Respond with 500 Internal Server Error */
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "upload_post_handler: Failed to receive file");
             return ESP_FAIL;
         }
@@ -826,7 +819,6 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
             unlink(filepath);
 
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File write failed");
-            /* Respond with 500 Internal Server Error */
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "upload_post_handler: Failed to write file to storage");
             return ESP_FAIL;
         }
@@ -878,38 +870,35 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 }
 
 
-/* Handler to delete a file from the server */
+// Handler to delete a file or folder content from server (sd card)
 static esp_err_t delete_post_handler(httpd_req_t *req)
 {
-    //LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler");
     char filepath[FILE_PATH_MAX];
     struct stat file_stat;
 
-    char _query[200];
-    char _valuechar[30];
-    std::string fn = "/sdcard/firmware/";
-    std::string _task;
+    char query[200];
+    char valuechar[30];
+    std::string task;
     std::string directory;
     std::string zw;
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        ESP_LOGD(TAG, "Query: %s", _query);
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        ESP_LOGD(TAG, "Query: %s", query);
 
-        if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Task: " + std::string(_valuechar));
-            _task = std::string(_valuechar);
+        if (httpd_query_key_value(query, "task", valuechar, sizeof(valuechar)) == ESP_OK) {
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Task: " + std::string(valuechar));
+            task = std::string(valuechar);
         }
     }
 
-    if (_task.compare("deldircontent") == 0) {
+    if (task.compare("deldircontent") == 0) {
         /* Skip leading "/delete" from URI to get filename */
         /* Note sizeof() counts NULL termination hence the -1 */
         const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
                                                 req->uri  + sizeof("/delete") - 1, sizeof(filepath));
         if (!filename) {
-            /* Respond with 414 Error */
             httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "delete_post_handler: Filename too long");
             return ESP_FAIL;
         }
@@ -920,14 +909,7 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         ESP_LOGD(TAG, "Directory to delete: %s", zw.c_str());
 
         deleteAllFilesInDirectory(zw);
-       //        directory = std::string(filepath);
-        //        directory = "/fileserver" + directory;
         ESP_LOGD(TAG, "Location after delete directory content: %s", directory.c_str());
-        /* Redirect onto root to see the updated file list */
-        //        httpd_resp_set_status(req, "303 See Other");
-        //        httpd_resp_set_hdr(req, "Location", directory.c_str());
-        //        httpd_resp_sendstr(req, "File deleted successfully");
-        //        return ESP_OK;
     }
     else {
         /* Skip leading "/delete" from URI to get filename */
@@ -935,7 +917,6 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
                                                 req->uri  + sizeof("/delete") - 1, sizeof(filepath));
         if (!filename) {
-            /* Respond with 500 Internal Server Error */
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "delete_post_handler: Filename too long");
             return ESP_FAIL;
         }
@@ -943,7 +924,6 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         /* Filename cannot have a trailing '/' */
         if (filename[strlen(filename) - 1] == '/') {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "delete_post_handler: Invalid filename: " + std::string(filename));
-            /* Respond with 400 Bad Request */
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "delete_post_handler: Invalid filename");
             return ESP_FAIL;
         }
