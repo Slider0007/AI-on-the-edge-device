@@ -124,7 +124,7 @@
         <tr>
             <td>Current Fallback Value</td>
             <td>
-                <div style="padding-left:5px" id="current_fallbackvalue"></div>
+                <input type="number" style="padding-left:5px" id="current_fallbackvalue" step="any" readonly></input>
             </td>
         </tr>
         <tr>
@@ -143,7 +143,7 @@
                 Fallback Value updated to
             </td>
             <td>
-                <div id="result" style="padding-left:5px;"></div>
+                <input type="number" id="result" style="padding-left:5px;" step="any" readonly></input>
             </td>
         </tr>
     </table>
@@ -181,7 +181,7 @@
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
-                    document.getElementById("result").innerHTML=xhttp.responseText;
+                    document.getElementById("result").value = xhttp.responseText;
                     firework.launch('New Fallback Value set', 'success', 2000, true);
                 }
                 else if (this.status == 403) {
@@ -213,7 +213,7 @@
         xhttp_sequence.onreadystatechange = function() {
             if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
-                    document.getElementById("current_fallbackvalue").innerHTML=xhttp_sequence.responseText;
+                    document.getElementById("current_fallbackvalue").value = xhttp_sequence.responseText;
                 }
                 else if (this.status == 403) {
                     firework.launch("Sequence name request rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
