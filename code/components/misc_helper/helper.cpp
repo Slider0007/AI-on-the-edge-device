@@ -468,7 +468,7 @@ std::string toLower(std::string in)
 }
 
 
-void findReplace(std::string& line, std::string& oldString, std::string& newString)
+void findReplace(std::string &line, std::string &oldString, std::string &newString)
 {
     const size_t oldSize = oldString.length();
 
@@ -495,7 +495,7 @@ void findReplace(std::string& line, std::string& oldString, std::string& newStri
 
 
 // from https://stackoverflow.com/a/14678800
-void replaceAll(std::string& s, const std::string& toReplace, const std::string& replaceWith)
+void replaceAll(std::string &s, const std::string &toReplace, const std::string &replaceWith)
 {
     size_t pos = 0;
     while ((pos = s.find(toReplace, pos)) != std::string::npos) {
@@ -505,30 +505,7 @@ void replaceAll(std::string& s, const std::string& toReplace, const std::string&
 }
 
 
-bool replaceString(std::string& s, std::string const& toReplace, std::string const& replaceWith)
-{
-    return replaceString(s, toReplace, replaceWith, true);
-}
-
-
-bool replaceString(std::string& s, std::string const& toReplace, std::string const& replaceWith, bool logIt)
-{
-    std::size_t pos = s.find(toReplace);
-
-    if (pos == std::string::npos) { // Not found
-        return false;
-    }
-
-    std::string old = s;
-    s.replace(pos, toReplace.length(), replaceWith);
-    if (logIt) {
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate '" + old + "' > '" + s + "'");
-    }
-    return true;
-}
-
-
-bool isInString(std::string& s, std::string const& toFind)
+bool isInString(std::string &s, std::string const &toFind)
 {
     std::size_t pos = s.find(toFind);
 
@@ -539,7 +516,7 @@ bool isInString(std::string& s, std::string const& toFind)
 }
 
 
-std::vector<std::string> splitStringAtNewline(const std::string& str) {
+std::vector<std::string> splitStringAtNewline(const std::string &str) {
     std::vector<std::string> tokens;
 
     std::stringstream ss(str);

@@ -134,11 +134,16 @@ void migrateConfigIni(void)
                     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) +
                                 " > v" + std::to_string(configFileVersion+1) + " => Config will be handled in firmware + config.json");
 
-                    // Remove unused binary files, readme file and legacy config backup file
+                    // Remove unused files
                     deleteFile("/sdcard/bootloader.bin");
                     deleteFile("/sdcard/partitions.bin");
                     deleteFile("/sdcard/readme.md");
                     deleteFile("/sdcard/config/config.bak");
+                    deleteFile("/sdcard/config/prevalue.ini");
+                    deleteFile("/sdcard/config/align.txt");
+                    deleteFile("/sdcard/config/ref0_org.jpg");
+                    deleteFile("/sdcard/config/ref1_org.jpg");
+                    deleteAllFilesInDirectory("/sdcard/img_tmp");
 
                     // Rename marker files to new naming scheme
                     renameFile("/sdcard/config/ref0.jpg", "/sdcard/config/marker1.jpg");
@@ -1243,4 +1248,27 @@ std::vector<std::string> splitStringWLAN(std::string input, std::string _delimit
 	output.push_back(input);
 
 	return output;
+}
+
+
+bool replaceString(std::string &s, std::string const &toReplace, std::string const &replaceWith)
+{
+    return replaceString(s, toReplace, replaceWith, true);
+}
+
+
+bool replaceString(std::string &s, std::string const &toReplace, std::string const &replaceWith, bool logIt)
+{
+    std::size_t pos = s.find(toReplace);
+
+    if (pos == std::string::npos) { // Not found
+        return false;
+    }
+
+    std::string old = s;
+    s.replace(pos, toReplace.length(), replaceWith);
+    if (logIt) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate '" + old + "' > '" + s + "'");
+    }
+    return true;
 }

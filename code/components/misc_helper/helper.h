@@ -13,7 +13,7 @@ bool deleteFile(std::string fn);
 std::string getFileFullFileName(std::string filename);
 std::string getFileType(std::string filename);
 bool getFileIsFiletype(const std::string &filename, const std::string &filetype);
-size_t getFileSize(const std::string& filename);
+size_t getFileSize(const std::string &filename);
 
 std::string getDirectory(std::string filename);
 bool makeDir(std::string _what);
@@ -27,12 +27,10 @@ std::string trim(std::string istring, std::string adddelimiter = "");
 std::string toLower(std::string in);
 std::string toUpper(std::string in);
 
-void findReplace(std::string& line, std::string& oldString, std::string& newString);
-void replaceAll(std::string& s, const std::string& toReplace, const std::string& replaceWith);
-bool replaceString(std::string& s, std::string const& toReplace, std::string const& replaceWith);
-bool replaceString(std::string& s, std::string const& toReplace, std::string const& replaceWith, bool logIt);
-bool isInString(std::string& s, std::string const& toFind);
-std::vector<std::string> splitStringAtNewline(const std::string& str);
+void findReplace(std::string &line, std::string &oldString, std::string &newString);
+void replaceAll(std::string &s, const std::string &toReplace, const std::string &replaceWith);
+bool isInString(std::string &s, std::string const &toFind);
+std::vector<std::string> splitStringAtNewline(const std::string &str);
 size_t findDelimiterPos(std::string input, std::string delimiter);
 
 std::string to_stringWithPrecision(const double _value, int _decPlace);
