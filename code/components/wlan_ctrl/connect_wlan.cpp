@@ -392,7 +392,7 @@ void wifi_scan(void)
 
 void wifiRoamByScanning(void)
 {
-	if (cfgDataPtr->wlan.wlanRoaming.rssiThreshold != 0 && getWifiRssi() != -127 && getWifiRssi() < cfgDataPtr->wlan.wlanRoaming.rssiThreshold) {
+	if (cfgDataPtr->wlan.wlanRoaming.enabled && getWifiRssi() != -127 && getWifiRssi() < cfgDataPtr->wlan.wlanRoaming.rssiThreshold) {
 		LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: Start scan of all channels for SSID " + cfgDataPtr->wlan.ssid);
 		wifi_scan();
 
