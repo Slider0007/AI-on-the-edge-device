@@ -1624,9 +1624,9 @@
 														  (setClassVisibility('classvisibility_influxdbv1_authbasic', 'false'),
 									   					   setClassVisibility('classvisibility_influxdbv1_authtls', 'false'));
 										gatherChangedParameter(this.form, true)">
-						<option value="0" selected>None</option>
-						<option value="1">Basic</option>
-						<option value="2">TLS</option>
+						<option value="0" hidden>None</option> <!-- @TODO: Check NONE -->
+						<option value="1" selected>Basic</option>
+						<option value="2" hidden>TLS</option> <!-- @TODO: Fix TLS -->
 					</select>
 				</form>
 			</td>
@@ -1804,7 +1804,7 @@
 														  setClassVisibility('classvisibility_influxdbv2_authmode_2', 'false');
 								gatherChangedParameter(this.form, true)">
 						<option value="1" selected>Basic</option>
-						<option value="2">TLS</option>
+						<option value="2" hidden>TLS</option> <!-- @TODO: Fix TLS -->
 					</select>
 				</form>
 			</td>

@@ -2,21 +2,25 @@
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Client Key          | TLSClientKey
+| Parameter Name    | Client Key          | clientkey
 | Default Value     | empty               | empty
 
 
 ## Description
 
-Location of client private key file (absolute path in relation to sdcard root)<br>
+Client private key file (absolute path in relation to sd card root folder)<br>
 
+Client private key file for mutual authentication (absolute path in relation to sd card root folder). 
+If configured, `Client Certificate` needs to be configured, too.
 
 The client private key is used for TLS handshake of MQTT broker authentification. The client certificate and 
 related client private key is used by the MQTT client to prove its identity to the MQTT broker (server).
 
 !!! Note
 The certificate file needs to be copied to SD card folder `/config/certs`.<br>
-    Typical file extention: `*.key`, `*.pem`<br>
+    Supported formats:<br>
+    - `PEM` (Base64-ASCII-coding, File extentions: `.pem, .crt, .cer, .key`)<br>
+    - `DER` (Binary coding, File extention: `.der, .cer`)<br>
     Only unencrypted and not password protected files are supported.
 
 

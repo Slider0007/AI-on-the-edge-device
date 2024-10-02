@@ -2,13 +2,13 @@
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | CA Certificate      | TLSCACert
+| Parameter Name    | CA Certificate      | cacert
 | Default Value     | empty               | empty
 
 
 ## Description
 
-Location of CA (Certificate Authority) certificate file (absolute path in relation to sdcard root)
+CA (Certificate Authority) certificate file (Provide absolute path in relation to sd card root folder).
 
 
 The CA certificate is used for TLS handshake of MQTT broker authentification. The CA certificate is 
@@ -16,12 +16,14 @@ used by the client to validate the broker is who it claims to be.
 
 
 !!! Note
-    The certificate file needs to be copied to SD card folder `/config/certs`.<br>
-    Typical file extentions: `*.crt`, `*.pem`, `*.der`<br>
-    Only unencrypted and not password protected files are supported.<br>
+The certificate file needs to be copied to SD card folder `/config/certs`.<br>
+    Supported formats:<br>
+    - `PEM` (Base64-ASCII-coding, File extentions: `.pem, .crt, .cer`)<br>
+    - `DER` (Binary coding, File extention: `.der, .cer`)<br>
+    Only unencrypted and not password protected files are supported.
 
     
-!!! Note
+!!! Warning
     Certificate CN field (common name) check is disabled by default (hard-coded).
 
 
