@@ -16,7 +16,7 @@
 * 1. Restore Config : readConfigFile()       > parseConfig > serializeConfig > writeConfigFile
 * 2. REST API Set   : setConfigRequest()     > parseConfig > serializeConfig > REST API Response
 * 3. REST API Get   : getConfigRequest()                   > serializeConfig > REST API Response
-* 4. Cfg Migration  : migrateConfiguration()                                 > writeConfigFile
+* 4. Cfg Migration  : migrateConfiguration()               > serializeConfig > writeConfigFile
 */
 
 class ConfigClass
@@ -45,6 +45,9 @@ class ConfigClass
     ConfigClass();
     ~ConfigClass();
 
+    void clearCfgData(void);
+    void clearCfgDataTemp(void);
+
     void readConfigFile(bool unityTest = false, std::string unityTestData = "{}");
     void reinitConfig(void) { cfgData = cfgDataTemp; };
     void persistConfig(void) { serializeConfig(); writeConfigFile(); };
@@ -58,14 +61,15 @@ class ConfigClass
     // Only for migration and internal parameter modification purpose
     void initCfgTmp(void) { cfgDataTemp = {}; };
     CfgData *cfgTmp(void) { return &cfgDataTemp; };
+    bool saveMigDataToNVS(std::string key, std::string value) { return saveDataToNVS(key, value); };
 
     // Only for testing purpose --> unity test
     CfgData *get(void) { return &cfgData; };
     char *getJsonBuffer(void) { return jsonBuffer; };
-    void clearCfgData(void);
-    void clearCfgDataTemp(void);
-    /***********************************************/
 };
+
+bool loadDataFromNVS(std::string key, std::string &value);
+bool saveDataToNVS(std::string key, std::string value);
 
 void registerConfigFileUri(httpd_handle_t server);
 

@@ -173,12 +173,12 @@ void migrateConfigIni(void)
                     if (splitted[0] == "") // Skip empty lines
                         continue;
 
-                    if ((toUpper(splitted[0]) ==  "RAWIMAGESLOCATION" || (toUpper(splitted[0]) == ";RAWIMAGESLOCATION")) && (splitted[0].size() > 1)) {
+                    if ((toUpper(splitted[0]) ==  "RAWIMAGESLOCATION" || toUpper(splitted[0]) == ";RAWIMAGESLOCATION") && (splitted[0].size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.debug.rawImagesLocation = splitted[1];
                         if (!splitted[0].starts_with(";"))
                             ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.debug.saveRawImages = true;
                     }
-                    if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION" || (toUpper(splitted[0]) == ";RAWIMAGESRETENTION")) && (splitted.size() > 1)) {
+                    if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION" || toUpper(splitted[0]) == ";RAWIMAGESRETENTION") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.debug.rawImagesRetention = std::stoi(splitted[1]);
                     }
                     if ((toUpper(splitted[0]) == "FLASHTIME") && (splitted.size() > 1)) {
@@ -492,8 +492,11 @@ void migrateConfigIni(void)
                     }
                     if ((toUpper(splitted[0]) == "PASSWORD" || toUpper(splitted[0]) == ";PASSWORD") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.password = (splitted[1] == "undefined" ? "" : splitted[1]);
-                        if (!splitted[0].starts_with(";"))
+                        ConfigClass::getInstance()->saveMigDataToNVS("mqtt_pw", ConfigClass::getInstance()->cfgTmp()->sectionMqtt.password);
+
+                        if (!splitted[0].starts_with(";")) {
                             ConfigClass::getInstance()->cfgTmp()->sectionMqtt.authMode = AUTH_BASIC;
+                        }
                     }
                     if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "TRUE")
@@ -584,12 +587,16 @@ void migrateConfigIni(void)
                     }
                     if ((toUpper(splitted[0]) == "PASSWORD" || toUpper(splitted[0]) == ";PASSWORD") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.password = (splitted[1] == "undefined" ? "" : splitted[1]);
-                        if (!splitted[0].starts_with(";"))
+                        ConfigClass::getInstance()->saveMigDataToNVS("influxdbv1_pw", ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.password);
+
+                        if (!splitted[0].starts_with(";")) {
                             ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.authMode = AUTH_BASIC;
+                        }
                     }
                     if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
-                        if (toUpper(splitted[1]) == "TRUE")
+                        if (toUpper(splitted[1]) == "TRUE") {
                             ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.authMode = AUTH_TLS;
+                        }
                     }
                     if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.caCert = (splitted[1] == "undefined" ? "" : splitted[1]);
@@ -636,12 +643,12 @@ void migrateConfigIni(void)
                     }
                     if ((toUpper(splitted[0]) == "TOKEN" || (toUpper(splitted[0]) == ";TOKEN")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.token = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->saveMigDataToNVS("influxdbv2_pw", ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.token);
                     }
                     if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
-                        if (toUpper(splitted[1]) == "TRUE")
+                        if (toUpper(splitted[1]) == "TRUE") {
                             ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.authMode = AUTH_TLS;
-                        else
-                            ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.authMode = AUTH_BASIC;
+                        }
                     }
                     if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.caCert = (splitted[1] == "undefined" ? "" : splitted[1]);
@@ -757,9 +764,6 @@ void migrateConfigIni(void)
                     if ((toUpper(splitted[0]) == "SETUPMODE") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "FALSE") {
                             ConfigClass::getInstance()->cfgTmp()->sectionOperationMode.opMode = OPMODE_AUTO;
-                        }
-                        else if (toUpper(splitted[1]) == "TRUE") {
-                            ConfigClass::getInstance()->cfgTmp()->sectionOperationMode.opMode = OPMODE_SETUP;
                         }
                     }
                 }
@@ -1136,6 +1140,7 @@ void migrateWlanIni()
                     tmp = tmp.substr(1, tmp.length()-2);
                 }
                 ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.password = tmp;
+                ConfigClass::getInstance()->saveMigDataToNVS("wlan_pw", ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.password);
             }
             else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "HOSTNAME")) {
                 tmp = trim(splitted[1]);
