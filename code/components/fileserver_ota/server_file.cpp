@@ -167,7 +167,7 @@ esp_err_t sendFile(httpd_req_t *req, std::string filename)
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(fd, NULL, _IOFBF, 512);
 
-    ESP_LOGI(TAG, "Sending file: %s", filename.c_str());
+    // ESP_LOGI(TAG, "Sending file: %s", filename.c_str());
     // httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     // For all files with the following file extention tell the webbrowser to cache them for a long period

@@ -22,8 +22,7 @@ static std::string TLSClientKey;
 
 static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
-    switch(evt->event_id)
-    {
+    switch(evt->event_id) {
         case HTTP_EVENT_ERROR:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Error event");
             break;
@@ -35,13 +34,14 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Headers sent");
             break;
         case HTTP_EVENT_ON_HEADER:
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Header: key=" + std::string(evt->header_key) + ", value="  + std::string(evt->header_value));
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Received header: key: " + std::string(evt->header_key) +
+                                                    " | value: " + std::string(evt->header_value));
             break;
         case HTTP_EVENT_ON_DATA:
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Data recevied: len=" + std::to_string(evt->data_len));
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Received data: length:" + std::to_string(evt->data_len));
             break;
         case HTTP_EVENT_ON_FINISH:
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: HTTP session finished");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Session finished");
             break;
          case HTTP_EVENT_DISCONNECTED:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Disconnected");
@@ -60,43 +60,43 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
 
     if (cfgDataPtr->authMode == AUTH_TLS) {
         if (cfgDataPtr->uri.substr(0,8) != "https://") {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "InfluxDBv1 TLS: URI parameter needs to be configured with \'https://\'");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: URI parameter needs to be configured with \'https://\'");
             return false;
         }
 
         if (!cfgDataPtr->tls.caCert.empty()) { // TLS parameter activated and not empty
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv1 TLS: CA certificate file: /sdcard" + cfgDataPtr->tls.caCert);
-            std::ifstream ifs("/sdcard" + cfgDataPtr->tls.caCert);
-            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-            TLSCACert = content;
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: /config/certs/" + cfgDataPtr->tls.caCert);
+            std::ifstream ifs("/sdcard/config/certs/" + cfgDataPtr->tls.caCert);
+            TLSCACert = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
             if (TLSCACert.empty()) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "InfluxDBv1 TLS: Failed to load CA certificate");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load CA certificate");
+                return false;
             }
         }
 
         if (!cfgDataPtr->tls.clientCert.empty()) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv1 TLS: Client certificate file: " + cfgDataPtr->tls.clientCert);
-            std::ifstream cert_ifs("/sdcard" + cfgDataPtr->tls.clientCert);
-            std::string cert_content((std::istreambuf_iterator<char>(cert_ifs)), (std::istreambuf_iterator<char>()));
-            TLSClientCert = cert_content;
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client certificate file: /config/certs/" + cfgDataPtr->tls.clientCert);
+            std::ifstream cert_ifs("/sdcard/config/certs/" + cfgDataPtr->tls.clientCert);
+            TLSClientCert = std::string(std::istreambuf_iterator<char>(cert_ifs), std::istreambuf_iterator<char>());
             if (TLSClientCert.empty()) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "InfluxDBv1 TLS: Failed to load client certificate");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client certificate");
+                return false;
             }
         }
 
         if (!cfgDataPtr->tls.clientKey.empty()) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "InfluxDBv1 TLS: Client key file: " + cfgDataPtr->tls.clientKey);
-            std::ifstream key_ifs("/sdcard" + cfgDataPtr->tls.clientKey);
-            std::string key_content((std::istreambuf_iterator<char>(key_ifs)), (std::istreambuf_iterator<char>()));
-            TLSClientKey = key_content;
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client key file: /config/certs/" + cfgDataPtr->tls.clientKey);
+            std::ifstream key_ifs("/sdcard/config/certs/" + cfgDataPtr->tls.clientKey);
+            TLSClientKey = std::string(std::istreambuf_iterator<char>(key_ifs), std::istreambuf_iterator<char>());
             if (TLSClientKey.empty()) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "InfluxDBv1 TLS: Failed to load client key");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client key");
+                return false;
             }
         }
     }
     else {
         if (cfgDataPtr->uri.substr(0,7) != "http://") {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "InfluxDBv1: URI parameter needs to be configured with \'http://\'");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "URI parameter needs to be configured with \'http://\'");
             return false;
         }
     }
@@ -105,7 +105,7 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
 }
 
 
-esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &_key, const std::string &_content, const std::string &_timestamp)
+esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &_fieldkey1, const std::string &_fieldvalue1, const std::string &_timestamp)
 {
     char* response_buffer = (char*) calloc_psram_heap(std::string(TAG) + "->response_buffer", 1,
                             sizeof(char) * MAX_HTTP_OUTPUT_BUFFER, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
@@ -118,13 +118,17 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
        .user_data = response_buffer
     };
 
-    if (cfgDataPtr->authMode != AUTH_NONE) {
-       http_config.username = cfgDataPtr->username.c_str();
-       http_config.password = cfgDataPtr->password.c_str();
-       http_config.auth_type = HTTP_AUTH_TYPE_BASIC;
+    if (cfgDataPtr->authMode == AUTH_BASIC) {
+        http_config.auth_type = HTTP_AUTH_TYPE_BASIC;
+        http_config.username = cfgDataPtr->username.c_str();
+        http_config.password = cfgDataPtr->password.c_str();
     }
+    else if (cfgDataPtr->authMode == AUTH_TLS) {
+        http_config.auth_type = HTTP_AUTH_TYPE_BASIC;
+        http_config.username = cfgDataPtr->username.c_str();
+        http_config.password = cfgDataPtr->password.c_str();
+        http_config.transport_type = HTTP_TRANSPORT_OVER_SSL;
 
-    if (cfgDataPtr->authMode == AUTH_TLS) {
         if (!TLSCACert.empty()) {
             http_config.cert_pem = TLSCACert.c_str();
             http_config.cert_len = TLSCACert.length() + 1;
@@ -142,7 +146,8 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
         }
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "influxDBv1Publish: Key: " + _key + ", Content: " + _content + ", Timestamp: " + _timestamp);
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "influxDBv1Publish: field key 1: " + _fieldkey1 + ", field value 1: " +
+                                            _fieldvalue1 + ", timestamp: " + _timestamp);
 
     esp_err_t retVal = ESP_OK;
     std::string payload;
@@ -159,11 +164,11 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
         t = mktime(&tm);
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Timestamp: " + _timestamp + ", Timestamp (UTC): " + std::to_string(t));
 
-        sprintf(nowTimestamp,"%ld000000000", (long) t);           // UTC
-        payload = _measurement + " " + _key + "=" + _content + " " + nowTimestamp;
+        sprintf(nowTimestamp,"%ld000000000", (long) t); // UTC
+        payload = _measurement + " " + _fieldkey1 + "=" + _fieldvalue1 + " " + nowTimestamp;
     }
     else {
-        payload = _measurement + " " + _key + "=" + _content;
+        payload = _measurement + " " + _fieldkey1 + "=" + _fieldvalue1;
     }
 
     payload.shrink_to_fit();

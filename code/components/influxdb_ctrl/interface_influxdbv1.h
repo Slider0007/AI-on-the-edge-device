@@ -9,7 +9,8 @@
 #include "configClass.h"
 
 bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr);
-esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &_key, const std::string &_content, const std::string &_timestamp);
+esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &_fieldkey1,
+                            const std::string &_fieldvalue1, const std::string &_timestamp);
 bool getInfluxDBv1isEncrypted();
 
 #endif //INTERFACE_INFLUXDBV1_H

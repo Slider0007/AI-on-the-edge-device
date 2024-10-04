@@ -1405,8 +1405,8 @@
 			</td>
 			<td>
 				<form id="mqtt_tls_cacert_form">
-					<input required type="text" name="mqtt.tls.cacert" id="mqtt_tls_cacert_value"
-						placeholder="/config/certs/ca.crt" onchange="gatherChangedParameter(this.form)">
+					<input type="text" name="mqtt.tls.cacert" id="mqtt_tls_cacert_value"
+						placeholder="ca.crt" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_mqtt_tls_cacert</td>
@@ -1418,8 +1418,8 @@
 			</td>
 			<td>
 				<form id="mqtt_tls_clientcert_form">
-					<input required type="text" name="mqtt.tls.clientcert" id="mqtt_tls_clientcert_value"
-						placeholder="/config/certs/client.crt" onchange="gatherChangedParameter(this.form)">
+					<input type="text" name="mqtt.tls.clientcert" id="mqtt_tls_clientcert_value"
+						placeholder="client.crt" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_mqtt_tls_clientcert</td>
@@ -1431,8 +1431,8 @@
 			</td>
 			<td>
 				<form id="mqtt_tls_clientkey_form">
-					<input required type="text" name="mqtt.tls.clientkey" id="mqtt_tls_clientkey_value"
-						placeholder="/config/certs/client.key" onchange="gatherChangedParameter(this.form)">
+					<input type="text" name="mqtt.tls.clientkey" id="mqtt_tls_clientkey_value"
+						placeholder="client.key" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_mqtt_tls_clientkey</td>
@@ -1612,7 +1612,7 @@
 
 		<tr class="classvisibility_influxdbv1_enabled">
 			<td class="indent1">
-				<span>Authentication</span>
+				<span>Authentication / Security</span>
 			</td>
 			<td>
 				<form id="influxdbv1_authmode_form">
@@ -1624,9 +1624,9 @@
 														  (setClassVisibility('classvisibility_influxdbv1_authbasic', 'false'),
 									   					   setClassVisibility('classvisibility_influxdbv1_authtls', 'false'));
 										gatherChangedParameter(this.form, true)">
-						<option value="0" hidden>None</option> <!-- @TODO: Check NONE -->
-						<option value="1" selected>Basic</option>
-						<option value="2" hidden>TLS</option> <!-- @TODO: Fix TLS -->
+						<option value="0" selected>None</option>
+						<option value="1">Basic</option>
+						<option value="2">TLS</option>
 					</select>
 				</form>
 			</td>
@@ -1639,7 +1639,7 @@
 			</td>
 			<td>
 				<form id="influxdbv1_username_form">
-					<input required type="text" name="influxdbv1.username" id="influxdbv1_username_value"
+					<input type="text" name="influxdbv1.username" id="influxdbv1_username_value"
 						onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
@@ -1666,8 +1666,8 @@
 			</td>
 			<td>
 				<form id="influxdbv1_tls_cacert_form">
-					<input required type="text" name="influxdbv1.tls.cacert" id="influxdbv1_tls_cacert_value"
-						placeholder="/config/certs/ca.crt" onchange="gatherChangedParameter(this.form)">
+					<input type="text" name="influxdbv1.tls.cacert" id="influxdbv1_tls_cacert_value"
+						placeholder="ca.crt" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv1_tls_cacert</td>
@@ -1679,8 +1679,8 @@
 			</td>
 			<td>
 				<form id="influxdbv1_tls_clientcert_form">
-					<input required type="text" name="influxdbv1.tls.clientcert" id="influxdbv1_tls_clientcert_value"
-						placeholder="/config/certs/client.crt" onchange="gatherChangedParameter(this.form)">
+					<input type="text" name="influxdbv1.tls.clientcert" id="influxdbv1_tls_clientcert_value"
+						placeholder="client.crt" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv1_tls_clientcert</td>
@@ -1692,8 +1692,8 @@
 			</td>
 			<td>
 				<form id="influxdbv1_tls_clientkey_form">
-					<input required type="text" name="influxdbv1.tls.clientkey" id="influxdbv1_tls_clientkey_value"
-						placeholder="/config/certs/client.key" onchange="gatherChangedParameter(this.form)">
+					<input type="text" name="influxdbv1.tls.clientkey" id="influxdbv1_tls_clientkey_value"
+						placeholder="client.key" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv1_tls_clientkey</td>
@@ -1727,16 +1727,16 @@
 
 		<tr class="classvisibility_influxdbv1_enabled">
 			<td class="indent1">
-				<span >Field Name</span>
+				<span >Field Key [Actual Value]</span>
 			</td>
 			<td>
-				<form class="influxdbv1_per_sequence" id="influxdbv1_sequence_fieldname_form">
+				<form class="influxdbv1_per_sequence" id="influxdbv1_sequence_fieldkey1_form">
 					<input required type="text"
-						name="influxdbv1.sequence.0.fieldname" id="influxdbv1_sequence_0_fieldname_value" placeholder="value"
+						name="influxdbv1.sequence.0.fieldkey1" id="influxdbv1_sequence_0_fieldkey1_value" placeholder="value"
 						onchange="gatherChangedParameter(this.form);gatherChangedParameter(influxdbv1_sequence_sequencename_form)">
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_influxdbv1_sequence_fieldname</td>
+			<td style="visibility:hidden">$TOOLTIP_influxdbv1_sequence_fieldkey1</td>
 		</tr>
 	</table>
 
@@ -1795,24 +1795,6 @@
 
 		<tr class="classvisibility_influxdbv2_enabled">
 			<td class="indent1">
-				<span>Authentication</span>
-			</td>
-			<td>
-				<form id="influxdbv2_authmode_form">
-					<select name="influxdbv2.authmode" id="influxdbv2_authmode_value"
-							onchange="this.value == '2' ? setClassVisibility('classvisibility_influxdbv2_authmode_2', 'true') :
-														  setClassVisibility('classvisibility_influxdbv2_authmode_2', 'false');
-								gatherChangedParameter(this.form, true)">
-						<option value="1" selected>Basic</option>
-						<option value="2" hidden>TLS</option> <!-- @TODO: Fix TLS -->
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_influxdbv2_authmode</td>
-		</tr>
-
-		<tr class="classvisibility_influxdbv2_enabled">
-			<td class="indent2">
 				<span>Organization</span>
 			</td>
 			<td>
@@ -1822,6 +1804,24 @@
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_organization</td>
+		</tr>
+
+		<tr class="classvisibility_influxdbv2_enabled">
+			<td class="indent1">
+				<span>Authentication / Security</span>
+			</td>
+			<td>
+				<form id="influxdbv2_authmode_form">
+					<select name="influxdbv2.authmode" id="influxdbv2_authmode_value"
+							onchange="this.value == '2' ? setClassVisibility('classvisibility_influxdbv2_authmode_2', 'true') :
+														  setClassVisibility('classvisibility_influxdbv2_authmode_2', 'false');
+								gatherChangedParameter(this.form, true)">
+						<option value="1" selected>Token</option>
+						<option value="2">TLS</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_influxdbv2_authmode</td>
 		</tr>
 
 		<tr class="classvisibility_influxdbv2_enabled">
@@ -1844,8 +1844,8 @@
 			</td>
 			<td>
 				<form id="influxdbv2_tls_cacert_form">
-					<input required type="text" name="influxdbv2.tls.cacert" id="influxdbv2_tls_cacert_value"
-						placeholder="/config/certs/ca.crt" onchange="gatherChangedParameter(this.form)">
+					<input type="text" name="influxdbv2.tls.cacert" id="influxdbv2_tls_cacert_value"
+						placeholder="ca.crt" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_tls_cacert</td>
@@ -1857,8 +1857,8 @@
 			</td>
 			<td>
 				<form id="influxdbv2_tls_clientcert_form">
-					<input required type="text" name="influxdbv2.tls.clientcert" id="influxdbv2_tls_clientcert_value"
-						placeholder="/config/certs/client.crt" onchange="gatherChangedParameter(this.form)">
+					<input type="text" name="influxdbv2.tls.clientcert" id="influxdbv2_tls_clientcert_value"
+						placeholder="client.crt" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_tls_clientcert</td>
@@ -1870,8 +1870,8 @@
 			</td>
 			<td>
 				<form id="influxdbv2_tls_clientkey_form">
-					<input required type="text" name="influxdbv2.tls.clientkey" id="influxdbv2_tls_clientkey_value"
-						placeholder="/config/certs/client.key" onchange="gatherChangedParameter(this.form)">
+					<input type="text" name="influxdbv2.tls.clientkey" id="influxdbv2_tls_clientkey_value"
+						placeholder="client.key" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_tls_clientkey</td>
@@ -1905,16 +1905,16 @@
 
 		<tr class="classvisibility_influxdbv2_enabled">
 			<td class="indent1">
-				<span >Field Name</span>
+				<span >Field Key [Actual Value]</span>
 			</td>
 			<td>
-				<form class="influxdbv2_per_sequence" id="influxdbv2_sequence_fieldname_form">
+				<form class="influxdbv2_per_sequence" id="influxdbv2_sequence_fieldkey1_form">
 					<input required type="text"
-						name="influxdbv2.sequence.0.fieldname" id="influxdbv2_sequence_0_fieldname_value" placeholder="value"
+						name="influxdbv2.sequence.0.fieldkey1" id="influxdbv2_sequence_0_fieldkey1_value" placeholder="value"
 						onchange="gatherChangedParameter(this.form);gatherChangedParameter(influxdbv2_sequence_sequencename_form)">
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_influxdbv2_sequence_fieldname</td>
+			<td style="visibility:hidden">$TOOLTIP_influxdbv2_sequence_fieldkey1</td>
 		</tr>
 	</table>
 

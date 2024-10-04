@@ -56,10 +56,10 @@ bool ClassFlowInfluxDBv2::loadParameter()
         return InfluxDBenable;
     }
 
-    // Check measurementname and fieldname
+    // Check measurementname and fieldkey
     for (const auto &sequence : cfgDataPtr->sequence) {
-        if (sequence.measurementName.empty() || sequence.fieldName.empty()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or invalid parameter \'Measurement Name\' or \'Field Name\' for sequence: " +
+        if (sequence.measurementName.empty() || sequence.fieldKey1.empty()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or invalid parameter \'Measurement Name\' or \'Field Key\' for sequence: " +
                                                         sequence.sequenceName);
             InfluxDBenable = false;
             return InfluxDBenable;
@@ -87,7 +87,7 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
             continue;
         }
 
-        if (ESP_OK != influxDBv2Publish(sequence->paramInfluxDBv2->measurementName, sequence->paramInfluxDBv2->fieldName,
+        if (ESP_OK != influxDBv2Publish(sequence->paramInfluxDBv2->measurementName, sequence->paramInfluxDBv2->fieldKey1,
                             sequence->sActualValue, sequence->sTimeProcessed)) {
             setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
         }

@@ -854,25 +854,27 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         saveDataToNVS("mqtt_pw", cfgDataTemp.sectionMqtt.password);
     }
     else {
-        loadDataFromNVS("mqtt_pw", cfgDataTemp.sectionMqtt.password);
+        if (!unityTest) {
+            loadDataFromNVS("mqtt_pw", cfgDataTemp.sectionMqtt.password);
+        }
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "tls"), "cacert");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionMqtt.tls.caCert = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionMqtt.tls.caCert, true);
+        validateStructure(cfgDataTemp.sectionMqtt.tls.caCert);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "tls"), "clientcert");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionMqtt.tls.clientCert = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionMqtt.tls.clientCert, true);
+        validateStructure(cfgDataTemp.sectionMqtt.tls.clientCert);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "tls"), "clientkey");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionMqtt.tls.clientKey = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionMqtt.tls.clientKey, true);
+        validateStructure(cfgDataTemp.sectionMqtt.tls.clientKey);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "processdatanotation");
@@ -936,25 +938,27 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         saveDataToNVS("influxdbv1_pw", cfgDataTemp.sectionInfluxDBv1.password);
     }
     else {
-        loadDataFromNVS("influxdbv1_pw", cfgDataTemp.sectionInfluxDBv1.password);
+        if (!unityTest) {
+            loadDataFromNVS("influxdbv1_pw", cfgDataTemp.sectionInfluxDBv1.password);
+        }
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "tls"), "cacert");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionInfluxDBv1.tls.caCert = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionInfluxDBv1.tls.caCert, true);
+        validateStructure(cfgDataTemp.sectionInfluxDBv1.tls.caCert);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "tls"), "clientcert");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionInfluxDBv1.tls.clientCert = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionInfluxDBv1.tls.clientCert, true);
+        validateStructure(cfgDataTemp.sectionInfluxDBv1.tls.clientCert);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "tls"), "clientkey");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionInfluxDBv1.tls.clientKey = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionInfluxDBv1.tls.clientKey, true);
+        validateStructure(cfgDataTemp.sectionInfluxDBv1.tls.clientKey);
     }
 
     // Update sequences
@@ -982,10 +986,10 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
                 validateStructure(sequenceEl->measurementName);
             }
 
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "fieldname");
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "fieldkey1");
             if (cJSON_IsString(sequenceArrEl)) {
-                sequenceEl->fieldName = sequenceArrEl->valuestring;
-                validateStructure(sequenceEl->fieldName);
+                sequenceEl->fieldKey1 = sequenceArrEl->valuestring;
+                validateStructure(sequenceEl->fieldKey1);
             }
         }
     }
@@ -1005,13 +1009,13 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsString(objEl))
         cfgDataTemp.sectionInfluxDBv2.bucket = objEl->valuestring;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "authmode");
-    if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionInfluxDBv2.authMode = std::clamp(objEl->valueint, 0, 2);
-
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "organization");
     if (cJSON_IsString(objEl))
         cfgDataTemp.sectionInfluxDBv2.organization = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "authmode");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionInfluxDBv2.authMode = std::clamp(objEl->valueint, 0, 2);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "token");
     if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
@@ -1019,25 +1023,27 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         saveDataToNVS("influxdbv2_pw", cfgDataTemp.sectionInfluxDBv2.token);
     }
     else {
-        loadDataFromNVS("influxdbv2_pw", cfgDataTemp.sectionInfluxDBv2.token);
+        if (!unityTest) {
+            loadDataFromNVS("influxdbv2_pw", cfgDataTemp.sectionInfluxDBv2.token);
+        }
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "tls"), "cacert");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionInfluxDBv2.tls.caCert = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionInfluxDBv2.tls.caCert, true);
+        validateStructure(cfgDataTemp.sectionInfluxDBv2.tls.caCert);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "tls"), "clientcert");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionInfluxDBv2.tls.clientCert = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionInfluxDBv2.tls.clientCert, true);
+        validateStructure(cfgDataTemp.sectionInfluxDBv2.tls.clientCert);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "tls"), "clientkey");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionInfluxDBv2.tls.clientKey = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionInfluxDBv2.tls.clientKey, true);
+        validateStructure(cfgDataTemp.sectionInfluxDBv2.tls.clientKey);
     }
 
 
@@ -1066,10 +1072,10 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
                 validateStructure(sequenceEl->measurementName);
             }
 
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "fieldname");
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "fieldkey1");
             if (cJSON_IsString(sequenceArrEl)) {
-                sequenceEl->fieldName = sequenceArrEl->valuestring;
-                validateStructure(sequenceEl->fieldName);
+                sequenceEl->fieldKey1 = sequenceArrEl->valuestring;
+                validateStructure(sequenceEl->fieldKey1);
             }
         }
     }
@@ -1736,7 +1742,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(influxdbv1SequenceEl, "measurementname", cfgDataTemp.sectionInfluxDBv1.sequence[i].measurementName.c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(influxdbv1SequenceEl, "fieldname", cfgDataTemp.sectionInfluxDBv1.sequence[i].fieldName.c_str()) == NULL)
+        if (cJSON_AddStringToObject(influxdbv1SequenceEl, "fieldkey1", cfgDataTemp.sectionInfluxDBv1.sequence[i].fieldKey1.c_str()) == NULL)
             retVal = ESP_FAIL;
     }
 
@@ -1752,9 +1758,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(influxdbv2, "bucket", cfgDataTemp.sectionInfluxDBv2.bucket.c_str()) == NULL)
         retVal = ESP_FAIL;
-    if (cJSON_AddNumberToObject(influxdbv2, "authmode", cfgDataTemp.sectionInfluxDBv2.authMode) == NULL)
-        retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(influxdbv2, "organization", cfgDataTemp.sectionInfluxDBv2.organization.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(influxdbv2, "authmode", cfgDataTemp.sectionInfluxDBv2.authMode) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(influxdbv2, "token", cfgDataTemp.sectionInfluxDBv2.token.empty() ? "" : "******") == NULL)
         retVal = ESP_FAIL;
@@ -1776,7 +1782,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(influxdbv2SequenceEl, "measurementname", cfgDataTemp.sectionInfluxDBv2.sequence[i].measurementName.c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(influxdbv2SequenceEl, "fieldname", cfgDataTemp.sectionInfluxDBv2.sequence[i].fieldName.c_str()) == NULL)
+        if (cJSON_AddStringToObject(influxdbv2SequenceEl, "fieldkey1", cfgDataTemp.sectionInfluxDBv2.sequence[i].fieldKey1.c_str()) == NULL)
             retVal = ESP_FAIL;
     }
 

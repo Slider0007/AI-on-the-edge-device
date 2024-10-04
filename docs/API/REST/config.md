@@ -253,8 +253,8 @@ WebUI configuration page (question mark symbol next to each parameter).
 		"enabled":	false,
 		"uri":	"",
 		"bucket":	"watermeter",
-		"authmode":	1,
 		"organization":	"",
+		"authmode":	1,
 		"token":	"",
 		"tls":	{
 			"cacert":	"",

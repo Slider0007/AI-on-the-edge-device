@@ -23,7 +23,9 @@ static const char *TAG = "MQTT_IF";
 static const CfgData::SectionMqtt* cfgDataPtr;
 static int keepAlive;
 static std::string LWTTopic;
-static std::string TLSCACert, TLSClientCert, TLSClientKey;
+static std::string TLSCACert;
+static std::string TLSClientCert;
+static std::string TLSClientKey;
 
 static strMqttState mqttState = {};
 
@@ -156,7 +158,7 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             }
             // The network connection has been made but the MQTT service is unavailable
             else if (event->error_handle->connect_return_code == MQTT_CONNECTION_REFUSE_SERVER_UNAVAILABLE) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Connection refused, Server unavailable (0x03)");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Connection refused, server unavailable (0x03)");
             }
             // The data in the username name or password is malformed
             else if (event->error_handle->connect_return_code == MQTT_CONNECTION_REFUSE_BAD_USERNAME) {
@@ -164,7 +166,7 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             }
             // The client is not authorized to connect
             else if (event->error_handle->connect_return_code == MQTT_CONNECTION_REFUSE_NOT_AUTHORIZED) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Connection refused, not authorized. Check username/password (0x05)");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Connection refused, not authorized (0x05)");
             }
 
             // Log any ESP-TLS error: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html
@@ -230,35 +232,32 @@ bool MQTT_Configure(const CfgData::SectionMqtt *_param, int keepAlive)
         }
 
         if (!cfgDataPtr->tls.caCert.empty()) { // TLS parameter activated and not empty
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: /sdcard" + cfgDataPtr->tls.caCert);
-            std::ifstream ifs("/sdcard" + cfgDataPtr->tls.caCert);
-            std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-            TLSCACert = content;
-
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: /config/certs/" + cfgDataPtr->tls.caCert);
+            std::ifstream ifs("/sdcard/config/certs/" + cfgDataPtr->tls.caCert);
+            TLSCACert = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
             if (TLSCACert.empty()) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load CA certificate");
+                return false;
             }
         }
 
         if (!cfgDataPtr->tls.clientCert.empty()) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client certificate file: " + cfgDataPtr->tls.clientCert);
-            std::ifstream cert_ifs("/sdcard" + cfgDataPtr->tls.clientCert);
-            std::string cert_content((std::istreambuf_iterator<char>(cert_ifs)), (std::istreambuf_iterator<char>()));
-            TLSClientCert = cert_content;
-
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client certificate file: /config/certs/" + cfgDataPtr->tls.clientCert);
+            std::ifstream cert_ifs("/sdcard/config/certs/" + cfgDataPtr->tls.clientCert);
+            TLSClientCert = std::string(std::istreambuf_iterator<char>(cert_ifs), std::istreambuf_iterator<char>());
             if (TLSClientCert.empty()) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client certificate");
+                return false;
             }
         }
 
         if (!cfgDataPtr->tls.clientKey.empty()) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client key file: " + cfgDataPtr->tls.clientKey);
-            std::ifstream key_ifs("/sdcard" + cfgDataPtr->tls.clientKey);
-            std::string key_content((std::istreambuf_iterator<char>(key_ifs)), (std::istreambuf_iterator<char>()));
-            TLSClientKey = key_content;
-
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client key file: /config/certs/" + cfgDataPtr->tls.clientKey);
+            std::ifstream key_ifs("/sdcard/config/certs/" + cfgDataPtr->tls.clientKey);
+            TLSClientKey = std::string(std::istreambuf_iterator<char>(key_ifs), std::istreambuf_iterator<char>());
             if (TLSClientKey.empty()) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client key");
+                return false;
             }
         }
     }

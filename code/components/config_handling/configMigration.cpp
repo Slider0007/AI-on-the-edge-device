@@ -149,10 +149,6 @@ void migrateConfigIni(void)
                     renameFile("/sdcard/config/ref0.jpg", "/sdcard/config/marker1.jpg");
                     renameFile("/sdcard/config/ref1.jpg", "/sdcard/config/marker2.jpg");
 
-                    // Rename file to harmonize model name syntax
-                    renameFile("/sdcard/config/dig-class100-0167_s2_q.tflite", "/sdcard/config/dig-class100_0167_s2_q.tflite");
-                    renameFile("/sdcard/config/dig-class100-0168_s2_q.tflite", "/sdcard/config/dig-class100_0168_s2_q.tflite");
-
                     // Create model subfolder in /sdcard/config and move all models to subfolder
                     makeDir("/sdcard/config/models");
                     moveAllFilesWithFiletype("/sdcard/config", "/sdcard/config/models", "tfl");
@@ -503,13 +499,16 @@ void migrateConfigIni(void)
                             ConfigClass::getInstance()->cfgTmp()->sectionMqtt.authMode = AUTH_TLS;
                     }
                     if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionMqtt.tls.caCert = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->cfgTmp()->sectionMqtt.tls.caCert =
+                            (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
                     if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionMqtt.tls.clientCert = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->cfgTmp()->sectionMqtt.tls.clientCert =
+                            (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
                     if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionMqtt.tls.clientKey = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->cfgTmp()->sectionMqtt.tls.clientKey =
+                            (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
                     if ((toUpper(splitted[0]) == "RETAINPROCESSDATA") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.retainProcessData = (toUpper(splitted[1]) == "TRUE");
@@ -599,13 +598,16 @@ void migrateConfigIni(void)
                         }
                     }
                     if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.caCert = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.caCert =
+                            (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
                     if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.clientCert = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.clientCert =
+                            (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
                     if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.clientKey = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.clientKey =
+                            (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
                     if (splitted[0].find_first_of(".") != std::string::npos) {
                         std::string parameter = toUpper(splitted[0].substr(splitted[0].find_first_of(".")+1));
@@ -616,7 +618,7 @@ void migrateConfigIni(void)
                                     seqEl.measurementName = (splitted[1] == "undefined" ? "" : splitted[1]);
                                 }
                                 else if (parameter == "FIELD" && (splitted.size() > 1)) {
-                                    seqEl.fieldName = (splitted[1] == "undefined" ? "" : splitted[1]);
+                                    seqEl.fieldKey1 = (splitted[1] == "undefined" ? "" : splitted[1]);
                                 }
                                 break;
                             }
@@ -651,13 +653,16 @@ void migrateConfigIni(void)
                         }
                     }
                     if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.caCert = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.caCert =
+                            (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
                     if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.clientCert = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.clientCert =
+                            (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
                     if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.clientKey = (splitted[1] == "undefined" ? "" : splitted[1]);
+                        ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.clientKey =
+                            (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
                     if (splitted[0].find_first_of(".") != std::string::npos) {
                         std::string parameter = toUpper(splitted[0].substr(splitted[0].find_first_of(".")+1));
@@ -668,7 +673,7 @@ void migrateConfigIni(void)
                                     seqEl.measurementName = (splitted[1] == "undefined" ? "" : splitted[1]);
                                 }
                                 else if (parameter == "FIELD" && (splitted.size() > 1)) {
-                                    seqEl.fieldName = (splitted[1] == "undefined" ? "" : splitted[1]);
+                                    seqEl.fieldKey1 = (splitted[1] == "undefined" ? "" : splitted[1]);
                                 }
                                 break;
                             }

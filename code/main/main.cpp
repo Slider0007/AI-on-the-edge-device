@@ -198,11 +198,12 @@ extern "C" void app_main(void)
     esp_err_t retVal = initWifiStation();
     if (retVal != ESP_OK) {
         if (retVal == ESP_ERR_NOT_FOUND) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Device init aborted");
             setStatusLed(WLAN_INIT, 1, true);
             return;
         }
         else {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted.");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted");
             setStatusLed(WLAN_INIT, 2, true);
             return;
         }

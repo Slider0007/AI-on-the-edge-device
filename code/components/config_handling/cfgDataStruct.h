@@ -133,7 +133,7 @@ struct InfluxDBPerSequence {
     int sequenceId = -1;
     std::string sequenceName = "";
     std::string measurementName = "";
-    std::string fieldName = "";
+    std::string fieldKey1 = "";
 };
 
 
@@ -306,7 +306,7 @@ struct CfgData {
         bool enabled = false;
         std::string uri = ""; // e.g. http://192.168.x.x:8086
         std::string database = "";
-        int authMode = AUTH_BASIC;
+        int authMode = AUTH_NONE;
         std::string username = "";
         std::string password = "";
         struct TLS {
@@ -322,8 +322,8 @@ struct CfgData {
         bool enabled = false;
         std::string uri = ""; // e.g. http://192.168.x.x:8086
         std::string bucket = "";
-        int authMode = AUTH_BASIC;
         std::string organization = "";
+        int authMode = AUTH_BASIC; // AUTH_BASIC: Tokenized authentication
         std::string token = "";
         struct TLS {
             std::string caCert = "";
