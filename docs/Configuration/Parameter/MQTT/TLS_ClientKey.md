@@ -8,7 +8,7 @@
 
 ## Description
 
-Client private key file (absolute path in relation to sd card root folder)<br>
+Client private key file (file name with extention, file placed in /config/certs)<br>
 
 Client private key file for mutual authentication (absolute path in relation to sd card root folder). 
 If configured, `Client Certificate` needs to be configured, too.

@@ -8,7 +8,7 @@
 
 ## Description
 
-Client certificate file for mutual authentication (Provide absolute path in relation to sd card root folder). 
+Client certificate file for mutual authentication (file name with extention, file placed in /config/certs). 
 Keep it empty if mutual authentication is not required. If configured, `Client Key` needs to be provided, too.
 
 The client certificate is used for TLS handshake of InfluxDB mutual authentification. The client certificate and 

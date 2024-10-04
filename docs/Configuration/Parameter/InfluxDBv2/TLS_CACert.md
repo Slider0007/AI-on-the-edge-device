@@ -8,7 +8,7 @@
 
 ## Description
 
-CA (Certificate Authority) certificate file (Provide absolute path in relation to sd card root folder).
+CA (Certificate Authority) certificate file (file name with extention, file placed in /config/certs).
 
 
 The CA certificate is used for TLS handshake of InfluxDB authentification. The CA certificate is 

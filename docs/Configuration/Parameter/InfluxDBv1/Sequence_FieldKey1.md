@@ -1,15 +1,16 @@
-# Parameter: Field Name
+# Parameter: Field Key [Actual Value]
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Field Name          | fieldname
+| Parameter Name    | Field Key [Actual Value] | fieldkey1
 | Default Value     | empty               | empty
 
 
 ## Description
 
-Dedicated definition of the field for InfluxDB used for saving into 
-InfluxDB database (e.g.: `value`).
+Field key for the field value containing the value of 'Actual value'.
+A field key is the key part of the key-value pair that makes up a field.
+Field keys are strings and they store metadata.
 
 
 !!! Note

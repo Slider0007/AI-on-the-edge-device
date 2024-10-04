@@ -8,7 +8,8 @@
 
 ## Description
 
-Name of the InfluxDB measurement container data needs to be published.
+The part of the InfluxDB data structure that describes the data stored in 
+the associated fields. Measurements are strings.
 
 
 !!! Note

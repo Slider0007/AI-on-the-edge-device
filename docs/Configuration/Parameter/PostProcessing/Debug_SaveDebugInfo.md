@@ -17,7 +17,7 @@ Save the following debug information in case of the follwoing deviation during p
 1. Deviation 'Rate too high (<)' in terms of negative rate: Save single ROI images + result file <br>
 2. Deviation 'Rate too high (>)' in terms of positive rate: Save single ROI images + result file <br>
 <br>
-Debug path: `/sdcard/log/debug/`<br>
+Debug path: `/log/debug/`<br>
 
 !!! Note
     This event will be additionally logged as a warning event (process deviation).
