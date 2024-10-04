@@ -134,9 +134,9 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "username": "",
     "password": "",
     "tls": {
-      "cacert": "config/certs/client.key",
-      "clientcert": "config/certs/client.crt",
-      "clientkey": "config/certs/client.key"
+      "cacert": "/ca.crt/",
+      "clientcert": "/client.crt/",
+      "clientkey": "/client.key/"
     },
     "processdatanotation": 0,
     "retainprocessdata": false,
@@ -156,16 +156,16 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "username": "",
     "password": "",
     "tls": {
-      "cacert": "config/certs/client.key",
-      "clientcert": "config/certs/client.crt",
-      "clientkey": "config/certs/client.key"
+      "cacert": "/ca.crt/",
+      "clientcert": "/client.crt/",
+      "clientkey": "/client.key/"
     },
     "sequence": [
       {
         "sequenceid": 0,
         "sequencename": "main",
         "measurementname": "/test/",
-        "fieldname": "/test/"
+        "fieldkey1": "/test/"
       }
     ]
   },
@@ -173,20 +173,20 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "enabled": false,
     "uri": "",
     "bucket": "",
-    "authmode": 0,
     "organization": "",
+    "authmode": 0,
     "token": "",
     "tls": {
-      "cacert": "config/certs/client.key",
-      "clientcert": "config/certs/client.crt",
-      "clientkey": "config/certs/client.key"
+      "cacert": "/ca.crt/",
+      "clientcert": "/client.crt/",
+      "clientkey": "/client.key/"
     },
     "sequence": [
       {
         "sequenceid": 0,
         "sequencename": "main",
         "measurementname": "/test/",
-        "fieldname": "/test/"
+        "fieldkey1": "/test/"
       }
     ]
   },

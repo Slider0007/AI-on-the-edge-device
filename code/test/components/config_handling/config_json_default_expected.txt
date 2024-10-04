@@ -6,34 +6,34 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "lastmodified": ""
   },
   "operationmode": {
-    "opmode": 2,
+    "opmode": -1,
     "automaticprocessinterval": "1.0",
     "usedemoimages": false
   },
   "takeimage": {
     "flashlight": {
       "flashtime": 2000,
-      "flashintensity": 101
+      "flashintensity": 50
     },
     "camera": {
-      "camerafrequency": 21,
-      "imagequality": 64,
+      "camerafrequency": 20,
+      "imagequality": 12,
       "imagesize": "VGA",
-      "brightness": 3,
-      "contrast": 3,
-      "saturation": 3,
-      "sharpness": 4,
-      "exposurecontrolmode": 2,
-      "autoexposurelevel": 5,
-      "manualexposurevalue": 1300,
-      "gaincontrolmode": 2,
-      "manualgainvalue": 1500,
-      "specialeffect": 10,
+      "brightness": 0,
+      "contrast": 0,
+      "saturation": 0,
+      "sharpness": 0,
+      "exposurecontrolmode": 1,
+      "autoexposurelevel": 0,
+      "manualexposurevalue": 300,
+      "gaincontrolmode": 1,
+      "manualgainvalue": 0,
+      "specialeffect": 0,
       "mirrorimage": false,
       "flipimage": false,
-      "zoommode": 4,
-      "zoomoffsetx": 1000,
-      "zoomoffsety": 1000
+      "zoommode": 0,
+      "zoomoffsetx": 0,
+      "zoomoffsety": 0
     },
     "debug": {
       "saverawimages": false,
@@ -42,12 +42,12 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     }
   },
   "imagealignment": {
-    "alignmentalgo": 5,
+    "alignmentalgo": 0,
     "searchfield": {
       "x": 20,
       "y": 20
     },
-    "imagerotation": "189.9",
+    "imagerotation": "0.0",
     "flipimagesize": false,
     "marker": [
       {
@@ -74,7 +74,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
   "digit": {
     "enabled": true,
     "model": "dig-class100_0168_s2_q.tflite",
-    "cnngoodthreshold": "1.10",
+    "cnngoodthreshold": "0.00",
     "sequence": [
       {
         "sequenceid": 0,
@@ -109,12 +109,12 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
       {
         "sequenceid": 0,
         "sequencename": "main",
-        "decimalshift": 10,
-        "analogdigitsyncvalue": "10.0",
+        "decimalshift": 0,
+        "analogdigitsyncvalue": "9.2",
         "extendedresolution": true,
         "ignoreleadingnan": false,
         "checkdigitincreaseconsistency": false,
-        "maxratechecktype": 4,
+        "maxratechecktype": 1,
         "maxrate": "0.150",
         "allownegativerate": false,
         "usefallbackvalue": true,
@@ -130,7 +130,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "uri": "",
     "maintopic": "watermeter",
     "clientid": "watermeter",
-    "authmode": 3,
+    "authmode": 0,
     "username": "",
     "password": "",
     "tls": {
@@ -138,13 +138,13 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
       "clientcert": "",
       "clientkey": ""
     },
-    "processdatanotation": 3,
+    "processdatanotation": 0,
     "retainprocessdata": false,
     "homeassistant": {
       "discoveryenabled": false,
       "discoveryprefix": "homeassistant",
       "statustopic": "homeassistant/status",
-      "metertype": 12,
+      "metertype": 1,
       "retaindiscovery": false
     }
   },
@@ -152,7 +152,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "enabled": false,
     "uri": "",
     "database": "",
-    "authmode": 3,
+    "authmode": 0,
     "username": "",
     "password": "",
     "tls": {
@@ -165,7 +165,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
         "sequenceid": 0,
         "sequencename": "main",
         "measurementname": "",
-        "fieldname": ""
+        "fieldkey1": ""
       }
     ]
   },
@@ -173,8 +173,8 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "enabled": false,
     "uri": "",
     "bucket": "",
-    "authmode": 3,
     "organization": "",
+    "authmode": 1,
     "token": "",
     "tls": {
       "cacert": "",
@@ -186,7 +186,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
         "sequenceid": 0,
         "sequencename": "main",
         "measurementname": "",
-        "fieldname": ""
+        "fieldkey1": ""
       }
     ]
   },
@@ -200,18 +200,18 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
         "pinname": "",
         "pinmode": "input",
         "capturemode": "cyclic-polling",
-        "inputdebouncetime": 5001,
-        "pwmfrequency": 1000001,
+        "inputdebouncetime": 200,
+        "pwmfrequency": 5000,
         "exposetomqtt": false,
         "exposetorest": false,
         "smartled": {
-          "type": 8,
-          "quantity": 0,
-          "colorredchannel": 256,
-          "colorgreenchannel": 256,
-          "colorbluechannel": 256
+          "type": 0,
+          "quantity": 1,
+          "colorredchannel": 255,
+          "colorgreenchannel": 255,
+          "colorbluechannel": 255
         },
-        "intensitycorrectionfactor": 101
+        "intensitycorrectionfactor": 100
       },
       {
         "gpionumber": 3,
@@ -297,7 +297,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
   },
   "log": {
     "debug": {
-      "loglevel": 5,
+      "loglevel": 2,
       "logfilesretention": 5,
       "debugfilesretention": 5
     },
@@ -312,7 +312,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
       "password": "",
       "hostname": "watermeter",
       "ipv4": {
-        "networkconfig": 2,
+        "networkconfig": 0,
         "ipaddress": "",
         "subnetmask": "",
         "gatewayaddress": "",
@@ -320,7 +320,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
       },
       "wlanroaming": {
         "enabled": false,
-        "rssithreshold": 1
+        "rssithreshold": -75
       }
     },
     "time": {
@@ -333,7 +333,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     }
   },
   "system": {
-    "cpufrequency": 241
+    "cpufrequency": 160
   },
   "webui": {
     "autorefresh": {
