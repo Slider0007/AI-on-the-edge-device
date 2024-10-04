@@ -174,73 +174,73 @@ void migrateConfigIni(void)
                         if (!splitted[0].starts_with(";"))
                             ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.debug.saveRawImages = true;
                     }
-                    if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION" || toUpper(splitted[0]) == ";RAWIMAGESRETENTION") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "RAWIMAGESRETENTION" || toUpper(splitted[0]) == ";RAWIMAGESRETENTION") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.debug.rawImagesRetention = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "FLASHTIME") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "FLASHTIME") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.flashlight.flashTime = (int)(stof(splitted[1])*1000); // Flashtime in ms
                     }
-                    if ((toUpper(splitted[0]) == "FLASHINTENSITY") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "FLASHINTENSITY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.flashlight.flashIntensity = std::max(0, std::min(std::stoi(splitted[1]), 100));
                     }
-                    if ((toUpper(splitted[0]) == "CAMERAFREQUENCY") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "CAMERAFREQUENCY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.cameraFrequency = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "IMAGEQUALITY") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "IMAGEQUALITY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.imageQuality = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "IMAGESIZE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "IMAGESIZE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.imageSize = splitted[1].c_str();
                     }
-                    if ((toUpper(splitted[0]) == "BRIGHTNESS") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "BRIGHTNESS") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.brightness = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "CONTRAST") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "CONTRAST") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.contrast = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "SATURATION") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SATURATION") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.saturation = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "SHARPNESS") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SHARPNESS") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.sharpness = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "EXPOSURECONTROLMODE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "EXPOSURECONTROLMODE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.exposureControlMode = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "AUTOEXPOSURELEVEL") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "AUTOEXPOSURELEVEL") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.autoExposureLevel = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "MANUALEXPOSUREVALUE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "MANUALEXPOSUREVALUE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.manualExposureValue = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "GAINCONTROLMODE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "GAINCONTROLMODE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.gainControlMode = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "MANUALGAINVALUE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "MANUALGAINVALUE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.manualGainValue = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "SPECIALEFFECT") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SPECIALEFFECT") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.specialEffect = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "MIRRORIMAGE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "MIRRORIMAGE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.mirrorImage = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if ((toUpper(splitted[0]) == "FLIPIMAGE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "FLIPIMAGE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.flipImage = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if ((toUpper(splitted[0]) == "ZOOMMODE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "ZOOMMODE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomMode = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "ZOOMOFFSETX") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "ZOOMOFFSETX") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomOffsetX = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "ZOOMOFFSETY") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "ZOOMOFFSETY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomOffsetY = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "DEMO") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "DEMO") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionOperationMode.useDemoImages = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.debug.saveAllFiles = (toUpper(splitted[1]) == "TRUE");
                     }
                 }
@@ -250,6 +250,7 @@ void migrateConfigIni(void)
                     if (splitted[0] == "") // Skip empty lines
                         continue;
 
+                    static int idx = 0;
                     if ((toUpper(splitted[0]) == "ALIGNMENTALGO") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "HIGHACCURACY")
                             ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo = ALIGNALGO_HIGH_ACCURACY;
@@ -262,26 +263,25 @@ void migrateConfigIni(void)
                         else
                             ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo = ALIGNALGO_DEFAULT;
                     }
-                    if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.searchField.x = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "SEARCHFIELDY") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SEARCHFIELDY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.searchField.y = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.imageRotation = std::stof(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "FLIPIMAGESIZE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "FLIPIMAGESIZE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.flipImageSize = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.debug.saveDebugInfo = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.debug.saveAllFiles = (toUpper(splitted[1]) == "TRUE");
                     }
-                    static int idx = 0;
-                    if (splitted.size() == 3 && idx < 2) {
+                    else if (splitted.size() == 3 && idx < 2) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.marker[idx].x = std::stoi(splitted[1]);
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.marker[idx].y = std::stoi(splitted[2]);
                         idx++;
@@ -298,21 +298,21 @@ void migrateConfigIni(void)
                     if ((toUpper(splitted[0]) == "MODEL") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionDigit.model = splitted[1].substr(8, std::string::npos);
                     }
-                    if ((toUpper(splitted[0]) == "CNNGOODTHRESHOLD") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "CNNGOODTHRESHOLD") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionDigit.cnnGoodThreshold = std::stof(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "ROIIMAGESLOCATION"  || (toUpper(splitted[0]) == ";ROIIMAGESLOCATION")) && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "ROIIMAGESLOCATION"  || (toUpper(splitted[0]) == ";ROIIMAGESLOCATION")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionDigit.debug.roiImagesLocation = splitted[1];
                         if (!splitted[0].starts_with(";"))
                             ConfigClass::getInstance()->cfgTmp()->sectionDigit.debug.saveRoiImages = true;
                     }
-                    if ((toUpper(splitted[0]) == "ROIIMAGESRETENTION"  || (toUpper(splitted[0]) == ";ROIIMAGESRETENTION")) && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "ROIIMAGESRETENTION"  || (toUpper(splitted[0]) == ";ROIIMAGESRETENTION")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionDigit.debug.roiImagesRetention = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1)) {
                             ConfigClass::getInstance()->cfgTmp()->sectionDigit.debug.saveAllFiles = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if (splitted.size() >= 5) {
+                    else if (splitted.size() >= 5) {
                         RoiElement roiEl;
                         roiEl.x = std::stoi(splitted[1]);
                         roiEl.y = std::stoi(splitted[2]);
@@ -367,19 +367,19 @@ void migrateConfigIni(void)
                     if ((toUpper(splitted[0]) == "MODEL") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionAnalog.model = splitted[1].substr(8, std::string::npos);
                     }
-                    if ((toUpper(splitted[0]) == "ROIIMAGESLOCATION"  || (toUpper(splitted[0]) == ";ROIIMAGESLOCATION")) && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "ROIIMAGESLOCATION"  || (toUpper(splitted[0]) == ";ROIIMAGESLOCATION")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionAnalog.debug.roiImagesLocation = splitted[1];
                         if (!splitted[0].starts_with(";"))
                             ConfigClass::getInstance()->cfgTmp()->sectionAnalog.debug.saveRoiImages = true;
                     }
-                    if ((toUpper(splitted[0]) == "ROIIMAGESRETENTION" || (toUpper(splitted[0]) == ";ROIIMAGESRETENTION")) && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "ROIIMAGESRETENTION" || (toUpper(splitted[0]) == ";ROIIMAGESRETENTION")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionAnalog.debug.roiImagesRetention = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
+                    else if ((toUpper(splitted[0]) == "SAVEALLFILES") && (splitted.size() > 1))
                     {
                         ConfigClass::getInstance()->cfgTmp()->sectionAnalog.debug.saveAllFiles = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if (splitted.size() >= 5) {
+                    else if (splitted.size() >= 5) {
                         RoiElement roiEl;
                         roiEl.x = std::stoi(splitted[1]);
                         roiEl.y = std::stoi(splitted[2]);
@@ -475,18 +475,18 @@ void migrateConfigIni(void)
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.uri =
                             (splitted[1] == "mqtt://IP-ADDRESS:1883" || splitted[1] == "undefined" ? "" : splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "MAINTOPIC") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "MAINTOPIC") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.mainTopic = (splitted[1] == "undefined" ? "" : splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "CLIENTID") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "CLIENTID") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.clientID = (splitted[1] == "undefined" ? "" : splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "USER" || toUpper(splitted[0]) == ";USER") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "USER" || toUpper(splitted[0]) == ";USER") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.username = (splitted[1] == "undefined" ? "" : splitted[1]);
                         if (!splitted[0].starts_with(";"))
                             ConfigClass::getInstance()->cfgTmp()->sectionMqtt.authMode = AUTH_BASIC;
                     }
-                    if ((toUpper(splitted[0]) == "PASSWORD" || toUpper(splitted[0]) == ";PASSWORD") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "PASSWORD" || toUpper(splitted[0]) == ";PASSWORD") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.password = (splitted[1] == "undefined" ? "" : splitted[1]);
                         ConfigClass::getInstance()->saveMigDataToNVS("mqtt_pw", ConfigClass::getInstance()->cfgTmp()->sectionMqtt.password);
 
@@ -494,41 +494,41 @@ void migrateConfigIni(void)
                             ConfigClass::getInstance()->cfgTmp()->sectionMqtt.authMode = AUTH_BASIC;
                         }
                     }
-                    if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "TRUE")
                             ConfigClass::getInstance()->cfgTmp()->sectionMqtt.authMode = AUTH_TLS;
                     }
-                    if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.tls.caCert =
                             (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
-                    if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.tls.clientCert =
                             (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
-                    if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.tls.clientKey =
                             (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
-                    if ((toUpper(splitted[0]) == "RETAINPROCESSDATA") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "RETAINPROCESSDATA") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.retainProcessData = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if ((toUpper(splitted[0]) == "PROCESSDATANOTATION") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "PROCESSDATANOTATION") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.processDataNotation = std::stoi(splitted[1]);
                     }
                     if ((toUpper(splitted[0]) == "HOMEASSISTANTDISCOVERY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.homeAssistant.discoveryEnabled = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if ((toUpper(splitted[0]) == "HADISCOVERYPREFIX") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "HADISCOVERYPREFIX") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.homeAssistant.discoveryPrefix = splitted[1];
                     }
-                    if ((toUpper(splitted[0]) == "HASTATUSTOPIC") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "HASTATUSTOPIC") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.homeAssistant.statusTopic = splitted[1];
                     }
-                    if ((toUpper(splitted[0]) == "HARETAINDISCOVERY") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "HARETAINDISCOVERY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionMqtt.homeAssistant.retainDiscovery = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if ((toUpper(splitted[0]) == "HAMETERTYPE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "HAMETERTYPE") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "WATER_M3") {
                             ConfigClass::getInstance()->cfgTmp()->sectionMqtt.homeAssistant.meterType = WATER_M3;
                         }
@@ -576,15 +576,15 @@ void migrateConfigIni(void)
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.uri =
                             (splitted[1] == "http://IP-ADDRESS:PORT" || splitted[1] == "undefined" ? "" : splitted[1]);
                     }
-                    if (((toUpper(splitted[0]) == "DATABASE")) && (splitted.size() > 1)) {
+                    else if (((toUpper(splitted[0]) == "DATABASE")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.database = (splitted[1] == "undefined" ? "" : splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "USER" || toUpper(splitted[0]) == ";USER") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "USER" || toUpper(splitted[0]) == ";USER") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.username = (splitted[1] == "undefined" ? "" : splitted[1]);
                         if (!splitted[0].starts_with(";"))
                             ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.authMode = AUTH_BASIC;
                     }
-                    if ((toUpper(splitted[0]) == "PASSWORD" || toUpper(splitted[0]) == ";PASSWORD") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "PASSWORD" || toUpper(splitted[0]) == ";PASSWORD") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.password = (splitted[1] == "undefined" ? "" : splitted[1]);
                         ConfigClass::getInstance()->saveMigDataToNVS("influxdbv1_pw", ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.password);
 
@@ -592,24 +592,24 @@ void migrateConfigIni(void)
                             ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.authMode = AUTH_BASIC;
                         }
                     }
-                    if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "TRUE") {
                             ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.authMode = AUTH_TLS;
                         }
                     }
-                    if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.caCert =
                             (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
-                    if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.clientCert =
                             (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
-                    if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.tls.clientKey =
                             (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
-                    if (splitted[0].find_first_of(".") != std::string::npos) {
+                    else if (splitted[0].find_first_of(".") != std::string::npos) {
                         std::string parameter = toUpper(splitted[0].substr(splitted[0].find_first_of(".")+1));
 
                         for (auto &seqEl : ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv1.sequence) {
@@ -637,34 +637,34 @@ void migrateConfigIni(void)
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.uri =
                             (splitted[1] == "http://IP-ADDRESS:PORT" || splitted[1] == "undefined" ? "" : splitted[1]);
                     }
-                    if (((toUpper(splitted[0]) == "BUCKET")) && (splitted.size() > 1)) {
+                    else if (((toUpper(splitted[0]) == "BUCKET")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.bucket = (splitted[1] == "undefined" ? "" : splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "ORG" || (toUpper(splitted[0]) == ";ORG")) && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "ORG" || (toUpper(splitted[0]) == ";ORG")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.organization = (splitted[1] == "undefined" ? "" : splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "TOKEN" || (toUpper(splitted[0]) == ";TOKEN")) && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TOKEN" || (toUpper(splitted[0]) == ";TOKEN")) && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.token = (splitted[1] == "undefined" ? "" : splitted[1]);
                         ConfigClass::getInstance()->saveMigDataToNVS("influxdbv2_pw", ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.token);
                     }
-                    if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSENCRYPTION") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "TRUE") {
                             ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.authMode = AUTH_TLS;
                         }
                     }
-                    if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSCACERT") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.caCert =
                             (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
-                    if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSCLIENTCERT") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.clientCert =
                             (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
-                    if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "TLSCLIENTKEY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.tls.clientKey =
                             (splitted[1] == "undefined" ? "" : splitted[1].substr(splitted[1].find_last_of("/")+1));
                     }
-                    if (splitted[0].find_first_of(".") != std::string::npos) {
+                    else if (splitted[0].find_first_of(".") != std::string::npos) {
                         std::string parameter = toUpper(splitted[0].substr(splitted[0].find_first_of(".")+1));
 
                         for (auto &seqEl : ConfigClass::getInstance()->cfgTmp()->sectionInfluxDBv2.sequence) {
@@ -695,7 +695,7 @@ void migrateConfigIni(void)
                         else
                             ConfigClass::getInstance()->cfgTmp()->sectionOperationMode.opMode = OPMODE_MANUAL;
                     }
-                    if ((toUpper(splitted[0]) == "INTERVAL") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "INTERVAL") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionOperationMode.automaticProcessInterval = std::stof(splitted[1]);
                     }
                 }
@@ -708,7 +708,7 @@ void migrateConfigIni(void)
                     if ((toUpper(splitted[0]) == "DATALOGACTIVE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionLog.data.enabled = (toUpper(splitted[1]) == "TRUE");
                     }
-                    if ((toUpper(splitted[0]) == "DATAFILESRETENTION") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "DATAFILESRETENTION") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionLog.data.dataFilesRetention = std::stoi(splitted[1]);
                     }
                 }
@@ -735,10 +735,10 @@ void migrateConfigIni(void)
                             ConfigClass::getInstance()->cfgTmp()->sectionLog.debug.logLevel = ESP_LOG_ERROR;
                         }
                     }
-                    if ((toUpper(splitted[0]) == "LOGFILESRETENTION") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "LOGFILESRETENTION") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionLog.debug.logFilesRetention = std::stoi(splitted[1]);
                     }
-                    if ((toUpper(splitted[0]) == "DEBUGFILESRETENTION") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "DEBUGFILESRETENTION") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionLog.debug.debugFilesRetention = std::stoi(splitted[1]);
                     }
                 }
@@ -751,25 +751,44 @@ void migrateConfigIni(void)
                     if ((toUpper(splitted[0]) == "TIMESERVER") || (toUpper(splitted[0]) == ";TIMESERVER")) {
                         ConfigClass::getInstance()->cfgTmp()->sectionNetwork.time.ntp.timeServer = splitted[1];
                     }
-                    if (toUpper(splitted[0]) == "TIMEZONE") {
+                    else if (toUpper(splitted[0]) == "TIMEZONE") {
                         ConfigClass::getInstance()->cfgTmp()->sectionNetwork.time.timeZone = splitted[1];
                     }
-                    if ((toUpper(splitted[0]) == "HOSTNAME") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "HOSTNAME") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.hostname = splitted[1];
                     }
-                    if ((toUpper(splitted[0]) == "RSSITHRESHOLD") || (toUpper(splitted[0]) == ";RSSITHRESHOLD")) {
+                    else if ((toUpper(splitted[0]) == "RSSITHRESHOLD") || (toUpper(splitted[0]) == ";RSSITHRESHOLD")) {
                         if (!splitted[0].starts_with(";"))
                             ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.wlanRoaming.enabled = true;
 
                         ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.wlanRoaming.rssiThreshold = atoi(splitted[1].c_str());
                     }
-                    if ((toUpper(splitted[0]) == "CPUFREQUENCY")) {
+                    else if ((toUpper(splitted[0]) == "CPUFREQUENCY")) {
                         ConfigClass::getInstance()->cfgTmp()->sectionSystem.cpuFrequency = atoi(splitted[1].c_str());
                     }
-                    if ((toUpper(splitted[0]) == "SETUPMODE") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SETUPMODE") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "FALSE") {
                             ConfigClass::getInstance()->cfgTmp()->sectionOperationMode.opMode = OPMODE_AUTO;
                         }
+                    }
+                }
+                else if (section == "[WebUI]") {
+                    splitted = splitString(configLines[i+1]);
+
+                    if (splitted[0] == "") // Skip empty lines
+                        continue;
+
+                    if (toUpper(splitted[0]) == "OVERVIEWAUTOREFRESH") {
+                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.overviewPage.enabled = (toUpper(splitted[1]) == "TRUE");
+                    }
+                    else if (toUpper(splitted[0]) == "OVERVIEWAUTOREFRESHTIME") {
+                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.overviewPage.refreshTime = atoi(splitted[1].c_str());
+                    }
+                    else if (toUpper(splitted[0]) == "DATAGRAPHAUTOREFRESH") {
+                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.dataGraphPage.enabled = (toUpper(splitted[1]) == "TRUE");
+                    }
+                    else if (toUpper(splitted[0]) == "DATAGRAPHAUTOREFRESHTIME") {
+                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.dataGraphPage.refreshTime = atoi(splitted[1].c_str());
                     }
                 }
             }
