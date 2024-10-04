@@ -459,7 +459,7 @@ void migrateConfigIni(void)
                             }
                         }
                     }
-                    if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1)) {
+                    else if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionPostProcessing.debug.saveDebugInfo = (toUpper(splitted[1]) == "TRUE");
                     }
                 }
@@ -773,7 +773,7 @@ void migrateConfigIni(void)
                     }
                 }
                 else if (section == "[WebUI]") {
-                    splitted = splitString(configLines[i+1]);
+                    splitted = splitString(configLines[i]);
 
                     if (splitted[0] == "") // Skip empty lines
                         continue;
