@@ -67,13 +67,21 @@ bool ClassFlowPostProcessing::loadParameter()
 
         // Only valid for Class11 models
         if (sequence->paramPostProc->checkDigitIncreaseConsistency) {
-            if (flowDigit != NULL && flowDigit->getCNNType() != CNNTYPE_DIGIT_CLASS11)
+            if (flowDigit != NULL && flowDigit->getCNNType() != CNNTYPE_DIGIT_CLASS11) {
                 LogFile.writeToFile(ESP_LOG_WARN, TAG, sequence->sequenceName +
                                     ": Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models");
+            }
 
-            if (!sequence->paramPostProc->useFallbackValue)
+            if (!sequence->paramPostProc->useFallbackValue) {
                 LogFile.writeToFile(ESP_LOG_WARN, TAG, sequence->sequenceName +
                                     ": Activate parameter \'Use Fallback Value\' to be able use \'Digit Increase Consistency\' check");
+            }
+        }
+
+        if (sequence->paramPostProc->ignoreLeadingNaN) {
+            if (flowDigit != NULL && flowDigit->getCNNType() != CNNTYPE_DIGIT_CLASS11) {
+                LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip \'Ignore Leading NaN\' check, only applicable for dig-class11 models");
+            }
         }
 
         // Check if fallbackvalue usage is activated (at least in one sequence)
