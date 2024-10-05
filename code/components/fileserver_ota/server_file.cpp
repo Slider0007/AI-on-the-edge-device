@@ -51,15 +51,11 @@ esp_err_t getDataFileList(httpd_req_t *req)
     httpd_resp_set_type(req, "text/plain");
 
     DIR *dir = opendir(verz_name);
-
     if (!dir) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getDataFileList: Failed to open directory: " + std::string(verz_name));
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
         return ESP_FAIL;
     }
-
-    struct dirent *entry;
-    std::string fileList = "";
 
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
@@ -72,6 +68,7 @@ esp_err_t getDataFileList(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_name[0] == '.') { // ignore all files with starting dot (hidden files)
             continue;
@@ -108,15 +105,11 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
     httpd_resp_set_type(req, "text/plain");
 
     DIR *dir = opendir(verz_name);
-
     if (!dir) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getTfliteFileList: Failed to open directory: " + std::string(verz_name));
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
         return ESP_FAIL;
     }
-
-    struct dirent *entry;
-    std::string fileList = "";
 
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
@@ -129,6 +122,7 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_name[0] == '.') { // ignore all files with starting dot (hidden files)
             continue;
@@ -139,6 +133,57 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
                 retVal = ESP_FAIL;
                 break;
             }
+        }
+    }
+    closedir(dir);
+
+    char *jsonChar = cJSON_Print(cJSONObject);
+    cJSON_Delete(cJSONObject);
+
+    if (jsonChar != NULL) {
+        retVal = httpd_resp_send(req, jsonChar, strlen(jsonChar));
+        cJSON_free(jsonChar);
+    }
+
+    return retVal;
+}
+
+
+esp_err_t getCertFileList(httpd_req_t *req)
+{
+    esp_err_t retVal = ESP_FAIL;
+    const char verz_name[] = "/sdcard/config/certs";
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
+    httpd_resp_set_type(req, "text/plain");
+
+    DIR *dir = opendir(verz_name);
+    if (!dir) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getCertFileList: Failed to open directory: " + std::string(verz_name));
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
+        return ESP_FAIL;
+    }
+
+    cJSON *cJSONObject = cJSON_CreateObject();
+    if (cJSONObject == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
+        return ESP_FAIL;
+    }
+    cJSON *files;
+    if (!cJSON_AddItemToObject(cJSONObject, "files", files = cJSON_CreateArray())) {
+        cJSON_Delete(cJSONObject);
+        return ESP_FAIL;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_name[0] == '.') { // ignore all files with starting dot (hidden files)
+            continue;
+        }
+
+        if (!cJSON_AddItemToArray(files, cJSON_CreateString(entry->d_name))) {
+            retVal = ESP_FAIL;
         }
     }
     closedir(dir);

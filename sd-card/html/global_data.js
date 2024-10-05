@@ -5,9 +5,9 @@ let jsonConfigModifiedDelta = {}; // Config: Object in JSON notation (modified p
 async function fileCopyOnServer(_source, _target, _domainname = "", async = false)
 {
      return new Promise(function (resolve, reject) {
-          var url = _domainname + "/editflow?task=copy&in=" + _source + "&out=" + _target;
+          let url = _domainname + "/editflow?task=copy&in=" + _source + "&out=" + _target;
 
-          var xhttp = new XMLHttpRequest();
+          let xhttp = new XMLHttpRequest();
           xhttp.onreadystatechange = function() {
                if (this.readyState == 4) {
                     if (this.status >= 200 && this.status < 300) {
@@ -33,10 +33,10 @@ async function fileCopyOnServer(_source, _target, _domainname = "", async = fals
 
 function fileDeleteOnServer(_filename, _domainname = "")
 {
-     var okay = false;
-     var url = _domainname + "/delete" + _filename;
+     let okay = false;
+     let url = _domainname + "/delete" + _filename;
 
-     var xhttp = new XMLHttpRequest();
+     let xhttp = new XMLHttpRequest();
      xhttp.onreadystatechange = function() {
           if (xhttp.readyState == 4) {
                if (xhttp.status >= 200 && xhttp.status < 300) {
@@ -60,10 +60,10 @@ function fileDeleteOnServer(_filename, _domainname = "")
 
 function uploadContent(_content, _filename, _domainname = "")
 {
-     var okay = false;
-     var url = _domainname + "/upload" + _filename;
+     let okay = false;
+     let url = _domainname + "/upload" + _filename;
 
-     var xhttp = new XMLHttpRequest();
+     let xhttp = new XMLHttpRequest();
      xhttp.onreadystatechange = function() {
           if (xhttp.readyState == 4) {
                if (xhttp.status >= 200 && xhttp.status < 300) {
@@ -115,7 +115,7 @@ async function getDataFileList()
 }
 
 
-async function getTFLITEList()
+async function getTfliteFileList()
 {
     return new Promise(function (resolve, reject) {
         let url = getDomainname() + '/editflow?task=tflite';
@@ -142,11 +142,38 @@ async function getTFLITEList()
 }
 
 
+async function getCertFileList()
+{
+    return new Promise(function (resolve, reject) {
+        let url = getDomainname() + '/editflow?task=certs';
+
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                        return resolve(JSON.parse(xhttp.responseText));
+                }
+                else {
+                        firework.launch("Cert files request failed (Response status: " + this.status +
+                                "). Repeat action or check logs.", 'danger', 30000);
+                        console.error("Cert files request failed. Response status: " + this.status);
+                        return reject("Cert files request failed");
+                }
+            }
+        };
+
+        xhttp.timeout = 10000; // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    });
+}
+
+
 function reloadConfig()
 {
-     var url = getDomainname() + '/config?task=reload';
+     let url = getDomainname() + '/config?task=reload';
 
-     var xhttp = new XMLHttpRequest();
+     let xhttp = new XMLHttpRequest();
      xhttp.onreadystatechange = function() {
           if (this.readyState == 4) {
                if (this.status >= 200 && this.status < 300) {
@@ -268,7 +295,7 @@ function jsonObjectKeyify(jsonObject)
 
      function traverse_it(jsonObj)
      {
-          for(var prop in jsonObj) {
+          for(let prop in jsonObj) {
                if(typeof jsonObj[prop] == 'object') { // object
                     traverse_it(jsonObj[prop]);
                }
@@ -412,7 +439,7 @@ function loadImage(url, altUrl)
 
 function dataURLtoBlob(dataurl)
 {
-     var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+     let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
           bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
      while(n--){
           u8arr[n] = bstr.charCodeAt(n);
@@ -423,9 +450,9 @@ function dataURLtoBlob(dataurl)
 
 function SaveCanvasToImage(_canvas, _filename, _delete = true, _domainname = "")
 {
-     var JPEG_QUALITY=0.8;
-     var dataUrl = _canvas.toDataURL('image/jpeg', JPEG_QUALITY);
-     var rtn = dataURLtoBlob(dataUrl);
+     let JPEG_QUALITY = 0.8;
+     let dataUrl = _canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+     let rtn = dataURLtoBlob(dataUrl);
 
      if (_delete) {
           fileDeleteOnServer(_filename, _domainname);

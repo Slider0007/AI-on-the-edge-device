@@ -1405,8 +1405,9 @@
 			</td>
 			<td>
 				<form id="mqtt_tls_cacert_form">
-					<input type="text" name="mqtt.tls.cacert" id="mqtt_tls_cacert_value"
-						placeholder="ca.crt" onchange="gatherChangedParameter(this.form)">
+					<select class="select_large" name="mqtt.tls.cacert" id="mqtt_tls_cacert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_mqtt_tls_cacert</td>
@@ -1418,8 +1419,9 @@
 			</td>
 			<td>
 				<form id="mqtt_tls_clientcert_form">
-					<input type="text" name="mqtt.tls.clientcert" id="mqtt_tls_clientcert_value"
-						placeholder="client.crt" onchange="gatherChangedParameter(this.form)">
+					<select class="select_large" name="mqtt.tls.clientcert" id="mqtt_tls_clientcert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_mqtt_tls_clientcert</td>
@@ -1431,8 +1433,9 @@
 			</td>
 			<td>
 				<form id="mqtt_tls_clientkey_form">
-					<input type="text" name="mqtt.tls.clientkey" id="mqtt_tls_clientkey_value"
-						placeholder="client.key" onchange="gatherChangedParameter(this.form)">
+					<select class="select_large" name="mqtt.tls.clientkey" id="mqtt_tls_clientkey_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_mqtt_tls_clientkey</td>
@@ -1666,8 +1669,9 @@
 			</td>
 			<td>
 				<form id="influxdbv1_tls_cacert_form">
-					<input type="text" name="influxdbv1.tls.cacert" id="influxdbv1_tls_cacert_value"
-						placeholder="ca.crt" onchange="gatherChangedParameter(this.form)">
+					<select class="select_large" name="influxdbv1.tls.cacert" id="influxdbv1_tls_cacert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv1_tls_cacert</td>
@@ -1679,8 +1683,9 @@
 			</td>
 			<td>
 				<form id="influxdbv1_tls_clientcert_form">
-					<input type="text" name="influxdbv1.tls.clientcert" id="influxdbv1_tls_clientcert_value"
-						placeholder="client.crt" onchange="gatherChangedParameter(this.form)">
+					<select class="select_large" name="influxdbv1.tls.clientcert" id="influxdbv1_tls_clientcert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv1_tls_clientcert</td>
@@ -1692,8 +1697,9 @@
 			</td>
 			<td>
 				<form id="influxdbv1_tls_clientkey_form">
-					<input type="text" name="influxdbv1.tls.clientkey" id="influxdbv1_tls_clientkey_value"
-						placeholder="client.key" onchange="gatherChangedParameter(this.form)">
+					<select class="select_large" name="influxdbv1.tls.clientkey" id="influxdbv1_tls_clientkey_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv1_tls_clientkey</td>
@@ -1800,7 +1806,7 @@
 			<td>
 				<form id="influxdbv2_organization_form">
 					<input required type="text" name="influxdbv2.organization" id="influxdbv2_organization_value"
-						onchange="gatherChangedParameter(this.form)">
+						placeholder="organization" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_organization</td>
@@ -1844,8 +1850,9 @@
 			</td>
 			<td>
 				<form id="influxdbv2_tls_cacert_form">
-					<input type="text" name="influxdbv2.tls.cacert" id="influxdbv2_tls_cacert_value"
-						placeholder="ca.crt" onchange="gatherChangedParameter(this.form)">
+					<select class="select_large" name="influxdbv2.tls.cacert" id="influxdbv2_tls_cacert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_tls_cacert</td>
@@ -1857,8 +1864,9 @@
 			</td>
 			<td>
 				<form id="influxdbv2_tls_clientcert_form">
-					<input type="text" name="influxdbv2.tls.clientcert" id="influxdbv2_tls_clientcert_value"
-						placeholder="client.crt" onchange="gatherChangedParameter(this.form)">
+					<select class="select_large" name="influxdbv2.tls.clientcert" id="influxdbv2_tls_clientcert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_tls_clientcert</td>
@@ -1870,8 +1878,9 @@
 			</td>
 			<td>
 				<form id="influxdbv2_tls_clientkey_form">
-					<input type="text" name="influxdbv2.tls.clientkey" id="influxdbv2_tls_clientkey_value"
-						placeholder="client.key" onchange="gatherChangedParameter(this.form)">
+					<select class="select_large" name="influxdbv2.tls.clientkey" id="influxdbv2_tls_clientkey_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_influxdbv2_tls_clientkey</td>
@@ -2872,7 +2881,7 @@
 
 		let modelFileArray = modelFileListObj.files.sort(); // Convert to array and sort
 
-		for (var i = 0; i < modelFileArray.length; ++i) {
+		for (let i = 0; i < modelFileArray.length; ++i) {
 			if (modelFileArray[i].startsWith("dig")) { // Digit model, only show in the digit selection
 				digitModelSelection.append(new Option(modelFileArray[i].substring(0, modelFileArray[i].lastIndexOf('.')), modelFileArray[i]));
 			}
@@ -2883,6 +2892,27 @@
 				digitModelSelection.append(new Option(modelFileArray[i].substring(0, modelFileArray[i].lastIndexOf('.')), modelFileArray[i]));
 				analogModelSelection.append(new Option(modelFileArray[i].substring(0, modelFileArray[i].lastIndexOf('.')), modelFileArray[i]));
 			}
+		}
+	}
+
+
+	function fillCertSelectionOptions(certFileListObj)
+	{
+		let cacertSelection = $("select[name$=cacert]").find("option").remove().end();
+		let clientcertSelection = $("select[name$=clientcert]").find("option").remove().end();
+		let clientkeySelection = $("select[name$=clientkey]").find("option").remove().end();
+
+		let certFileArray = certFileListObj.files.sort(); // Convert to array and sort
+
+		// Add empty selection
+		cacertSelection.append(new Option("None", ""));
+		clientcertSelection.append(new Option("None", ""));
+		clientkeySelection.append(new Option("None", ""));
+
+		for (let i = 0; i < certFileArray.length; ++i) {
+			cacertSelection.append(new Option(certFileArray[i], certFileArray[i]));
+			clientcertSelection.append(new Option(certFileArray[i], certFileArray[i]));
+			clientkeySelection.append(new Option(certFileArray[i], certFileArray[i]));
 		}
 	}
 
@@ -2904,9 +2934,10 @@
 	}
 
 
-	function loadConfigData(modelFileListObj)
+	function loadConfigData(modelFileListObj, certFileListObj)
 	{
 		fillModelSelectionOptions(modelFileListObj);
+		fillCertSelectionOptions(certFileListObj);
 
 		//jsonConfigModifiedDelta = {};
 		let jsonConfigKeyified = [];            // Config: array as key-value pairs
@@ -2917,7 +2948,7 @@
 		initGpioSection();
 
 		triggerClassElementOnChange("classvisibility_init");
-		jsonConfigModifiedDelta = {}; // Reset modified parameter container after subparameter visibilty is set.
+		jsonConfigModifiedDelta = {}; // Reset modified parameter container after subparameter visibilty is set
 
 		$("#wlan_reboot_note").hide(); // Hide note
 		$("#divloading").hide(); // Hide loading indicator
@@ -2929,7 +2960,7 @@
 	function openDescription()
 	{
 		if(window.location.hash) {
-			var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+			let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
 			if(hash == 'description')
 				document.getElementById("desc_details").open = true;
 		}
@@ -2940,9 +2971,9 @@
 	{
 		openDescription();
 
-		// Ensure TFLite file list and config is loaded before parsing data
-		Promise.all([getTFLITEList(), loadConfig(2)])
-			.then(([modelFileListObj]) => loadConfigData(modelFileListObj))
+		// Ensure tflite file list, cert file list and config is loaded before parsing data
+		Promise.all([getTfliteFileList(), getCertFileList(), loadConfig(2)])
+			.then(([modelFileListObj, certFileListObj]) => loadConfigData(modelFileListObj, certFileListObj))
 			.catch((error) => {
 				firework.launch('Failed loading data for configuration page. Please repeat or check logs', 'danger', 30000);
 				console.error("Failed loading data for configuration page. Error: " + error.message);

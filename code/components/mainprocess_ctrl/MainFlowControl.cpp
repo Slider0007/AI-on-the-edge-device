@@ -258,24 +258,24 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     // Default return error message when no return is programmed
     std::string sReturnMessage = "E90: Uninitialized";
 
-    char _query[100];
-    char numberSequence[50] = "default";
-    char value[20] = "";
+    char query[100];
+    char numberSequence[50];
+    char value[20];
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        //ESP_LOGD(TAG, "Query: %s", _query);
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        //ESP_LOGD(TAG, "Query: %s", query);
 
-        if (httpd_query_key_value(_query, "sequence", numberSequence, sizeof(numberSequence)) != ESP_OK) { // If request is incomplete
+        if (httpd_query_key_value(query, "sequence", numberSequence, sizeof(numberSequence)) != ESP_OK) { // If request is incomplete
             sReturnMessage = "E91: Query parameter incomplete or not valid!<br> "
                              "Call /set_fallbackvalue to show REST API usage info and/or check documentation";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
             return ESP_FAIL;
         }
 
-        if (httpd_query_key_value(_query, "value", value, sizeof(value)) == ESP_OK) {
+        if (httpd_query_key_value(query, "value", value, sizeof(value)) == ESP_OK) {
             //ESP_LOGD(TAG, "Value: %s", value);
         }
     }
@@ -322,13 +322,13 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 esp_err_t handler_editflow(httpd_req_t *req)
 {
     const char* APIName = "editflow:v3"; // API name and version
-    char _query[200];
-    char _valuechar[30];
+    char query[200];
+    char valuechar[30];
     std::string task;
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            task = std::string(_valuechar);
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        if (httpd_query_key_value(query, "task", valuechar, sizeof(valuechar)) == ESP_OK) {
+            task = std::string(valuechar);
         }
     }
 
@@ -342,11 +342,14 @@ esp_err_t handler_editflow(httpd_req_t *req)
     else if (task.compare("tflite") == 0) {
         return getTfliteFileList(req);
     }
+    else if (task.compare("certs") == 0) {
+        return getCertFileList(req);
+    }
     else if (task.compare("copy") == 0) {
-        httpd_query_key_value(_query, "in", _valuechar, sizeof(_valuechar));
-        std::string in = std::string(_valuechar);
-        httpd_query_key_value(_query, "out", _valuechar, sizeof(_valuechar));
-        std::string out = std::string(_valuechar);
+        httpd_query_key_value(query, "in", valuechar, sizeof(valuechar));
+        std::string in = std::string(valuechar);
+        httpd_query_key_value(query, "out", valuechar, sizeof(valuechar));
+        std::string out = std::string(valuechar);
 
         in = "/sdcard" + in;
         out = "/sdcard" + out;
@@ -371,23 +374,23 @@ esp_err_t handler_editflow(httpd_req_t *req)
             return ESP_FAIL;
         }
 
-        httpd_query_key_value(_query, "in", _valuechar, sizeof(_valuechar));
-        std::string in = std::string(_valuechar);
+        httpd_query_key_value(query, "in", valuechar, sizeof(valuechar));
+        std::string in = std::string(valuechar);
 
-        httpd_query_key_value(_query, "out", _valuechar, sizeof(_valuechar));
-        std::string out = std::string(_valuechar);
+        httpd_query_key_value(query, "out", valuechar, sizeof(valuechar));
+        std::string out = std::string(valuechar);
 
-        httpd_query_key_value(_query, "x", _valuechar, sizeof(_valuechar));
-        int x = std::stoi(std::string(_valuechar));
+        httpd_query_key_value(query, "x", valuechar, sizeof(valuechar));
+        int x = std::stoi(std::string(valuechar));
 
-        httpd_query_key_value(_query, "y", _valuechar, sizeof(_valuechar));
-        int y = std::stoi(std::string(_valuechar));
+        httpd_query_key_value(query, "y", valuechar, sizeof(valuechar));
+        int y = std::stoi(std::string(valuechar));
 
-        httpd_query_key_value(_query, "dx", _valuechar, sizeof(_valuechar));
-        int dx = std::stoi(std::string(_valuechar));
+        httpd_query_key_value(query, "dx", valuechar, sizeof(valuechar));
+        int dx = std::stoi(std::string(valuechar));
 
-        httpd_query_key_value(_query, "dy", _valuechar, sizeof(_valuechar));
-        int dy = std::stoi(std::string(_valuechar));
+        httpd_query_key_value(query, "dy", valuechar, sizeof(valuechar));
+        int dy = std::stoi(std::string(valuechar));
 
         in = "/sdcard" + in;    // --> img_tmp/reference.jpg
         out = "/sdcard" + out;  // --> img_tmp/markerX.jpg
@@ -431,16 +434,16 @@ esp_err_t handler_process_data(httpd_req_t *req)
     }
 
     const char* APIName = "process_data:v3"; // API name and version
-    char _query[200];
-    char _valuechar[30];
+    char query[200];
+    char valuechar[30];
     std::string type, numberSequence;
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            type = std::string(_valuechar);
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        if (httpd_query_key_value(query, "type", valuechar, sizeof(valuechar)) == ESP_OK) {
+            type = std::string(valuechar);
         }
-        if (httpd_query_key_value(_query, "sequence", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            numberSequence = std::string(_valuechar);
+        if (httpd_query_key_value(query, "sequence", valuechar, sizeof(valuechar)) == ESP_OK) {
+            numberSequence = std::string(valuechar);
         }
     }
     else { // default - no parameter set: send data as JSON
@@ -685,13 +688,13 @@ esp_err_t handler_process_data(httpd_req_t *req)
 esp_err_t handler_recognition_details(httpd_req_t *req)
 {
     const char* APIName = "recognition_details:v1"; // API name and version
-    char _query[100];
-    char _valuechar[30];
+    char query[100];
+    char valuechar[30];
     std::string type, zw;
 
-    if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
-        if (httpd_query_key_value(_query, "type", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            type = std::string(_valuechar);
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        if (httpd_query_key_value(query, "type", valuechar, sizeof(valuechar)) == ESP_OK) {
+            type = std::string(valuechar);
         }
     }
 
