@@ -8,5 +8,8 @@
 
 ## Description
 
-DNS server address which provides name resolution service (network configuration: Static).
+DNS server address which provides name resolution service (network configuration: Static)
 
+
+!!! Note
+    To apply this parameter a device reboot is required.

@@ -8,4 +8,8 @@
 
 ## Description
 
-Network name of the device.
+Network name of the device
+
+
+!!! Note
+    To apply this parameter a device reboot is required.

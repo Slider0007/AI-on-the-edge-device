@@ -129,7 +129,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "enabled": false,
     "uri": "",
     "maintopic": "/watermeter/",
-    "clientid": "watermeter",
+    "clientid": "123456789012345678901234",
     "authmode": 0,
     "username": "",
     "password": "",

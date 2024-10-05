@@ -1,8 +1,8 @@
-# Parameter: Authentication
+# Parameter: Authentication / Security
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Authentication      | authmode
+| Parameter Name    | Authentication / Security | authmode
 | Default Value     | `None`              | `0`
 | Input Options     | `None`<br>`Basic`<br>`TLS` | `0`<br>`1`<br>`2`
 

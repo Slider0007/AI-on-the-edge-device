@@ -171,7 +171,7 @@
 			z-index: 99;
 			top: 100%;
 			left: 100%;
-			margin-left: -600px;
+			margin-left: -620px;
 		}
 
 		.tooltip:hover .tooltiptext {
@@ -1342,8 +1342,8 @@
 			</td>
 			<td>
 				<form id="mqtt_clientid_form">
-					<input required type="text" name="mqtt.clientid" id="mqtt_clientid_value" placeholder="watermeter"
-						onchange="gatherChangedParameter(this.form)">
+					<input required type="text" name="mqtt.clientid" id="mqtt_clientid_value" maxlength="23"
+						pattern="^[A-Za-z0-9]+$" placeholder="watermeter" onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_mqtt_clientid</td>

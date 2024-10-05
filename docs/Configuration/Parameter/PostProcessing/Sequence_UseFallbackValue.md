@@ -3,8 +3,8 @@
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Use Fallback Value  | [sequence].UseFallbackValue
-| Default Value     | `true`              | `true`
-| Input Options     | `false`<br>`true`   | `false`<br>`true` 
+| Default Value     | `Enabled`           | `true`
+| Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
 
 
 !!! Warning

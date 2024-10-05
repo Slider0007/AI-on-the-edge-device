@@ -837,7 +837,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "clientid");
-    if (cJSON_IsString(objEl))
+    if (cJSON_IsString(objEl) && strlen(objEl->valuestring) <= 23) // MQTT v3.1 spec limits to max 23 character
         cfgDataTemp.sectionMqtt.clientID = objEl->valuestring;
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "authmode");

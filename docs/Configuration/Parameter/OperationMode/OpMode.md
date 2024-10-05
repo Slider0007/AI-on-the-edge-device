@@ -9,7 +9,7 @@
 
 ## Description
 
-Define the process operation mode.
+Define the process operation mode
 
 
 ### Input Options

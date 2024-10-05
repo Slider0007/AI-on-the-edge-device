@@ -8,4 +8,8 @@
 
 ## Description
 
-Gateway address of the subnet the device shall be connected to (network configuration: Static).
+Gateway address of the subnet the device shall be connected to (network configuration: Static)
+
+
+!!! Note
+    To apply this parameter a device reboot is required.

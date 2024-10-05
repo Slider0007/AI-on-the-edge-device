@@ -8,7 +8,11 @@
 
 ## Description
 
-SSID (WLAN Name) of the wireless network.
+SSID (WLAN Name) of the wireless network
+
+
+!!! Note
+    To apply this parameter a device reboot is required.
 
 
 !!! Note

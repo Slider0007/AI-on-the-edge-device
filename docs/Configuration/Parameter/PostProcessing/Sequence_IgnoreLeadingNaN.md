@@ -3,8 +3,8 @@
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Ignore Leading NaNs | [sequence].ignoreleadingnan
-| Default Value     | `false`             | `false`
-| Input Options     | `false`<br>`true`   | `false`<br>`true` 
+| Default Value     | `Disabled`          | `false`
+| Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
 
 
 ## Description
