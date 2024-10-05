@@ -144,9 +144,9 @@
 <script>
     function manual_cycle_start()
     {
-        var url = getDomainname() + '/cycle_start';
+        let url = getDomainname() + '/cycle_start';
 
-		var xhttp = new XMLHttpRequest();
+		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
@@ -194,9 +194,9 @@
 
     function HA_send_discovery()
     {
-        var url = getDomainname() + '/mqtt?task=publish_ha_discovery';
+        let url = getDomainname() + '/mqtt?task=publish_ha_discovery';
 
-		var xhttp = new XMLHttpRequest();
+		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
@@ -232,9 +232,9 @@
 
     function LoadHostname()
     {
-        var url = getDomainname() + '/info?type=hostname';
+        let url = getDomainname() + '/info?type=hostname';
 
-        var xhttp = new XMLHttpRequest();
+        let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
@@ -253,9 +253,9 @@
 
     function LoadFwVersion()
     {
-        var url = getDomainname() + '/info?type=firmware_version';
+        let url = getDomainname() + '/info?type=firmware_version';
 
-        var xhttp = new XMLHttpRequest();
+        let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
@@ -277,9 +277,9 @@
 
     function LoadWebUiVersion()
     {
-        var url = getDomainname() + '/info?type=html_version';
+        let url = getDomainname() + '/info?type=html_version';
 
-        var xhttp = new XMLHttpRequest();
+        let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {

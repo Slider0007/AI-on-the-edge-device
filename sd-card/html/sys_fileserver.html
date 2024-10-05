@@ -109,39 +109,42 @@
 
 <script src="/global_common.js?v=$COMMIT_HASH"></script>
 <script>
-    function setpath() {
-        var fileserverpraefix = "/fileserver";
-        var anz_zeichen_fileserver = fileserverpraefix.length;
-        var default_path = window.location.pathname.substring(anz_zeichen_fileserver) + document.getElementById("newfile").files[0].name;
+    function setpath()
+    {
+        let fileserverpraefix = "/fileserver";
+        let anz_zeichen_fileserver = fileserverpraefix.length;
+        let default_path = window.location.pathname.substring(anz_zeichen_fileserver) + document.getElementById("newfile").files[0].name;
         document.getElementById("filepath").value = default_path;
     }
 
-    function dirup() {
-        var str = window.location.href;
+    function dirup()
+    {
+        let str = window.location.href;
         str = str.substring(0, str.length-1);
-        var zw = str.indexOf("/");
-        var found = zw;
+        let zw = str.indexOf("/");
+        let found = zw;
         while (zw >= 0)
         {
             zw = str.indexOf("/", found+1);
             if (zw >= 0)
                 found = zw;
         }
-        var res = str.substring(0, found+1);
+        let res = str.substring(0, found+1);
 
         window.location.href = res;
     }
 
 
-    function upload() {
-        var filePath = document.getElementById("filepath").value;
-        var upload_path = "/upload/" + filePath;
-        var fileInput = document.getElementById("newfile").files;
+    function upload()
+    {
+        let filePath = document.getElementById("filepath").value;
+        let upload_path = "/upload/" + filePath;
+        let fileInput = document.getElementById("newfile").files;
 
         /* Max size of an individual file. Make sure this
         * value is same as that set in file_server.c */
-        var MAX_FILE_SIZE = 8000*1024;
-        var MAX_FILE_SIZE_STR = "8000KB";
+        let MAX_FILE_SIZE = 8000*1024;
+        let MAX_FILE_SIZE_STR = "8000KB";
 
         if (fileInput.length == 0) {
             firework.launch('No file selected!', 'danger', 30000);
@@ -160,8 +163,8 @@
             document.getElementById("filepath").disabled = true;
             document.getElementById("upload").disabled = true;
 
-            var file = fileInput[0];
-            var xhttp = new XMLHttpRequest();
+            let file = fileInput[0];
+            let xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (xhttp.readyState == 4) {
                     if (xhttp.status == 200) {
@@ -186,7 +189,8 @@
     }
 
 
-    function checkAtRootLevel(res) {
+    function checkAtRootLevel(res)
+    {
         if (getPath() == "/fileserver/") { // Already at root level
             document.getElementById("dirup").disabled = true;
             return true;
@@ -197,7 +201,8 @@
     }
 
 
-    function getPath() {
+    function getPath()
+    {
         return window.location.pathname.replace(/\/+$/, '') + "/"
     }
 

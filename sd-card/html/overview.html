@@ -212,9 +212,9 @@
 
 	function LoadProcessData()
 	{
-		var url = domainname + '/process_data';
+		let url = domainname + '/process_data';
 
-		var xhttp = new XMLHttpRequest();
+		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				const _jsonData = JSON.parse(xhttp.responseText);
@@ -238,10 +238,10 @@
 
 	function LoadROIImage()
 	{
-		var d = new Date();
-		var h = addZero(d.getHours());
-		var m = addZero(d.getMinutes());
-		var s = addZero(d.getSeconds());
+		let d = new Date();
+		let h = addZero(d.getHours());
+		let m = addZero(d.getMinutes());
+		let s = addZero(d.getSeconds());
 		$('#timestamp').html(h + ":" + m + ":" + s);
 		document.getElementById("img").src = domainname + '/img_tmp/alg_roi.jpg?' + Math.floor((Math.random() * 1000000) + 1);
 	}
@@ -368,7 +368,7 @@
 				autoRefreshTimeoutHandle = null;
 			}
 
-			var autoRefreshTime = document.getElementById("AutoRefreshTime").value * 1000; // Refresh time in ms
+			let autoRefreshTime = document.getElementById("AutoRefreshTime").value * 1000; // Refresh time in ms
 
 			if (autoRefreshTime == null || autoRefreshTime == 0) { // If no value is set or value is zero, reset checkbox
 				document.getElementById("AutoRefreshEnabled").checked = false;

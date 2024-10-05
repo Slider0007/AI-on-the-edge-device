@@ -322,12 +322,12 @@
 
    function loadRSSI()
    {
-		var url = getDomainname() + '/info?type=wlan_rssi';
+		let url = getDomainname() + '/info?type=wlan_rssi';
 
-		var xhttp = new XMLHttpRequest();
+		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				var _rsp = xhttp.responseText;
+				let _rsp = xhttp.responseText;
 
 				if (_rsp >= -55) {
 					document.getElementById('rssi').value = ("WLAN Signal: Excellent (" + _rsp + "dBm)");

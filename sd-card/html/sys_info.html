@@ -480,8 +480,8 @@
 <script type="text/javascript">
 	function loadInfoData()
 	{
-		url = getDomainname() + '/info';
-		var xhttp = new XMLHttpRequest();
+		let url = getDomainname() + '/info';
+		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				const _jsonData = JSON.parse(xhttp.responseText);
@@ -633,7 +633,7 @@
 
 	function addClassToElement(_element, _class)
 	{
-		var element = document.getElementById(_element);
+		let element = document.getElementById(_element);
 		element.classList.add(_class);
 	}
 

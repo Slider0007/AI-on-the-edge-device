@@ -205,11 +205,11 @@
     function loadFallbackValue(_domainname)
     {
         // Get current Fallback Value
-        var sel = document.getElementById("sequence_selection");
-        var sequenceName = sel.options[sel.selectedIndex].text;
-        var url_sequence = _domainname + '/set_fallbackvalue?sequence=' + sequenceName;
+        let sel = document.getElementById("sequence_selection");
+        let sequenceName = sel.options[sel.selectedIndex].text;
+        let url_sequence = _domainname + '/set_fallbackvalue?sequence=' + sequenceName;
 
-        var xhttp_sequence = new XMLHttpRequest();
+        let xhttp_sequence = new XMLHttpRequest();
         xhttp_sequence.onreadystatechange = function() {
             if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
@@ -232,8 +232,8 @@
         xhttp_sequence.send();
 
         // Get current RAW Value
-        var url_rawvalue = _domainname + '/process_data?type=raw_value';
-        var xhttp_rawvalue = new XMLHttpRequest();
+        let url_rawvalue = _domainname + '/process_data?type=raw_value';
+        let xhttp_rawvalue = new XMLHttpRequest();
         xhttp_rawvalue.onreadystatechange = function() {
             if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
