@@ -562,7 +562,7 @@ bool ClassFlowControl::initMqttService()
 #endif //ENABLE_MQTT
 
 
-// Return values for all numbers names (number sequences) and a given value type
+// Return values for all number sequences and a given value type
 // Providing any sequence name will filter result only for mentioned sequence
 std::string ClassFlowControl::getSequenceResultInline(int type, std::string sequenceName)
 {

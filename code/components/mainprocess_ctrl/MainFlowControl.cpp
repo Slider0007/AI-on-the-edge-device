@@ -242,6 +242,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 {
     if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        httpd_resp_set_type(req, "text/plain");
         httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E95: Request rejected, flow not initialized");
         return ESP_FAIL;
     }
@@ -260,16 +261,15 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 
     char query[100];
     char numberSequence[50];
-    char value[20];
+    char value[20] = ""; // Default: empty value
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
-        //ESP_LOGD(TAG, "Query: %s", query);
-
-        if (httpd_query_key_value(query, "sequence", numberSequence, sizeof(numberSequence)) != ESP_OK) { // If request is incomplete
-            sReturnMessage = "E91: Query parameter incomplete or not valid!<br> "
+        if (httpd_query_key_value(query, "sequence", numberSequence, sizeof(numberSequence)) != ESP_OK) {
+            // If request is incomplete
+            sReturnMessage = "E91: Query parameter incomplete or invalid! "
                              "Call /set_fallbackvalue to show REST API usage info and/or check documentation";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
             return ESP_FAIL;
@@ -280,6 +280,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
         }
     }
     else {  // if no parameter is provided, print handler usage
+        httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, RESTUsageInfo.c_str(), RESTUsageInfo.length());
         return ESP_OK;
     }
@@ -296,7 +297,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     else {
         // New value is positive: Set FallbackValue to provided value and return value
         // New value is negative and actual RAW value is a valid number: Set FallbackValue to RAW value and return value
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "REST API handler_fallbackvalue called: numbersname: " + std::string(numberSequence) +
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "REST API handler_fallbackvalue called: sequence: " + std::string(numberSequence) +
                                                 ", value: " + std::string(value));
         if (!flowctrl.setFallbackValue(numberSequence, value)) {
             sReturnMessage = "E93: Update request rejected. Please check device logs for more details";
@@ -307,7 +308,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
         sReturnMessage = flowctrl.getFallbackValue(std::string(numberSequence));
 
         if (sReturnMessage.empty()) {
-            sReturnMessage = "E94: Numbers name not found";
+            sReturnMessage = "E92: Number sequence not found";
             httpd_resp_send(req, sReturnMessage.c_str(), sReturnMessage.length());
             return ESP_FAIL;
         }
