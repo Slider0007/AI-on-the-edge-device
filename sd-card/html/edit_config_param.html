@@ -1359,7 +1359,10 @@
 							onchange="this.value == '1' ? (setClassVisibility('classvisibility_mqtt_authmode_1', true),
 														   setClassVisibility('classvisibility_mqtt_authmode_2', false)) :
 	   								  this.value == '2' ? (setClassVisibility('classvisibility_mqtt_authmode_1', true),
-										 				   setClassVisibility('classvisibility_mqtt_authmode_2', true)) :
+										 				   setClassVisibility('classvisibility_mqtt_authmode_2', true),
+									  						gatherChangedParameter(mqtt_tls_cacert_form),
+															gatherChangedParameter(mqtt_tls_clientcert_form),
+															gatherChangedParameter(mqtt_tls_clientkey_form)) :
 						   								  (setClassVisibility('classvisibility_mqtt_authmode_1', false),
 							   							   setClassVisibility('classvisibility_mqtt_authmode_2', false));
 								gatherChangedParameter(this.form, true);">
@@ -1623,7 +1626,10 @@
 							onload=""
 							onchange="this.value == '1' ? (setClassVisibility('classvisibility_influxdbv1_authtls', 'false'),
 														   setClassVisibility('classvisibility_influxdbv1_authbasic', 'true')) :
-									  this.value == '2' ?  setClassVisibility('classvisibility_influxdbv1_authtls', 'true') :
+									  this.value == '2' ? (setClassVisibility('classvisibility_influxdbv1_authtls', 'true'),
+									  						gatherChangedParameter(influxdbv1_tls_cacert_form),
+															gatherChangedParameter(influxdbv1_tls_clientcert_form),
+															gatherChangedParameter(influxdbv1_tls_clientkey_form)) :
 														  (setClassVisibility('classvisibility_influxdbv1_authbasic', 'false'),
 									   					   setClassVisibility('classvisibility_influxdbv1_authtls', 'false'));
 										gatherChangedParameter(this.form, true)">
@@ -1819,7 +1825,10 @@
 			<td>
 				<form id="influxdbv2_authmode_form">
 					<select name="influxdbv2.authmode" id="influxdbv2_authmode_value"
-							onchange="this.value == '2' ? setClassVisibility('classvisibility_influxdbv2_authmode_2', 'true') :
+							onchange="this.value == '2' ? (setClassVisibility('classvisibility_influxdbv2_authmode_2', 'true'),
+															gatherChangedParameter(influxdbv2_tls_cacert_form),
+															gatherChangedParameter(influxdbv2_tls_clientcert_form),
+															gatherChangedParameter(influxdbv2_tls_clientkey_form)) :
 														  setClassVisibility('classvisibility_influxdbv2_authmode_2', 'false');
 								gatherChangedParameter(this.form, true)">
 						<option value="1" selected>Token</option>
