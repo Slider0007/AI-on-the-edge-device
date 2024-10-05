@@ -7,4 +7,6 @@
 version.cpp
 dependencies.lock
 sdkconfig.esp32cam
+sdkconfig.esp32cam-localbuild
 sdkconfig.xiao-esp32s3-sense
+sdkconfig.xiao-esp32s3-sense-localbuild
