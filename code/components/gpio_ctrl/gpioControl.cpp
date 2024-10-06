@@ -385,7 +385,7 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
 
     for (std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
         if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM) {
-            int dutyResultionMaxValue = calcDutyResultionMaxValue(it->second->getFrequency());
+            int dutyResultionMaxValue = calcDutyResolutionMaxValue(it->second->getFrequency());
             int intensityValueCorrected = std::min(std::max(0, it->second->getIntensityCorrection() *
                                                     _intensity * dutyResultionMaxValue / 10000), dutyResultionMaxValue);
 
@@ -580,7 +580,7 @@ std::string GpioHandler::getPinInterruptDecription(gpio_int_type_t _type)
 }
 
 
-int GpioHandler::calcDutyResultionMaxValue(int frequency)
+int GpioHandler::calcDutyResolutionMaxValue(int frequency)
 {
     return ((1 << calcDutyResolution(frequency)) - 1);
 }
@@ -742,7 +742,7 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
                         ", State: " + std::to_string((*gpioMap)[gpioNum]->getPinState());
             }
             else { // Use PWM
-                requestedPWMDuty = std::min(std::max(0, requestedPWMDuty), calcDutyResultionMaxValue((*gpioMap)[gpioNum]->getFrequency()));
+                requestedPWMDuty = std::min(std::max(0, requestedPWMDuty), calcDutyResolutionMaxValue((*gpioMap)[gpioNum]->getFrequency()));
                 retVal = (*gpioMap)[gpioNum]->setPinState(requestedGpioState == "1", requestedPWMDuty, GPIO_SET_SOURCE_HTTP);
                 respStr = "GPIO" + std::to_string(requestedGpioNum) +
                         ", State: " + std::to_string((*gpioMap)[gpioNum]->getPinState()) +

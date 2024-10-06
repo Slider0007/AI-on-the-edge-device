@@ -34,7 +34,7 @@ class GpioHandler
     void ledcInitGpio(ledc_timer_t _timer, ledc_channel_t _channel, int _gpioNum, int _frequency);
 
     std::map<int, ledc_timer_t> frequencyTable;
-    int calcDutyResultionMaxValue(int frequency);
+    int calcDutyResolutionMaxValue(int frequency);
     ledc_timer_bit_t calcDutyResolution(int frequency);
     ledc_timer_t getFreeTimer(int _frequency);
 
