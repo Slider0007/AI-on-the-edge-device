@@ -1988,7 +1988,7 @@
 					<select name="gpio.gpiopin.0.pinenabled" id="gpio_gpiopin_0_pinenabled_value"
 							onchange="setClassVisibility('classvisibility_gpio_gpiopin_pinenabled', this.value);
 								this.value == 'true' ? $('[id$=\'pinmode_value\']').trigger('onchange') : null;
-								gatherChangedParameter(this.form)">
+								gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)">
 						<option value="false" selected>Disabled</option>
 						<option value="true">Enabled</option>
 					</select>
@@ -2005,7 +2005,8 @@
 			<td>
 				<form class="form_gpio_config" id="gpio_gpiopin_pinmode_form">
 					<select name="gpio.gpiopin.0.pinmode" id="gpio_gpiopin_0_pinmode_value"
-							onchange='gpioPinModeChanged(); gatherChangedParameter(this.form)'>
+							onchange='gpioPinModeChanged();gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
+								gatherChangedParameter(this.form)'>
 						<option value="flashlight-default">flashlight-default</option>
 						<option value="flashlight-pwm">flashlight-pwm</option>
 						<option value="flashlight-smartled">flashlight-smartled</option>
@@ -2029,7 +2030,8 @@
 			<td>
 				<form class="form_gpio_config" id="gpio_gpiopin_capturemode_form">
 					<select name="gpio.gpiopin.0.capturemode" id="gpio_gpiopin_0_capturemode_value"
-							onchange='gpioPinModeChanged(); gatherChangedParameter(this.form)'>
+							onchange='gpioPinModeChanged(); gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
+								gatherChangedParameter(this.form)'>
 						<option value="cyclic-polling" selected>cyclic-polling</option>
 						<option value="interrupt-rising-edge">interrupt-rising-edge</option>
 						<option value="interrupt-falling-edge">interrupt-falling-edge</option>
@@ -2049,7 +2051,7 @@
 					<input required type="number" min="0" max="5000" value="500"
 						name="gpio.gpiopin.0.inputdebouncetime" id="gpio_gpiopin_0_inputdebouncetime_value"
 						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5000));
-							gatherChangedParameter(this.form, true)">ms
+							gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form, true)">ms
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_inputdebouncetime</td>
@@ -2064,7 +2066,7 @@
 					<input style="min-width:90px" required type="number" min="5" max="1000000" value="5000"
 						name="gpio.gpiopin.0.pwmfrequency" id="gpio_gpiopin_0_pwmfrequency_value"
 						onchange="(!validity.rangeUnderflow||(value=5)) && (!validity.rangeOverflow||(value=1000000));
-							gatherChangedParameter(this.form, true)">Hz
+							gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form, true)">Hz
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_pwmfrequency</td>
@@ -2077,7 +2079,7 @@
 			<td>
 				<form class="form_gpio_config" id="gpio_gpiopin_exposetorest_form">
 					<select name="gpio.gpiopin.0.exposetorest" id="gpio_gpiopin_0_exposetorest_value"
-							onchange='gatherChangedParameter(this.form)'>
+							onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)'>
 						<option value="false">Disabled</option>
 						<option value="true" selected>Enabled</option>
 					</select>
@@ -2093,7 +2095,7 @@
 			<td>
 				<form class="form_gpio_config" id="gpio_gpiopin_exposetomqtt_form">
 					<select name="gpio.gpiopin.0.exposetomqtt" id="gpio_gpiopin_0_exposetomqtt_value"
-							onchange='gatherChangedParameter(this.form)'>
+							onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)'>
 						<option value="false">Disabled</option>
 						<option value="true" selected>Enabled</option>
 					</select>
@@ -2109,7 +2111,7 @@
 			<td>
 				<form class="form_gpio_config" id="gpio_gpiopin_pinname_form">
 					<input type="text" name="gpio.gpiopin.0.pinname" id="gpio_gpiopin_0_pinname_value" placeholder="gpioX"
-						onchange='gatherChangedParameter(this.form)'>
+						onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)'>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_pinname</td>
@@ -2122,7 +2124,7 @@
 			<td>
 				<form class="form_gpio_config" id="gpio_gpiopin_smartled_type_form">
 					<select name="gpio.gpiopin.0.smartled.type" id="gpio_gpiopin_0_smartled_type_value"
-							onchange='gatherChangedParameter(this.form, true)'>
+							onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form, true)'>
 						<option value="0" selected>WS2812</option>
 						<option value="1">WS2812B (universal)</option>
 						<option value="2">WS2812B (newer variant)</option>
@@ -2143,7 +2145,8 @@
 				<form class="form_gpio_config" id="gpio_gpiopin_smartled_quantity_form">
 					<input required type="number" min="1" value="1"
 						name="gpio.gpiopin.0.smartled.quantity" id="gpio_gpiopin_0_smartled_quantity_value"
-						onchange="(!validity.rangeUnderflow||(value=1));gatherChangedParameter(this.form, true)">
+						onchange="(!validity.rangeUnderflow||(value=1));gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_smartled_quantity</td>
@@ -2158,17 +2161,17 @@
 					R <input required style="min-width:45px;width:45px;" type="number" min="0" max="255" value="255"
 							name="gpio.gpiopin.0.smartled.colorredchannel" id="gpio_gpiopin_0_smartled_colorredchannel_value"
 							onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255));
-								gatherChangedParameter(this.form, true)">
+								gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form, true)">
 
 					G <input required style="min-width:45px;width:45px" type="number" min="0" max="255" value="255"
 							name="gpio.gpiopin.0.smartled.colorgreenchannel" id="gpio_gpiopin_0_smartled_colorgreenchannel_value"
 							onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255));
-								gatherChangedParameter(this.form, true)">
+								gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form, true)">
 
 					B <input required style="min-width:45px;width:45px" type="number" min="0" max="255" value="255"
 							name="gpio.gpiopin.0.smartled.colorbluechannel" id="gpio_gpiopin_0_smartled_colorbluechannel_value"
 							onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=255));
-								gatherChangedParameter(this.form, true)">
+								gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_smartled_color</td>
@@ -2183,7 +2186,7 @@
 				<input required type="number" min="1" max="100" value="100"
 					name="gpio.gpiopin.0.intensitycorrectionfactor" id="gpio_gpiopin_0_intensitycorrectionfactor"
 					onchange="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=100));
-						gatherChangedParameter(this.form, true)">%
+						gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form, true)">%
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_intensitycorrectionfactor</td>
@@ -2697,9 +2700,6 @@
 	function initGpioSection()
 	{
 		getGpioPins();
-
-		if ($(gpio_customizationenabled_value).val() == 'true')
-			$("[id$='pinenabled_value']")[0].onchange();
 	}
 
 
@@ -2720,12 +2720,12 @@
 		}
 
 		gpioPinSelection.prop('selectedIndex', idx);
-		gpioPinSelectAfterChange();
-		getGpioPinMode(parseInt(gpioPinSelection[0].value));
+		gpioPinSelectAfterChange(true);
+		getGpioPinUsage(parseInt(gpioPinSelection[0].value));
 	}
 
 
-	function getGpioPinMode(gpioNumberSelected, reload = false)
+	function getGpioPinUsage(gpioNumberSelected)
 	{
 		let gpioPinModeSel = document.querySelector("[id$='pinmode_value']");
 
@@ -2735,14 +2735,10 @@
 				if (jsonConfig.gpio.gpiopin[i].gpiousage.substring(0,10) == "flashlight") { // Special case: Default flashlight GPIO
 					// Show option "flashlight-default"
 					gpioPinModeSel.options[0].removeAttribute("hidden");
-					if (!reload)
-						gpioPinModeSel.selectedIndex = 0;
 				}
 				else {
 					// Hide option "flashlight-default"
 					gpioPinModeSel.options[0].setAttribute('hidden', 'true');
-					if (!reload)
-						gpioPinModeSel.selectedIndex = 4;
 				}
 
 				// Show expert view / text for restricted pins
@@ -2760,8 +2756,6 @@
 				break;
 			}
 		}
-
-		gpioPinModeChanged();
 	}
 
 
@@ -2834,7 +2828,7 @@
 	}
 
 
-	function gpioPinSelectAfterChange()
+	function gpioPinSelectAfterChange(init = false)
 	{
 		let gpioPinSelect = $("[id$='gpionumber_value']")[0];
 
@@ -2849,8 +2843,10 @@
 		let jsonConfigModified = deepMergeObjects(jsonConfig, jsonConfigModifiedDelta);
 		let jsonConfigModifiedKeyified = jsonObjectKeyify(jsonConfigModified)
 		parseCurrentParametrization(jsonConfigModifiedKeyified);
-		$("[id$='pinenabled_value']")[0].onchange(); // Eval pin enabled state
-		getGpioPinMode(parseInt(gpioPinSelect.value), true);
+		if(!init) {
+			$("[id$='pinenabled_value']")[0].onchange(); // Eval pin enabled state
+			getGpioPinUsage(gpioPinSelect.value);
+		}
 	}
 
 
@@ -2948,7 +2944,6 @@
 		fillModelSelectionOptions(modelFileListObj);
 		fillCertSelectionOptions(certFileListObj);
 
-		//jsonConfigModifiedDelta = {};
 		let jsonConfigKeyified = [];            // Config: array as key-value pairs
 		[jsonConfig, jsonConfigKeyified] = getConfigFromStorage(2); // Get config
 		parseCurrentParametrization(jsonConfigKeyified);
@@ -2959,7 +2954,7 @@
 		triggerClassElementOnChange("classvisibility_init");
 		jsonConfigModifiedDelta = {}; // Reset modified parameter container after subparameter visibilty is set
 
-		$("#wlan_reboot_note").hide(); // Hide note
+		$("#wlan_reboot_note").hide(); // Hide reboot note
 		$("#divloading").hide(); // Hide loading indicator
 		$("#divcontent").show(); // Show parameter content
 	}

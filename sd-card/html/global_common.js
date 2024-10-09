@@ -140,7 +140,7 @@ function triggerClassElementOnChange(classname)
     if (el.length == 0)
         return;
 
-    for (i = 0; i < el.length; i++) {
+    for (i = el.length - 1; i >= 0; i--) {
         el[i].onchange();
     }
 }
