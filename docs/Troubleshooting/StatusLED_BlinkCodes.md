@@ -14,33 +14,32 @@ The error code source definition can be found [here](https://github.com/Slider00
 
 # Overview
 
-| **source**    | source<br>blink count| error / warning / status           | status<br>blink count| repeat<br>infinite |
-| ------------- | ----------------- |---------------------------------------| ---------------- | -----------------------|
-| WLAN_CONN     | 1                 | Disconnected (No Access Point)        | 1                |
-| WLAN_CONN     | 1                 | Disconnected (Authentication failure) | 2                |
-| WLAN_CONN     | 1                 | Disconnected (Timeout)                | 3                |
-| WLAN_CONN     | 1                 | Disconnected (further reasons)        | 4                |  
-| WLAN_INIT     | 2                 | WLAN.ini empty or not readable        | 1                | X
-| WLAN_INIT     | 2                 | SSID or password empty                | 2                | X
-| WLAN_INIT     | 2                 | WIFI init error (details console)     | 3                | X
-| SDCARD_NVS_INIT | 3               | SD card filesystem mount failed       | 1                | X
-| SDCARD_NVS_INIT | 3               | SD card not found (0x107)             | 2                | X
-| SDCARD_NVS_INIT | 3               | SD card init failed (details console) | 3                | X
-| SDCARD_NVS_INIT | 3               | NVS init failed: No partition found   | 4                | X
-| SDCARD_NVS_INIT | 3               | NVS init failed: No free pages found  | 5                | X
-| SDCARD_NVS_INIT | 3               | NVS init failed (details console)     | 6                | X
-| SDCARD_CHECK  | 4                 | Basic check: file creation/write error| 1                | X
-| SDCARD_CHECK  | 4                 | Basic check: file read/CRC error      | 2                | X
-| SDCARD_CHECK  | 4                 | Basic check: file delete error        | 3                | X
-| SDCARD_CHECK  | 4                 | Basic check: folder/file presence     | 4                | X
-| CAM_INIT      | 5                 | Initial camera init failed            | 1                | 
-| PSRAM_INIT    | 6                 | RAM init failed: Not found/defective  | 1                | X
-| PSRAM_INIT    | 6                 | External SPI RAM < 4MB                | 2                | X
-| PSRAM_INIT    | 6                 | Total heap < 4MB                      | 3                | X
-| TIME_CHECK    | 7                 | Missing time sync (check every round) | 1                |
-| OTA_OR_AP     | 8                 | OTA process ongoing                   | 1                | X
-| OTA_OR_AP     | 8                 | Soft AP started (for remote config)   | 2                | X
-| FLASHLIGHT    | N/A               | LED on when flashlight is on          | solid, <br> no blink
+| **source**    | source<br>blink count| error / warning / status              | status<br>blink count| repeat<br>infinite |
+| ------------- | -------------------- |---------------------------------------| -------------------- | -------------------|
+| WLAN_CONN     | 1                    | Disconnected (No Access Point)        | 1                    |
+| WLAN_CONN     | 1                    | Disconnected (Authentication failure) | 2                    |
+| WLAN_CONN     | 1                    | Disconnected (Timeout)                | 3                    |
+| WLAN_CONN     | 1                    | Disconnected (further reasons)        | 4                    |  
+| WLAN_INIT     | 2                    | SSID empty                            | 1                    | X
+| WLAN_INIT     | 2                    | WIFI init error (details console)     | 2                    | X
+| SDCARD_NVS_INIT | 3                  | SD card filesystem mount failed       | 1                    | X
+| SDCARD_NVS_INIT | 3                  | SD card not found (0x107)             | 2                    | X
+| SDCARD_NVS_INIT | 3                  | SD card init failed (details console) | 3                    | X
+| SDCARD_NVS_INIT | 3                  | NVS init failed: No partition found   | 4                    | X
+| SDCARD_NVS_INIT | 3                  | NVS init failed: No free pages found  | 5                    | X
+| SDCARD_NVS_INIT | 3                  | NVS init failed (details console)     | 6                    | X
+| SDCARD_CHECK  | 4                    | Basic check: file creation/write error| 1                    | X
+| SDCARD_CHECK  | 4                    | Basic check: file read/CRC error      | 2                    | X
+| SDCARD_CHECK  | 4                    | Basic check: file delete error        | 3                    | X
+| SDCARD_CHECK  | 4                    | Basic check: folder/file presence     | 4                    | X
+| CAM_INIT      | 5                    | Initial camera init failed            | 1                    | 
+| PSRAM_INIT    | 6                    | RAM init failed: Not found/defective  | 1                    | X
+| PSRAM_INIT    | 6                    | External SPI RAM < 4MB                | 2                    | X
+| PSRAM_INIT    | 6                    | Total heap < 4MB                      | 3                    | X
+| TIME_CHECK    | 7                    | Missing time sync (check every round) | 1                    |
+| OTA_OR_AP     | 8                    | OTA process ongoing                   | 1                    | X
+| OTA_OR_AP     | 8                    | Soft AP started (for remote config)   | 2                    | X
+| FLASHLIGHT    | N/A                  | LED on when flashlight is on          | solid, <br> no blink | 
 
 
 
@@ -62,7 +61,7 @@ WLAN connection is interrupted due to an authentication failure. If error repeat
 WLAN connection is interrupted due to an timeout because no beacon from AP is received in a timely manner. Most probably access point  is not available anymore or connection is not reliable.
 
 ### `WLAN Disconnected (Further reasons)`
-WLAN connection is interrupted due to further reasons. Disconnect reason is printed in warining message. Please check serial console output or logfile from sd card (using another device to retrieve logfile /sdcard/log/message/). Please refer to this page to have additional infos in terms of WLAN disconnect reasons --> [WLAN disconnect reason code description](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/wifi.html#wi-fi-reason-code)
+WLAN connection is interrupted due to further reasons. Disconnect reason is printed in warining message. Please check serial console output or logfile from sd card (using another device to retrieve logfile /log/message/). Please refer to this page to have additional infos in terms of WLAN disconnect reasons --> [WLAN disconnect reason code description](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/wifi.html#wi-fi-reason-code)
 
 
 
@@ -71,14 +70,11 @@ WLAN connection is interrupted due to further reasons. Disconnect reason is prin
 !!! __NOTE__:
     All critical errors, regular boot not possible
 
-### `WLAN.ini empty or not readable`
-The WLAN.INI file is present but content is either not readable or no content present. Please check for further errors in terms of SD card readability or content of WLAN.INI which is located in /sdcard (most top folder od SD card) 
-
 ### `SSID empty`
-The mandatory parameter SSID (name of WIFI network) is empty. Please configure those parameters in WLAN.INI and try again.
+The mandatory parameter SSID (name of WLAN network) is empty. Please verify and reconfigure in `/config/config.json` and try again.
 
 ### `WIFI init error (details console)`
-A general WIFI initialization error occured. Please check serial console output or logfile from sd card (using another device to retrieve logfile /sdcard/log/message/) 
+A general WIFI initialization error occured. Please check serial console output or logfile from sd card (using another device to retrieve logfile /log/message/) 
 
 
 
@@ -162,13 +158,13 @@ Total available system memory (heap) is too small. A size of >= 4MB is necessary
 
 
 
-## Source TIME_CHECK: External RAM (SPI RAM) initialization
+## Source TIME_CHECK: Time synchronization
 ### `Missing time sync (check every round)`
 
 !!! __NOTE__:
     Only warning indication, blink code repetition: 2x
 
-If system is configured to be synced with a NTP server the sync status is checked after every round (in state: "Flow finished". An warming message is also printed to log). If the time is not synced after serveral rounds, please check for proper configuration.
+If system is configured to be synced with a NTP server the sync status is checked after every round (in state: "Flow finished". An warning message is also printed to log). If the time is not synced after serveral rounds, please check for proper configuration.
 
 
 

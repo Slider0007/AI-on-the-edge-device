@@ -12,14 +12,14 @@ Payload:
 - `task` Task
   - Available options:
     - `emptyfirmwaredir`
-      - Delete all content in `/sdcard/firmware`
+      - Delete all content in `/firmware`
       - No additional parameter necessary
     - `update`
       - Perform an update
       - Mandatory parameter: `file` 
     - `unziphtml`
       - Update WebUI of firmware only
-      - Extracts the content of `/sdcard/firmware/html.zip` to `/sdcard/html`
+      - Extracts the content of `/firmware/html.zip` to `/html`
       - No additional parameter necessary
 - `file` Filename with extention but without path
   - Supported file extentions:
@@ -27,7 +27,7 @@ Payload:
     - `TFL`: TFLite model (legacy)
     - `ZIP`: ZIP file (e.g. OTA release package)
     - `BIN`: MCU firmware (e.g. firmware.bin)
-  - Note: File needs to be existing and located in folder `/sdcard/firmware`
+  - Note: File needs to be existing and located in folder `/firmware`
     
 Example: `/ota?task=update&file=AI-on-the-edge-device__update__*.zip`
 

@@ -63,7 +63,8 @@
     </style>
 
     <script>
-        function resizeIframe(obj) {
+        function resizeIframe(obj)
+        {
             obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 20 + 'px';
         }
     </script>
@@ -82,15 +83,15 @@
     <table>
         <tr>
             <td style="padding:10px">
-                <output id="rssi" name="rssi">WLAN Signal: </output>
+                <output id="rssi">WLAN Signal: </output>
             </td>
         </tr>
         <tr>
             <td>
-                <button class="button" id="restart" name="restart" onclick="clickStart()">Restart Setup</button>
-                <button class="button" id="previous" name="previous" onclick="clickPrevious()">Previous Step</button>
-                <button class="button" id="next" name="next" onclick="clickNext()">Next Step</button>
-                <button class="button" id="skip" name="skip" onclick="clickAbort()">Abort Setup</button>
+                <button class="button" id="restart" onclick="clickStart()">Restart Setup</button>
+                <button class="button" id="previous" onclick="clickPrevious()">Previous Step</button>
+                <button class="button" id="next" onclick="clickNext()">Next Step</button>
+                <button class="button" id="skip" onclick="clickAbort()">Abort Setup</button>
                 <span style="margin:0px; float:right;">Setup Progress:<br><progress id="progressBar" value="0" max="7" style="width:120px;"></progress></span>
             </td>
         </tr>
@@ -103,12 +104,12 @@
     </div>
 
     <div class="h_iframe" id="h_iframe">
-        <iframe style="padding-right:0px" name="maincontent" id ="maincontent" src="" onload="resizeIframe(this)" allowfullscreen></iframe>
-        <iframe name="stream" id ="stream" src="" allowfullscreen></iframe>
+        <iframe style="padding-right:0px" id ="maincontent" src="" onload="resizeIframe(this)" allowfullscreen></iframe>
+        <iframe id ="stream" src="" allowfullscreen></iframe>
     </div>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script>
+<script src="global_common.js?v=$COMMIT_HASH"></script>
 <script>
     var aktstep = 0;
     var setupCompleted = false;
@@ -243,7 +244,7 @@
             break;
 
         case 4: // Digit ROIs
-            document.getElementById('maincontent').src = 'edit_digits.html?v=$COMMIT_HASH#description';
+            document.getElementById('maincontent').src = 'edit_digit.html?v=$COMMIT_HASH#description';
 
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:45px;"
@@ -321,12 +322,12 @@
 
    function loadRSSI()
    {
-		var url = getDomainname() + '/info?type=wlan_rssi';
+		let url = getDomainname() + '/info?type=wlan_rssi';
 
-		var xhttp = new XMLHttpRequest();
+		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				var _rsp = xhttp.responseText;
+				let _rsp = xhttp.responseText;
 
 				if (_rsp >= -55) {
 					document.getElementById('rssi').value = ("WLAN Signal: Excellent (" + _rsp + "dBm)");

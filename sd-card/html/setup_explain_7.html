@@ -44,31 +44,25 @@
         <button class="button" onclick="completeSetup()">Complete Setup</button>
     </p>
 
-<script src="common.js?v=$COMMIT_HASH"></script>
-<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
-<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-
+<script src="global_common.js?v=$COMMIT_HASH"></script>
+<script src="global_data.js?v=$COMMIT_HASH"></script>
 <script>
 
     function reboot()
     {
-        ParseConfig();
-        param = getConfigParameters();
-
-        param["System"]["SetupMode"]["enabled"] = true;
-        param["System"]["SetupMode"]["value1"] = "false";
-
-        WriteConfigININew();
-        SaveConfigToServer(getDomainname());
-
         firework.launch('Setup completed', 'success', 5000);
-        setTimeout(function() {
-            reload_config();
-        }, 200);
+        jsonConfig = getConfigFromStorage(); // Get config
+        jsonConfig.operationmode.opmode = 1;
+
+        saveConfig(JSON.stringify(jsonConfig)).then(() => {
+            setTimeout(function() {
+                reloadConfig();
+            }, 500);
+        });
 
         firework.launch('Regular web interface gets loaded in a few seconds...', 'success', 10000);
         setTimeout(function() {
-            var stringota = getDomainname();
+            let stringota = getDomainname();
             parent.location = stringota;
             parent.location.href = stringota;
             parent.location.assign(stringota);

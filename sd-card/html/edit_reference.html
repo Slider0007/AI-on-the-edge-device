@@ -87,7 +87,7 @@
 			padding-right: 10px;
 			border: solid black 1px;
 			position: absolute; /* Position the tooltip */
-			z-index: 1;
+			z-index: 99;
 			top: 100%;
 			margin-left: -40px;
 		}
@@ -151,22 +151,22 @@
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
     <h2>Reference Image</h2>
     <details id="desc_details">
-        <summary><b>CLICK HERE</b> for usage description. Further documentation:
-                <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/Reference-Image/ target=_blank>Reference Image</a>
+        <summary><b>CLICK HERE</b> for usage description
         </summary>
         <p>
-            The reference image is the base image on which the alignment marker, digit ROIs and analog ROIs will be defined.
+            The reference image is the base image on which the alignment marker, digit ROIs and analog ROIs will be defined. It only serves
+            the need to have a visual feedback while defining alignment marker and ROIs. It is not used for any cycle processing task.
         </p>
         <p>
-            Firstly the actual saved reference image is shown. If you start with the setup from scratch a default image is shown
-            as placeholder. Use the button <b>"Create New Reference"</b> to start creation of your own reference image. After
+            If you start with the setup from scratch no reference image is available and only a textual info is shown. Otherwise the actual
+            saved reference image is shown. Use the button <b>"Create New Reference"</b> to start creating your own reference image. After
             selecting the button a new image will be taken using all configured parameter. With the button <b>"Update Image"</b>
             the image can be refreshed (still all parameter get applied to the new image).
         </p>
         <p>
             To have reliable evaluation processing a properly horizontal aligned evaluation area is mandatory. Using the parameter
-            "Image Rotation" and "Image Rotation (Fine-tune)" the image can be rotated in both directions. The resulting rotation
-            angle is used to prerotate the image before the alignment algorithm is processed to compensate only small misalignments.
+            "Image Rotation" the image can be rotated in both directions. The resulting rotation angle is used to prerotate the image
+            before the alignment algorithm is processed to compensate only small misalignments of rotataion or shift.
         </p>
         <p>
             After setting up your reference image don't forget to save the new configuration  with the button <b>"Save And Apply"</b>.
@@ -182,10 +182,16 @@
             <col span="1" style="width: 33.3%;">
         </colgroup>
         <tr>
-            <td><input class="button" type="button" value="Show Actual Reference" onclick="showReference()"></td>
-            <td><input class="button" type="button" id="createreference" value="Create New Reference" onclick="loadRawImage(false)"></td>
+            <td>
+                <input class="button" type="button" value="Show Actual Reference" onclick="showReference()">
+            </td>
+            <td>
+                <input class="button" type="button" id="createreference" value="Create New Reference" onclick="loadRawImage(false)">
+            </td>
+            <td></td>
         </tr>
     </table>
+
     <table class="table">
         <colgroup>
             <col span="1" style="width: 5%;">
@@ -195,200 +201,299 @@
             <col span="1" style="width: 20%;">
             <col span="1" style="width: 23%;">
         </colgroup>
+
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_ZoomMode</td>
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_zoommode</td>
             <td>
-                <span id="TakeImage_ZoomMode_text">Zoom Mode</span>
+                <span>Zoom Mode</span>
             </td>
             <td class="camParameter">
-				<select id="TakeImage_ZoomMode_value1" onchange='setEnabled("TakeImage_Zoom_parameter", this.value > 0 ? true : false);'>
-                    <option value="0" selected>Off</option>
-					<option value="1">Crop</option>
-					<option value="2">Scale & Crop</option>
-				</select>
+                <form id="takeimage_camera_zoommode_form">
+                    <select class="classvisibility_init" name="takeimage.camera.zoommode" id="takeimage_camera_zoommode_value"
+                            onchange='setClassEnabled("classvisibility_takeimage_zoommode", this.value > 0);
+                                gatherChangedParameter(this.form, true)'>
+                        <option value="0" selected>Off</option>
+                        <option value="1">Crop</option>
+                        <option value="2">Scale & Crop</option>
+                    </select>
+                </form>
             </td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_Brightness</td>
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_brightness</td>
             <td>
-                <span id="TakeImage_Brightness_text">Brightness</span>
-            </td>
-            <td>
-                <input class="camParameter" style="clear: both; width: 80%;vertical-align:middle" type="range" id="TakeImage_Brightness_value1"
-                        value=0 min="-2" max="2" onchange="this.nextElementSibling.value = this.value">
-                <output id="TakeImage_Brightness_value1_output" style="vertical-align:middle;
-                                min-width:15px; padding-right:5px; text-align:right; float:left">0</output>
-            </td>
-        </tr>
-        <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_ZoomOffsetX</td>
-            <td>
-                <span id="TakeImage_ZoomOffsetX_text">Zoom Offset X</span>
-            </td>
-            <td  class="camParameter TakeImage_Zoom_parameter">
-                <input required style="clear: both" type="number" id="TakeImage_ZoomOffsetX_value1" value="0" min="0" max="960"
-                        oninput="(!validity.rangeOverflow||(value=960)) && (!validity.rangeUnderflow||(value=0));">px
-            </td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_Contrast</td>
-            <td>
-                <span id="TakeImage_Contrast_text">Contrast</span>
-            </td>
-            <td>
-                <input class="camParameter" style="clear: both; width: 80%;vertical-align:middle" type="range" id="TakeImage_Contrast_value1"
-                        value=0 min="-2" max="2" onchange="this.nextElementSibling.value = this.value">
-                <output id="TakeImage_Contrast_value1_output" style="vertical-align:middle;
-                                min-width:15px; padding-right:5px; text-align:right; float:left">0</output>
-            </td>
-        </tr>
-        <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_ZoomOffsetY</td>
-            <td>
-                <span id="TakeImage_ZoomOffsetY_text">Zoom Offset Y</span>
-            </td>
-            <td class="camParameter TakeImage_Zoom_parameter">
-                <input required style="clear: both" type="number" id="TakeImage_ZoomOffsetY_value1" value="0" min="0" max="720"
-                        oninput="(!validity.rangeOverflow||(value=720)) && (!validity.rangeUnderflow||(value=0));">px
-            </td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_Saturation</td>
-            <td>
-                <span id="TakeImage_Saturation_text">Saturation</span>
-            </td>
-            <td>
-                <input class="camParameter" style="clear: both; width: 80%;vertical-align:middle" type="range" id="TakeImage_Saturation_value1"
-                        value=0 min="-2" max="2" onchange="this.nextElementSibling.value = this.value">
-                <output id="TakeImage_Saturation_value1_output" style="vertical-align:middle;
-                                min-width:15px; padding-right:5px; text-align:right; float:left">0</output>
-            </td>
-        </tr>
-        <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_MirrorImage</td>
-            <td><label for="TakeImage_MirrorImage_value1" id="TakeImage_MirrorImage_text">Mirror Image</label></td>
-            <td><input class="camParameter" type="checkbox" id="TakeImage_MirrorImage_value1" name="TakeImage_MirrorImage" value="1" ></td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_Sharpness</td>
-            <td>
-                <span id="TakeImage_Sharpness_text">Sharpness</span>
-            </td>
-            <td>
-                <input class="camParameter" style="clear: both; width: 80%;vertical-align:middle" type="range" id="TakeImage_Sharpness_value1"
-                        value=0 min="-4" max="3" onchange="onchangeSharpness(this.value);">
-                <output id="TakeImage_Sharpness_value1_output" style="vertical-align:middle;
-                        min-width:15px; padding-right:5px; text-align:right; float:left">0</output>
-            </td>
-        </tr>
-        <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_FlipImage</td>
-            <td><label for="TakeImage_FlipImage_value1" id="TakeImage_FlipImage_text">Flip Image</label></td>
-            <td><input class="camParameter" type="checkbox" id="TakeImage_FlipImage_value1" name="TakeImage_FlipImage" value="1" ></td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_SpecialEffect</td>
-            <td>
-                <span id="TakeImage_SpecialEffect_text">Special Effect</span>
+                <span>Brightness</span>
             </td>
             <td class="camParameter">
-				<select id="TakeImage_SpecialEffect_value1">
-					<option value="0" selected>None</option>
-					<option value="1">Negative</option>
-					<option value="2">Grayscale</option>
-                    <option value="7">Gray+Negative</option>
-				</select>
+                <form id="takeimage_camera_brightness_form">
+                    <input style="clear: both; width: 80%;vertical-align:middle" type="range" min="-2" max="2" value="0"
+                            name="takeimage.camera.brightness" id="takeimage_camera_brightness_value"
+                            onchange="this.nextElementSibling.value = this.value; gatherChangedParameter(this.form, true)">
+                    <output style="vertical-align:middle;min-width:15px; padding-right:5px;text-align:right;float:left">0</output>
+                </form>
             </td>
         </tr>
+
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_Alignment_FlipImageSize</td>
-            <td><label for="Alignment_FlipImageSize_value1" id="Alignment_FlipImageSize_text">Flip Image Size</label></td>
-            <td><input class="camParameter" type="checkbox" id="Alignment_FlipImageSize_value1" name="Alignment_FlipImageSize" value="1"></td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_ExposureControlMode</td>
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_zoomoffsetx</td>
             <td>
-                <span id="TakeImage_ExposureControlMode_text">Exposure Control</span>
+                <span>Zoom Offset X</span>
+            </td>
+            <td class="camParameter classvisibility_takeimage_zoommode">
+                <form id="takeimage_camera_zoomoffsetx_form">
+                    <input required style="clear:both" type="number" min="0" max="960" value="0"
+                            name="takeimage.camera.zoomoffsetx" id="takeimage_camera_zoomoffsetx_value"
+                            onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=960));
+							gatherChangedParameter(this.form, true)">px
+                </form>
+            </td>
+
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_contrast</td>
+            <td>
+                <span>Contrast</span>
             </td>
             <td class="camParameter">
-				<select id="TakeImage_ExposureControlMode_value1"
-                        onchange='setEnabled("TakeImage_ExposureControlModeAuto_parameter", this.value > 0 ? true : false);
-                                  setEnabled("TakeImage_ExposureControlModeManual_parameter", this.value == 0 ? true : false);'>
-                    <option value="0">Manual</option>
-					<option value="1" selected>Auto</option>
-                    <option value="2">Auto (AEC2)</option>
-				</select>
+                <form id="takeimage_camera_contrast_form">
+                    <input style="clear:both;width:80%;vertical-align:middle" type="range" min="-2" max="2" value="0"
+                            name="takeimage.camera.contrast" id="takeimage_camera_contrast_value"
+                            onchange="this.nextElementSibling.value = this.value; gatherChangedParameter(this.form, true)">
+                    <output style="vertical-align:middle;min-width:15px;padding-right:5px;text-align:right;float:left">0</output>
+                </form>
             </td>
         </tr>
+
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_GainControlMode</td>
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_zoomoffsety</td>
             <td>
-                <span id="TakeImage_GainControlMode_text">Gain Control</span>
+                <span>Zoom Offset Y</span>
+            </td>
+            <td class="camParameter classvisibility_takeimage_zoommode">
+                <form id="takeimage_camera_zoomoffsety_form">
+                    <input required style="clear:both" type="number" min="0" max="720" value="0"
+                            name="takeimage.camera.zoomoffsety" id="takeimage_camera_zoomoffsety_value"
+                            onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=720));
+							gatherChangedParameter(this.form, true)">px
+                </form>
+            </td>
+
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_saturation</td>
+            <td>
+                <span>Saturation</span>
             </td>
             <td class="camParameter">
-				<select id="TakeImage_GainControlMode_value1"
-                    onchange='setEnabled("TakeImage_GainControlModeManual_parameter", this.value == 0 ? true : false);'>>
-					<option value="0">Manual</option>
-                    <option value="1" selected>Auto</option>
-				</select>
+                <form id="takeimage_camera_saturation_form">
+                    <input style="clear:both;width:80%;vertical-align:middle" type="range" min="-2" max="2" value="0"
+                            name="takeimage.camera.saturation" id="takeimage_camera_saturation_value"
+                            onchange="this.nextElementSibling.value = this.value; gatherChangedParameter(this.form, true)">
+                    <output style="vertical-align:middle;min-width:15px;padding-right:5px;text-align:right;float:left">0</output>
+                </form>
             </td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_AutoExposureLevel</td>
+        </tr>
+
+        <tr>
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_mirrorimage</td>
+            <td>
+                <span>Mirror Image</span>
+            </td>
+            <td class="camParameter">
+				<form id="takeimage_camera_mirrorimage_form">
+					<select name="takeimage.camera.mirrorimage" id="takeimage_camera_mirrorimage_value"
+							onchange="gatherChangedParameter(this.form)">
+						<option value="false" selected>Disabled</option>
+						<option value="true">Enabled</option>
+					</select>
+				</form>
+            </td>
+
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_sharpness</td>
+            <td>
+                <span>Sharpness</span>
+            </td>
+            <td class="camParameter">
+                <form id="takeimage_camera_sharpness_form">
+                    <input style="clear:both;width:80%;vertical-align:middle" type="range" min="-4" max="3" value="0"
+                            name="takeimage.camera.sharpness" id="takeimage_camera_sharpness_value"
+                            onchange="this.value == -4 ? this.nextElementSibling.value = 'A' : this.nextElementSibling.value = this.value
+                                ; gatherChangedParameter(this.form, true)">
+                    <output style="vertical-align:middle;min-width:15px;padding-right:5px;text-align:right;float:left"
+                            id="takeimage_camera_sharpness_value_output">0</output>
+                </form>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_flipimage</td>
+            <td>
+                <span>Flip Image</span>
+            </td>
+            <td class="camParameter">
+                <form id="takeimage_camera_flipimage_form">
+					<select name="takeimage.camera.flipimage" id="takeimage_camera_flipimage_value"
+							onchange="gatherChangedParameter(this.form)">
+						<option value="false" selected>Disabled</option>
+						<option value="true">Enabled</option>
+					</select>
+				</form>
+            </td>
+
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_specialeffect</td>
+            <td>
+                <span>Special Effect</span>
+            </td>
+            <td class="camParameter">
+				<form id="takeimage_camera_specialeffect_form">
+					<select name="takeimage.camera.specialeffect" id="takeimage_camera_specialeffect_value"
+							onchange="gatherChangedParameter(this.form, true)">
+						<option value="0" selected>None</option>
+						<option value="1">Negative</option>
+						<option value="2">Grayscale</option>
+						<option value="7">Gray+Negative</option>
+					</select>
+				</form>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="visibility:hidden">$TOOLTIP_imagealignment_flipimagesize</td>
+            <td>
+                <span>Flip Image Size</span>
+            </td>
+            <td class="camParameter">
+				<form id="timagealignment_flipimagesize_form">
+					<select name="imagealignment.flipimagesize" id="imagealignment_flipimagesize_value"
+							onchange="gatherChangedParameter(this.form)">
+						<option value="false" selected>Disabled</option>
+						<option value="true">Enabled</option>
+					</select>
+				</form>
+            </td>
+
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_exposurecontrolmode</td>
+            <td>
+                <span>Exposure Control</span>
+            </td>
+            <td class="camParameter">
+                <form id="takeimage_camera_exposurecontrolmode_form">
+					<select class="classvisibility_init"
+							name="takeimage.camera.exposurecontrolmode" id="takeimage_camera_exposurecontrolmode_value"
+							onchange='setClassEnabled("classvisibility_takeimage_exposurecontrolmode_auto", this.value > 0);
+									  	setClassEnabled("classvisibility_takeimage_exposurecontrolmode_manual", this.value == 0);
+										gatherChangedParameter(this.form, true)'>
+						<option value="0">Manual</option>
+						<option value="1" selected>Auto</option>
+						<option value="2">Auto (AEC2)</option>
+					</select>
+				</form>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_gaincontrolmode</td>
+            <td>
+                <span>Gain Control</span>
+            </td>
+            <td class="camParameter">
+				<form id="takeimage_camera_gaincontrolmode_form">
+					<select class="classvisibility_init" name="takeimage.camera.gaincontrolmode" id="takeimage_camera_gaincontrolmode_value"
+							onchange='setClassEnabled("classvisibility_takeimage_gaincontrolmode_manual", this.value == 0);
+										gatherChangedParameter(this.form, true)'>
+						<option value="0">Manual</option>
+						<option value="1" selected>Auto</option>
+					</select>
+				</form>
+            </td>
+
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_autoexposurelevel</td>
             <td style="padding:0px 5px 0px 0px">
-                <span id="TakeImage_AutoExposureLevel_text">Auto Exposure Level</span>
+                <span>Auto Exposure Level</span>
             </td>
-            <td>
-                <input class="camParameter TakeImage_ExposureControlModeAuto_parameter" style="clear: both; width: 80%;vertical-align:middle"
-                        type="range" id="TakeImage_AutoExposureLevel_value1" value=0 min="-2" max="2"
-                        onchange="this.nextElementSibling.value = this.value">
-                <output id="TakeImage_AutoExposureLevel_value1_output" style="vertical-align:middle;
-                                min-width:15px; padding-right:5px; text-align:right; float:left">0</output>
+            <td class="camParameter classvisibility_takeimage_exposurecontrolmode_auto">
+                <form id="takeimage_camera_autoexposurelevel_form">
+                    <input style="clear:both;width:80%;vertical-align:middle" type="range" min="-2" max="2" value="0"
+                            name="takeimage.camera.autoexposurelevel" id="takeimage_camera_autoexposurelevel_value"
+                            onchange="this.nextElementSibling.value = this.value; gatherChangedParameter(this.form, true)">
+                    <output style="vertical-align:middle;min-width:15px;padding-right:5px;text-align:right;float:left">0</output>
+                </form>
             </td>
         </tr>
+
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_ManualGainValue</td>
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_manualgainvalue</td>
             <td style="padding:0px 5px 0px 0px">
-                <span id="TakeImage_ManualGainValue_text">Manual Gain Value</span>
+                <span>Manual Gain Value</span>
             </td>
-            <td>
-                <input class="camParameter TakeImage_GainControlModeManual_parameter" required style="clear: both" type="number" id="TakeImage_ManualGainValue_value1"
-                        value="0" min="0" max="5" oninput="(!validity.rangeOverflow||(value=5)) &&
-                        (!validity.rangeUnderflow||(value=0));">
+            <td class="camParameter classvisibility_takeimage_gaincontrolmode_manual">
+				<form id="takeimage_camera_manualgainvalue_form">
+					<input required type="number" min="0" max="5" value="0"
+						name="takeimage.camera.manualgainvalue" id="takeimage_camera_manualgainvalue_value"
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5));
+							gatherChangedParameter(this.form, true)">
+				</form>
             </td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_ManualExposureValue</td>
+
+            <td style="visibility:hidden">$TOOLTIP_takeimage_camera_manualexposurevalue</td>
             <td style="padding:0px 5px 0px 0px">
-                <span id="TakeImage_ManualExposureValue_text">Manual Exposure Value</span>
+                <span>Manual Exposure Value</span>
             </td>
-            <td>
-                <input class="camParameter TakeImage_ExposureControlModeManual_parameter" required style="clear: both" type="number" id="TakeImage_ManualExposureValue_value1"
-                        value="300" min="0" max="1200" oninput="(!validity.rangeOverflow||(value=1200)) &&
-                        (!validity.rangeUnderflow||(value=0));">
-            </td>
-        </tr>
-        <tr>
-            <td style="overflow:hidden">$TOOLTIP_Alignment_InitialRotate</td>
-            <td><label for="Alignment_InitialRotate_value1" name="Alignment_InitialRotate_text">Image Rotation</label></td>
-            <td>
-                <input class="camParameter" required type="number" id="Alignment_InitialRotate_value1" name="Alignment_InitialRotate"
-                        value="0" min="-360" max="360" onchange="drawRotated()" oninput="(!validity.rangeOverflow||(value=360))
-                        && (!validity.rangeUnderflow||(value=-360)) && (!validity.stepMismatch||(value=parseInt(this.value)));">°
-            </td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_FlashTime</td>
-            <td>
-                <span id="TakeImage_FlashTime_text">Flash Time</span>
-            </td>
-            <td>
-                <input class="camParameter" required type="number" id="TakeImage_FlashTime_value1"
-                        value="2.0" min="0.1" step="0.1" oninput="(!validity.rangeUnderflow||(value=0.1));">s
+            <td class="camParameter classvisibility_takeimage_exposurecontrolmode_manual">
+				<form id="takeimage_camera_manualexposurevalue_form">
+					<input required type="number" min="0" max="1200" value="300"
+						name="takeimage.camera.manualexposurevalue" id="takeimage_camera_manualexposurevalue_value"
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1200));
+							gatherChangedParameter(this.form, true)">
+				</form>
             </td>
         </tr>
+
         <tr>
-            <td style="overflow:hidden">$TOOLTIP_Alignment_InitialRotate</td>
-            <td style="padding:0px 5px 0px 0px"><label for="Alignment_InitialRotate_value1_fine"
-                    name="Alignment_InitialRotate_text">Image Rotation<br>(Fine-tune)</label></td>
+            <td style="visibility:hidden">$TOOLTIP_imagealignment_imagerotation</td>
             <td>
-                <input class="camParameter" required type="number" id="Alignment_InitialRotate_value1_fine" name="Alignment_InitialRotate"
-                        value=0.0 min="-1" max="1" step="0.1" onchange="drawRotated()" oninput="(!validity.rangeOverflow||(value=1)) &&
-                        (!validity.rangeUnderflow||(value=-1)) && (!validity.stepMismatch||(value=parseInt(this.value)));">°
+                <span>Image Rotation</span>
             </td>
-            <td style="overflow:hidden">$TOOLTIP_TakeImage_FlashIntensity</td>
-            <td>
-                <span id="TakeImage_FlashIntensity_text">Flash Intensity</span>
+            <td class="camParameter">
+				<form id="imagealignment_imagerotation_form">
+					<input required type="number" min="-180.0" max="180.0" step="0.1" value="0.0"
+						name="imagealignment.imagerotation" id="imagealignment_imagerotation_value"
+						onchange="(!validity.rangeUnderflow||(value=-180.0)) && (!validity.rangeOverflow||(value=180.0)) &&
+							(!validity.stepMismatch||(value=this.value));drawRotated();gatherChangedParameter(this.form)">°
+				</form>
             </td>
+
+            <td style="visibility:hidden">$TOOLTIP_takeimage_flashlight_flashtime</td>
             <td>
-                <input class="camParameter" required style="clear: both" type="number" id="TakeImage_FlashIntensity_value1"
-                        value="0" min="0" max="100" oninput="(!validity.rangeOverflow||(value=100)) &&
-                        (!validity.rangeUnderflow||(value=0)) && (!validity.stepMismatch||(value=parseInt(this.value)));">%
+                <span>Flash Time</span>
+            </td>
+            <td class="camParameter">
+				<form id="takeimage_flashlight_flashtime_form">
+					<input required type="number" min="100" step="100" value="2000"
+						name="takeimage.flashlight.flashtime" id="takeimage_flashlight_flashtime_value"
+						onchange="(!validity.rangeUnderflow||(value=100)) && (!validity.stepMismatch||(value=parseInt(this.value)));
+                            gatherChangedParameter(this.form, true)"
+						oninput="">ms
+				</form>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="visibility:hidden"></td>
+            <td style="padding:0px 5px 0px 0px">
+                <span></span>
+            </td>
+            <td></td>
+
+            <td style="visibility:hidden">$TOOLTIP_takeimage_flashlight_flashintensity</td>
+            <td>
+                <span>Flash Intensity</span>
+            </td>
+            <td class="camParameter">
+				<form id="takeimage_flashlight_flashintensity_form">
+					<input required type="number" min="0" max="100" value="50"
+						name="takeimage.flashlight.flashintensity" id="takeimage_flashlight_flashintensity_value"
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=100));
+							gatherChangedParameter(this.form, true)">%
+				</form>
             </td>
         </tr>
     </table>
+
     <table class="table">
         <colgroup>
             <col span="1" style="width: 33.3%;">
@@ -396,38 +501,33 @@
             <col span="1" style="width: 33.3%;">
         </colgroup>
         <tr>
-            <td style="vertical-align: bottom;"><b>Reference Image</b></td>
-            <td><input class="button" type="button" id="take" onclick="doTake(true)" value="Update Image">
+            <td style="vertical-align: bottom;">
+                <b>Reference Image</b>
+            </td>
+            <td>
+                <input class="button" type="button" id="take" onclick="doTake(true)" value="Update Image">
             <td>
                 <input style="font-weight:bold;" class="button" type="button" id="savereference"
                         value="Save And Apply" onclick="SaveReference()">
             </td>
         </tr>
         <tr>
-            <td colspan="3"><canvas style="max-width: 100%" id="canvas"></canvas></td>
+            <td colspan="3">
+                <img id="img_loading" hidden>
+                <canvas style="max-width: 100%" id="canvas" hidden></canvas>
+            </td>
         </tr>
     </table>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script>
-<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
+<script src="global_common.js?v=$COMMIT_HASH"></script>
+<script src="global_data.js?v=$COMMIT_HASH"></script>
 <script>
-    let canvas = document.getElementById('canvas'),
-        context = canvas.getContext('2d'),
-        imageObj = new Image(),
-        isActReference = false,
-        paramLocal = {},
-        initialConfigUrl = "";
-
-
-    function onchangeSharpness(val)
-    {
-        if (val > -4) // 3 .. -3
-            document.getElementById('TakeImage_Sharpness_value1_output').value = val;
-        else if (val == -4) // Automatic
-            document.getElementById('TakeImage_Sharpness_value1_output').value = "A";
-    }
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
+    let imageObj = new Image();
+    let isActReference = false;
+    let initialConfigUrl = "";
 
 
     function restoreCamSettings()
@@ -460,45 +560,45 @@
         if (release_save)
             document.getElementById("savereference").disabled = false;
 
-        if (paramLocal["TakeImage"]["Brightness"].found && paramLocal["TakeImage"]["Brightness"].enabled) // Parameter available?
+        if (jsonConfig.takeimage.brightness !== null) // Parameter available?
         {
-            let flashtime = document.getElementById("TakeImage_FlashTime_value1").value;
-            if (flashtime == "") flashtime = "2.0";
+            let flashtime = document.getElementById("takeimage_flashlight_flashtime_value").value;
+            if (flashtime == "") flashtime = "2000";
 
-            firework.launch('Taking image...', 'success', flashtime * 1000, true);
+            firework.launch('Taking image...', 'success', flashtime, true);
 
-            let flashintensity = document.getElementById("TakeImage_FlashIntensity_value1").value;
+            let flashintensity = document.getElementById("takeimage_flashlight_flashintensity_value").value;
             if (flashintensity == "") flashintensity = "50";
-            let brightness = document.getElementById("TakeImage_Brightness_value1").value;
+            let brightness = document.getElementById("takeimage_camera_brightness_value").value;
             if (brightness == "") brightness = "0";
-            let contrast = document.getElementById("TakeImage_Contrast_value1").value;
+            let contrast = document.getElementById("takeimage_camera_contrast_value").value;
             if (contrast == "") contrast = "0";
-            let saturation = document.getElementById("TakeImage_Saturation_value1").value;
+            let saturation = document.getElementById("takeimage_camera_saturation_value").value;
             if (saturation == "") saturation = "0";
-            let sharpness = document.getElementById("TakeImage_Sharpness_value1").value;
+            let sharpness = document.getElementById("takeimage_camera_sharpness_value").value;
             if (sharpness == "") sharpness = "0";
-            let exposureControlMode = document.getElementById("TakeImage_ExposureControlMode_value1").value;
+            let exposureControlMode = document.getElementById("takeimage_camera_exposurecontrolmode_value").value;
             if (exposureControlMode == "") exposureControlMode = "1";
-            let autoExposureLevel = document.getElementById("TakeImage_AutoExposureLevel_value1").value;
+            let autoExposureLevel = document.getElementById("takeimage_camera_autoexposurelevel_value").value;
             if (autoExposureLevel == "") autoExposureLevel = "0";
-            let manualExposureValue = document.getElementById("TakeImage_ManualExposureValue_value1").value;
+            let manualExposureValue = document.getElementById("takeimage_camera_manualexposurevalue_value").value;
             if (manualExposureValue == "") manualExposureValue = "300";
-            let gainControlMode = document.getElementById("TakeImage_GainControlMode_value1").value;
+            let gainControlMode = document.getElementById("takeimage_camera_gaincontrolmode_value").value;
             if (gainControlMode == "") gainControlMode = "1";
-            let manualGainValue = document.getElementById("TakeImage_ManualGainValue_value1").value;
+            let manualGainValue = document.getElementById("takeimage_camera_manualgainvalue_value").value;
             if (manualGainValue == "") manualGainValue = "0";
             // Special case: Use as global variable: use to draw negative by browser
-            specialeffect = document.getElementById("TakeImage_SpecialEffect_value1").value;
+            specialeffect = document.getElementById("takeimage_camera_specialeffect_value").value;
             if (specialeffect == "") specialeffect = "0";
-            let mirror = document.getElementById("TakeImage_MirrorImage_value1").checked ? "true" : "false";
+            let mirror = document.getElementById("takeimage_camera_mirrorimage_value").value;
             if (mirror == "") mirror = "false";
-            let flip = document.getElementById("TakeImage_FlipImage_value1").checked ? "true" : "false";
+            let flip = document.getElementById("takeimage_camera_flipimage_value").value;
             if (flip == "") flip = "false";
-            let zoomMode = document.getElementById("TakeImage_ZoomMode_value1").value;
+            let zoomMode = document.getElementById("takeimage_camera_zoommode_value").value;
             if (zoomMode == "") zoomMode = "0";
-            let zoomOffsetX = document.getElementById("TakeImage_ZoomOffsetX_value1").value;
+            let zoomOffsetX = document.getElementById("takeimage_camera_zoomoffsetx_value").value;
             if (zoomOffsetX == "") zoomOffsetX = "0";
-            let zoomOffsetY = document.getElementById("TakeImage_ZoomOffsetY_value1").value;
+            let zoomOffsetY = document.getElementById("takeimage_camera_zoomoffsety_value").value;
             if (zoomOffsetX == "") zoomOffsetX = "0";
 
             url = getDomainname() + "/camera?task=set_parameter&flashtime=" + flashtime + "&flashintensity=" + flashintensity +
@@ -547,6 +647,7 @@
     function loadRawImage(new_image)
     {
         document.getElementById("take").disabled = true;
+
         if (new_image) {
             let url = getDomainname() + "/img_tmp/raw.jpg?" + Math.floor((Math.random() * 1000000) + 1);
             loadCanvas(url, true);
@@ -557,178 +658,27 @@
             document.getElementById("savereference").disabled = true;
             document.getElementById("take").disabled = false;
 
-            // Release input for all camera parameter
-            setEnabled("camParameter", true);
-            // Release additional zoom parameter
-            setEnabled("TakeImage_Zoom_parameter", paramLocal["TakeImage"]["ZoomMode"]["value1"] > 0 ? true : false);
-            // Release additional exposure control parameter
-            setEnabled("TakeImage_ExposureControlModeAuto_parameter",
-                document.getElementById("TakeImage_ExposureControlMode_value1").value > 0 ? true : false);
-		    setEnabled("TakeImage_ExposureControlModeManual_parameter",
-                document.getElementById("TakeImage_ExposureControlMode_value1").value == 0 ? true : false);
-            // Release additional gain control parameter
-		    setEnabled("TakeImage_GainControlModeManual_parameter",
-                document.getElementById("TakeImage_GainControlMode_value1").value == 0 ? true : false);
+            setClassEnabled("camParameter", true); // Release input for all camera parameter
+            triggerClassElementOnChange("classvisibility_init"); // Init subparameter lock
+            jsonConfigModifiedDelta = {}; // Reset modified parameter container after visibility update
 
             doTake();
         }
     }
 
 
-    function showReference()
-    {
-        let url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);
-        loadCanvas(url, false);
-        isActReference = true;
-
-        document.getElementById("savereference").disabled = true;
-        document.getElementById("createreference").disabled = false;
-        document.getElementById("take").disabled = true;
-        setEnabled("camParameter", false); // Lock input for all camera parameter
-
-        parseActualData();
-    }
-
-
-    function parseActualData()
-    {
-        WriteParameter(paramLocal, "TakeImage", "FlashTime");
-        WriteParameter(paramLocal, "TakeImage", "FlashIntensity");
-        WriteParameter(paramLocal, "TakeImage", "Brightness", true);
-        WriteParameter(paramLocal, "TakeImage", "Contrast", true);
-        WriteParameter(paramLocal, "TakeImage", "Saturation", true);
-        WriteParameter(paramLocal, "TakeImage", "Sharpness", true);
-        onchangeSharpness(paramLocal["TakeImage"]["Sharpness"]["value1"]); // -4 -> Auto
-        WriteParameter(paramLocal, "TakeImage", "ExposureControlMode");
-        WriteParameter(paramLocal, "TakeImage", "AutoExposureLevel", true);
-        WriteParameter(paramLocal, "TakeImage", "ManualExposureValue");
-        WriteParameter(paramLocal, "TakeImage", "GainControlMode");
-        WriteParameter(paramLocal, "TakeImage", "ManualGainValue");
-        WriteParameter(paramLocal, "TakeImage", "SpecialEffect");
-        WriteParameter(paramLocal, "TakeImage", "MirrorImage");
-        WriteParameter(paramLocal, "TakeImage", "FlipImage");
-        WriteParameter(paramLocal, "TakeImage", "ZoomMode");
-        WriteParameter(paramLocal, "TakeImage", "ZoomOffsetX");
-        WriteParameter(paramLocal, "TakeImage", "ZoomOffsetY");
-
-        WriteParameter(paramLocal, "Alignment", "FlipImageSize");
-
-        if (paramLocal["Alignment"]["InitialRotate"].value1 < 0) {
-            document.getElementById("Alignment_InitialRotate_value1").value = Math.ceil(paramLocal["Alignment"]["InitialRotate"].value1);
-        }
-        else {
-            document.getElementById("Alignment_InitialRotate_value1").value = Math.floor(paramLocal["Alignment"]["InitialRotate"].value1);
-        }
-
-        document.getElementById("Alignment_InitialRotate_value1_fine").value = (Number(paramLocal["Alignment"]["InitialRotate"].value1) -
-                                                        Number(document.getElementById("Alignment_InitialRotate_value1").value)).toFixed(1);
-    }
-
-
-    /* Parse parameter out of param structure and preset WebUI fields */
-    function WriteParameter(_param, _cat, _name, outval = false)
-    {
-        if (_param[_cat][_name]["found"]) {
-            document.getElementById(_cat+"_"+_name+"_text").style="color:black;"
-
-            let el = document.getElementById(_cat+"_"+_name+"_value1");
-            if (el.type == "select") {
-                let textToFind = _param[_cat][_name]["value1"];
-                let dd = document.getElementById(_cat+"_"+_name+"_value1");
-                for (let i = 0; i < dd.options.length; i++) {
-                    if (dd.options[i].text.toLowerCase() === textToFind.toLowerCase()) {
-                        dd.selectedIndex = i;
-                        break;
-                    }
-                }
-            }
-            else if (el.type == "checkbox") {
-                document.getElementById(_cat+"_"+_name+"_value1").checked = paramLocal[_cat][_name]["value1"] == "true" ? true : false;
-            }
-            else {
-                document.getElementById(_cat+"_"+_name+"_value1").value = _param[_cat][_name]["value1"];
-            }
-
-            if (outval)
-                document.getElementById(_cat+"_"+_name+"_value1_output").value = document.getElementById(_cat+"_"+_name+"_value1").value;
-        }
-        else {
-            document.getElementById(_cat+"_"+_name+"_text").style="color:lightgrey;"
-            document.getElementById(_cat+"_"+_name).style="color:lightgrey;"
-        }
-    }
-
-
-    /* read WebUI fields and write parameter to param structure */
-    function ReadParameter(_param, _cat, _name)
-    {
-        if (_param[_cat][_name]["found"]) {
-            let el = document.getElementById(_cat+"_"+_name+"_value1");
-            if (el.type == "select") {
-                let sel = document.getElementById(_cat+"_"+_name+"_value1");
-                _param[_cat][_name]["value1"] = sel.options[sel.selectedIndex].text;
-            }
-            else if (el.type == "checkbox") {
-                paramLocal[_cat][_name]["value1"] = document.getElementById(_cat+"_"+_name+"_value1").checked ? "true" : "false";
-            }
-            else {
-                _param[_cat][_name]["value1"] = document.getElementById(_cat+"_"+_name+"_value1").value;
-            }
-        }
-    }
-
-
-    function setEnabled(className, enabled)
-    {
-        let _color = "rgb(122, 122, 122)";
-		if (enabled) {
-			_color = "black";
-		}
-
-		let elements = document.getElementsByClassName(className);
-		for (i = 0; i < elements.length; i++) {
-			if (enabled) {
-				elements[i].classList.remove("disabled");
-				elements[i].disabled = false;
-			}
-            else {
-				elements[i].classList.add("disabled");
-				elements[i].disabled = true;
-			}
-
-			let inputs = elements[i].getElementsByTagName("input");
-			for (j = 0; j < inputs.length; j++) {
-				inputs[j].style.color = _color;
-				if (enabled)
-					inputs[j].removeAttribute("disabled");
-                else
-					inputs[j].setAttribute("disabled", "disabled");
-			}
-
-			let select = elements[i].getElementsByTagName("select");
-			for (j = 0; j < select.length; j++) {
-					select[j].style.color = _color;
-				if (enabled)
-					select[j].removeAttribute("disabled");
-                else
-					select[j].setAttribute("disabled", "disabled");
-			}
-		}
-	}
-
-
     function ImageSizeValidation()
     {
-        if (paramLocal["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
-            if (document.getElementById("Alignment_FlipImageSize_value1").checked ? false : true) {
+        if (jsonConfig.takeimage.camera.imagesize == "QVGA") {
+            if (document.getElementById("imagealignment_flipimagesize_value").checked ? false : true) {
                 configuredWidth = 320;
             }
             else {
                 configuredWidth = 240;
             }
         }
-        else if (paramLocal["TakeImage"]["ImageSize"]["value1"] == "VGA") {
-            if (document.getElementById("Alignment_FlipImageSize_value1").checked ? false : true) {
+        else if (jsonConfig.takeimage.camera.imagesize == "VGA") {
+            if (document.getElementById("imagealignment_flipimagesize_value").checked ? false : true) {
                 configuredWidth = 640;
             }
             else {
@@ -749,27 +699,9 @@
 
     function drawRotated(_grid = true, _applySpecials = false)
     {
-        /* Handle rotation */
-        let finerot= parseFloat(document.getElementById("Alignment_InitialRotate_value1_fine").value);
-        let prerot = parseFloat(document.getElementById("Alignment_InitialRotate_value1").value);
-
-        if (finerot == 1) {
-            prerot +=1
-            finerot = 0
-        }
-
-        if (finerot == -1) {
-            prerot -=1
-            finerot = 0
-        }
-
-        document.getElementById("Alignment_InitialRotate_value1_fine").value =  finerot;
-        document.getElementById("Alignment_InitialRotate_value1").value =  prerot;
-        let degrees = finerot + prerot;
-
-       if (_applySpecials) {
-            // Handle flip
-            let flipImageSize = document.getElementById("Alignment_FlipImageSize_value1").checked;
+        // Handle flip
+        if (_applySpecials) {
+            let flipImageSize = document.getElementById("imagealignment_flipimagesize_value").checked;
 
             if (flipImageSize) {
                 canvas.width = imageObj.height;
@@ -785,6 +717,9 @@
         context.clearRect(0,0,canvas.width,canvas.height);
         context.save();
 
+        /* Handle rotation */
+        let degrees = parseFloat(document.getElementById("imagealignment_imagerotation_value").value);
+
         if (isActReference) {
             context.drawImage(imageObj,0,0);
         }
@@ -794,7 +729,7 @@
 
             // Handle special effect case 7 (grayscale + negative)
             // Both effects together are not working when processed on camera
-            // Workaround: Process grayscale on camera + negative on MCU (procesisng) / browser (preview)
+            // Workaround: Process grayscale on camera + negative on MCU (processing) / browser (preview)
             if (specialeffect == "7")
                 context.filter = 'invert(1)';
 
@@ -815,7 +750,7 @@
 
         context.save();
         context.lineWidth = 0.25;
-        context.strokeStyle = 'rgb(0, 153, 0)'; //'#00FF00';
+        context.strokeStyle = 'rgb(160, 160, 160)'; //'#00FF00';
 
         for (let i = h/2; i < h; i += 100) {
             context.moveTo(0, i);
@@ -841,6 +776,9 @@
 
     function loadCanvas(dataURL, grid)
     {
+        $("#canvas").hide();
+        $("#img_loading").show();
+
         imageObj.onload = function() {
             canvas.width = this.width;
             canvas.height = this.height;
@@ -849,8 +787,14 @@
                 drawRotated(true, true);
                 document.getElementById("take").disabled = false;
             }
-            else
+            else {
                 drawRotated(false);
+            }
+
+            canvas.addEventListener('mousemove', mouseMove, false);
+
+            $("#img_loading").hide();
+            $("#canvas").show();
 
             ImageSizeValidation();
 
@@ -858,7 +802,20 @@
                 restoreCamSettings();
         };
 
-        imageObj.src = loadImage(dataURL, 'img_not_available.png?v=$COMMIT_HASH').src;
+        imageObj.onerror = function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.textBaseline = "top";
+            context.textAlign = "left";
+            context.font = "16px arial";
+            context.fillText("No reference image", 10, 10);
+
+            canvas.removeEventListener('mousemove', mouseMove, false);
+
+            $("#img_loading").hide();
+            $("#canvas").show();
+        };
+
+        imageObj.src = dataURL;
     }
 
 
@@ -889,7 +846,7 @@
         let y = e.pageY - zw.top;
 
         context.lineWidth = 1;
-        context.strokeStyle = 'rgb(0, 255, 0)'; //"#00FF00";
+        context.strokeStyle = 'rgb(160, 160, 160)';
         context.beginPath();
         context.moveTo(0,y);
         context.lineTo(canvas.width, y);
@@ -904,41 +861,40 @@
         if (confirm("Are you sure you want to save and apply the new camera configuration and reference image?")) {
             document.getElementById("savereference").disabled = true;
 
-            ReadParameter(param, "TakeImage", "FlashTime");
-            ReadParameter(param, "TakeImage", "FlashIntensity");
-            ReadParameter(param, "TakeImage", "Brightness");
-            ReadParameter(param, "TakeImage", "Contrast");
-            ReadParameter(param, "TakeImage", "Saturation");
-            ReadParameter(param, "TakeImage", "Sharpness");
-            ReadParameter(param, "TakeImage", "ExposureControlMode");
-            ReadParameter(param, "TakeImage", "AutoExposureLevel");
-            ReadParameter(param, "TakeImage", "ManualExposureValue");
-            ReadParameter(param, "TakeImage", "GainControlMode");
-            ReadParameter(param, "TakeImage", "ManualGainValue");
-            ReadParameter(param, "TakeImage", "SpecialEffect");
-            ReadParameter(param, "TakeImage", "MirrorImage");
-            ReadParameter(param, "TakeImage", "FlipImage");
-            ReadParameter(param, "TakeImage", "ZoomMode");
-            ReadParameter(param, "TakeImage", "ZoomOffsetX");
-            ReadParameter(param, "TakeImage", "ZoomOffsetY");
-
-            ReadParameter(param, "Alignment", "FlipImageSize");
-
-            param["Alignment"]["InitialRotate"].value1 = (Number(document.getElementById("Alignment_InitialRotate_value1").value) +
-                                                            Number(document.getElementById("Alignment_InitialRotate_value1_fine").value)).toFixed(1);
-
             drawRotated(false);
-
-            WriteConfigININew();
-            SaveConfigToServer(getDomainname());
             SaveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
-            showReference();
 
             firework.launch('Save and apply configuration...', 'success', 2000, true);
-            setTimeout(function() {
-                reload_config();
-            }, 200);
+			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
+				setTimeout(function() {
+					reloadConfig();
+				}, 500);
+			});
         }
+    }
+
+
+    function showReference()
+    {
+        let url = getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1);
+        loadCanvas(url, false);
+        isActReference = true;
+
+        document.getElementById("savereference").disabled = true;
+        document.getElementById("createreference").disabled = false;
+        document.getElementById("take").disabled = true;
+        setClassEnabled("camParameter", false); // Lock input for all camera parameter
+
+        //jsonConfigModifiedDelta = {}; // Will be reseted after subparameter visiblity is set (loadRawImage())
+        let jsonConfigKeyified = []; // Config: array as key-value pairs
+        [jsonConfig, jsonConfigKeyified] = getConfigFromStorage(2); // Get config
+        parseCurrentParametrization(jsonConfigKeyified);
+    }
+
+
+    function loadConfigData()
+    {
+         showReference();
     }
 
 
@@ -953,19 +909,19 @@
     }
 
 
-    function loadConfigData()
-    {
-        ParseConfig();
-        paramLocal = getConfigParameters();
-        showReference();
-    }
-
-
-    function init()
+    async function init()
     {
         openDescription();
 
-        canvas.addEventListener('mousemove', mouseMove, false);
+        $("#img_loading").attr("src", getDomainname() + '/img_loading.gif?v=$COMMIT_HASH');
+
+        // @TODO. Check if config reloading can be avoided, because still up to date.
+        // Up to now reload config before every usage
+        /*if (noConfigInStorage())
+			loadConfig().then(() => loadConfigData());
+		else
+            loadConfigData();
+        */
         loadConfig().then(() => loadConfigData());
     }
 

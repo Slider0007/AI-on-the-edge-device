@@ -67,7 +67,10 @@ def generateHtmlTooltip(section, parameter, markdownFile):
         configPageContent = configPageHandle.read()
 
     # print("replacing $TOOLTIP_" + section + "_" + parameter + " with the tooltip content...")
-    configPageContent = configPageContent.replace("<td>$TOOLTIP_" + section + "_" + parameter + "</td>", "<td>" + htmlTooltip + "</td>")
+    configPageContent = configPageContent.replace("<th hidden>$TOOLTIP_" + section + "_" + parameter + "</th>",
+                                                    "<th style=\"font-weight: unset;\">" + htmlTooltip + "</th>")
+    configPageContent = configPageContent.replace("<td style=\"visibility:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>",
+                                                    "<td>" + htmlTooltip + "</td>")
 
     with open(docsMainFolder + "/" + configPage, 'w') as configPageHandle:
         configPageHandle.write(configPageContent)
@@ -77,7 +80,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
         referenceImagePageContent = referenceImagePageHandle.read()
 
     # print("replacing $TOOLTIP_" + section + "_" + parameter + " with the tooltip content...")
-    referenceImagePageContent = referenceImagePageContent.replace("<td style=\"overflow:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>",
+    referenceImagePageContent = referenceImagePageContent.replace("<td style=\"visibility:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>",
                                                                   "<td>" + htmlTooltip + "</td>")
 
     with open(docsMainFolder + "/" + referenceImagePage, 'w') as referenceImagePageHandle:
@@ -105,4 +108,4 @@ for folder in folders:
 
             parameter = file.split("\\")[-1].replace(".md", "")
             parameter = parameter.replace("<", "").replace(">", "")
-            generateHtmlTooltip(folder, parameter, file)
+            generateHtmlTooltip(folder.lower(), parameter.lower(), file)

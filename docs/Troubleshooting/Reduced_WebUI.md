@@ -44,20 +44,15 @@ To have early indication that SD card is potentially ready for operation, some f
 
 The following folders / files get checked during boot sequence:
 
-- /sdcard/config
-- /sdcard/config/certs --> created automatically in firmware
-- /sdcard/html
-- /sdcard/demo --> created automatically in firmware
-- /sdcard/firmware --> created automatically in firmware
-- /sdcard/img_tmp --> created automatically in firmware
-- /sdcard/log --> created automatically in firmware
-- /sdcard/wlan.ini
-- /sdcard/config/config.ini
-- /sdcard/html/index.html
-- /sdcard/html/ota_page.html
-- /sdcard/html/log.html
-- /sdcard/html/common.js
-- /sdcard/html/version.txt
+- /config --> created by firmware during initial boot automatically
+- /config/certs --> created by firmware during initial boot automatically
+- /config/models --> created by firmware during initial boot automatically
+- /firmware --> created by firmware during initial boot automatically
+- /img_tmp --> created by firmware during initial boot automatically
+- /log --> created by firmware during initial boot automatically
+- /demo --> created by firmware during initial boot automatically
+- /html
+- /html/index.html
 
 Note: This list might be outdated, see the source code for the latest implementation: [SDCardCheckFolderFilePresence()](https://github.com/slider0007/AI-on-the-edge-device/blob/develop/code/components/jomjol_helper/sdcard_check.cpp#L14)
 

@@ -59,7 +59,7 @@ Payload:
       - Example: `/camera?task=capture_to_file&flashtime=1000&filename=/img_tmp/filename.jpg`
       - Response:
         - Content type: `HTML`
-        - Content: `/sdcard/img_tmp/test.jpg`<br>
+        - Content: `/img_tmp/test.jpg`<br>
           (Response delayed by flash duration)
     - `flashlight_on` Flashlight on
       - Example: `/camera?task=flashlight_on`

@@ -1,0 +1,22 @@
+# Parameter: Page Auto Refresh
+
+|                   | WebUI               | REST API
+|:---               |:---                 |:----
+| Parameter Name    | Page Auto Refresh   | enabled
+| Default Value     | `Enabled`           | `true`
+| Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
+
+
+## Description
+
+Enable or disable the automatic data refresh of WebUI page `Overview`. All data and the respective image gets
+updated in the defined refresh interval.
+
+
+!!! Tip
+    This can be temporarily overridden on the 'Overview' WebUI page, e.g. to temporarily switch off the automatic 
+    refresh. Manual refreshing is also possible.
+
+
+!!! Note
+    The refresh interval needs to be configured with parameter `Refresh Time` in this subsection.

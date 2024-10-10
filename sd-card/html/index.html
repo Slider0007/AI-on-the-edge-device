@@ -15,14 +15,15 @@
     <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
     <script src="firework.js?v=$COMMIT_HASH"></script>
 
-    <script src="common.js?v=$COMMIT_HASH"></script>
-    <script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-    <script src="readconfigparam.js?v=$COMMIT_HASH"></script>
+    <script src="global_common.js?v=$COMMIT_HASH"></script>
+    <script src="global_data.js?v=$COMMIT_HASH"></script>
 
     <script>
-        var streamPopup;
-        var streamFlashlight = false;
-        var streamWindowFeatures =
+        let fwVersion = "";
+        let webUiVersion = "";
+        let streamPopup;
+        let streamFlashlight = false;
+        let streamWindowFeatures =
                 'channelmode=no,directories=no,fullscreen=no,' +
                 'location=no,dependent=yes,menubar=no,resizable=no,scrollbars=no,' +
                 'status=no,toolbar=no,titlebar=no,' +
@@ -32,7 +33,6 @@
             if (streamPopup)   // Ensure that stream popup is closed because it's blocking web interface
                 streamPopup.close();
 
-            //console.log("loadPage(" + page + ")");
             document.cookie = "page=" + page + ";path=/;SameSite=Lax";
             document.getElementById('maincontent').src = page;
 
@@ -83,21 +83,21 @@
         <li><a>Data<i class="arrow down"></i></a>
             <ul class="submenu">
                 <li><a href="#" onclick="loadPage(getDomainname() + '/recognition_details');">Recognition Details</a></li>
-                <li><a href="#" onclick="loadPage('graph.html?v=$COMMIT_HASH');">Data Graph</a></li>
-                <li><a href="#" onclick="loadPage('data.html?v=$COMMIT_HASH');">Data Viewer</a></li>
+                <li><a href="#" onclick="loadPage('data_graph.html?v=$COMMIT_HASH');">Data Graph</a></li>
+                <li><a href="#" onclick="loadPage('data_viewer.html?v=$COMMIT_HASH');">Data Viewer</a></li>
                 <li><a href="#" onclick="loadPage(getDomainname() + '/fileserver/log/data/');">Data Files</a></li>
             </ul>
         </li>
 
         <li><a>Settings<i class="arrow down"></i></a>
             <ul class="submenu">
-            <li><a href="#" onclick="loadPage('set_fallbackvalue.html?v=$COMMIT_HASH');">Set "Fallback Value"</a></li>
+            <li><a href="#" onclick="loadPage('edit_fallbackvalue.html?v=$COMMIT_HASH');">Set Fallback Value</a></li>
             <li><a href="#" onclick="loadPage('edit_config_param.html?v=$COMMIT_HASH');">Configuration</a></li>
             <li><a href="#" onclick="loadPage('edit_reference.html?v=$COMMIT_HASH');">Reference Image</a></li>
             <li><a href="#" onclick="loadPage('edit_alignment.html?v=$COMMIT_HASH');">Alignment Marker</a></li>
             <li><a><strong>R</strong>egions <strong>O</strong>f <strong>I</strong>nterest <i class="arrow right"></i></a>
                 <ul>
-                    <li><a href="#" onclick="loadPage('edit_digits.html?v=$COMMIT_HASH');">Digit ROI</a></li>
+                    <li><a href="#" onclick="loadPage('edit_digit.html?v=$COMMIT_HASH');">Digit ROI</a></li>
                     <li><a href="#" onclick="loadPage('edit_analog.html?v=$COMMIT_HASH');">Analog ROI</a></li>
                 </ul>
             </li>
@@ -106,17 +106,17 @@
 
         <li><a>System<i class="arrow down"></i></a>
             <ul class="submenu">
-                <li><a href="#" onclick="loadPage('backup.html?v=$COMMIT_HASH');">Backup/Restore</a></li>
-                <li><a href="#" onclick="loadPage('ota_page.html?v=$COMMIT_HASH');">OTA Update</a></li>
-                <li><a href="#" onclick="loadPage('log.html?v=$COMMIT_HASH');">Log Viewer</a></li>
+                <li><a href="#" onclick="loadPage('sys_backup.html?v=$COMMIT_HASH');">Backup/Restore</a></li>
+                <li><a href="#" onclick="loadPage('sys_ota_page.html?v=$COMMIT_HASH');">OTA Update</a></li>
+                <li><a href="#" onclick="loadPage('sys_log.html?v=$COMMIT_HASH');">Log Viewer</a></li>
                 <li><a href="#" onclick="loadPage(getDomainname() + '/fileserver/');">File Server</a></li>
                 <li><a>Livestream <i class="arrow right"></i></a>
                     <ul>
                         <li><a href="#" onclick="start_livestream(false);">Livestream (Flash off)</a></li>
                         <li><a href="#" onclick="start_livestream(true);">Livestream (Flash on)</a></li>
                     </ul>
-                <li><a href="#" onclick="loadPage('reboot_page.html?v=$COMMIT_HASH');">Reboot</a></li>
-                <li><a href="#" onclick="loadPage('info.html?v=$COMMIT_HASH');">System Info</a></li>
+                <li><a href="#" onclick="loadPage('sys_reboot_page.html?v=$COMMIT_HASH');">Reboot</a></li>
+                <li><a href="#" onclick="loadPage('sys_info.html?v=$COMMIT_HASH');">System Info</a></li>
                 <li><a>Documentation<i class="arrow right"></i></a>
                     <ul>
                         <li><a href="#" onclick="loadPage('doc_api_rest.html?v=$COMMIT_HASH');">REST API</a></li>
@@ -135,31 +135,18 @@
     </ul>
     </div>
 
-    <iframe title="maincontent" name="maincontent" class="iframe" id="maincontent"></iframe>
+    <iframe title="maincontent" class="iframe" id="maincontent"></iframe>
 
     <span id="Version" style="font-size: 10px; margin-top: -5px;padding-left: 10px;">Loading version...</span>
     </div>
 
 
 <script>
-    LoadHostname();
-    LoadFwVersion();
-    LoadWebUiVersion();
-    loadConfig().then(() => HA_send_discovery_visibililty());
-
-    if (getCookie("page") == "" || getCookie("page") == "reboot_page.html?v=$COMMIT_HASH") {
-        document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax";
-    }
-
-    //console.log("Loading page: " + getCookie("page"));
-    document.getElementById('maincontent').src = getCookie("page");
-
-
     function manual_cycle_start()
     {
-        var url = getDomainname() + '/cycle_start';
+        let url = getDomainname() + '/cycle_start';
 
-		var xhttp = new XMLHttpRequest();
+		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
@@ -180,7 +167,7 @@
                         document.getElementById("maincontent").contentWindow.location.reload();
                     }
                     else {
-                        firework.launch("Cycle start request malformed. ResponseText: " + xhttp.responseText, 'danger', 30000);
+                        firework.launch("Cycle start rejected. Reason: " + xhttp.responseText, 'danger', 30000);
                     }
                 }
                 else {
@@ -199,19 +186,17 @@
 
     function HA_send_discovery_visibililty()
     {
-		ParseConfigReduced();
-		_category = getConfigCategory();
-        _param = getConfigParameters();
-		if (_category["MQTT"]["enabled"] && _param["MQTT"]["HomeassistantDiscovery"]["value1"] == "true")
+        let configObj = getConfigFromStorage();
+        if (configObj.mqtt.enabled && configObj.mqtt.homeassistant.discoveryenabled)
             document.getElementById("HASendDiscovery").style.display="";
 	}
 
 
     function HA_send_discovery()
     {
-        var url = getDomainname() + '/mqtt?task=publish_ha_discovery';
+        let url = getDomainname() + '/mqtt?task=publish_ha_discovery';
 
-		var xhttp = new XMLHttpRequest();
+		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
@@ -243,6 +228,119 @@
 
         streamPopup.focus();
     }
+
+
+    function LoadHostname()
+    {
+        let url = getDomainname() + '/info?type=hostname';
+
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    hostname = xhttp.responseText;
+                    document.title = hostname + " | AI on the Edge";
+                    document.getElementById("id_title").innerHTML  += hostname;
+                }
+            }
+        };
+
+        xhttp.timeout = 10000;  // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    }
+
+
+    function LoadFwVersion()
+    {
+        let url = getDomainname() + '/info?type=firmware_version';
+
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    fwVersion = xhttp.responseText;
+                    document.getElementById("Version").innerHTML  = "Slider0007 Fork | " + fwVersion;
+                    compareVersions();
+                }
+                else {
+                    fwVersion = "";
+                }
+            }
+        };
+
+        xhttp.timeout = 10000;  // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    }
+
+
+    function LoadWebUiVersion()
+    {
+        let url = getDomainname() + '/info?type=html_version';
+
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+                    webUiVersion = xhttp.responseText;
+                    compareVersions();
+                }
+                else {
+                    webUiVersion = "";
+                }
+            }
+        };
+
+        xhttp.timeout = 10000;  // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    }
+
+
+    function compareVersions()
+    {
+        if (fwVersion == "" || webUiVersion == "") {
+            return;
+        }
+
+        arr = fwVersion.split(" ");
+        fWGitHash = arr[arr.length - 1].substring(0, 7);
+        arr = webUiVersion.split(" ");
+        webUiHash = arr[arr.length - 1].substring(0, 7);
+
+        if (fWGitHash != webUiHash) {
+            firework.launch("Web interface version does not match the firmware version. " +
+                            "It's strongly advised to use matching version. Check logs for more details.",
+                            'warning', 10000);
+        }
+    }
+
+
+    function init()
+    {
+        LoadHostname();
+        LoadFwVersion();
+        LoadWebUiVersion();
+
+        // @TODO. Check if config reloading can be avoided, because still up to date.
+        // Up to now reload config before every usage
+        /*if (noConfigInStorage())
+            loadConfig().then(() => HA_send_discovery_visibililty());
+        else
+            HA_send_discovery_visibililty();
+        */
+        loadConfig().then(() => HA_send_discovery_visibililty());
+
+        if (getCookie("page") == "" || getCookie("page") == "sys_reboot_page.html?v=$COMMIT_HASH") {
+            document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax";
+        }
+
+        document.getElementById('maincontent').src = getCookie("page");
+    }
+
+
+    init();
 
 </script>
 

@@ -1,8 +1,6 @@
 #include "../../include/defines.h"
 
-#include <iostream>
 #include <string>
-#include <vector>
 #include <regex>
 
 #include "nvs_flash.h"
@@ -15,30 +13,20 @@
     #include "soc/rtc_cntl_reg.h"
 #endif
 
-#ifdef USE_HIMEM_IF_AVAILABLE
-    #include "esp32/himem.h"
-    #ifdef DEBUG_HIMEM_MEMORY_CHECK
-        #include "himem_memory_check.h"
-    #endif
-#endif
-
-//#ifdef CONFIG_HEAP_TRACING_STANDALONE
-#if defined HEAP_TRACING_MAIN_WIFI || defined HEAP_TRACING_MAIN_START
-    #include <esp_heap_trace.h>
-    #define NUM_RECORDS 300
-    static heap_trace_record_t trace_record[NUM_RECORDS]; // This buffer must be in internal RAM
-#endif
-
+#include "configClass.h"
+#include "configMigration.h"
 #include "ClassLogFile.h"
-#include "connect_wlan.h"
-#include "read_wlanini.h"
-#include "server_main.h"
+#include "helper.h"
+#include "system.h"
+#include "statusled.h"
+#include "sdcard_check.h"
 #include "MainFlowControl.h"
+#include "connect_wlan.h"
+#include "webserver.h"
+#include "time_sntp.h"
+#include "gpioControl.h"
 #include "server_file.h"
 #include "server_ota.h"
-#include "time_sntp.h"
-#include "configFile.h"
-#include "GpioControl.h"
 #include "server_camera.h"
 
 #ifdef ENABLE_MQTT
@@ -46,11 +34,6 @@
 #endif //ENABLE_MQTT
 
 #include "openmetrics.h"
-
-#include "Helper.h"
-#include "system.h"
-#include "statusled.h"
-#include "sdcard_check.h"
 
 #ifdef ENABLE_SOFTAP
     #include "softAP.h"
@@ -73,25 +56,14 @@ extern std::string getHTMLcommit(void);
 
 esp_err_t initNVSFlash();
 esp_err_t initSDCard();
-void migrateConfiguration();
 
 
 extern "C" void app_main(void)
 {
-    //#ifdef CONFIG_HEAP_TRACING_STANDALONE
-    #if defined HEAP_TRACING_MAIN_WIFI || defined HEAP_TRACING_MAIN_START
-        //register a buffer to record the memory trace
-        ESP_ERROR_CHECK( heap_trace_init_standalone(trace_record, NUM_RECORDS) );
-    #endif
-
     deviceStartTimestamp = getCurrentTimeString(TIME_FORMAT_OUTPUT);
 
     #ifdef DISABLE_BROWNOUT_DETECTOR
         WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
-    #endif
-
-    #ifdef HEAP_TRACING_MAIN_START
-        ESP_ERROR_CHECK( heap_trace_start(HEAP_TRACE_LEAKS) );
     #endif
 
     // ********************************************
@@ -115,179 +87,162 @@ extern "C" void app_main(void)
 
     // SD card: Create log directories (if not already existing)
     // ********************************************
-    LogFile.CreateLogDirectories(); // mandatory for logging + image saving
+    LogFile.createLogDirectories(); // mandatory for logging + image saving
 
     // ********************************************
     // Highlight start of logfile logging
     // Default Log Level: INFO -> Everything which needs to be logged during boot should be have level INFO, WARN OR ERROR
     // ********************************************
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "=================================================");
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "==================== Start ======================");
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "=================================================");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "=================================================");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "==================== Start ======================");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "=================================================");
 
     // SD card: Create further mandatory directories (if not already existing)
-    // Correct creation of these folders will be checked with function "SDCardCheckFolderFilePresence"
+    // Correct creation of these folders will be checked with function "checkSdCardFolderFilePresence"
     // ********************************************
-    MakeDir("/sdcard/firmware");         // mandatory for OTA firmware update
-    MakeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marker
-    MakeDir("/sdcard/demo");             // mandatory for demo mode
-    MakeDir("/sdcard/config/certs");     // mandatory for TLS encryption
+    makeDir("/sdcard/config");           // mandatory for config handling
+    makeDir("/sdcard/config/certs");     // mandatory for TLS encryption
+    makeDir("/sdcard/config/models");    // mandatory for TFLite models
+    makeDir("/sdcard/firmware");         // mandatory for OTA firmware update
+    makeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marker
+    makeDir("/sdcard/demo");             // mandatory for demo mode
 
     // Check for updates
     // Note: OTA status check only necessary if OTA rollback feature is enabled
     // ********************************************
     #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    CheckOTAPartitionState();
+    checkOTAPartitionState();
     #endif
-    CheckOTAUpdate();
+    checkOTAUpdate();
 
-    // Start SoftAP for initial remote setup
-    // Note: Start AP if no wlan.ini and/or config.ini available, e.g. SD card empty; function does not exit anymore until reboot
+    // Migrate parameter from older version to actual version
+    // Do migration task before first parameter usage
+    // ********************************************
+    migrateConfiguration();
+
+    // Load persistent config from file (json notation)
+    ConfigClass::getInstance()->readConfigFile();
+
+    // Check for missing configuration
     // ********************************************
     #ifdef ENABLE_SOFTAP
-        CheckStartAPMode();
+        checkStartAPMode();
     #endif
 
     // SD card: basic R/W check
     // ********************************************
-    int iSDCardStatus = SDCardCheckRW();
+    int iSDCardStatus = checkSdCardRW();
     if (iSDCardStatus < 0) {
         if (iSDCardStatus <= -1 && iSDCardStatus >= -2) { // write error
-            StatusLED(SDCARD_CHECK, 1, true);
+            setStatusLed(SDCARD_CHECK, 1, true);
         }
         else if (iSDCardStatus <= -3 && iSDCardStatus >= -5) { // read error
-            StatusLED(SDCARD_CHECK, 2, true);
+            setStatusLed(SDCARD_CHECK, 2, true);
         }
         else if (iSDCardStatus == -6) { // delete error
-            StatusLED(SDCARD_CHECK, 3, true);
+            setStatusLed(SDCARD_CHECK, 3, true);
         }
         setSystemStatusFlag(SYSTEM_STATUS_SDCARD_CHECK_BAD); // reduced web interface going to be loaded
     }
 
     // SD card: Check presence of some mandatory folders / files
     // ********************************************
-    if (!SDCardCheckFolderFilePresence()) {
-        StatusLED(SDCARD_CHECK, 4, true);
+    if (!checkSdCardFolderFilePresence()) {
+        setStatusLed(SDCARD_CHECK, 4, true);
         setSystemStatusFlag(SYSTEM_STATUS_FOLDER_CHECK_BAD); // reduced web interface going to be loaded
     }
 
     // Check version information
     // ********************************************
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, getFwVersion() + " | Build time: " + std::string(BUILD_TIME) + " | WebUI: " + getHTMLversion());
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, getFwVersion() + " | Build time: " + std::string(BUILD_TIME) + " | WebUI: " + getHTMLversion());
 
     if (getHTMLcommit().substr(0, 7) == "?")
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse WebUI version"));
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse WebUI version"));
 
     if (getHTMLcommit().substr(0, 7) != std::string(GIT_REV).substr(0, 7)) { // Compare the first 7 characters of both hashes
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "WebUI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using AI-on-the-edge-device__update__*.zip");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "WebUI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using AI-on-the-edge-device__board_type__*.zip");
     }
 
     // Check reboot reason
     // ********************************************
-    CheckIsPlannedReboot();
+    checkIsPlannedReboot();
     if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {  // If system reboot was not triggered by user and reboot was caused by execption
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Device was rebooted due to a software exception! Log level is set to DEBUG until the next reboot. "
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Device was rebooted due to a software exception! Log level is set to DEBUG until the next reboot. "
                                                "Flow init is delayed by 5 minutes to check the logs or do an OTA update");
-        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Keep device running until crash occurs again and check logs after device is up again");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Keep device running until crash occurs again and check logs after device is up again");
         LogFile.setLogLevel(ESP_LOG_DEBUG);
         setTaskAutoFlowState(FLOW_TASK_STATE_INIT_DELAYED);
     }
     else {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Reset reason: " + getResetReason());
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Reset reason: " + getResetReason());
     }
 
-    #ifdef HEAP_TRACING_MAIN_START
-        ESP_ERROR_CHECK( heap_trace_stop() );
-        heap_trace_dump();
-    #endif
-
-    #ifdef HEAP_TRACING_MAIN_WIFI
-        ESP_ERROR_CHECK( heap_trace_start(HEAP_TRACE_LEAKS) );
-    #endif
-
-    // Migrate parameter in config.ini to new naming (firmware 15.0 and newer)
-    // Do migration task before first read of config.ini
-    // ********************************************
-    migrateConfiguration();
+    // Allocate webserver memory (in an early stage to avoid memory fragmentation)
+    allocateWebserverHelperMemory();
 
     // Set CPU Frequency (default: 160Mhz)
     // Start before WLAN init to avoid frequency changes after WLAN init
     // ********************************************
     setCPUFrequency();
 
-    // Read WLAN parameter and start WIFI
+    // Init time (as early as possible, but wifi needs to be connected to sync time. no hardware clock available)
+    // Status of time sync will be checked after every cycle (MainFlowControl.cpp)
     // ********************************************
-    int iWLANStatus = LoadWlanFromFile(WLAN_CONFIG_FILE);
-    if (iWLANStatus == 0) {
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "WLAN config loaded, init WIFI");
-        if (wifi_init_sta() != ESP_OK) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted");
-            StatusLED(WLAN_INIT, 3, true);
+    initTime();
+
+    // Init WIFI service
+    // ********************************************
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WIFI service");
+    esp_err_t retVal = initWifiStation();
+    if (retVal != ESP_OK) {
+        if (retVal == ESP_ERR_NOT_FOUND) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Device init aborted");
+            setStatusLed(WLAN_INIT, 1, true);
             return;
         }
-    }
-    else if (iWLANStatus == -1) {  // wlan.ini not available, potentially empty or content not readable
-        StatusLED(WLAN_INIT, 1, true);
-        return; // No way to continue without reading the wlan.ini
-    }
-    else if (iWLANStatus == -2) { // SSID not configured
-        StatusLED(WLAN_INIT, 2, true);
-        return; // No way to continue with empty SSID
+        else {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted");
+            setStatusLed(WLAN_INIT, 2, true);
+            return;
+        }
     }
 
     // Set log level for wifi component to WARN level (default: INFO; only relevant for serial console)
     // ********************************************
     esp_log_level_set("wifi", ESP_LOG_WARN);
 
-    // Init time (as early as possible, but wifi needs to be connected to sync time. no hardware clock available)
-    // Status of time sync will be checked after every cycle (server_tflite.cpp)
-    // ********************************************
-    setupTime();
-
-    #ifdef HEAP_TRACING_MAIN_WIFI
-        ESP_ERROR_CHECK( heap_trace_stop() );
-        heap_trace_dump();
-    #endif
-
-    #ifdef USE_HIMEM_IF_AVAILABLE
-        #ifdef DEBUG_HIMEM_MEMORY_CHECK
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Himem mem check : " + himem_memory_check() );
-            ESP_LOGD(TAG, "Himem mem check %s", himem_memory_check().c_str());
-        #endif
-    #endif
-
     // Init external PSRAM
     // ********************************************
     esp_err_t PSRAMStatus = esp_psram_init();
-    if (PSRAMStatus == ESP_FAIL) {  // ESP_FAIL -> Failed to init PSRAM
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "PSRAM init failed (" + std::to_string(PSRAMStatus) + ")! PSRAM not found or defective");
+    if (PSRAMStatus == ESP_FAIL) {  // Failed to init PSRAM
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "PSRAM init failed (" + std::to_string(PSRAMStatus) + ")! PSRAM not found or defective");
         setSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD);
-        StatusLED(PSRAM_INIT, 1, true);
+        setStatusLed(PSRAM_INIT, 1, true);
     }
-    else { // ESP_OK -> PSRAM init OK --> continue to check PSRAM size
+    else { // PSRAM init not failed --> continue to check PSRAM size
         size_t psram_size = esp_psram_get_size();
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "PSRAM size: " + std::to_string(psram_size) + " byte (" + std::to_string(psram_size/1024/1024) +
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "PSRAM size: " + std::to_string(psram_size) + " byte (" + std::to_string(psram_size/1024/1024) +
                                                "MB / " + std::to_string(psram_size/1024/1024*8) + "MBit)");
 
         // Check PSRAM size
         // ********************************************
         if (psram_size < (4*1024*1024)) { // PSRAM is below 4 MBytes (32Mbit)
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "PSRAM size >= 4MB (32Mbit) is mandatory to run this application");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "PSRAM size >= 4MB (32Mbit) is mandatory to run this application");
             setSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD);
-            StatusLED(PSRAM_INIT, 2, true);
+            setStatusLed(PSRAM_INIT, 2, true);
         }
         else { // PSRAM size OK --> continue to check heap size
             size_t _hsize = getESPHeapSizeTotalFree();
-            LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Total heap: " + std::to_string(_hsize) + " byte");
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Total heap: " + std::to_string(_hsize) + " byte");
 
             // Check heap memory
             // ********************************************
             if (_hsize < 4000000) { // Check available Heap memory for a bit less than 4 MB (a test on a good device showed 4187558 bytes to be available)
-                LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Total heap >= 4000000 byte is mandatory to run this application");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Total heap >= 4000000 byte is mandatory to run this application");
                 setSystemStatusFlag(SYSTEM_STATUS_HEAP_TOO_SMALL);
-                StatusLED(PSRAM_INIT, 3, true);
+                setStatusLed(PSRAM_INIT, 3, true);
             }
             else { // HEAP size OK --> continue to camera init
                 // Set SPIRAM memory category
@@ -303,17 +258,17 @@ extern "C" void app_main(void)
 
                 // Init camera
                 // ********************************************
-                esp_err_t camStatus = Camera.initCam();
-                Camera.setFlashlight(false);
+                esp_err_t camStatus = cameraCtrl.initCam();
+                cameraCtrl.setFlashlight(false);
 
                 // Check camera init
                 // ********************************************
                 if (camStatus != ESP_OK) { // Camera init failed, try to reinit during flow init (MainFlowControl.cpp -> doInit())
-                    StatusLED(CAM_INIT, 1, false);
+                    setStatusLed(CAM_INIT, 1, false);
                 }
                 else { // ESP_OK -> Camera init OK
-                    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Init camera successful");
-                    Camera.printCamInfo();
+                    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init camera successful");
+                    cameraCtrl.printCamInfo();
                 }
             }
         }
@@ -331,40 +286,36 @@ extern "C" void app_main(void)
 
     // Print SD-Card info
     // ********************************************
-    LogFile.WriteToFile(ESP_LOG_INFO, TAG, "SD card info: Name: " + getSDCardName() + ", Capacity: " +
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "SD card info: Name: " + getSDCardName() + ", Capacity: " +
             std::to_string(getSDCardCapacity()) + "MB, Free: " + std::to_string(getSDCardFreePartitionSpace()) + "MB");
 
 
-    // Start webserver + register handler
+    // Start webserver + register URI handler
     // ********************************************
     ESP_LOGD(TAG, "starting servers");
-    server = start_webserver();
-    register_server_camera_uri(server);
-    register_server_main_flow_task_uri(server);
-    register_server_file_uri(server, "/sdcard");
-    register_server_ota_sdcard_uri(server);
-
+    server = startWebserver();
+    registerConfigFileUri(server);
+    registerCameraUri(server);
+    registerMainFlowTaskUri(server);
+    registerFileserverUri(server, "/sdcard");
+    registerOtaRebootUri(server);
     #ifdef ENABLE_MQTT
-    register_server_mqtt_uri(server);
+    registerMqttUri(server);
     #endif //ENABLE_MQTT
-
-    register_openmetrics_uri(server);
-
-    gpio_handler_create(server);
-
-    ESP_LOGD(TAG, "Before reg server main");
-    register_server_main_uri(server, "/sdcard");
+    registerOpenmetricsUri(server);
+    createGpioHandler(server);
+    registerWebserverUri(server, "/sdcard");
 
     // Check basic device init status
     // ********************************************
-    if (getSystemStatus() == 0) { // Continue with regular boot sequence
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Basic device initialization completed");
-        CreateMainFlowTask(); // Create main task
+    if (getSystemStatus() == 0) { // Continue with regular boot sequence --> MainProcessControl.cpp -> createMainFlowTask()
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Basic device initialization completed");
+        createMainFlowTask(); // Create main task
     }
     // Critical error(s) occured which do not allow to continue with regular boot sequence.
     // Provding only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: server_main.cpp -> hello_main_handler()
     else {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed");
     }
 }
 
@@ -382,15 +333,15 @@ esp_err_t initNVSFlash()
     if (ret != ESP_OK) {
         if (ret == ESP_ERR_NOT_FOUND) {
             ESP_LOGE(TAG, "NVS flash init failed. No NVS partition found");
-            StatusLED(SDCARD_NVS_INIT, 4, true);
+            setStatusLed(SDCARD_NVS_INIT, 4, true);
         }
         else if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
             ESP_LOGE(TAG, "NVS flash init failed. No free NVS pages found");
-            StatusLED(SDCARD_NVS_INIT, 5, true);
+            setStatusLed(SDCARD_NVS_INIT, 5, true);
         }
         else {
             ESP_LOGE(TAG, "NVS flash init failed. Check error code");
-            StatusLED(SDCARD_NVS_INIT, 6, true);
+            setStatusLed(SDCARD_NVS_INIT, 6, true);
         }
     }
 
@@ -456,393 +407,19 @@ esp_err_t initSDCard()
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
             ESP_LOGE(TAG, "Failed to mount FAT filesystem on SD card. Check SD card filesystem (only FAT supported) or try another card");
-            StatusLED(SDCARD_NVS_INIT, 1, true);
+            setStatusLed(SDCARD_NVS_INIT, 1, true);
         }
         else if (ret == 263) { // Error code: 0x107 --> usually: SD not found
             ESP_LOGE(TAG, "SD card init failed. Check if SD card is properly inserted into SD card slot or try another card");
-            StatusLED(SDCARD_NVS_INIT, 2, true);
+            setStatusLed(SDCARD_NVS_INIT, 2, true);
         }
         else {
             ESP_LOGE(TAG, "SD card init failed. Check error code or try another card");
-            StatusLED(SDCARD_NVS_INIT, 3, true);
+            setStatusLed(SDCARD_NVS_INIT, 3, true);
         }
         return ret;
     }
 
-    SaveSDCardInfo(card);
+    saveSDCardInfo(card);
     return ret;
-}
-
-
-void migrateConfiguration(void)
-{
-    if (!FileExists(CONFIG_FILE)) {
-        LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Config file seems to be missing");
-        return;
-    }
-
-    const std::string sectionConfigFile= "[ConfigFile]";
-    bool configSectionFound = false;
-    int actualConfigFileVersion = 0;
-
-    bool migrated = false;
-    std::string section = "";
-
-    // Read config file
-    std::ifstream ifs(CONFIG_FILE);
-    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-    std::vector<std::string> configLines = splitString(content); // Split config file in array of lines
-
-    // Read config file version
-    for (int i = 0; i < configLines.size(); i++) {
-        if (configLines[i] == sectionConfigFile) {
-            configSectionFound = true;
-
-            std::vector<std::string> splitted = ZerlegeZeile(configLines[i+1]);
-            if (toUpper(splitted[0]) == "VERSION") {
-                actualConfigFileVersion = stoi(splitted[1]);
-            }
-            break;
-        }
-    }
-
-    // If no [Config] section is available, add section and set config version to zero
-    if (!configSectionFound) {
-        configLines.insert(configLines.begin(), ""); // 3rd line
-        configLines.insert(configLines.begin(), "Version = 0"); //2nd line
-	    configLines.insert(configLines.begin(), sectionConfigFile); // 1st line
-        migrated = true;
-    }
-
-     // Process every version iteration beginning from actual version
-	for (int configFileVersion = actualConfigFileVersion; configFileVersion < (int)CONFIG_FILE_VERSION; configFileVersion++) {
-        // Process each line of config
-        for (int i = 0; i < configLines.size(); i++) {
-            if (configLines[i].find("[") != std::string::npos) { // Detect start of new section
-                section = configLines[i];
-                replaceString(section, ";", "", false); // Remove possible semicolon (just for the string comparison)
-            }
-
-            /* Notes:
-            * The migration has some simplifications:
-            *  - Case sensitiveness must be like in the config.ini
-            *  - No whitespace after a semicollon
-            *  - Only one whitespace before/after the equal sign
-            */
-
-            //*************************************************************************************************
-            // Migrate from version 1 to version 2
-            // Migrate GPIO section due to PR#154 (complete refactoring of GPIO) which is part of v17.x
-            //*************************************************************************************************
-            if (configFileVersion == 1) {
-                // Update config version
-                // ---------------------
-                if (section == sectionConfigFile) {
-                    if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion),
-                                                     "Version = " + std::to_string(configFileVersion+1))) {
-                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) +
-                                                                                " > v" + std::to_string(configFileVersion+1));
-                        migrated = true;
-                    }
-                }
-
-                // Migrate parameter
-                // ---------------------
-                if (section == "[GPIO]") {
-                    // Erase complete section content due to major change in parameter usage
-                    // Section will be filled again by WebUI after save config initially
-                    if (configLines[i].find("[GPIO]") == std::string::npos && !configLines[i].empty()) {
-                        configLines.erase(configLines.begin()+i);
-                        i--; // One element removed, check same position again
-                    }
-                }
-            }
-
-            //*************************************************************************************************
-            // Migrate from version 0 to version 1
-            // Version 0: All config file versions before 17.x
-            //*************************************************************************************************
-            else if (configFileVersion == 0) {
-                // Update config version
-                // ---------------------
-                if (section == sectionConfigFile) {
-                    if(replaceString(configLines[i], "Version = " + std::to_string(configFileVersion),
-                                                     "Version = " + std::to_string(configFileVersion+1))) {
-                        LogFile.WriteToFile(ESP_LOG_WARN, TAG, "Config.ini: Migrate v" + std::to_string(configFileVersion) +
-                                                                                " > v" + std::to_string(configFileVersion+1));
-                        migrated = true;
-                    }
-                }
-
-                // Migrate parameter
-                // ---------------------
-                if (section == "[MakeImage]") {
-                    migrated = migrated | replaceString(configLines[i], "[MakeImage]", "[TakeImage]"); // Rename the section itself
-                }
-
-                if (section == "[MakeImage]" || section == "[TakeImage]") {
-                    migrated = migrated | replaceString(configLines[i], "LogImageLocation", "RawImagesLocation");
-                    migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "RawImagesRetention");
-
-                    migrated = migrated | replaceString(configLines[i], "WaitBeforeTakingPicture", "FlashTime"); // Rename
-                    migrated = migrated | replaceString(configLines[i], "LEDIntensity", "FlashIntensity"); // Rename
-
-                    migrated = migrated | replaceString(configLines[i], "FixedExposure", "UNUSED"); // Mark as unused
-
-                    migrated = migrated | replaceString(configLines[i], ";Demo = true", ";Demo = false"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";Demo", "Demo"); // Enable it
-                }
-
-                if (section == "[Alignment]") {
-                    if (isInString(configLines[i], "AlignmentAlgo") && isInString(configLines[i], ";")) { // It is the parameter "AlignmentAlgo" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], "highAccuracy", "default"); // Set it to its default value and enable it
-                        migrated = migrated | replaceString(configLines[i], "fast", "default"); // Set it to its default value and enable it
-                        migrated = migrated | replaceString(configLines[i], "off", "default"); // Set it to its default value and enable it
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    migrated = migrated | replaceString(configLines[i], ";FlipImageSize = true", ";FlipImageSize = false"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";FlipImageSize", "FlipImageSize"); // Enable it
-
-                    migrated = migrated | replaceString(configLines[i], "InitialMirror", "UNUSED"); // Mark as unused
-                }
-
-                if (section == "[Digits]") {
-                    if (isInString(configLines[i], "CNNGoodThreshold")) { // It is the parameter "CNNGoodThreshold"
-                        migrated = migrated | replaceString(configLines[i], "0.5", "0.0");
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-                    migrated = migrated | replaceString(configLines[i], "LogImageLocation", "ROIImagesLocation");
-                    migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "ROIImagesRetention");
-                }
-
-                if (section == "[Analog]") {
-                    migrated = migrated | replaceString(configLines[i], "LogImageLocation", "ROIImagesLocation");
-                    migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "ROIImagesRetention");
-                    migrated = migrated | replaceString(configLines[i], "CNNGoodThreshold", ";UNUSED_PARAMETER"); // This parameter is no longer used
-                    migrated = migrated | replaceString(configLines[i], "ExtendedResolution", ";UNUSED_PARAMETER"); // This parameter is no longer used
-                }
-
-                if (section == "[PostProcessing]") {
-                    migrated = migrated | replaceString(configLines[i], ";PreValueUse = true", ";PreValueUse = false"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";PreValueUse", "PreValueUse"); // Enable it
-                    migrated = migrated | replaceString(configLines[i], "PreValueUse", "FallbackValueUse"); // Rename it
-
-                    migrated = migrated | replaceString(configLines[i], ";PreValueAgeStartup", "PreValueAgeStartup"); // Enable it
-                    migrated = migrated | replaceString(configLines[i], "PreValueAgeStartup", "FallbackValueAgeStartup");
-
-                    migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency = true", ";CheckDigitIncreaseConsistency = false"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency", "CheckDigitIncreaseConsistency"); // Enable it
-
-                    if (isInString(configLines[i], "DecimalShift") && isInString(configLines[i], ";")) { // It is the parameter "DecimalShift" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    /* AllowNegativeRates has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "AllowNegativeRates") && isInString(configLines[i], ";")) { // It is the parameter "AllowNegativeRates" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    if (isInString(configLines[i], "AnalogDigitalTransitionStart") && isInString(configLines[i], ";")) { // It is the parameter "AnalogDigitalTransitionStart" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    /* MaxRateType has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "MaxRateType")) { // It is the parameter "MaxRateType"
-                        if (isInString(configLines[i], ";")) { // if disabled
-                            migrated = migrated | replaceString(configLines[i], "= Off", "= RatePerMin"); // Convert it to its default value
-                            migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its default value
-                            migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerMin"); // Convert it to its default value
-                            migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                        }
-                        else {
-                            migrated = migrated | replaceString(configLines[i], "= Off", "= RateOff"); // Convert it to its new name
-                            migrated = migrated | replaceString(configLines[i], "= RateChange", "= RatePerMin"); // Convert it to its new name
-                            migrated = migrated | replaceString(configLines[i], "= AbsoluteChange", "= RatePerInterval"); // Convert it to its new name
-                        }
-                    }
-
-                    if (isInString(configLines[i], "MaxRateValue") && isInString(configLines[i], ";")) { // It is the parameter "MaxRateValue" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    /* ExtendedResolution has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "ExtendedResolution") && isInString(configLines[i], ";")) { // It is the parameter "ExtendedResolution" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    /* IgnoreLeadingNaN has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "IgnoreLeadingNaN") && isInString(configLines[i], ";")) { // It is the parameter "IgnoreLeadingNaN" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-                }
-
-                if (section == "[MQTT]") {
-                    migrated = migrated | replaceString(configLines[i], ";Uri", "Uri"); // Enable it
-                    migrated = migrated | replaceString(configLines[i], ";MainTopic", "MainTopic"); // Enable it
-                    migrated = migrated | replaceString(configLines[i], ";ClientID", "ClientID"); // Enable it
-
-                    if (isInString(configLines[i], "CACert") && !isInString(configLines[i], "TLSCACert")) {
-                        migrated = migrated | replaceString(configLines[i], "CACert =", "TLSCACert ="); // Rename it
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    if (isInString(configLines[i], "ClientCert") && !isInString(configLines[i], "TLSClientCert")) {
-                        migrated = migrated | replaceString(configLines[i], "ClientCert =", "TLSClientCert ="); // Rename it
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    if (isInString(configLines[i], "ClientKey") && !isInString(configLines[i], "TLSClientKey")) {
-                        migrated = migrated | replaceString(configLines[i], "ClientKey =", "TLSClientKey ="); // Rename it
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    migrated = migrated | replaceString(configLines[i], "SetRetainFlag", "RetainMessages"); // First rename it, enable it with its default value
-                    migrated = migrated | replaceString(configLines[i], ";RetainMessages = true", ";RetainMessages = false"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";RetainMessages", "RetainMessages"); // Enable it
-                    migrated = migrated | replaceString(configLines[i], "RetainMessages", "RetainProcessData"); // Rename it
-
-                    migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery = true", ";HomeassistantDiscovery = false"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";HomeassistantDiscovery", "HomeassistantDiscovery"); // Enable it
-
-                    if (isInString(configLines[i], "MeterType") && !isInString(configLines[i], "HAMeterType")) {
-                        migrated = migrated | replaceString(configLines[i], "MeterType =", "HAMeterType ="); // Rename it
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                        migrated = migrated | replaceString(configLines[i], "HAMeterType = other", "HAMeterType = water_m3"); // Enable it
-                    }
-
-                    if (configLines[i].rfind("Topic", 0) != std::string::npos) { // only if string starts with "Topic" (Was the naming in very old version)
-                        migrated = migrated | replaceString(configLines[i], "Topic", "MainTopic");
-                    }
-                }
-
-                if (section == "[InfluxDB]") {
-                    if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    /* Measurement has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    /* Fieldname has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Fieldname")) { // It is the parameter "Fieldname"
-                        migrated = migrated | replaceString(configLines[i], "Fieldname", "Field"); // Rename it to Field
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    /* Field has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-                }
-
-                if (section == "[InfluxDBv2]") {
-                    if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-                    if (isInString(configLines[i], "Database")) { // It is the parameter "Database"
-                        migrated = migrated | replaceString(configLines[i], "Database", "Bucket"); // Rename it to Bucket
-                    }
-
-                    /* Measurement has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    /* Fieldname has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Fieldname")) { // It is the parameter "Fieldname"
-                        migrated = migrated | replaceString(configLines[i], "Fieldname", "Field"); // Rename it to Field
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    /* Field has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-                }
-
-                if (section == "[DataLogging]") {
-                    /* DataLogActive is true by default! */
-                    migrated = migrated | replaceString(configLines[i], ";DataLogActive = false", ";DataLogActive = true"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";DataLogActive", "DataLogActive"); // Enable it
-
-                    migrated = migrated | replaceString(configLines[i], "DataLogRetentionInDays", "DataFilesRetention");
-                }
-
-                if (section == "[AutoTimer]") {
-                    migrated = migrated | replaceString(configLines[i], ";AutoStart = true", ";AutoStart = false"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";AutoStart", "AutoStart"); // Enable it
-
-                    migrated = migrated | replaceString(configLines[i], "Intervall", "Interval");
-                }
-
-                if (section == "[Debug]") {
-                    migrated = migrated | replaceString(configLines[i], "Logfile ", "LogLevel "); // Whitespace needed so it does not match `LogfileRetentionInDays`
-                    /* LogLevel (resp. LogFile) was originally a boolean, but we switched it to an int
-                    * For both cases (true/false), we set it to level 2 (WARNING) */
-                    migrated = migrated | replaceString(configLines[i], "LogLevel = true", "LogLevel = 2");
-                    migrated = migrated | replaceString(configLines[i], "LogLevel = false", "LogLevel = 2");
-
-                    migrated = migrated | replaceString(configLines[i], "LogfileRetentionInDays", "LogfilesRetention");
-                }
-
-                if (section == "[System]") {
-                    if (isInString(configLines[i], "TimeServer = undefined") && isInString(configLines[i], ";"))
-                    { // It is the parameter "TimeServer" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], "undefined", "pool.ntp.org");
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    if (isInString(configLines[i], "TimeZone") && isInString(configLines[i], ";")) { // It is the parameter "TimeZone" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    if (isInString(configLines[i], "Hostname") && isInString(configLines[i], ";")) { // It is the parameter "Hostname" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], "undefined", "watermeter");
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    migrated = migrated | replaceString(configLines[i], "RSSIThreashold", "RSSIThreshold");
-
-                    if (isInString(configLines[i], "CPUFrequency") && isInString(configLines[i], ";")) { // It is the parameter "CPUFrequency" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], "240", "160");
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
-                    }
-
-                    migrated = migrated | replaceString(configLines[i], "AutoAdjustSummertime", ";UNUSED_PARAMETER"); // This parameter is no longer used
-
-                    migrated = migrated | replaceString(configLines[i], ";SetupMode = true", ";SetupMode = false"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";SetupMode", "SetupMode"); // Enable it
-                }
-            }
-        }
-    }
-
-    if (migrated) { // At least one replacement happened
-        if (!RenameFile(CONFIG_FILE, CONFIG_FILE_BACKUP)) {
-            LogFile.WriteToFile(ESP_LOG_ERROR, TAG, "Failed to create backup of config file");
-            return;
-        }
-
-        FILE* pfile = fopen(CONFIG_FILE, "w");
-        for (int i = 0; i < configLines.size(); i++) {
-            fwrite(configLines[i].c_str() , configLines[i].length(), 1, pfile);
-            fwrite("\n" , 1, 1, pfile);
-        }
-        fclose(pfile);
-        LogFile.WriteToFile(ESP_LOG_INFO, TAG, "Config file migrated. Saved backup to " + std::string(CONFIG_FILE_BACKUP));
-    }
 }

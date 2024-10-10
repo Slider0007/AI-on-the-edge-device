@@ -124,7 +124,7 @@
             The position in the number sequence can be changed with the buttons <b>"Move Lower"</b> and <b>"Move Higher"</b>.
             The multiplication factor which is shown below the ROI drop down is the multiplication factor of pure position/order
             in number sequence and the factor right-hand side to this is the additionally corrected by decimal shift setting
-            (expert parameter: Decimal Shift, default: 0).
+            (Parameter: Decimal Shift, default: 0).
         </p>
         <p>
             After the definition of analog ROIs is completed don't forget to save the new configuration with the button
@@ -142,13 +142,13 @@
         </colgroup>
         <tr>
             <td colspan="4" style="padding-bottom: 0px">
-                <input type="checkbox" id="Category_Analog_enabled" value="1"  onclick = 'EnDisableAnalog()' checked>
-                <label style="font-weight: bold; font-size: larger;" for="Category_Analog_enabled">Analog ROI Processing</label>
+                <input type="checkbox" id="analog_processing" value="0" onchange="analogProcessingChanged()">
+                <label style="font-weight: bold; font-size: larger;" for="analog_processing">Analog ROI Processing</label>
             </td>
         </tr>
     </table>
 
-<div id="div1">
+<div id="div_input_el" hidden>
     <table>
         <colgroup>
             <col span="1" style="width: 22%;">
@@ -161,12 +161,17 @@
         </tr>
         <tr>
             <td>
-                <select id="SequenceSelect" onchange="onSequenceChanged()">
-                </select>
+                <select id="sequence_selection" onchange="onSequenceChanged()"></select>
             </td>
-            <td><input class="button" type="submit" id="newSequence" name="newSequence" value="New" onclick="onClickNewSequence()"></td>
-            <td><input class="button" type="submit" id="renameSequence" name="renameSequence" value="Rename" onclick="onClickRenameSequence()"></td>
-            <td><input class="button" type="submit" id="deleteSequence" name="deleteSequence" value="Delete" onclick="onClickDeleteSequence()"></td>
+            <td>
+                <button class="button" id="newSequence" onclick="onClickNewSequence()">New</button>
+            </td>
+            <td>
+                <button class="button" id="renameSequence" onclick="onClickRenameSequence()">Rename</button>
+            </td>
+            <td>
+                <button class="button" id="deleteSequence" onclick="onClickDeleteSequence()">Delete</button>
+            </td>
         </tr>
     </table>
 
@@ -181,19 +186,31 @@
             <th colspan="4">Region Of Interest (ROI)</th>
         </tr>
         <tr>
-            <td colspan="2" ><select id="ROISelect" onchange="onROIChanged()"></select></td>
-            <td><input class="button" type="submit" id="newROI" name="newROI" onclick="onClickNewROI()" value="New"></td>
-            <td><input class="button" type="submit" id="deleteROI" name="deleteROI" onclick="onClickDeleteROI()" value="Delete"></td>
+            <td colspan="2">
+                <select id="ROISelect" onchange="onROIChanged()"></select>
+            </td>
+            <td>
+                <button class="button" id="newROI" onclick="onClickNewROI()">New</button>
+            </td>
+            <td>
+                <button class="button" id="deleteROI" onclick="onClickDeleteROI()">Delete</button>
+            </td>
         </tr>
         <tr>
-            <td class="multiplier">Multiplier: <output id="multiplier" name="multiplier"></output><br>
+            <td class="multiplier">
+                Multiplier: <output id="multiplier"></output><br>
                 (only based on order)
             </td>
-            <td class="multiplier">Multiplier: <output id="multiplier_decshift" name="multiplier_decshift"></output><br>
-                (order + decimal shift: <output id="decimalShift" name="decimalShift"></output>)
+            <td class="multiplier">
+                Multiplier: <output id="multiplier_decshift"></output><br>
+                (order + decimal shift: <output id="decimalShift"></output>)
             </td>
-            <td><input class="button" type="submit" id="moveROIHigher" onclick="onClickMoveROIHigher()" value="Move Higher"></td>
-            <td><input class="button" type="submit" id="moveROILower" onclick="onClickMoveROILower()" value="Move Lower"></td>
+            <td>
+                <button class="button" id="moveROIHigher" onclick="onClickMoveROIHigher()">Move Higher</button>
+            </td>
+            <td>
+                <button class="button" id="moveROILower" onclick="onClickMoveROILower()">Move Lower</button>
+            </td>
         </tr>
     </table>
 
@@ -204,26 +221,41 @@
             <col span="1" style="width: 62%;">
         </colgroup>
         <tr>
-            <td>x: <input type="number" name="refx" id="refx" min=1 step=1 onchange="onValueManualChanged()"
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
-            <td>Δx: <input type="number" name="refdx" id="refdx" min=1 step=1 onchange="onValueManualChangedDx()"
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
-            <td><input type="checkbox" id="lockAspectRatio" name="lockAspectRatio" value="1" onclick="onClickLockAspectRatio()" checked>
-                            <label for="lockAspectRatio"> Lock aspect ratio </label></td>
+            <td>
+                x <input type="number" id="refx" min="1"
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
+            </td>
+            <td>
+                Δx <input type="number" id="refdx" min="1"
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChangedDx()">
+            </td>
+            <td>
+                <input type="checkbox" id="lockAspectRatio" value="1" onclick="onClickLockAspectRatio()" checked>
+                    <label for="lockAspectRatio"> Lock aspect ratio </label>
+            </td>
         </tr>
         <tr>
-            <td>y: <input type="number" name="refy" id="refy" min=1 step=1 onchange="onValueManualChanged()"
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
-            <td>Δy: <input type="number" name="refdy" id="refdy" min=1 step=1 onchange="onValueManualChanged()"
-                        oninput="(!validity.rangeUnderflow||(value=1));"></td>
-            <td><input type="checkbox" id="lockSizes" name="lockSizes" value="1" onclick="onClickLockSizes()" checked>
-                            <label for="lockSizes"> Synchronize Δx and Δy</label></td>
+            <td>
+                y <input type="number" id="refy" min="1"
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
+            </td>
+            <td>
+                Δy <input type="number" id="refdy" min="1"
+                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
+            </td>
+            <td>
+                <input type="checkbox" id="lockSizes" value="1" onclick="onClickLockSizes()" checked>
+                    <label for="lockSizes"> Synchronize Δx and Δy</label>
+            </td>
         </tr>
         <tr>
-            <td colspan="2"><input type="checkbox" id="showSelectedROIOnly" onclick="RefreshDraw()">
-                            <label for="showSelectedROIOnly"> Show selected ROI only</label></td>
-            <td><input type="checkbox" id="CCW" name="CCW" value="0" onclick="onClickCCW()">
-                            <label for="CCW">Counter clockwise rotation (CCW)</label>
+            <td colspan="2">
+                <input type="checkbox" id="showSelectedROIOnly" onclick="RefreshDraw()">
+                    <label for="showSelectedROIOnly"> Show selected ROI only</label>
+            </td>
+            <td>
+                <input type="checkbox" id="CCW" value="0" onclick="onClickCCW()">
+                    <label for="CCW">Counter clockwise rotation (CCW)</label>
             </td>
         </tr>
     </table>
@@ -237,167 +269,142 @@
             <col span="1" style="width: 26%;">
         </colgroup>
         <tr>
-            <td colspan="3" style="vertical-align: bottom;"><b>Reference Image</b></td>
-            <td><input disabled style="font-weight:bold;" class="button" type="submit" id="saveconfig" name="saveconfig"
-                        onclick="SaveToConfig()" value="Save And Apply"></td>
+            <td colspan="3" style="vertical-align: bottom;">
+                <b>Reference Image</b>
+            </td>
+            <td>
+                <input disabled style="font-weight:bold;" class="button" type="submit" id="saveconfig"
+                        onclick="SaveToConfig()" value="Save And Apply">
+            </td>
         </tr>
         <tr>
-            <td colspan="4"><canvas style="max-width: 100%" id="canvas"></canvas></td>
+            <td colspan="4">
+                <img id="img_loading" hidden>
+                <canvas style="max-width: 100%" id="canvas" hidden></canvas>
+            </td>
         </tr>
     </table>
 
 
-<script src="common.js?v=$COMMIT_HASH"></script>
-<script src="readconfigcommon.js?v=$COMMIT_HASH"></script>
-<script src="readconfigparam.js?v=$COMMIT_HASH"></script>
-
+<script src="global_common.js?v=$COMMIT_HASH"></script>
+<script src="global_data.js?v=$COMMIT_HASH"></script>
 <script>
-    var canvas = document.getElementById('canvas'),
-        context = canvas.getContext('2d'),
-        imageObj = new Image(),
-        rect = {},
-        drag = false,
-        roi_selected = 0,
-        ROIInfo,
-        param,
-        param_category,
-        lockAspectRatio = true,
-        lockSizes = false,
-        domainname = getDomainname();
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
+    let imageObj = new Image();
+    let rect = {};
+    let drag = false;
+    let roiSelected = 0;
+    let lockAspectRatio = true;
+    let lockSizes = false;
+    let sequenceSelection = document.getElementById("sequence_selection");
 
 
-    function EnDisableAnalog()
+    function analogProcessingChanged(init = false)
     {
-        isEnabled = document.getElementById("Category_Analog_enabled").checked;
-
-        sah1(document.getElementById("div1"), !isEnabled);
-
-        param_category["Analog"]["enabled"] = isEnabled;
-        document.getElementById("saveconfig").disabled = false;
-
-        if (isEnabled) {
-            RefreshROI();
-        }
-    }
-
-
-    function sah1(el, _target)
-    {
-        try {
-            el.disabled = _target;
-        } catch (E) {}
-        if (el.childNodes && el.childNodes.length > 0) {
-            for (var x = 0; x < el.childNodes.length; x++) {
-                sah1(el.childNodes[x], _target);
+        if (init) {
+            if (!jsonConfig.analog.enabled) {
+                firework.launch('Analog ROI processing is disabled. Activate with checkbox if needed', 'warning', 5000);
             }
+            document.getElementById("analog_processing").checked = jsonConfig.analog.enabled;
+            setElVisibility("#div_input_el", jsonConfig.analog.enabled);
+        }
+        else {
+            jsonConfigModifiedDelta.analog.enabled = document.getElementById("analog_processing").checked;
+            setElVisibility("#div_input_el", jsonConfigModifiedDelta.analog.enabled);
+            document.getElementById("saveconfig").disabled = false;
+            RefreshROI();
         }
     }
 
 
     function onSequenceChanged()
     {
-        roi_selected = 0;
+        roiSelected = 0;
         RefreshROI();
     }
 
 
     function onClickNewSequence()
     {
-        var sequence_name = prompt("Please enter a name for the new number sequence", "name");
-        if (sequence_name === null) {
+        let sequenceName = prompt("Please enter a name for the new number sequence", "name").toLowerCase();
+        if (sequenceName === null) {
             return; //break out of the function early because prompt was aborted
         }
 
-        erg = CreateNumberSequence(sequence_name);
+        erg = CreateNumberSequence("analog", sequenceName);
         if (erg != "")
             firework.launch(erg, 'danger', 30000);
         else
-            RefreshSequences(sequence_name);
+            fillSequenceSelectionOptions(sequenceName);
     }
 
 
     function onClickRenameSequence()
     {
-        var sel_sequence = document.getElementById("SequenceSelect");
-        var sequence_name = sel_sequence.options[sel_sequence.selectedIndex].text;
-        var sequence_name_new = prompt("Please enter a new name for the selected number sequence", sequence_name);
-        if (sequence_name_new === null) {
+        let sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
+        let sequenceNameNew = prompt("Please enter a new name for the selected number sequence", sequenceName).toLowerCase();
+        if (sequenceNameNew === null) {
             return; //break out of the function early because prompt was aborted
         }
 
-        erg = RenameNumberSequence(sequence_name, sequence_name_new);
+        erg = RenameNumberSequence("analog", sequenceSelection.selectedIndex, sequenceNameNew);
         if (erg != "")
-            firework.launch(erg, 'danger', 30000);
+            firework.launch(erg, 'danger', 5000);
         else
-            RefreshSequences(sequence_name_new);
+            fillSequenceSelectionOptions(sequenceNameNew);
     }
 
 
-    function removeNumber(){
-        if (confirm("The entire number sequence will be removed (digit + analog parts). " +
-                    "To remove single ROI of the number sequence, use \"Delete ROI\" instead.\n" +
+    function onClickDeleteSequence()
+    {
+        if (confirm("The entire number sequence will be removed (all related digit + analog ROIs). " +
+                    "To remove a single ROI of the selected number sequence, use \"Delete ROI\" instead.\n" +
                     "Do you really want to proceed?"))
         {
-            var sel_sequence = document.getElementById("SequenceSelect");
-            var sequence_name = sel_sequence.options[sel_sequence.selectedIndex].text;
-            erg = DeleteNumberSequence(sequence_name);
+            erg = DeleteNumberSequence("analog", sequenceSelection.selectedIndex);
             if (erg != "")
-                firework.launch(erg, 'danger', 30000);
-            RefreshSequences();
+                firework.launch(erg, 'danger', 5000);
+            fillSequenceSelectionOptions();
         }
     }
 
 
     function onROIChanged()
     {
-        roi_selected = parseInt(document.getElementById("ROISelect").value);
+        roiSelected = parseInt(document.getElementById("ROISelect").value);
         RefreshROI();
-    }
-
-
-    function RenameROIAfterChange()
-    {
-        var sel_sequence = document.getElementById("SequenceSelect");
-        var sequence_name = sel_sequence.options[sel_sequence.selectedIndex].text;
-
-        for(var i = 0; i < ROIInfo.length; ++i) {
-            RenameROI(sequence_name, "analog", ROIInfo[i].name, "anatmp" + (i+1));
-        }
-
-        for(var i = 0; i < ROIInfo.length; ++i) {
-            RenameROI(sequence_name, "analog", ROIInfo[i].name, "ana" + (i+1));
-        }
     }
 
 
     function onClickNewROI()
     {
-        var sel_sequence = document.getElementById("SequenceSelect");
-        var sequence_name = sel_sequence.options[sel_sequence.selectedIndex].text;
-        var sel_roi = document.getElementById("ROISelect");
+        let sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
+        let roiSelection = document.getElementById("ROISelect");
 
-        RenameROIAfterChange(); // Only for migration purpose (migrate actual ROI name to 'anaX')
+        if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length > 0) {
+            if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length > 1) {
+                space = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[1].x) -
+                    parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].x) -
+                    parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].dx);
+            }
 
-        if (!document.getElementById("ROISelect").disabled) {
-            var roi_name = "ana" + (sel_roi.length + 1);
-            var roi_index = sel_roi.length + 1;
+            let roiX = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].x) +
+                parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].dx);
+
+            erg = CreateROI("analog", sequenceName, roiX,
+                parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].y),
+                parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].dx),
+                parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].dy));
         }
-        else {
-            var roi_name = "ana1";
-            var roi_index = 0;
-        }
-
-        if (ROIInfo.length > 0)
-            erg = CreateROI(sequence_name, "analog", roi_index, roi_name, 15, 30,
-                            ROIInfo[roi_selected]["dx"], ROIInfo[roi_selected]["dy"], ROIInfo[roi_selected]["CCW"]=="true");
         else
-            erg = CreateROI(sequence_name, "analog", roi_index, roi_name, 15, 30, 30, 30, false);
+            erg = CreateROI("analog", sequenceName, 15, 30, 80, 80);
 
         if (erg != "") {
             firework.launch(erg, 'danger', 30000);
         }
         else {
-            RefreshROI(roi_name);
+            RefreshROI("ana" + jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length.toString());
             RefreshDraw();
         }
     }
@@ -409,24 +416,24 @@
             return; //break out of the function early because prompt was aborted
         }
 
-        ROIInfo.splice(roi_selected, 1);
+        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.splice(roiSelected, 1);
 
-        if (roi_selected > ROIInfo.length - 1) {
-            roi_selected = ROIInfo.length - 1;
+        if (roiSelected > jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1) {
+            roiSelected = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1;
         }
 
-        RenameROIAfterChange(); // Ensure that ROIs are always consecutive beginning with 'ana1'
         RefreshROI();
     }
 
 
     function onClickMoveROIHigher()
     {
-        var zw = ROIInfo[roi_selected];
-        ROIInfo[roi_selected] = ROIInfo[roi_selected-1];
-        ROIInfo[roi_selected-1] = zw;
-        roi_selected--;
-        RenameROIAfterChange(); // Ensure that ROIs are always consecutive beginning with 'ana1'
+        let zw = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected];
+        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected] =
+            jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected-1];
+        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected-1] = zw;
+        roiSelected--;
+
         RefreshROI();
         onValueManualChanged();
     }
@@ -434,11 +441,12 @@
 
     function onClickMoveROILower()
     {
-        var zw = ROIInfo[roi_selected];
-        ROIInfo[roi_selected] = ROIInfo[roi_selected+1];
-        ROIInfo[roi_selected+1] = zw;
-        roi_selected++;
-        RenameROIAfterChange(); // Ensure that ROIs are always consecutive beginning with 'ana1'
+        let zw = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected];
+        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected] =
+            jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected+1];
+        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected+1] = zw;
+        roiSelected++;
+
         RefreshROI();
         onValueManualChanged();
     }
@@ -459,24 +467,15 @@
 
     function onClickCCW()
     {
-        var sel_sequence = document.getElementById("SequenceSelect");
-        var sequence_name = sel_sequence.options[sel_sequence.selectedIndex].text;
-
-        ROIInfo = getROIInfo("analog", sequence_name);
-        roi_selected = parseInt(document.getElementById("ROISelect").value);
-
-        if (document.getElementById("CCW").checked)
-            ROIInfo[roi_selected]["CCW"] = "true";
-        else
-            ROIInfo[roi_selected]["CCW"] = "false";
-
+        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ccw =
+            document.getElementById("CCW").checked;
         RefreshROI();
     }
 
 
     function onValueManualChanged()
     {
-        if (ROIInfo.length == 0) {
+        if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length == 0) {
             return;
         }
 
@@ -485,7 +484,7 @@
             rect.h = document.getElementById("refdy").value;
 
             if (lockAspectRatio) {
-                rect.w = Math.round(rect.h * ROIInfo[roi_selected]["ar"]);
+                rect.w = Math.round(rect.h * jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
                 document.getElementById("refdx").value = rect.w;
             }
 
@@ -501,7 +500,7 @@
 
     function onValueManualChangedDx()
     {
-        if (ROIInfo.length == 0) {
+        if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length == 0) {
             return;
         }
 
@@ -510,7 +509,7 @@
             rect.h = document.getElementById("refdy").value;
 
             if (lockAspectRatio) {
-                rect.h = Math.round(rect.w / ROIInfo[roi_selected]["ar"]);
+                rect.h = Math.round(rect.w / jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
                 document.getElementById("refdy").value = rect.h;
             }
 
@@ -523,114 +522,45 @@
     }
 
 
-    function ShowMultiplier()
+    function fillSequenceSelectionOptions(selectedSequence)
     {
-        var decimalShift = 0;
-        var multiplier;
-        var multiplier_decshift;
-        var fixedDecimals;
-        var fixedDecimals_decshift;
-        var NumberSequence = getNumberSequences();
-        var CategoryInfo = getConfigCategory();
+        $("#sequence_selection").find('option').remove().end();
 
-        var sel_sequence = document.getElementById("SequenceSelect");
-        var sequence_name = sel_sequence.options[sel_sequence.selectedIndex].text;
-        document.getElementById("decimalShift").value = 0;
-        for (var i = 0; i < NumberSequence.length; ++i) {
-            if (NumberSequence[i]["name"] == sequence_name) {
-                if (NumberSequence[i]["PostProcessing"]["DecimalShift"]["enabled"]) {
-                    decimalShift = NumberSequence[i]["PostProcessing"]["DecimalShift"]["value1"];
-                    document.getElementById("decimalShift").value = decimalShift;
+        if (jsonConfigModifiedDelta.numbersequences.sequence.length == 0) {
+            $("#sequence_selection").append(new Option("N/A", -1));
+        }
+        else {
+            for (let i = 0; i < jsonConfigModifiedDelta.numbersequences.sequence.length; ++i) {
+                $("#sequence_selection").append(new Option(jsonConfigModifiedDelta.numbersequences.sequence[i].sequencename, i));
+
+                if (typeof selectedSequence !== undefined) {
+                    if (jsonConfigModifiedDelta.numbersequences.sequence[i].sequencename == selectedSequence)
+                    $("#sequence_selection").prop("selectedIndex", i);
                 }
             }
         }
 
-        if (CategoryInfo["Analog"]["enabled"] == true && CategoryInfo["Digits"]["enabled"] == true) { // Digit + Analog
-            multiplier = fixedDecimals = roi_selected + 1;
-            multiplier_decshift = fixedDecimals_decshift = multiplier - Number(decimalShift);
-
-            if (multiplier < 0)
-                fixedDecimals = 0;
-
-            if (multiplier_decshift < 0)
-                fixedDecimals_decshift = 0;
-
-            document.getElementById("multiplier").value="x" + Number(10 ** (-1*multiplier)).toFixed(fixedDecimals);
-            document.getElementById("multiplier_decshift").value="x" + Number(10 ** (-1*multiplier_decshift)).toFixed(fixedDecimals_decshift);
+        if ($('#sequence_selection option').length <= 1) {
+            $("#deleteSequence").prop("disabled", true);
         }
-        else if (CategoryInfo["Analog"]["enabled"] == true && CategoryInfo["Digits"]["enabled"] == false) { // Only Analog
-            multiplier = ROIInfo.length - 1 - roi_selected;
-            multiplier_decshift = fixedDecimals_decshift = multiplier + Number(decimalShift);
-
-            if (multiplier_decshift > 0)
-                fixedDecimals_decshift = 0;
-
-            if (fixedDecimals_decshift < 0) {
-                fixedDecimals_decshift = -1 * fixedDecimals_decshift;
-            }
-
-            document.getElementById("multiplier").value="x" + Number(10 ** multiplier).toFixed(0);
-            document.getElementById("multiplier_decshift").value="x" + Number(10 ** multiplier_decshift).toFixed(fixedDecimals_decshift);
+        else {
+            $("#deleteSequence").prop("disabled", false);
         }
-    }
-
-
-    function RefreshSequences(_sel)
-    {
-        var NumberSequence = getNumberSequences();
-        var index = 0;
-
-        var sel_sequence = document.getElementById("SequenceSelect");
-        while (sel_sequence.length) {
-            sel_sequence.remove(0);
-        }
-
-        for (var i = 0; i < NumberSequence.length; ++i){
-            var option = document.createElement("option");
-            option.text = NumberSequence[i]["name"];
-            option.value = i;
-            sel_sequence.add(option);
-
-            if (typeof _sel !== 'undefined') {
-                if (NumberSequence[i]["name"] == _sel)
-                    index = i
-            }
-        }
-        sel_sequence.selectedIndex = index;
 
         RefreshROI();
     }
 
 
-    function RefreshROI(_sel)
+    function RefreshROI(roiName)
     {
-        document.getElementById("Category_Analog_enabled").checked = true;
-        var sel_sequence = document.getElementById("SequenceSelect");
-        var sequence_name = sel_sequence.options[sel_sequence.selectedIndex].text;
-
-        ROIInfo = getROIInfo("analog", sequence_name);
-        //_catzw = getConfigCategory();
-
-        if (param_category["Analog"]["enabled"] == false) {
-            document.getElementById("Category_Analog_enabled").checked = false;
-            EnDisableAnalog();
-            firework.launch('Analog ROI processing is disabled. Activate with checkbox if needed', 'warning', 5000);
-            return;
-        }
-
-        var sel_roi = document.getElementById("ROISelect");
-
-        if (ROIInfo.length == 0) {
+        let roiSelection = document.getElementById("ROISelect");
+        if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length == 0) {
             firework.launch('No analog ROIs defined in selected number sequence', 'warning', 5000);
-            document.getElementById("newROI").disabled = false;
-            document.getElementById("deleteROI").disabled = true;
-
             document.getElementById("ROISelect").disabled = true;
-            sel_roi.selectedIndex = 0;
-            sel_roi.options[sel_roi.selectedIndex].text = "N/A";
-
             document.getElementById("multiplier").style.display = "none";
             document.getElementById("multiplier_decshift").style.display = "none";
+            document.getElementById("newROI").disabled = false;
+            document.getElementById("deleteROI").disabled = true;
             document.getElementById("refx").disabled = true;
             document.getElementById("refdx").disabled = true;
             document.getElementById("refy").disabled = true;
@@ -641,15 +571,26 @@
             document.getElementById("moveROILower").disabled = true;
             document.getElementById("moveROIHigher").disabled = true;
             document.getElementById("saveconfig").disabled = false;
+
+            while (roiSelection.length){
+                roiSelection.remove(0);
+            }
+
+            let option = document.createElement("option");
+            option.text = "N/A";
+            option.value = -1;
+            roiSelection.add(option);
+            roiSelected = roiSelection.selectedIndex = 0;
+
             RefreshDraw();
             return;
         }
         else {
-            document.getElementById("newROI").disabled = false;
-            document.getElementById("deleteROI").disabled = false;
             document.getElementById("ROISelect").disabled = false;
             document.getElementById("multiplier").style.display = "";
             document.getElementById("multiplier_decshift").style.display = "";
+            document.getElementById("newROI").disabled = false;
+            document.getElementById("deleteROI").disabled = false;
             document.getElementById("refx").disabled = false;
             document.getElementById("refdx").disabled = false;
             document.getElementById("refy").disabled = false;
@@ -659,35 +600,39 @@
             document.getElementById("CCW").disabled = false;
             document.getElementById("saveconfig").disabled = false;
 
-            while (sel_roi.length){
-                sel_roi.remove(0);
+            while (roiSelection.length) {
+                roiSelection.remove(0);
             }
 
-            if (roi_selected > ROIInfo.length)
-                roi_selected = ROIInfo.length-1;
+            if (roiSelected > jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length)
+                roiSelected = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length-1;
 
-            for (var i = 0; i < ROIInfo.length; ++i){
-                var option = document.createElement("option");
-                option.text = ROIInfo[i]["name"];
+            for (let i = 0; i < jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length; ++i){
+                let option = document.createElement("option");
+                option.text = "ana" + (i+1).toString();
                 option.value = i;
-                sel_roi.add(option);
-                if (typeof _sel !== 'undefined') {
-                    if (option.text == _sel)
-                        roi_selected = i;
+                roiSelection.add(option);
+                if (typeof roiName !== 'undefined') {
+                    if (option.text == roiName)
+                        roiSelected = i;
                 }
 
-                ROIPositionValidation(ROIInfo[i]);
+                jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].ar =
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dx /
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dy;
+
+                ROIPositionValidation(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i]);
             }
-            sel_roi.selectedIndex = roi_selected;
+            roiSelection.selectedIndex = roiSelected;
         }
 
         document.getElementById("moveROIHigher").disabled = false;
-        if (roi_selected == 0) {
+        if (roiSelected == 0) {
             document.getElementById("moveROIHigher").disabled = true;
         }
 
         document.getElementById("moveROILower").disabled = false;
-        if (roi_selected == (ROIInfo.length-1)) {
+        if (roiSelected == (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length-1)) {
             document.getElementById("moveROILower").disabled = true;
         }
 
@@ -695,55 +640,49 @@
 
         document.getElementById("lockAspectRatio").checked = lockAspectRatio;
         document.getElementById("lockSizes").checked = lockSizes;
-        document.getElementById("CCW").checked = ROIInfo[roi_selected]["CCW"] == "true";
+        document.getElementById("CCW").checked = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ccw;
 
-        document.getElementById("refx").value = ROIInfo[roi_selected]["x"];
-        document.getElementById("refy").value = ROIInfo[roi_selected]["y"];
-        document.getElementById("refdx").value = ROIInfo[roi_selected]["dx"];
-        document.getElementById("refdy").value = ROIInfo[roi_selected]["dy"];
-        rect.startX = ROIInfo[roi_selected]["x"];
-        rect.startY = ROIInfo[roi_selected]["y"];
-        rect.w = ROIInfo[roi_selected]["dx"];
-        rect.h = ROIInfo[roi_selected]["dy"];
+        rect.startX = document.getElementById("refx").value = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].x;
+        rect.startY = document.getElementById("refy").value = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].y;
+        rect.w = document.getElementById("refdx").value = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].dx;
+        rect.h = document.getElementById("refdy").value = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].dy;
         RefreshDraw();
     }
 
 
-    function ParseROIArrangement()
+    function parseROIArrangement()
     {
         /* Check if the ROIs have same dy and dx. If so, tick the sync checkbox */
-        var all_dx_dy_Identical = true;
-        if (ROIInfo.length > 1) {
-            for (var i = 1; i < (ROIInfo.length); ++i) { // 2nd .. last ROI
-                if (parseInt(ROIInfo[i].dx) != parseInt(ROIInfo[0].dx) ||
-                    parseInt(ROIInfo[i].dy) != parseInt(ROIInfo[0].dy)) {
-                    all_dx_dy_Identical = false;
+        let allDxDyIdentical = true;
+        if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length > 1) {
+            for (let i = 1; i < (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length); ++i) { // 2nd .. last ROI
+                if (parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dx) !=
+                        parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].dx) ||
+                    parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dy) !=
+                        parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].dy)) {
+                            allDxDyIdentical = false;
                     break;
                 }
             }
         }
 
-        if (all_dx_dy_Identical) {
+        if (allDxDyIdentical) {
             lockSizes = true;
-            //console.log("All ROI have the same dX and dY, ticking the sync checkbox!");
             document.getElementById("lockSizes").checked = lockSizes;
-        }
-        else {
-            //console.log("Not all ROI have the same dX and dY, unticking the sync checkbox!");
         }
     }
 
 
-    function ROIPositionValidation(ROI)
+    function ROIPositionValidation(roi)
     {
-        var refImageWidth, refImageHeight;
+        let refImageWidth, refImageHeight;
 
-        if (param["TakeImage"]["ImageSize"]["value1"] == "QVGA") {
-            if (param["Alignment"]["FlipImageSize"]["value1"] == "false") {
+        if (jsonConfig.takeimage.camera.imagesize == "QVGA") {
+            if (jsonConfig.imagealignment.flipimagesize == false) {
                 refImageWidth = 320;
                 refImageHeight = 240;
             }
-            else if (param["Alignment"]["FlipImageSize"]["value1"] == "true") {
+            else if (jsonConfig.imagealignment.flipimagesize == true) {
                 refImageWidth = 240;
                 refImageHeight = 320;
             }
@@ -752,12 +691,12 @@
                 return;
             }
         }
-        else if (param["TakeImage"]["ImageSize"]["value1"] == "VGA") {
-            if (param["Alignment"]["FlipImageSize"]["value1"] == "false") {
+        else if (jsonConfig.takeimage.camera.imagesize == "VGA") {
+            if (jsonConfig.imagealignment.flipimagesize == false) {
                 refImageWidth = 640;
                 refImageHeight = 480;
             }
-            else if (param["Alignment"]["FlipImageSize"]["value1"] == "true") {
+            else if (jsonConfig.imagealignment.flipimagesize == true) {
                 refImageWidth = 480;
                 refImageHeight = 640;
             }
@@ -771,39 +710,110 @@
             return;
         }
 
-        if ((parseInt(ROI.x) + parseInt(ROI.dx)) >= refImageWidth) {
-                ROI.x = refImageWidth - parseInt(ROI.dx) - 1;
+        if ((parseInt(roi.x) + parseInt(roi.dx)) >= refImageWidth) {
+            roi.x = refImageWidth - parseInt(roi.dx) - 1;
                 firework.launch('ROI partially or completely out of image area (x) -> Position automatically adapted. \
                                     Please verify position', 'warning', 5000);
         }
-        else if (parseInt(ROI.x) < 1) {
-            ROI.x = 1;
+        else if (parseInt(roi.x) < 1) {
+            roi.x = 1;
             firework.launch('ROI partially or completely out of image area (x) -> Position automatically adapted. \
                                 Please verify position', 'warning', 5000);
         }
 
-        if ((parseInt(ROI.y) + parseInt(ROI.dy)) >= refImageHeight) {
-            ROI.y = refImageHeight - parseInt(ROI.dy) - 1;
+        if ((parseInt(roi.y) + parseInt(roi.dy)) >= refImageHeight) {
+            roi.y = refImageHeight - parseInt(roi.dy) - 1;
             firework.launch('ROI partially or completely out of image area (y) -> Position automatically adapted. \
                                 Please verify position', 'warning', 5000);
         }
-        else if (parseInt(ROI.y) < 1) {
-            ROI.y = 1;
+        else if (parseInt(roi.y) < 1) {
+            roi.y = 1;
             firework.launch('ROI partially or completely out of image area (y) -> Position automatically adapted. \
                                 Please verify position', 'warning', 5000);
         }
     }
 
 
+    function ShowMultiplier()
+    {
+        let multiplier;
+        let multiplier_decshift;
+        let fixedDecimals;
+        let fixedDecimals_decshift;
+        let decimalShift = document.getElementById("decimalShift").value = 0;
+        let sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
+
+        // Compare with non modified jsonConfig (new sequence initially uses decimalShift = 0)
+        for (let i = 0; i < jsonConfig.analog.sequence.length; ++i) {
+            if (jsonConfig.analog.sequence[i].sequencename == sequenceName) {
+                decimalShift = document.getElementById("decimalShift").value = jsonConfig.postprocessing.sequence[i].decimalshift;
+            }
+        }
+
+        if (jsonConfigModifiedDelta.analog.enabled && jsonConfig.digit.enabled) { // Digit + Analog
+            multiplier = fixedDecimals = roiSelected + 1;
+            multiplier_decshift = fixedDecimals_decshift = multiplier - Number(decimalShift);
+
+            if (multiplier < 0)
+                fixedDecimals = 0;
+
+            if (multiplier_decshift < 0)
+                fixedDecimals_decshift = 0;
+
+            document.getElementById("multiplier").value="x" + Number(10 ** (-1*multiplier)).toFixed(fixedDecimals);
+            document.getElementById("multiplier_decshift").value="x" + Number(10 ** (-1*multiplier_decshift)).toFixed(fixedDecimals_decshift);
+        }
+        else if (jsonConfigModifiedDelta.analog.enabled && !jsonConfig.digit.enabled) { // Only Analog
+            multiplier = jsonConfig.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1 - roiSelected;
+            multiplier_decshift = fixedDecimals_decshift = multiplier + Number(decimalShift);
+
+            if (multiplier_decshift > 0)
+                fixedDecimals_decshift = 0;
+
+            if (fixedDecimals_decshift < 0) {
+                fixedDecimals_decshift = -1 * fixedDecimals_decshift;
+            }
+
+            document.getElementById("multiplier").value="x" + Number(10 ** multiplier).toFixed(0);
+            document.getElementById("multiplier_decshift").value="x" + Number(10 ** multiplier_decshift).toFixed(fixedDecimals_decshift);
+        }
+    }
     function loadCanvas(dataURL)
     {
+        $("#canvas").hide();
+        $("#img_loading").show();
+
         imageObj.onload = function() {
             canvas.width = this.width;
             canvas.height = this.height;
             RefreshDraw();
+
+            canvas.addEventListener('mousedown', mouseDown, false);
+            canvas.addEventListener('mouseup', mouseUp, false);
+            canvas.addEventListener('mousemove', mouseMove, false);
+
+            $("#img_loading").hide();
+            $("#canvas").show();
         };
 
-        imageObj.src = loadImage(dataURL, 'img_not_available.png?v=$COMMIT_HASH').src;
+        imageObj.onerror = function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.textBaseline = "top";
+            context.textAlign = "left";
+            context.font = "16px arial";
+            context.fillText("No reference image", 10, 10);
+
+            canvas.removeEventListener('mousedown', mouseDown, false);
+            canvas.removeEventListener('mouseup', mouseUp, false);
+            canvas.removeEventListener('mousemove', mouseMove, false);
+
+            setElVisibility("#div_input_el", false); // Hide complete interaction area
+
+            $("#img_loading").hide();
+            $("#canvas").show();
+        };
+
+        imageObj.src = dataURL;
     }
 
 
@@ -812,14 +822,14 @@
         context.font = "15px Arial";
         context.textAlign = "center";
 
-        var width = context.measureText(txt).width;
-        var height = parseInt(context.font, 10);
+        let width = context.measureText(txt).width;
+        let height = parseInt(context.font, 10);
 
         /* Highlight selected ROI textbox*/
         if (highlight)
-            context.fillStyle = 'rgba(255, 0, 0, 0.6)';
+            context.fillStyle = 'rgba(0, 255, 0, 0.6)';
         else
-            context.fillStyle = 'rgba(153, 0, 0, 0.5)';
+            context.fillStyle = 'rgba(0, 150, 0, 0.5)';
 
         if ((y - height - 8) >= 0) { // If no space on top of ROI place text below ROI
             /* Background rectangle */
@@ -844,114 +854,107 @@
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(imageObj, 0, 0);
 
-        // During init, ROIInfo is not defined yet OR no ROIs defined
-        if (typeof ROIInfo === 'undefined' || ROIInfo.length == 0) {
-            return;
-        }
+        if (sequenceSelection === undefined)
+            sequenceSelection = document.getElementById("sequence_selection");
 
         // Draw ROI overlay
-        if (document.getElementById("Category_Analog_enabled").checked) {
-            var sel_roi = document.getElementById("ROISelect");
-            var sel_roi_index = sel_roi.selectedIndex;
-
+        if (document.getElementById("analog_processing").checked) {
             if (lockSizes) {
                 // Synchronize dx and dy
-                for (var i = 0; i < ROIInfo.length; i++) {
-                    if (i != sel_roi_index) {
-                        ROIInfo[i].dy = rect.h;
-                        ROIInfo[i].dx = rect.w;
+                for (let i = 0; i < jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length; i++) {
+                    if (i != roiSelected) {
+                        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dy = parseInt(rect.h);
+                        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dx = parseInt(rect.w);
                     }
                 }
             }
 
-            if (!document.getElementById("showSelectedROIOnly").checked)
-                for (var i = 0; i < ROIInfo.length; i++) {
-                    if (i != sel_roi_index) {
-                        lw = 1;
-                        context.lineWidth = lw;
-                        context.strokeStyle = 'rgb(153, 0, 0)'; //"#990000";
-                        var x0 = parseInt(ROIInfo[i].x) - parseInt(lw/2);
-                        var y0 = parseInt(ROIInfo[i].y) - parseInt(lw/2);
-                        var dx = parseInt(ROIInfo[i].dx) + parseInt(lw);
-                        var dy = parseInt(ROIInfo[i].dy) + parseInt(lw);
-                        context.strokeRect(x0, y0, dx, dy);
+            for (let i = 0; i < jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length; i++) {
+                if (i != roiSelected && !document.getElementById("showSelectedROIOnly").checked) {
+                    lw = 1;
+                    context.lineWidth = lw;
+                    context.strokeStyle = 'rgb(0, 150, 0)';
+                    let x0 = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].x) - parseInt(lw/2);
+                    let y0 = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].y) - parseInt(lw/2);
+                    let dx = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dx) + parseInt(lw);
+                    let dy = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dy) + parseInt(lw);
+                    context.strokeRect(x0, y0, dx, dy);
 
-                        if (ROIInfo[i]["CCW"] != "true")
-                            drawTextBG(context, ROIInfo[i]["name"], x0+dx/2-0.5, parseInt(ROIInfo[i].y), parseInt(rect.h), 2, false);
-                        else
-                            drawTextBG(context, ROIInfo[i]["name"] + " (CCW)", x0+dx/2-0.5, parseInt(ROIInfo[i].y), parseInt(rect.h), 2, false);
+                    if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].ccw == false)
+                        drawTextBG(context, "ana" + (i+1).toString(), x0+dx/2-0.5,
+                            parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].y), parseInt(rect.h), 2, false);
+                    else
+                        drawTextBG(context, "ana" + (i+1).toString() + " (CCW)", x0+dx/2-0.5,
+                            parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].y), parseInt(rect.h), 2, false);
 
-                        lw = 1;
-                        var x0 = parseInt(ROIInfo[i].x) - parseInt(lw/2);
-                        var y0 = parseInt(ROIInfo[i].y) - parseInt(lw/2);
-                        var dx = parseInt(ROIInfo[i].dx) + parseInt(lw);
-                        var dy = parseInt(ROIInfo[i].dy) + parseInt(lw);
-                        context.strokeRect(x0, y0, dx, dy);
+                    lw = 1;
+                    x0 = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].x) - parseInt(lw/2);
+                    y0 = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].y) - parseInt(lw/2);
+                    dx = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dx) + parseInt(lw);
+                    dy = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dy) + parseInt(lw);
+                    context.strokeRect(x0, y0, dx, dy);
 
-                        context.lineWidth = lw;
-                        context.beginPath();
-                        //context.arc(x0+dx/2, y0+dy/2, dx/2, 0, 2 * Math.PI); -> use ellispe instead; fix https://github.com/jomjol/AI-on-the-edge-device/issues/2403
-                        context.ellipse(x0+dx/2, y0+dy/2, dx/2, dy/2, 0, 0, 2 * Math.PI);
-
-                        context.moveTo(x0+dx/2, y0);
-                        context.lineTo(x0+dx/2, y0+dy);
-                        context.moveTo(x0, y0+dy/2);
-                        context.lineTo(x0+dx, y0+dy/2);
-                        context.stroke();
-                    }
+                    context.lineWidth = lw;
+                    context.beginPath();
+                    context.ellipse(x0+dx/2, y0+dy/2, dx/2, dy/2, 0, 0, 2 * Math.PI);
+                    context.moveTo(x0+dx/2, y0);
+                    context.lineTo(x0+dx/2, y0+dy);
+                    context.moveTo(x0, y0+dy/2);
+                    context.lineTo(x0+dx, y0+dy/2);
+                    context.stroke();
                 }
+                else if (i == roiSelected) {
+                    lw = 2;
+                    context.lineWidth = lw;
+                    context.strokeStyle = 'rgb(0, 255, 0)';
+                    let x0 = parseInt(rect.startX) - parseInt(lw/2);
+                    let y0 = parseInt(rect.startY) - parseInt(lw/2);
+                    let dx = parseInt(rect.w) + parseInt(lw);
+                    let dy = parseInt(rect.h) + parseInt(lw);
+                    context.strokeRect(x0, y0, dx, dy);
 
-            lw = 2;
-            context.lineWidth = lw;
-            context.strokeStyle = 'rgb(255, 0, 0)' //"#FF0000";
-            var x0 = parseInt(rect.startX) - parseInt(lw/2);
-            var y0 = parseInt(rect.startY) - parseInt(lw/2);
-            var dx = parseInt(rect.w) + parseInt(lw);
-            var dy = parseInt(rect.h) + parseInt(lw);
-            context.strokeRect(x0, y0, dx, dy);
+                    if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].ccw == false)
+                        drawTextBG(context, "ana" + (i+1).toString(), x0+dx/2, parseInt(rect.startY), parseInt(rect.h), 2, true);
+                    else
+                        drawTextBG(context, "ana" + (i+1).toString() + " (CCW)", x0+dx/2, parseInt(rect.startY), parseInt(rect.h), 2, true);
 
-            if (ROIInfo[roi_selected]["CCW"] != "true")
-                drawTextBG(context, ROIInfo[roi_selected]["name"], x0+dx/2, parseInt(rect.startY), parseInt(rect.h), 2, true);
-            else
-                drawTextBG(context, ROIInfo[roi_selected]["name"] + " (CCW)", x0+dx/2, parseInt(rect.startY), parseInt(rect.h), 2, true);
+                    context.lineWidth = 1;
+                    context.beginPath();
+                    context.ellipse(x0+dx/2, y0+dy/2, dx/2, dy/2, 0, 0, 2 * Math.PI);
+                    context.moveTo(x0+dx/2, y0);
+                    context.lineTo(x0+dx/2, y0+dy);
+                    context.moveTo(x0, y0+dy/2);
+                    context.lineTo(x0+dx, y0+dy/2);
+                    context.stroke();
 
-            context.lineWidth = 1;
-            context.beginPath();
-            //context.arc(x0+dx/2, y0+dy/2, dx/2, 0, 2 * Math.PI); -> use ellispe instead; fix https://github.com/jomjol/AI-on-the-edge-device/issues/2403
-            context.ellipse(x0+dx/2, y0+dy/2, dx/2, dy/2, 0, 0, 2 * Math.PI);
-
-            context.moveTo(x0+dx/2, y0);
-            context.lineTo(x0+dx/2, y0+dy);
-            context.moveTo(x0, y0+dy/2);
-            context.lineTo(x0+dx, y0+dy/2);
-            context.stroke();
-
-            ROIInfo[roi_selected]["x"] = rect.startX;
-            ROIInfo[roi_selected]["y"] = rect.startY;
-            ROIInfo[roi_selected]["dx"] = rect.w;
-            ROIInfo[roi_selected]["dy"] = rect.h;
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].x = parseInt(rect.startX);
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].y = parseInt(rect.startY);
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].dx = parseInt(rect.w);
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].dy = parseInt(rect.h);
+                }
+            }
         }
     }
 
 
     function getCoords(elem) // crossbrowser version
     {
-        var box = elem.getBoundingClientRect();
-        var body = document.body;
-        var docEl = document.documentElement;
-        var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-        var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-        var clientTop = docEl.clientTop || body.clientTop || 0;
-        var clientLeft = docEl.clientLeft || body.clientLeft || 0;
-        var top  = box.top +  scrollTop - clientTop;
-        var left = box.left + scrollLeft - clientLeft;
+        let box = elem.getBoundingClientRect();
+        let body = document.body;
+        let docEl = document.documentElement;
+        let scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+        let scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+        let clientTop = docEl.clientTop || body.clientTop || 0;
+        let clientLeft = docEl.clientLeft || body.clientLeft || 0;
+        let top  = box.top +  scrollTop - clientTop;
+        let left = box.left + scrollLeft - clientLeft;
         return { top: Math.round(top), left: Math.round(left) };
     }
 
 
     function mouseDown(e)
     {
-        zw = getCoords(this)
+        let zw = getCoords(this)
         rect.startX = e.pageX - zw.left;
         rect.startY = e.pageY - zw.top;
         document.getElementById("refx").value =  rect.startX;
@@ -982,15 +985,15 @@
     function mouseMove(e)
     {
         if (drag) {
-            zw = getCoords(this)
-
-            if (ROIInfo.length == 0) {
+            if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length == 0) {
                 return;
             }
 
+            let zw = getCoords(this)
+
             if (lockAspectRatio) {
                 rect.h = (e.pageY - zw.top) - rect.startY;
-                rect.w = Math.round(rect.h * ROIInfo[roi_selected]["ar"]);
+                rect.w = Math.round(rect.h * jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
             }
             else {
                 rect.w = (e.pageX - zw.left) - rect.startX;
@@ -1003,12 +1006,12 @@
         else {
             RefreshDraw();
 
-            zw = getCoords(this);
-            x = e.pageX - zw.left;
-            y = e.pageY - zw.top;
+            let zw = getCoords(this);
+            let x = e.pageX - zw.left;
+            let y = e.pageY - zw.top;
 
             context.lineWidth = 1;
-            context.strokeStyle = "#00FF00";
+            context.strokeStyle = 'rgb(160, 160, 160)';
             context.beginPath();
             context.moveTo(0,y);
             context.lineTo(canvas.width, y);
@@ -1022,17 +1025,15 @@
     function SaveToConfig()
     {
         if (confirm("Are you sure you want to save and apply the new analog ROI configuration?")) {
-            //_zwcat = getConfigCategory();
-            param_category["Analog"]["enabled"] = document.getElementById("Category_Analog_enabled").checked;
-            WriteConfigININew();
-            SaveConfigToServer(domainname);
             RefreshROI();
             document.getElementById("saveconfig").disabled = true;
 
             firework.launch('Save and apply configuration...', 'success', 2000, true);
-            setTimeout(function() {
-                reload_config();
-            }, 200);
+			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
+				setTimeout(function() {
+					reloadConfig();
+				}, 500);
+			});
         }
     }
 
@@ -1041,7 +1042,7 @@
     function openDescription()
     {
         if(window.location.hash) {
-            var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+            let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
             if(hash == 'description')
                 document.getElementById("desc_details").open = true;
         }
@@ -1050,21 +1051,22 @@
 
     function loadReferenceImage()
     {
-        loadCanvas(domainname + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
-        canvas.addEventListener('mousedown', mouseDown, false);
-        canvas.addEventListener('mouseup', mouseUp, false);
-        canvas.addEventListener('mousemove', mouseMove, false);
+        loadCanvas(getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
     }
 
 
     function loadConfigData()
     {
-        ParseConfig();
-        param = getConfigParameters();
-        param_category = getConfigCategory();
+        jsonConfig = getConfigFromStorage(); // Get config
+        jsonConfigModifiedDelta = {}; // Reset modified parameter container
+        jsonConfigModifiedDelta.numbersequences = new Object();
+        jsonConfigModifiedDelta.numbersequences = structuredClone(jsonConfig.numbersequences);
+        jsonConfigModifiedDelta.analog = new Object();
+        jsonConfigModifiedDelta.analog = structuredClone(jsonConfig.analog);
 
-        RefreshSequences();
-        ParseROIArrangement();
+        analogProcessingChanged(true);
+        fillSequenceSelectionOptions();
+        parseROIArrangement();
         RefreshDraw();
 
         document.getElementById("saveconfig").disabled = true;
@@ -1075,7 +1077,16 @@
     {
         openDescription();
 
+        $("#img_loading").attr("src", getDomainname() + '/img_loading.gif?v=$COMMIT_HASH');
         loadReferenceImage();
+
+        // @TODO. Check if config reloading can be avoided, because still up to date.
+        // Up to now reload config before every usage
+        /*if (noConfigInStorage())
+			loadConfig().then(() => loadConfigData());
+		else
+            loadConfigData();
+        */
         loadConfig().then(() => loadConfigData());
     }
 
