@@ -844,7 +844,8 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
                 // Fallback value valid
                 else {
                     sequence->isFallbackValueValid = true;
-                    sequence->fallbackValue = stod(std::string(cValue));
+                    char *pEnd = NULL;
+                    sequence->fallbackValue = strtod(cValue, &pEnd);
                     sequence->sFallbackValue = to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1); // Keep one digit more
                     LogFile.writeToFile(ESP_LOG_INFO, TAG, sequence->sequenceName + ": Fallback value valid | Time: " + std::string(cTime));
                 }
