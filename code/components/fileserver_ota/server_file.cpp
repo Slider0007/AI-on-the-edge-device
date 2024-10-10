@@ -1058,7 +1058,6 @@ static esp_err_t coredump_handler(httpd_req_t *req)
     const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
                                             ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
     if (partition == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "coredump_handler: Partition 'coredump' not found. Check if correct partition.bin is flashed");
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Partition 'coredump' not found");
         return ESP_FAIL;
     }

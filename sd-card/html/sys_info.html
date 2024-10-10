@@ -698,9 +698,10 @@
 					}
                 }
                 else {
-					firework.launch("Core dump request failed (Response status: " + this.status +
-									"). Repeat action or check logs.", 'danger', 30000);
-					console.error("Core dump request failed. Response status: " + this.status);
+					firework.launch("Core dump request failed (Status: " + this.status +
+									": " + this.responseText + ")", 'danger', 30000);
+					console.error("Core dump request failed. Status: " + this.status +
+									": " + this.responseText);
                 }
             }
         };
