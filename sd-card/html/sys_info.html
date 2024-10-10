@@ -687,8 +687,8 @@
 						}
 					}
 					else if (task === "save") {
-						firework.launch('Core dump file saved', 'success', 2000);
 						// @TODO: Embed save function as well (drawback: file download needs to be handled manually)
+						firework.launch('Core dump file saved', 'success', 2000);
 					}
 					else if (task === "clear") {
 						document.getElementById("coreDumpData").hidden = true;
@@ -697,12 +697,15 @@
 						firework.launch('Core dump partition cleared', 'success', 2000);
 					}
                 }
-                else {
-					firework.launch("Core dump request failed (Status: " + this.status +
-									": " + this.responseText + ")", 'danger', 30000);
-					console.error("Core dump request failed. Status: " + this.status +
-									": " + this.responseText);
+                else if (this.status >= 400) {
+					firework.launch("Core dump request failed. Status: " + this.status + " " +
+						(this.status == 404 ? "Not found" : this.responseText), 'danger', 30000);
+					console.error("Core dump request failed. Status: " + this.status + " " +
+						(this.status == 404 ? "Not found" : this.responseText));
                 }
+				else {
+					firework.launch("Core dump request failed. Status: Rejected, no response", 'danger', 30000);
+				}
             }
         };
 
