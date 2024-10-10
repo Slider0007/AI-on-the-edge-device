@@ -178,6 +178,12 @@ static bool ota_update_firmware(std::string fn)
         return false;
     }
 
+    // Clear core dump partition content after successful firmware update (clean start)
+    const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
+    if (partition != NULL) {
+        esp_partition_erase_range(partition, 0, partition->size);
+    }
+
     return true;
 }
 

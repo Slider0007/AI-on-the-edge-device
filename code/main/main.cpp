@@ -169,9 +169,10 @@ extern "C" void app_main(void)
     checkIsPlannedReboot();
     if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {  // If system reboot was not triggered by user and reboot was caused by execption
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Device was rebooted due to a software exception! Log level is set to DEBUG until the next reboot. "
-                                               "Flow init is delayed by 5 minutes to check the logs or do an OTA update");
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Keep device running until crash occurs again and check logs after device is up again");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "The device was restarted due to a software exception. The log level is set to DEBUG "
+                                               "until the next reboot. Process init is delayed by 5 minutes to allow checking logs, "
+                                               "downloading the dump file or performing an OTA update. Keep the device running until "
+                                               "another crash happens and review once the device is back online");
         LogFile.setLogLevel(ESP_LOG_DEBUG);
         setTaskAutoFlowState(FLOW_TASK_STATE_INIT_DELAYED);
     }
