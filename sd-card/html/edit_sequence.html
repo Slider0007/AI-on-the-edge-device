@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Number Sequences</title>
+
+    <style>
+        h1 {font-size: 1.8em;}
+        h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+        h3 {font-size: 1.2em;}
+        h4 {font-size: 1em; background-color: lightgray; padding: 5px; margin: 5px 0px 3px 0px;}
+        p {font-size: 1em;}
+
+        body, html {
+            font-size: 100%;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        input[type=number] {
+            width: 60px;
+            margin-right: 10px;
+            padding: 3px 5px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        input[type=text] {
+            padding: 3px 5px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        input:out-of-range {
+        background-color: rgba(255, 0, 0, 0.25);
+        border: 1px solid red;
+        }
+
+        select {
+            padding: 3px 5px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            margin-right: 10px;
+            min-width: 125px;
+            max-width: 100%;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+
+        .button {
+            padding: 5px 10px;
+            width: 160px;
+            font-size: 16px;
+        }
+
+        .multiplier {
+            padding: 0px 0px;
+            font-size: 12px;
+        }
+
+        th {
+			vertical-align: middle;
+			text-align: left;
+			font-size: 1em;
+			background-color: lightgray;
+			padding: 5px;
+		}
+
+        td {
+            padding: 5px 5px 5px 0px;
+        }
+
+        table {
+            width: 660px;
+            padding: 5px 5px 5px 0px;
+            table-layout: fixed;
+        }
+
+        details {
+            text-align: justify;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .hidden {
+			display: none;
+		}
+    </style>
+
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+    <script src="firework.js?v=$COMMIT_HASH"></script>
+</head>
+
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
+
+    <h2>Number Sequences</h2>
+    <details id="desc_details">
+        <summary><b>CLICK HERE</b> for usage description. Further documentation:
+            <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/ROI-Configuration/ target=_blank>ROI Configuration</a>
+        </summary>
+        <p>
+            This page is dedicated to defining number sequences. Each number sequence consists of digital ROIs and/or analog
+            ROIs that are processed together. After defining the number sequence, you need to specify the corresponding digit
+            and/or analog <b>R</b>egion <b>O</b>f <b>I</b>nterest (ROI). These ROIs are processed by the algorithm to digitize
+            the content.<br>
+            By default, one number sequence ("main") is already predefined and selected in the <b>Number Sequence</b> dropdown.
+            If additional number sequences are required, they can be added using the buttons next to the dropdown.
+        </p>
+        <p>
+            The ROI type can be switched using the <b>Digit ROI / Analog ROI</b> selection box. Individual ROIs in the selected
+            number sequence can be toggled using the selection box next to the ROI type selector.<br>
+            To create new ROIs, click <b>New</b>. The new ROI will automatically be assigned a unique name in ascending order
+            based on the type selected (dig1, dig2, ... / ana1, ana2, ...). Deleting an ROI from the existing ones will
+            rename the remaining ROIs in ascending order, without leaving any gaps.<br>
+
+            ROIs can be positioned either by dragging and dropping with the mouse or by manually entering parameters into the
+            designated fields. For accurate ROI placement and sizing, please consult the documentation thoroughly, as precise
+            configurations are essential for reliable processing:
+            <a href=https://jomjol.github.io/AI-on-the-edge-device-docs/ROI-Configuration/ target=_blank>ROI Configuration</a>.<br>
+            The order of the ROIs determines their position (and thus the multiplication factor) within the number sequence.
+            The position in the sequence can be changed using the <b>Move Lower</b> and <b>Move Higher</b> buttons. Below
+            the selection boxes, the resulting multiplication factors are displayed: one based solely on the position/order
+            in the number sequence, and another adjusted by the decimal shift setting (Parameter: Decimal Shift, default: 0).
+        </p>
+        <p>
+            Once the sequences and ROIs are defined, don't forget to save the new configuration by clicking the <b>Save And Apply</b>
+            button. The new configuration will be applied automatically, and no reboot is required.
+        </p>
+    </details>
+    <hr>
+
+    <table>
+        <colgroup>
+            <col span="1" style="width: 36%;">
+            <col span="1" style="width: 32%;">
+            <col span="1" style="width: 32%;">
+        </colgroup>
+        <tr>
+            <th>Global Configuration</th>
+            <td style="padding-left:15px">
+                <input type="checkbox" id="digitProcessing" value="0" onchange="digitProcessingChanged()">
+                <label for="digitProcessing">Process Digit ROI</label>
+            </td>
+            <td>
+                <input type="checkbox" id="analogProcessing" value="0" onchange="analogProcessingChanged()">
+                <label for="analogProcessing">Process Analog ROI</label>
+            </td>
+        </tr>
+    </table>
+
+    <table>
+        <colgroup>
+            <col span="1" style="width: 22%;">
+            <col span="1" style="width: 26%;">
+            <col span="1" style="width: 26%;">
+            <col span="1" style="width: 26%;">
+        </colgroup>
+        <tr>
+            <th colspan="4">Number Sequence</th>
+        </tr>
+        <tr>
+            <td>
+                <select id="sequenceSelection" onchange="onSequenceChanged()"></select>
+            </td>
+            <td><button class="button" id="newSequence" onclick="onClickNewSequence()">New</button></td>
+            <td><button class="button" id="renameSequence" onclick="onClickRenameSequence()">Rename</button></td>
+            <td><button class="button" id="deleteSequence" onclick="onClickDeleteSequence()">Delete</button></td>
+        </tr>
+    </table>
+
+<div id="div_input_el" hidden>
+    <table>
+        <colgroup>
+            <col span="1" style="width: 22%;">
+            <col span="1" style="width: 26%;">
+            <col span="1" style="width: 26%;">
+            <col span="1" style="width: 26%;">
+        </colgroup>
+        <tr>
+            <th colspan="4">Region Of Interest (ROI)</th>
+        </tr>
+        <tr>
+            <td>
+                <select id="roiTypeSelection" onchange="onTypeChanged()">
+                    <option value="digit" selected>Digit ROI</option>
+                    <option value="analog">Analog ROI</option>
+                </select>
+            </td>
+            <td>
+                <select id="ROISelect" onchange="onROIChanged()"></select>
+            </td>
+            <td><button class="button" id="newROI" onclick="onClickNewROI()">New</button></td>
+            <td><button class="button" id="deleteROI" onclick="onClickDeleteROI()">Delete</button></td>
+        </tr>
+        <tr>
+            <td class="multiplier">
+                Multiplier: <output id="multiplier"></output><br>
+                (based on order)
+            </td>
+            <td class="multiplier">
+                Multiplier: <output id="multiplierDecshift"></output><br>
+                (order + decimal shift: <output id="decimalShift"></output>)
+            </td>
+            <td><button class="button" id="moveROIHigher" onclick="onClickMoveROIHigher()">Move Higher</button></td>
+            <td><button class="button" id="moveROILower" onclick="onClickMoveROILower()">Move Lower</button></td>
+        </tr>
+    </table>
+
+	<table>
+        <colgroup>
+            <col span="1" style="width: 20%;">
+            <col span="1" style="width: 20%;">
+            <col span="1" style="width: 60%;">
+        </colgroup>
+        <tr>
+            <td>
+                x <input type="number" id="refx" min="1" onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
+            </td>
+            <td>
+                Δx <input type="number" id="refdx" min="1" onchange="(!validity.rangeUnderflow||(value=1));onValueManualChangedDx()">
+            </td>
+            <td class="digit">
+                <input type="checkbox" id="lockAspectRatio" value="1" onclick="onClickLockAspectRatio()" checked>
+                    <label for="lockAspectRatio">Lock aspect ratio</label>
+            </td>
+            <td class="analog">
+                <input type="checkbox" id="lockAspectRatioAnalog" value="1" onclick="onClickLockAspectRatio()" checked>
+                    <label for="lockAspectRatioAnalog">Lock aspect ratio</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                y <input type="number" id="refy" min="1" onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
+            </td>
+            <td>
+                Δy <input type="number" id="refdy" min="1" onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
+            </td>
+            <td class="digit">
+                <input type="checkbox" id="lockSizesDigit" value="1" onclick="onClickLockSizes()" checked>
+                    <label for="lockSizesDigit">Synchronize y, Δx and Δy</label>
+            </td>
+            <td class="analog">
+                <input type="checkbox" id="lockSizesAnalog" value="1" onclick="onClickLockSizes()" checked>
+                    <label for="lockSizesAnalog">Synchronize Δx and Δy</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="height: 27px;"></td>
+            <td class="digit">
+                <input type="checkbox" id="lockSpaceEquidistant" value="1" onclick="onClickLockSpaceEquidistant()" checked>
+                    <label for="lockSpaceEquidistant">Keep equidistance of <input style="margin-right:0px;width:40px" type="number"
+                        id="space" min="0" onchange="(!validity.rangeUnderflow||(value=0));onValueManualChangedSpace()"> between all ROIs</label>
+            </td>
+            <td class="analog">
+                <input type="checkbox" id="CCW" value="0" onclick="onClickCCW()">
+                    <label for="CCW">Counter clockwise rotation (CCW)</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" style="height: 27px;">
+                <input type="checkbox" id="showSelectedROIOnly" onclick="RefreshDraw()">
+                    <label for="showSelectedROIOnly">Show selected ROI only</label>
+            </td>
+            <td class="digitanalog" style="height: 27px;">
+                <input type="checkbox" id="showDigitAnalogROI" onclick="RefreshDraw()" checked>
+                     <label for="showDigitAnalogROI">Show Digit + Analog ROI</label>
+            </td>
+        </tr>
+    </table>
+</div>
+
+    <table>
+        <colgroup>
+            <col span="1" style="width: 22%;">
+            <col span="1" style="width: 26%;">
+            <col span="1" style="width: 26%;">
+            <col span="1" style="width: 26%;">
+        </colgroup>
+        <tr>
+            <td colspan="3" style="vertical-align: bottom;"><b>Reference Image</b></td>
+            <td><input disabled style="font-weight:bold;" class="button" type="submit" id="saveconfig"
+                        onclick="SaveToConfig()" value="Save And Apply"></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <img id="img_loading" hidden>
+                <canvas style="max-width: 100%" id="canvas" hidden></canvas>
+            </td>
+        </tr>
+    </table>
+
+
+<script src="global_common.js?v=$COMMIT_HASH"></script>
+<script src="global_data.js?v=$COMMIT_HASH"></script>
+<script>
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
+    let imageObj = new Image();
+    let rect = {};
+    let drag = false;
+    let roiSelected = 0;
+    let lockAspectRatio = true;
+    let lockAspectRatioAnalog = true;
+    let lockSizeDigit = false;
+    let lockSizeAnalog = false;
+    let lockSpaceEquidistant = true;
+    let space = 3;
+    let sequenceSelection = document.getElementById("sequenceSelection");
+    let typeSelection = document.getElementById("roiTypeSelection");
+
+
+    function setInputVisibilty()
+    {
+        setElVisibility("#div_input_el", jsonConfigModifiedDelta.digit.enabled || jsonConfigModifiedDelta.analog.enabled);
+    }
+
+
+    function digitProcessingChanged(init = false)
+    {
+        if (init) {
+            document.getElementById("digitProcessing").checked = jsonConfig.digit.enabled;
+            setInputVisibilty();
+        }
+        else {
+            jsonConfigModifiedDelta.digit.enabled = document.getElementById("digitProcessing").checked;
+            setInputVisibilty();
+            document.getElementById("saveconfig").disabled = false;
+        }
+
+        if (jsonConfigModifiedDelta.digit.enabled) {
+            setClassVisibility("digitanalog", jsonConfigModifiedDelta.analog.enabled);
+            $("#roiTypeSelection option[value='digit']").attr("disabled", false);
+            $("#roiTypeSelection").val("digit");
+        }
+        else {
+            setClassVisibility("digitanalog", false);
+            $("#roiTypeSelection option[value='digit']").attr("disabled", true);
+            $("#roiTypeSelection").val("analog");
+        }
+
+        RefreshROI();
+        parseROIArrangement();
+        onTypeChanged();
+    }
+
+
+    function analogProcessingChanged(init = false)
+    {
+        if (init) {
+            document.getElementById("analogProcessing").checked = jsonConfig.analog.enabled;
+            setInputVisibilty();
+        }
+        else {
+            jsonConfigModifiedDelta.analog.enabled = document.getElementById("analogProcessing").checked;
+            setInputVisibilty();
+            document.getElementById("saveconfig").disabled = false;
+        }
+
+        if (jsonConfigModifiedDelta.analog.enabled) {
+            setClassVisibility("digitanalog", jsonConfigModifiedDelta.digit.enabled);
+            $("#roiTypeSelection option[value='analog']").attr("disabled", false);
+            $("#roiTypeSelection").val("analog");
+        }
+        else {
+            setClassVisibility("digitanalog", false);
+            $("#roiTypeSelection option[value='analog']").attr("disabled", true);
+            $("#roiTypeSelection").val("digit");
+        }
+
+        RefreshROI();
+        parseROIArrangement();
+        onTypeChanged();
+    }
+
+
+    function onTypeChanged()
+    {
+        roiSelected = 0;
+
+        if (typeSelection.value == "digit") {
+            setClassVisibility("digit", true);
+            setClassVisibility("analog", false);
+        }
+        else if (typeSelection.value == "analog") {
+            setClassVisibility("digit", false);
+            setClassVisibility("analog", true);
+        }
+
+        RefreshROI();
+        parseROIArrangement();
+    }
+
+
+    function onSequenceChanged()
+    {
+        roiSelected = 0;
+        onTypeChanged();
+    }
+
+
+    function onClickNewSequence()
+    {
+        let sequenceName = prompt("Please enter a name for the new number sequence", "name").toLowerCase();
+        if (sequenceName === null) {
+            return; //break out of the function early because prompt was aborted
+        }
+
+        erg = CreateNumberSequence(sequenceName);
+        if (erg != "")
+            firework.launch(erg, 'danger', 30000);
+        else
+            fillSequenceSelectionOptions(sequenceName);
+
+        onTypeChanged();
+    }
+
+
+    function CreateNumberSequence(sequenceName)
+    {
+        if (sequenceName.length == 0) {
+            return "Number sequence name must not be empty";
+        }
+
+        if ((sequenceName.indexOf(".") >= 0) || (sequenceName.indexOf(",") >= 0) ||
+        (sequenceName.indexOf(" ") >= 0) || (sequenceName.indexOf("\"") >= 0)) {
+            return "Number sequence name must not contain , . \" or a space";
+        }
+
+        for (i = 0; i < jsonConfigModifiedDelta.numbersequences.sequence.length; ++i) {
+            if (jsonConfigModifiedDelta.numbersequences.sequence[i]["sequencename"] == sequenceName)
+                return "Number sequence name is already existing";
+        }
+
+        jsonConfigModifiedDelta.numbersequences.sequence.push({"sequenceid": -1, "sequencename": sequenceName});
+        jsonConfigModifiedDelta.digit.sequence.push({"sequenceid": -1, "sequencename": sequenceName, "roi": []});
+        jsonConfigModifiedDelta.analog.sequence.push({"sequenceid": -1, "sequencename": sequenceName, "roi": []});
+        return "";
+    }
+
+
+    function onClickRenameSequence()
+    {
+        let sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
+        let sequenceNameNew = prompt("Please enter a new name for the selected number sequence", sequenceName).toLowerCase();
+        if (sequenceNameNew === null) {
+            return; //break out of the function early because prompt was aborted
+        }
+
+        erg = RenameNumberSequence(sequenceSelection.selectedIndex, sequenceNameNew);
+        if (erg != "")
+            firework.launch(erg, 'danger', 5000);
+        else
+            fillSequenceSelectionOptions(sequenceNameNew);
+    }
+
+
+    function RenameNumberSequence(idx, sequenceNameNew)
+    {
+        if (sequenceNameNew.length == 0) {
+            return "Number sequence name must not be empty";
+        }
+
+        if ((sequenceNameNew.indexOf(".") >= 0) || (sequenceNameNew.indexOf(",") >= 0) ||
+            (sequenceNameNew.indexOf(" ") >= 0) || (sequenceNameNew.indexOf("\"") >= 0)) {
+            return "Number sequence name must not contain , . \" or a space";
+        }
+
+        for (i = 0; i < jsonConfigModifiedDelta.numbersequences.sequence.length; ++i) {
+            if (jsonConfigModifiedDelta.numbersequences.sequence[i]["sequencename"] == sequenceNameNew)
+                return "Number sequence name is already existing";
+        }
+
+        if (idx == -1)
+            return "Invalid number sequence index";
+
+        jsonConfigModifiedDelta.numbersequences.sequence[idx].sequencename = sequenceNameNew;
+        jsonConfigModifiedDelta.digit.sequence[idx]["sequencename"] = sequenceNameNew;
+        jsonConfigModifiedDelta.analog.sequence[idx]["sequencename"] = sequenceNameNew;
+        return "";
+    }
+
+
+    function onClickDeleteSequence()
+    {
+        if (confirm("The entire number sequence will be removed.\n Do you really want to proceed?"))
+        {
+            erg = DeleteNumberSequence(sequenceSelection.selectedIndex);
+            if (erg != "")
+                firework.launch(erg, 'danger', 5000);
+            fillSequenceSelectionOptions();
+        }
+
+        onTypeChanged();
+    }
+
+
+    function DeleteNumberSequence(idx)
+    {
+        if (jsonConfigModifiedDelta.numbersequences.sequence.length == 1)
+            return "One number sequence is mandatory. Therefore this cannot be deleted"
+
+        jsonConfigModifiedDelta.numbersequences.sequence.splice(idx, 1);
+        jsonConfigModifiedDelta.digit.sequence.splice(idx, 1);
+        jsonConfigModifiedDelta.analog.sequence.splice(idx, 1);
+
+        return "";
+    }
+
+
+    function onROIChanged()
+    {
+        roiSelected = parseInt(document.getElementById("ROISelect").value);
+        RefreshROI();
+        parseROIArrangement()
+    }
+
+
+    function onClickNewROI()
+    {
+        let sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
+        let roiSelection = document.getElementById("ROISelect");
+
+        if (typeSelection.value == "digit") {
+            if (jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length > 0) {
+                if (jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length > 1) {
+                    space = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[1].x) -
+                        parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].x) -
+                        parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].dx);
+                }
+
+                let roiX = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].x) +
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].dx) + parseInt(space);
+
+                erg = CreateROI("digit", sequenceName, roiX,
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].y),
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].dx),
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].dy));
+            }
+            else
+                erg = CreateROI("digit", sequenceName, 15, 30, 55, 75);
+
+            if (erg != "") {
+                firework.launch(erg, 'danger', 30000);
+            }
+            else {
+                RefreshROI("dig" + jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length.toString());
+                RefreshDraw();
+            }
+        }
+        else if (typeSelection.value == "analog") {
+            if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length > 0) {
+                if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length > 1) {
+                    space = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[1].x) -
+                        parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].x) -
+                        parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].dx);
+                }
+
+                let roiX = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].x) +
+                    parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].dx);
+
+                erg = CreateROI("analog", sequenceName, roiX,
+                    parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].y),
+                    parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].dx),
+                    parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length-1].dy));
+            }
+            else
+                erg = CreateROI("analog", sequenceName, 15, 140, 100, 100);
+
+            if (erg != "") {
+                firework.launch(erg, 'danger', 30000);
+            }
+            else {
+                RefreshROI("ana" + jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length.toString());
+                RefreshDraw();
+            }
+        }
+    }
+
+
+    function CreateROI(type, sequenceName, x, y, dx, dy)
+    {
+        for (i = 0; i < jsonConfigModifiedDelta[type]["sequence"].length; ++i) {
+            if (jsonConfigModifiedDelta[type]["sequence"][i]["sequencename"] == sequenceName) {
+                if (typeSelection.value == "digit") {
+                    jsonConfigModifiedDelta[type]["sequence"][i]["roi"].push({"x": parseInt(x),
+                        "y": parseInt(y), "dx": parseInt(dx), "dy": parseInt(dy), "ar": dx/dy});
+                }
+                else if (typeSelection.value == "analog") {
+                    jsonConfigModifiedDelta[type]["sequence"][i]["roi"].push({"x": parseInt(x),
+                        "y": parseInt(y), "dx": parseInt(dx), "dy": parseInt(dy), "ccw": false, "ar": dx/dy});
+                }
+                return "";
+            }
+        }
+
+        return "Number sequence not existing. ROI cannot be created"
+    }
+
+
+    function onClickDeleteROI()
+    {
+        if (!confirm("Delete the selected ROI?")) {
+            return; //break out of the function early because prompt was aborted
+        }
+
+        if (typeSelection.value == "digit") {
+            jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.splice(roiSelected, 1);
+
+            if (roiSelected > jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length - 1) {
+                roiSelected = jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length - 1;
+            }
+
+            RefreshROI();
+        }
+        else if (typeSelection.value == "analog") {
+            jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.splice(roiSelected, 1);
+
+            if (roiSelected > jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1) {
+                roiSelected = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1;
+            }
+
+            RefreshROI();
+        }
+
+    }
+
+
+    function onClickMoveROIHigher()
+    {
+        if (typeSelection.value == "digit") {
+            let zw = jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected];
+            jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected] =
+                jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected-1];
+            jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected-1] = zw;
+            roiSelected--;
+
+            RefreshROI();
+            onValueManualChanged();
+        }
+        else if (typeSelection.value == "analog") {
+            let zw = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected];
+            jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected] =
+                jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected-1];
+            jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected-1] = zw;
+            roiSelected--;
+
+            RefreshROI();
+            onValueManualChanged();
+        }
+    }
+
+
+    function onClickMoveROILower()
+    {
+        if (typeSelection.value == "digit") {
+            let zw = jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected];
+            jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected] =
+                jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected+1];
+            jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected+1] = zw;
+            roiSelected++;
+
+            RefreshROI();
+            onValueManualChanged();
+        }
+        else if (typeSelection.value == "analog") {
+            let zw = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected];
+            jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected] =
+                jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected+1];
+            jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected+1] = zw;
+            roiSelected++;
+
+            RefreshROI();
+            onValueManualChanged();
+        }
+    }
+
+
+    function onClickLockAspectRatio()
+    {
+        if (typeSelection.value == "digit") {
+            lockAspectRatio = document.getElementById("lockAspectRatio").checked;
+        }
+        else if (typeSelection.value == "analog") {
+            lockAspectRatioAnalog = document.getElementById("lockAspectRatioAnalog").checked;
+        }
+    }
+
+
+    function onClickLockSizes()
+    {
+        if (typeSelection.value == "digit") {
+            lockSizeDigit = document.getElementById("lockSizesDigit").checked;
+            onValueManualChangedSpace();
+            RefreshDraw();
+        }
+        else if (typeSelection.value == "analog") {
+            lockSizeAnalog = document.getElementById("lockSizesAnalog").checked;
+            RefreshROI();
+        }
+    }
+
+
+    function onClickLockSpaceEquidistant()
+    {
+        lockSpaceEquidistant = document.getElementById("lockSpaceEquidistant").checked;
+        document.getElementById("space").disabled = !lockSpaceEquidistant;
+        RefreshROI();
+    }
+
+
+    function onClickCCW()
+    {
+        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ccw = document.getElementById("CCW").checked;
+        RefreshROI();
+    }
+
+
+    function onValueManualChanged()
+    {
+        if (typeSelection.value == "digit") {
+            if (jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length == 0) {
+                return;
+            }
+
+            if (!drag) {
+                rect.w = document.getElementById("refdx").value;
+                rect.h = document.getElementById("refdy").value;
+
+                if (lockAspectRatio) {
+                    rect.w = Math.round(rect.h * jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
+                    document.getElementById("refdx").value = rect.w;
+                }
+
+                rect.startX = document.getElementById("refx").value;
+                rect.startY = document.getElementById("refy").value;
+
+                if (lockSpaceEquidistant) {
+                    makeX_SpaceEquidistant();
+                }
+
+                RefreshDraw();
+            }
+            RefreshROI();
+        }
+        else if (typeSelection.value == "analog") {
+            if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length == 0) {
+                return;
+            }
+
+            if (!drag) {
+                rect.w = document.getElementById("refdx").value;
+                rect.h = document.getElementById("refdy").value;
+
+                if (lockAspectRatioAnalog) {
+                    rect.w = Math.round(rect.h * jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
+                    document.getElementById("refdx").value = rect.w;
+                }
+
+                rect.startX = document.getElementById("refx").value;
+                rect.startY = document.getElementById("refy").value;
+
+                RefreshDraw();
+            }
+            RefreshROI();
+        }
+
+        document.getElementById("saveconfig").disabled = false;
+    }
+
+
+    function onValueManualChangedDx()
+    {
+        if (typeSelection.value == "digit") {
+            if (jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length == 0) {
+                return;
+            }
+
+            if (!drag) {
+                rect.w = document.getElementById("refdx").value;
+                rect.h = document.getElementById("refdy").value;
+
+                if (lockAspectRatio) {
+                    rect.h = Math.round(rect.w / jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
+                    document.getElementById("refdy").value = rect.h;
+                }
+
+                rect.startX = document.getElementById("refx").value;
+                rect.startY = document.getElementById("refy").value;
+
+                if (lockSpaceEquidistant) {
+                    makeX_SpaceEquidistant();
+                }
+
+                RefreshDraw();
+            }
+            RefreshROI();
+        }
+        else if (typeSelection.value == "analog") {
+            if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length == 0) {
+                return;
+            }
+            if (!drag) {
+                rect.w = document.getElementById("refdx").value;
+                rect.h = document.getElementById("refdy").value;
+
+                if (lockAspectRatioAnalog) {
+                    rect.h = Math.round(rect.w / jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
+                    document.getElementById("refdy").value = rect.h;
+                }
+
+                rect.startX = document.getElementById("refx").value;
+                rect.startY = document.getElementById("refy").value;
+
+                RefreshDraw();
+            }
+            RefreshROI();
+        }
+
+        document.getElementById("saveconfig").disabled = false;
+    }
+
+
+    function onValueManualChangedSpace()
+    {
+        if (!drag) {
+           space = document.getElementById("space").value;
+           onValueManualChanged();
+           RefreshDraw();
+        }
+    }
+
+
+    function makeX_SpaceEquidistant()
+    {
+        if (jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length <= 1) { // Only one or no number
+            return;
+        }
+
+        if (roiSelected == 0) { // First number
+            for (let i = 1; i < jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length; i++) {
+                jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].x =
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i-1].x)  +
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i-1].dx) + parseInt(space);
+            }
+        }
+        else { // In between
+            for (let i = roiSelected - 1; i >= 0 ; i--) { // left side
+                jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].x =
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i+1].x) -
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dx) - parseInt(space);
+            }
+
+            for (let i = roiSelected + 1; i < jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length; i++) { // right side
+                jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].x =
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i-1].x) +
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i-1].dx) + parseInt(space);
+            }
+        }
+    }
+
+
+    function fillSequenceSelectionOptions(selectedSequence)
+	{
+		$("#sequenceSelection").find('option').remove().end();
+
+        if (jsonConfigModifiedDelta.numbersequences.sequence.length == 0) {
+            $("#sequenceSelection").append(new Option("N/A", -1));
+        }
+        else {
+            for (let i = 0; i < jsonConfigModifiedDelta.numbersequences.sequence.length; ++i) {
+                $("#sequenceSelection").append(new Option(jsonConfigModifiedDelta.numbersequences.sequence[i].sequencename, i));
+
+                if (typeof selectedSequence !== undefined) {
+                    if (jsonConfigModifiedDelta.numbersequences.sequence[i].sequencename == selectedSequence)
+                    $("#sequenceSelection").prop("selectedIndex", i);
+                }
+            }
+        }
+
+        if ($('#sequenceSelection option').length <= 1) {
+            $("#deleteSequence").prop("disabled", true);
+        }
+        else {
+            $("#deleteSequence").prop("disabled", false);
+        }
+	}
+
+
+    function RefreshROI(roiName)
+    {
+        let roiSelection = document.getElementById("ROISelect");
+        if (jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi.length == 0) {
+            document.getElementById("ROISelect").disabled = true;
+            document.getElementById("multiplier").style.display = "none";
+            document.getElementById("multiplierDecshift").style.display = "none";
+            document.getElementById("newROI").disabled = false;
+            document.getElementById("deleteROI").disabled = true;
+            document.getElementById("refx").disabled = true;
+            document.getElementById("refdx").disabled = true;
+            document.getElementById("refy").disabled = true;
+            document.getElementById("refdy").disabled = true;
+            document.getElementById("lockAspectRatio").disabled = true;
+            document.getElementById("lockAspectRatioAnalog").disabled = true;
+            document.getElementById("lockSizesDigit").disabled = true;
+            document.getElementById("lockSizesAnalog").disabled = true;
+            document.getElementById("lockSpaceEquidistant").disabled = true;
+            document.getElementById("space").disabled = true;
+            document.getElementById("CCW").disabled = true;
+            document.getElementById("showSelectedROIOnly").disabled = true;
+            document.getElementById("moveROILower").disabled = true;
+            document.getElementById("moveROIHigher").disabled = true;
+            document.getElementById("saveconfig").disabled = false;
+
+            while (roiSelection.length){
+                roiSelection.remove(0);
+            }
+
+            let option = document.createElement("option");
+            option.text = "None";
+            option.value = -1;
+            roiSelection.add(option);
+            roiSelected = roiSelection.selectedIndex = 0;
+
+            RefreshDraw();
+            return;
+        }
+        else {
+            document.getElementById("ROISelect").disabled = false;
+            document.getElementById("multiplier").style.display = "";
+            document.getElementById("multiplierDecshift").style.display = "";
+            document.getElementById("newROI").disabled = false;
+            document.getElementById("deleteROI").disabled = false;
+            document.getElementById("refx").disabled = false;
+            document.getElementById("refdx").disabled = false;
+            document.getElementById("refy").disabled = false;
+            document.getElementById("refdy").disabled = false;
+            document.getElementById("lockAspectRatio").disabled = false;
+            document.getElementById("lockAspectRatioAnalog").disabled = false;
+            document.getElementById("lockSizesDigit").disabled = false;
+            document.getElementById("lockSizesAnalog").disabled = false;
+            document.getElementById("lockSpaceEquidistant").disabled = false;
+            document.getElementById("space").disabled = false;
+            document.getElementById("CCW").disabled = false;
+            document.getElementById("showSelectedROIOnly").disabled = false;
+            document.getElementById("saveconfig").disabled = false;
+
+            while (roiSelection.length) {
+                roiSelection.remove(0);
+            }
+
+            if (roiSelected > jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi.length)
+                roiSelected = jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi.length-1;
+
+            for (let i = 0; i < jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi.length; ++i){
+                let option = document.createElement("option");
+
+                if (typeSelection.value == "digit") {
+                    option.text = "dig" + (i+1).toString();
+                }
+                else if (typeSelection.value == "analog") {
+                    option.text = "ana" + (i+1).toString();
+                }
+
+                option.value = i;
+                roiSelection.add(option);
+
+                if (typeof roiName !== 'undefined') {
+                    if (option.text == roiName)
+                        roiSelected = i;
+                }
+
+                jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi[i].ar =
+                    jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi[i].dx /
+                    jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi[i].dy;
+
+                ROIPositionValidation(jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi[i]);
+            }
+            roiSelection.selectedIndex = roiSelected;
+        }
+
+        document.getElementById("moveROIHigher").disabled = false;
+        if (roiSelected == 0) {
+            document.getElementById("moveROIHigher").disabled = true;
+        }
+
+        document.getElementById("moveROILower").disabled = false;
+        if (roiSelected == (jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi.length-1)) {
+            document.getElementById("moveROILower").disabled = true;
+        }
+
+        ShowMultiplier();
+
+        document.getElementById("lockAspectRatio").checked = lockAspectRatio;
+        document.getElementById("lockAspectRatioAnalog").checked = lockAspectRatioAnalog;
+        document.getElementById("lockSizesDigit").checked = lockSizeDigit;
+        document.getElementById("lockSizesAnalog").checked = lockSizeAnalog;
+
+        document.getElementById("lockSpaceEquidistant").checked = lockSpaceEquidistant;
+        document.getElementById("space").disabled = !lockSpaceEquidistant;
+        document.getElementById("space").value = space;
+
+        rect.startX = document.getElementById("refx").value = jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi[roiSelected].x;
+        rect.startY = document.getElementById("refy").value = jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi[roiSelected].y;
+        rect.w = document.getElementById("refdx").value = jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi[roiSelected].dx;
+        rect.h = document.getElementById("refdy").value = jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi[roiSelected].dy;
+
+        if (typeSelection.value == "analog") {
+            document.getElementById("CCW").checked = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ccw;
+        }
+
+        RefreshDraw();
+    }
+
+
+    function parseROIArrangement()
+    {
+        // Only one ROI, no check needed
+        if (jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi.length <= 1)
+            return;
+
+        if (typeSelection.value == "digit") {
+            // Check if the ROIs are equidistant. Only if not, untick the checkbox
+            let distanceROI0_to_ROI1 = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[1].x) -
+                (parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].x) +
+                parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].dx)); // Distance between 1st and 2nd ROI
+
+            for (let i = 1; i < (jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length - 1); ++i) { // 2nd .. 2nd-last ROI
+                if (distanceROI0_to_ROI1 != (parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i+1].x) -
+                    (parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].x) +
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dx)))) {
+                    lockSpaceEquidistant = false;
+                    document.getElementById("lockSpaceEquidistant").checked = lockSpaceEquidistant;
+                    document.getElementById("space").disabled = !lockSpaceEquidistant;
+                    break;
+                }
+            }
+
+            // Check if the ROIs have same y, dy and dx. If so, tick the sync checkbox
+            let allYDxDyIdentical = true;
+            for (let i = 1; i < (jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length); ++i) { // 2nd .. last ROI
+                if (parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].y) !=
+                        parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].y) ||
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dx) !=
+                            parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].dx) ||
+                    parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dy) !=
+                            parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].dy)) {
+                                allYDxDyIdentical = false;
+                    break;
+                }
+            }
+
+            if (allYDxDyIdentical) {
+                lockSizeDigit = true;
+                document.getElementById("lockSizesDigit").checked = lockSizeDigit;
+            }
+
+            // Preset space value
+            space = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[1].x) -
+                parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].x) -
+                parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].dx);
+            document.getElementById("space").value = space;
+        }
+        else if (typeSelection.value == "analog") {
+            // Check if the ROIs have same dy and dx. If so, tick the sync checkbox
+            let allDxDyIdentical = true;
+            for (let i = 1; i < jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length; ++i) { // 2nd .. last ROI
+                if (parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dx) !=
+                        parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].dx) ||
+                    parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dy) !=
+                        parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].dy)) {
+                            allDxDyIdentical = false;
+                    break;
+                }
+            }
+
+            if (allDxDyIdentical) {
+                lockSizeAnalog = true;
+                document.getElementById("lockSizesAnalog").checked = lockSizeAnalog;
+            }
+        }
+    }
+
+
+    function ROIPositionValidation(roi)
+    {
+        let refImageWidth, refImageHeight;
+
+        if (jsonConfig.takeimage.camera.imagesize == "QVGA") {
+            if (jsonConfig.imagealignment.flipimagesize == false) {
+                refImageWidth = 320;
+                refImageHeight = 240;
+            }
+            else if (jsonConfig.imagealignment.flipimagesize == true) {
+                refImageWidth = 240;
+                refImageHeight = 320;
+            }
+            else {
+                firework.launch('Unknown FlipImageSize. No ROI position validation', 'danger', 30000);
+                return;
+            }
+        }
+        else if (jsonConfig.takeimage.camera.imagesize == "VGA") {
+            if (jsonConfig.imagealignment.flipimagesize == false) {
+                refImageWidth = 640;
+                refImageHeight = 480;
+            }
+            else if (jsonConfig.imagealignment.flipimagesize == true) {
+                refImageWidth = 480;
+                refImageHeight = 640;
+            }
+            else {
+                firework.launch('Unknown FlipImageSize. No ROI position validation', 'danger', 30000);
+                return;
+            }
+        }
+        else {
+            firework.launch('Unknown image size. No ROI position validation', 'danger', 30000);
+            return;
+        }
+
+        if ((parseInt(roi.x) + parseInt(roi.dx)) >= refImageWidth) {
+            roi.x = refImageWidth - parseInt(roi.dx) - 1;
+                firework.launch('ROI partially or completely out of image area (x) -> Position automatically adapted. \
+                                    Please verify position', 'warning', 5000);
+        }
+        else if (parseInt(roi.x) < 1) {
+            roi.x = 1;
+            firework.launch('ROI partially or completely out of image area (x) -> Position automatically adapted. \
+                                Please verify position', 'warning', 5000);
+        }
+
+        if ((parseInt(roi.y) + parseInt(roi.dy)) >= refImageHeight) {
+            roi.y = refImageHeight - parseInt(roi.dy) - 1;
+            firework.launch('ROI partially or completely out of image area (y) -> Position automatically adapted. \
+                                Please verify position', 'warning', 5000);
+        }
+        else if (parseInt(roi.y) < 1) {
+            roi.y = 1;
+            firework.launch('ROI partially or completely out of image area (y) -> Position automatically adapted. \
+                                Please verify position', 'warning', 5000);
+        }
+    }
+
+
+    function ShowMultiplier()
+    {
+        let multiplier;
+        let multiplierDecshift;
+        let fixedDecimals_decshift;
+        let decimalShift = document.getElementById("decimalShift").value = 0;
+        let sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
+
+        // Compare with non modified jsonConfig (new sequence initially uses decimalShift = 0)
+        for (let i = 0; i < jsonConfig.numbersequences.sequence.length; i++) {
+            if (jsonConfig.numbersequences.sequence[i].sequencename == sequenceName) {
+                decimalShift = document.getElementById("decimalShift").value = jsonConfig.postprocessing.sequence[i].decimalshift;
+            }
+        }
+
+        if (typeSelection.value == "digit") {
+            multiplier = jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length - 1 - roiSelected;
+            multiplierDecshift = fixedDecimals_decshift = multiplier + Number(decimalShift);
+
+            if (multiplierDecshift > 0)
+                fixedDecimals_decshift = 0;
+
+            if (fixedDecimals_decshift < 0) {
+                fixedDecimals_decshift = -1*fixedDecimals_decshift;
+            }
+
+            document.getElementById("multiplier").value="x" + Number(10 ** multiplier).toFixed(0);
+            document.getElementById("multiplierDecshift").value="x" + Number(10 ** multiplierDecshift).toFixed(fixedDecimals_decshift);
+        }
+        else if (typeSelection.value == "analog") {
+            if (jsonConfigModifiedDelta.digit.enabled && jsonConfigModifiedDelta.analog.enabled) { // Digit + Analog
+                multiplier = fixedDecimals = roiSelected + 1;
+                multiplierDecshift = fixedDecimals_decshift = multiplier - Number(decimalShift);
+
+                if (multiplier < 0)
+                    fixedDecimals = 0;
+
+                if (multiplierDecshift < 0)
+                    fixedDecimals_decshift = 0;
+
+                document.getElementById("multiplier").value="x" + Number(10 ** (-1*multiplier)).toFixed(fixedDecimals);
+                document.getElementById("multiplierDecshift").value="x" + Number(10 ** (-1*multiplierDecshift)).toFixed(fixedDecimals_decshift);
+            }
+            else if (!jsonConfigModifiedDelta.digit.enabled && jsonConfigModifiedDelta.analog.enabled) { // Only Analog
+                multiplier = jsonConfig.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1 - roiSelected;
+                multiplierDecshift = fixedDecimals_decshift = multiplier + Number(decimalShift);
+
+                if (multiplierDecshift > 0)
+                    fixedDecimals_decshift = 0;
+
+                if (fixedDecimals_decshift < 0) {
+                    fixedDecimals_decshift = -1 * fixedDecimals_decshift;
+                }
+
+                document.getElementById("multiplier").value="x" + Number(10 ** multiplier).toFixed(0);
+                document.getElementById("multiplierDecshift").value="x" + Number(10 ** multiplierDecshift).toFixed(fixedDecimals_decshift);
+            }
+        }
+    }
+
+
+    function loadCanvas(dataURL)
+    {
+        $("#canvas").hide();
+        $("#img_loading").show();
+
+        imageObj.onload = function() {
+            canvas.width = this.width;
+            canvas.height = this.height;
+            RefreshDraw();
+
+            $("#img_loading").hide();
+            $("#canvas").show();
+        };
+
+        imageObj.src = loadImage(dataURL, 'img_not_available.png?v=$COMMIT_HASH').src;
+    }
+
+
+    function drawTextBG(type, context, txt, x, y, dy, padding, highlight)
+    {
+        context.font = "15px Arial";
+        context.textAlign = "center";
+
+        let width = context.measureText(txt).width;
+        let height = parseInt(context.font, 10);
+
+
+        // Highlight selected ROI textbox#
+        if (type == "digit") {
+            if (highlight)
+                context.fillStyle = 'rgba(0, 0, 255, 0.6)';
+            else
+                context.fillStyle = 'rgba(0, 0, 150, 0.5)';
+        }
+        else if (type == "analog") {
+            if (highlight)
+                context.fillStyle = 'rgba(0, 255, 0, 0.6)';
+            else
+                context.fillStyle = 'rgba(0, 150, 0, 0.5)';
+        }
+
+        if ((y - height - 8) >= 0) { // If no space on top of ROI place text below ROI
+            /* Background rectangle */
+            context.fillRect(x-width/2-padding, y - height - 8, width + 2*padding, height + 2*padding);
+            /* Text */
+            context.fillStyle = "black";
+            context.fillText(txt, x + padding/2 - 1, y - height/2 - 1);
+        }
+        else {
+            /* Background rectangle */
+            context.fillRect(x-width/2-padding, y + dy + 4, width + 2*padding, height + 2*padding);
+            /* Text */
+            context.fillStyle = "black";
+            context.fillText(txt, x + padding/2 - 1, y + dy + height + 2*padding);
+        }
+    }
+
+
+    function RefreshDraw()
+    {
+        // Draw reference image
+        // ************************
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(imageObj, 0, 0);
+
+        if (sequenceSelection === undefined)
+            sequenceSelection = document.getElementById("sequenceSelection");
+
+        // Draw digit ROI overlay
+        // ************************
+        if (document.getElementById("digitProcessing").checked &&
+            (typeSelection.value == "digit" || document.getElementById("showDigitAnalogROI").checked)) {
+
+            if (typeSelection.value == "digit" && lockSizeDigit) {
+                // Synchronize y, dx and dy
+                for (let i = 0; i < jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length; i++) {
+                    if (i != roiSelected) {
+                        jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].y = parseInt(rect.startY);
+                        jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dy = parseInt(rect.h);
+                        jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dx = parseInt(rect.w);
+                    }
+                }
+            }
+
+            for (let i = 0; i < jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length; i++) {
+                if ((i != roiSelected || (typeSelection.value == "analog" && document.getElementById("showDigitAnalogROI").checked)) &&
+                        !document.getElementById("showSelectedROIOnly").checked) {
+                    lw = 1;
+                    context.lineWidth = lw;
+                    context.strokeStyle = 'rgb(0, 0, 150)';
+                    let x0 = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].x) - parseInt(lw/2);
+                    let y0 = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].y) - parseInt(lw/2);
+                    let dx = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dx) + parseInt(lw);
+                    let dy = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dy) + parseInt(lw);
+                    context.strokeRect(x0, y0, dx, dy);
+
+                    drawTextBG("digit", context, "dig" + (i+1).toString(), x0+dx/2,
+                        parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].y), parseInt(rect.h), 2, false);
+
+                    lw = 1;
+                    x0 = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].x) - parseInt(lw/2);
+                    y0 = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].y) - parseInt(lw/2);
+                    dx = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dx) + parseInt(lw);
+                    dy = parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[i].dy) + parseInt(lw);
+                    context.lineWidth = lw;
+                    context.beginPath();
+                    context.moveTo(x0, y0+dy/2);
+                    context.lineTo(x0+dx, y0+dy/2);
+                    context.stroke();
+                    context.strokeRect(x0+dx*0.2, y0+dy*0.2, dx*0.6, dy*0.6);
+                }
+                else if (typeSelection.value == "digit" && i == roiSelected) {
+                    lw = 2;
+                    context.lineWidth = lw;
+                    context.strokeStyle = 'rgb(0, 0, 255)';
+                    let x0 = parseInt(rect.startX) - parseInt(lw/2);
+                    let y0 = parseInt(rect.startY) - parseInt(lw/2);
+                    let dx = parseInt(rect.w) + parseInt(lw);
+                    let dy = parseInt(rect.h) + parseInt(lw);
+                    context.strokeRect(x0, y0, dx, dy);
+
+                    drawTextBG("digit", context, "dig" + (i+1).toString(), x0+dx/2, parseInt(rect.startY), parseInt(rect.h), 2, true);
+
+                    context.lineWidth = 1;
+                    context.strokeRect(x0+dx*0.2, y0+dy*0.2, dx*0.6, dy*0.6);
+
+
+                    context.lineWidth = 1;
+                    context.beginPath();
+                    context.moveTo(x0, y0+dy/2);
+                    context.lineTo(x0+dx, y0+dy/2);
+                    context.stroke();
+
+                    jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected].x = parseInt(rect.startX);
+                    jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected].y = parseInt(rect.startY);
+                    jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected].dx = parseInt(rect.w);
+                    jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected].dy = parseInt(rect.h);
+                }
+            }
+        }
+
+        // Draw analog ROI overlay
+        // ************************
+        if (document.getElementById("analogProcessing").checked &&
+            (typeSelection.value == "analog" || document.getElementById("showDigitAnalogROI").checked)) {
+
+            if (typeSelection.value == "analog" && lockSizeAnalog) {
+                // Synchronize dx and dy
+                for (let i = 0; i < jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length; i++) {
+                    if (i != roiSelected) {
+                        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dy = parseInt(rect.h);
+                        jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dx = parseInt(rect.w);
+                    }
+                }
+            }
+
+            for (let i = 0; i < jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length; i++) {
+                if ((i != roiSelected || (typeSelection.value == "digit" && document.getElementById("showDigitAnalogROI").checked)) &&
+                        !document.getElementById("showSelectedROIOnly").checked) {
+                    lw = 1;
+                    context.lineWidth = lw;
+                    context.strokeStyle = 'rgb(0, 150, 0)';
+                    let x0 = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].x) - parseInt(lw/2);
+                    let y0 = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].y) - parseInt(lw/2);
+                    let dx = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dx) + parseInt(lw);
+                    let dy = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dy) + parseInt(lw);
+                    //context.strokeRect(x0, y0, dx, dy);
+
+                    if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].ccw == false)
+                        drawTextBG("analog", context, "ana" + (i+1).toString(), x0+dx/2-0.5,
+                            parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].y), parseInt(rect.h), 2, false);
+                    else
+                        drawTextBG("analog", context, "ana" + (i+1).toString() + " (CCW)", x0+dx/2-0.5,
+                            parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].y), parseInt(rect.h), 2, false);
+
+                    lw = 1;
+                    x0 = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].x) - parseInt(lw/2);
+                    y0 = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].y) - parseInt(lw/2);
+                    dx = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dx) + parseInt(lw);
+                    dy = parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].dy) + parseInt(lw);
+                    //context.strokeRect(x0, y0, dx, dy);
+
+                    context.lineWidth = lw;
+                    context.beginPath();
+                    context.ellipse(x0+dx/2, y0+dy/2, dx/2, dy/2, 0, 0, 2 * Math.PI);
+                    context.moveTo(x0+dx/2, y0);
+                    context.lineTo(x0+dx/2, y0+dy);
+                    context.moveTo(x0, y0+dy/2);
+                    context.lineTo(x0+dx, y0+dy/2);
+                    context.stroke();
+                }
+                else if (typeSelection.value == "analog" && i == roiSelected) {
+                    lw = 2;
+                    context.lineWidth = lw;
+                    context.strokeStyle = 'rgb(0, 255, 0)';
+                    let x0 = parseInt(rect.startX) - parseInt(lw/2);
+                    let y0 = parseInt(rect.startY) - parseInt(lw/2);
+                    let dx = parseInt(rect.w) + parseInt(lw);
+                    let dy = parseInt(rect.h) + parseInt(lw);
+                    //context.strokeRect(x0, y0, dx, dy);
+
+                    if (jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[i].ccw == false)
+                        drawTextBG("analog", context, "ana" + (i+1).toString(), x0+dx/2, parseInt(rect.startY), parseInt(rect.h), 2, true);
+                    else
+                        drawTextBG("analog", context, "ana" + (i+1).toString() + " (CCW)", x0+dx/2, parseInt(rect.startY), parseInt(rect.h), 2, true);
+
+                    context.lineWidth = 1;
+                    context.beginPath();
+                    context.ellipse(x0+dx/2, y0+dy/2, dx/2, dy/2, 0, 0, 2 * Math.PI);
+                    context.moveTo(x0+dx/2, y0);
+                    context.lineTo(x0+dx/2, y0+dy);
+                    context.moveTo(x0, y0+dy/2);
+                    context.lineTo(x0+dx, y0+dy/2);
+                    context.stroke();
+
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].x = parseInt(rect.startX);
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].y = parseInt(rect.startY);
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].dx = parseInt(rect.w);
+                    jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].dy = parseInt(rect.h);
+                }
+            }
+        }
+    }
+
+
+    function getCoords(elem) // crossbrowser version
+    {
+        let box = elem.getBoundingClientRect();
+        let body = document.body;
+        let docEl = document.documentElement;
+        let scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+        let scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+        let clientTop = docEl.clientTop || body.clientTop || 0;
+        let clientLeft = docEl.clientLeft || body.clientLeft || 0;
+        let top  = box.top +  scrollTop - clientTop;
+        let left = box.left + scrollLeft - clientLeft;
+        return { top: Math.round(top), left: Math.round(left) };
+    }
+
+
+    function mouseDown(e)
+    {
+        let zw = getCoords(this)
+        rect.startX = e.pageX - zw.left;
+        rect.startY = e.pageY - zw.top;
+        document.getElementById("refx").value =  rect.startX;
+        document.getElementById("refy").value =  rect.startY;
+        drag = true;
+    }
+
+
+    function mouseUp()
+    {
+        drag = false;
+        if (rect.w < 0) {
+            rect.w = -rect.w
+            rect.startX-=rect.w
+        }
+        if (rect.h < 0) {
+            rect.h = -rect.h
+            rect.startY-=rect.h
+        }
+        document.getElementById("refdx").value = rect.w;
+        document.getElementById("refdy").value = rect.h;
+        document.getElementById("refx").value = rect.startX;
+        document.getElementById("refy").value = rect.startY;
+
+        RefreshROI();
+    }
+
+
+    function mouseMove(e)
+    {
+        if (drag) {
+            if (jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi.length == 0) {
+                return;
+            }
+
+            let zw = getCoords(this)
+
+            if (typeSelection.value == "digit") {
+                if (lockAspectRatio) {
+                    rect.h = (e.pageY - zw.top) - rect.startY;
+                    rect.w = Math.round(rect.h * jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
+                }
+                else {
+                    rect.w = (e.pageX - zw.left) - rect.startX;
+                    rect.h = (e.pageY - zw.top) - rect.startY;
+                }
+                document.getElementById("refdx").value = rect.w;
+                document.getElementById("refdy").value = rect.h;
+                RefreshDraw();
+            }
+            else if (typeSelection.value == "analog") {
+                if (lockAspectRatioAnalog) {
+                    rect.h = (e.pageY - zw.top) - rect.startY;
+                    rect.w = Math.round(rect.h * jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
+                }
+                else {
+                    rect.w = (e.pageX - zw.left) - rect.startX;
+                    rect.h = (e.pageY - zw.top) - rect.startY;
+                }
+                document.getElementById("refdx").value = rect.w;
+                document.getElementById("refdy").value = rect.h;
+                RefreshDraw();
+            }
+        }
+        else {
+            RefreshDraw();
+
+            let zw = getCoords(this);
+            let x = e.pageX - zw.left;
+            let y = e.pageY - zw.top;
+
+            context.lineWidth = 1;
+            context.strokeStyle = 'rgb(160, 160, 160)';
+            context.beginPath();
+            context.moveTo(0,y);
+            context.lineTo(canvas.width, y);
+            context.moveTo(x, 0);
+            context.lineTo(x, canvas.height);
+            context.stroke();
+        }
+    }
+
+
+    function SaveToConfig()
+    {
+        if (confirm("Are you sure you want to save and apply the new configuration?")) {
+            saveConfig(JSON.stringify(jsonConfigModifiedDelta));
+            RefreshROI();
+
+            document.getElementById("saveconfig").disabled = true;
+
+            firework.launch('Save and apply configuration...', 'success', 2000, true);
+            setTimeout(function() {
+                reloadConfig();
+                loadConfigData();
+            }, 1000);
+        }
+    }
+
+
+    /* hash #description open the details part of the page */
+    function openDescription()
+    {
+        if(window.location.hash) {
+            let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+            if(hash == 'description')
+                document.getElementById("desc_details").open = true;
+        }
+    }
+
+
+    function loadReferenceImage()
+    {
+        loadCanvas(getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
+        canvas.addEventListener('mousedown', mouseDown, false);
+        canvas.addEventListener('mouseup', mouseUp, false);
+        canvas.addEventListener('mousemove', mouseMove, false);
+    }
+
+
+    function loadConfigData()
+    {
+        jsonConfig = getConfigFromStorage(); // Get config
+        jsonConfigModifiedDelta = {}; // Reset modified parameter container
+        jsonConfigModifiedDelta.numbersequences = new Object();
+        jsonConfigModifiedDelta.numbersequences = structuredClone(jsonConfig.numbersequences);
+        jsonConfigModifiedDelta.digit = new Object();
+        jsonConfigModifiedDelta.digit = structuredClone(jsonConfig.digit);
+        jsonConfigModifiedDelta.analog = new Object();
+        jsonConfigModifiedDelta.analog = structuredClone(jsonConfig.analog);
+
+        fillSequenceSelectionOptions();
+        analogProcessingChanged(true);
+        digitProcessingChanged(true);
+
+        onTypeChanged();
+
+        document.getElementById("saveconfig").disabled = true;
+    }
+
+
+    function init()
+    {
+        openDescription();
+
+        $("#img_loading").attr("src", getDomainname() + '/img_loading.gif?v=$COMMIT_HASH');
+        loadReferenceImage();
+
+        //if (noConfigInStorage())
+			loadConfig().then(() => loadConfigData());
+		//else
+        //    loadConfigData();
+    }
+
+
+    init();
+
+</script>
+
+</body>
+</html>
