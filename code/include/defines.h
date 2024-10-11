@@ -277,40 +277,23 @@ CONFIG_WPA_11R_SUPPORT=n
 //*************************************************************************
 
 // Define BOARD type
-// Define ENV_BOARD_TYPE in platformio.ini
+// Define in platformio.ini
 //************************************
-#if ENV_BOARD_TYPE == 1
-#define BOARD_AITHINKER_ESP32CAM
+#if defined(BOARD_AITHINKER_ESP32CAM)
 #define BOARD_TYPE_NAME     "ESP32CAM"              // Keep Board type equal to main board environment name
                                                     // This is used for OTA update package verification (converted to lower case)
-#elif ENV_BOARD_TYPE == 2
-#define BOARD_XIAO_ESP32S3
+
+#elif defined(BOARD_XIAO_ESP32S3)
 #define BOARD_TYPE_NAME    "XIAO-ESP32S3-Sense"     // Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
 
-#elif ENV_BOARD_TYPE == 3
-#define BOARD_FREENOVE_ESP32S3
+#elif defined(BOARD_FREENOVE_ESP32S3_N16R8)
 #define BOARD_TYPE_NAME     "Freenove-ESP32S3-N16R8"// Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
 #else
-#error "Board type (ENV_BOARD_TYPE) not defined"
+#error "Board type not defined"
 #define BOARD_AITHINKER_ESP32CAM
-#define BOARD_TYPE_NAME      "Board unknown"
-#endif
-
-
-// Define CAMERA model
-// Define ENV_CAMERA_MODEL in platformio.ini
-//************************************
-#if ENV_CAMERA_MODEL == 1
-#define CAMERA_AITHINKER_ESP32CAM
-#elif ENV_CAMERA_MODEL == 2
-#define CAMERA_XIAO_ESP32S3_SENSE
-#elif ENV_CAMERA_MODEL == 3
-#define CAMERA_FREENOVE_ESP32S3
-#else
-#define CAMERA_AITHINKER_ESP32CAM_OV2640
-#error "Camera model (ENV_CAMERA_MODEL) not defined"
+#define BOARD_TYPE_NAME     "Board unknown"
 #endif
 
 
@@ -329,6 +312,28 @@ CONFIG_WPA_11R_SUPPORT=n
         #define GPIO_SDCARD_D2              GPIO_NUM_12
     #endif
     #define GPIO_SDCARD_D3                  GPIO_NUM_13     // Needs to be high to init SD in MMC mode. After init GPIO can be used as spare GPIO
+
+
+    // Camera pin config
+    // Further models: https://github.com/Mjrovai/XIAO-ESP32S3-Sense/blob/main/camera_round_display_save_jpeg/camera_pins.h
+    //-------------------------------------------------
+    #define PWDN_GPIO_NUM       GPIO_NUM_32
+    #define RESET_GPIO_NUM      -1
+    #define XCLK_GPIO_NUM       GPIO_NUM_0
+    #define SIOD_GPIO_NUM       GPIO_NUM_26
+    #define SIOC_GPIO_NUM       GPIO_NUM_27
+
+    #define Y9_GPIO_NUM         GPIO_NUM_35
+    #define Y8_GPIO_NUM         GPIO_NUM_34
+    #define Y7_GPIO_NUM         GPIO_NUM_39
+    #define Y6_GPIO_NUM         GPIO_NUM_36
+    #define Y5_GPIO_NUM         GPIO_NUM_21
+    #define Y4_GPIO_NUM         GPIO_NUM_19
+    #define Y3_GPIO_NUM         GPIO_NUM_18
+    #define Y2_GPIO_NUM         GPIO_NUM_5
+    #define VSYNC_GPIO_NUM      GPIO_NUM_25
+    #define HREF_GPIO_NUM       GPIO_NUM_23
+    #define PCLK_GPIO_NUM       GPIO_NUM_22
 
 
     // LEDs
@@ -410,6 +415,28 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SDCARD_D3                  GPIO_NUM_21     // Needs to be high to init with MMC mode. After init GPIO can be used as status LED
 
 
+    // Camera pin config
+    // Further models: https://github.com/Mjrovai/XIAO-ESP32S3-Sense/blob/main/camera_round_display_save_jpeg/camera_pins.h
+    //-------------------------------------------------
+    #define PWDN_GPIO_NUM       -1
+    #define RESET_GPIO_NUM      -1
+    #define XCLK_GPIO_NUM       GPIO_NUM_10
+    #define SIOD_GPIO_NUM       GPIO_NUM_40
+    #define SIOC_GPIO_NUM       GPIO_NUM_39
+
+    #define Y9_GPIO_NUM         GPIO_NUM_48
+    #define Y8_GPIO_NUM         GPIO_NUM_11
+    #define Y7_GPIO_NUM         GPIO_NUM_12
+    #define Y6_GPIO_NUM         GPIO_NUM_14
+    #define Y5_GPIO_NUM         GPIO_NUM_16
+    #define Y4_GPIO_NUM         GPIO_NUM_18
+    #define Y3_GPIO_NUM         GPIO_NUM_17
+    #define Y2_GPIO_NUM         GPIO_NUM_15
+    #define VSYNC_GPIO_NUM      GPIO_NUM_38
+    #define HREF_GPIO_NUM       GPIO_NUM_47
+    #define PCLK_GPIO_NUM       GPIO_NUM_13
+
+
     // LEDs
     //-------------------------------------------------
     #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_21     // Onboard yellow status LED (USER LED, yellow, active low)
@@ -461,7 +488,7 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SPARE_6                    GPIO_NUM_6
     #define GPIO_SPARE_6_USAGE              "spare"
 
-#elif defined(BOARD_FREENOVE_ESP32S3)
+#elif defined(BOARD_FREENOVE_ESP32S3_N16R8)
     #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
         #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1              // Only 1 line SD card operation is supported (hardware related)
     #endif
@@ -474,6 +501,28 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SDCARD_D1                  GPIO_NUM_NC
     #define GPIO_SDCARD_D2                  GPIO_NUM_NC
     #define GPIO_SDCARD_D3                  GPIO_NUM_NC
+
+
+    // Camera pin config
+    // Further models: https://github.com/Mjrovai/XIAO-ESP32S3-Sense/blob/main/camera_round_display_save_jpeg/camera_pins.h
+    //-------------------------------------------------
+    #define PWDN_GPIO_NUM       -1
+    #define RESET_GPIO_NUM      -1
+    #define XCLK_GPIO_NUM       GPIO_NUM_15
+    #define SIOD_GPIO_NUM       GPIO_NUM_4
+    #define SIOC_GPIO_NUM       GPIO_NUM_5
+
+    #define Y9_GPIO_NUM         GPIO_NUM_16
+    #define Y8_GPIO_NUM         GPIO_NUM_17
+    #define Y7_GPIO_NUM         GPIO_NUM_18
+    #define Y6_GPIO_NUM         GPIO_NUM_12
+    #define Y5_GPIO_NUM         GPIO_NUM_10
+    #define Y4_GPIO_NUM         GPIO_NUM_8
+    #define Y3_GPIO_NUM         GPIO_NUM_9
+    #define Y2_GPIO_NUM         GPIO_NUM_11
+    #define VSYNC_GPIO_NUM      GPIO_NUM_6
+    #define HREF_GPIO_NUM       GPIO_NUM_7
+    #define PCLK_GPIO_NUM       GPIO_NUM_13
 
 
     // LEDs
@@ -530,69 +579,5 @@ CONFIG_WPA_11R_SUPPORT=n
 #else
     #error "define.h: No board type defined or type unknown"
 #endif //Board types
-
-
-// Camera models
-// Further models: https://github.com/Mjrovai/XIAO-ESP32S3-Sense/blob/main/camera_round_display_save_jpeg/camera_pins.h
-//************************************
-#ifdef CAMERA_AITHINKER_ESP32CAM
-    #define PWDN_GPIO_NUM       GPIO_NUM_32
-    #define RESET_GPIO_NUM      -1
-    #define XCLK_GPIO_NUM       GPIO_NUM_0
-    #define SIOD_GPIO_NUM       GPIO_NUM_26
-    #define SIOC_GPIO_NUM       GPIO_NUM_27
-
-    #define Y9_GPIO_NUM         GPIO_NUM_35
-    #define Y8_GPIO_NUM         GPIO_NUM_34
-    #define Y7_GPIO_NUM         GPIO_NUM_39
-    #define Y6_GPIO_NUM         GPIO_NUM_36
-    #define Y5_GPIO_NUM         GPIO_NUM_21
-    #define Y4_GPIO_NUM         GPIO_NUM_19
-    #define Y3_GPIO_NUM         GPIO_NUM_18
-    #define Y2_GPIO_NUM         GPIO_NUM_5
-    #define VSYNC_GPIO_NUM      GPIO_NUM_25
-    #define HREF_GPIO_NUM       GPIO_NUM_23
-    #define PCLK_GPIO_NUM       GPIO_NUM_22
-
-#elif defined(CAMERA_XIAO_ESP32S3_SENSE)
-    #define PWDN_GPIO_NUM       -1
-    #define RESET_GPIO_NUM      -1
-    #define XCLK_GPIO_NUM       GPIO_NUM_10
-    #define SIOD_GPIO_NUM       GPIO_NUM_40
-    #define SIOC_GPIO_NUM       GPIO_NUM_39
-
-    #define Y9_GPIO_NUM         GPIO_NUM_48
-    #define Y8_GPIO_NUM         GPIO_NUM_11
-    #define Y7_GPIO_NUM         GPIO_NUM_12
-    #define Y6_GPIO_NUM         GPIO_NUM_14
-    #define Y5_GPIO_NUM         GPIO_NUM_16
-    #define Y4_GPIO_NUM         GPIO_NUM_18
-    #define Y3_GPIO_NUM         GPIO_NUM_17
-    #define Y2_GPIO_NUM         GPIO_NUM_15
-    #define VSYNC_GPIO_NUM      GPIO_NUM_38
-    #define HREF_GPIO_NUM       GPIO_NUM_47
-    #define PCLK_GPIO_NUM       GPIO_NUM_13
-
-#elif defined(CAMERA_FREENOVE_ESP32S3)
-    #define PWDN_GPIO_NUM       -1
-    #define RESET_GPIO_NUM      -1
-    #define XCLK_GPIO_NUM       GPIO_NUM_15
-    #define SIOD_GPIO_NUM       GPIO_NUM_4
-    #define SIOC_GPIO_NUM       GPIO_NUM_5
-
-    #define Y9_GPIO_NUM         GPIO_NUM_16
-    #define Y8_GPIO_NUM         GPIO_NUM_17
-    #define Y7_GPIO_NUM         GPIO_NUM_18
-    #define Y6_GPIO_NUM         GPIO_NUM_12
-    #define Y5_GPIO_NUM         GPIO_NUM_10
-    #define Y4_GPIO_NUM         GPIO_NUM_8
-    #define Y3_GPIO_NUM         GPIO_NUM_9
-    #define Y2_GPIO_NUM         GPIO_NUM_11
-    #define VSYNC_GPIO_NUM      GPIO_NUM_6
-    #define HREF_GPIO_NUM       GPIO_NUM_7
-    #define PCLK_GPIO_NUM       GPIO_NUM_13
-#else
-    #error "define.h: No camera model defined or model unknown"
-#endif //Camera models
 
 #endif //DEFINES_H
