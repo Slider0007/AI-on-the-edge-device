@@ -2722,6 +2722,7 @@
 		gpioPinSelection.prop('selectedIndex', idx);
 		gpioPinSelectAfterChange(true);
 		getGpioPinUsage(parseInt(gpioPinSelection[0].value));
+		gpioPinModeChanged(); // Show GPIO mapping in 'Take Image' section
 	}
 
 
