@@ -65,6 +65,12 @@
 			border-radius: .25rem;
 		}
 
+		.button {
+            padding: 5px 10px;
+            width: 120px;
+            font-size: 16px;
+        }
+
 		table {
 			width: 660px;
 			table-layout: fixed;
@@ -74,6 +80,9 @@
 	</style>
 
 	<script src="global_common.js?v=$COMMIT_HASH"></script>
+	<script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+    <script src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
@@ -461,6 +470,23 @@
 				<output id="idf_version"></output>
 			</td>
 		</tr>
+		<tr>
+			<td>Core Dump</td>
+			<td>
+				<button class="button" id="showCoreDump" type="button"
+					onclick="coreDump('show')">Show</button>
+				<button class="button" id="saveCoreDump" type="button"
+					onclick="window.open(getDomainname() + '/coredump?task=save', '_self');
+						firework.launch('Core dump info saved', 'success', 2000);" disabled>Save</button>
+				<button class="button" id="clearCoreDump" type="button"
+					onclick="coreDump('clear')" disabled>Clear</button>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<textarea id="coreDumpData" style="height:90px; width:100%; resize:none;" readonly hidden></textarea>
+			</td>
+		</tr>
 	</table>
 
 	<table>
@@ -477,7 +503,7 @@
 </html>
 
 
-<script type="text/javascript">
+<script>
 	function loadInfoData()
 	{
 		let url = getDomainname() + '/info';
@@ -635,6 +661,57 @@
 	{
 		let element = document.getElementById(_element);
 		element.classList.add(_class);
+	}
+
+
+	function coreDump(task)
+	{
+		let url = getDomainname() + '/coredump?task=' + task;
+		let xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status >= 200 && this.status < 300) {
+					if (task === "show") {
+						if (xhttp.responseText === "No core dump available") {
+							document.getElementById("coreDumpData").hidden = true;
+							document.getElementById("saveCoreDump").disabled = true;
+							document.getElementById("clearCoreDump").disabled = true;
+							firework.launch('No core dump available', 'success', 2000);
+						}
+						else {
+							document.getElementById("coreDumpData").hidden = false;
+							document.getElementById("coreDumpData").innerHTML = xhttp.responseText;
+							document.getElementById("saveCoreDump").disabled = false;
+							document.getElementById("clearCoreDump").disabled = false;
+							firework.launch('Show core dump backtrace summary', 'success', 2000);
+						}
+					}
+					else if (task === "save") {
+						// @TODO: Embed save function as well (drawback: file download needs to be handled manually)
+						firework.launch('Core dump file saved', 'success', 2000);
+					}
+					else if (task === "clear") {
+						document.getElementById("coreDumpData").hidden = true;
+						document.getElementById("saveCoreDump").disabled = true;
+						document.getElementById("clearCoreDump").disabled = true;
+						firework.launch('Core dump partition cleared', 'success', 2000);
+					}
+                }
+                else if (this.status >= 400) {
+					firework.launch("Core dump request failed. Status: " + this.status + " " +
+						(this.status == 404 ? "Not found" : this.responseText), 'danger', 30000);
+					console.error("Core dump request failed. Status: " + this.status + " " +
+						(this.status == 404 ? "Not found" : this.responseText));
+                }
+				else {
+					firework.launch("Core dump request failed. Status: Rejected, no response", 'danger', 30000);
+				}
+            }
+        };
+
+		xhttp.timeout = 10000; // 10 seconds
+		xhttp.open("GET", url, true);
+		xhttp.send();
 	}
 
 

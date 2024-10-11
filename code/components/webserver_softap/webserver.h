@@ -3,6 +3,7 @@
 
 #include <esp_http_server.h>
 #include <esp_vfs.h>
+#include <string>
 
 #include "../../include/defines.h"
 
@@ -14,6 +15,7 @@ struct HttpServerData {
 extern struct HttpServerData *httpServerData;
 
 extern httpd_handle_t server;
+extern std::string getFwVersion(void);
 
 void allocateWebserverHelperMemory(void);
 httpd_handle_t startWebserver(void);

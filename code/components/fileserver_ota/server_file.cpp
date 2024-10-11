@@ -18,12 +18,14 @@ extern "C" {
 }
 #endif
 
-#include "esp_err.h"
+#include <esp_partition.h>
+#include <esp_core_dump.h>
+#include <esp_err.h>
 #include <esp_log.h>
-
-#include "esp_vfs.h"
+#include <esp_vfs.h>
 #include <esp_spiffs.h>
-#include "esp_http_server.h"
+#include <esp_http_server.h>
+#include <cJSON.h>
 
 #include "webserver.h"
 #include "server_help.h"
@@ -31,6 +33,7 @@ extern "C" {
 #include "MainFlowControl.h"
 #include "gpioControl.h"
 #include "helper.h"
+#include "system.h"
 #include "psram.h"
 
 #ifdef ENABLE_MQTT
@@ -778,7 +781,6 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 // Handler to upload a file to server (sd card)
 static esp_err_t upload_post_handler(httpd_req_t *req)
 {
-    //LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "upload_post_handler");
     char filepath[FILE_PATH_MAX];
     FILE *fd = NULL;
     struct stat file_stat;
@@ -930,8 +932,6 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
-        ESP_LOGD(TAG, "Query: %s", query);
-
         if (httpd_query_key_value(query, "task", valuechar, sizeof(valuechar)) == ESP_OK) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Task: " + std::string(valuechar));
             task = std::string(valuechar);
@@ -1010,6 +1010,141 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
 }
 
 
+static std::string printCoreDumpBacktraceInfo(const esp_core_dump_summary_t *summary)
+{
+    if (summary == NULL) {
+        return "No core dump available";
+    }
+
+    char results[256]; // Assuming a maximum of 256 characters for the backtrace string
+    int offset = 0;
+
+    for (int i = 0; i < summary->exc_bt_info.depth; i++) {
+        uintptr_t pc = summary->exc_bt_info.bt[i]; // Program Counter (PC)
+        int len = snprintf(results + offset, sizeof(results) - offset, " 0x%08X", pc);
+        if (len >= 0 && offset + len < sizeof(results)) {
+            offset += len;
+        }
+        else {
+            break; // Reached the limit of the results buffer
+        }
+    }
+
+    return std::string("Backtrace: " + std::string(results) +
+            "\nDepth: " + std::to_string((int)summary->exc_bt_info.depth) +
+            "\nCorrupted: " + std::to_string(summary->exc_bt_info.corrupted) +
+            "\nPC: " + std::to_string((int)summary->exc_pc) +
+            "\nFirmware version: " + getFwVersion());
+}
+
+
+static esp_err_t coredump_handler(httpd_req_t *req)
+{
+    const char* APIName = "coredump:v1"; // API name and version
+    char query[200];
+    char valuechar[30];
+    std::string task;
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_type(req, "text/plain");
+
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        if (httpd_query_key_value(query, "task", valuechar, sizeof(valuechar)) == ESP_OK) {
+            task = std::string(valuechar);
+        }
+    }
+
+    // Check if coredump partition is available
+    const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
+                                            ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
+    if (partition == NULL) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Partition 'coredump' not found");
+        return ESP_FAIL;
+    }
+
+    // Get core dump summary to check if core dump is available
+    esp_core_dump_summary_t summary;
+    esp_err_t coreDumpGetSummaryRetVal = esp_core_dump_get_summary(&summary);
+
+    // Save core dump file
+    // Debug with esp-coredump (https://github.com/espressif/esp-coredump) --> e.g. install with "pip install esp-coredump"
+    // Generic: esp-coredump info_corefile --gdb <path_to_gdb_bin> --rom-elf <soc_specific_rom_elf_file> --core-format raw
+    //  --core <downloaded coredump file (FIRMWARE_BOARDTYPE-coredump-elf.bin)> firmware.elf (firmware debug zip --> firmware.elf)
+    // Example: esp-coredump info_corefile --gdb <tool-xtensa-esp-elf-gdb/bin/xtensa-esp32-elf-gdb.exe>
+    //  --rom-elf esp32_rev0_rom.elf --core-format raw --core firmware_ESP32CAM_coredump-elf.bin firmware.elf
+    if (task.compare("save") == 0) {
+        if (coreDumpGetSummaryRetVal != ESP_OK) { // Skip save request if no core dump is available (empty partition)
+            httpd_resp_sendstr(req, "Skip request, no core dump available");
+            return ESP_OK;
+        }
+
+        // Get firmware and cleanup name to have proper filename
+        std::string firmware = getFwVersion();
+        replaceAll(firmware, ":", "_");
+        replaceAll(firmware, " ", "_");
+        replaceAll(firmware, "(", "_");
+        replaceAll(firmware, ")", "_");
+
+        std::string attachmentFile = "attachment;filename=" + firmware + "_" + getBoardType() + "_coredump-elf.bin";
+        httpd_resp_set_type(req, "application/octet-stream");
+        httpd_resp_set_hdr(req, "Content-Disposition", attachmentFile.c_str());
+
+        /* Retrieve the pointer to scratch buffer for temporary storage */
+        char *buf = ((struct HttpServerData *)req->user_ctx)->scratch;
+        if (buf == NULL) {
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "No scratch buffer available");
+            return ESP_FAIL;
+        }
+
+        int i = 0;
+        for (i = 0; i < (partition->size / WEBSERVER_SCRATCH_BUFSIZE); i++) {
+            esp_partition_read(partition, i * WEBSERVER_SCRATCH_BUFSIZE, buf, WEBSERVER_SCRATCH_BUFSIZE);
+            httpd_resp_send_chunk(req, buf, WEBSERVER_SCRATCH_BUFSIZE);
+        }
+
+        int pendingSize = partition->size - (i * WEBSERVER_SCRATCH_BUFSIZE);
+        if (pendingSize > 0) {
+            ESP_ERROR_CHECK(esp_partition_read(partition, i * WEBSERVER_SCRATCH_BUFSIZE, buf, pendingSize));
+            httpd_resp_send_chunk(req, buf, pendingSize);
+        }
+        httpd_resp_send_chunk(req, NULL, 0);
+        return ESP_OK;
+    }
+    else if (task.compare("clear") == 0) { // Format partition 'coredump'
+        esp_err_t err = esp_partition_erase_range(partition, 0, partition->size);
+        if (err == ESP_OK) {
+            httpd_resp_sendstr(req, "Partition 'coredump' cleared");
+            return ESP_OK;
+        }
+        else {
+            std::string errMsg = "Failed to format partition 'coredump'. Error: " + intToHexString(err);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, errMsg.c_str());
+            return ESP_FAIL;
+        }
+    }
+    else if (task.compare("force_exception") == 0) { // Only for testing purpose, and ESP exception crash can be forced
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "coredump_handler: Software exception triggered manually");
+        httpd_resp_send_chunk(req, NULL, 0);
+        assert(0);
+        return ESP_OK;
+    }
+    else if (task.compare("api_name") == 0) {
+        httpd_resp_sendstr(req, APIName);
+        return ESP_OK;
+    }
+
+    // Default action: Print backtrace summary
+    if (coreDumpGetSummaryRetVal == ESP_OK) {
+        httpd_resp_sendstr(req, printCoreDumpBacktraceInfo(&summary).c_str());
+    }
+    else {
+        httpd_resp_sendstr(req, "No core dump available");
+    }
+
+    return ESP_OK;
+}
+
+
 void registerFileserverUri(httpd_handle_t server, const char *basePath)
 {
     ESP_LOGI(TAG, "Registering URI handlers");
@@ -1048,6 +1183,15 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
         .user_ctx  = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &file_delete);
+
+    /* URI handler for deleting files from server */
+    httpd_uri_t coredump = {
+        .uri       = "/coredump",
+        .method    = HTTP_GET,
+        .handler   = coredump_handler,
+        .user_ctx  = httpServerData // Pass server data as context
+    };
+    httpd_register_uri_handler(server, &coredump);
 
     httpd_uri_t handler_logfile = {
         .uri       = "/log",

@@ -26,6 +26,7 @@ Further details can be found in the respective REST API endpoint description.
 | [/log](log.md)                       | Log of today (last 80kB)                           | HTML        | 
 | [/ota](ota.md)                       | Over The Air Update                                | HTML        | 
 | [/reboot](reboot.md)                 | Trigger Reboot                                     | HTML        | 
+| [/coredump](coredump.md)             | Handle Core Dumps (Software Exception)             | HTML        | 
 | [/fileserver/](fileserver.md)        | Fileserver                                         | HTML        | 
 | [/upload/](upload.md)                | File Upload (POST)                                 | HTML        | 
 | [/delete/](delete.md)                | File Deletion (POST)                               | HTML        | 

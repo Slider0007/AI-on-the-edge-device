@@ -13,7 +13,7 @@ WebUI configuration page (question mark symbol next to each parameter).
 - JSON: `/config`
 - HTML: `/config?task=reload`
 
-1. HTML query request to show API name and version:
+1. Get API name and version:
     - Payload:
       - `/config?task=api_name`
     - Response:
