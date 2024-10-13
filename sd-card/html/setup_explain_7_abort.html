@@ -48,7 +48,7 @@
 
     function reboot()
     {
-        firework.launch('Setup completed', 'success', 5000);
+        firework.launch('Initial setup aborted', 'warning', 5000);
         jsonConfig = getConfigFromStorage(); // Get config
         jsonConfig.operationmode.opmode = 1;
 
@@ -71,7 +71,7 @@
 
     function abortSetup()
     {
-        if (confirm("Do you want to abort the setup mode and switch to regular web interface?"))
+        if (confirm("Do you want to abort the setup and switch to regular web interface?"))
             loadConfig().then(() => reboot());
     }
 

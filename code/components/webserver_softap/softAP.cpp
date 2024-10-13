@@ -97,7 +97,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     if (!SDCardContentExisting) {
         message = "<h3>2. Upload ZIP package to flash SD card content</h3><p>";
         message += "After initial flashing of the firmware the the device sd-card is still empty.<br>";
-        message += "Please upload \"remote_setup.zip\", which contains an full inital configuration.<p>";
+        message += "Please upload \"AI-on-the-edge-device__{Board Type}__*.zip\", which installs the SD card content.<p>";
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
         message += "<button class=\"button\" style=\"width:300px\" id=\"doUpdate\" type=\"button\" onclick=\"upload()\">Upload File</button><p>";
         message += "The upload might take up to 60s. After a succesfull upload the page will be reloaded.";
@@ -109,7 +109,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message += "xhttp.onreadystatechange = function() {if (xhttp.readyState == 4) {if (xhttp.status == 200) {location.reload();}}};";
         message += "let filePath = document.getElementById(\"newfile\").value.split(/[\\\\/]/).pop();";
         message += "let file = document.getElementById(\"newfile\").files[0];";
-        message += "if (!file.name.includes(\"AI-on-the-edge-device__\")){if (!confirm(\"The zip file name should contain 'AI-on-the-edge-device__...'. ";
+        message += "if (!file.name.includes(\"AI-on-the-edge-device__\")){if (!confirm(\"The zip file name should contain 'AI-on-the-edge-device__'. ";
         message += "Are you sure that you have downloaded the correct file?\"))return;};";
         message += "let upload_path = \"/upload/firmware/\" + filePath; xhttp.open(\"POST\", upload_path, true); xhttp.send(file);";
         message += "document.getElementById(\"doUpdate\").disabled = true;}";
