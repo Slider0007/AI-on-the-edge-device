@@ -109,7 +109,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message += "xhttp.onreadystatechange = function() {if (xhttp.readyState == 4) {if (xhttp.status == 200) {location.reload();}}};";
         message += "let filePath = document.getElementById(\"newfile\").value.split(/[\\\\/]/).pop();";
         message += "let file = document.getElementById(\"newfile\").files[0];";
-        message += "if (!file.name.includes(\"remote-setup\")){if (!confirm(\"The zip file name should contain '...remote-setup...'. ";
+        message += "if (!file.name.includes(\"AI-on-the-edge-device__\")){if (!confirm(\"The zip file name should contain 'AI-on-the-edge-device__...'. ";
         message += "Are you sure that you have downloaded the correct file?\"))return;};";
         message += "let upload_path = \"/upload/firmware/\" + filePath; xhttp.open(\"POST\", upload_path, true); xhttp.send(file);";
         message += "document.getElementById(\"doUpdate\").disabled = true;}";
@@ -145,6 +145,7 @@ esp_err_t config_handler_AP(httpd_req_t *req)
 
         if (httpd_query_key_value(query, "pwd", valuechar, sizeof(valuechar)) == ESP_OK) {
             ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.password = urlDecode(std::string(valuechar));
+            ConfigClass::getInstance()->saveMigDataToNVS("wlan_pw", ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.password);
         }
     }
     ConfigClass::getInstance()->persistConfig();
