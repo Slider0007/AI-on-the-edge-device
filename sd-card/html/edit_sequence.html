@@ -260,30 +260,31 @@
                     <label for="CCW">Counter clockwise rotation (CCW)</label>
             </td>
         </tr>
-        <tr>
-            <td colspan="2" style="height: 27px;">
-                <input type="checkbox" id="showSelectedROIOnly" onclick="RefreshDraw()">
-                    <label for="showSelectedROIOnly">Show selected ROI only</label>
-            </td>
-            <td class="digitanalog" style="height: 27px;">
-                <input type="checkbox" id="showDigitAnalogROI" onclick="RefreshDraw()" checked>
-                     <label for="showDigitAnalogROI">Show Digit + Analog ROI</label>
-            </td>
-        </tr>
+
     </table>
 </div>
 
     <table>
         <colgroup>
-            <col span="1" style="width: 22%;">
-            <col span="1" style="width: 26%;">
-            <col span="1" style="width: 26%;">
+            <col span="1" style="width: 37%;">
+            <col span="1" style="width: 37%;">
             <col span="1" style="width: 26%;">
         </colgroup>
         <tr>
-            <td colspan="3" style="vertical-align: bottom;"><b>Reference Image</b></td>
+            <td colspan="2" style="vertical-align: bottom;"><b>Reference Image (incl. ROI Overlays)</b></td>
             <td><input disabled style="font-weight:bold;" class="button" type="submit" id="saveconfig"
-                        onclick="SaveToConfig()" value="Save And Apply"></td>
+                onclick="SaveToConfig()" value="Save And Apply">
+            </td>
+        </tr>
+        <tr>
+            <td class="visibilityRoiOnly">
+                <input type="checkbox" id="showSelectedROIOnly" onclick="RefreshDraw()">
+                    <label for="showSelectedROIOnly">Show selected ROI only</label>
+            </td>
+            <td class="visibilityDigitAnalog">
+                <input type="checkbox" id="showDigitAnalogROI" onclick="RefreshDraw()" checked>
+                     <label for="showDigitAnalogROI">Show Digit + Analog ROI</label>
+            </td>
         </tr>
         <tr>
             <td colspan="4">
@@ -316,6 +317,7 @@
     function setInputVisibilty()
     {
         setElVisibility("#div_input_el", jsonConfigModifiedDelta.digit.enabled || jsonConfigModifiedDelta.analog.enabled);
+        setClassVisibility("visibilityRoiOnly", jsonConfigModifiedDelta.digit.enabled || jsonConfigModifiedDelta.analog.enabled);
     }
 
 
@@ -332,12 +334,12 @@
         }
 
         if (jsonConfigModifiedDelta.digit.enabled) {
-            setClassVisibility("digitanalog", jsonConfigModifiedDelta.analog.enabled);
+            setClassVisibility("visibilityDigitAnalog", jsonConfigModifiedDelta.analog.enabled);
             $("#roiTypeSelection option[value='digit']").attr("disabled", false);
             $("#roiTypeSelection").val("digit");
         }
         else {
-            setClassVisibility("digitanalog", false);
+            setClassVisibility("visibilityDigitAnalog", false);
             $("#roiTypeSelection option[value='digit']").attr("disabled", true);
             $("#roiTypeSelection").val("analog");
         }
@@ -361,12 +363,12 @@
         }
 
         if (jsonConfigModifiedDelta.analog.enabled) {
-            setClassVisibility("digitanalog", jsonConfigModifiedDelta.digit.enabled);
+            setClassVisibility("visibilityDigitAnalog", jsonConfigModifiedDelta.digit.enabled);
             $("#roiTypeSelection option[value='analog']").attr("disabled", false);
             $("#roiTypeSelection").val("analog");
         }
         else {
-            setClassVisibility("digitanalog", false);
+            setClassVisibility("visibilityDigitAnalog", false);
             $("#roiTypeSelection option[value='analog']").attr("disabled", true);
             $("#roiTypeSelection").val("digit");
         }
