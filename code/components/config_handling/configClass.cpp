@@ -599,36 +599,34 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
             if (sequenceEl == NULL)
                 continue;
 
+
+            sequenceEl->roi.clear();
+            sequenceEl->roi.shrink_to_fit();
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "roi");
-            if (cJSON_GetArraySize(sequenceArrEl) > 0) {
-                sequenceEl->roi.clear();
-                sequenceEl->roi.shrink_to_fit();
+            for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
+                cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
+                cJSON *roiEl;
+                RoiElement roiElTemp;
 
-                for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
-                    cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
-                    cJSON *roiEl;
-                    RoiElement roiElTemp;
+                roiElTemp.roiName = sequenceEl->sequenceName + "_dig" + std::to_string(j+1);
 
-                    roiElTemp.roiName = sequenceEl->sequenceName + "_dig" + std::to_string(j+1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "x");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.x = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "x");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.x = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "y");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.y = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "y");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.y = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.dx = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.dx = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.dy = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.dy = std::max(roiEl->valueint, 1);
-
-                    sequenceEl->roi.push_back(roiElTemp);
-                }
+                sequenceEl->roi.push_back(roiElTemp);
             }
         }
     }
@@ -689,40 +687,37 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
             if (sequenceEl == NULL)
                 continue;
 
+            sequenceEl->roi.clear();
+            sequenceEl->roi.shrink_to_fit();
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "roi");
-            if (cJSON_GetArraySize(sequenceArrEl) > 0) {
-                sequenceEl->roi.clear();
-                sequenceEl->roi.shrink_to_fit();
+            for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
+                cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
+                cJSON *roiEl;
+                RoiElement roiElTemp;
 
-                for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
-                    cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
-                    cJSON *roiEl;
-                    RoiElement roiElTemp;
+                roiElTemp.roiName = sequenceEl->sequenceName + "_ana" + std::to_string(j+1);
 
-                    roiElTemp.roiName = sequenceEl->sequenceName + "_ana" + std::to_string(j+1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "x");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.x = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "x");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.x = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "y");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.y = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "y");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.y = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.dx = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.dx = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.dy = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.dy = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "ccw");
+                if (cJSON_IsBool(roiEl))
+                    roiElTemp.ccw = roiEl->valueint;
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "ccw");
-                    if (cJSON_IsBool(roiEl))
-                        roiElTemp.ccw = roiEl->valueint;
-
-                    sequenceEl->roi.push_back(roiElTemp);
-                }
+                sequenceEl->roi.push_back(roiElTemp);
             }
         }
     }
