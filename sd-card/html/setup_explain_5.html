@@ -2,26 +2,82 @@
 <html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI on the edge</title>
+    <title>AI-on-the-Edge</title>
 
     <style>
         h1 {font-size: 1.8em;}
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
-        p {font-size: 1em;}
+        p {font-size: 1em; text-align: justify}
 
         body, html {
             font-size: 100%;
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
+
+        .button {
+            padding: 5px 10px;
+            width: 205px;
+            font-size: 16px;
+        }
     </style>
 
+    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+    <script src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
 <body style="font-family: arial">
 
-    <h4>Step 5 / 7: Configuration Of ROIs For Analog Counters</h4>
+    <h4>Step 5 / 5: Initial setup completed</h4>
+
+    <p>
+        Congratulations! You have completed the initial setup and you are now ready to switch to the regular web interface!
+    </p>
+    <p>
+        Once you push the button below, the setup mode will be completed and the device will be automatically switch to
+        regular web interface. If configuration is error free, the device will automatically start with first processing.
+        It will take some time until you get the first reading.
+    </p>
+    <p>
+        <button class="button" onclick="completeSetup()">Complete Setup</button>
+    </p>
+
+<script src="global_common.js?v=$COMMIT_HASH"></script>
+<script src="global_data.js?v=$COMMIT_HASH"></script>
+<script>
+
+    function reboot()
+    {
+        firework.launch('Setup completed', 'success', 5000);
+        jsonConfig = getConfigFromStorage(); // Get config
+        jsonConfig.operationmode.opmode = 1;
+
+        saveConfig(JSON.stringify(jsonConfig)).then(() => {
+            setTimeout(function() {
+                reloadConfig();
+            }, 500);
+        });
+
+        firework.launch('Regular web interface gets loaded in a few seconds...', 'success', 10000);
+        setTimeout(function() {
+            let stringota = getDomainname();
+            parent.location = stringota;
+            parent.location.href = stringota;
+            parent.location.assign(stringota);
+            parent.location.replace(stringota);
+        }, 7000);
+    }
+
+
+    function completeSetup()
+    {
+        if (confirm("Do you want to complete the setup mode and switch to regular web interface?"))
+            loadConfig().then(() => reboot());
+    }
+
+</script>
 
 </body>
 </html>

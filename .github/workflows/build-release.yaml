@@ -106,6 +106,7 @@ jobs:
         echo "Update hash..."
         cd ./html; find . -type f -exec sed -i 's/$COMMIT_HASH/${{ steps.vars.outputs.sha_short }}/g' {} \;
 
+
     #########################################################################################
     ## Create firmware package
     # - Inital flashing using web installer, device's access point or serial console
@@ -170,6 +171,9 @@ jobs:
 #########################################################################################
   upload-release-artifacts:
     runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.vars.outputs.branch }}
+      sha_short: ${{ steps.vars.outputs.sha_short }}
     needs: [prepare-release, build]
     if: ${{ needs.prepare-release.outputs.release_created }}
     strategy:
@@ -203,10 +207,10 @@ jobs:
       run: |
         rm -rf release
         mkdir -p release
-        cd "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        cd "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}"
         zip -r ../release/AI-on-the-edge-device__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
-        cd "AI-on-the-edge-device__${{ matrix.plat }}__debug-files__SLFork_${{ steps.vars.outputs.branch }}_(${{ steps.vars.outputs.sha_short }})"
+        cd "AI-on-the-edge-device__${{ matrix.plat }}__debug-files__SLFork_${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}"
         zip -r ../release/AI-on-the-edge-device__${{ matrix.plat }}__debug-files__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
         cd ..
 
@@ -215,3 +219,65 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run:
         gh release upload ${{ needs.prepare-release.outputs.tag_name }} release/*
+
+
+#########################################################################################
+## Update web installer (branch: gh-pages-webinstaller)
+#
+# Firmware files are commited to branch gh-pages-webinstaller
+#########################################################################################
+  update-webinstaller:
+    runs-on: ubuntu-latest
+    needs: [prepare-release, build, upload-release-artifacts]
+    if: ${{ needs.prepare-release.outputs.release_created }}
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        plat:
+         - esp32cam
+         - xiao-esp32s3-sense
+
+    # Sets permissions of the GITHUB_TOKEN to allow downloading artifacts
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
+    - name: Checkout branch gh-pages-webinstaller
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages-webinstaller
+
+    - name: Pull artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ needs.upload-release-artifacts.outputs.branch }}_${{ needs.upload-release-artifacts.outputs.sha_short }}"
+        path: './artifacts/'
+
+    - name: Prepare data
+      run: |
+        echo "Updating files ..."
+        cd ./artifacts
+        ls
+        cd ..
+        cp -f ./artifacts/bootloader.bin ./firmware/${{ matrix.plat }}/bootloader.bin
+        cp -f ./artifacts/partitions.bin ./firmware/${{ matrix.plat }}/partitions.bin
+        cp -f ./artifacts/firmware.bin ./firmware/${{ matrix.plat }}/firmware.bin
+
+        echo "Updating version strings (index.html, manifest) ..."
+        sed -i -E 's/Firmware: .*./\Firmware: <b\>${{ needs.prepare-release.outputs.tag_name }}\<\/b\>/g' index.html
+        sed -i -E 's/"version":.*.,/"version": "${{ needs.prepare-release.outputs.tag_name }}",/g' manifest_${{ matrix.plat }}.json
+
+    - name: Commit data to branch gh-pages-webinstaller
+      shell: pwsh
+      run: |
+        & git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        & git config --local user.name "github-actions[bot]"
+        & git add .
+        & git diff HEAD --exit-code | Out-Null
+        if ($LASTEXITCODE -ne 0)
+        {
+          & git commit -m "${{ matrix.plat }}: Update firmware files to ${{ needs.prepare-release.outputs.tag_name }}"
+          & git push
+        }

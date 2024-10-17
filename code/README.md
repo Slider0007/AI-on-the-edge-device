@@ -41,7 +41,7 @@ pio run --target upload --upload-port /dev/ttyUSB0
 
 Alternatively, UART device can be defined in `platformio.ini`, eg. `upload_port = /dev/ttyUSB0`
 
-#### Monitor UART Log
+#### Monitor Serial / UART Log
 ```
 pio device monitor -p /dev/ttyUSB0 -b 115200
 ```
@@ -84,9 +84,14 @@ pio device monitor -p /dev/ttyUSB0 -b 115200
 ## Debugging
 
 ### UART/Serial Log
+##### Using platformio IDE
 ```
 pio device monitor -p /dev/ttyUSB0 -b 115200
 ```
+##### Using [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/)
+<img src="../images/webinstaller_console.jpg">
+
+
 ### Application Log File
 The device is logging lots of actions to SD card (`log/messages`). This log can be viewed using WebUI (`System > Log Viewer`) or directly by browsing the files on SD card. Verbosity is depended on log level which can be adapted in WebUI
 

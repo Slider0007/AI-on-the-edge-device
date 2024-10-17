@@ -2,7 +2,7 @@
 <html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI on the edge</title>
+    <title>AI-on-the-Edge</title>
 
     <style>
         h1 {font-size: 1.8em;}
@@ -30,18 +30,16 @@
 
 <body style="font-family: arial">
 
-    <h4>Step 7 / 7: Initial setup completed!</h4>
+    <h4>Initial setup aborted</h4>
+
+    <p>You have <b>aborted</b> the initial setup!</p>
+    <p>Once you push the button below, the setup mode will be ended and the device will be automatically switch to regular web interface.
+       Please be aware: The configuration of the device is not or only parly adapted to your needs! <br><br>
+       Configuration can still be adapted / completed using regular web interface.
+    </p>
 
     <p>
-        Congratulations! You have completed the initial setup and you are now ready to switch to the regular web interface!
-    </p>
-    <p>
-        Once you push the button below, the setup mode will be completed and the device will be automatically switch to
-        regular web interface. If configuration is error free, the device will automatically start with first processing.
-        It will take some time until you get the first reading.
-    </p>
-    <p>
-        <button class="button" onclick="completeSetup()">Complete Setup</button>
+        <button class="button" onclick="abortSetup()">Abort Setup</button>
     </p>
 
 <script src="global_common.js?v=$COMMIT_HASH"></script>
@@ -50,7 +48,7 @@
 
     function reboot()
     {
-        firework.launch('Setup completed', 'success', 5000);
+        firework.launch('Initial setup aborted', 'warning', 5000);
         jsonConfig = getConfigFromStorage(); // Get config
         jsonConfig.operationmode.opmode = 1;
 
@@ -71,9 +69,9 @@
     }
 
 
-    function completeSetup()
+    function abortSetup()
     {
-        if (confirm("Do you want to complete the setup mode and switch to regular web interface?"))
+        if (confirm("Do you want to abort the setup and switch to regular web interface?"))
             loadConfig().then(() => reboot());
     }
 
