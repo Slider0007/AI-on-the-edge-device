@@ -1,0 +1,15 @@
+{
+    "name": "AI-on-the-Edge Device",
+    "version": "$VERSION",
+    "new_install_prompt_erase": false,
+    "builds": [
+        {
+            "chipFamily": "ESP32-S3",
+            "parts": [
+                { "path": "firmware/xiao-esp32s3-sense/bootloader.bin", "offset": 0 },
+                { "path": "firmware/xiao-esp32s3-sense/partitions.bin", "offset": 32768 },
+                { "path": "firmware/xiao-esp32s3-sense/firmware.bin", "offset": 65536 }
+            ]
+        }
+    ]
+}
