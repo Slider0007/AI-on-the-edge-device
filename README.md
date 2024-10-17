@@ -61,7 +61,7 @@ A possibly already available development version (upcoming release version) can 
 
 ### Option 1: Web Installer (Only For Released Versions)
 
-#### Step 1: Install MCU Part Of Firmware
+#### Step 1: Installation Of MCU Part Of Firmware
 
 Follow the instructions listed at [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/) page:
 

@@ -279,5 +279,5 @@ jobs:
         if ($LASTEXITCODE -ne 0)
         {
           & git commit -m "${{ matrix.plat }}: Update firmware files to ${{ needs.prepare-release.outputs.tag_name }}"
-          & git push --force
+          & git push
         }

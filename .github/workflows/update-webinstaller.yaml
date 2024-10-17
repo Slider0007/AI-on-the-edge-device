@@ -62,5 +62,5 @@ jobs:
         if ($LASTEXITCODE -ne 0)
         {
           & git commit -m "${{ matrix.plat }}: Update firmware files to ${{ steps.pull_artifacts.outputs.version }}"
-          & git push --force
+          & git push
         }
