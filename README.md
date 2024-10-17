@@ -30,7 +30,9 @@ As a result, you get the digitized value of your meter. There are several option
 
 ## Impressions
 ### Hardware
-<img src="images/watermeter_all.jpg" width="266"><img src="images/main.jpg" width="266"><img src="images/size.png" width="266"> 
+<img src="images/watermeter_all.jpg" width="264">
+<img src="images/main.jpg" width="264">
+<img src="images/size.png" width="264"> 
 
 
 ### Web Interface
@@ -61,15 +63,14 @@ A possibly already available development version (upcoming release version) can 
 
 ### Option 1: Web Installer (Only For Released Versions)
 
-#### Step 1: Installation Of MCU Part Of Firmware
-
 Follow the instructions listed at [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/) page:
 
-<img src="images/webinstaller_home.jpg"> 
+<img src="images/webinstaller_home.jpg" width="800"> 
 
-#### Step 2: Installation Of SD Card Content
+<img src="images/webinstaller_dashboard_not_connected.jpg" height="200" width="264">
+<img src="images/webinstaller_wificonfig.jpg" height="200" width="264">
+<img src="images/webinstaller_dashboard_connected.jpg" height="200" width="264">
 
-Please follow the instructions in the following chapter ["Installation Of SD Card Content"](#step-2-installation-of-sd-card-content).
 
 ---
 ### Option 2: Manual Installation (MCU + SD Card)
