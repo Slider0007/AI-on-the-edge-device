@@ -1,0 +1,7 @@
+# Name,   Type, SubType, Offset, Size, Flags
+nvs,      data, nvs,           , 0x5000,
+otadata,  data, ota,           , 0x2000,
+ota_0,    app,  ota_0,         , 2048K,
+ota_1,    app,  ota_1,         , 2048K,
+coredump, data, coredump,      , 64K,
+littlefs, data, littlefs,      , 0xBE0000,
