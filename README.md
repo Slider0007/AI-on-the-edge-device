@@ -65,8 +65,6 @@ Follow the instructions listed at [Web Installer](https://slider0007.github.io/A
 
 <img src="images/webinstaller_home.jpg" width="800">
 
-<img src="images/webinstaller_dashboard_not_connected.jpg" height="200" width="266"><img src="images/webinstaller_wificonfig.jpg" height="200" width="266"><img src="images/webinstaller_dashboard_connected.jpg" height="200" width="266">
-
 ---
 ### Option 2: Manual Installation (MCU + SD Card)
 
