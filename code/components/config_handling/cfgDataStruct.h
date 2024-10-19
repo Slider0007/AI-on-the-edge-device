@@ -61,6 +61,13 @@ enum HAMeterType {
 };
 
 
+enum WebhookUploadImage {
+    WEBHOOK_PUBLISH_IMAGE_DISABLED = 0,
+    WEBHOOK_PUBLISH_IMAGE_ENABLED = 1,
+    WEBHOOK_PUBLISH_IMAGE_ON_ERROR_ONLY = 2
+};
+
+
 enum GpioSmartledType {
     LEDTYPE_WS2812 = 0,
     LEDTYPE_WS2812B_UNIVERSAL = 1,
@@ -332,6 +339,22 @@ struct CfgData {
         } tls;
         std::vector<InfluxDBPerSequence> sequence;
     } sectionInfluxDBv2;
+
+    // Webhook service (push-based)
+    struct SectionWebhook {
+        bool enabled = false;
+        std::string uri = ""; // e.g. http://webhook.com/1234567890
+        std::string apiKey = "";
+        int publishImage = WEBHOOK_PUBLISH_IMAGE_DISABLED;
+        int authMode = AUTH_NONE;
+        std::string username = "";
+        std::string password = "";
+        struct TLS {
+            std::string caCert = "";
+            std::string clientCert = "";
+            std::string clientKey = "";
+        } tls;
+    } sectionWebhook;
 
     // GPIO
     struct SectionGpio {

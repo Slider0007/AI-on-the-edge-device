@@ -153,6 +153,12 @@
 				<output class="badge" id="influxdbv2_status"></output>
 			</td>
 		</tr>
+		<tr>
+			<td>Webhook</td>
+			<td class="td-badge">
+				<output class="badge" id="webhook_status"></output>
+			</td>
+		</tr>
 	</table>
 
 	<table>
@@ -561,6 +567,16 @@
 				else {
 					document.getElementById("influxdbv2_status").value += " (Unknown Status)"
 					addClassToElement("influxdbv2_status", "badge-error");
+				}
+
+				document.getElementById("webhook_status").value = _jsonData.webhook_status;
+				if (_jsonData.webhook_status.substring(0,7) == "Enabled")
+					addClassToElement("webhook_status", "badge-success");
+				else if (_jsonData.webhook_status == "Disabled")
+					addClassToElement("webhook_status", "badge-disabled");
+				else {
+					document.getElementById("webhook_status").value += " (Unknown Status)"
+					addClassToElement("webhook_status", "badge-error");
 				}
 
 				document.getElementById("ntp_syncstatus").value = _jsonData.ntp_syncstatus

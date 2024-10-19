@@ -3,19 +3,20 @@
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Authentication / Security | authmode
-| Default Value     | `Token`             | `1`
-| Input Options     | `Token`<br>`TLS` | `1`<br>`2`
+| Default Value     | `None`              | `0`
+| Input Options     | `None`<br>`Basic`<br>`TLS` | `0`<br>`1`<br>`2`
 
 
 ## Description
 
-Select authentication mode for InfluxDB authentication / security.
+Select authentication / security mode for webhook authentication / security.
 
 
 | Input Option               | Description
 |:---                        |:---
-| `Token`                    | Authenticate with token
-| `TLS`                      | Authenticate with token and secure with TLS certificates
+| `None`                     | No authentication, anonymous
+| `Basic`                    | Authenticate with username and password
+| `TLS`                      | Authenticate with username, password and/or secure with TLS certificates
 
 
 !!! Note

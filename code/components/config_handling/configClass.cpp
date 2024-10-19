@@ -1076,6 +1076,62 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     }
 
 
+    // Webhook
+    // ***************************
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "enabled");
+    if (cJSON_IsBool(objEl))
+        cfgDataTemp.sectionWebhook.enabled = objEl->valueint;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "uri");
+    if (cJSON_IsString(objEl))
+        cfgDataTemp.sectionWebhook.uri = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "apikey");
+    if (cJSON_IsString(objEl))
+        cfgDataTemp.sectionWebhook.apiKey = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "publishimage");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionWebhook.publishImage = std::clamp(objEl->valueint, 0, 2);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "authmode");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionWebhook.authMode = std::clamp(objEl->valueint, 0, 2);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "username");
+    if (cJSON_IsString(objEl))
+        cfgDataTemp.sectionWebhook.username = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "password");
+    if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
+        cfgDataTemp.sectionWebhook.password = objEl->valuestring;
+        saveDataToNVS("webhook_pw", cfgDataTemp.sectionWebhook.password);
+    }
+    else {
+        if (!unityTest) {
+            loadDataFromNVS("webhook_pw", cfgDataTemp.sectionWebhook.password);
+        }
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "cacert");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionWebhook.tls.caCert = objEl->valuestring;
+        validateStructure(cfgDataTemp.sectionWebhook.tls.caCert);
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "clientcert");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionWebhook.tls.clientCert = objEl->valuestring;
+        validateStructure(cfgDataTemp.sectionWebhook.tls.clientCert);
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "clientkey");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionWebhook.tls.clientKey = objEl->valuestring;
+        validateStructure(cfgDataTemp.sectionWebhook.tls.clientKey);
+    }
+
+
     // GPIO
     // ***************************
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "gpio"), "customizationenabled");
@@ -1781,6 +1837,35 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         if (cJSON_AddStringToObject(influxdbv2SequenceEl, "fieldkey1", cfgDataTemp.sectionInfluxDBv2.sequence[i].fieldKey1.c_str()) == NULL)
             retVal = ESP_FAIL;
     }
+
+
+    // Webhook
+    // ***************************
+    cJSON *webhook, *webhookTls;
+    if (!cJSON_AddItemToObject(cJsonObject, "webhook", webhook = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddBoolToObject(webhook, "enabled", cfgDataTemp.sectionWebhook.enabled) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhook, "uri", cfgDataTemp.sectionWebhook.uri.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhook, "apikey", cfgDataTemp.sectionWebhook.apiKey.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(webhook, "publishimage", cfgDataTemp.sectionWebhook.publishImage) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(webhook, "authmode", cfgDataTemp.sectionWebhook.authMode) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhook, "username", cfgDataTemp.sectionWebhook.username.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhook, "password", cfgDataTemp.sectionWebhook.password.empty() ? "" : "******") == NULL)
+        retVal = ESP_FAIL;
+    if (!cJSON_AddItemToObject(webhook, "tls", webhookTls = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhookTls, "cacert", cfgDataTemp.sectionWebhook.tls.caCert.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhookTls, "clientcert", cfgDataTemp.sectionWebhook.tls.clientCert.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhookTls, "clientkey", cfgDataTemp.sectionWebhook.tls.clientKey.c_str()) == NULL)
+        retVal = ESP_FAIL;
 
 
     // GPIO

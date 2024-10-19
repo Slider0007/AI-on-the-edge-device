@@ -1,21 +1,16 @@
-# Parameter: MQTT
+# Parameter: Webhook
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | MQTT                | enabled
+| Parameter Name    | Webhook             | enabled
 | Default Value     | `Disabled`          | `false`
 | Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
 
 
 ## Description
 
-Enable or disable MQTT client service.
-
-
-!!! Note
-    Only MQTT version 3.1.x is supported up to now.
-
+Enable or disable push-based publishing service to a webhook.
 
 !!! Tip
-    More detailed information can be found in MQTT API description located in
+    More detailed information can be found in webhook API description located in
     repository `docs` folder or is also accessible in `WebUI > System > Documentation`.
