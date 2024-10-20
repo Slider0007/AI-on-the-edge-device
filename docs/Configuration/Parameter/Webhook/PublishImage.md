@@ -22,7 +22,7 @@ Definition of image publishing to the server using the same `URI` and `API Key` 
 !!! Note
     HTTP method: `PUT`<br>
     Header:<br>
-    - Content-Type: `application/json`
+    - Content-Type: `application/json`<br>
     - `APIKEY`: Parameter `API Key` Content
 
 

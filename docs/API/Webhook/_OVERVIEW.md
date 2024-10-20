@@ -1,7 +1,7 @@
 ## Overview: Webhook API
-### Event-driven HTTP push service to an URL endpoint
+### Event-driven push service to an HTTP / HTTPS URL endpoint
 
-Number sequence results and related camera image are pushed to an URL endpoint.
+Number sequence results and related camera image are pushed to an HTTP / HTTPS URL endpoint.
 
 ### Message typtes
 #### 1. Data message
