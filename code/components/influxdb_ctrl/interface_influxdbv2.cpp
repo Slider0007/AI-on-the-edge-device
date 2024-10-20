@@ -122,7 +122,7 @@ esp_err_t influxDBv2Publish(const std::string &_measurement, const std::string &
             httpConfig.skip_cert_common_name_check = true;    // Skip any validation of server certificate CN field
         }
         else {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verfication");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verification");
             httpConfig.crt_bundle_attach = esp_crt_bundle_attach;
         }
 
