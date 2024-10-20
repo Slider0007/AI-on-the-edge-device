@@ -120,7 +120,7 @@ See [REST API Documentation](docs/API/REST/_OVERVIEW.md) in github repository or
 ⚠️ Read API documenation carefully. REST API is not fully compatible with jomjol's original firmware.
 
 ### MQTT API
-See [MQTT API Documentation](docs/API/webhook/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > MQTT API`).<br>
+See [MQTT API Documentation](docs/API/MQTT/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > MQTT API`).<br>
 ⚠️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
 
 ### Prometheus Exporter
@@ -128,7 +128,7 @@ See [Prometheus API Documentation](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)
 ⚠️ Read API documenation carefully. Prometheus API is not fully compatible with jomjol's original firmware.
 
 ### Webhook API
-See [Webhook API Documentation](docs/API/webhook/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Webhook API`).<br>
+See [Webhook API Documentation](docs/API/Webhook/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Webhook API`).<br>
 ⚠️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
 
 
