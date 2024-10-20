@@ -1010,7 +1010,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "authmode");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionInfluxDBv2.authMode = std::clamp(objEl->valueint, 0, 2);
+        cfgDataTemp.sectionInfluxDBv2.authMode = std::clamp(objEl->valueint, 1, 2);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "token");
     if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {

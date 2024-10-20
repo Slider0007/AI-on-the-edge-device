@@ -9,7 +9,7 @@
 
 ## Description
 
-Definition of publishing of actual image to the server data is published (using the same API Key). 
+Definition of image publishing to the server using the same `URI` and `API Key` than data message. 
 
 
 | Input Option               | Description
@@ -19,7 +19,7 @@ Definition of publishing of actual image to the server data is published (using 
 | `Enabled (On Error)`       | Publishing image enabled, only if value status has error state `Rate too high >` or `Rate too high <`
 
 
-!!! Note:
+!!! Note
     HTTP method: `PUT`<br>
     Header:<br>
     - Content-Type: `application/json`

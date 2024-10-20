@@ -133,7 +133,7 @@ esp_err_t webhookPublish(const char* _jsonData, ImageData *_imgData, time_t _ima
             httpConfig.skip_cert_common_name_check = true;    // Skip any validation of server certificate CN field
         }
         else {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verfication");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verification");
             httpConfig.crt_bundle_attach = esp_crt_bundle_attach;
         }
 

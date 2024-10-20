@@ -8,4 +8,4 @@
 
 ## Description
 
-API Key which is added in form of a HTTP message header as message identifier.
+API Key which is added in form of a HTTP message header to identify the message.

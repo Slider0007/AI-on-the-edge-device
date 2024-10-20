@@ -17,14 +17,9 @@ related client private key is used by the HTTP client to prove its identity to t
 
 
 !!! Note
-The certificate file needs to be copied to SD card folder `/config/certs`.<br>
+    The certificate file needs to be copied to SD card folder `/config/certs`.<br>
     Supported formats:<br>
     - `PEM` (Base64-ASCII-coding, File extentions: `.pem, .crt, .cer, .key`)<br>
     - `DER` (Binary coding, File extention: `.der, .cer`)<br>
     Only unencrypted and not password protected files are supported.
 
-
-
-!!! Note
-    Using TLS for Webhook, adaptions of Webhook `URI` parameter needs to be done, as well. Please ensure 
-    protocol `https://` is configured, e.g. `https://IP-ADDRESS`

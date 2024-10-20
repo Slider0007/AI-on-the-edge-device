@@ -15,14 +15,11 @@ Keep it empty if mutual authentication is not required. If configured, `Client K
 The client certificate is used for TLS handshake of InfluxDB mutual authentification. The client certificate and 
 related client private key is used by the HTTP client to prove its identity to the  server.
 
+
 !!! Note
-The certificate file needs to be copied to SD card folder `/config/certs`.<br>
+    The certificate file needs to be copied to SD card folder `/config/certs`.<br>
     Supported formats:<br>
     - `PEM` (Base64-ASCII-coding, File extentions: `.pem, .crt, .cer`)<br>
     - `DER` (Binary coding, File extention: `.der, .cer`)<br>
     Only unencrypted and not password protected files are supported.
 
-
-!!! Note
-    Using TLS for Webhook, adaptions of Webhook `URI` parameter needs to be done, as well. Please ensure 
-    protocol `https://` is configured, e.g. `https://IP-ADDRESS`

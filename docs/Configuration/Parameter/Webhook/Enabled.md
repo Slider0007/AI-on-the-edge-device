@@ -9,7 +9,7 @@
 
 ## Description
 
-Enable or disable push-based publishing service to a webhook.
+Enable or disable event-driven push-based data publishing service to a webhook.
 
 !!! Tip
     More detailed information can be found in webhook API description located in

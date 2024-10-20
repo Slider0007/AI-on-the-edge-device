@@ -15,7 +15,7 @@ used by the client to validate the HTTP server is who it claims to be.
 
 
 !!! Note
-The certificate file needs to be copied to SD card folder `/config/certs`.<br>
+    The certificate file needs to be copied to SD card folder `/config/certs`.<br>
     Supported formats:<br>
     - `PEM` (Base64-ASCII-coding, File extentions: `.pem, .crt, .cer`)<br>
     - `DER` (Binary coding, File extention: `.der, .cer`)<br>
@@ -29,8 +29,3 @@ The certificate file needs to be copied to SD card folder `/config/certs`.<br>
   
 !!! Warning
     Certificate CN field (common name) check is disabled by default (hard-coded).
-
-
-!!! Note
-    Using TLS for the webhook, adaptions of webhook `URI` parameter needs to be done, as well. Please ensure 
-    protocol `https://` is configured, e.g. `https://IP-ADDRESS`

@@ -22,12 +22,12 @@ The following data are published:
 | `time_processed_utc`                 | Timestamp of last processed cycle<br><br>Notes:<br>- Output of multiple sequences possible<br>- Time of image taken (UTC) | `1729341437`
 | `timestamp_processed`                | Timestamp of last processed cycle per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible<br>- Time of image taken (incl. timezone) | `2024-10-19T14:37:17+0200`
 | `sequence_name`                      | Sequence Name                                      | `main`
-| `value_status`                       | Value Status per sequence<br><br>Notes:<br>- Output of multiple sequences possible <br>- Possible states:<br>`000 Valid`: Valid, no deviation <br>`W01 W01 Empty data`: No data available <br>`E90 No data to substitute N`: No valid data to substitude N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `main`:`000 Valid`
-| `actual_value`                       | Actual value per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible | `main`:`146.540`
-| `fallback_value`                     | Fallback value<br>(Latest valid result) per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible <br>- Possible special states:<br>`Deactivated`: No fallback value usage <br>`Outdated`: Fallback value too old <br>`Not Determinable`: Age of value not determinable | `main`:`146.540`
-| `raw_value`                          | Raw value <br>(Value before any post-processing) per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible | `main`:`146.539`
-| `rate_per_minute`                    | Rate per minute per sequence<br>(Delta between actual and last valid processed value (Fallback Value) + additionally normalized to a minute)<br><br>Notes:<br>- Tab separated listing<br>- Output of multiple sequences possible | `main`:`0.0000`
-| `rate_per_interval`                  | Rate per interval per serquence<br>(Delta between actual and last valid processed value (Fallback Value))<br><br>Notes:<br>- Output of multiple sequences possible | `main`:`0.0000`
+| `value_status`                       | Value Status per sequence<br><br>Notes:<br>- Output of multiple sequences possible <br>- Possible states:<br>`000 Valid`: Valid, no deviation <br>`W01 W01 Empty data`: No data available <br>`E90 No data to substitute N`: No valid data to substitude N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `000 Valid`
+| `actual_value`                       | Actual value per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible | `146.540`
+| `fallback_value`                     | Fallback value<br>(Latest valid result) per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible <br>- Possible special states:<br>`Deactivated`: No fallback value usage <br>`Outdated`: Fallback value too old <br>`Not Determinable`: Age of value not determinable | `146.540`
+| `raw_value`                          | Raw value <br>(Value before any post-processing) per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible | `146.539`
+| `rate_per_minute`                    | Rate per minute per sequence<br>(Delta between actual and last valid processed value (Fallback Value) + additionally normalized to a minute)<br><br>Notes:<br>- Tab separated listing<br>- Output of multiple sequences possible | `0.0000`
+| `rate_per_interval`                  | Rate per interval per serquence<br>(Delta between actual and last valid processed value (Fallback Value))<br><br>Notes:<br>- Output of multiple sequences possible | `0.0000`
 
 Example - Message body in JSON syntax:
 ```
@@ -52,7 +52,7 @@ Example - Message body in JSON syntax:
 Depending on configuration (Parameter section `Webhook`) the respective image on which the evauluation is based, is published to the same URL endpoint.
 
 Message configuration:
-- URL: Content of parameter `URI`
+- URL: Content of parameter `URI` (query string with actual timestamp gets attached to URI: `/?timestamp=...`)
 - HTTP method: `PUT`<br>
 - Header:<br>
   - Content-Type: `image/jpeg`
