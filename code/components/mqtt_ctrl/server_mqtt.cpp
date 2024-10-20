@@ -565,6 +565,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Rate",
             .icon = "swap-vertical",
             .unit = rateUnit,
+            .deviceClass = meterType == "energy" ? "power" : "volume_flow_rate",
             .stateClass = "measurement"
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -578,7 +579,8 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Rate / Interval",
             .icon = "arrow-expand-vertical",
             .unit = valueUnit != "" ? valueUnit + "/" + to_stringWithPrecision(processingInterval, 1) + "min" : "",
-            .stateClass = "measurement"
+            .stateClass = "measurement",
+            .entityCategory = "diagnostic"
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
