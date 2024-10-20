@@ -10,15 +10,20 @@ Let's explore how to make **AI on the Edge** a reality!
 ## Key features
 - Tensorflow Lite (TFLite) integration – including easy-to-use wrapper
 - Inline image processing (Image taking, Image alignment, ROI extraction, Post processing)
-- Usage of **small** and **low-cost** devices ([Supported Hardware](#supported-hardware))
-- Integrated camera and illumination (depending on hardware)
-- Web interface for administration and control
-- OTA interface for updating directly via web interface
-- Full integration into [Home Assistant](docs/API/MQTT/home-assistant-discovery.md)
-- InfluxDB v1.x + v2.x
-- [MQTT v3.x](docs/API/MQTT/_OVERVIEW.md)
+- Usage of **small** and **low-cost** AI-capable devices ([Supported Hardware](#supported-hardware))
+- Integrated camera and illumination (depending on hardware capabilities)
+- Web interface for visualization, control and administration 
+- Over the air (OTA) firmware update via web interface
+
+
+## APIs / Publishing Services / Home Automation Integrations
+- Home Assistant Integration ([Home Assistant Discovery](docs/API/MQTT/home-assistant-discovery.md))
 - [REST API](docs/API/REST/_OVERVIEW.md)
-- [Prometheus/OpenMetrics exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)
+- [MQTT v3](docs/API/MQTT/_OVERVIEW.md)
+- InfluxDB v1
+- InfluxDB v2
+- [Webhook Publishing](docs/API/Webhook/_OVERVIEW.md)
+- [Prometheus/OpenMetrics Exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)
 
 
 ## Workflow
@@ -69,7 +74,7 @@ Follow the instructions listed at [Web Installer](https://slider0007.github.io/A
 
 #### Step 2: Installation Of SD Card Content
 
-Please follow the instructions in the following chapter ["Installation Of SD Card Content"](#step-2-installation-of-sd-card-content).
+Please follow the instructions in the following chapter ["Step 2: Installation Of SD Card Content"](#step-2-installation-of-sd-card-content).
 
 ---
 ### Option 2: Manual Installation (MCU + SD Card)
@@ -115,8 +120,16 @@ See [REST API Documentation](docs/API/REST/_OVERVIEW.md) in github repository or
 ⚠️ Read API documenation carefully. REST API is not fully compatible with jomjol's original firmware.
 
 ### MQTT API
-See [MQTT API Documentation](docs/API/MQTT/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > MQTT API`).<br>
-⚠️ Read API documenation carefully. MQTT API is not fully compatible  with jomjol's original firmware.
+See [MQTT API Documentation](docs/API/webhook/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > MQTT API`).<br>
+⚠️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
+
+### Prometheus Exporter
+See [Prometheus API Documentation](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Prometheus API`).<br>
+⚠️ Read API documenation carefully. Prometheus API is not fully compatible with jomjol's original firmware.
+
+### Webhook API
+See [Webhook API Documentation](docs/API/webhook/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Webhook API`).<br>
+⚠️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
 
 
 ## Build Yourself
