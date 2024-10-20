@@ -7,6 +7,7 @@
 #include <cJSON.h>
 
 #include <mqtt_client.h>
+#include <esp_crt_bundle.h>
 
 #ifdef DEBUG_DETAIL_ON
 #include <esp_timer.h>
@@ -309,20 +310,25 @@ int MQTT_Init()
     mqtt_cfg.session.last_will.topic = LWTTopic.c_str();
     mqtt_cfg.session.last_will.retain = 1;
     mqtt_cfg.session.last_will.msg = std::string(MQTT_STATUS_OFFLINE).c_str();
-    //mqtt_cfg.session.last_will.msg_len = (int)(std::string(MQTT_STATUS_OFFLINE).length());
     mqtt_cfg.session.keepalive = keepAlive;
     mqtt_cfg.buffer.size = 1024;                         // size of MQTT send/receive buffer (Default: 1024)
 
-    if (cfgDataPtr->authMode > AUTH_NONE) {
+    if (cfgDataPtr->authMode == AUTH_BASIC) {
         mqtt_cfg.credentials.username = cfgDataPtr->username.c_str();
         mqtt_cfg.credentials.authentication.password = cfgDataPtr->password.c_str();
     }
+    else if (cfgDataPtr->authMode == AUTH_TLS) {
+        mqtt_cfg.credentials.username = cfgDataPtr->username.c_str();
+        mqtt_cfg.credentials.authentication.password = cfgDataPtr->password.c_str();
 
-    if (cfgDataPtr->authMode == AUTH_TLS) {
         if (!TLSCACert.empty()) {
             mqtt_cfg.broker.verification.certificate = TLSCACert.c_str();
             mqtt_cfg.broker.verification.certificate_len = TLSCACert.length() + 1;
             mqtt_cfg.broker.verification.skip_cert_common_name_check = true;    // Skip any validation of server certificate CN field
+        }
+        else {
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verfication");
+            mqtt_cfg.broker.verification.crt_bundle_attach = esp_crt_bundle_attach;
         }
 
         if (!TLSClientCert.empty()) {

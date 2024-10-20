@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include <esp_http_client.h>
+#include <esp_crt_bundle.h>
 #include <esp_log.h>
 
 #include "ClassLogFile.h"
@@ -107,32 +108,32 @@ bool influxDBv2Init(const CfgData::SectionInfluxDBv2 *_cfgDataPtr)
 
 esp_err_t influxDBv2Publish(const std::string &_measurement, const std::string &_fieldkey1, const std::string &_fieldvalue1, const std::string &_timestamp)
 {
-    char* response_buffer = (char*) calloc_psram_heap(std::string(TAG) + "->response_buffer", 1,
-                            sizeof(char) * MAX_HTTP_OUTPUT_BUFFER, MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-
-    esp_http_client_config_t http_config = {
-       .user_agent = "ESP32 Meter reader",
+    esp_http_client_config_t httpConfig = {
+       .user_agent = "AI-on-the-Edge Device",
        .method = HTTP_METHOD_POST,
        .event_handler = http_event_handler,
-       .buffer_size = MAX_HTTP_OUTPUT_BUFFER,
-       .user_data = response_buffer
+       .buffer_size = MAX_HTTP_OUTPUT_BUFFER
     };
 
     if (cfgDataPtr->authMode == AUTH_TLS) {
         if (!TLSCACert.empty()) {
-            http_config.cert_pem = TLSCACert.c_str();
-            http_config.cert_len = TLSCACert.length() + 1;
-            http_config.skip_cert_common_name_check = true;    // Skip any validation of server certificate CN field
+            httpConfig.cert_pem = TLSCACert.c_str();
+            httpConfig.cert_len = TLSCACert.length() + 1;
+            httpConfig.skip_cert_common_name_check = true;    // Skip any validation of server certificate CN field
+        }
+        else {
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verification");
+            httpConfig.crt_bundle_attach = esp_crt_bundle_attach;
         }
 
         if (!TLSClientCert.empty()) {
-            http_config.client_cert_pem = TLSClientCert.c_str();
-            http_config.client_cert_len = TLSClientCert.length() + 1;
+            httpConfig.client_cert_pem = TLSClientCert.c_str();
+            httpConfig.client_cert_len = TLSClientCert.length() + 1;
         }
 
         if (!TLSClientKey.empty()) {
-            http_config.client_key_pem = TLSClientKey.c_str();
-            http_config.client_key_len = TLSClientKey.length() + 1;
+            httpConfig.client_key_pem = TLSClientKey.c_str();
+            httpConfig.client_key_len = TLSClientKey.length() + 1;
         }
     }
 
@@ -166,25 +167,30 @@ esp_err_t influxDBv2Publish(const std::string &_measurement, const std::string &
 
     std::string apiURI = cfgDataPtr->uri + "/api/v2/write?org=" + cfgDataPtr->organization + "&bucket=" + cfgDataPtr->bucket;
     apiURI.shrink_to_fit();
-    http_config.url = apiURI.c_str();
+    httpConfig.url = apiURI.c_str();
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "URI: " + apiURI);
 
-    esp_http_client_handle_t http_client = esp_http_client_init(&http_config);
+    esp_http_client_handle_t httpClient = esp_http_client_init(&httpConfig);
+    if (httpClient == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "HTTP client: Initialization failed");
+        return ESP_FAIL;
+    }
+
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Initialized");
 
-    esp_http_client_set_header(http_client, "Content-Type", "text/plain");
+    esp_http_client_set_header(httpClient, "Content-Type", "text/plain");
     std::string authString = "Token " + cfgDataPtr->token;
     //LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Tokenheader: %s\n", _zw.c_str());
-    esp_http_client_set_header(http_client, "Authorization", authString.c_str());
+    esp_http_client_set_header(httpClient, "Authorization", authString.c_str());
     //LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Header setting done");
 
-    ESP_ERROR_CHECK(esp_http_client_set_post_field(http_client, payload.c_str(), payload.length()));
+    ESP_ERROR_CHECK(esp_http_client_set_post_field(httpClient, payload.c_str(), payload.length()));
     //LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Payload post completed");
 
-    retVal = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(http_client));
+    retVal = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(httpClient));
 
     if (retVal == ESP_OK) {
-        int status_code = esp_http_client_get_status_code(http_client);
+        int status_code = esp_http_client_get_status_code(httpClient);
         if (status_code < 300) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Writing data successful. HTTP response status: " + std::to_string(status_code));
         }
@@ -196,9 +202,7 @@ esp_err_t influxDBv2Publish(const std::string &_measurement, const std::string &
     else {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "HTTP client: Request failed. Error: " + intToHexString(retVal));
     }
-    esp_http_client_cleanup(http_client);
-    free_psram_heap(std::string(TAG) + "->response_buffer", response_buffer);
-
+    esp_http_client_cleanup(httpClient);
     return retVal;
 }
 
