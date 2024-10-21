@@ -92,9 +92,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message += "<td>Enter the name of WLAN network</td></tr>";
         message += "<tr><td>Network Password</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"password\" id=\"password\"></td>";
         message += "<td>Enter the WLAN network password (NOTE: The password is transmitted to the device as plain text!)</td><tr>";
-        message += "</table>";
-        httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
-
+        message += "</table><br><br>";
         message = "<button style=\"width:150px\" class=\"button\" type=\"button\" onclick=\"wr()\">Save config</button>";
         message += "<script language=\"JavaScript\">async function wr(){";
         message += "api = \"/config?\"+\"ssid=\"+document.getElementById(\"ssid\").value+\"&pwd=\"+document.getElementById(\"password\").value;";
@@ -110,8 +108,6 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
         message += "<button style=\"width:150px\" class=\"button\" type=\"button\" id=\"doUpdate\" onclick=\"upload()\">Upload File</button><p>";
         message += "The upload might take up to 60s. After the package has been successfully uploaded, the page is automatically reloaded.";
-        httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
-
         message = "<script language=\"JavaScript\">";
         message += "function upload() {";
         message += "let xhttp = new XMLHttpRequest();";
@@ -129,15 +125,15 @@ esp_err_t main_handler_AP(httpd_req_t *req)
 
     message = "<h3>3. Install firmware package</h3><p>";
     message += "The firmware package has been successfully uploaded to the device.<br>";
-    message += "The device is going to reboot and intall the provided package. This process can take up to 3 minutes.<br>";
+    message += "The device is going to reboot and install the provided package. This process can take up to 3 minutes.<br>";
     message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).<br>";
     message += "If device is provisioned using web installer, just wait until browser window gets refreshed automatically.<br>";
-    message += "Otherwise access the device using network device name (Default: watermeter) or the IP address (check router logs).<br><br>";
+    message += "Otherwise access the device using network device name (default: watermeter) or the IP address (check router logs).<br><br>";
     message += "<button style=\"width:150px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To Proceed</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
     message += "api = \"/reboot\";";
-    message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}</script>";
-    message += "document.getElementById(\"doReboot\").disabled = true;}";
+    message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}";
+    message += "document.getElementById(\"doReboot\").disabled = true;}</script>";
     httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
