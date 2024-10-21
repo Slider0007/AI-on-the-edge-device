@@ -38,14 +38,13 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
 
 void wifiInitAP(void)
 {
-    ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     esp_netif_create_default_wifi_ap();
 
     wifi_init_config_t wifiInitCfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&wifiInitCfg));
 
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
 
     wifi_config_t wifiConfig = { };
     strcpy((char*)wifiConfig.ap.ssid, (const char*) AP_ESP_WIFI_SSID);
@@ -67,25 +66,34 @@ void wifiInitAP(void)
 }
 
 
+void wifiDeinitAP(void)
+{
+    esp_wifi_disconnect();
+    esp_wifi_stop();
+    esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler);
+    esp_wifi_deinit();
+    setStatusLedOff();
+    credentialsSet = true;
+}
+
+
 esp_err_t main_handler_AP(httpd_req_t *req)
 {
-    std::string message = "<h1>AI-on-the-edge - BASIC SETUP</h1><p>This is an access point to setup ";
-    message += "the minimum required files and information on the device and the SD-card.<br><br>";
-    message += "The initial setup is performed in 3 steps:<br>1. Set WLAN credentials<br>";
-    message += "2. Upload ZIP package to flash SD card content<br>3. Reboot<br>";
+    std::string message = "<h1>AI on the Edge Device | Device Provisioning</h1>";
+    message += "<p>Setup the minimum required content on the device and the SD card.<br><br>";
+    message += "The provisioning is performed into 3 steps:<br>1. Configure WLAN network and set credentials<br>";
+    message += "2. Upload firmware package<br>3. Install firmware package<br>";
     httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
 
     if (!credentialsSet) {
-        message = "<h3>1. Set WLAN credentials</h3><p>";
+        message = "<h3>1. Configure WLAN network and set credentials</h3>";
         message += "<table>";
-        message += "<tr><td>SSID</td><td><input type=\"text\" name=\"ssid\" id=\"ssid\"></td><td>   ";
-        message += "Enter the SSID name of WLAN network</td></tr>";
-        message += "<tr><td>Password</td><td><input type=\"text\" name=\"password\" id=\"password\"></td><td>   ";
-        message += "Enter the WLAN network password (ATTENTION: The password will be transmitted unencrypted!)</td><tr>";
-        message += "</table><p>";
-        httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
-
-        message = "<button class=\"button\" type=\"button\" onclick=\"wr()\">Submit</button>";
+        message += "<tr><td>Network Name (SSID)</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"ssid\" id=\"ssid\"></td>";
+        message += "<td>Enter the name of WLAN network</td></tr>";
+        message += "<tr><td>Network Password</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"password\" id=\"password\"></td>";
+        message += "<td>Enter the WLAN network password (NOTE: The password is transmitted to the device as plain text!)</td><tr>";
+        message += "</table><br><br>";
+        message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" onclick=\"wr()\">Save config</button>";
         message += "<script language=\"JavaScript\">async function wr(){";
         message += "api = \"/config?\"+\"ssid=\"+document.getElementById(\"ssid\").value+\"&pwd=\"+document.getElementById(\"password\").value;";
         message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}</script>";
@@ -95,38 +103,36 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     }
 
     if (!SDCardContentExisting) {
-        message = "<h3>2. Upload ZIP package to flash SD card content</h3><p>";
-        message += "After initial flashing of the firmware the the device sd-card is still empty.<br>";
-        message += "Please upload \"AI-on-the-edge-device__{Board Type}__*.zip\", which installs the SD card content.<p>";
+        message = "<h3>2. Upload firmware package</h3><p>";
+        message += "Upload a firmware package \"AI-on-the-edge-device__{Board Type}__*.zip\" to install the SD card content.<p>";
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
-        message += "<button class=\"button\" style=\"width:300px\" id=\"doUpdate\" type=\"button\" onclick=\"upload()\">Upload File</button><p>";
-        message += "The upload might take up to 60s. After a succesfull upload the page will be reloaded.";
-        httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
-
-        message = "<script language=\"JavaScript\">";
+        message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doUpdate\" onclick=\"upload()\">Upload File</button><p>";
+        message += "The upload might take up to 60s. After the package has been successfully uploaded, the page is automatically reloaded.";
+        message += "<script language=\"JavaScript\">";
         message += "function upload() {";
         message += "let xhttp = new XMLHttpRequest();";
         message += "xhttp.onreadystatechange = function() {if (xhttp.readyState == 4) {if (xhttp.status == 200) {location.reload();}}};";
         message += "let filePath = document.getElementById(\"newfile\").value.split(/[\\\\/]/).pop();";
         message += "let file = document.getElementById(\"newfile\").files[0];";
         message += "if (!file.name.includes(\"AI-on-the-edge-device__\")){if (!confirm(\"The zip file name should contain 'AI-on-the-edge-device__'. ";
-        message += "Are you sure that you have downloaded the correct file?\"))return;};";
+        message += "Are you sure that you have chosen the correct file?\"))return;};";
         message += "let upload_path = \"/upload/firmware/\" + filePath; xhttp.open(\"POST\", upload_path, true); xhttp.send(file);";
-        message += "document.getElementById(\"doUpdate\").disabled = true;}";
-        message += "</script>";
+        message += "document.getElementById(\"doUpdate\").disabled = true;}</script>";
         httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
         return ESP_OK;
     }
 
-    message = "<h3>3. Reboot</h3><p>";
-    message += "Reboot to proceed the update process.<br>The device is going restart twice ";
-    message += "and then connect to configured access point.<br>Please find the IP in your router settings and access it with the new IP address.<p>";
-    message += "The first update and initialization process can take up to 3 minutes.<br>Error logs can be found ";
-    message += "using UART / serial console.<p>Have fun!<p>";
-    message += "<button class=\"button\" type=\"button\" onclick=\"rb()\")>Reboot</button>";
+    message = "<h3>3. Install firmware package</h3><p>";
+    message += "The firmware package has been successfully uploaded to the device.<br>";
+    message += "The device is going to reboot and install the provided package. This process can take up to 3 minutes.<br>";
+    message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).<br>";
+    message += "If device is provisioned using web installer, just wait until installation is completed and refresh browser window.<br>";
+    message += "Switch WLAN network and access the device using device name (default: watermeter) or IP address (check router logs).<br><br>";
+    message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To Proceed</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
     message += "api = \"/reboot\";";
-    message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}</script>";
+    message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();";
+    message += "document.getElementById(\"doReboot\").disabled = true;}</script>";
     httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;

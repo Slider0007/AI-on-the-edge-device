@@ -20,8 +20,7 @@ The error code source definition can be found [here](https://github.com/Slider00
 | WLAN_CONN     | 1                    | Disconnected (Authentication failure) | 2                    |
 | WLAN_CONN     | 1                    | Disconnected (Timeout)                | 3                    |
 | WLAN_CONN     | 1                    | Disconnected (further reasons)        | 4                    |  
-| WLAN_INIT     | 2                    | SSID empty                            | 1                    | X
-| WLAN_INIT     | 2                    | WIFI init error (details console)     | 2                    | X
+| WLAN_INIT     | 2                    | WIFI init error (details console)     | 1                    | X
 | SDCARD_NVS_INIT | 3                  | SD card filesystem mount failed       | 1                    | X
 | SDCARD_NVS_INIT | 3                  | SD card not found (0x107)             | 2                    | X
 | SDCARD_NVS_INIT | 3                  | SD card init failed (details console) | 3                    | X

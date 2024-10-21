@@ -1,26 +1,16 @@
 #include "connect_wlan.h"
 #include "../../include/defines.h"
 
-#include <stdlib.h>
-#include <fstream>
-#include <vector>
-#include <sstream>
-#include <iostream>
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-
-#include "esp_system.h"
-#include <esp_wifi.h>
-#include "esp_wnm.h"
-#include "esp_rrm.h"
-#include "esp_mbo.h"
-#include "esp_mac.h"
-#include "esp_netif.h"
 #include <netdb.h>
+#include <esp_system.h>
+#include <esp_wifi.h>
+#include <esp_wnm.h>
+#include <esp_rrm.h>
+#include <esp_mbo.h>
+#include <esp_mac.h>
 #include <esp_log.h>
-#include "esp_netif_sntp.h"
+#include <esp_netif.h>
+#include <esp_netif_sntp.h>
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
@@ -587,15 +577,9 @@ esp_err_t initWifiStation(void)
 {
 	cfgDataPtr = &ConfigClass::getInstance()->get()->sectionNetwork;
 
-	esp_err_t retVal = esp_netif_init();
-	if (retVal != ESP_OK) {
-		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_init: Error: "  + std::to_string(retVal));
-		return retVal;
-	}
-
-    retVal = esp_event_loop_create_default();
-	if (retVal != ESP_OK) {
-		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_event_loop_create_default: Error: "  + std::to_string(retVal));
+    esp_err_t retVal = esp_event_loop_create_default();
+	if (retVal != ESP_OK && retVal != ESP_ERR_INVALID_STATE) {
+		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_event_loop_create_default: Error: "  + intToHexString(retVal));
 		return retVal;
 	}
 
@@ -606,7 +590,7 @@ esp_err_t initWifiStation(void)
 
 		retVal = esp_netif_dhcpc_stop(wifiStation);	// Stop DHCP service
 		if (retVal != ESP_OK) {
-			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_dhcpc_stop: Error: "  + std::to_string(retVal));
+			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_dhcpc_stop: Error: "  + intToHexString(retVal));
 			return retVal;
 		}
 
@@ -624,7 +608,7 @@ esp_err_t initWifiStation(void)
 
 		retVal = esp_netif_set_ip_info(wifiStation, &ipInfo);
 		if (retVal != ESP_OK) {
-			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_set_ip_info: Error: "  + std::to_string(retVal));
+			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_set_ip_info: Error: "  + intToHexString(retVal));
 			return retVal;
 		}
 
@@ -641,7 +625,7 @@ esp_err_t initWifiStation(void)
 
 		retVal = esp_netif_set_dns_info(wifiStation, ESP_NETIF_DNS_MAIN, &dnsInfo);
 		if (retVal != ESP_OK) {
-			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_set_dns_info: Error: "  + std::to_string(retVal));
+			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_set_dns_info: Error: "  + intToHexString(retVal));
 			return retVal;
 		}
 	}
@@ -652,19 +636,19 @@ esp_err_t initWifiStation(void)
 	wifi_init_config_t wifiInitCfg = WIFI_INIT_CONFIG_DEFAULT();
     retVal = esp_wifi_init(&wifiInitCfg);
 	if (retVal != ESP_OK) {
-		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_init: Error: "  + std::to_string(retVal));
+		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_init: Error: "  + intToHexString(retVal));
 		return retVal;
 	}
 
     retVal = esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, NULL);
 	if (retVal != ESP_OK) {
-		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_event_handler_instance_register - WIFI_ANY: Error: "  + std::to_string(retVal));
+		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_event_handler_instance_register - WIFI_ANY: Error: "  + intToHexString(retVal));
 		return retVal;
 	}
 
     retVal = esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL, NULL);
 	if (retVal != ESP_OK) {
-		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_event_handler_instance_register - GOT_IP: Error: "  + std::to_string(retVal));
+		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_event_handler_instance_register - GOT_IP: Error: "  + intToHexString(retVal));
 		return retVal;
 	}
 
@@ -691,8 +675,7 @@ esp_err_t initWifiStation(void)
 	#endif
 
     if (cfgDataPtr->wlan.ssid.empty()) {
-		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SSID empty");
-		return ESP_ERR_NOT_FOUND;
+		LogFile.writeToFile(ESP_LOG_WARN, TAG, "SSID empty");
 	}
 
 	strcpy((char*)wifiConfig.sta.ssid, (const char*)cfgDataPtr->wlan.ssid.c_str());
@@ -700,31 +683,31 @@ esp_err_t initWifiStation(void)
 
     retVal = esp_wifi_set_mode(WIFI_MODE_STA);
 	if (retVal != ESP_OK) {
-		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_mode: Error: "  + std::to_string(retVal));
+		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_mode: Error: "  + intToHexString(retVal));
 		return retVal;
 	}
 
     retVal = esp_wifi_set_config(WIFI_IF_STA, &wifiConfig);
 	if (retVal != ESP_OK) {
 		if (retVal == ESP_ERR_WIFI_PASSWORD) {
-			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_config: Password invalid | Error: " + std::to_string(retVal));
+			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_config: Password invalid | Error: " + intToHexString(retVal));
 		}
 		else {
-			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_config: Error: "  + std::to_string(retVal));
+			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_config: Error: "  + intToHexString(retVal));
 		}
 		return retVal;
 	}
 
 	retVal = esp_wifi_start();
 	if (retVal != ESP_OK) {
-		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_start: Error: "  + std::to_string(retVal));
+		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_start: Error: "  + intToHexString(retVal));
 		return retVal;
 	}
 
     if (!cfgDataPtr->wlan.hostname.empty()) {
         retVal = esp_netif_set_hostname(wifiStation, cfgDataPtr->wlan.hostname.c_str());
         if(retVal != ESP_OK ) {
-			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_set_hostname: Error: " + std::to_string(retVal));
+			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_set_hostname: Error: " + intToHexString(retVal));
         }
         else {
 			LogFile.writeToFile(ESP_LOG_INFO, TAG, "Assigned hostname: " + cfgDataPtr->wlan.hostname);

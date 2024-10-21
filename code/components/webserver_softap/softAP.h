@@ -6,7 +6,8 @@
 
 #include <esp_http_server.h>
 
-void checkStartAPMode();
+void checkStartAPMode(void);
+void wifiDeinitAP(void);
 
 #endif  //SOFTAP_H
 #endif //#ifdef ENABLE_SOFTAP
