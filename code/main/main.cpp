@@ -3,14 +3,15 @@
 #include <string>
 #include <regex>
 
-#include "nvs_flash.h"
-#include "esp_psram.h"
-#include "esp_vfs_fat.h"
-#include "driver/sdmmc_host.h"
+#include <nvs_flash.h>
+#include <esp_psram.h>
+#include <esp_vfs_fat.h>
+#include <esp_netif.h>
+#include <driver/sdmmc_host.h>
 
 #ifdef DISABLE_BROWNOUT_DETECTOR
-    #include "soc/soc.h"
-    #include "soc/rtc_cntl_reg.h"
+    #include <soc/soc.h>
+    #include <soc/rtc_cntl_reg.h>
 #endif
 
 #include "configClass.h"
@@ -28,6 +29,7 @@
 #include "server_file.h"
 #include "server_ota.h"
 #include "server_camera.h"
+#include "improvWifiProvisioning.h"
 
 #ifdef ENABLE_MQTT
 #include "server_mqtt.h"
@@ -123,6 +125,15 @@ extern "C" void app_main(void)
     // Load persistent config from file (json notation)
     ConfigClass::getInstance()->readConfigFile();
 
+    // Init network interface
+    // Call only once in application (deinit is not possible)
+    // ********************************************
+    esp_netif_init();
+
+    // Init improv service
+    // ********************************************
+    improvInit();
+
     // Check for missing configuration
     // ********************************************
     #ifdef ENABLE_SOFTAP
@@ -198,16 +209,9 @@ extern "C" void app_main(void)
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WIFI service");
     esp_err_t retVal = initWifiStation();
     if (retVal != ESP_OK) {
-        if (retVal == ESP_ERR_NOT_FOUND) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Device init aborted");
-            setStatusLed(WLAN_INIT, 1, true);
-            return;
-        }
-        else {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted");
-            setStatusLed(WLAN_INIT, 2, true);
-            return;
-        }
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted");
+        setStatusLed(WLAN_INIT, 1, true);
+        return;
     }
 
     // Set log level for wifi component to WARN level (default: INFO; only relevant for serial console)
