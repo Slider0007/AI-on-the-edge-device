@@ -82,7 +82,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     std::string message = "<h1>AI on the Edge Device | Device Provisioning</h1><p>This allows you to setup ";
     message += "the minimum required files and information on the device and the SD card.<br><br>";
     message += "The initial setup is performed in 3 steps:<br>1. Set WLAN credentials<br>";
-    message += "2. Flash SD card content<br>3. Reboot<br>";
+    message += "2. Upload firmware package<br>3. Install firmware package<br>";
     httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
 
     if (!credentialsSet) {
@@ -105,11 +105,11 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     }
 
     if (!SDCardContentExisting) {
-        message = "<h3>2. Flash SD card content</h3><p>";
-        message += "Upload a firmware release package \"AI-on-the-edge-device__{Board Type}__*.zip\" to install the SD card content.<p>";
+        message = "<h3>2. Upload firmware package</h3><p>";
+        message += "Upload a firmware package \"AI-on-the-edge-device__{Board Type}__*.zip\" to install the SD card content.<p>";
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
-        message += "<button class=\"button\" style=\"width:300px\" id=\"doUpdate\" type=\"button\" onclick=\"upload()\">Upload File</button><p>";
-        message += "The upload might take up to 60s. After the file has been successfully uploaded, the page is automatically reloaded.";
+        message += "<button style=\"width:150px\" class=\"button\" type=\"button\" id=\"doUpdate\" onclick=\"upload()\">Upload File</button><p>";
+        message += "The upload might take up to 60s. After the package has been successfully uploaded, the page is automatically reloaded.";
         httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
 
         message = "<script language=\"JavaScript\">";
@@ -127,12 +127,12 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         return ESP_OK;
     }
 
-    message = "<h3>3. Reboot</h3><p>";
-    message += "Reboot to proceed.<br>The device is going to reboot and intall the provided package. This process can take up to 3 minutes.<br>";
-    message += "After installation access the device using the IP address (check router logs) or device name \"watermeter\".<br>";
+    message = "<h3>3. Install firmware package</h3><p>";
+    message += "The device is going to reboot and intall the provided package. This process can take up to 3 minutes.<br>";
+    message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).";
     message += "If device is provisioned using web installer, just wait until browser window gets refreshed automatically.<br>";
-    message += "Logs can be visualized using serial console (e.g. via web installer web interface).<p>Have fun!<p>";
-    message += "<button class=\"button\" type=\"button\" onclick=\"rb()\")>Reboot</button>";
+    message += "Otherwise access the device using network device name (Default: watermeter) or the IP address (check router logs).<br>";
+    message += "<button style=\"width:150px\" class=\"button\" type=\"button\" onclick=\"rb()\")>Reboot To Proceed</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
     message += "api = \"/reboot\";";
     message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}</script>";
