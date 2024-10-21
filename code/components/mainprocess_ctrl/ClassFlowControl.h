@@ -20,6 +20,10 @@
     #include "ClassFlowInfluxDBv2.h"
 #endif // ENABLE_INFLUXDB
 
+#ifdef ENABLE_WEBHOOK
+    #include "ClassFlowWebhook.h"
+#endif // ENABLE_WEBHOOK
+
 
 enum flowStateEvent {
     MULTIPLE_ERROR_IN_ROW = -2,
@@ -51,6 +55,9 @@ class ClassFlowControl : public ClassFlow
     ClassFlowInfluxDBv1 *flowInfluxDBv1;
     ClassFlowInfluxDBv2 *flowInfluxDBv2;
 #endif // ENABLE_INFLUXDB
+#ifdef ENABLE_WEBHOOK
+    ClassFlowWebhook *flowWebhook;
+#endif // ENABLE_WEBHOOK
 
     std::string actualProcessState;
     std::string actualProcessStateWithTime;

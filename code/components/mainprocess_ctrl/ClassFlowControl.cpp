@@ -59,6 +59,10 @@ ClassFlowControl::ClassFlowControl()
 	flowInfluxDBv2 = NULL;
     #endif //ENABLE_INFLUXDB
 
+    #ifdef ENABLE_WEBHOOK
+    flowWebhook = NULL;
+    #endif //ENABLE_WEBHOOK
+
     setActualProcessState(std::string(FLOW_NO_TASK));
     flowStateErrorInRow = 0;
     flowStateDeviationInRow = 0;
@@ -202,6 +206,17 @@ bool ClassFlowControl::initFlow()
     }
 #endif //ENABLE_INFLUXDB
 
+#ifdef ENABLE_WEBHOOK
+    if (cfgClassPtr->get()->sectionWebhook.enabled) {
+        flowWebhook = new ClassFlowWebhook(flowalignment);
+        FlowControlPublish.push_back(flowWebhook);
+        if (!flowWebhook->loadParameter()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Webhook: Init failed");
+            retVal = false;
+        }
+    }
+#endif
+
     // Load parameter handled in this class
     this->loadParameter();
 
@@ -216,6 +231,12 @@ void ClassFlowControl::deinitFlow(void)
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Deinit flow");
     //LogFile.writeHeapInfo("deinitFlow start");
+
+    #ifdef ENABLE_WEBHOOK
+	delete flowWebhook;
+    flowWebhook = NULL;
+    //LogFile.writeHeapInfo("After WEBHOOK");
+    #endif //ENABLE_WEBHOOK
 
     #ifdef ENABLE_INFLUXDB
     delete flowInfluxDBv2;
@@ -312,6 +333,7 @@ bool ClassFlowControl::doFlowImageEvaluation(std::string time)
                     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Process deviation in state: \"" + getActualProcessState() + "\"");
                     flowStateDeviationInRow++;
                     flowStateErrorInRow = 0;
+                    break;
                 }
             }
 
@@ -356,6 +378,7 @@ bool ClassFlowControl::doFlowPublishData(std::string time)
                     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Process deviation in state: \"" + getActualProcessState() + "\"");
                     flowStateDeviationInRow++;
                     flowStateErrorInRow = 0;
+                    break;
                 }
             }
 
@@ -526,6 +549,9 @@ std::string ClassFlowControl::translateActualProcessState(std::string classname)
     }
     else if (classname.compare("ClassFlowInfluxDBv2") == 0) {
         return std::string(FLOW_PUBLISH_INFLUXDB2);
+    }
+    else if (classname.compare("ClassFlowWebhook") == 0) {
+        return std::string(FLOW_PUBLISH_WEBHOOK);
     }
 #endif //ENABLE_INFLUXDB
     else {

@@ -1351,7 +1351,7 @@
 
 		<tr class="classvisibility_mqtt_enabled">
 			<td class="indent1">
-				<span>Authentication</span>
+				<span>Authentication / Security</span>
 			</td>
 			<td>
 				<form id="mqtt_authmode_form">
@@ -1936,6 +1936,171 @@
 		</tr>
 	</table>
 
+
+	<!-- WEBHOOK -->
+	<table class="table">
+		<colgroup>
+			<col span="1" style="width:310px">
+			<col span="1" style="width:310px;">
+			<col span="1">
+		</colgroup>
+
+		<tr>
+			<th>
+				<span>Webhook</span>
+			</th>
+			<th class="section">
+				<form id="webhook_enabled_form">
+					<select style="font-weight:bold" class="classvisibility_init" name="webhook.enabled" id="webhook_enabled_value"
+							onchange="setClassVisibility('classvisibility_webhook_enabled', this.value);
+								this.value == 'true' ? $(webhook_authmode_value).trigger('onchange') : null;
+								gatherChangedParameter(this.form)">
+						<option value="false" selected>Disabled</option>
+						<option value="true">Enabled</option>
+					</select>
+				</form>
+			</th>
+			<th hidden>$TOOLTIP_webhook_enabled</th>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled">
+			<td class="indent1">
+				<span>URI</span>
+			</td>
+			<td>
+				<form id="webhook_uri_form">
+					<input required type="text" name="webhook.uri" id="webhook_uri_value" placeholder="http://"
+						onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_uri</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled">
+			<td class="indent1">
+				<span>API Key</span>
+			</td>
+			<td>
+				<form id="webhook_database_form">
+					<input required type="text" name="webhook.apikey" id="webhook_apikey_value"
+						onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_apikey</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled">
+			<td class="indent1">
+				<span>Publish Image</span>
+			</td>
+			<td>
+				<form id="webhook_publishimage_form">
+					<select name="webhook.publishimage" id="webhook_publishimage_value"
+							onchange="gatherChangedParameter(this.form, true)">
+						<option value="0" selected>Disabled</option>
+						<option value="1">Enabled</option>
+						<option value="2">Enabled (On Error)</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_publishimage</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled">
+			<td class="indent1">
+				<span>Authentication / Security</span>
+			</td>
+			<td>
+				<form id="webhook_authmode_form">
+					<select name="webhook.authmode" id="webhook_authmode_value"
+							onload=""
+							onchange="this.value == '1' ? (setClassVisibility('classvisibility_webhook_authtls', 'false'),
+														   setClassVisibility('classvisibility_webhook_authbasic', 'true')) :
+									  this.value == '2' ? (setClassVisibility('classvisibility_webhook_authtls', 'true'),
+									  						gatherChangedParameter(webhook_tls_cacert_form),
+															gatherChangedParameter(webhook_tls_clientcert_form),
+															gatherChangedParameter(webhook_tls_clientkey_form)) :
+														  (setClassVisibility('classvisibility_webhook_authbasic', 'false'),
+									   					   setClassVisibility('classvisibility_webhook_authtls', 'false'));
+										gatherChangedParameter(this.form, true)">
+						<option value="0" selected>None</option>
+						<option value="1">Basic</option>
+						<option value="2">TLS</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_authmode</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authbasic classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>Username</span>
+			</td>
+			<td>
+				<form id="webhook_username_form">
+					<input type="text" name="webhook.username" id="webhook_username_value"
+						onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_username</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authbasic classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>Password</span>
+			</td>
+			<td>
+				<form id="webhook_password_form">
+					<input type="password" name="webhook.password" id="webhook_password_value" autocomplete="on"
+						onchange="gatherChangedParameter(this.form)">
+						<span toggle="#webhook_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_password</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>CA Certificate</span>
+			</td>
+			<td>
+				<form id="webhook_tls_cacert_form">
+					<select class="select_large" name="webhook.tls.cacert" id="webhook_tls_cacert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_tls_cacert</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>Client Certificate</span>
+			</td>
+			<td>
+				<form id="webhook_tls_clientcert_form">
+					<select class="select_large" name="webhook.tls.clientcert" id="webhook_tls_clientcert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_tls_clientcert</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>Client Key</span>
+			</td>
+			<td>
+				<form id="webhook_tls_clientkey_form">
+					<select class="select_large" name="webhook.tls.clientkey" id="webhook_tls_clientkey_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_tls_clientkey</td>
+		</tr>
+	</table>
 
 	<!-- GPIO -->
 	<table class="table">
@@ -2911,7 +3076,7 @@
 		let certFileArray = certFileListObj.files.sort(); // Convert to array and sort
 
 		// Add empty selection
-		cacertSelection.append(new Option("None", ""));
+		cacertSelection.append(new Option("Default (Built-In Certificate Bundle)", ""));
 		clientcertSelection.append(new Option("None", ""));
 		clientkeySelection.append(new Option("None", ""));
 

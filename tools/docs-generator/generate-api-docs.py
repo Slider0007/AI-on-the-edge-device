@@ -11,6 +11,7 @@ htmlFolder = "./sd-card/html"
 docAPIRest = "doc_api_rest.md"
 docAPIMqtt = "doc_api_mqtt.md"
 docAPIPrometheus = "doc_api_prometheus.md"
+docAPIWebhook = "doc_api_webhook.md"
 
 
 # Generate REST API doc markdown file for offline usage
@@ -82,6 +83,14 @@ def preparePrometheusApiMarkdown(markdownFile):
     return markdownFileContent
 
 
+# Generate Webhook API doc markdown file for offline usage
+def prepareWebhookApiMarkdown(markdownFile):
+    with open(markdownFile, 'r') as markdownFileHandle:
+        markdownFileContent = markdownFileHandle.read()
+
+    return markdownFileContent
+
+
 ##########################################################################################
 # Generate API docs for offline usage in WebUI
 ##########################################################################################
@@ -92,6 +101,7 @@ folders = sorted( filter( os.path.isdir, glob.glob(docsAPIRootFolder + '/*') ) )
 markdownRestApi = ''
 markdownMqttApi = ''
 markdownPrometheusApi = ''
+markdownWebhookApi = ''
 
 # Create a combined markdown file
 for folder in folders:
@@ -110,6 +120,8 @@ for folder in folders:
             markdownMqttApi += "\n\n---\n" # Add a divider line
         elif (folder == "Prometheus-OpenMetrics"):
             markdownPrometheusApi += preparePrometheusApiMarkdown(file) # Read content
+        elif (folder == "Webhook"):
+            markdownWebhookApi += prepareWebhookApiMarkdown(file) # Read content
 
     # Copy in API doc linked images to HTMl folder
     if os.path.exists(docsAPIRootFolder + "/" + folder + "/img"):
@@ -128,3 +140,7 @@ with open(htmlFolder + "/" + docAPIMqtt, 'w') as docAPIMqttHandle:
 # Write Prometheus API markdown file
 with open(htmlFolder + "/" + docAPIPrometheus, 'w') as docAPIPrometheusHandle:
     docAPIPrometheusHandle.write(markdownPrometheusApi)
+
+# Write Prometheus API markdown file
+with open(htmlFolder + "/" + docAPIWebhook, 'w') as docAPIWebhookHandle:
+    docAPIWebhookHandle.write(markdownWebhookApi)

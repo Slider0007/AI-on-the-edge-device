@@ -73,7 +73,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
   },
   "digit": {
     "enabled": true,
-    "model": "dig-class100_0168_s2_q.tflite",
+    "model": "dig-class100_0173_s2_q.tflite",
     "cnngoodthreshold": "0.00",
     "sequence": [
       {
@@ -174,7 +174,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "uri": "",
     "bucket": "",
     "organization": "",
-    "authmode": 0,
+    "authmode": 1,
     "token": "",
     "tls": {
       "cacert": "",
@@ -190,6 +190,20 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
       }
     ]
   },
+	"webhook":	{
+		"enabled":	false,
+		"uri":	"",
+		"apikey":	"",
+		"publishimage":	0,
+		"authmode":	0,
+		"username":	"",
+		"password":	"",
+		"tls":	{
+			"cacert":	"",
+			"clientcert":	"",
+			"clientkey":	""
+		}
+	},
   "gpio": {
     "customizationenabled": false,
     "gpiopin": [

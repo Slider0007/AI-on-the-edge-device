@@ -25,6 +25,7 @@
 #include "interface_mqtt.h"
 #include "interface_influxdbv1.h"
 #include "interface_influxdbv2.h"
+#include "interface_webhook.h"
 
 
 static const char *TAG = "MAIN_SERVER";
@@ -91,6 +92,15 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "influxdbv1_status", "E02: Service not compiled (#define ENABLE_INFLUXDB)") == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "influxdbv2_status", "E02: Service not compiled (#define ENABLE_INFLUXDB)") == NULL)
+            retVal = ESP_FAIL;
+        #endif
+
+        #ifdef ENABLE_WEBHOOK
+        if (cJSON_AddStringToObject(cJSONObject, "webhook_status", ConfigClass::getInstance()->get()->sectionWebhook.enabled ?
+                                        (getWebhookIsEncrypted() ? "Enabled (Encrypted)" : "Enabled") : "Disabled") == NULL)
+            retVal = ESP_FAIL;
+        #else
+        if (cJSON_AddStringToObject(cJSONObject, "webhook_status", "E02: Service not compiled (#define ENABLE_WEBHOOK)") == NULL)
             retVal = ESP_FAIL;
         #endif
 
