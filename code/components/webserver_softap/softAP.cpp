@@ -93,7 +93,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message += "<tr><td>Network Password</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"password\" id=\"password\"></td>";
         message += "<td>Enter the WLAN network password (NOTE: The password is transmitted to the device as plain text!)</td><tr>";
         message += "</table><br><br>";
-        message = "<button style=\"width:150px\" class=\"button\" type=\"button\" onclick=\"wr()\">Save config</button>";
+        message = "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" onclick=\"wr()\">Save config</button>";
         message += "<script language=\"JavaScript\">async function wr(){";
         message += "api = \"/config?\"+\"ssid=\"+document.getElementById(\"ssid\").value+\"&pwd=\"+document.getElementById(\"password\").value;";
         message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}</script>";
@@ -106,7 +106,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message = "<h3>2. Upload firmware package</h3><p>";
         message += "Upload a firmware package \"AI-on-the-edge-device__{Board Type}__*.zip\" to install the SD card content.<p>";
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
-        message += "<button style=\"width:150px\" class=\"button\" type=\"button\" id=\"doUpdate\" onclick=\"upload()\">Upload File</button><p>";
+        message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doUpdate\" onclick=\"upload()\">Upload File</button><p>";
         message += "The upload might take up to 60s. After the package has been successfully uploaded, the page is automatically reloaded.";
         message = "<script language=\"JavaScript\">";
         message += "function upload() {";
@@ -129,7 +129,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).<br>";
     message += "If device is provisioned using web installer, just wait until browser window gets refreshed automatically.<br>";
     message += "Otherwise access the device using network device name (default: watermeter) or the IP address (check router logs).<br><br>";
-    message += "<button style=\"width:150px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To Proceed</button>";
+    message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To Proceed</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
     message += "api = \"/reboot\";";
     message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}";
