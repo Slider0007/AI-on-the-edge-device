@@ -79,10 +79,10 @@ void wifiDeinitAP(void)
 
 esp_err_t main_handler_AP(httpd_req_t *req)
 {
-    std::string message = "<h1>AI-on-the-edge - BASIC SETUP</h1><p>This allows you to setup ";
-    message += "the minimum required files and information on the device and the SD-card.<br><br>";
+    std::string message = "<h1>AI on the Edge Device | Device Provisioning</h1><p>This allows you to setup ";
+    message += "the minimum required files and information on the device and the SD card.<br><br>";
     message += "The initial setup is performed in 3 steps:<br>1. Set WLAN credentials<br>";
-    message += "2. Upload ZIP package to flash SD card content<br>3. Reboot<br>";
+    message += "2. Flash SD card content<br>3. Reboot<br>";
     httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
 
     if (!credentialsSet) {
@@ -105,11 +105,11 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     }
 
     if (!SDCardContentExisting) {
-        message = "<h3>2. Upload ZIP package to flash SD card content</h3><p>";
+        message = "<h3>2. Flash SD card content</h3><p>";
         message += "Upload a firmware release package \"AI-on-the-edge-device__{Board Type}__*.zip\" to install the SD card content.<p>";
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
         message += "<button class=\"button\" style=\"width:300px\" id=\"doUpdate\" type=\"button\" onclick=\"upload()\">Upload File</button><p>";
-        message += "The upload might take up to 60s. After succesfully uploading the file the page will be reloaded.";
+        message += "The upload might take up to 60s. After the file has been successfully uploaded, the page is automatically reloaded.";
         httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
 
         message = "<script language=\"JavaScript\">";
@@ -128,11 +128,10 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     }
 
     message = "<h3>3. Reboot</h3><p>";
-    message += "Reboot to proceed the update process.<br>The device is going restart and connect to the configured wireless lan.<br>";
-    message += "Access the device using the IP address (check router logs) or device name \"watermeter\". If device is installed ";
-    message += "using web installer, just refresh your browser window.<p>";
-    message += "The first update and initialization process can take up to 3 minutes.<br>Error logs can be found ";
-    message += "using UART / serial console.<p>Have fun!<p>";
+    message += "Reboot to proceed.<br>The device is going to reboot and intall the provided package. This process can take up to 3 minutes.<br>";
+    message += "After installation access the device using the IP address (check router logs) or device name \"watermeter\".<br>";
+    message += "If device is provisioned using web installer, just wait until browser window gets refreshed automatically.<br>";
+    message += "Logs can be visualized using serial console (e.g. via web installer web interface).<p>Have fun!<p>";
     message += "<button class=\"button\" type=\"button\" onclick=\"rb()\")>Reboot</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
     message += "api = \"/reboot\";";
