@@ -2078,7 +2078,7 @@ bool ConfigClass::loadDataFromNVS(std::string key, std::string &value)
     // Get string length
     size_t requiredSize = 0;
     err = nvs_get_str(nvshandle, key.c_str(), NULL, &requiredSize);
-    if (err != ESP_OK) {
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadDataFromNVS: nvs_get_str | Key: " + key + " length | error: " + intToHexString(err));
         nvs_close(nvshandle);
         return false;
