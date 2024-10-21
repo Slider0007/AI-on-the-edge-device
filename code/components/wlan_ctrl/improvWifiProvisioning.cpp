@@ -52,19 +52,19 @@ static void improvEventHandler(void)
     uart_event_t event;
 
     if (xQueueReceive(uartQueueHandle, (void *)&event, (TickType_t)portMAX_DELAY) == pdPASS) {
-        //ESP_LOGD(TAG, "uart[%d] event:", DEFAULT_UART_NUM);
+        // ESP_LOGD(TAG, "uart[%d] event:", DEFAULT_UART_NUM);
         switch (event.type) {
             // UART receving data
             case UART_DATA:
                 bzero(evtData, evtBufferSize);
                 uart_read_bytes(DEFAULT_UART_NUM, evtData, event.size, portMAX_DELAY);
                 improvWifi->handleSerial(evtData, event.size);
-                //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV UART RX: " + std::string((char *)evtData, event.size));
+                // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV UART RX: " + std::string((char *)evtData, event.size));
                 break;
 
             // HW FIFO overflow detected
             case UART_FIFO_OVF:
-                //ESP_LOGD(TAG, "hw fifo overflow");
+                // ESP_LOGD(TAG, "hw fifo overflow");
                 uart_flush_input(DEFAULT_UART_NUM);
                 xQueueReset(uartQueueHandle);
                 break;
@@ -78,7 +78,7 @@ static void improvEventHandler(void)
 
             // Other events
             default:
-                //ESP_LOGD(TAG, "uart event type: %d", event.type);
+                // ESP_LOGD(TAG, "uart event type: %d", event.type);
                 break;
         }
     }
@@ -87,7 +87,7 @@ static void improvEventHandler(void)
     int readBytes = usb_serial_jtag_read_bytes(evtData, evtBufferSize, portMAX_DELAY);
     if (readBytes > 0) {
         improvWifi->handleSerial(evtData, readBytes);
-        ESP_LOGI(TAG, "Data received"); // Workaround: Do not remove, otherwise not working (@TODO, tested ESP-IDF 5.2.1)
+        ESP_LOGI(TAG, "Data received"); // Workaround: Do not remove, otherwise it's not working (@TODO, FIXME, tested ESP-IDF 5.2.1)
         //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV USB RX: " + std::string((char *)evtData, readBytes));
         bzero(evtData, evtBufferSize);
         readBytes = 0;
@@ -108,8 +108,7 @@ static void improvTask(void *pvParameters)
 void improvUartWrite(const unsigned char *txData, int length)
 {
     uart_write_bytes(DEFAULT_UART_NUM, txData, length);
-    //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV UART TX: " + std::string((char *)txData, length));
-
+    // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV UART TX: " + std::string((char *)txData, length));
 }
 
 #else
@@ -120,7 +119,7 @@ void improvUSBWrite(const unsigned char *txData, int length)
 
     const char newline = '\n';
     usb_serial_jtag_write_bytes(&newline, 1, portMAX_DELAY); // Force the transmission
-    //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV USB TX: " + std::string((char *)txData, length));
+    // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV USB TX: " + std::string((char *)txData, length));
 }
 #endif // USB_SERIAL
 
