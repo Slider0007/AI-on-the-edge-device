@@ -57,9 +57,9 @@ static void improvEventHandler(void)
             // UART receving data
             case UART_DATA:
                 bzero(evtData, evtBufferSize);
-                //ESP_LOGD(TAG, "[UART DATA]: %d", event.size);
                 uart_read_bytes(DEFAULT_UART_NUM, evtData, event.size, portMAX_DELAY);
                 improvWifi->handleSerial(evtData, event.size);
+                //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV UART RX: " + std::string((char *)evtData, event.size));
                 break;
 
             // HW FIFO overflow detected
@@ -87,7 +87,10 @@ static void improvEventHandler(void)
     int readBytes = usb_serial_jtag_read_bytes(evtData, evtBufferSize, portMAX_DELAY);
     if (readBytes > 0) {
         improvWifi->handleSerial(evtData, readBytes);
+        ESP_LOGI(TAG, "Data received"); // Workaround: Do not remove, otherwise not working (@TODO, tested ESP-IDF 5.2.1)
+        //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV USB RX: " + std::string((char *)evtData, readBytes));
         bzero(evtData, evtBufferSize);
+        readBytes = 0;
     }
 #endif // USB_SERIAL
 }
@@ -105,6 +108,8 @@ static void improvTask(void *pvParameters)
 void improvUartWrite(const unsigned char *txData, int length)
 {
     uart_write_bytes(DEFAULT_UART_NUM, txData, length);
+    //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV UART TX: " + std::string((char *)txData, length));
+
 }
 
 #else
@@ -112,6 +117,10 @@ void improvUartWrite(const unsigned char *txData, int length)
 void improvUSBWrite(const unsigned char *txData, int length)
 {
     usb_serial_jtag_write_bytes(txData, length, portMAX_DELAY);
+
+    const char newline = '\n';
+    usb_serial_jtag_write_bytes(&newline, 1, portMAX_DELAY); // Force the transmission
+    //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV USB TX: " + std::string((char *)txData, length));
 }
 #endif // USB_SERIAL
 
@@ -126,10 +135,10 @@ void improvWifiScan(unsigned char *scanResponse, int bufLen, uint16_t *networkNu
 
     if(wifiMode == WIFI_MODE_AP) {
         wifiDeinitAP();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(500));
 
         initWifiStation();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 
     wifi_scan_config_t wifiScanConfig;
@@ -138,14 +147,20 @@ void improvWifiScan(unsigned char *scanResponse, int bufLen, uint16_t *networkNu
     wifiScanConfig.show_hidden = true; // Scan also hidden SSIDs
 	wifiScanConfig.channel = 0; // Scan all channels
 
-    // Start scan if in wrong state disconnect first and restart scan again
+    // Start scan. If in wrong state disconnect first and restart scan again
     if (esp_wifi_scan_start(&wifiScanConfig, true) == ESP_ERR_WIFI_STATE) {
         wifi_ap_record_t apInfoTmp;
+        int timeoutCnt = 0;
 
         do {
             esp_wifi_disconnect();
             vTaskDelay(pdMS_TO_TICKS(500));
-        } while (esp_wifi_sta_get_ap_info(&apInfoTmp) != ESP_ERR_WIFI_NOT_CONNECT);
+            if (timeoutCnt > 20) { // Timeout 10s
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvWifiScan: Timeout, waiting for proper state to scan");
+                break;
+            }
+            timeoutCnt++;
+        } while (esp_wifi_sta_get_ap_info(&apInfoTmp) != ESP_ERR_WIFI_NOT_CONNECT && esp_wifi_sta_get_ap_info(&apInfoTmp) != ESP_OK);
 
         esp_wifi_scan_start(&wifiScanConfig, true); // Scan in blocking mode
     }
@@ -228,13 +243,13 @@ bool improvWifiConnect(const char *ssid, const char *password)
     esp_wifi_connect();
 
     // Check connection state
-    int count = 0;
+    int timeoutCnt = 0;
     while (!getWIFIisConnected()) {
         vTaskDelay(pdMS_TO_TICKS(1000));
-        if (count > 30) { // Timeout 30s
+        if (timeoutCnt > 30) { // Timeout 30s
             return false;
         }
-        count++;
+        timeoutCnt++;
     }
 
     return true;
@@ -274,7 +289,7 @@ void improvInit(void)
 
 #ifndef USB_SERIAL
     // Install UART driver using an event queue
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "improvInit: Install UART driver");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Install UART driver");
     retVal = uart_driver_install(DEFAULT_UART_NUM, uartBufferSize, uartBufferSize, 10, &uartQueueHandle, 0);
     if (retVal != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvInit: uart_driver_install: Error: Parameter error");
@@ -285,7 +300,7 @@ void improvInit(void)
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvInit: uart_set_pin: Error: Parameter error");
     }
 #else
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "improvInit: Install USB serial driver");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Install USB serial driver");
     usb_serial_jtag_driver_config_t usbCfg = USB_SERIAL_JTAG_DRIVER_CONFIG_DEFAULT();
     usbCfg.rx_buffer_size = evtBufferSize;
     usbCfg.tx_buffer_size = evtBufferSize;
