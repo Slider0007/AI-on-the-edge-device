@@ -38,10 +38,18 @@ As a result, you get the digitized value of your meter. There are several option
 
 
 ## Supported Hardware
-| Board Type                                                                     | SOC      | Firmware Release | Remarks                       
-|:---                                                                            |:---      |:---           |:--- 
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           | - Only boards with >4MB RAM are supported<br>- Beware of inferior quality Chinese clones
-| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |- No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) necessary<br>- Running quite hot, small heat sink recommended
+### Board
+
+| Board Type                                                                     | SOC / Module | Firmware Release | Remarks                       
+|:---                                                                            |:---          |:---              |:--- 
+| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32        | All              | - Only boards with >4MB RAM are supported<br>- Beware of inferior quality Chinese clones
+| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3      | $\ge$ v17.0.0    |- No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) necessary<br>- Running quite hot, small heat sink recommended
+| [ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8 | $\ge$ v17.0.0 |- SOC and pin compatible borads of Freenove ESP32S3-WROOM with 16MB flash and 8MB RAM supported
+
+### Camera
+| Camera Type                                                                    | Resolution           | Firmware Release | Remarks                       
+|:---                                                                            |:---                  |:---              |:--- 
+| [OV2640](https://www.arducam.com/ov2640/)                                      | 2MP (max. 1600x1200) | All              | - Officially EOL since 2009, but still very popular<br>- Pin and function compatible Chinese clones are supported
 
 
 ## Inform Yourself
