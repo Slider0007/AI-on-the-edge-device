@@ -235,14 +235,20 @@ bool improvWifiConnect(const char *ssid, const char *password)
 
     // Disconnect and reconnect
     wifi_ap_record_t apInfoTmp;
+    int timeoutCnt = 0;
     do {
         esp_wifi_disconnect();
         vTaskDelay(pdMS_TO_TICKS(500));
+        if (timeoutCnt > 10) { // Timeout 5s
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvWifiConnect: Timeout, waiting for disconnect state");
+            break;
+        }
+        timeoutCnt++;
     } while (esp_wifi_sta_get_ap_info(&apInfoTmp) != ESP_ERR_WIFI_NOT_CONNECT);
     esp_wifi_connect();
 
     // Check connection state
-    int timeoutCnt = 0;
+    timeoutCnt = 0;
     while (!getWIFIisConnected()) {
         vTaskDelay(pdMS_TO_TICKS(1000));
         if (timeoutCnt > 30) { // Timeout 30s
