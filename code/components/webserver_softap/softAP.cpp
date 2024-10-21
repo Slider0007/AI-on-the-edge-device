@@ -79,23 +79,23 @@ void wifiDeinitAP(void)
 
 esp_err_t main_handler_AP(httpd_req_t *req)
 {
-    std::string message = "<h1>AI on the Edge Device | Device Provisioning</h1><p>This allows you to setup ";
-    message += "the minimum required files and information on the device and the SD card.<br><br>";
-    message += "The initial setup is performed in 3 steps:<br>1. Set WLAN credentials<br>";
+    std::string message = "<h1>AI on the Edge Device | Device Provisioning</h1>";
+    message += "<p>Setup the minimum required content on the device and the SD card.<br><br>";
+    message += "The provisioning is performed into 3 steps:<br>1. Configure WLAN network and set credentials<br>";
     message += "2. Upload firmware package<br>3. Install firmware package<br>";
     httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
 
     if (!credentialsSet) {
-        message = "<h3>1. Set WLAN credentials</h3><p>";
+        message = "<h3>1. Configure WLAN network and set credentials</h3>";
         message += "<table>";
-        message += "<tr><td>SSID</td><td><input type=\"text\" name=\"ssid\" id=\"ssid\"></td><td>   ";
-        message += "Enter the SSID name of WLAN network</td></tr>";
-        message += "<tr><td>Password</td><td><input type=\"text\" name=\"password\" id=\"password\"></td><td>   ";
-        message += "Enter the WLAN network password (ATTENTION: The password will be transmitted unencrypted!)</td><tr>";
-        message += "</table><p>";
+        message += "<tr><td>Network Name (SSID)</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"ssid\" id=\"ssid\"></td>";
+        message += "<td>Enter the name of WLAN network</td></tr>";
+        message += "<tr><td>Network Password</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"password\" id=\"password\"></td>";
+        message += "<td>Enter the WLAN network password (NOTE: The password is transmitted to the device as plain text!)</td><tr>";
+        message += "</table>";
         httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
 
-        message = "<button class=\"button\" type=\"button\" onclick=\"wr()\">Submit</button>";
+        message = "<button style=\"width:150px\" class=\"button\" type=\"button\" onclick=\"wr()\">Save config</button>";
         message += "<script language=\"JavaScript\">async function wr(){";
         message += "api = \"/config?\"+\"ssid=\"+document.getElementById(\"ssid\").value+\"&pwd=\"+document.getElementById(\"password\").value;";
         message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}</script>";
@@ -128,14 +128,16 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     }
 
     message = "<h3>3. Install firmware package</h3><p>";
+    message += "The firmware package has been successfully uploaded to the device.<br>";
     message += "The device is going to reboot and intall the provided package. This process can take up to 3 minutes.<br>";
-    message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).";
+    message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).<br>";
     message += "If device is provisioned using web installer, just wait until browser window gets refreshed automatically.<br>";
-    message += "Otherwise access the device using network device name (Default: watermeter) or the IP address (check router logs).<br>";
-    message += "<button style=\"width:150px\" class=\"button\" type=\"button\" onclick=\"rb()\")>Reboot To Proceed</button>";
+    message += "Otherwise access the device using network device name (Default: watermeter) or the IP address (check router logs).<br><br>";
+    message += "<button style=\"width:150px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To Proceed</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
     message += "api = \"/reboot\";";
     message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}</script>";
+    message += "document.getElementById(\"doReboot\").disabled = true;}";
     httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
