@@ -117,8 +117,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message += "if (!file.name.includes(\"AI-on-the-edge-device__\")){if (!confirm(\"The zip file name should contain 'AI-on-the-edge-device__'. ";
         message += "Are you sure that you have chosen the correct file?\"))return;};";
         message += "let upload_path = \"/upload/firmware/\" + filePath; xhttp.open(\"POST\", upload_path, true); xhttp.send(file);";
-        message += "document.getElementById(\"doUpdate\").disabled = true;}";
-        message += "</script>";
+        message += "document.getElementById(\"doUpdate\").disabled = true;}</script>";
         httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
         return ESP_OK;
     }
@@ -132,7 +131,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To Proceed</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
     message += "api = \"/reboot\";";
-    message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}";
+    message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();";
     message += "document.getElementById(\"doReboot\").disabled = true;}</script>";
     httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
     httpd_resp_send_chunk(req, NULL, 0);

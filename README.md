@@ -61,7 +61,8 @@ A possibly already available development version (upcoming release version) can 
 
 ### Option 1: Web Installer (Only For Released Versions)
 
-Follow the instructions listed at [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/) page:
+Follow the instructions listed at [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/) page.
+Further details can be found in [Web Installer Documentation](docs/Installation/DeviceProvisioning/WebInstaller.md).
 
 <img src="images/webinstaller_home.jpg" width="800">
 
