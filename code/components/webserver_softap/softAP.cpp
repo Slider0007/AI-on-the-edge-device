@@ -93,7 +93,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message += "<tr><td>Network Password</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"password\" id=\"password\"></td>";
         message += "<td>Enter the WLAN network password (NOTE: The password is transmitted to the device as plain text!)</td><tr>";
         message += "</table><br><br>";
-        message = "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" onclick=\"wr()\">Save config</button>";
+        message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" onclick=\"wr()\">Save config</button>";
         message += "<script language=\"JavaScript\">async function wr(){";
         message += "api = \"/config?\"+\"ssid=\"+document.getElementById(\"ssid\").value+\"&pwd=\"+document.getElementById(\"password\").value;";
         message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}</script>";
@@ -108,7 +108,7 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
         message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doUpdate\" onclick=\"upload()\">Upload File</button><p>";
         message += "The upload might take up to 60s. After the package has been successfully uploaded, the page is automatically reloaded.";
-        message = "<script language=\"JavaScript\">";
+        message += "<script language=\"JavaScript\">";
         message += "function upload() {";
         message += "let xhttp = new XMLHttpRequest();";
         message += "xhttp.onreadystatechange = function() {if (xhttp.readyState == 4) {if (xhttp.status == 200) {location.reload();}}};";
