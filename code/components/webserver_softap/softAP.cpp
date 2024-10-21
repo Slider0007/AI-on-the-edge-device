@@ -126,8 +126,8 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     message += "The firmware package has been successfully uploaded to the device.<br>";
     message += "The device is going to reboot and install the provided package. This process can take up to 3 minutes.<br>";
     message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).<br>";
-    message += "If device is provisioned using web installer, just wait until browser window gets refreshed automatically.<br>";
-    message += "Otherwise access the device using network device name (default: watermeter) or the IP address (check router logs).<br><br>";
+    message += "If device is provisioned using web installer, just wait until installation is completed and refresh browser window.<br>";
+    message += "Switch WLAN network and access the device using device name (default: watermeter) or IP address (check router logs).<br><br>";
     message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To Proceed</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
     message += "api = \"/reboot\";";

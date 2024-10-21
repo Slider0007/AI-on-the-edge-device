@@ -84,9 +84,11 @@ static void improvEventHandler(void)
     }
 #else
     // Waiting for USB data
-    bzero(evtData, evtBufferSize);
     int readBytes = usb_serial_jtag_read_bytes(evtData, evtBufferSize, portMAX_DELAY);
-    improvWifi->handleSerial(evtData, readBytes);
+    if (readBytes > 0) {
+        improvWifi->handleSerial(evtData, readBytes);
+        bzero(evtData, evtBufferSize);
+    }
 #endif // USB_SERIAL
 }
 
@@ -272,6 +274,7 @@ void improvInit(void)
 
 #ifndef USB_SERIAL
     // Install UART driver using an event queue
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "improvInit: Install UART driver");
     retVal = uart_driver_install(DEFAULT_UART_NUM, uartBufferSize, uartBufferSize, 10, &uartQueueHandle, 0);
     if (retVal != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvInit: uart_driver_install: Error: Parameter error");
@@ -282,6 +285,7 @@ void improvInit(void)
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvInit: uart_set_pin: Error: Parameter error");
     }
 #else
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "improvInit: Install USB serial driver");
     usb_serial_jtag_driver_config_t usbCfg = USB_SERIAL_JTAG_DRIVER_CONFIG_DEFAULT();
     usbCfg.rx_buffer_size = evtBufferSize;
     usbCfg.tx_buffer_size = evtBufferSize;
