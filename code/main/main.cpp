@@ -109,15 +109,6 @@ extern "C" void app_main(void)
     makeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marker
     makeDir("/sdcard/demo");             // mandatory for demo mode
 
-    // Init network interface
-    // Call only once in application (deinit is not possible)
-    // ********************************************
-    esp_netif_init();
-
-    // Init improv service
-    // ********************************************
-    improvInit();
-
     // Check for updates
     // Note: OTA status check only necessary if OTA rollback feature is enabled
     // ********************************************
@@ -133,6 +124,15 @@ extern "C" void app_main(void)
 
     // Load persistent config from file (json notation)
     ConfigClass::getInstance()->readConfigFile();
+
+    // Init network interface
+    // Call only once in application (deinit is not possible)
+    // ********************************************
+    esp_netif_init();
+
+    // Init improv service
+    // ********************************************
+    improvInit();
 
     // Check for missing configuration
     // ********************************************
