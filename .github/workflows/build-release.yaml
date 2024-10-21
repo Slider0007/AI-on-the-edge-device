@@ -124,7 +124,7 @@ jobs:
         cp -f "./code/.pio/build/${{ matrix.plat }}/firmware.bin" "./artifact/firmware.bin"
         cp -f "./code/.pio/build/${{ matrix.plat }}/bootloader.bin" "./artifact/bootloader.bin"
         cp -f "./code/.pio/build/${{ matrix.plat }}/partitions.bin" "./artifact/partitions.bin"
-        cp -f "./docs/Installation/Firmware/${{ matrix.plat }}.md" "./artifact/readme.md"
+        cp -f "./docs/Installation/DeviceReadme/${{ matrix.plat }}.md" "./artifact/README.md"
 
         cp -r ./html ./artifact/
 
