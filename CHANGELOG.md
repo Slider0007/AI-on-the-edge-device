@@ -1,5 +1,59 @@
 # Changelog
 
+## [17.0.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.2.0-SLFork...v17.0.0-SLFork) (2024-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config-handling:** Complete rework of internal config parameter and sequence data handling ([#165](https://github.com/Slider0007/AI-on-the-edge-device/issues/165))
+* **GPIO:** Complete rework of GPIO handler & Add additional features for GPIOs ([#154](https://github.com/Slider0007/AI-on-the-edge-device/issues/154))
+* **mqtt:** Complete rework of MQTT API & Add new content ([#151](https://github.com/Slider0007/AI-on-the-edge-device/issues/151))
+* **REST API:** Complete rework of REST API & WebUI 'info' page ([#85](https://github.com/Slider0007/AI-on-the-edge-device/issues/85))
+
+### Features
+
+* **device provisioning:** Implement Improv Wi-Fi protocol using serial interface (Wi-Fi config via web installer) ([#183](https://github.com/Slider0007/AI-on-the-edge-device/issues/183)) ([c1fa372](https://github.com/Slider0007/AI-on-the-edge-device/commit/c1fa37231037c7eea53d52ac739e54eb2aaa3b87))
+* **GPIO:** Complete rework of GPIO handler & Add additional features for GPIOs ([#154](https://github.com/Slider0007/AI-on-the-edge-device/issues/154)) ([026c650](https://github.com/Slider0007/AI-on-the-edge-device/commit/026c650e819b6dc5ec83b77cfe1cdb51361ca45f))
+* **hardware:** Add support for board Seeed Studio XIAO ESP32S3 Sense ([#155](https://github.com/Slider0007/AI-on-the-edge-device/issues/155)) ([922ba2f](https://github.com/Slider0007/AI-on-the-edge-device/commit/922ba2fbfe75d2bdbdc8604051435566c587517e))
+* **mqtt:** Complete rework of MQTT API & Add new content ([#151](https://github.com/Slider0007/AI-on-the-edge-device/issues/151)) ([48ce862](https://github.com/Slider0007/AI-on-the-edge-device/commit/48ce862f64092d3caaa09ffe67f79ca75a23d538))
+* **publish service:** Implement push-based publish service to a webhook ([#181](https://github.com/Slider0007/AI-on-the-edge-device/issues/181)) ([ea52a5c](https://github.com/Slider0007/AI-on-the-edge-device/commit/ea52a5ca3119a18d0bd3b3313b8d99e580a93a13))
+* **REST API:** Complete rework of REST API & WebUI 'info' page ([#85](https://github.com/Slider0007/AI-on-the-edge-device/issues/85)) ([93353bb](https://github.com/Slider0007/AI-on-the-edge-device/commit/93353bb9cc499cf3ffe56790db06b57fa4541f71))
+* **rest api:** Prometheus (OpenMetrics) exporter (/metrics) ([#163](https://github.com/Slider0007/AI-on-the-edge-device/issues/163)) ([7f14d89](https://github.com/Slider0007/AI-on-the-edge-device/commit/7f14d89bc013f6db145eac343d90b4b457ae11b3))
+* **webui:** WLAN configuration via web interface ([cfc53b0](https://github.com/Slider0007/AI-on-the-edge-device/commit/cfc53b0b0daf33a19217cf9de5457bbfa84d90e8))
+
+
+### Bug Fixes
+
+* **home assistant discovery:** Set correct device class for 'rate_per_time_unit' ([#182](https://github.com/Slider0007/AI-on-the-edge-device/issues/182)) ([1f68acb](https://github.com/Slider0007/AI-on-the-edge-device/commit/1f68acb09cd14b3dccc57063dfefb7694adb0255))
+* **load fallbackvalue:** Avoid conversion exception if string is invalid ([#169](https://github.com/Slider0007/AI-on-the-edge-device/issues/169)) ([7a3219c](https://github.com/Slider0007/AI-on-the-edge-device/commit/7a3219cb97e70ddfca6119596861928249318e4e))
+* **wlan:** Fix IP config output (DHCP) + Enable connection retry ([#156](https://github.com/Slider0007/AI-on-the-edge-device/issues/156)) ([869013d](https://github.com/Slider0007/AI-on-the-edge-device/commit/869013d17041c7e7282e06666e15ff50cacaca9a))
+
+
+### Refactoring / Style Changes
+
+* **config-handling:** Complete rework of internal config parameter and sequence data handling ([#165](https://github.com/Slider0007/AI-on-the-edge-device/issues/165)) ([cfc53b0](https://github.com/Slider0007/AI-on-the-edge-device/commit/cfc53b0b0daf33a19217cf9de5457bbfa84d90e8))
+* **setup wizard:** Streamline setup wizard ([#179](https://github.com/Slider0007/AI-on-the-edge-device/issues/179)) ([6f7bcfd](https://github.com/Slider0007/AI-on-the-edge-device/commit/6f7bcfd72822448b14df7b0c2e6bea9ef30b940d))
+* **source code:** Remove trailing whitespaces ([#158](https://github.com/Slider0007/AI-on-the-edge-device/issues/158)) ([32608ac](https://github.com/Slider0007/AI-on-the-edge-device/commit/32608ac9c0bb151c250da3e7bca97ef7abf3816a))
+* **timesync:** Process start only when time is synced (implement new process state, interlock configurable) ([cfc53b0](https://github.com/Slider0007/AI-on-the-edge-device/commit/cfc53b0b0daf33a19217cf9de5457bbfa84d90e8))
+* **webui:** Merge Digit ROI and Analog ROI page to one page -&gt; Number Sequences ([#172](https://github.com/Slider0007/AI-on-the-edge-device/issues/172)) ([d4ff5c1](https://github.com/Slider0007/AI-on-the-edge-device/commit/d4ff5c1a8557ff3133ccb87066c773ef052fc10b))
+
+
+### Other Changes
+
+* **build:** Implement ESP web tools for initial device setup ([#178](https://github.com/Slider0007/AI-on-the-edge-device/issues/178)) ([dfb0b7c](https://github.com/Slider0007/AI-on-the-edge-device/commit/dfb0b7c8cf1ac2f0b018c7ed6badbf198c34d78d))
+* **build:** Only one firmware package is generated which can be used to handle inital, remote and OTA update ([cfc53b0](https://github.com/Slider0007/AI-on-the-edge-device/commit/cfc53b0b0daf33a19217cf9de5457bbfa84d90e8))
+* **build:** Update release-please-action ([#161](https://github.com/Slider0007/AI-on-the-edge-device/issues/161)) ([3dd78b8](https://github.com/Slider0007/AI-on-the-edge-device/commit/3dd78b801ea11421f7ef54c5ef02e462871a667e))
+* **config file:** Add config file version tag ([#153](https://github.com/Slider0007/AI-on-the-edge-device/issues/153)) ([33258c5](https://github.com/Slider0007/AI-on-the-edge-device/commit/33258c5f9a0d2185931ea38afd2480a04d8e6a49))
+* **debug:** Implement core dump handling ([#168](https://github.com/Slider0007/AI-on-the-edge-device/issues/168)) ([5b5077c](https://github.com/Slider0007/AI-on-the-edge-device/commit/5b5077c5abc802d73a00576cfa6fc84a3f10864a))
+* **documentation:** Fix REST API / parameter description ([#162](https://github.com/Slider0007/AI-on-the-edge-device/issues/162)) ([49f1397](https://github.com/Slider0007/AI-on-the-edge-device/commit/49f1397438b62e61b410614b7faaee41df35460b))
+* **framework:** Upgrade platformio to 6.7.0 (ESP-IDF 5.2.1) ([#160](https://github.com/Slider0007/AI-on-the-edge-device/issues/160)) ([49e123e](https://github.com/Slider0007/AI-on-the-edge-device/commit/49e123e2b44d4fe7bec57a417ef3a2a089451f45))
+* **influxdb tls + mqtt tls:** Use built-in certification bundle for server verification ([#180](https://github.com/Slider0007/AI-on-the-edge-device/issues/180)) ([cdf84c1](https://github.com/Slider0007/AI-on-the-edge-device/commit/cdf84c14939436662e9136011e633dfa1bb617ad))
+* **submodule:** Update esp-tflite-micro to 07c014e + esp-nn to v1.1.0 (9195e96) ([#175](https://github.com/Slider0007/AI-on-the-edge-device/issues/175)) ([7b6083f](https://github.com/Slider0007/AI-on-the-edge-device/commit/7b6083f848d2553ed0494cfb5519f1b899023bbc))
+* **submodule:** Update esp32-camera to v2.0.13 (0054ab7) ([#166](https://github.com/Slider0007/AI-on-the-edge-device/issues/166)) ([2501d3b](https://github.com/Slider0007/AI-on-the-edge-device/commit/2501d3b96dd8d71f926b66a4462ffa7da517033a))
+* **submodule:** Update smartleds to v3.1.3 ([#167](https://github.com/Slider0007/AI-on-the-edge-device/issues/167)) ([27c1094](https://github.com/Slider0007/AI-on-the-edge-device/commit/27c1094016761a2b338e03a6bda837f578ab4e59))
+* **tflite:** Updated digit/analog models ([#177](https://github.com/Slider0007/AI-on-the-edge-device/issues/177)) ([aceb18a](https://github.com/Slider0007/AI-on-the-edge-device/commit/aceb18a797b6f72d1d8512020cb707ef52d8d66b))
+* **wlan:** Force full RF calibration at every boot ([#170](https://github.com/Slider0007/AI-on-the-edge-device/issues/170)) ([70cee70](https://github.com/Slider0007/AI-on-the-edge-device/commit/70cee70fbdf0aed2623a41662c9d4692c826b306))
+
 ## [16.2.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.3-SLFork...v16.2.0-SLFork) (2024-03-11)
 
 
