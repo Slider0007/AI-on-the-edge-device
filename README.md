@@ -1,4 +1,4 @@
-# AI-on-the-Edge device [SL Fork]
+# AI-on-the-Edge Device [SLFork]
 <img src="images/icon/watermeter.svg" width="80px"> 
 
 Artificial intelligence is everywhere, from speech to image recognition. While most AI systems rely on powerful processors or cloud computing, **edge computing** brings AI closer to the end user by utilizing the capabilities of modern processors.  
@@ -63,6 +63,8 @@ There are multiple options to install the firmware and the SD card content.
 ### Download Firmware Package
 Officially released firmware packages can be downloaded from [releases](https://github.com/slider0007/AI-on-the-edge-device/releases) page.<br>
 A possibly already available development version (upcoming release version) can be previewed [here](https://github.com/Slider0007/AI-on-the-edge-device/pulls?q=is%3Aopen+is%3Apr+label%3A%22autorelease%3A+pending%22).
+
+⚠️ **Please do not use the source files directly from the repository, not even for the preparation of the SD card!** Use only files related to the download sources mentioned here (official precompiled release packages or test versions). Otherwise, full functionality cannot be guaranteed.<br>
 
 ### Option 1: Web Installer (Only For Released Versions)
 

@@ -21,7 +21,7 @@ A SD card is mandatory to operate the device because of internal device memory i
 ⚠️ Make sure, SD card is formated properly (FAT or FAT32 file system).<br>
 
 Use firmware package `AI-on-the-edge-device__{Board Type}__*.zip` for installation process.<br>
-⚠️ Do not use github source files, use only release related zip package. Otherwise functionality cannot be fully guaranteed or is limited!<br>
+⚠️ **Please do not use the source files directly from the repository, not even for the preparation of the SD card!** Use only files related to official precompiled release packages or test versions. Otherwise, full functionality cannot be guaranteed.<br>
 
 ##### Option 1: Manual SD Card Installation
 - Copy complete `config` and `html` folder of `AI-on-the-edge-device__{Board Type}__*.zip` to SD card root folder

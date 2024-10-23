@@ -1,12 +1,12 @@
 ## Overview: Webhook API
-### Event-driven push service to an HTTP / HTTPS URL endpoint
+### Data push service to a webhook
 
-Number sequence results and related camera image are pushed to an HTTP / HTTPS URL endpoint.
+Number sequence data / results and related camera image are pushed to a HTTP / HTTPS URL endpoint.
 
-### Message typtes
+### Message types
 #### 1. Data message
 
-Provides process related actual data and results in JSON syntax. 
+Provides number sequence related actual data and results in JSON syntax. 
 
 HTTP message configuration:
 - URL: Content of parameter `URI`
@@ -19,15 +19,15 @@ The following data are published:
 
 | JSON Property                        | Description                                        | Output
 |:-------------------------------------|:---------------------------------------------------|:-----------------------
-| `time_processed_utc`                 | Timestamp of last processed cycle<br><br>Notes:<br>- Output of multiple sequences possible<br>- Time of image taken (UTC) | `1729341437`
-| `timestamp_processed`                | Timestamp of last processed cycle per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible<br>- Time of image taken (incl. timezone) | `2024-10-19T14:37:17+0200`
+| `time_processed_utc`                 | Timestamp of last processed cycle<br><br>Notes:<br>- Time of image taken (UTC) | `1729341437`
+| `timestamp_processed`                | Timestamp of last processed cycle<br><br>Notes:<br>- Time of image taken (incl. timezone) | `2024-10-19T14:37:17+0200`
 | `sequence_name`                      | Sequence Name                                      | `main`
-| `value_status`                       | Value Status per sequence<br><br>Notes:<br>- Output of multiple sequences possible <br>- Possible states:<br>`000 Valid`: Valid, no deviation <br>`W01 W01 Empty data`: No data available <br>`E90 No data to substitute N`: No valid data to substitude N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `000 Valid`
-| `actual_value`                       | Actual value per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible | `146.540`
-| `fallback_value`                     | Fallback value<br>(Latest valid result) per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible <br>- Possible special states:<br>`Deactivated`: No fallback value usage <br>`Outdated`: Fallback value too old <br>`Not Determinable`: Age of value not determinable | `146.540`
-| `raw_value`                          | Raw value <br>(Value before any post-processing) per seqeunce<br><br>Notes:<br>- Output of multiple sequences possible | `146.539`
-| `rate_per_minute`                    | Rate per minute per sequence<br>(Delta between actual and last valid processed value (Fallback Value) + additionally normalized to a minute)<br><br>Notes:<br>- Tab separated listing<br>- Output of multiple sequences possible | `0.0000`
-| `rate_per_interval`                  | Rate per interval per serquence<br>(Delta between actual and last valid processed value (Fallback Value))<br><br>Notes:<br>- Output of multiple sequences possible | `0.0000`
+| `value_status`                       | Value Status<br><br>Notes:<br>- Possible states:<br>`000 Valid`: Valid, no deviation <br>`W01 Empty data`: No data available <br>`E90 No data to substitute N`: No valid data to substitude N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `000 Valid`
+| `actual_value`                       | Actual value | `146.540`
+| `fallback_value`                     | Fallback value (last valid result)<br><br>Notes:<br>- Possible special states:<br>`Deactivated`: No fallback value usage <br>`Outdated`: Fallback value too old <br>`Not Determinable`: Age of value not determinable | `146.540`
+| `raw_value`                          | Raw value <br>(Value before any post-processing) per seqeunce | `146.539`
+| `rate_per_minute`                    | Rate per minute per sequence<br>(Delta between actual and last valid processed value (Fallback Value) + additionally normalized to a minute) | `0.0000`
+| `rate_per_interval`                  | Rate per interval per serquence<br>(Delta between actual and last valid processed value (Fallback Value)) | `0.0000`
 
 Example - Message body in JSON syntax:
 ```
@@ -42,6 +42,17 @@ Example - Message body in JSON syntax:
     "raw_value": "00530.00984",
     "rate_per_min": "0.001240",
     "rate_per_interval": "0.00062"
+  },
+  {
+    "time_processed_utc": "1729341437",
+    "timestamp_processed": "2024-10-19T14:37:17+0200",
+    "sequence_name": "sequence2",
+    "value_status": "000 Valid",
+    "actual_value": "530.01984",
+    "fallback_value": "530.01984",
+    "raw_value": "00530.01984",
+    "rate_per_min": "0.001440",
+    "rate_per_interval": "0.00075"
   }
 ]
 ```
@@ -97,14 +108,14 @@ if ($method === 'POST') {
 
     foreach ($dataArray as $data) {
         $csvRow = [
-            $data['timestamp'], 
-            $data['sequenceName'], 
-            $data['valueStatus']
-            $data['actualValue'], 
-            $data['fallbackValue'], 
-            $data['rawValue'], 
-            $data['ratePerMin'], 
-            $data['ratePerInterval'], 
+            $data['timestamp_processed'], 
+            $data['sequence_name'], 
+            $data['raw_value'], 
+            $data['actual_value'], 
+            $data['fallback_value'], 
+            $data['rate_per_min'], 
+            $data['rate_per_interval'], 
+            $data['value_status']
         ];
         fputcsv($csvHandle, $csvRow);
     }
@@ -115,6 +126,7 @@ if ($method === 'POST') {
     echo json_encode(['status' => 'success', 'message' => 'Data written to CSV file']);
 } elseif ($method === 'PUT') {
     // Handle PUT request: Save image
+    // With provided timestamp parameter (?timestamp='unix epoch time') unique image filename can be created and/or linked to data
     $imageFilePath = 'uploaded_image.jpg';
 
     $imageData = file_get_contents('php://input');
