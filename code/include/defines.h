@@ -21,6 +21,15 @@
 #endif
 
 
+// Webhook (Default: enabled)
+#ifndef ENV_DISABLE_WEBHOOK // Disable module by build_flag in platformio.ini
+    #ifndef ENABLE_WEBHOOK
+        #define ENABLE_WEBHOOK
+    #endif
+#endif
+
+
+
 // Access point for initial setup (Default: enabled)
 #ifndef ENV_DISABLE_SOFTAP // Disable module by build_flag in platformio.ini
     #ifndef ENABLE_SOFTAP
@@ -242,6 +251,7 @@ CONFIG_WPA_11R_SUPPORT=n
 #define FLOW_PUBLISH_MQTT           "Publish to MQTT"
 #define FLOW_PUBLISH_INFLUXDB       "Publish to InfluxDBv1"
 #define FLOW_PUBLISH_INFLUXDB2      "Publish to InfluxDBv2"
+#define FLOW_PUBLISH_WEBHOOK        "Publish to Webhook"
 
 #define FLOW_ADDITIONAL_TASKS       "Additional Tasks"
 #define FLOW_POST_EVENT_HANDLING    "Post Process Event Handling"

@@ -1,4 +1,4 @@
-# AI-on-the-Edge device [SL Fork]
+# AI-on-the-Edge Device [SLFork]
 <img src="images/icon/watermeter.svg" width="80px"> 
 
 Artificial intelligence is everywhere, from speech to image recognition. While most AI systems rely on powerful processors or cloud computing, **edge computing** brings AI closer to the end user by utilizing the capabilities of modern processors.  
@@ -10,15 +10,20 @@ Let's explore how to make **AI on the Edge** a reality!
 ## Key features
 - Tensorflow Lite (TFLite) integration – including easy-to-use wrapper
 - Inline image processing (Image taking, Image alignment, ROI extraction, Post processing)
-- Usage of **small** and **low-cost** devices ([Supported Hardware](#supported-hardware))
-- Integrated camera and illumination (depending on hardware)
-- Web interface for administration and control
-- OTA interface for updating directly via web interface
-- Full integration into [Home Assistant](docs/API/MQTT/home-assistant-discovery.md)
-- InfluxDB v1.x + v2.x
-- [MQTT v3.x](docs/API/MQTT/_OVERVIEW.md)
+- Usage of **small** and **low-cost** AI-capable devices ([Supported Hardware](#supported-hardware))
+- Integrated camera and illumination (depending on hardware capabilities)
+- Web interface for visualization, control and administration 
+- Over the air (OTA) firmware update via web interface
+
+
+## APIs / Publishing Services / Home Automation Integrations
+- Home Assistant Integration ([Home Assistant Discovery](docs/API/MQTT/home-assistant-discovery.md))
 - [REST API](docs/API/REST/_OVERVIEW.md)
-- [Prometheus/OpenMetrics exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)
+- [MQTT v3](docs/API/MQTT/_OVERVIEW.md)
+- InfluxDB v1
+- InfluxDB v2
+- [Webhook Publishing](docs/API/Webhook/_OVERVIEW.md)
+- [Prometheus/OpenMetrics Exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)
 
 
 ## Workflow
@@ -59,6 +64,8 @@ There are multiple options to install the firmware and the SD card content.
 Officially released firmware packages can be downloaded from [releases](https://github.com/slider0007/AI-on-the-edge-device/releases) page.<br>
 A possibly already available development version (upcoming release version) can be previewed [here](https://github.com/Slider0007/AI-on-the-edge-device/pulls?q=is%3Aopen+is%3Apr+label%3A%22autorelease%3A+pending%22).
 
+⚠️ **Please do not use the source files directly from the repository, not even for the preparation of the SD card!** Use only files related to the download sources mentioned here (official precompiled release packages or test versions). Otherwise, full functionality cannot be guaranteed.<br>
+
 ### Option 1: Web Installer (Only For Released Versions)
 
 Follow the instructions listed at [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/) page.<br>
@@ -77,7 +84,15 @@ See [REST API Documentation](docs/API/REST/_OVERVIEW.md) in github repository or
 
 ### MQTT API
 See [MQTT API Documentation](docs/API/MQTT/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > MQTT API`).<br>
-⚠️ Read API documenation carefully. MQTT API is not fully compatible  with jomjol's original firmware.
+⚠️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
+
+### Prometheus Exporter
+See [Prometheus API Documentation](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Prometheus API`).<br>
+⚠️ Read API documenation carefully. Prometheus API is not fully compatible with jomjol's original firmware.
+
+### Webhook API
+See [Webhook API Documentation](docs/API/Webhook/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Webhook API`).<br>
+⚠️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
 
 
 ## Build Yourself
