@@ -898,7 +898,7 @@
 			</td>
 			<td>
 				<form id="digit_model_form">
-					<select class="select_large" name="digit.model" id="digit_model_value"
+					<select required class="select_large" name="digit.model" id="digit_model_value"
 						onchange="setClassVisibility('classvisibility_digit_model_class11',
 														$(digit_enabled_value).val() && this.value.includes('class11'));
 							setClassVisibility('classvisibility_digit_model_cont',
@@ -1010,7 +1010,7 @@
 			</td>
 			<td>
 				<form id="analog_model_form">
-					<select class="select_large" name="analog.model" id="analog_model_value"
+					<select required class="select_large" name="analog.model" id="analog_model_value"
 						onchange="gatherChangedParameter(this.form)">
 					</select>
 				</form>
@@ -3064,6 +3064,9 @@
 				analogModelSelection.append(new Option(modelFileArray[i].substring(0, modelFileArray[i].lastIndexOf('.')), modelFileArray[i]));
 			}
 		}
+
+		digitModelSelection.val("");
+		analogModelSelection.val("");
 	}
 
 
@@ -3085,6 +3088,10 @@
 			clientcertSelection.append(new Option(certFileArray[i], certFileArray[i]));
 			clientkeySelection.append(new Option(certFileArray[i], certFileArray[i]));
 		}
+
+		cacertSelection.val("");
+		clientcertSelection.val("");
+		clientkeySelection.val("");
 	}
 
 
