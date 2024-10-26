@@ -115,7 +115,7 @@ void taskSocTemp(void *pvParameter)
 void initSOCTemperatureSensor()
 {
 	// Create a dedicated task to ensure access temperature ressource only from a single source
-	BaseType_t xReturned = xTaskCreate(&taskSocTemp, "taskSocTemp", 2048, NULL, tskIDLE_PRIORITY+1, NULL);
+	BaseType_t xReturned = xTaskCreate(&taskSocTemp, "taskSocTemp", 2048, NULL, tskIDLE_PRIORITY + 1, NULL);
 
 	if( xReturned != pdPASS ) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create taskSocTemp");

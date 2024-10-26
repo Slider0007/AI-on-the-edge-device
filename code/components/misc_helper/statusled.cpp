@@ -123,7 +123,7 @@ void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite)
 	}
 	else if (xHandle_task_StatusLED == NULL) {
 		StatusLEDData.bProcessingRequest = true;
-		BaseType_t xReturned = xTaskCreate(&task_StatusLED, "task_StatusLED", 1280, NULL, tskIDLE_PRIORITY+1, &xHandle_task_StatusLED);
+		BaseType_t xReturned = xTaskCreate(&task_StatusLED, "task_StatusLED", 1280, NULL, tskIDLE_PRIORITY + 1, &xHandle_task_StatusLED);
 		if(xReturned != pdPASS)
 		{
 			xHandle_task_StatusLED = NULL;

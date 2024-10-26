@@ -100,6 +100,7 @@ static void improvTask(void *pvParameters)
 {
     while (true) {
         improvEventHandler();
+        taskYIELD();
     }
 }
 
@@ -315,7 +316,7 @@ void improvInit(void)
     }
 #endif // USB_SERIAL
 
-    BaseType_t xReturned = xTaskCreate(&improvTask, "improv", 4 * 1024, NULL, tskIDLE_PRIORITY + 4, &improvTaskHandle);
+    BaseType_t xReturned = xTaskCreate(&improvTask, "improv", 4 * 1024, NULL, tskIDLE_PRIORITY + 1, &improvTaskHandle);
     if (xReturned != pdPASS) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create task 'improv'");
     }
