@@ -389,8 +389,8 @@ function parseCurrentParametrization(paramsKeyified)
         if (el.tagName.toLowerCase() == "select") {
             for(let j, k = 0; j = el.options[k]; k++) {
                 if(j.value.toLowerCase() == paramsKeyified[i][1].toString() || j.value.toLowerCase() == paramsKeyified[i][1]) {
-                        el.selectedIndex = k;
-                        break;
+                    el.selectedIndex = k;
+                    break;
                 }
             }
         }
