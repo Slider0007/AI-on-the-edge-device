@@ -103,7 +103,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
 
     if (jsonChar != NULL) {
         retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceInfoTopic + "hardware", std::string(jsonChar), _qos, true);
-        cJSON_free(jsonChar);
+        heap_caps_free(jsonChar); // Avoid using cJSON_Delete, because configClass using modified cJSON initHooks
         jsonChar = NULL;
     }
 
@@ -126,7 +126,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
 
     if (jsonChar != NULL) {
         retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceInfoTopic + "network", std::string(jsonChar), _qos, true);
-        cJSON_free(jsonChar);
+        heap_caps_free(jsonChar); // Avoid using cJSON_Delete, because configClass using modified cJSON initHooks
         jsonChar = NULL;
     }
 
@@ -191,7 +191,7 @@ bool mqttServer_publishDeviceStatus(int _qos)
 
     if (jsonChar != NULL) {
         retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "heap", std::string(jsonChar), _qos, false);
-        cJSON_free(jsonChar);
+        heap_caps_free(jsonChar); // Avoid using cJSON_Delete, because configClass using modified cJSON initHooks
     }
 
     retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "sd_partition_free", std::to_string(getSDCardFreePartitionSpace()), _qos, false);

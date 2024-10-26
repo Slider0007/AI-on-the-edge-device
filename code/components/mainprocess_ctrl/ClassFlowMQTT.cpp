@@ -177,7 +177,7 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
             if (jsonChar != NULL) {
                 retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/json",
                                         std::string(jsonChar), MQTT_QOS, cfgDataPtr->retainProcessData);
-                cJSON_free(jsonChar);
+                heap_caps_free(jsonChar); // Avoid using cJSON_Delete, because configClass using modified cJSON initHooks
             }
         }
 
