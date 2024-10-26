@@ -1198,6 +1198,8 @@ void task_autodoFlow(void *pvParameter)
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "taskAutoFlowState: Invalid state called. Programming error");
             flowctrl.setActualProcessState(std::string(FLOW_INVALID_STATE));
         }
+
+        taskYIELD();
     }
 
     // Delete task if it exits from the loop above
@@ -1216,7 +1218,7 @@ void createMainFlowTask()
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_CREATE_FLOW_TASK));
     flowctrl.setActualProcessState(std::string(FLOW_CREATE_FLOW_TASK));
 
-    BaseType_t xReturned = xTaskCreatePinnedToCore(&task_autodoFlow, "task_autodoFlow", 12 * 1024, NULL, tskIDLE_PRIORITY+2, &xHandletask_autodoFlow, 0);
+    BaseType_t xReturned = xTaskCreatePinnedToCore(&task_autodoFlow, "task_autodoFlow", 12 * 1024, NULL, tskIDLE_PRIORITY + 3, &xHandletask_autodoFlow, 0);
     if( xReturned != pdPASS ) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create task_autodoFlow");
         LogFile.writeHeapInfo("CreateFlowTask: Failed to create task");
