@@ -20,7 +20,8 @@ typedef enum {
     GPIO_PIN_MODE_FLASHLIGHT_SMARTLED   = 7,
     GPIO_PIN_MODE_FLASHLIGHT_DIGITAL    = 8,
     GPIO_PIN_MODE_TRIGGER_CYCLE_START   = 9,
-    GPIO_PIN_MODE_MAX                   = 10
+    GPIO_PIN_MODE_RESUME_WLAN_CONNECTION = 10,
+    GPIO_PIN_MODE_MAX                   = 11
 } gpio_pin_mode_t;
 
 

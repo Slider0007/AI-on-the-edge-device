@@ -8,7 +8,7 @@
 
 ## Description
 
-SSID (WLAN Name) of the wireless network
+Password of the wireless network
 
 
 !!! Note
@@ -20,6 +20,7 @@ SSID (WLAN Name) of the wireless network
     the password is not accessible anymore, neither by WebUI nor by any API. As indication 
     for a password set, dots are displayed as placeholder. An empty password results in an 
     empty parameter field, though.
+
 
 !!! Warning
     During initial transmission password is sent as cleartext. 

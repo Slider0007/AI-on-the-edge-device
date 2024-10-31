@@ -1272,10 +1272,13 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
 
     // Network
-    //@TODO FEATURE. WLAN operation modes not yet implemented
-    /*objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "opmode");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "opmode");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionNetwork.wlan.enabled = objEl->valueint;*/
+        cfgDataTemp.sectionNetwork.opmode = std::clamp(objEl->valueint, -1, 3);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "timedoffdelay");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionNetwork.timedOffDelay = std::max(objEl->valueint, 1);
 
     bool ssidEmpty = false;
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ssid");
@@ -1327,11 +1330,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress = objEl->valuestring;
 
     // Static IP config selected, but IP config invalid --> Fallback to DHCP
-    if (cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig == NETWORK_CONFIG_STATIC) {
+    if (cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig == NETWORK_WLAN_IP_CONFIG_STATIC) {
         if (!isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.ipAddress.c_str()) ||
             !isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.subnetMask.c_str()) ||
             !isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress.c_str())) {
-                cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = NETWORK_CONFIG_DHCP;
+                cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = NETWORK_WLAN_IP_CONFIG_DHCP;
                 LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Static network config invalid. Use DHCP as fallback");
         }
     }
@@ -1347,6 +1350,22 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "wlanroaming"), "rssithreshold");
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionNetwork.wlan.wlanRoaming.rssiThreshold = std::clamp(objEl->valueint, -100, 0);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "ssid");
+    if (cJSON_IsString(objEl))
+        cfgDataTemp.sectionNetwork.wlanAp.ssid = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "password");
+    if (cJSON_IsString(objEl) && (strlen(objEl->valuestring) == 0 || strlen(objEl->valuestring) >= 8))
+        cfgDataTemp.sectionNetwork.wlanAp.password = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "channel");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionNetwork.wlanAp.channel = std::clamp(objEl->valueint, 1, 14);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "ipv4"), "ipaddress");
+    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring))
+        cfgDataTemp.sectionNetwork.wlanAp.ipv4.ipAddress = objEl->valuestring;
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"), "timesyncenabled");
     if (cJSON_IsBool(objEl))
@@ -1938,13 +1957,15 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 
     // Network
     // ***************************
-    cJSON *network, *networkIpv4, *networkWlan, *networkWlanRoaming, *networkTime, *networkTimeNtp;
+    cJSON *network, *networkWlan, *networkIpv4, *networkWlanRoaming, *networkWlanAp, *networkApIpv4, *networkTime, *networkTimeNtp;
     if (!cJSON_AddItemToObject(cJsonObject, "network", network = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(network, "opmode", cfgDataTemp.sectionNetwork.opmode) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(network, "timedoffdelay", cfgDataTemp.sectionNetwork.timedOffDelay) == NULL)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(network, "wlan", networkWlan = cJSON_CreateObject()))
         retVal = ESP_FAIL;
-    /*if (cJSON_AddNumberToObject(networkWlan, "opmode", cfgDataTemp.sectionNetwork.wlan.opmode) == NULL) //@TODO FEATURE. Not yet implemented
-        retVal = ESP_FAIL;*/
     if (cJSON_AddStringToObject(networkWlan, "ssid", cfgDataTemp.sectionNetwork.wlan.ssid.c_str()) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(networkWlan, "password", cfgDataTemp.sectionNetwork.wlan.password.empty() ? "" : "******") == NULL)
@@ -1968,6 +1989,18 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (cJSON_AddBoolToObject(networkWlanRoaming, "enabled", cfgDataTemp.sectionNetwork.wlan.wlanRoaming.enabled) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(networkWlanRoaming, "rssithreshold", cfgDataTemp.sectionNetwork.wlan.wlanRoaming.rssiThreshold) == NULL)
+        retVal = ESP_FAIL;
+    if (!cJSON_AddItemToObject(network, "wlanap", networkWlanAp = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(networkWlanAp, "ssid", cfgDataTemp.sectionNetwork.wlanAp.ssid.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(networkWlanAp, "password", cfgDataTemp.sectionNetwork.wlanAp.password.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(networkWlanAp, "channel", cfgDataTemp.sectionNetwork.wlanAp.channel) == NULL)
+        retVal = ESP_FAIL;
+    if (!cJSON_AddItemToObject(networkWlanAp, "ipv4", networkApIpv4 = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(networkApIpv4, "ipaddress", cfgDataTemp.sectionNetwork.wlanAp.ipv4.ipAddress.c_str()) == NULL)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(network, "time", networkTime = cJSON_CreateObject()))
         retVal = ESP_FAIL;

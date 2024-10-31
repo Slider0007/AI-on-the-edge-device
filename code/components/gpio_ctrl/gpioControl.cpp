@@ -79,7 +79,8 @@ void GpioHandler::gpioInputStatePolling()
     if (gpioMap != NULL) {
         for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
             if (it->second->getMode() == GPIO_PIN_MODE_INPUT || it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLUP ||
-                it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START)
+                it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+                it->second->getMode() == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION)
             {
                 it->second->updatePinState();
             }
@@ -203,7 +204,8 @@ bool GpioHandler::init()
 
         // Handler task is only needed to maintain input pin state (interrupt or polling)
         if (it->second->getMode() == GPIO_PIN_MODE_INPUT || it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLUP ||
-            it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START)
+            it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+            it->second->getMode() == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION)
         {
             initHandlerTask = true;
         }
@@ -212,7 +214,7 @@ bool GpioHandler::init()
 
     #ifdef ENABLE_MQTT
         std::function<void()> f = std::bind(&GpioHandler::handleMQTTconnect, this);
-        MQTTregisterConnectFunction("gpioHandler", f);
+        registerMqttConnectFunction("gpioHandler", f);
     #endif //ENABLE_MQTT
 
     // Handler task is only needed to maintain input pin state (interrupt or polling)
@@ -366,7 +368,7 @@ void GpioHandler::clearData()
 void GpioHandler::deinit()
 {
     #ifdef ENABLE_MQTT
-    MQTTunregisterConnectFunction("gpioHandler");
+    unregisterMqttConnectFunction("gpioHandler");
     #endif //ENABLE_MQTT
 
     clearData();
@@ -506,6 +508,8 @@ gpio_pin_mode_t GpioHandler::resolvePinMode(std::string input)
     }
     else if (input == "trigger-cycle-start")
         return GPIO_PIN_MODE_TRIGGER_CYCLE_START;
+    else if (input == "resume-wlan-connection")
+        return GPIO_PIN_MODE_RESUME_WLAN_CONNECTION;
 
     return GPIO_PIN_MODE_DISABLED;
 }
@@ -534,6 +538,8 @@ std::string GpioHandler::getPinModeDecription(gpio_pin_mode_t _mode)
             return FLASHLIGHT_DIGITAL;
         case 9:
             return "trigger-cycle-start";
+        case 10:
+            return "resume-wlan-connection";
         default:
             return "disabled";
     }

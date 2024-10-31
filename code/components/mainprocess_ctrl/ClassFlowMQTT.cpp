@@ -73,7 +73,7 @@ bool ClassFlowMQTT::loadParameter()
 }
 
 
-bool ClassFlowMQTT::initMqtt(float _processingInterval)
+bool ClassFlowMQTT::initMqttService(float _processingInterval)
 {
     std::stringstream stream;
 
@@ -89,8 +89,8 @@ bool ClassFlowMQTT::initMqtt(float _processingInterval)
             "min -> MQTT keepAlive: " << ((float)keepAlive/60) << "min";
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, stream.str());
 
-    if (MQTT_Configure(cfgDataPtr, keepAlive)) {
-        MQTT_Init();
+    if (configureMqttClient(cfgDataPtr, keepAlive)) {
+        startMqttClient();
         return true;
     }
 
@@ -103,7 +103,7 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
     presetFlowStateHandler(false, zwtime);
     bool retValCommon = true, retValStatus = true, retValData = true;
 
-    if (!getMQTTisConnected()) {
+    if (!getMqttIsConnected()) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip process state: Not connected to broker");
         setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
         return false;
@@ -116,17 +116,17 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
 
     // Publish process status
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Publish process status");
-    retValStatus &= MQTTPublish(cfgDataPtr->mainTopic + "/process/status/process_status",
+    retValStatus &= publishMqttData(cfgDataPtr->mainTopic + "/process/status/process_status",
                                 getProcessStatus().c_str(), MQTT_QOS, false);
-    retValStatus &= MQTTPublish(cfgDataPtr->mainTopic + "/process/status/process_interval",
+    retValStatus &= publishMqttData(cfgDataPtr->mainTopic + "/process/status/process_interval",
                                 to_stringWithPrecision(flowctrl.getProcessInterval(), 1).c_str(), MQTT_QOS, false);
-    retValStatus &= MQTTPublish(cfgDataPtr->mainTopic + "/process/status/process_time",
+    retValStatus &= publishMqttData(cfgDataPtr->mainTopic + "/process/status/process_time",
                                 std::to_string(getFlowProcessingTime()).c_str(), MQTT_QOS, false);
-    retValStatus &= MQTTPublish(cfgDataPtr->mainTopic + "/process/status/process_state",
+    retValStatus &= publishMqttData(cfgDataPtr->mainTopic + "/process/status/process_state",
                                 flowctrl.getActualProcessState().c_str(), MQTT_QOS, false);
-    retValStatus &= MQTTPublish(cfgDataPtr->mainTopic + "/process/status/process_error",
+    retValStatus &= publishMqttData(cfgDataPtr->mainTopic + "/process/status/process_error",
                                 std::to_string(flowctrl.getFlowStateErrorOrDeviation()).c_str(), MQTT_QOS, false);
-    retValStatus &= MQTTPublish(cfgDataPtr->mainTopic + "/process/status/cycle_counter",
+    retValStatus &= publishMqttData(cfgDataPtr->mainTopic + "/process/status/cycle_counter",
                                 std::to_string(getFlowCycleCounter()).c_str(), MQTT_QOS, false);
 
     if (!retValStatus)
@@ -135,7 +135,7 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
     // Publish process data per sequence
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Publish process data");
 
-    retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/number_sequences",
+    retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/number_sequences",
                               std::to_string(sequenceData.size()), MQTT_QOS, cfgDataPtr->retainProcessData);
 
     for (const auto &sequence : sequenceData) {
@@ -175,36 +175,36 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
             cJSON_Delete(cJSONObject);
 
             if (jsonChar != NULL) {
-                retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/json",
+                retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/json",
                                         std::string(jsonChar), MQTT_QOS, cfgDataPtr->retainProcessData);
                 cJSON_free(jsonChar);
             }
         }
 
         if (cfgDataPtr->processDataNotation == PROCESSDATA_TOPICS || cfgDataPtr->processDataNotation == PROCESSDATA_JSON_AND_TOPICS) {
-            retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/sequence_name",
+            retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/sequence_name",
                                         sequence->sequenceName.c_str(), MQTT_QOS, cfgDataPtr->retainProcessData);
-            retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/actual_value",
+            retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/actual_value",
                                         sequence->sActualValue.c_str(), MQTT_QOS, cfgDataPtr->retainProcessData);
-            retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/fallback_value",
+            retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/fallback_value",
                                         sequence->sFallbackValue.c_str(), MQTT_QOS, cfgDataPtr->retainProcessData);
-            retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/raw_value",
+            retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/raw_value",
                                         sequence->sRawValue.c_str(), MQTT_QOS, cfgDataPtr->retainProcessData);
-            retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/value_status",
+            retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/value_status",
                                         sequence->sValueStatus.c_str(), MQTT_QOS, cfgDataPtr->retainProcessData);
-            retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/rate_per_minute",
+            retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/rate_per_minute",
                                         sequence->sRatePerMin.c_str(), MQTT_QOS, cfgDataPtr->retainProcessData);
-            retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/rate_per_interval",
+            retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/rate_per_interval",
                                         sequence->sRatePerInterval.c_str(), MQTT_QOS, cfgDataPtr->retainProcessData);
             if (cfgDataPtr->homeAssistant.discoveryEnabled) { // Only used for Home Assistant integration
-                retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/rate_per_time_unit",
+                retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/rate_per_time_unit",
                             (mqttServer_getTimeUnit() == "h") ? to_stringWithPrecision(sequence->ratePerMin * 60,
                             sequence->decimalPlaceCount).c_str() : sequence->sRatePerMin.c_str(),
                             MQTT_QOS, cfgDataPtr->retainProcessData);
             }
-            retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/timestamp_processed",
+            retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/timestamp_processed",
                                         sequence->sTimeProcessed.c_str(), MQTT_QOS, cfgDataPtr->retainProcessData);
-            retValData &= MQTTPublish(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/timestamp_fallbackvalue",
+            retValData &= publishMqttData(cfgDataPtr->mainTopic + "/process/data/" + std::to_string(sequence->sequenceId) + "/timestamp_fallbackvalue",
                                         sequence->sTimeFallbackValue.c_str(), MQTT_QOS, cfgDataPtr->retainProcessData);
         }
     }
@@ -232,7 +232,7 @@ void ClassFlowMQTT::doPostProcessEventHandling()
 
 ClassFlowMQTT::~ClassFlowMQTT()
 {
-    MQTTdestroy_client(true);
+    deinitMqttClient(true);
 }
 
 #endif //ENABLE_MQTT

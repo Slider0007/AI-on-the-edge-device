@@ -42,7 +42,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
     if (!publishDeviceInfoScheduled)
         return true;
 
-    if (!getMQTTisConnected()) {
+    if (!getMqttIsConnected()) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip publish device info, not (yet) connected to broker");
         return false;
     }
@@ -102,7 +102,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
     cJSON_Delete(cJSONObject);
 
     if (jsonChar != NULL) {
-        retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceInfoTopic + "hardware", std::string(jsonChar), _qos, true);
+        retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceInfoTopic + "hardware", std::string(jsonChar), _qos, true);
         cJSON_free(jsonChar);
         jsonChar = NULL;
     }
@@ -116,7 +116,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
     }
     if (cJSON_AddStringToObject(cJSONObject, "hostname", getHostname().c_str()) == NULL)
         retVal = false;
-    if (cJSON_AddStringToObject(cJSONObject, "ipv4_address", getIPAddress().c_str()) == NULL)
+    if (cJSON_AddStringToObject(cJSONObject, "ipv4_address", getIpAddress().c_str()) == NULL)
         retVal = false;
     if (cJSON_AddStringToObject(cJSONObject, "mac_address", getMac().c_str()) == NULL)
         retVal = false;
@@ -125,7 +125,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
     cJSON_Delete(cJSONObject);
 
     if (jsonChar != NULL) {
-        retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceInfoTopic + "network", std::string(jsonChar), _qos, true);
+        retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceInfoTopic + "network", std::string(jsonChar), _qos, true);
         cJSON_free(jsonChar);
         jsonChar = NULL;
     }
@@ -136,7 +136,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
     if (firmwareVersion == "" || firmwareVersion == "N/A")
         firmwareVersion = std::string(libfive_git_branch()) + " (" + std::string(libfive_git_revision()) + ")";
 
-    retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceInfoTopic + "firmware_version", firmwareVersion, _qos, true);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceInfoTopic + "firmware_version", firmwareVersion, _qos, true);
 
     if (!retVal) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish device info");
@@ -151,7 +151,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
 // Publish device status topics (common topics variable)
 bool mqttServer_publishDeviceStatus(int _qos)
 {
-    if (!getMQTTisConnected()) {
+    if (!getMqttIsConnected()) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip publish device status, not (yet) connected to broker");
         return false;
     }
@@ -161,10 +161,10 @@ bool mqttServer_publishDeviceStatus(int _qos)
     const std::string deviceStatusTopic = "/device/status/";
     bool retVal = true;
 
-    retVal &= MQTTPublish(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, _qos, false);
-    retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "device_uptime", std::to_string(getUptime()), _qos, false);
-    retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "wlan_rssi", std::to_string(getWifiRssi()), _qos, false);
-    retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "chip_temp", to_stringWithPrecision(getSOCTemperature(), 0), _qos, false);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, _qos, false);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "device_uptime", std::to_string(getUptime()), _qos, false);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "wlan_rssi", std::to_string(getWifiRssi()), _qos, false);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "chip_temp", to_stringWithPrecision(getSOCTemperature(), 0), _qos, false);
 
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
@@ -190,12 +190,12 @@ bool mqttServer_publishDeviceStatus(int _qos)
     cJSON_Delete(cJSONObject);
 
     if (jsonChar != NULL) {
-        retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "heap", std::string(jsonChar), _qos, false);
+        retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "heap", std::string(jsonChar), _qos, false);
         cJSON_free(jsonChar);
     }
 
-    retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "sd_partition_free", std::to_string(getSDCardFreePartitionSpace()), _qos, false);
-    retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "ntp_syncstatus", getNTPSyncStatus().c_str(), _qos, false);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "sd_partition_free", std::to_string(getSDCardFreePartitionSpace()), _qos, false);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "ntp_syncstatus", getNTPSyncStatus().c_str(), _qos, false);
 
     if (!retVal) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish device status");
@@ -317,7 +317,7 @@ bool mqttServer_publishHADiscovery(int _qos)
     if (!cfgDataPtr->homeAssistant.discoveryEnabled || !publishHADiscoveryScheduled) // Continue if enabled and scheduled
         return true;
 
-    if (!getMQTTisConnected()) {
+    if (!getMqttIsConnected()) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip publish HA discovery, not (yet) connected to broker");
         return false;
     }
@@ -701,7 +701,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
             "\"mdl\":\"AI-on-the-Edge device [" + getBoardType() + "]\","  +
             "\"mf\":\"AI-on-the-Edge\","  +
             "\"sw\":\"" + firmwareVersion + " [SLFork]\","  +
-            "\"cu\":\"http://" + getIPAddress() + "\"}";
+            "\"cu\":\"http://" + getIpAddress() + "\"}";
     }
     else { // Publish device reference only to group data together
         payload += std::string(", \"dev\": {")  +
@@ -710,7 +710,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
 
     payload += "}";
 
-    if (MQTTPublish(configurationTopic, payload, _qos, cfgDataPtr->homeAssistant.retainDiscovery)) {
+    if (publishMqttData(configurationTopic, payload, _qos, cfgDataPtr->homeAssistant.retainDiscovery)) {
         publishHADiscoveryTopicDeviceInfo = false;
         return true;
     }

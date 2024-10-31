@@ -52,33 +52,25 @@ static void improvEventHandler(void)
     uart_event_t event;
 
     if (xQueueReceive(uartQueueHandle, (void *)&event, (TickType_t)portMAX_DELAY) == pdPASS) {
-        // ESP_LOGD(TAG, "uart[%d] event:", DEFAULT_UART_NUM);
         switch (event.type) {
-            // UART receving data
-            case UART_DATA:
+            case UART_DATA: // UART receving data
                 bzero(evtData, evtBufferSize);
                 uart_read_bytes(DEFAULT_UART_NUM, evtData, event.size, portMAX_DELAY);
                 improvWifi->handleSerial(evtData, event.size);
                 // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV UART RX: " + std::string((char *)evtData, event.size));
                 break;
 
-            // HW FIFO overflow detected
-            case UART_FIFO_OVF:
-                // ESP_LOGD(TAG, "hw fifo overflow");
+            case UART_FIFO_OVF: // HW FIFO overflow detected
                 uart_flush_input(DEFAULT_UART_NUM);
                 xQueueReset(uartQueueHandle);
                 break;
 
-            // Ring buffer full
-            case UART_BUFFER_FULL:
-                //ESP_LOGD(TAG, "ring buffer full");
+            case UART_BUFFER_FULL: // Ring buffer full
                 uart_flush_input(DEFAULT_UART_NUM);
                 xQueueReset(uartQueueHandle);
                 break;
 
-            // Other events
-            default:
-                // ESP_LOGD(TAG, "uart event type: %d", event.type);
+            default: // Other events
                 break;
         }
     }
@@ -88,7 +80,7 @@ static void improvEventHandler(void)
     if (readBytes > 0) {
         improvWifi->handleSerial(evtData, readBytes);
         ESP_LOGI(TAG, "Data received"); // Workaround: Do not remove, otherwise it's not working (@TODO, FIXME, tested ESP-IDF 5.2.1)
-        //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV USB RX: " + std::string((char *)evtData, readBytes));
+        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV USB RX: " + std::string((char *)evtData, readBytes));
         bzero(evtData, evtBufferSize);
         readBytes = 0;
     }
@@ -133,11 +125,11 @@ void improvWifiScan(unsigned char *scanResponse, int bufLen, uint16_t *networkNu
     wifi_mode_t wifiMode;
     esp_wifi_get_mode(&wifiMode);
 
-    if(wifiMode == WIFI_MODE_AP) {
-        wifiDeinitAP();
+    if (wifiMode == WIFI_MODE_AP) {
+        stopAPForDeviceProvisioning();
         vTaskDelay(pdMS_TO_TICKS(500));
 
-        initWifiStation();
+        initWifiClient();
         vTaskDelay(pdMS_TO_TICKS(500));
     }
 
@@ -250,7 +242,7 @@ bool improvWifiConnect(const char *ssid, const char *password)
 
     // Check connection state
     timeoutCnt = 0;
-    while (!getWIFIisConnected()) {
+    while (!getWifiIsConnected(true)) {
         vTaskDelay(pdMS_TO_TICKS(1000));
         if (timeoutCnt > 30) { // Timeout 30s
             return false;
@@ -290,8 +282,8 @@ void improvInit(void)
 
     improvWifi->setCustomConnectWiFi(improvWifiConnect);
     improvWifi->setCustomScanWiFi(improvWifiScan);
-    improvWifi->setCustomisConnected(getWIFIisConnected);
-    improvWifi->setCustomGetLocalIpCallback(getIPAddress);
+    improvWifi->setCustomisConnected(getWifiIsConnected);
+    improvWifi->setCustomGetLocalIpCallback(getIpAddress);
 
 #ifndef USB_SERIAL
     // Install UART driver using an event queue

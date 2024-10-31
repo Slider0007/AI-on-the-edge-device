@@ -618,7 +618,7 @@ void task_reboot(void *DeleteMainFlow)
 
     /* Stop service tasks */
     #ifdef ENABLE_MQTT
-        MQTTdestroy_client(true);
+        deinitMqttClient(true);
     #endif //ENABLE_MQTT
 
     gpio_handler_destroy();
@@ -630,7 +630,7 @@ void task_reboot(void *DeleteMainFlow)
     httpd_stop(server);
 
     vTaskDelay(3000 / portTICK_PERIOD_MS);
-    wifiDestroy();
+    deinitWifi();
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     esp_restart();      // Reset type: CPU reset (Reset both CPUs)

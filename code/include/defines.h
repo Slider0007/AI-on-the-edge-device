@@ -29,19 +29,6 @@
 #endif
 
 
-
-// Access point for initial setup (Default: enabled)
-#ifndef ENV_DISABLE_SOFTAP // Disable module by build_flag in platformio.ini
-    #ifndef ENABLE_SOFTAP
-        #define ENABLE_SOFTAP
-    #endif
-#else
-    // If disabled, set CONFIG_ESP_WIFI_SOFTAP_SUPPORT=n in sdkconfig.defaults to save 28k of flash
-    #define CONFIG_ESP_WIFI_SOFTAP_SUPPORT 0
-#endif
-
-
-
 //**************************************************************************************
 // GLOABL DEBUG FLAGS
 //**************************************************************************************
@@ -184,6 +171,9 @@
 
 // connect_wlan.cpp
 //******************************
+#define WLAN_CONNECTION_RETRIES_INITIAL_CONNECT     5
+#define WLAN_CONNECTION_RETRIES_ERROR_MSG           10
+
 /* WIFI roaming functionalities 802.11k+v (uses ca. 6kB - 8kB internal RAM; if SCAN CACHE activated: + 1kB / beacon)
 PLEASE BE AWARE: The following CONFIG parameters have to to be set in
 sdkconfig.defaults before use of this function is possible!!
@@ -259,16 +249,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 // Process state misc
 #define FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT   3
-
-
-// SoftAP for initial setup process
-#ifdef ENABLE_SOFTAP
-    #define AP_ESP_WIFI_SSID      "AI-on-the-Edge"
-    #define AP_ESP_WIFI_PASS      ""
-    #define AP_ESP_WIFI_CHANNEL   11
-    #define AP_MAX_STA_CONN       1
-#endif // ENABLE_SOFTAP
-
 
 // Global flashlight definitions
 #define FLASHLIGHT_DEFAULT_LEDC_TIMER           LEDC_TIMER_1

@@ -48,7 +48,7 @@ class ImprovWiFi {
         // Callback functions to customize the wifi connection
         typedef bool(CustomConnectWiFi)(const char *ssid, const char *password);
         typedef void(CustomScanWiFi)(unsigned char *scanResponse, int bufLen, uint16_t *networkNum);
-        typedef bool(CustomIsConnected)(void);
+        typedef bool(CustomIsConnected)(bool improvProvisioning);
         typedef std::string(CustomGetLocalIpCallback)(void);
 
 
@@ -91,7 +91,7 @@ class ImprovWiFi {
         void setCustomGetLocalIpCallback(CustomGetLocalIpCallback *getLocalIpCallback);
 
         // Check if connection is established
-        bool isConnected();
+        bool isConnected(bool improvProvisioning = true);
 };
 
 #endif /* IMPROV_WIFI_H */

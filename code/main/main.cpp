@@ -36,10 +36,7 @@
 #endif //ENABLE_MQTT
 
 #include "openmetrics.h"
-
-#ifdef ENABLE_SOFTAP
-    #include "softAP.h"
-#endif //ENABLE_SOFTAP
+#include "softAP.h"
 
 
 static const char *TAG = "MAIN";
@@ -130,15 +127,15 @@ extern "C" void app_main(void)
     // ********************************************
     esp_netif_init();
 
-    // Init improv service
+    // Init improv service for device provisioning via serial / USB interface
     // ********************************************
     improvInit();
 
-    // Check for missing configuration
+    // Start access point for device provisioning if mandatory content / config is missing
+    // Missing HTML content: html/index.html
+    // Missing config: Empty SSID in config/config.json
     // ********************************************
-    #ifdef ENABLE_SOFTAP
-        checkStartAPMode();
-    #endif
+    startAPForDeviceProvisioning();
 
     // SD card: basic R/W check
     // ********************************************
@@ -204,12 +201,12 @@ extern "C" void app_main(void)
     // ********************************************
     initTime();
 
-    // Init WIFI service
+    // Init WLAN connection (init client, access point or none depending on configuration)
     // ********************************************
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WIFI service");
-    esp_err_t retVal = initWifiStation();
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WLAN serivce");
+    esp_err_t retVal = initWifi();
     if (retVal != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init WLAN serivce failed. Device init aborted");
         setStatusLed(WLAN_INIT, 1, true);
         return;
     }
