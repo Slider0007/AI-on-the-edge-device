@@ -10,5 +10,5 @@
 ## Description
 
 Define the delay after which the network shall be suspended.<br>
-- WLAN Client: Suspend after the defined time is elapsed and actual processed cycle is completed
-- Access Point: Suspend after the defined time with no client connected is elapsed and actual processed cycle is completed
+- WLAN Client: Suspend after the defined time is elapsed and actual processed cycle is completed.<br>
+- Access Point: Suspend after the defined time with no client connected is elapsed and actual processed cycle is completed.

@@ -18,10 +18,12 @@ Select the network operation mode
 | `WLAN Client`              | WLAN connection is established to a wireless network in range
 | `WLAN Client (Timed-Off)`  | WLAN connection is established to a wireless network in range. Network is suspended after a defined time (Parameter: Timed-Off Delay)
 | `WLAN Access Point`        | Standalone mode. Device is providing an access point.
-| `WLAN Client (Timed-Off)`  | Standalone mode. Device is providing an access point. Access point is suspended after a defined time if no client is connected or after last client has disconnected (Parameter: Timed-Off Delay)
+| `WLAN Access Point (Timed-Off)` | Standalone mode. Device is providing an access point. Access point is suspended after a defined time if no client is connected or after last client has disconnected (Parameter: Timed-Off Delay)
+
 
 !!! Note
     To apply this parameter a device reboot is required.
+
 
 !!! Tip
     A suspended network connection can be resumed by GPIO using option `Resume WLAN connection`. 

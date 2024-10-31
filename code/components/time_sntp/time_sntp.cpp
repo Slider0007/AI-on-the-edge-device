@@ -168,7 +168,6 @@ bool initTime()
     else {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "NTP service disabled");
         timeSyncEnabled = false;
-        timeServer = "";
         isTimeSynchonized = false;
     }
 
