@@ -72,7 +72,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
 
         #ifdef ENABLE_MQTT
-        if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", getMqttStartEnabled() ? (getMqttIsConnected() ? (getMqttIsEncrypted() ?
+        if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", getMqttIsEnabled() ? (getMqttIsConnected() ? (getMqttIsEncrypted() ?
                                         "Connected (Encrypted)" : "Connected") : "Disconnected") : "Disabled") == NULL)
             retVal = ESP_FAIL;
         #else
@@ -248,7 +248,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
 
     #ifdef ENABLE_MQTT
     else if (type.compare("mqtt_status") == 0) {
-        httpd_resp_sendstr(req, getMqttStartEnabled() ? (getMqttIsConnected() ? (getMqttIsEncrypted() ?
+        httpd_resp_sendstr(req, getMqttIsEnabled() ? (getMqttIsConnected() ? (getMqttIsEncrypted() ?
                                 "Connected (Encrypted)" : "Connected") : "Disconnected") : "Disabled");
         return ESP_OK;
     }

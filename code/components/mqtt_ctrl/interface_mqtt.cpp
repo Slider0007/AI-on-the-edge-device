@@ -31,8 +31,7 @@ static std::string TLSClientKey;
 static int keepAlive;
 
 static struct strMqttState {
-    bool mqttConfigured = false;
-    bool mqttStartEnabled = false;
+    bool mqttEnabled = false;
     bool mqttInitialized = false;
     bool mqttConnected = false;
 
@@ -49,11 +48,11 @@ static std::map<std::string, std::function<bool(std::string, char*, int)>>* subs
 
 bool publishMqttData(std::string _key, std::string _content, int _qos, bool _retainFlag)
 {
-    if (!mqttState.mqttStartEnabled) { // MQTT client preconfigured, but not initialized / started (startMqttClient not called before)
+    if (!mqttState.mqttEnabled) { // MQTT service disabled
         return false;
     }
 
-    if (mqttState.failedOnCycle == getFlowCycleCounter()) { // we already failed in this cycle, do not retry until the next cycle
+    if (mqttState.failedOnCycle == getFlowCycleCounter()) { // Already a failed transmission in this cycle
         return true; // Fail quietly
     }
 
@@ -283,7 +282,7 @@ bool configureMqttClient(const CfgData::SectionMqtt *_param, int keepAlive)
         }
     }
 
-    mqttState.mqttConfigured = true;
+    mqttState.mqttEnabled = true;
     return true;
 }
 
@@ -294,16 +293,13 @@ int startMqttClient(void)
         return 0;
     }
 
-    if (mqttState.mqttConfigured) {
-        mqttState.mqttStartEnabled = true;
-    }
-    else {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but client is not yet configured.");
+    if (!mqttState.mqttEnabled) {
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but service is not configured");
         return 0;
     }
 
     if (!getWifiIsConnected()) {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but wlan is not yet connected.");
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but wlan is not yet connected");
         return 0;
     }
 
@@ -383,11 +379,10 @@ int startMqttClient(void)
 }
 
 
-void deinitMqttClient(bool discardConfig)
+void deinitMqttClient(bool disable)
 {
-    if (discardConfig) {
-        mqttState.mqttConfigured = false;
-        mqttState.mqttStartEnabled = false;
+    if (disable) {
+        mqttState.mqttEnabled = false;
     }
 
     mqttState.mqttInitialized = false;
@@ -402,9 +397,9 @@ void deinitMqttClient(bool discardConfig)
 }
 
 
-bool getMqttStartEnabled(void)
+bool getMqttIsEnabled(void)
 {
-    return mqttState.mqttConfigured && mqttState.mqttStartEnabled;
+    return mqttState.mqttEnabled;
 }
 
 

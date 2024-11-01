@@ -173,7 +173,8 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 
 #ifdef ENABLE_MQTT
 		// Start MQTT serivce
-		if (!getMqttStartEnabled()) {
+		if (getMqttIsEnabled()) {
+			vTaskDelay(pdMS_TO_TICKS(500));
 			startMqttClient();
 		}
 #endif //ENABLE_MQTT
@@ -216,7 +217,7 @@ bool suspendWifiConnection(void)
 			setStatusLed(WLAN_CONN, 5, false);
 
 			// Stop MQTT client
-			if (getMqttStartEnabled()) {
+			if (getMqttIsEnabled()) {
 				deinitMqttClient();
 			}
 

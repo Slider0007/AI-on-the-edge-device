@@ -15,7 +15,7 @@ bool publishMqttData(std::string _key, std::string _content, int qos, bool _reta
 bool configureMqttClient(const CfgData::SectionMqtt *cfgDataPtr, int keepAlive);
 int startMqttClient(void);
 
-bool getMqttStartEnabled(void);
+bool getMqttIsEnabled(void);
 bool getMqttIsConnected(void);
 bool getMqttIsEncrypted(void);
 
@@ -25,7 +25,7 @@ void registerMqttSubscribeFunction(std::string topic, std::function<bool(std::st
 void unregisterMqttSubscribeFunction();
 void isConnectedState(void);
 
-void deinitMqttClient(bool discardConfig = false);
+void deinitMqttClient(bool disable = false);
 
 #endif //INTERFACE_MQTT_H
 #endif //#ENABLE_MQTT
