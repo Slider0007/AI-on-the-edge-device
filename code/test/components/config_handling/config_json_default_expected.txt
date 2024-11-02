@@ -321,6 +321,8 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     }
   },
   "network": {
+    "opmode": 0,
+    "timedoffdelay": 60,
     "wlan": {
       "ssid": "",
       "password": "",
@@ -336,6 +338,14 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
         "enabled": false,
         "rssithreshold": -75
       }
+    },
+    "wlanap": {
+        "ssid": "AI-on-the-Edge Device",
+        "password": "",
+        "channel": 11,
+        "ipv4": {
+            "ipaddress": "192.168.4.1"
+        }
     },
     "time": {
       "timezone": "CET-1CEST,M3.5.0,M10.5.0/3",

@@ -276,7 +276,7 @@ esp_err_t initWifi(void)
 
 esp_err_t initWifiClient(void)
 {
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WLAN client");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init client mode");
 
 	cfgDataPtr = &ConfigClass::getInstance()->get()->sectionNetwork;
 
@@ -289,7 +289,9 @@ esp_err_t initWifiClient(void)
     esp_netif_t *wifiStation = esp_netif_create_default_wifi_sta();
 
 	if (cfgDataPtr->wlan.ipv4.networkConfig == NETWORK_WLAN_IP_CONFIG_STATIC) {
-		LogFile.writeToFile(ESP_LOG_INFO, TAG, "Use static network config");
+		LogFile.writeToFile(ESP_LOG_INFO, TAG, "Use static network config | IP: " + cfgDataPtr->wlan.ipv4.ipAddress +
+			", Subnet: " + cfgDataPtr->wlan.ipv4.subnetMask + ", Gateway: " + cfgDataPtr->wlan.ipv4.gatewayAddress +
+			", DNS: " + cfgDataPtr->wlan.ipv4.dnsServer);
 
 		retVal = esp_netif_dhcpc_stop(wifiStation);	// Stop DHCP service
 		if (retVal != ESP_OK) {
@@ -419,14 +421,14 @@ esp_err_t initWifiClient(void)
 
 	wifiState.initialized = true;
 
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WLAN client successful");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init client mode successful");
 	return ESP_OK;
 }
 
 
 esp_err_t initWifiAp(bool _useDefaultConfig)
 {
-	LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WLAN access point");
+	LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init access point mode");
 
 	cfgDataPtr = &ConfigClass::getInstance()->get()->sectionNetwork;
 
@@ -555,7 +557,7 @@ esp_err_t initWifiAp(bool _useDefaultConfig)
 
     wifiState.initialized = true;
 
-	LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WLAN access point successful | SSID: " + std::string((char *)wifiConfig.ap.ssid) +
+	LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init access point mode successful | SSID: " + std::string((char *)wifiConfig.ap.ssid) +
 		", PW: " + std::string((char *)wifiConfig.ap.password) + ", CH: " + std::to_string(wifiConfig.ap.channel) + ", IP: " + ipCfg.ipAddress);
 	return ESP_OK;
 }
