@@ -1045,7 +1045,7 @@ void task_autodoFlow(void *pvParameter)
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
             // Clear separation between runs
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "----------------------------------------------------------------");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "--------------------------------");
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(++cycleCounter) + " started");
             cycleStartTime = getUptime();
             cylceStartActualTime = esp_timer_get_time();

@@ -68,7 +68,7 @@ extern "C" void app_main(void)
     // ********************************************
     // Highlight start of app_main
     // ********************************************
-    ESP_LOGI(TAG, "=========== Start app_main ============");
+    ESP_LOGI(TAG, "========= Start app_main ==========");
 
     // Init NVS flash
     // ********************************************
@@ -92,9 +92,9 @@ extern "C" void app_main(void)
     // Highlight start of logfile logging
     // Default Log Level: INFO -> Everything which needs to be logged during boot should be have level INFO, WARN OR ERROR
     // ********************************************
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "=======================================");
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "=============== Start =================");
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "=======================================");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "===================================");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "============== Start ==============");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "===================================");
 
     // SD card: Create further mandatory directories (if not already existing)
     // Correct creation of these folders will be checked with function "checkSdCardFolderFilePresence"
