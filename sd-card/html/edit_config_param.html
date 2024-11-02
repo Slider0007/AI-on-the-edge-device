@@ -263,7 +263,8 @@
 		</p>
 		<p>
 			Don't forget to save the changes with the button <b>"Save And Apply"</b> at the bottom of this page.
-            The new configuration gets automatically applied. No reboot is required.
+            The new configuration gets automatically applied. No reboot is required. Only a few hardware related
+			parameter require a reboot indicated by the button labled with <b>"Save And Reboot"</b>.
 		</p>
     </details>
     <hr>
@@ -2560,7 +2561,7 @@
 			<td>
 				<form id="network_wlan_ipv4_networkconfig_form">
 					<select class="classvisibility_init" name="network.wlan.ipv4.networkconfig" id="network_wlan_ipv4_networkconfig_value"
-							onchange="setClassVisibility('_network_wlan_ipv4_networkconfig', this.value == 1);
+							onchange="setClassVisibility('classvisibility_network_wlan_ipv4_networkconfig', this.value == 1);
 								gatherChangedParameter(this.form, true), rebootRequired()">
 						<option value="0" selected>DHCP</option>
 						<option value="1">Static</option>
