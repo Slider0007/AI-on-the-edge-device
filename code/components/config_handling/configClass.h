@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <freertos/FreeRTOS.h>
 #include <esp_log.h>
 #include <esp_heap_caps.h>
 #include <cJSON.h>
@@ -26,6 +27,7 @@ class ConfigClass
     CfgData cfgDataTemp; // Keeps last parameter modifications, but not in use by process (gets promoted to active config by reinitConfig())
     CfgData cfgData; // Keep active parameter configuration in use by process
 
+    portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED;
     cJSON *cJsonObject = NULL;
     uint8_t *cJsonObjectBuffer = NULL;
     char *jsonBuffer = NULL;

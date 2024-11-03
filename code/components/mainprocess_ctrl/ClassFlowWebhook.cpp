@@ -62,7 +62,6 @@ bool ClassFlowWebhook::doFlow(std::string zwtime)
     time_t actTime;
     struct tm timeStruct;
     time_t timeProcessedUtc = 0L;
-
     cJSON *jsonArray = cJSON_CreateArray();
 
     // Publish data

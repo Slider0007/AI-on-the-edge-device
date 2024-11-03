@@ -52,7 +52,7 @@ struct strcJSON {
     uint8_t* preallocatedMemory = NULL;
     int preallocatedMemorySize = 0;
     int usedMemory = 0;
-    bool failedAllocation = false;
+    bool useDefaultAllocation = false;
 };
 extern struct strcJSON cJSONObjectPSRAM;
 
