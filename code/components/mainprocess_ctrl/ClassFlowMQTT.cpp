@@ -141,7 +141,6 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
     for (const auto &sequence : sequenceData) {
         if (cfgDataPtr->processDataNotation == PROCESSDATA_JSON || cfgDataPtr->processDataNotation == PROCESSDATA_JSON_AND_TOPICS ||
                 cfgDataPtr->homeAssistant.discoveryEnabled) {
-            cJSON_InitHooks(NULL); // Reset cJSON hooks to default
             cJSON *cJSONObject = cJSON_CreateObject();
             if (cJSONObject == NULL) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
