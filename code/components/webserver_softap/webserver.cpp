@@ -51,6 +51,8 @@ esp_err_t handler_get_info(httpd_req_t *req)
     else { // default - no parameter set: send data as JSON
         esp_err_t retVal = ESP_OK;
         std::string sReturnMessage;
+
+        cJSON_InitHooks(NULL); // Reset cJSON hooks to default
         cJSON *cJSONObject = cJSON_CreateObject();
 
         if (cJSONObject == NULL) {

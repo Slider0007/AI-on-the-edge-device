@@ -53,6 +53,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
     bool retVal = true;
 
     // Prepare topic: device/info/hardware
+    cJSON_InitHooks(NULL); // Reset cJSON hooks to default
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
@@ -109,6 +110,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
 
 
     // Prepare topic: device/info/network
+    cJSON_InitHooks(NULL); // Reset cJSON hooks to default
     cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
@@ -166,6 +168,7 @@ bool mqttServer_publishDeviceStatus(int _qos)
     retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "wlan_rssi", std::to_string(getWifiRssi()), _qos, false);
     retVal &= MQTTPublish(cfgDataPtr->mainTopic + deviceStatusTopic + "chip_temp", to_stringWithPrecision(getSOCTemperature(), 0), _qos, false);
 
+    cJSON_InitHooks(NULL); // Reset cJSON hooks to default
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");

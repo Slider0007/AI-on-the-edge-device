@@ -60,6 +60,7 @@ esp_err_t getDataFileList(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    cJSON_InitHooks(NULL); // Reset cJSON hooks to default
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
@@ -114,6 +115,7 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    cJSON_InitHooks(NULL); // Reset cJSON hooks to default
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
@@ -168,6 +170,7 @@ esp_err_t getCertFileList(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    cJSON_InitHooks(NULL); // Reset cJSON hooks to default
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
