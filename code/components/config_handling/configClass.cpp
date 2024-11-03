@@ -142,6 +142,7 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
         streamBuffer.str("{}"); // Ensure any content
     }
 
+    portENTER_CRITICAL(&mutex);
     // Modify hook to use SPIRAM for cJSON object
     cJSON_Hooks hooks;
     hooks.malloc_fn = malloc_psram_heap_cjson;
@@ -153,6 +154,11 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 
     // Parse content to cJSON object structure
     cJsonObject = cJSON_Parse(streamBuffer.str().c_str());
+
+    // Reset cJSON hooks to default
+    cJSON_InitHooks(NULL);
+    portEXIT_CRITICAL(&mutex);
+
     if (cJsonObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseConfig: Failed to parse JSON data | Fallback: Use default config");
         // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started to reconfigure.
@@ -192,6 +198,7 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
         remaining -= received;
     }
 
+    portENTER_CRITICAL(&mutex);
     // Modify hook to use SPIRAM for cJSON object
     cJSON_Hooks hooks;
     hooks.malloc_fn = malloc_psram_heap_cjson;
@@ -203,6 +210,11 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
     // Parse content to cJSON object structure
     cJsonObject = cJSON_Parse(jsonBuffer);
+
+    // Reset cJSON hooks to default
+    cJSON_InitHooks(NULL);
+    portEXIT_CRITICAL(&mutex);
+
     if (cJsonObject == NULL) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Failed to parse JSON data, e.g. malformed notation");
         return ESP_FAIL;
@@ -1409,8 +1421,6 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.refreshTime = std::max(objEl->valueint, 1);
 
-    cJSON_InitHooks(NULL); // Reset cJSON hooks to default (cJSON_Delete -> not needed)
-
     // Init active config struct with latest configuration data
     if (init) {
         cfgData = cfgDataTemp;
@@ -1438,6 +1448,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
 esp_err_t ConfigClass::serializeConfig(bool unityTest)
 {
+    portENTER_CRITICAL(&mutex);
     // Modify hook to use SPIRAM for cJSON object
     cJSON_Hooks hooks;
     hooks.malloc_fn = malloc_psram_heap_cjson;
@@ -2045,12 +2056,13 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (cJSON_AddNumberToObject(webuiAutorefreshDataGraph, "refreshtime", cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.refreshTime) == NULL)
         retVal = ESP_FAIL;
 
+    cJSON_InitHooks(NULL); // Reset cJSON hooks to default
+    portEXIT_CRITICAL(&mutex);
+
     jsonBuffer[0] = '\0'; // Reset content
     // Print to preallocted buffer
     if (!cJSON_PrintPreallocated(cJsonObject, jsonBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, unityTest ? 0 : 1))
         retVal = ESP_FAIL;
-
-    cJSON_InitHooks(NULL); // Reset cJSON hooks to default (cJSON_Delete -> not needed)
 
     return retVal;
 }

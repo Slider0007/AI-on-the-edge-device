@@ -348,7 +348,7 @@ esp_err_t GpioHandler::loadParameter()
 void GpioHandler::clearData()
 {
     if (gpioMap != NULL) {
-        for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
+        for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); it++) {
             if (it->second->getSmartLed() != NULL) {
                 delete it->second->getSmartLed();
                 it->second->setSmartLed(NULL);
@@ -637,6 +637,7 @@ void GpioHandler::handleMQTTconnect()
     if (gpioMap != NULL) {
         for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
             it->second->mqttPublishPinState();
+            vTaskDelay(pdMS_TO_TICKS(500));
         }
     }
 }
