@@ -92,7 +92,7 @@ esp_err_t getDataFileList(httpd_req_t *req)
 
     if (jsonChar != NULL) {
         retVal = httpd_resp_send(req, jsonChar, strlen(jsonChar));
-        heap_caps_free(jsonChar); // Avoid using cJSON_Delete, because configClass using modified cJSON initHooks
+        cJSON_free(jsonChar);
     }
 
     return retVal;
@@ -147,7 +147,7 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
 
     if (jsonChar != NULL) {
         retVal = httpd_resp_send(req, jsonChar, strlen(jsonChar));
-        heap_caps_free(jsonChar); // Avoid using cJSON_Delete, because configClass using modified cJSON initHooks
+        cJSON_free(jsonChar);
     }
 
     return retVal;
@@ -199,7 +199,7 @@ esp_err_t getCertFileList(httpd_req_t *req)
 
     if (jsonChar != NULL) {
         retVal = httpd_resp_send(req, jsonChar, strlen(jsonChar));
-        heap_caps_free(jsonChar); // Avoid using cJSON_Delete, because configClass using modified cJSON initHooks
+        cJSON_free(jsonChar);
     }
 
     return retVal;

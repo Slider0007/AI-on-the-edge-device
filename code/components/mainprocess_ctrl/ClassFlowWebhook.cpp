@@ -122,7 +122,7 @@ bool ClassFlowWebhook::doFlow(std::string zwtime)
                 setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
             }
         }
-        heap_caps_free(jsonChar); // Avoid using cJSON_Delete, because configClass using modified cJSON initHooks
+        cJSON_free(jsonChar);
     }
 
     if (!getFlowState()->isSuccessful)

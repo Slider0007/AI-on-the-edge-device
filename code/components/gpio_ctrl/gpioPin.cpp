@@ -226,7 +226,7 @@ bool GpioPin::mqttPublishPinState(int _pwmDuty)
 
         if (jsonChar != NULL) {
             retVal &= MQTTPublish(mqttTopic + "/state", std::string(jsonChar), 1);
-            heap_caps_free(jsonChar); // Avoid using cJSON_Delete, because configClass using modified cJSON initHooks
+            cJSON_free(jsonChar);
         }
 
         if (!retVal) {
