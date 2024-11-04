@@ -174,7 +174,7 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 #ifdef ENABLE_MQTT
 		// Start MQTT serivce
 		if (getMqttIsEnabled()) {
-			vTaskDelay(pdMS_TO_TICKS(500));
+			vTaskDelay(pdMS_TO_TICKS(1000));
 			startMqttClient();
 		}
 #endif //ENABLE_MQTT
