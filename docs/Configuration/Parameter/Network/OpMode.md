@@ -14,11 +14,11 @@ Select the network operation mode
 
 | Input Option               | Description
 |:---                        |:---
-| `Disabled`                 | All network connections are disabled (no interaction with device possible, but device is processing)
-| `WLAN Client`              | WLAN connection is established to a wireless network in range
-| `WLAN Client (Timed-Off)`  | WLAN connection is established to a wireless network in range. Network is suspended after a defined time (Parameter: Timed-Off Delay)
+| `Disabled`                 | All network connections are disabled (no interaction with device possible, but device is processing).
+| `WLAN Client`              | WLAN connection is established to a wireless network in range.
+| `WLAN Client (Timed-Off)`  | WLAN connection is established to a wireless network in range. Network is suspended after a configurable time is elapsed and actual cycle processing is completed (Parameter: Timed-Off Delay).
 | `WLAN Access Point`        | Standalone mode. Device is providing an access point.
-| `WLAN Access Point (Timed-Off)` | Standalone mode. Device is providing an access point. Access point is suspended after a defined time if no client is connected or after last client has disconnected (Parameter: Timed-Off Delay)
+| `WLAN Access Point (Timed-Off)` | Standalone mode. Device is providing an access point. Access point is suspended after a configurable time is elapsed, no client is connected and actual cycle processing is completed (Parameter: Timed-Off Delay).
 
 
 !!! Note
