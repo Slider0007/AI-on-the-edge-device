@@ -66,6 +66,11 @@ A possibly already available development version (upcoming release version) can 
 
 ⚠️ **Please do not use the source files directly from the repository, not even for the preparation of the SD card!** Use only files related to the download sources mentioned here (official precompiled release packages or test versions). Otherwise, full functionality cannot be guaranteed.<br>
 
+---
+### Over The Air (OTA) Update
+After the device is intially installed using one of the following options, it is **strongly recommended** to perform any further firmware update using the **web interface built-in OTA functionality**.
+
+---
 ### Option 1: Web Installer (Only For Released Versions)
 
 Follow the instructions listed at [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/) page.<br>
@@ -76,6 +81,7 @@ Further details can be found in [Web Installer Provisioning Documentation](docs/
 ---
 ### Option 2: Manual Installation (MCU + SD Card)
 Further details can be found in [Manual Provisioning Documentation](docs/Installation/DeviceProvisioning/Manual.md).
+
 
 ## API Description
 ### REST API
