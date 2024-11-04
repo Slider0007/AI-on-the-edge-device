@@ -8,6 +8,7 @@
 #include "ClassLogFile.h"
 #include "helper.h"
 #include "MainFlowControl.h"
+#include "connect_wlan.h"
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
@@ -29,8 +30,10 @@ GpioPin::GpioPin(gpio_num_t _gpio, const char* _name, gpio_pin_mode_t _mode, gpi
     gpioISR.gpio = gpio = _gpio;
     name = _name;
     mode = _mode;
-    interruptType = mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ? GPIO_INTR_ANYEDGE : _interruptType;
-    gpioISR.debounceTime = mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ? 1000 : _debounceTime;
+    interruptType = mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+                    mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION ? GPIO_INTR_ANYEDGE : _interruptType;
+    gpioISR.debounceTime = mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+                    mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION? 1000 : _debounceTime;
     frequency = _frequency;
 
     httpAccess = _httpAccess;
@@ -88,8 +91,8 @@ void GpioPin::init()
 
     //set interrupt
     io_conf.intr_type = mode == GPIO_PIN_MODE_INPUT || mode == GPIO_PIN_MODE_INPUT_PULLUP ||
-                        mode == GPIO_PIN_MODE_INPUT_PULLDOWN || mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ?
-                                                                        interruptType : GPIO_INTR_DISABLE;
+                        mode == GPIO_PIN_MODE_INPUT_PULLDOWN || mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+                        mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION ? interruptType : GPIO_INTR_DISABLE;
 
     //set input / output mode
     io_conf.mode = mode == GPIO_PIN_MODE_OUTPUT || mode == GPIO_PIN_MODE_OUTPUT_PWM ||
@@ -101,11 +104,11 @@ void GpioPin::init()
 
     //set pull-down mode
     io_conf.pull_down_en = mode == GPIO_PIN_MODE_INPUT_PULLDOWN ?
-                            gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
+        gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
 
     //set pull-up mode
-    io_conf.pull_up_en = mode == GPIO_PIN_MODE_INPUT_PULLUP || mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ?
-                            gpio_pullup_t::GPIO_PULLUP_ENABLE : gpio_pullup_t::GPIO_PULLUP_DISABLE;
+    io_conf.pull_up_en = mode == GPIO_PIN_MODE_INPUT_PULLUP || mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+        mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION ? gpio_pullup_t::GPIO_PULLUP_ENABLE : gpio_pullup_t::GPIO_PULLUP_DISABLE;
 
     //configure GPIO with the given settings
     gpio_config(&io_conf);
@@ -123,7 +126,7 @@ void GpioPin::init()
         // Subcribe to [mainTopic]/device/gpio/[GpioName]/ctrl
         std::function<bool(std::string, char*, int)> func = std::bind(&GpioPin::mqttControlPinState, this, std::placeholders::_1,
                                                                         std::placeholders::_2, std::placeholders::_3);
-        MQTTregisterSubscribeFunction(mqttTopic + "/ctrl", func);
+        registerMqttSubscribeFunction(mqttTopic + "/ctrl", func);
     }
     #endif //ENABLE_MQTT
 }
@@ -141,8 +144,15 @@ void GpioPin::updatePinState(int _state)
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "updatePinState: GPIO" + std::to_string((int)gpio) +
                     ", State: " + std::to_string(pinState));
 
-        if (mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START && pinState == 0) // Pullup enabled, trigger with falling edge / low level
-            triggerFlowStartByGpio();
+        // Handle special modes
+        if (pinState == 0) { // Pullup enabled, trigger with falling edge / low level
+            if (mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START) {
+                triggerFlowStartByGpio();
+            }
+            else if (mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION) {
+                resumeWifiConnection("GPIO" + std::to_string((int)gpio));
+            }
+        }
 
         #ifdef ENABLE_MQTT
         mqttPublishPinState();
@@ -202,7 +212,7 @@ int GpioPin::getPinState()
 #ifdef ENABLE_MQTT
 bool GpioPin::mqttPublishPinState(int _pwmDuty)
 {
-    if (getMQTTisConnected() && mqttAccess) {
+    if (getMqttIsConnected() && mqttAccess) {
         cJSON *cJSONObject = cJSON_CreateObject();
         if (cJSONObject == NULL) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
@@ -224,7 +234,7 @@ bool GpioPin::mqttPublishPinState(int _pwmDuty)
         cJSON_Delete(cJSONObject);
 
         if (jsonChar != NULL) {
-            retVal &= MQTTPublish(mqttTopic + "/state", std::string(jsonChar), 1);
+            retVal &= publishMqttData(mqttTopic + "/state", std::string(jsonChar), 1);
             cJSON_free(jsonChar);
         }
 

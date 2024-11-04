@@ -1217,7 +1217,7 @@ void migrateWlanIni()
         !ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ipv4.subnetMask.empty() &&
         !ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ipv4.gatewayAddress.empty())
     {
-        ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ipv4.networkConfig = NETWORK_CONFIG_STATIC;
+        ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ipv4.networkConfig = NETWORK_WLAN_IP_CONFIG_STATIC;
     }
 
     deleteFile(CONFIG_WIFI_FILE_BACKUP_LEGACY);

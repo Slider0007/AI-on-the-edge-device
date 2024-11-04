@@ -1,7 +1,6 @@
 #include "softAP.h"
 #include "../../include/defines.h"
 
-#ifdef ENABLE_SOFTAP
 #include <string>
 #include <unistd.h>
 #include <sys/param.h>
@@ -10,6 +9,7 @@
 #include <esp_wifi.h>
 #include <esp_log.h>
 
+#include "connect_wlan.h"
 #include "configClass.h"
 #include "server_help.h"
 #include "helper.h"
@@ -21,60 +21,6 @@ static const char *TAG = "WIFI_AP";
 
 static bool credentialsSet = false;
 static bool SDCardContentExisting = false;
-
-
-static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
-{
-    if (event_id == WIFI_EVENT_AP_STACONNECTED) {
-        wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-        ESP_LOGI(TAG, "station " MACSTR " join, AID=%d", MAC2STR(event->mac), event->aid);
-    }
-    else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
-        wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-        ESP_LOGI(TAG, "station " MACSTR " leave, AID=%d", MAC2STR(event->mac), event->aid);
-    }
-}
-
-
-void wifiInitAP(void)
-{
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_netif_create_default_wifi_ap();
-
-    wifi_init_config_t wifiInitCfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&wifiInitCfg));
-
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
-
-    wifi_config_t wifiConfig = { };
-    strcpy((char*)wifiConfig.ap.ssid, (const char*) AP_ESP_WIFI_SSID);
-    strcpy((char*)wifiConfig.ap.password, (const char*) AP_ESP_WIFI_PASS);
-    wifiConfig.ap.channel = AP_ESP_WIFI_CHANNEL;
-    wifiConfig.ap.max_connection = AP_MAX_STA_CONN;
-    wifiConfig.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
-
-    if (strlen(AP_ESP_WIFI_PASS) == 0) {
-        wifiConfig.ap.authmode = WIFI_AUTH_OPEN;
-    }
-
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifiConfig));
-    ESP_ERROR_CHECK(esp_wifi_start());
-
-    ESP_LOGI(TAG, "started with SSID \"%s\", password: \"%s\", channel: %d. Connect to AP and open http://192.168.4.1",
-             AP_ESP_WIFI_SSID, AP_ESP_WIFI_PASS, AP_ESP_WIFI_CHANNEL);
-}
-
-
-void wifiDeinitAP(void)
-{
-    esp_wifi_disconnect();
-    esp_wifi_stop();
-    esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler);
-    esp_wifi_deinit();
-    setStatusLedOff();
-    credentialsSet = true;
-}
 
 
 esp_err_t main_handler_AP(httpd_req_t *req)
@@ -270,7 +216,7 @@ httpd_handle_t start_webserverAP(void)
     httpd_register_uri_handler(server, &config_handleAP);
 
     httpd_uri_t file_uploadAP = {
-        .uri       = "/upload/*", // Match all URIs of type /upload/path/to/file
+        .uri       = "/upload/*",
         .method    = HTTP_POST,
         .handler   = upload_handler_AP,
         .user_ctx  = NULL
@@ -289,16 +235,16 @@ httpd_handle_t start_webserverAP(void)
 }
 
 
-void checkStartAPMode()
+void startAPForDeviceProvisioning()
 {
     SDCardContentExisting = fileExists("/sdcard/html/index.html");
     if (!SDCardContentExisting)
-        ESP_LOGW(TAG, "SD content not found (html/index.html)");
+        ESP_LOGW(TAG, "HTML content not found on SD card (html/index.html)");
 
     if (ConfigClass::getInstance()->get()->sectionNetwork.wlan.ssid.empty() || !SDCardContentExisting) {
-        ESP_LOGI(TAG, "Starting access point");
+        ESP_LOGI(TAG, "Starting access point for device provisioning");
         setStatusLed(AP_OR_OTA, 2, true);
-        wifiInitAP();
+        initWifiAp(true);
         start_webserverAP();
 
         while(1) { // wait until reboot
@@ -307,4 +253,14 @@ void checkStartAPMode()
     }
 }
 
-#endif //#ifdef ENABLE_SOFTAP
+
+/** This function is only used to switch the Improv provisioning service where
+* step 1, WLAN configuration, is provisioned via serial / USB console,
+* continued with step 2 and step 3 defined in softAP.cpp -> function 'main_handler_AP'
+*/
+void stopAPForDeviceProvisioning(void)
+{
+    setStatusLedOff();
+    deinitWifi();
+    credentialsSet = true; // Skip step 1
+}

@@ -72,7 +72,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
 
         #ifdef ENABLE_MQTT
-        if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", getMQTTisEnabled() ? (getMQTTisConnected() ? (getMQTTisEncrypted() ?
+        if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", getMqttIsEnabled() ? (getMqttIsConnected() ? (getMqttIsEncrypted() ?
                                         "Connected (Encrypted)" : "Connected") : "Disconnected") : "Disabled") == NULL)
             retVal = ESP_FAIL;
         #else
@@ -112,23 +112,27 @@ esp_err_t handler_get_info(httpd_req_t *req)
             retVal = ESP_FAIL;
         if (cJSON_AddNumberToObject(cJSONObject, "device_uptime", getUptime()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "wlan_status", getWIFIisConnected() ? "Connected" : "Disconnected") == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "network_opmode", getNetworkOpmode().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "wlan_ssid", getSSID().c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "connection_status", getWifiIsConnected() ? "Connected" : "Disconnected") == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddStringToObject(cJSONObject, "wlan_ssid", getWifiSsid().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddNumberToObject(cJSONObject, "wlan_rssi", getWifiRssi()) == NULL)
             retVal = ESP_FAIL;
+        if (cJSON_AddNumberToObject(cJSONObject, "wlan_channel", getWifiChannel()) == NULL)
+            retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "mac_address", getMac().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "network_config", getDHCPUsage() ? "DHCP" : "Static") == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "network_config", getDhcpStatus() ? "DHCP" : "Static") == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "ipv4_address", getIPAddress().c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "ipv4_address", getIpAddress().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "netmask_address", getNetmaskAddress().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "gateway_address", getGatewayAddress().c_str()) == NULL)
             retVal = ESP_FAIL;
-        if (cJSON_AddStringToObject(cJSONObject, "dns_address", getDNSAddress().c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObject, "dns_address", getDnsAddress().c_str()) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddStringToObject(cJSONObject, "hostname", getHostname().c_str()) == NULL)
             retVal = ESP_FAIL;
@@ -244,7 +248,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
 
     #ifdef ENABLE_MQTT
     else if (type.compare("mqtt_status") == 0) {
-        httpd_resp_sendstr(req, getMQTTisEnabled() ? (getMQTTisConnected() ? (getMQTTisEncrypted() ?
+        httpd_resp_sendstr(req, getMqttIsEnabled() ? (getMqttIsConnected() ? (getMqttIsEncrypted() ?
                                 "Connected (Encrypted)" : "Connected") : "Disconnected") : "Disabled");
         return ESP_OK;
     }
@@ -289,16 +293,24 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_sendstr(req, std::to_string(getUptime()).c_str());
         return ESP_OK;
     }
-    else if (type.compare("wlan_status") == 0) {
-        httpd_resp_sendstr(req, getWIFIisConnected() ? "Connected" : "Disconnected");
+    else if (type.compare("network_opmode") == 0) {
+        httpd_resp_sendstr(req, getNetworkOpmode().c_str());
+        return ESP_OK;
+    }
+    else if (type.compare("connection_status") == 0) {
+        httpd_resp_sendstr(req, getWifiIsConnected() ? "Connected" : "Disconnected");
         return ESP_OK;
     }
     else if (type.compare("wlan_ssid") == 0) {
-        httpd_resp_sendstr(req, getSSID().c_str());
+        httpd_resp_sendstr(req, getWifiSsid().c_str());
         return ESP_OK;
     }
     else if (type.compare("wlan_rssi") == 0) {
         httpd_resp_sendstr(req, std::to_string(getWifiRssi()).c_str());
+        return ESP_OK;
+    }
+    else if (type.compare("wlan_channel") == 0) {
+        httpd_resp_sendstr(req, std::to_string(getWifiChannel()).c_str());
         return ESP_OK;
     }
     else if (type.compare("mac_address") == 0) {
@@ -306,11 +318,11 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;
     }
     else if (type.compare("network_config") == 0) {
-        httpd_resp_sendstr(req, getDHCPUsage() ? "DHCP" : "Static");
+        httpd_resp_sendstr(req, getDhcpStatus() ? "DHCP" : "Static");
         return ESP_OK;
     }
     else if (type.compare("ipv4_address") == 0) {
-        httpd_resp_sendstr(req, getIPAddress().c_str());
+        httpd_resp_sendstr(req, getIpAddress().c_str());
         return ESP_OK;
     }
     else if (type.compare("netmask_address") == 0) {
@@ -322,7 +334,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;
     }
     else if (type.compare("dns_address") == 0) {
-        httpd_resp_sendstr(req, getDNSAddress().c_str());
+        httpd_resp_sendstr(req, getDnsAddress().c_str());
         return ESP_OK;
     }
     else if (type.compare("hostname") == 0) {

@@ -23,7 +23,7 @@ class ClassFlowMQTT : public ClassFlow
   public:
     ClassFlowMQTT();
     virtual ~ClassFlowMQTT();
-    bool initMqtt(float _processingInterval);
+    bool initMqttService(float _processingInterval);
 
     bool loadParameter();
     bool doFlow(std::string time);

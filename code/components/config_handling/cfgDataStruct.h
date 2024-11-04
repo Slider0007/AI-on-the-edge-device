@@ -78,18 +78,18 @@ enum GpioSmartledType {
 };
 
 
-enum NetworkConfig {
-    NETWORK_CONFIG_DHCP = 0,
-    NETWORK_CONFIG_STATIC = 1,
+enum NetworkWlanIpConfig {
+    NETWORK_WLAN_IP_CONFIG_DHCP = 0,
+    NETWORK_WLAN_IP_CONFIG_STATIC = 1,
 };
 
 
-enum WlanOperationMode {
-    WLAN_OPMODE_OFF = -1,
-    WLAN_OPMODE_STATION_FULL = 0,
-    WLAN_OPMODE_STATION_LIMITED = 1,
-    WLAN_OPMODE_AP_FULL = 2,
-    WLAN_OPMODE_AP_LIMITED = 3,
+enum NetworkOperationMode {
+    NETWORK_OPMODE_DISABLED = -1,
+    NETWORK_OPMODE_WLAN_CLIENT = 0,
+    NETWORK_OPMODE_WLAN_CLIENT_TIMED_OFF = 1,
+    NETWORK_OPMODE_WLAN_AP = 2,
+    NETWORK_OPMODE_WLAN_AP_TIMED_OFF = 3,
 };
 
 
@@ -377,29 +377,38 @@ struct CfgData {
 
     // Network
     struct SectionNetwork {
+        int opmode = NETWORK_OPMODE_WLAN_CLIENT;
+        int timedOffDelay = 60; // Minutes
         struct Wlan {
-            int opmode = WLAN_OPMODE_STATION_FULL;
             std::string ssid = "";
             std::string password = "";
-        std::string hostname = "watermeter";
-        struct Ipv4 {
-            int networkConfig = NETWORK_CONFIG_DHCP;
-            std::string ipAddress = "";
-            std::string subnetMask = "";
-            std::string gatewayAddress = "";
-            std::string dnsServer = "";
-        } ipv4;
+            std::string hostname = "watermeter";
+            struct Ipv4 {
+                int networkConfig = NETWORK_WLAN_IP_CONFIG_DHCP;
+                std::string ipAddress = "";
+                std::string subnetMask = "";
+                std::string gatewayAddress = "";
+                std::string dnsServer = "";
+            } ipv4;
             struct WlanRoaming {
                 bool enabled = false;
                 int rssiThreshold = -75;
             } wlanRoaming;
         } wlan;
+        struct WlanAp {
+            std::string ssid = "AI-on-the-Edge Device";
+            std::string password = "";
+            int channel = 11;
+            struct Ipv4 {
+                std::string ipAddress = "192.168.4.1";
+            } ipv4;
+        } wlanAp;
         struct Time {
             std::string timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
             struct Ntp {
-            bool timeSyncEnabled = true;
-            std::string timeServer = ""; // IP-Address or DNS name, e.g. 192.168.x.x OR fritz.box
-            bool processStartInterlock = true;
+                bool timeSyncEnabled = true;
+                std::string timeServer = ""; // IP-Address or DNS name, e.g. 192.168.x.x OR fritz.box
+                bool processStartInterlock = true;
             } ntp;
         } time;
     } sectionNetwork;

@@ -122,7 +122,7 @@ bool ClassFlowAlignment::doFlow(std::string time)
 
     if (imageTemp == NULL) {
         imageTemp = new CImageBasis("imageTemp", ImageBasis, 1);
-        if (imageTemp == NULL) {
+        if (imageTemp == NULL || imageTemp->rgb_image == NULL) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate imageTemp");
             LogFile.writeHeapInfo("ClassFlowAlignment-doFlow");
             return false;

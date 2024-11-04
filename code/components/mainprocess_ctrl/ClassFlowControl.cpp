@@ -315,7 +315,7 @@ bool ClassFlowControl::doFlowImageEvaluation(std::string time)
         setActualProcessState(translateActualProcessState(FlowControlImage[i]->name()));
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + getActualProcessState());
         #ifdef ENABLE_MQTT
-            MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
+            publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
         #endif //ENABLE_MQTT
 
         if (!FlowControlImage[i]->doFlow(time)) {
@@ -360,7 +360,7 @@ bool ClassFlowControl::doFlowPublishData(std::string time)
         setActualProcessState(translateActualProcessState(FlowControlPublish[i]->name()));
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + getActualProcessState());
         #ifdef ENABLE_MQTT
-            MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
+            publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
         #endif //ENABLE_MQTT
 
         if (!FlowControlPublish[i]->doFlow(time)) {
@@ -583,7 +583,7 @@ bool ClassFlowControl::initMqttService()
         return true;
     }
 
-    return flowMQTT->initMqtt(cfgClassPtr->get()->sectionOperationMode.automaticProcessInterval);
+    return flowMQTT->initMqttService(cfgClassPtr->get()->sectionOperationMode.automaticProcessInterval);
 }
 #endif //ENABLE_MQTT
 
