@@ -268,6 +268,10 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionTakeImage.flashlight.flashIntensity = std::clamp(objEl->valueint, 0, 100);
 
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "cameramodel");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionTakeImage.camera.imageQuality = std::clamp(objEl->valueint, 0, 14);
+
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "camerafrequency");
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionTakeImage.camera.cameraFrequency = std::clamp(objEl->valueint, 5, 20);
@@ -275,10 +279,6 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "imagequality");
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionTakeImage.camera.imageQuality = std::clamp(objEl->valueint, 8, 63);
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "imagesize");
-    if (cJSON_IsString(objEl))
-        cfgDataTemp.sectionTakeImage.camera.imageSize = objEl->valuestring;
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "brightness");
     if (cJSON_IsNumber(objEl))
@@ -294,7 +294,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "sharpness");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.sharpness = std::clamp(objEl->valueint, -4, 3);
+        cfgDataTemp.sectionTakeImage.camera.sharpness = std::clamp(objEl->valueint, -3, 3);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "exposurecontrolmode");
     if (cJSON_IsNumber(objEl))
@@ -302,11 +302,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "autoexposurelevel");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.autoExposureLevel = std::clamp(objEl->valueint, -2, 2);
+        cfgDataTemp.sectionTakeImage.camera.autoExposureLevel = std::clamp(objEl->valueint, -5, 5);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "manualexposurevalue");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.manualExposureValue = std::clamp(objEl->valueint, 0, 1200);
+        cfgDataTemp.sectionTakeImage.camera.manualExposureValue = std::clamp(objEl->valueint, 0, 1920);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "gaincontrolmode");
     if (cJSON_IsNumber(objEl))
@@ -314,7 +314,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "manualgainvalue");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.manualGainValue = std::clamp(objEl->valueint, 0, 5);
+        cfgDataTemp.sectionTakeImage.camera.manualGainValue = std::clamp(objEl->valueint, 0, 30);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "specialeffect");
     if (cJSON_IsNumber(objEl))
@@ -328,17 +328,17 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsBool(objEl))
         cfgDataTemp.sectionTakeImage.camera.flipImage = objEl->valueint;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoommode");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoomfactor");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.zoomMode = std::clamp(objEl->valueint, 0, 2);
+        cfgDataTemp.sectionTakeImage.camera.zoomFactor = std::clamp(objEl->valueint, 1000, 4000);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoomoffsetx");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.zoomOffsetX = std::clamp(objEl->valueint, 0, 960);
+        cfgDataTemp.sectionTakeImage.camera.zoomOffsetX = std::clamp(objEl->valueint, -960, 960);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoomoffsety");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.zoomOffsetY = std::clamp(objEl->valueint, 0, 720);
+        cfgDataTemp.sectionTakeImage.camera.zoomOffsetY = std::clamp(objEl->valueint, -720, 720);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "debug"), "saverawimages");
     if (cJSON_IsBool(objEl))
@@ -372,10 +372,6 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "imagerotation");
     if (cJSON_IsString(objEl))
         cfgDataTemp.sectionImageAlignment.imageRotation = std::clamp(std::stof(objEl->valuestring), (float)-180.0, (float)180.0);
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "flipimagesize");
-    if (cJSON_IsBool(objEl))
-        cfgDataTemp.sectionImageAlignment.flipImageSize = objEl->valueint;
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "marker");
     for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
@@ -1504,11 +1500,11 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(takeImage, "camera", camera = cJSON_CreateObject()))
         retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(camera, "cameramodel", cfgDataTemp.sectionTakeImage.camera.cameraModel) == NULL)
+        retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(camera, "camerafrequency", cfgDataTemp.sectionTakeImage.camera.cameraFrequency) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(camera, "imagequality", cfgDataTemp.sectionTakeImage.camera.imageQuality) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(camera, "imagesize", cfgDataTemp.sectionTakeImage.camera.imageSize.c_str()) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(camera, "brightness", cfgDataTemp.sectionTakeImage.camera.brightness) == NULL)
         retVal = ESP_FAIL;
@@ -1534,7 +1530,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (cJSON_AddBoolToObject(camera, "flipimage", cfgDataTemp.sectionTakeImage.camera.flipImage) == NULL)
         retVal = ESP_FAIL;
-    if (cJSON_AddNumberToObject(camera, "zoommode", cfgDataTemp.sectionTakeImage.camera.zoomMode) == NULL)
+    if (cJSON_AddNumberToObject(camera, "zoomfactor", cfgDataTemp.sectionTakeImage.camera.zoomFactor) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(camera, "zoomoffsetx", cfgDataTemp.sectionTakeImage.camera.zoomOffsetX) == NULL)
         retVal = ESP_FAIL;
@@ -1565,8 +1561,6 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(imageAlignment, "imagerotation", to_stringWithPrecision(cfgDataTemp.sectionImageAlignment.imageRotation, 1).c_str()) ==
         NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddBoolToObject(imageAlignment, "flipimagesize", cfgDataTemp.sectionImageAlignment.flipImageSize) == NULL)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(imageAlignment, "marker", marker = cJSON_CreateArray()))
         retVal = ESP_FAIL;

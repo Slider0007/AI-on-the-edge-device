@@ -34,14 +34,10 @@ ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalignment, std
 
 bool roiPositionPlausibilityCheck(RoiData *roiEl)
 {
-    // ROI position plausibilty check - Check Flip Image Size
-    int imgWidth = cameraCtrl.image_width;
-    int imgHeight = cameraCtrl.image_height;
-
-    if (ConfigClass::getInstance()->get()->sectionImageAlignment.flipImageSize) {
-        imgWidth = cameraCtrl.image_height;
-        imgHeight = cameraCtrl.image_width;
-    }
+    // ROI position plausibilty check
+    int imgWidth = 640;
+    int imgHeight = 480;
+    cameraCtrl.getOutputFrameSize(imgWidth, imgHeight);
 
     if (roiEl->param->x < 1 || (roiEl->param->x > (imgWidth - 1 - roiEl->param->dx))) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "One or more ROI out of image area (x). Check ROI config");

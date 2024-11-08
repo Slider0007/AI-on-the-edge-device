@@ -40,25 +40,17 @@ bool ClassFlowTakeImage::loadParameter()
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     cameraCtrl.ledcInitFlashlightDefault(); // PWM init needs to be done here due to parameter reload (camera class not to be deleted completely)
 #endif
-    cameraCtrl.setFlashIntensity(cfgDataPtr->flashlight.flashIntensity);
-    cameraCtrl.setFlashTime(cfgDataPtr->flashlight.flashTime);
-    cameraCtrl.setCameraFrequency(cfgDataPtr->camera.cameraFrequency);
-    cameraCtrl.setSizeQuality(cfgDataPtr->camera.imageQuality,
-                          cameraCtrl.textToFramesize(cfgDataPtr->camera.imageSize.c_str()),
-                          cfgDataPtr->camera.zoomMode, cfgDataPtr->camera.zoomOffsetX,
-                          cfgDataPtr->camera.zoomOffsetY);
-    cameraCtrl.setImageManipulation(cfgDataPtr->camera.brightness, cfgDataPtr->camera.contrast,
-                                cfgDataPtr->camera.saturation, cfgDataPtr->camera.sharpness,
-                                cfgDataPtr->camera.exposureControlMode, cfgDataPtr->camera.autoExposureLevel,
-                                cfgDataPtr->camera.manualExposureValue, cfgDataPtr->camera.gainControlMode,
-                                cfgDataPtr->camera.manualGainValue, cfgDataPtr->camera.specialEffect,
-                                cfgDataPtr->camera.mirrorImage, cfgDataPtr->camera.flipImage);
 
-    image_width = cameraCtrl.image_width;
-    image_height = cameraCtrl.image_height;
+    cameraCtrl.setCameraParameter(&cfgDataPtr->camera);
+    cameraCtrl.setFlashlightParameter(&cfgDataPtr->flashlight);
+
+    int imgWidth = 640;
+    int imgHeight = 480;
+    cameraCtrl.getOutputFrameSize(imgWidth, imgHeight);
+
     rawImage = new CImageBasis("rawImage");
     if (rawImage) {
-        if(!rawImage->createEmptyImage(image_width, image_height, STBI_rgb, 1)) {
+        if(!rawImage->createEmptyImage(imgWidth, imgHeight, STBI_rgb, 1)) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create rawimage");
             return false;
         }

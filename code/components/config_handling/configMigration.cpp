@@ -46,7 +46,7 @@ void migrateConfiguration(void)
 
                 // Update parameter
                 // ---------------------
-
+                // @TODO: Migration from 3 to 4
             }
     }
 
@@ -189,9 +189,6 @@ void migrateConfigIni(void)
                     else if ((toUpper(splitted[0]) == "IMAGEQUALITY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.imageQuality = std::stoi(splitted[1]);
                     }
-                    else if ((toUpper(splitted[0]) == "IMAGESIZE") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.imageSize = splitted[1].c_str();
-                    }
                     else if ((toUpper(splitted[0]) == "BRIGHTNESS") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.brightness = std::stoi(splitted[1]);
                     }
@@ -229,7 +226,15 @@ void migrateConfigIni(void)
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.flipImage = (toUpper(splitted[1]) == "TRUE");
                     }
                     else if ((toUpper(splitted[0]) == "ZOOMMODE") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomMode = std::stoi(splitted[1]);
+                        if (std::stoi(splitted[1]) == 0) { // Disabled
+                            ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomFactor = 1000; // 1.0x
+                        }
+                        else if (std::stoi(splitted[1]) == 1) { // Crop from 1600 x 1200
+                            ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomFactor = 2500; // 2.5x
+                        }
+                        else if (std::stoi(splitted[1]) == 2) { // Scale and crop from 800 x 600
+                            ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomFactor = 1250; // 1.25x
+                        }
                     }
                     else if ((toUpper(splitted[0]) == "ZOOMOFFSETX") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomOffsetX = std::stoi(splitted[1]);
@@ -271,9 +276,6 @@ void migrateConfigIni(void)
                     }
                     else if ((toUpper(splitted[0]) == "INITIALROTATE") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.imageRotation = std::stof(splitted[1]);
-                    }
-                    else if ((toUpper(splitted[0]) == "FLIPIMAGESIZE") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.flipImageSize = (toUpper(splitted[1]) == "TRUE");
                     }
                     else if ((toUpper(splitted[0]) == "SAVEDEBUGINFO") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.debug.saveDebugInfo = (toUpper(splitted[1]) == "TRUE");

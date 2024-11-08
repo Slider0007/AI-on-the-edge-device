@@ -4,14 +4,13 @@
 |:---               |:---                 |:----
 | Parameter Name    | Sharpness           | sharpness
 | Default Value     | `0`                 | `0`
-| Input Options     | `Auto`, `-3` .. `3` | `-4`, `-3` .. `3`
+| Input Options     | `-3` .. `3`         | `-3` .. `3`
 
 
 ## Description
 
 Set the sharpness level of the image. Positive values increase sharpness 
-(more defined edges), negative values lower it (softer edges). To determine 
-sharpness automatically by camera controller, set it to `Auto` (-4).
+(more defined edges), negative values lower it (softer edges).
 
 
 !!! Tip

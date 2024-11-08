@@ -63,75 +63,72 @@ esp_err_t handler_camera(httpd_req_t *req)
         return ESP_OK;
     }
     else if (task.compare("set_parameter") == 0) {
-        if (!cameraCtrl.getcameraInitSuccessful()) {
+        if (!cameraCtrl.getCameraInitSuccessful()) {
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN,
                                 "Camera not initialized: REST API /lighton not available");
             return ESP_ERR_NOT_FOUND;
         }
 
-        CameraParameter camParameter = cameraCtrl.getCameraParameter(); // Retrieve actual parameter settings
+        // Load actual parameter settings to allow partial parameter updates
+        CfgData::SectionTakeImage::Camera paramCamera = ConfigClass::getInstance()->get()->sectionTakeImage.camera;
+        CfgData::SectionTakeImage::Flashlight paramFlashlight = ConfigClass::getInstance()->get()->sectionTakeImage.flashlight;
 
         if (httpd_query_key_value(_query, "flashtime", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.flashTime = stoi(std::string(_valuechar)); // flashTime in ms
+            paramFlashlight.flashTime = stoi(std::string(_valuechar)); // flashTime in ms
         }
         if (httpd_query_key_value(_query, "flashintensity", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.flashIntensity = stoi(std::string(_valuechar));
+            paramFlashlight.flashIntensity = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "brightness", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.brightness = stoi(std::string(_valuechar));
+            paramCamera.brightness = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "contrast", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.contrast = stoi(std::string(_valuechar));
+            paramCamera.contrast = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "saturation", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.saturation = stoi(std::string(_valuechar));
+            paramCamera.saturation = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "sharpness", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.sharpness = stoi(std::string(_valuechar));
+            paramCamera.sharpness = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "exposurecontrolmode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.exposureControlMode  = stoi(std::string(_valuechar));
+            paramCamera.exposureControlMode  = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "autoexposurelevel", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.autoExposureLevel = stoi(std::string(_valuechar));
+            paramCamera.autoExposureLevel = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "manualexposurevalue", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.manualExposureValue = stoi(std::string(_valuechar));
+            paramCamera.manualExposureValue = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "gaincontrolmode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.gainControlMode = stoi(std::string(_valuechar));
+            paramCamera.gainControlMode = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "manualgainvalue", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.manualGainValue = stoi(std::string(_valuechar));
+            paramCamera.manualGainValue = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "specialeffect", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.specialEffect = stoi(std::string(_valuechar));
+            paramCamera.specialEffect = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "mirror", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ?
-                camParameter.mirrorImage = true : camParameter.mirrorImage = false;
+                paramCamera.mirrorImage = true : paramCamera.mirrorImage = false;
         }
         if (httpd_query_key_value(_query, "flip", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ?
-                camParameter.flipImage = true : camParameter.flipImage = false;
+                paramCamera.flipImage = true : paramCamera.flipImage = false;
         }
-        if (httpd_query_key_value(_query, "zoommode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.zoomMode = stoi(std::string(_valuechar));
+        if (httpd_query_key_value(_query, "zoomfactor", _valuechar, sizeof(_valuechar)) == ESP_OK) {
+            paramCamera.zoomFactor = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "zoomx", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.zoomOffsetX = stoi(std::string(_valuechar));
+            paramCamera.zoomOffsetX = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "zoomy", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            camParameter.zoomOffsetY = stoi(std::string(_valuechar));
+            paramCamera.zoomOffsetY = stoi(std::string(_valuechar));
         }
 
-        cameraCtrl.setFlashIntensity(camParameter.flashIntensity);
-        cameraCtrl.setFlashTime(camParameter.flashTime);
-        cameraCtrl.setZoom(camParameter.zoomMode, camParameter.zoomOffsetX, camParameter.zoomOffsetY);
-        cameraCtrl.setImageManipulation(camParameter.brightness, camParameter.contrast, camParameter.saturation,
-                                    camParameter.sharpness, camParameter.exposureControlMode, camParameter.autoExposureLevel,
-                                    camParameter.manualExposureValue, camParameter.gainControlMode, camParameter.manualGainValue,
-                                    camParameter.specialEffect, camParameter.mirrorImage, camParameter.flipImage);
+        cameraCtrl.setCameraParameter(&paramCamera);
+        cameraCtrl.setFlashlightParameter(&paramFlashlight);
 
         httpd_resp_sendstr(req, "001: Camera parameter set");
         return ESP_OK;

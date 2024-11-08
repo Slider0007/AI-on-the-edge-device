@@ -18,12 +18,12 @@ Payload:
     - `set_parameter` Set camera parameter
       - Full or delta parameter update is possible
       - Possible parameter:
-        - `flashtime` Flash Time [0.1 .. &infin; seconds]
+        - `flashtime` Flash Time [100 .. &infin; milliseconds]
         - `flashintensity` Flash Intensity [0 .. 100 %]
         - `brightness` Image Brightness [-2 .. 2]
         - `contrast` Image Contrast [-2 .. 2]
         - `saturation` Image Saturation [-2 .. 2]
-        - `sharpness` Image Sharpness [-4(Auto), -3 .. 3]
+        - `sharpness` Image Sharpness [-3 .. 3]
         - `exposurecontrolmode` Exposure Control Mode [0 .. 2]
         - `autoexposurelevel` Auto Exposure Level [-2 .. 2]
         - `manualexposurevalue` Manual Exposure Value [0 .. 1200]
@@ -32,10 +32,10 @@ Payload:
         - `specialeffect` Special Effect [0 .. 2, 7] (0: None, 1: Negative, 2: Grayscale, 7: Grayscale + Negative)
         - `mirror` Image Mirror [true, false]
         - `flip` Image Flip [true, false]
-        - `zoommode` Zoom Mode [0 .. 2] (0: Off, 1: Crop only, 2: Scale & Crop)
-        - `zoomx` Zoom Offset X [0 .. 960]
-        - `zommy` Zoom Offset Y [0 .. 720]
-      - Example: `/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0&saturation=0 &sharpness=0&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1 &manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoommode=0&zoomx=0&zoomy=0`
+        - `zoomfactor` Zoom Factor [1000 .. 4000] (1000: 1.0x, 4000: 4.0x | Max. zoom factor is depending on hardware capabilities)
+        - `zoomx` Zoom Offset X [0 .. max. 960] (Max. Offset is limited in firmware depending on actual zoom factor | Lower zoom --> lower limits)
+        - `zommy` Zoom Offset Y [0 .. max. 720] (Max. Offset is limited in firmware depending on actual zoom factor | Lower zoom --> lower limits)
+      - Example: `/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0&saturation=0 &sharpness=0&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1 &manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&zoomx=0&zoomy=0`
       - Response:
         - Content type: `HTML`
         - Content: `001: Camer parameter set`

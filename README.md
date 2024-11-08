@@ -43,10 +43,17 @@ As a result, you get the digitized value of your meter. There are several option
 
 
 ## Supported Hardware
+### Board
 | Board Type                                                                     | SOC      | Firmware Release | Remarks                       
 |:---                                                                            |:---      |:---           |:--- 
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           | - Only boards with >4MB RAM are supported<br>- Beware of inferior quality Chinese clones
-| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |- No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) necessary<br>- Running quite hot, small heat sink recommended
+| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           |⚠️ Only boards with >4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones
+| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |⚠️ Running quite hot, a small heat sink is recommended<br>- No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) required
+
+### Camera
+| Camera Type                                                                             | Sensor Resolution  | Digital Zoom | Firmware Release | Remarks                       
+|:---                                                                                     |:---                |:---          |:---              |:--- 
+| [OV2640](https://www.arducam.com/ov2640/)                                               | 2MP                | 1.0x - 2.5x  | All              | - Officially EOL since 2009, but still very popular<br>- Pin and function compatible Chinese clones are supported
+| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP                | 1.0x - 4.0x  | $\ge$ v17.0.0    | ⚠️ Running quite hot, a small heat sink is recommended to get stable image quality<br>⚠️ ESP32-CAM: Functional. Core and I/O voltage supply out of specification (board: 1.2V / 3.3V, camera: 1.5V / 2.8V).<br>⚠️ XIAO ESP32S3 Sense: Functional. Core supply out of specification (board: 1.3V, camera: 1.5V).
 
 
 ## Inform Yourself
@@ -68,7 +75,7 @@ A possibly already available development version (upcoming release version) can 
 
 ---
 ### Over The Air (OTA) Update
-After the device is intially installed using one of the following options, it is **strongly recommended** to perform any further firmware update using the **web interface built-in OTA functionality**.
+After the device is initially installed using one of the following installation options, it is **strongly recommended** to perform any further firmware update using the **web interface built-in OTA functionality**.
 
 ---
 ### Option 1: Web Installer (Only For Released Versions)
