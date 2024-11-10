@@ -12,6 +12,7 @@
 #include <nvs_flash.h>
 #include <nvs.h>
 
+#include "configMigration.h"
 #include "webserver.h"
 #include "MainFlowControl.h"
 #include "psram.h"
@@ -112,6 +113,9 @@ ConfigClass::~ConfigClass()
 }
 
 
+//**************************************************************************************************
+// Read configuration from file (JSON notation)
+//**************************************************************************************************
 void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 {
     std::stringstream streamBuffer;
@@ -123,22 +127,16 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
     else { // Read data from file
         std::ifstream file(CONFIG_PERSISTENCE_FILE);
 
-        if (file.good() && file.is_open()) {
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "readConfigFile: Config file found");
+        if (file.is_open()) {
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config file found");
             streamBuffer << file.rdbuf();
             file.close();
-        }
-        else {
-            if (file.is_open()) {
-               file.close();
-            }
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readConfigFile: Failed to open config file");
         }
     }
 
     // Check for empty content -> either empty file or no / bad file
     if (streamBuffer.rdbuf()->in_avail() == 0) {
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "readConfigFile: No persistent config found");
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "No persistent config found");
         streamBuffer.str("{}"); // Ensure any content
     }
 
@@ -154,6 +152,7 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 
     // Parse content to cJSON object structure
     cJsonObject = cJSON_Parse(streamBuffer.str().c_str());
+    streamBuffer.str(""); // Clear stream buffer
 
     // Reset cJSON hooks to default
     cJSON_InitHooks(NULL);
@@ -169,6 +168,9 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 }
 
 
+//**************************************************************************************************
+// Update configuration via REST API (JSON notation)
+//**************************************************************************************************
 esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 {
     int remaining = req->content_len; // Content length of the request gives the size of the file being uploaded
@@ -225,6 +227,9 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 }
 
 
+//**************************************************************************************************
+// Parse JSON string and save to internal struct
+//**************************************************************************************************
 esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 {
     // Config Verison
@@ -1417,6 +1422,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.refreshTime = std::max(objEl->valueint, 1);
 
+    // Check for configuration migration
+    if (!unityTest) {
+        migrateConfiguration(cJsonObject);
+    }
+
     // Init active config struct with latest configuration data
     if (init) {
         cfgData = cfgDataTemp;
@@ -1442,6 +1452,9 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 }
 
 
+//**************************************************************************************************
+// Serialize internal struct to JSON string
+//**************************************************************************************************
 esp_err_t ConfigClass::serializeConfig(bool unityTest)
 {
     portENTER_CRITICAL(&mutex);
@@ -2062,6 +2075,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 }
 
 
+//**************************************************************************************************
+// Retrieve actual configuration via REST API (JSON notation)
+//**************************************************************************************************
 esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -2078,11 +2094,14 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 }
 
 
+//**************************************************************************************************
+// Persist actual configuration to file (JSON string)
+//**************************************************************************************************
 esp_err_t ConfigClass::writeConfigFile()
 {
     std::ofstream file(CONFIG_PERSISTENCE_FILE);
 
-    if (!file.good() || !file.is_open()) {
+    if (!file.is_open()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write JSON file");
         return ESP_FAIL;
     }

@@ -175,8 +175,7 @@ struct GpioElement {
 struct CfgData {
     // Config File
     struct SectionConfig {
-        int desiredConfigVersion = 3; // Set version in configMigration.cpp
-        int version = 3;
+        int version = 4; // NOTE: Increment when existing parameter name changed and add migration routine
         std::string lastModified = "";
     } sectionConfig;
 

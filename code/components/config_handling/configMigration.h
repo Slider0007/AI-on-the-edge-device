@@ -4,8 +4,10 @@
 #include <vector>
 #include <string>
 
+#include <cJSON.h>
 
-void migrateConfiguration(void);
+
+void migrateConfiguration(cJSON *cJsonObject);
 void migrateConfigIni(void);
 void migrateWlanIni();
 std::vector<std::string> splitString(std::string input, std::string delimiter = " = \t");

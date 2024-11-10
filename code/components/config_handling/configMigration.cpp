@@ -13,58 +13,66 @@
 static const char *TAG = "CFGMIGRATION";
 
 
-void migrateConfiguration(void)
+// ********************************************************************************
+// Migrate config based on JSON notation
+// Firmware version: v17.0 and newer, Config version 3 and newer
+// ********************************************************************************
+void migrateConfiguration(cJSON* cJsonObject)
 {
-    // ********************************************************************************
-    // Legacy: Support config.ini / wlan.ini migration
-    // Firmware version: v15.0 - v16.x, Config version: 0 - 2
-    // ********************************************************************************
-    migrateConfigIni();
+    uint16_t migratedVersion = 0;
 
+    //*************************************************************************************************
+    // Migrate from version 3 to version 4
+    // Date: November 2024
+    // Description: Add camera model OV5460 and enhance zoom functionality
+    //*************************************************************************************************
+    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 3) {
+        // Update config version
+        // ---------------------
+        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "cfgData: Migrate v" + std::to_string(migratedVersion) +
+                                                " > v" + std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
 
-    // ********************************************************************************
-    // Config based on JSON notation
-    // Firmware version: v17.0 and newer, Config version: 3 and newer
-    // ********************************************************************************
-    bool migrated = false;
-    ConfigClass::getInstance()->cfgTmp()->sectionConfig.desiredConfigVersion = 3; // Set to new version whenever to data structure was modified
-
-    // Process every version iteration beginning from actual version
-    // Version 3 and newer is handled in internal struct (peristant to config.json)
-    for (int configFileVersion = 3; configFileVersion < ConfigClass::getInstance()->get()->sectionConfig.desiredConfigVersion; configFileVersion++) {
-           //*************************************************************************************************
-            // Migrate from version 3 to version 4
-            // Description ....
-            //*************************************************************************************************
-            if (configFileVersion == 3) {
-                // Update config version
-                // ---------------------
-                ConfigClass::getInstance()->cfgTmp()->sectionConfig.version = configFileVersion + 1;
-                LogFile.writeToFile(ESP_LOG_WARN, TAG, "cfgData: Migrate v" + std::to_string(configFileVersion) +
-                                                        " > v" + std::to_string(configFileVersion+1));
-                migrated = true;
-
-                // Update parameter
-                // ---------------------
-                // @TODO: Migration from 3 to 4
+        // Update parameter
+        // ---------------------
+        const cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoommode");
+        if (cJSON_IsNumber(objEl)) {
+            if (objEl->valueint == 0) { // Disabled
+                ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomFactor = 1000; // 1.0x
             }
+            else if (objEl->valueint == 1) { // Crop (1600 x 1200 -> 640 x 480)
+                ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomFactor = 2500; // 2.5x
+            }
+            else if (objEl->valueint == 2) { // Scale & Crop (800 x 600 -> 640 x 480)
+                ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomFactor = 1250; // 1.25x
+            }
+            else {
+                ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomFactor = 1000; // 1.0x
+            }
+        }
     }
 
-    // Migration detected
-    if (migrated) {
-        deleteFile(CONFIG_PERSISTENCE_FILE_BACKUP);
+    // Backup config file
+    if (migratedVersion >= 3) {
+        std::string ConfigBackupFile = std::string(CONFIG_PERSISTENCE_FILE_BACKUP) + "_v" + std::to_string(migratedVersion);
+        deleteFile(ConfigBackupFile);
 
-        if (!renameFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_BACKUP)) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create backup of config.json file");
+        if (!renameFile(CONFIG_PERSISTENCE_FILE, ConfigBackupFile)) {
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Config migrated. Failed to create backup file: " + std::string(ConfigBackupFile));
             return;
         }
 
-        ConfigClass::getInstance()->persistConfig();
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config file migrated. Saved backup to " + std::string(CONFIG_PERSISTENCE_FILE_BACKUP));
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config migrated. Backup file: " + std::string(ConfigBackupFile));
     }
 }
 
 
+// ********************************************************************************
+// Migrate config based on legacy config.ini / wlan.ini
+// Firmware version: v15.0 - v16.x, Config version: 0 - 2
+// ********************************************************************************
 void migrateConfigIni(void)
 {
     // No migration from config.ini needed
@@ -122,7 +130,8 @@ void migrateConfigIni(void)
 
            //*************************************************************************************************
             // Migrate from version 2 to version 3
-            // Migrate config.ini to internal struct which gets persistant to config.json
+            // Date: October 2024
+            // Description: Migrate config.ini to internal struct which gets persistant to config.json
             //*************************************************************************************************
             if (configFileVersion == 2) {
                 std::vector<std::string> splitted;
