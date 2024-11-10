@@ -2,7 +2,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
 
 {
   "config": {
-    "version": 3,
+    "version": 4,
     "lastmodified": ""
   },
   "operationmode": {
@@ -16,9 +16,9 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
       "flashintensity": 50
     },
     "camera": {
+      "cameramodel": 1,
       "camerafrequency": 20,
       "imagequality": 12,
-      "imagesize": "VGA",
       "brightness": 0,
       "contrast": 0,
       "saturation": 0,
@@ -31,7 +31,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
       "specialeffect": 0,
       "mirrorimage": false,
       "flipimage": false,
-      "zoommode": 0,
+      "zoomfactor": 1000,
       "zoomoffsetx": 0,
       "zoomoffsety": 0
     },
@@ -48,7 +48,6 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
       "y": 20
     },
     "imagerotation": "0.0",
-    "flipimagesize": false,
     "marker": [
       {
         "x": 1,
