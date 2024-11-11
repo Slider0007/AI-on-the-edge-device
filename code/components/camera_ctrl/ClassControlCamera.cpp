@@ -299,28 +299,36 @@ void ClassControlCamera::setImageSize(int _zoomFactor, int _zoomOffsetX, int _zo
 
     // Calculate image size (keep original ratio) based on zoom factor to realize zoomed image
     uint16_t imageWidthZoomed = (sensorFrameSizeWidth * 1000) / paramCameraInternal.zoomFactor;
-    imageWidthZoomed += (imageWidthZoomed % 8); // Make it dividable by 4
+    imageWidthZoomed += (imageWidthZoomed % 4); // Make it dividable by 4
 
     uint16_t imageHeightZoomed = (sensorFrameSizeHeight * 1000) / paramCameraInternal.zoomFactor;
-    imageHeightZoomed += (imageHeightZoomed % 8); // Make it dividable by 4
+    imageHeightZoomed += (imageHeightZoomed % 4); // Make it dividable by 4
 
     // Determine max offset values based on resulting image (with zoom factor applied)
     const int imageZoomOffsetXMax = (sensorFrameSizeWidth - imageWidthZoomed) / 2;
     const int imageZoomOffsetYMax = (sensorFrameSizeHeight - imageHeightZoomed) / 2;
 
     // Sanitize user provided offset values
-    const int imageZoomOffsetX = std::clamp(paramCameraInternal.zoomOffsetX, -1 * imageZoomOffsetXMax, imageZoomOffsetXMax);
-    const int imageZoomOffsetY = std::clamp(paramCameraInternal.zoomOffsetY, -1 * imageZoomOffsetYMax, imageZoomOffsetYMax);
+    const int16_t imageZoomOffsetX = std::clamp(paramCameraInternal.zoomOffsetX, -1 * imageZoomOffsetXMax, imageZoomOffsetXMax);
+    const int16_t imageZoomOffsetY = std::clamp(paramCameraInternal.zoomOffsetY, -1 * imageZoomOffsetYMax, imageZoomOffsetYMax);
 
     if (paramCameraInternal.cameraModel == CAMERA_OV2640) {
         // NOTE: No sensor offset required (x = 0, y = 0 --> see ov2640_settings.h: ratio_table -> 4x3)
+        uint16_t offsetX = imageZoomOffsetXMax + imageZoomOffsetX;
+        if (offsetX % 2) { // Make it odd to avoid tinted image
+            offsetX += 1;
+        }
+        uint16_t offsetY = imageZoomOffsetYMax + imageZoomOffsetY;
+        if (offsetY % 2) { // Make it odd to avoid tinted image
+            offsetY += 1;
+        }
 
         // Set customized resolution (and scale image to output resolution)
         //   NOTE 1: Function offset parameter based on image top-left (0,0). imageZoomOffsetX,Y are +/- values based on image center
         //   NOTE 2: Parameter startX --> Sensor frame size (0: 1600 x 1200)
         //   NOTE 3: Unused parameters: startY, endX, endY, scale, binning
-        s->set_res_raw(s, 0, 0, 0, 0, imageZoomOffsetXMax + imageZoomOffsetX, imageZoomOffsetYMax + imageZoomOffsetY,
-                        imageWidthZoomed, imageHeightZoomed, outputFrameSizeWidth, outputFrameSizeHeight, false, false);
+        s->set_res_raw(s, 0, 0, 0, 0, offsetX, offsetY, imageWidthZoomed, imageHeightZoomed,
+                        outputFrameSizeWidth, outputFrameSizeHeight, false, false);
     }
     else if (paramCameraInternal.cameraModel == CAMERA_OV5640) {
         // NOTE: Add sensor offset (x = 32, y = 16 --> see ov5640_settings.h: ratio_table -> 4x3)
@@ -339,7 +347,7 @@ void ClassControlCamera::setImageSize(int _zoomFactor, int _zoomOffsetX, int _zo
         if (ispWindowYStart < sensorOffsetY) { // If too low set to sensor offset
             ispWindowYStart = sensorOffsetY;
         }
-        if (ispWindowYStart % 2) { // Make it odd to avoid tint image
+        if (ispWindowYStart % 2) { // Make it odd to avoid tinted image
             ispWindowYStart += 1;
         }
 

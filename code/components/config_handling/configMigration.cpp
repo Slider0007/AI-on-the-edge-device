@@ -48,9 +48,6 @@ void migrateConfiguration(cJSON* cJsonObject)
             else if (objEl->valueint == 2) { // Scale & Crop (800 x 600 -> 640 x 480)
                 ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomFactor = 1250; // 1.25x
             }
-            else {
-                ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.zoomFactor = 1000; // 1.0x
-            }
         }
     }
 
