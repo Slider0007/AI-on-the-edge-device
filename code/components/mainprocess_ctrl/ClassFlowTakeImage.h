@@ -13,11 +13,9 @@ class ClassFlowTakeImage : public ClassLogImage
   protected:
     const CfgData::SectionTakeImage *cfgDataPtr = NULL;
     std::string rawImageFilename;
-    int image_height;
-    int image_width;
     time_t timeImageTaken;
 
-    bool takePictureWithFlash();
+    bool takeImage();
 
   public:
     CImageBasis *rawImage;
@@ -30,7 +28,6 @@ class ClassFlowTakeImage : public ClassLogImage
     void doPostProcessEventHandling();
 
     time_t getTimeImageTaken();
-    std::string getFileNameRawImage();
 
     ImageData *sendRawImage();
     esp_err_t sendRawJPG(httpd_req_t *req);

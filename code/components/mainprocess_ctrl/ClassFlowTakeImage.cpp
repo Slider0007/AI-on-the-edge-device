@@ -78,13 +78,13 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
         LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - Start");
     #endif
 
-    if (!takePictureWithFlash()) {
+    if (!takeImage()) {
         setFlowStateHandlerEvent(-1); // Set error code for post cycle error handler 'doPostProcessEventHandling' (error level)
         return false;
     }
 
     #ifdef DEBUG_DETAIL_ON
-        LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - After takePictureWithFlash");
+        LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - After takeImage");
     #endif
 
     logImage(logPath, "raw", CNNTYPE_NONE, -1, zwtime, rawImage);
@@ -112,24 +112,22 @@ void ClassFlowTakeImage::doPostProcessEventHandling()
 }
 
 
-bool ClassFlowTakeImage::takePictureWithFlash()
+bool ClassFlowTakeImage::takeImage()
 {
     if (rawImage == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "takePictureWithFlash: rawImage not initialized");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "takeImage: rawImage not initialized");
         return false;
     }
 
-    // in case the image is flipped, it must be reset here //
-    rawImage->width = image_width;
-    rawImage->height = image_height;
-
-    if (cameraCtrl.captureToBasisImage(rawImage) != ESP_OK)
+    if (cameraCtrl.captureToBasisImage(rawImage) != ESP_OK) {
         return false;
+    }
 
     time(&timeImageTaken);
 
-    if (cfgDataPtr->debug.saveAllFiles)
+    if (cfgDataPtr->debug.saveAllFiles) {
         rawImage->saveToFile(rawImageFilename);
+    }
 
     return true;
 }
@@ -145,16 +143,20 @@ esp_err_t ClassFlowTakeImage::sendRawJPG(httpd_req_t *req)
 
 ImageData* ClassFlowTakeImage::sendRawImage()
 {
-    CImageBasis *zw = new CImageBasis("sendRawImage", rawImage);
-    ImageData *id;
+    CImageBasis *imgTmp = new CImageBasis("sendRawImage", rawImage);
+    ImageData *id = NULL;
 
-    if (cameraCtrl.captureToBasisImage(rawImage) != ESP_OK)
+    if (cameraCtrl.captureToBasisImage(rawImage) != ESP_OK) {
         return NULL;
+    }
 
     time(&timeImageTaken);
 
-    id = zw->writeToMemoryAsJPG();
-    delete zw;
+    if (imgTmp != NULL) {
+        id = imgTmp->writeToMemoryAsJPG();
+        delete imgTmp;
+    }
+
     return id;
 }
 
@@ -162,12 +164,6 @@ ImageData* ClassFlowTakeImage::sendRawImage()
 time_t ClassFlowTakeImage::getTimeImageTaken()
 {
     return timeImageTaken;
-}
-
-
-std::string ClassFlowTakeImage::getFileNameRawImage(void)
-{
-    return rawImageFilename;
 }
 
 
