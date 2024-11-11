@@ -571,9 +571,9 @@
                 }
                 else {
                     document.getElementById("createreference").disabled = false;
-                    firework.launch("Camera image parameter reset failed (Response status: " + this.status +
-                                    "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Camera image parameter reset failed. Response status: " + this.status);
+                    firework.launch("Restore image parameter failed (Response status: " + this.status +
+                                    "). Repeat action or save configuration.", 'danger', 30000);
+                    console.error("Restore image parameter failed. Response status: " + this.status);
                 }
             }
         };
@@ -654,10 +654,6 @@
                                         Repeat action or check logs.", 'warning', 5000);
                     console.error("Setting image parameter rejected. Process not (yet) initialized. \
                                         Response status: " + this.status);
-                }
-                else if (this.status == 405) {
-                    firework.launch("Update image not allowed in state 'Take Image'. Wait a few moments and repeat action. [" +
-                                        xhttp.responseText.split(" | ")[1] + "]", 'warning', 3000, true);
                 }
                 else {
                     document.getElementById("createreference").disabled = false;

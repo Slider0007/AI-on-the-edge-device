@@ -8,7 +8,6 @@
 
 #include "ClassControlCamera.h"
 #include "ClassLogFile.h"
-#include "MainFlowControl.h"
 
 
 static const char *TAG = "SERVER_CAM";
@@ -67,12 +66,6 @@ esp_err_t handler_camera(httpd_req_t *req)
         if (!cameraCtrl.getCameraInitSuccessful()) {
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized");
             return ESP_ERR_NOT_FOUND;
-        }
-        // Interlock request in process state 'Take Image' (camera is already in use)
-        else if (getTaskAutoFlowState() == FLOW_TASK_STATE_IMG_PROCESSING && flowctrl.getActualProcessState() == "Take Image") {
-            httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED,
-                                ("E91: Request rejected, flow in process | Actual State: " + flowctrl.getActualProcessState()).c_str());
-            return ESP_FAIL;
         }
 
         // Load actual parameter settings to allow partial parameter updates
