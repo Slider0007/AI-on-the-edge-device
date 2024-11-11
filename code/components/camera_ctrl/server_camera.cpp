@@ -64,8 +64,7 @@ esp_err_t handler_camera(httpd_req_t *req)
     }
     else if (task.compare("set_parameter") == 0) {
         if (!cameraCtrl.getCameraInitSuccessful()) {
-            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN,
-                                "Camera not initialized: REST API /lighton not available");
+            httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized");
             return ESP_ERR_NOT_FOUND;
         }
 
