@@ -10,7 +10,7 @@
 #include "ClassControlCamera.h"
 
 
-static const char *TAG = "CFGMIGRATION";
+static const char *TAG = "CFGMIG";
 
 
 // ********************************************************************************

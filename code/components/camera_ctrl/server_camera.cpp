@@ -8,9 +8,10 @@
 
 #include "ClassControlCamera.h"
 #include "ClassLogFile.h"
+#include "MainFlowControl.h"
 
 
-static const char *TAG = "CAM_SERVER";
+static const char *TAG = "SERVER_CAM";
 
 
 esp_err_t handler_camera(httpd_req_t *req)
@@ -28,7 +29,7 @@ esp_err_t handler_camera(httpd_req_t *req)
         "1. Set camera parameter:<br>"
         "-  '/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0& "
             "saturation=0&sharpness=1&exposurecontrolmode=0&autoexposurelevel=0&manualexposurevalue=1200& "
-            "gaincontrolmode=0&manualgainvalue=2&specialeffect=0&mirror=false&flip=false&zoommode=0&zoomx=0&zoomy=0'<br>"
+            "gaincontrolmode=0&manualgainvalue=2&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&zoomx=0&zoomy=0'<br>"
         "2. Capture image<br>"
         "  - '/camera?task=capture' : Capture without flashlight<br>"
         "  - '/camera?task=capture_with_flashlight&flashtime=1000' : Capture with flashlight (flashtime in ms)<br>"
@@ -66,6 +67,12 @@ esp_err_t handler_camera(httpd_req_t *req)
         if (!cameraCtrl.getCameraInitSuccessful()) {
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Camera not initialized");
             return ESP_ERR_NOT_FOUND;
+        }
+        // Interlock request in process state 'Take Image' (camera is already in use)
+        else if (getTaskAutoFlowState() == FLOW_TASK_STATE_IMG_PROCESSING && flowctrl.getActualProcessState() == "Take Image") {
+            httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED,
+                                ("E91: Request rejected, flow in process | Actual State: " + flowctrl.getActualProcessState()).c_str());
+            return ESP_FAIL;
         }
 
         // Load actual parameter settings to allow partial parameter updates

@@ -591,58 +591,51 @@
         if (release_save)
             document.getElementById("savereference").disabled = false;
 
-        if (jsonConfig.takeimage.brightness !== null) // Parameter available?
-        {
-            let flashtime = document.getElementById("takeimage_flashlight_flashtime_value").value;
-            if (flashtime == "") flashtime = "2000";
+        let flashtime = document.getElementById("takeimage_flashlight_flashtime_value").value;
+        if (flashtime == "") flashtime = "2000";
 
-            firework.launch('Taking image...', 'success', flashtime, true);
+        firework.launch('Taking image...', 'success', flashtime, true);
 
-            let flashintensity = document.getElementById("takeimage_flashlight_flashintensity_value").value;
-            if (flashintensity == "") flashintensity = "50";
-            let brightness = document.getElementById("takeimage_camera_brightness_value").value;
-            if (brightness == "") brightness = "0";
-            let contrast = document.getElementById("takeimage_camera_contrast_value").value;
-            if (contrast == "") contrast = "0";
-            let saturation = document.getElementById("takeimage_camera_saturation_value").value;
-            if (saturation == "") saturation = "0";
-            let sharpness = document.getElementById("takeimage_camera_sharpness_value").value;
-            if (sharpness == "") sharpness = "0";
-            let exposureControlMode = document.getElementById("takeimage_camera_exposurecontrolmode_value").value;
-            if (exposureControlMode == "") exposureControlMode = "1";
-            let autoExposureLevel = document.getElementById("takeimage_camera_autoexposurelevel_value").value;
-            if (autoExposureLevel == "") autoExposureLevel = "0";
-            let manualExposureValue = document.getElementById("takeimage_camera_manualexposurevalue_value").value;
-            if (manualExposureValue == "") manualExposureValue = "300";
-            let gainControlMode = document.getElementById("takeimage_camera_gaincontrolmode_value").value;
-            if (gainControlMode == "") gainControlMode = "1";
-            let manualGainValue = document.getElementById("takeimage_camera_manualgainvalue_value").value;
-            if (manualGainValue == "") manualGainValue = "0";
-            // Special case: Use as global variable: use to draw negative by browser
-            specialeffect = document.getElementById("takeimage_camera_specialeffect_value").value;
-            if (specialeffect == "") specialeffect = "0";
-            let mirror = document.getElementById("takeimage_camera_mirrorimage_value").value;
-            if (mirror == "") mirror = "false";
-            let flip = document.getElementById("takeimage_camera_flipimage_value").value;
-            if (flip == "") flip = "false";
-            let zoomFactor = document.getElementById("takeimage_camera_zoomfactor_value").value;
-            if (zoomFactor == "") zoomFactor = "1000";
-            let zoomOffsetX = document.getElementById("takeimage_camera_zoomoffsetx_value").value;
-            if (zoomOffsetX == "") zoomOffsetX = "0";
-            let zoomOffsetY = document.getElementById("takeimage_camera_zoomoffsety_value").value;
-            if (zoomOffsetX == "") zoomOffsetX = "0";
+        let flashintensity = document.getElementById("takeimage_flashlight_flashintensity_value").value;
+        if (flashintensity == "") flashintensity = "50";
+        let brightness = document.getElementById("takeimage_camera_brightness_value").value;
+        if (brightness == "") brightness = "0";
+        let contrast = document.getElementById("takeimage_camera_contrast_value").value;
+        if (contrast == "") contrast = "0";
+        let saturation = document.getElementById("takeimage_camera_saturation_value").value;
+        if (saturation == "") saturation = "0";
+        let sharpness = document.getElementById("takeimage_camera_sharpness_value").value;
+        if (sharpness == "") sharpness = "0";
+        let exposureControlMode = document.getElementById("takeimage_camera_exposurecontrolmode_value").value;
+        if (exposureControlMode == "") exposureControlMode = "1";
+        let autoExposureLevel = document.getElementById("takeimage_camera_autoexposurelevel_value").value;
+        if (autoExposureLevel == "") autoExposureLevel = "0";
+        let manualExposureValue = document.getElementById("takeimage_camera_manualexposurevalue_value").value;
+        if (manualExposureValue == "") manualExposureValue = "300";
+        let gainControlMode = document.getElementById("takeimage_camera_gaincontrolmode_value").value;
+        if (gainControlMode == "") gainControlMode = "1";
+        let manualGainValue = document.getElementById("takeimage_camera_manualgainvalue_value").value;
+        if (manualGainValue == "") manualGainValue = "0";
+        // Special case: Use as global variable: use to draw negative by browser
+        specialeffect = document.getElementById("takeimage_camera_specialeffect_value").value;
+        if (specialeffect == "") specialeffect = "0";
+        let mirror = document.getElementById("takeimage_camera_mirrorimage_value").value;
+        if (mirror == "") mirror = "false";
+        let flip = document.getElementById("takeimage_camera_flipimage_value").value;
+        if (flip == "") flip = "false";
+        let zoomFactor = document.getElementById("takeimage_camera_zoomfactor_value").value;
+        if (zoomFactor == "") zoomFactor = "1000";
+        let zoomOffsetX = document.getElementById("takeimage_camera_zoomoffsetx_value").value;
+        if (zoomOffsetX == "") zoomOffsetX = "0";
+        let zoomOffsetY = document.getElementById("takeimage_camera_zoomoffsety_value").value;
+        if (zoomOffsetX == "") zoomOffsetX = "0";
 
-            url = getDomainname() + "/camera?task=set_parameter&flashtime=" + flashtime + "&flashintensity=" + flashintensity +
-                    "&brightness=" + brightness + "&contrast=" + contrast + "&saturation=" + saturation + "&sharpness=" + sharpness +
-                    "&exposurecontrolmode=" + exposureControlMode + "&autoexposurelevel=" + autoExposureLevel +
-                    "&manualexposurevalue=" + manualExposureValue + "&gaincontrolmode=" + gainControlMode +
-                    "&manualgainvalue=" + manualGainValue + "&specialeffect=" + specialeffect + "&mirror=" + mirror + "&flip=" + flip +
-                    "&zoomfactor=" + zoomFactor + "&zoomx=" + zoomOffsetX + "&zoomy=" + zoomOffsetY;
-        }
-        else {
-            firework.launch('Parsing of parameter failed', 'danger', 30000);
-            return;
-        }
+        url = getDomainname() + "/camera?task=set_parameter&flashtime=" + flashtime + "&flashintensity=" + flashintensity +
+                "&brightness=" + brightness + "&contrast=" + contrast + "&saturation=" + saturation + "&sharpness=" + sharpness +
+                "&exposurecontrolmode=" + exposureControlMode + "&autoexposurelevel=" + autoExposureLevel +
+                "&manualexposurevalue=" + manualExposureValue + "&gaincontrolmode=" + gainControlMode +
+                "&manualgainvalue=" + manualGainValue + "&specialeffect=" + specialeffect + "&mirror=" + mirror + "&flip=" + flip +
+                "&zoomfactor=" + zoomFactor + "&zoomx=" + zoomOffsetX + "&zoomy=" + zoomOffsetY;
 
         if (initialConfigUrl == "")
             initialConfigUrl = url;
@@ -657,16 +650,20 @@
                 }
                 else if (this.status == 403) {
                     document.getElementById("createreference").disabled = false;
-                    firework.launch("Take reference image parameter setting rejected. Process not (yet) initialized. \
+                    firework.launch("Setting image parameter rejected. Process not (yet) initialized. \
                                         Repeat action or check logs.", 'warning', 5000);
-                    console.error("Take reference image parameter setting rejected. Process not (yet) initialized. \
+                    console.error("Setting image parameter rejected. Process not (yet) initialized. \
                                         Response status: " + this.status);
+                }
+                else if (this.status == 405) {
+                    firework.launch("Update image not allowed in state 'Take Image'. Wait a few moments and repeat action. [" +
+                                        xhttp.responseText.split(" | ")[1] + "]", 'warning', 3000, true);
                 }
                 else {
                     document.getElementById("createreference").disabled = false;
-                    firework.launch("Take reference image parameter setting failed (Response status: " + this.status +
+                    firework.launch("Setting image parameter failed (Response status: " + this.status +
                                     "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Take reference image parameter setting failed. Response status: " + this.status);
+                    console.error("Setting image parameter failed. Response status: " + this.status);
                 }
             }
         };

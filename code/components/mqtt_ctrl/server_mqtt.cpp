@@ -18,7 +18,7 @@
 #include "helper.h"
 #include "system.h"
 
-static const char *TAG = "MQTT_SERVER";
+static const char *TAG = "SERVER_MQTT";
 
 
 extern const char* libfive_git_version(void);

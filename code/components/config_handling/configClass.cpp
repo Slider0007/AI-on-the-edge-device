@@ -127,7 +127,7 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
     else { // Read data from file
         std::ifstream file(CONFIG_PERSISTENCE_FILE);
 
-        if (file.is_open()) {
+        if (file.is_open() && file.good()) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config file found");
             streamBuffer << file.rdbuf();
             file.close();

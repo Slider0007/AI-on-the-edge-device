@@ -28,7 +28,7 @@
 #include "MainFlowControl.h"
 
 
-static const char *TAG = "CAM_CTRL";
+static const char *TAG = "CAMCTRL";
 
 ClassControlCamera cameraCtrl;
 
