@@ -824,6 +824,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
                 tmFallbackValue.tm_isdst = -1;
 
                 sequence->timeFallbackValue = mktime(&tmFallbackValue);
+                sequence->sTimeFallbackValue = convertTimeToString(sequence->timeFallbackValue, TIME_FORMAT_OUTPUT);
 
                 time(&tStart);
                 int AgeInMinutes = (int)(difftime(tStart, sequence->timeFallbackValue) / 60.0); // delta in minutes
@@ -832,14 +833,16 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
                     sequence->isFallbackValueValid = false;
                     sequence->fallbackValue = 0;
                     sequence->sFallbackValue = "Outdated";
-                    LogFile.writeToFile(ESP_LOG_INFO, TAG, sequence->sequenceName + ": Fallback value outdated | Time: " + std::string(cTime));
+                    LogFile.writeToFile(ESP_LOG_INFO, TAG, sequence->sequenceName + ": Fallback value outdated | Timestamp: " +
+                                            sequence->sTimeFallbackValue);
                 }
                 // Start time is older than fallback value timestamp -> age indeterminable
                 else if (AgeInMinutes < 0) {
                     sequence->isFallbackValueValid = false;
                     sequence->fallbackValue = 0;
                     sequence->sFallbackValue = "Not Determinable";
-                    LogFile.writeToFile(ESP_LOG_INFO, TAG, sequence->sequenceName + ": Fallback value age not determinable | Time: " + std::string(cTime));
+                    LogFile.writeToFile(ESP_LOG_INFO, TAG, sequence->sequenceName + ": Fallback value age not determinable | Timestamp: " +
+                                            sequence->sTimeFallbackValue);
                 }
                 // Fallback value valid
                 else {
@@ -847,7 +850,8 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
                     char *pEnd = NULL;
                     sequence->fallbackValue = strtod(cValue, &pEnd);
                     sequence->sFallbackValue = to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1); // Keep one digit more
-                    LogFile.writeToFile(ESP_LOG_INFO, TAG, sequence->sequenceName + ": Fallback value valid | Time: " + std::string(cTime));
+                    LogFile.writeToFile(ESP_LOG_INFO, TAG, sequence->sequenceName + ": Fallback value valid | Timestamp: " +
+                                            sequence->sTimeFallbackValue);
                 }
                 break;
             }
