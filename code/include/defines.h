@@ -171,8 +171,8 @@
 
 // connect_wlan.cpp
 //******************************
-#define WLAN_CONNECTION_RETRIES_INITIAL_CONNECT     5
-#define WLAN_CONNECTION_RETRIES_ERROR_MSG           10
+#define WLAN_CONNECT_FALLBACK_AP_DELAY 120 // Delay in seconds after which the device fall back to AP mode if no connection can be established initially
+#define WLAN_RECONNECT_RETRIES_ERROR_MSG 10 // Number of retries after error message will be shown after connection was already successfully established
 
 /* WIFI roaming functionalities 802.11k+v (uses ca. 6kB - 8kB internal RAM; if SCAN CACHE activated: + 1kB / beacon)
 PLEASE BE AWARE: The following CONFIG parameters have to to be set in

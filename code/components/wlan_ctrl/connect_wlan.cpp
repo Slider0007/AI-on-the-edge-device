@@ -11,7 +11,6 @@
 #include <esp_log.h>
 #include <esp_netif.h>
 #include <esp_netif_sntp.h>
-#include <esp_timer.h>
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
@@ -34,7 +33,7 @@ static struct strWifiState {
     bool connected = false;
 	bool connectionSucessful = false;
     bool connectionSupended = false;
-    int64_t connectionSuspendBaseTime = 0LL;
+    time_t connectionSuspendBaseTime = 0LL;
 
     int reconnectCnt = 0;
 	bool fallbackApActive = false;
@@ -107,25 +106,20 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 			esp_wifi_connect(); // Try to connect again
 		}
 
-		if (wifiState.connectionSucessful) { // Connection was never established (e.g. wrong password), switch to AP
-			if (wifiState.reconnectCnt >= WLAN_CONNECTION_RETRIES_ERROR_MSG) {
+		if (wifiState.connectionSucessful) {
+			if (wifiState.reconnectCnt >= WLAN_RECONNECT_RETRIES_ERROR_MSG) {
 				wifiState.reconnectCnt = 0;
 				LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Multiple reconnect attempts failed. Retry to connect");
 			}
 		}
 		else {
-			if (wifiState.reconnectCnt >= WLAN_CONNECTION_RETRIES_INITIAL_CONNECT) {
+			// Fallback to AP mode if initial connection cannot be established after defined time since boot [seconds]
+			if (getUptime() >= WLAN_CONNECT_FALLBACK_AP_DELAY) {
 				wifiState.reconnectCnt = 0;
-				LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to establish connection. Start access point (fallback)");
 				wifiState.fallbackApActive = true;
+				LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to establish connection. Start access point (fallback)");
 				deinitWifi();
-				if (initWifiAp(wifiState.fallbackApActive) != ESP_OK) {
-					LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init WLAN access point failed");
-				}
-				else {
-					setStatusLedOff();
-					setStatusLed(AP_OR_OTA, 3, true);
-				}
+				initWifiAp(wifiState.fallbackApActive);
 			}
 		}
 	}
@@ -142,7 +136,7 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 	#endif //WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES
 #endif //WLAN_USE_MESH_ROAMING
 
-		wifiState.connectionSuspendBaseTime = esp_timer_get_time();
+		wifiState.connectionSuspendBaseTime = getUptime();
 	}
 	else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
 		wifiState.connectionSucessful = true;
@@ -180,18 +174,18 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 #endif //ENABLE_MQTT
 	}
 	else if (event_id == WIFI_EVENT_AP_START) {
-		wifiState.connectionSuspendBaseTime = esp_timer_get_time();
+		wifiState.connectionSuspendBaseTime = getUptime();
 	}
 	else if (event_id == WIFI_EVENT_AP_STACONNECTED) {
         wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *)event_data;
 		LogFile.writeToFile(ESP_LOG_INFO, TAG, "Access point: Client connected. MAC: " + macToString(event->mac));
-		wifiState.connectionSuspendBaseTime = esp_timer_get_time();
+		wifiState.connectionSuspendBaseTime = getUptime();
     }
     else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
         wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *)event_data;
 		LogFile.writeToFile(ESP_LOG_INFO, TAG, "Access point: Client disconnected. MAC: " + macToString(event->mac) +
 												", Reason: " + std::to_string(event->reason));
-		wifiState.connectionSuspendBaseTime = esp_timer_get_time();
+		wifiState.connectionSuspendBaseTime = getUptime();
     }
 }
 
@@ -204,11 +198,11 @@ bool suspendWifiConnection(void)
 	{
 		// Set base time to actual time if connection to AP is still established
 		if (ConfigClass::getInstance()->get()->sectionNetwork.opmode == NETWORK_OPMODE_WLAN_AP_TIMED_OFF && getWifiIsConnected()) {
-			wifiState.connectionSuspendBaseTime = esp_timer_get_time();
+			wifiState.connectionSuspendBaseTime = getUptime();
 			return false;
 		}
 
-		if ((int)((esp_timer_get_time() - wifiState.connectionSuspendBaseTime) / 60000000) >=
+		if ((int)((getUptime() - wifiState.connectionSuspendBaseTime) / 60) >=
 														ConfigClass::getInstance()->get()->sectionNetwork.timedOffDelay) {
 			LogFile.writeToFile(ESP_LOG_WARN, TAG, "Suspending WLAN connection by time (parameter: Timed-Off Delay)");
 
@@ -239,7 +233,7 @@ bool resumeWifiConnection(std::string source)
 		(ConfigClass::getInstance()->get()->sectionNetwork.opmode == NETWORK_OPMODE_WLAN_CLIENT_TIMED_OFF ||
 			ConfigClass::getInstance()->get()->sectionNetwork.opmode == NETWORK_OPMODE_WLAN_AP_TIMED_OFF))
 	{
-		wifiState.connectionSuspendBaseTime = esp_timer_get_time();
+		wifiState.connectionSuspendBaseTime = getUptime();
 		wifiState.connectionSupended = false;
 		LogFile.writeToFile(ESP_LOG_INFO, TAG, "Resuming WLAN connection | Source: " + source);
 
@@ -556,6 +550,11 @@ esp_err_t initWifiAp(bool _useDefaultConfig)
 	}
 
     wifiState.initialized = true;
+
+	if (wifiState.fallbackApActive) {
+		setStatusLedOff();
+		setStatusLed(AP_OR_OTA, 3, true);
+	}
 
 	LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init access point mode successful | SSID: " + std::string((char *)wifiConfig.ap.ssid) +
 		", PW: " + std::string((char *)wifiConfig.ap.password) + ", CH: " + std::to_string(wifiConfig.ap.channel) + ", IP: " + ipCfg.ipAddress);
