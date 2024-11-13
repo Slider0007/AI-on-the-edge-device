@@ -1,4 +1,4 @@
-# Parameter: Zoom Mode
+# Parameter: Zoom Factor
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
