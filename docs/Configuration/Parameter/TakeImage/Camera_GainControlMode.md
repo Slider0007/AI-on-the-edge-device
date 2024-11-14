@@ -4,7 +4,7 @@
 |:---               |:---                 |:----
 | Parameter Name    | Gain Control Mode   | gaincontrolmode
 | Default Value     | `Auto`              | `1`
-| Input Options     | `Manual`<br>`Auto`  | `0` .. `1`
+| Input Options     | `Manual`<br>`Auto`  | `0`<br>`1`
 
 
 ## Description

@@ -4,7 +4,7 @@
 |:---               |:---                 |:----
 | Parameter Name    | Manual Gain Value   | manualgainvalue
 | Default Value     | `0`                 | `0`
-| Input Options     | `0` .. `5`          | `0` .. `30`
+| Input Options     | `0` .. `30`         | `0` .. `30`
 
 
 ## Description

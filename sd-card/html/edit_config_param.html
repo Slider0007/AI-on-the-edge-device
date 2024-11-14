@@ -433,22 +433,6 @@
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_imagequality</td>
 		</tr>
 
-		<tr class="expert">
-			<td class="indent1">
-				<span>Image Size</span>
-			</td>
-			<td>
-				<form id="takeimage_camera_imagesize_form">
-					<select name="takeimage.camera.imagesize" id="takeimage_camera_imagesize_value"
-							onchange="gatherChangedParameter(this.form)">
-						<option value="VGA" selected>VGA</option>
-						<option value="QVGA" >QVGA</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_imagesize</td>
-		</tr>
-
 		<tr>
 			<td class="indent1">
 				<span>Brightness</span>
@@ -458,7 +442,7 @@
 					<input required type="number" min="-2" max="2" value="0"
 						name="takeimage.camera.brightness" id="takeimage_camera_brightness_value"
 						onchange="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2));
-							gatherChangedParameter(this.form)">
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_brightness</td>
@@ -500,17 +484,10 @@
 			</td>
 			<td>
 				<form id="takeimage_camera_sharpness_form">
-					<select name="takeimage.camera.sharpness" id="takeimage_camera_sharpness_value"
-							onchange="gatherChangedParameter(this.form, true)">
-						<option value="-4">Auto</option>
-						<option value="-3">-3</option>
-						<option value="-2">-2</option>
-						<option value="-1">-1</option>
-						<option value="0" selected> 0</option>
-						<option value="1"> 1</option>
-						<option value="2"> 2</option>
-						<option value="3"> 3</option>
-					</select>
+					<input required type="number" min="-3" max="3" value="0"
+					name="takeimage.camera.sharpness" id="takeimage_camera_sharpness_value"
+					onchange="(!validity.rangeUnderflow||(value=-3)) && (!validity.rangeOverflow||(value=3));
+						gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_sharpness</td>
@@ -556,9 +533,9 @@
 			</td>
 			<td>
 				<form id="takeimage_camera_manualexposurevalue_form">
-					<input required type="number" min="0" max="1200" value="300"
+					<input required type="number" min="0" max="1920" value="300"
 						name="takeimage.camera.manualexposurevalue" id="takeimage_camera_manualexposurevalue_value"
-						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1200));
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1920));
 							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
@@ -588,9 +565,9 @@
 			</td>
 			<td>
 				<form id="takeimage_camera_manualgainvalue_form">
-					<input required type="number" min="0" max="5" value="0"
+					<input required type="number" min="0" max="30" value="0"
 						name="takeimage.camera.manualgainvalue" id="takeimage_camera_manualgainvalue_value"
-						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5));
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=30));
 							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
@@ -649,20 +626,17 @@
 
 		<tr>
 			<td class="indent1">
-				<span>Zoom Mode</span>
+				<span>Zoom Factor</span>
 			</td>
 			<td>
-				<form id="takeimage_camera_zoommode_form">
-					<select class="classvisibility_init" name="takeimage.camera.zoommode" id="takeimage_camera_zoommode_value"
-							onchange='setClassVisibility("classvisibility_takeimage_zoommode", this.value > 0);
-								gatherChangedParameter(this.form, true)'>
-						<option value="0" selected>Off</option>
-						<option value="1">Crop</option>
-						<option value="2">Scale & Crop</option>
-					</select>
+				<form id="takeimage_camera_zoomfactor_form">
+					<input required type="number" min="1000" max="4000" value="1000"
+						name="takeimage.camera.zoomfactor" id="takeimage_camera_zoomfactor_value"
+						onchange="(!validity.rangeUnderflow||(value=1000)) && (!validity.rangeOverflow||(value=4000));
+							setVariableInputLimits();gatherChangedParameter(this.form, true)">/ 1000x
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_zoommode</td>
+			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_zoomfactor</td>
 		</tr>
 
 		<tr class="classvisibility_takeimage_zoommode">
@@ -825,22 +799,6 @@
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_imagealignment_imagerotation</td>
-		</tr>
-
-		<tr>
-			<td class="indent1">
-			    <span>Flip Image Size</span>
-			</td>
-			<td>
-				<form id="imagealignment_flipimagesize_form">
-					<select name="imagealignment.flipimagesize" id="imagealignment_flipimagesize_value"
-							onchange="gatherChangedParameter(this.form)">
-						<option value="false" selected>Disabled</option>
-						<option value="true">Enabled</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_imagealignment_flipimagesize</td>
 		</tr>
 
 		<tr>
@@ -2938,6 +2896,53 @@
 		}
 	});
 
+
+	function setVariableInputLimits()
+    {
+        let sensorFrameSizeWidth = 1600; // Default
+        let sensorFrameSizeHeight = 1200; // Default
+        let autoExposureLimit = 2; // Default
+
+        if (jsonConfig.takeimage.camera.cameramodel == 1) { // OV2640
+            sensorFrameSizeWidth = 1600;
+            sensorFrameSizeHeight = 1200;
+
+            autoExposureLimit = 2;
+        }
+        else if (jsonConfig.takeimage.camera.cameramodel == 3) { // OV5640
+            sensorFrameSizeWidth = 2560;
+            sensorFrameSizeHeight = 1920;
+
+            autoExposureLimit = 5;
+        }
+        else {
+            firework.launch('Camera model unknown. Zoom factor range / limits may be wrong', 'warning', 5000);
+        }
+
+        $('#takeimage_camera_zoomfactor_value').attr({"max" : (sensorFrameSizeWidth * 1000) / 640});
+
+        let imageWidthZoomed = parseInt((sensorFrameSizeWidth * 1000) / $('#takeimage_camera_zoomfactor_value').val());
+        imageWidthZoomed += (imageWidthZoomed % 4); // Make it dividable by 4
+
+        let imageZoomOffsetXMax = (sensorFrameSizeWidth - imageWidthZoomed) / 2;
+        $('#takeimage_camera_zoomoffsetx_value').attr({"max" : imageZoomOffsetXMax, "min" : -1 * imageZoomOffsetXMax});
+        $('#takeimage_camera_zoomoffsetx_value').trigger('onchange');
+
+        let imageHeightZoomed = parseInt((sensorFrameSizeHeight * 1000) / $('#takeimage_camera_zoomfactor_value').val());
+        imageHeightZoomed += (imageHeightZoomed % 4); // Make it dividable by 4
+
+        let imageZoomOffsetYMax = (sensorFrameSizeHeight - imageHeightZoomed) / 2;
+        $('#takeimage_camera_zoomoffsety_value').attr({"max" : imageZoomOffsetYMax, "min" : -1 * imageZoomOffsetYMax});
+        $('#takeimage_camera_zoomoffsety_value').trigger('onchange');
+
+        $('#takeimage_camera_autoexposurelevel_value').attr({"max" : autoExposureLimit, "min" : -1 * autoExposureLimit});
+        $('#takeimage_camera_autoexposurelevel_value').trigger('onchange');
+
+        $('#takeimage_camera_manualexposurevalue_value').attr({"max" : sensorFrameSizeHeight});
+        $('#takeimage_camera_manualexposurevalue_value').trigger('onchange');
+    }
+
+
 	function initGpioSection()
 	{
 		getGpioPins();
@@ -3255,6 +3260,8 @@
 		// Preset save button visibility -> Default: Save and Apply (no reboot)
 		setElVisibility(button_saveConfig, true);
 		setElVisibility(button_saveConfigAndReboot, false);
+
+		setVariableInputLimits();
 
 		$("#divloading").hide(); // Hide loading indicator
 		$("#divcontent").show(); // Show parameter content
