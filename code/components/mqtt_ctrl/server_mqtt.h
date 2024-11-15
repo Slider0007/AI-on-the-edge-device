@@ -9,7 +9,7 @@
 
 
 struct strHADiscoveryData {
-    std::string sequenceName = "";
+    std::string structureName = "";
     bool isTopicJSONNotation = false;
     std::string topic = "";
     std::string topicName = "";
