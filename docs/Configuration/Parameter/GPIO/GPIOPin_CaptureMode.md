@@ -3,8 +3,8 @@
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Pin Capture Mode    | capturemode
-| Default Value     | `cyclic polling`    | `cyclic-polling`
-| Input Options     | `cyclic polling`<br>`interrupt rising edge`<br>`interrupt falling edge`<br>`interrupt rising falling` | `cyclic-polling`<br>`interrupt-rising-edge`<br>`interrupt-falling-edge`<br>`interrupt-rising-falling`
+| Default Value     | `Cyclic Polling`    | `cyclic-polling`
+| Input Options     | `Cyclic Polling`<br>`Interrupt Rising Edge`<br>`Interrupt Falling Edge`<br>`Interrupt Rising+Falling` | `cyclic-polling`<br>`interrupt-rising-edge`<br>`interrupt-falling-edge`<br>`interrupt-rising-falling`
 
 
 
@@ -16,10 +16,10 @@ This defines how the selected GPIO input is captured internally.
 
 | Input Option               | Description
 |:---                        |:---
-| `cyclic polling`           | Poll GPIO input state in a predefined interval of 1 second
-| `interrupt rising edge`    | Capture GPIO input state when a rising edge of signal is detected
-| `interrupt falling edge`   | Capture GPIO input state when a falling edge of signal is detected
-| `interrupt rising falling` | Capture GPIO input state when a rising or falling edge of signal is detected
+| `Cyclic Polling`           | Poll GPIO input state in a predefined interval of 1 second
+| `Interrupt Rising Edge`    | Capture GPIO input state when a rising edge of signal is detected
+| `Interrupt Falling Edge`   | Capture GPIO input state when a falling edge of signal is detected
+| `Interrupt Rising+Falling` | Capture GPIO input state when a rising or falling edge of signal is detected
 
 
 !!! Tip

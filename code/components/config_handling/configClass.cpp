@@ -1227,6 +1227,10 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         if (cJSON_IsNumber(arrEl))
             gpioElTemp->PwmFrequency = std::clamp(arrEl->valueint, 5, 1000000); // Hertz
 
+        arrEl = cJSON_GetObjectItem(objArrEl, "logicactivelow");
+        if (cJSON_IsBool(arrEl))
+            gpioElTemp->logicActiveLow = arrEl->valueint;
+
         arrEl = cJSON_GetObjectItem(objArrEl, "exposetomqtt");
         if (cJSON_IsBool(arrEl))
             gpioElTemp->exposeToMqtt = arrEl->valueint;
@@ -1931,6 +1935,8 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         if (cJSON_AddNumberToObject(gpiopinEl, "inputdebouncetime", cfgDataTemp.sectionGpio.gpioPin[i].inputDebounceTime) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddNumberToObject(gpiopinEl, "pwmfrequency", cfgDataTemp.sectionGpio.gpioPin[i].PwmFrequency) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddBoolToObject(gpiopinEl, "logicactivelow", cfgDataTemp.sectionGpio.gpioPin[i].logicActiveLow) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddBoolToObject(gpiopinEl, "exposetomqtt", cfgDataTemp.sectionGpio.gpioPin[i].exposeToMqtt) == NULL)
             retVal = ESP_FAIL;

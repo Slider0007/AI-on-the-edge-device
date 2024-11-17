@@ -154,6 +154,7 @@ struct GpioElement {
     std::string captureMode = "cyclic-polling";
     int inputDebounceTime = 200;
     int PwmFrequency = 5000;
+    bool logicActiveLow = false;
     bool exposeToMqtt = false;
     bool exposeToRest = false;
     struct SmartLed {
