@@ -2157,10 +2157,10 @@
 					<select name="gpio.gpiopin.0.capturemode" id="gpio_gpiopin_0_capturemode_value"
 							onchange='gpioPinModeChanged(); gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
 								gatherChangedParameter(this.form)'>
-						<option value="cyclic-polling" selected>cyclic-polling</option>
-						<option value="interrupt-rising-edge">interrupt-rising-edge</option>
-						<option value="interrupt-falling-edge">interrupt-falling-edge</option>
-						<option value="interrupt-rising-falling">interrupt-rising-falling</option>
+						<option value="cyclic-polling" selected>Cyclic Polling</option>
+						<option value="interrupt-rising-edge">Interrupt Rising Edge</option>
+						<option value="interrupt-falling-edge">Interrupt Falling Edge</option>
+						<option value="interrupt-rising-falling">Interrupt Rising+Falling</option>
 					</select>
 				</form>
 			</td>
@@ -2195,6 +2195,22 @@
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_pwmfrequency</td>
+		</tr>
+
+		<tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled gpio_show_logiclevel classexpert_gpio">
+			<td class="indent1">
+				<span>Pin Logic Level</span>
+			</td>
+			<td>
+				<form class="form_gpio_config" id="gpio_gpiopin_logicactivelow_form">
+					<select name="gpio.gpiopin.0.logicactivelow" id="gpio_gpiopin_0_logicactivelow_value"
+							onchange="gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)">
+						<option value="false" selected>Active High</option>
+						<option value="true">Active Low</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_logicactivelow</td>
 		</tr>
 
 		<tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled classexpert_gpio">
@@ -3034,24 +3050,27 @@
 		let elPinMode = document.querySelectorAll('[id$="pinmode_value"]')[0];
 		let elPinCaptureMode = document.querySelectorAll('[id$="capturemode_value"]')[0];
 
-		if ((pwm && elPinMode.value == "flashlight-default") ||
-			elPinMode.value == "flashlight-pwm" ||
-			elPinMode.value == "output-pwm"
-		)
+		if ((pwm && elPinMode.value == "flashlight-default") || elPinMode.value == "flashlight-pwm" ||
+				elPinMode.value == "output-pwm") {
 			setClassVisibility("gpio_show_pwm_frequency", true);
-		else
+		}
+		else {
 			setClassVisibility("gpio_show_pwm_frequency", false);
+		}
 
-		if (elPinMode.value == "input" ||
-			elPinMode.value == "input-pullup" ||
-			elPinMode.value == "input-pulldown")
-		{
+		if (elPinMode.value == "input" || elPinMode.value == "input-pullup" || elPinMode.value == "input-pulldown") {
 			setClassVisibility("gpio_show_capture_mode", true);
 
-			if (elPinCaptureMode.value != "cyclic-polling")
+			if (elPinCaptureMode.value != "cyclic-polling") {
 				setClassVisibility("gpio_show_debounce_time", true);
-			else
+			}
+			else {
 				setClassVisibility("gpio_show_debounce_time", false);
+			}
+		}
+		else if (elPinMode.value == "trigger-cycle-start" || elPinMode.value == "resume-wlan-connection") {
+			setClassVisibility("gpio_show_capture_mode", false);
+			setClassVisibility("gpio_show_debounce_time", true);
 		}
 		else {
 			setClassVisibility("gpio_show_capture_mode", false);
@@ -3066,12 +3085,20 @@
 			setClassVisibility("gpio_show_smartled", false);
 
 
-		if (elPinMode.value .substring(0,10) == "flashlight" &&
-			elPinMode.value  != "flashlight-digital"
-		)
+		if (elPinMode.value.substring(0,10) == "flashlight" && elPinMode.value != "flashlight-digital") {
 			setClassVisibility("gpio_show_intersity_correction", true);
-		else
+		}
+		else {
 			setClassVisibility("gpio_show_intersity_correction", false);
+		}
+
+		if (elPinMode.value == "flashlight-digital" || elPinMode.value == "trigger-cycle-start" ||
+			elPinMode.value == "resume-wlan-connection") {
+			setClassVisibility("gpio_show_logiclevel", true);
+		}
+		else {
+			setClassVisibility("gpio_show_logiclevel", false);
+		}
 	}
 
 
