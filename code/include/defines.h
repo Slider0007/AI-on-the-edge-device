@@ -568,7 +568,7 @@ CONFIG_WPA_11R_SUPPORT=n
 
     // Serial Port: Improv Serial / Improv WiFi
     //-------------------------------------------------
-    #define USB_SERIAL                                      // Use USB Serial/JTAG controller console
+    #define USB_SERIAL                                      // Use USB Serial/JTAG controller console (USB-OTG port)
 
 
     // Spare GPIO
