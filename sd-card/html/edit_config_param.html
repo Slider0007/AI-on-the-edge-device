@@ -263,7 +263,8 @@
 		</p>
 		<p>
 			Don't forget to save the changes with the button <b>"Save And Apply"</b> at the bottom of this page.
-            The new configuration gets automatically applied. No reboot is required.
+            The new configuration gets automatically applied. No reboot is required. Only a few hardware related
+			parameter require a reboot indicated by the button labled with <b>"Save And Reboot"</b>.
 		</p>
     </details>
     <hr>
@@ -432,22 +433,6 @@
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_imagequality</td>
 		</tr>
 
-		<tr class="expert">
-			<td class="indent1">
-				<span>Image Size</span>
-			</td>
-			<td>
-				<form id="takeimage_camera_imagesize_form">
-					<select name="takeimage.camera.imagesize" id="takeimage_camera_imagesize_value"
-							onchange="gatherChangedParameter(this.form)">
-						<option value="VGA" selected>VGA</option>
-						<option value="QVGA" >QVGA</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_imagesize</td>
-		</tr>
-
 		<tr>
 			<td class="indent1">
 				<span>Brightness</span>
@@ -457,7 +442,7 @@
 					<input required type="number" min="-2" max="2" value="0"
 						name="takeimage.camera.brightness" id="takeimage_camera_brightness_value"
 						onchange="(!validity.rangeUnderflow||(value=-2)) && (!validity.rangeOverflow||(value=2));
-							gatherChangedParameter(this.form)">
+							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_brightness</td>
@@ -499,17 +484,10 @@
 			</td>
 			<td>
 				<form id="takeimage_camera_sharpness_form">
-					<select name="takeimage.camera.sharpness" id="takeimage_camera_sharpness_value"
-							onchange="gatherChangedParameter(this.form, true)">
-						<option value="-4">Auto</option>
-						<option value="-3">-3</option>
-						<option value="-2">-2</option>
-						<option value="-1">-1</option>
-						<option value="0" selected> 0</option>
-						<option value="1"> 1</option>
-						<option value="2"> 2</option>
-						<option value="3"> 3</option>
-					</select>
+					<input required type="number" min="-3" max="3" value="0"
+					name="takeimage.camera.sharpness" id="takeimage_camera_sharpness_value"
+					onchange="(!validity.rangeUnderflow||(value=-3)) && (!validity.rangeOverflow||(value=3));
+						gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_sharpness</td>
@@ -555,9 +533,9 @@
 			</td>
 			<td>
 				<form id="takeimage_camera_manualexposurevalue_form">
-					<input required type="number" min="0" max="1200" value="300"
+					<input required type="number" min="0" max="1920" value="300"
 						name="takeimage.camera.manualexposurevalue" id="takeimage_camera_manualexposurevalue_value"
-						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1200));
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1920));
 							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
@@ -587,9 +565,9 @@
 			</td>
 			<td>
 				<form id="takeimage_camera_manualgainvalue_form">
-					<input required type="number" min="0" max="5" value="0"
+					<input required type="number" min="0" max="30" value="0"
 						name="takeimage.camera.manualgainvalue" id="takeimage_camera_manualgainvalue_value"
-						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=5));
+						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=30));
 							gatherChangedParameter(this.form, true)">
 				</form>
 			</td>
@@ -648,20 +626,17 @@
 
 		<tr>
 			<td class="indent1">
-				<span>Zoom Mode</span>
+				<span>Zoom Factor</span>
 			</td>
 			<td>
-				<form id="takeimage_camera_zoommode_form">
-					<select class="classvisibility_init" name="takeimage.camera.zoommode" id="takeimage_camera_zoommode_value"
-							onchange='setClassVisibility("classvisibility_takeimage_zoommode", this.value > 0);
-								gatherChangedParameter(this.form, true)'>
-						<option value="0" selected>Off</option>
-						<option value="1">Crop</option>
-						<option value="2">Scale & Crop</option>
-					</select>
+				<form id="takeimage_camera_zoomfactor_form">
+					<input required type="number" min="1000" max="4000" value="1000"
+						name="takeimage.camera.zoomfactor" id="takeimage_camera_zoomfactor_value"
+						onchange="(!validity.rangeUnderflow||(value=1000)) && (!validity.rangeOverflow||(value=4000));
+							setVariableInputLimits();gatherChangedParameter(this.form, true)">/ 1000x
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_zoommode</td>
+			<td style="visibility:hidden">$TOOLTIP_takeimage_camera_zoomfactor</td>
 		</tr>
 
 		<tr class="classvisibility_takeimage_zoommode">
@@ -827,22 +802,6 @@
 		</tr>
 
 		<tr>
-			<td class="indent1">
-			    <span>Flip Image Size</span>
-			</td>
-			<td>
-				<form id="imagealignment_flipimagesize_form">
-					<select name="imagealignment.flipimagesize" id="imagealignment_flipimagesize_value"
-							onchange="gatherChangedParameter(this.form)">
-						<option value="false" selected>Disabled</option>
-						<option value="true">Enabled</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_imagealignment_flipimagesize</td>
-		</tr>
-
-		<tr>
 			<td style="padding-top:25px" colspan="3">
 				<b>Debug</b>
 			</td>
@@ -898,7 +857,7 @@
 			</td>
 			<td>
 				<form id="digit_model_form">
-					<select class="select_large" name="digit.model" id="digit_model_value"
+					<select required class="select_large" name="digit.model" id="digit_model_value"
 						onchange="setClassVisibility('classvisibility_digit_model_class11',
 														$(digit_enabled_value).val() && this.value.includes('class11'));
 							setClassVisibility('classvisibility_digit_model_cont',
@@ -1010,7 +969,7 @@
 			</td>
 			<td>
 				<form id="analog_model_form">
-					<select class="select_large" name="analog.model" id="analog_model_value"
+					<select required class="select_large" name="analog.model" id="analog_model_value"
 						onchange="gatherChangedParameter(this.form)">
 					</select>
 				</form>
@@ -1351,7 +1310,7 @@
 
 		<tr class="classvisibility_mqtt_enabled">
 			<td class="indent1">
-				<span>Authentication</span>
+				<span>Authentication / Security</span>
 			</td>
 			<td>
 				<form id="mqtt_authmode_form">
@@ -1937,6 +1896,171 @@
 	</table>
 
 
+	<!-- WEBHOOK -->
+	<table class="table">
+		<colgroup>
+			<col span="1" style="width:310px">
+			<col span="1" style="width:310px;">
+			<col span="1">
+		</colgroup>
+
+		<tr>
+			<th>
+				<span>Webhook</span>
+			</th>
+			<th class="section">
+				<form id="webhook_enabled_form">
+					<select style="font-weight:bold" class="classvisibility_init" name="webhook.enabled" id="webhook_enabled_value"
+							onchange="setClassVisibility('classvisibility_webhook_enabled', this.value);
+								this.value == 'true' ? $(webhook_authmode_value).trigger('onchange') : null;
+								gatherChangedParameter(this.form)">
+						<option value="false" selected>Disabled</option>
+						<option value="true">Enabled</option>
+					</select>
+				</form>
+			</th>
+			<th hidden>$TOOLTIP_webhook_enabled</th>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled">
+			<td class="indent1">
+				<span>URI</span>
+			</td>
+			<td>
+				<form id="webhook_uri_form">
+					<input required type="text" name="webhook.uri" id="webhook_uri_value" placeholder="http://"
+						onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_uri</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled">
+			<td class="indent1">
+				<span>API Key</span>
+			</td>
+			<td>
+				<form id="webhook_database_form">
+					<input required type="text" name="webhook.apikey" id="webhook_apikey_value"
+						onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_apikey</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled">
+			<td class="indent1">
+				<span>Publish Image</span>
+			</td>
+			<td>
+				<form id="webhook_publishimage_form">
+					<select name="webhook.publishimage" id="webhook_publishimage_value"
+							onchange="gatherChangedParameter(this.form, true)">
+						<option value="0" selected>Disabled</option>
+						<option value="1">Enabled</option>
+						<option value="2">Enabled (On Error)</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_publishimage</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled">
+			<td class="indent1">
+				<span>Authentication / Security</span>
+			</td>
+			<td>
+				<form id="webhook_authmode_form">
+					<select name="webhook.authmode" id="webhook_authmode_value"
+							onload=""
+							onchange="this.value == '1' ? (setClassVisibility('classvisibility_webhook_authtls', 'false'),
+														   setClassVisibility('classvisibility_webhook_authbasic', 'true')) :
+									  this.value == '2' ? (setClassVisibility('classvisibility_webhook_authtls', 'true'),
+									  						gatherChangedParameter(webhook_tls_cacert_form),
+															gatherChangedParameter(webhook_tls_clientcert_form),
+															gatherChangedParameter(webhook_tls_clientkey_form)) :
+														  (setClassVisibility('classvisibility_webhook_authbasic', 'false'),
+									   					   setClassVisibility('classvisibility_webhook_authtls', 'false'));
+										gatherChangedParameter(this.form, true)">
+						<option value="0" selected>None</option>
+						<option value="1">Basic</option>
+						<option value="2">TLS</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_authmode</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authbasic classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>Username</span>
+			</td>
+			<td>
+				<form id="webhook_username_form">
+					<input type="text" name="webhook.username" id="webhook_username_value"
+						onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_username</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authbasic classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>Password</span>
+			</td>
+			<td>
+				<form id="webhook_password_form">
+					<input type="password" name="webhook.password" id="webhook_password_value" autocomplete="on"
+						onchange="gatherChangedParameter(this.form)">
+						<span toggle="#webhook_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_password</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>CA Certificate</span>
+			</td>
+			<td>
+				<form id="webhook_tls_cacert_form">
+					<select class="select_large" name="webhook.tls.cacert" id="webhook_tls_cacert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_tls_cacert</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>Client Certificate</span>
+			</td>
+			<td>
+				<form id="webhook_tls_clientcert_form">
+					<select class="select_large" name="webhook.tls.clientcert" id="webhook_tls_clientcert_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_tls_clientcert</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>Client Key</span>
+			</td>
+			<td>
+				<form id="webhook_tls_clientkey_form">
+					<select class="select_large" name="webhook.tls.clientkey" id="webhook_tls_clientkey_value"
+						onchange="gatherChangedParameter(this.form)">
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_tls_clientkey</td>
+		</tr>
+	</table>
+
 	<!-- GPIO -->
 	<table class="table">
 		<colgroup>
@@ -2007,16 +2131,17 @@
 					<select name="gpio.gpiopin.0.pinmode" id="gpio_gpiopin_0_pinmode_value"
 							onchange='gpioPinModeChanged();gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
 								gatherChangedParameter(this.form)'>
-						<option value="flashlight-default">flashlight-default</option>
-						<option value="flashlight-pwm">flashlight-pwm</option>
-						<option value="flashlight-smartled">flashlight-smartled</option>
-						<option value="flashlight-digital">flashlight-digital</option>
-						<option value="input" selected>input</option>
-						<option value="input-pullup">input-pullup</option>
-						<option value="input-pulldown">input-pulldown</option>
-						<option value="output">output</option>
-						<option value="output-pwm">output-pwm</option>
-						<option value="trigger-cycle-start">trigger-cycle-start</option>
+						<option value="flashlight-default">Flashlight Default</option>
+						<option value="flashlight-pwm">Flashlight PWM</option>
+						<option value="flashlight-smartled">Flashlight Smartled</option>
+						<option value="flashlight-digital">Flashlight Digital</option>
+						<option value="input" selected>Input</option>
+						<option value="input-pullup">Input Pullup</option>
+						<option value="input-pulldown">Input Pulldown</option>
+						<option value="output">Output</option>
+						<option value="output-pwm">Output PWM</option>
+						<option value="trigger-cycle-start">Trigger Cycle Start</option>
+						<option value="resume-wlan-connection">Resume WLAN Connection</option>
 					</select>
 				</form>
 			</td>
@@ -2032,10 +2157,10 @@
 					<select name="gpio.gpiopin.0.capturemode" id="gpio_gpiopin_0_capturemode_value"
 							onchange='gpioPinModeChanged(); gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
 								gatherChangedParameter(this.form)'>
-						<option value="cyclic-polling" selected>cyclic-polling</option>
-						<option value="interrupt-rising-edge">interrupt-rising-edge</option>
-						<option value="interrupt-falling-edge">interrupt-falling-edge</option>
-						<option value="interrupt-rising-falling">interrupt-rising-falling</option>
+						<option value="cyclic-polling" selected>Cyclic Polling</option>
+						<option value="interrupt-rising-edge">Interrupt Rising Edge</option>
+						<option value="interrupt-falling-edge">Interrupt Falling Edge</option>
+						<option value="interrupt-rising-falling">Interrupt Rising+Falling</option>
 					</select>
 				</form>
 			</td>
@@ -2070,6 +2195,22 @@
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_pwmfrequency</td>
+		</tr>
+
+		<tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled gpio_show_logiclevel classexpert_gpio">
+			<td class="indent1">
+				<span>Pin Logic Level</span>
+			</td>
+			<td>
+				<form class="form_gpio_config" id="gpio_gpiopin_logicactivelow_form">
+					<select name="gpio.gpiopin.0.logicactivelow" id="gpio_gpiopin_0_logicactivelow_value"
+							onchange="gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)">
+						<option value="false" selected>Active High</option>
+						<option value="true">Active Low</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_logicactivelow</td>
 		</tr>
 
 		<tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled classexpert_gpio">
@@ -2307,76 +2448,87 @@
 		</tr>
 
 		<tr>
-			<td style="padding-top:25px">
-				<b>WLAN Configuration</b>
-			</td>
-			<td colspan="2" style="padding-top:25px">
-				<span style="font-weight:bold;color:red;display:none;"
-					id="wlan_reboot_note">Reboot required to apply changes!</span>
-			</td>
-		</tr>
-<!--- //@TODO FEATURE. Not yet implemented
-		<tr class="expert">
 			<td class="indent1">
 				<span>Operation Mode</span>
 			</td>
 			<td>
-				<form id="network_wlan_opmode_enabled_form">
-					<select class="classvisibility_init" name="network.wlan.opmode" id="network_wlan_opmode_value"
-							onchange="gatherChangedParameter(this.form)">
-						<option value="-1">Off</option>
-						<option value="0" selected>On, Station Full</option>
-						<option value="1">On, Station Limited</option>
-						<option value="2">On, AP Full</option>
-						<option value="3">On, AP Limited</option>
+				<form id="network_opmode_form">
+					<select class="classvisibility_init" name="network.opmode" id="network_opmode_value"
+							onchange="networkOpModeChanged(this.value);gatherChangedParameter(this.form, true);
+								rebootRequired()">
+						<option value="-1">Disabled</option>
+						<option value="0" selected>WLAN Client</option>
+						<option value="1">WLAN Client (Timed-Off)</option>
+						<option value="2">WLAN Access Point</option>
+						<option value="3">WLAN Access Point (Timed-Off)</option>
 					</select>
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_network_wlan_opmode</td>
+			<td style="visibility:hidden">$TOOLTIP_network_opmode</td>
 		</tr>
--->
-		<tr>
+
+		<tr class="classvisibility_network_opmode_offdelay">
+			<td class="indent2">
+				<span>Timed-Off Delay</span>
+			</td>
+			<td>
+				<form id="network_timedoffdelay_form">
+					<input required type="number" min="1" value="60"
+						name="network.timedoffdelay" id="network_timedoffdelay_value"
+						onchange="(!validity.rangeUnderflow||(value=1));gatherChangedParameter(this.form, true)">Minutes
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_network_timedoffdelay</td>
+		</tr>
+
+		<tr class="classvisibility_network_opmode_client">
+			<td style="padding-top:25px">
+				<b>WLAN Client Configuration</b>
+			</td>
+		</tr>
+
+		<tr class="classvisibility_network_opmode_client">
 			<td class="indent1">
 				<span>SSID</span>
 			</td>
 			<td>
 				<form id="network_wlan_ssid_form">
-					<input required type="text" name="network.wlan.ssid" id="network_wlan_ssid_value" placeholder="SSID Name Access Point"
-						onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
+					<input required type="text" name="network.wlan.ssid" id="network_wlan_ssid_value" maxlength="32" placeholder="SSID Name Access Point"
+						onchange="gatherChangedParameter(this.form), rebootRequired()">
 						<!--<span toggle="#network_wlan_ssid_value" class="fa fa-fw fa-search field-icon"></span> //@TODO FEATURE. Not yet implemented -->
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_ssid</td>
 		</tr>
 
-		<tr>
+		<tr class="classvisibility_network_opmode_client">
 			<td class="indent1">
 				<span>Password</span>
 			</td>
 			<td>
 				<form class="wrapper" id="network_wlan_password_form">
 					<input type="password" name="network.wlan.password" id="network_wlan_password_value" autocomplete="on"
-						onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
+						onchange="gatherChangedParameter(this.form), rebootRequired()">
 						<span toggle="#network_wlan_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_password</td>
 		</tr>
 
-		<tr>
+		<tr class="classvisibility_network_opmode_client">
 			<td class="indent1">
 				<span>Hostname</span>
 			</td>
 			<td>
 				<form id="network_wlan_hostname_form">
 					<input required type="text" name="network.hostname" id="network_wlan_hostname_value" placeholder="watermeter"
-						onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
+						onchange="gatherChangedParameter(this.form), rebootRequired()">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_hostname</td>
 		</tr>
 
-		<tr>
+		<tr class="classvisibility_network_opmode_client">
 			<td class="indent1">
 				<span>Network Configuration</span>
 			</td>
@@ -2384,7 +2536,7 @@
 				<form id="network_wlan_ipv4_networkconfig_form">
 					<select class="classvisibility_init" name="network.wlan.ipv4.networkconfig" id="network_wlan_ipv4_networkconfig_value"
 							onchange="setClassVisibility('classvisibility_network_wlan_ipv4_networkconfig', this.value == 1);
-								$('#wlan_reboot_note').show();gatherChangedParameter(this.form, true)">
+								gatherChangedParameter(this.form, true), rebootRequired()">
 						<option value="0" selected>DHCP</option>
 						<option value="1">Static</option>
 					</select>
@@ -2393,66 +2545,67 @@
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_ipv4_networkconfig</td>
 		</tr>
 
-		<tr class="classvisibility_network_wlan_ipv4_networkconfig">
+		<tr class="classvisibility_network_opmode_client classvisibility_network_wlan_ipv4_networkconfig">
 			<td class="indent2">
 				<span>IP Address</span>
 			</td>
 			<td>
 				<form id="network_wlan_ipv4_ipaddress_form">
 					<input required type="text" ip-mask name="network.wlan.ipv4.ipaddress" id="network_wlan_ipv4_ipaddress_value"
-						placeholder="192.168.xxx.xxx" onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
+						placeholder="192.168.xxx.xxx" onchange="gatherChangedParameter(this.form), rebootRequired()">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_ipv4_ipaddress</td>
 		</tr>
 
-		<tr class="classvisibility_network_wlan_ipv4_networkconfig">
+		<tr class="classvisibility_network_opmode_client classvisibility_network_wlan_ipv4_networkconfig">
 			<td class="indent2">
 				<span>Subnet Mask</span>
 			</td>
 			<td>
 				<form id="network_wlan_ipv4_subnetmask_form">
 					<input required type="text" ip-mask name="network.wlan.ipv4.subnetmask" id="network_wlan_ipv4_subnetmask_value"
-						placeholder="255.255.255.0" onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
+						placeholder="255.255.255.0" onchange="gatherChangedParameter(this.form), rebootRequired()">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_ipv4_subnetmask</td>
 		</tr>
 
-		<tr class="classvisibility_network_wlan_ipv4_networkconfig">
+		<tr class="classvisibility_network_opmode_client classvisibility_network_wlan_ipv4_networkconfig">
 			<td class="indent2">
 				<span>Gateway Address</span>
 			</td>
 			<td>
 				<form id="network_wlan_ipv4_gatewayaddress_form">
 					<input required type="text" ip-mask name="network.wlan.ipv4.gatewayaddress" id="network_wlan_ipv4_gatewayaddress_value"
-						placeholder="192.168.xxx.xxx" onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
+						placeholder="192.168.xxx.xxx" onchange="gatherChangedParameter(this.form), rebootRequired()">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_ipv4_gatewayaddress</td>
 		</tr>
 
-		<tr class="classvisibility_network_wlan_ipv4_networkconfig">
+		<tr class="classvisibility_network_opmode_client classvisibility_network_wlan_ipv4_networkconfig">
 			<td class="indent2">
 				<span>DNS Server</span>
 			</td>
 			<td>
 				<form id="network_wlan_ipv4_dnsserver_form">
 					<input type="text" ip-mask name="network.wlan.ipv4.dnsserver" id="network_wlan_ipv4_dnsserver_value"
-						placeholder="192.168.xxx.xxx" onchange="$('#wlan_reboot_note').show();gatherChangedParameter(this.form)">
+						placeholder="192.168.xxx.xxx" onchange="gatherChangedParameter(this.form), rebootRequired()">
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_ipv4_dnsserver</td>
 		</tr>
 
-		<tr class="expert">
+		<tr class="classvisibility_network_opmode_client expert">
 			<td class="indent1">
 				<span>Roaming</span>
 			</td>
 			<td>
 				<form id="network_wlan_wlanroaming_enabled_form">
 					<select class="classvisibility_init" name="network.wlan.wlanroaming.enabled" id="network_wlan_wlanroaming_enabled_value"
-							onchange="setClassVisibility('classvisibility_network_wlan_wlanroaming_enabled', this.value); gatherChangedParameter(this.form)">
+							onchange="setClassVisibility('classvisibility_network_wlan_wlanroaming_enabled', this.value);
+								gatherChangedParameter(this.form)">
 						<option value="false" selected>Disabled</option>
 						<option value="true">Enabled</option>
 					</select>
@@ -2461,7 +2614,7 @@
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_wlanroaming_enabled</td>
 		</tr>
 
-		<tr class="classvisibility_network_wlan_wlanroaming_enabled expert">
+		<tr class="classvisibility_network_opmode_client classvisibility_network_wlan_wlanroaming_enabled expert">
 			<td class="indent2">
 				<span>RSSI Threshold</span>
 			</td>
@@ -2474,6 +2627,67 @@
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_network_wlan_wlanroaming_rssithreshold</td>
+		</tr>
+
+		<tr class="classvisibility_network_opmode_ap classvisibility_network_wlan_fallbackap">
+			<td style="padding-top:25px">
+				<b>WLAN Access Point Configuration</b>
+			</td>
+		</tr>
+
+		<tr class="classvisibility_network_opmode_ap classvisibility_network_wlan_fallbackap">
+			<td class="indent1">
+				<span>SSID</span>
+			</td>
+			<td>
+				<form id="network_wlanap_ssid_form">
+					<input type="text" name="network.wlanap.ssid" id="network_wlanap_ssid_value" maxlength="32" placeholder="AI-on-the-Edge Device"
+						onchange="gatherChangedParameter(this.form), rebootRequired()">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_network_wlanap_ssid</td>
+		</tr>
+
+		<tr class="classvisibility_network_opmode_ap classvisibility_network_wlan_fallbackap">
+			<td class="indent1">
+				<span>Password</span>
+			</td>
+			<td>
+				<form class="wrapper" id="network_wlanap_password_form">
+					<input type="password" name="network.wlanap.password" id="network_wlanap_password_value" minlength="8" autocomplete="on"
+						onchange="gatherChangedParameter(this.form), rebootRequired()">
+						<span toggle="#network_wlanap_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_network_wlanap_password</td>
+		</tr>
+
+		<tr class="classvisibility_network_opmode_ap classvisibility_network_wlan_fallbackap">
+			<td class="indent1">
+				<span>Channel</span>
+			</td>
+			<td>
+				<form id="network_wlanap_channel_form">
+					<input type="number" min="1" max="14" value="11"
+						name="network.wlanap.channel" id="network_wlanap_channel_value"
+						onchange="(!validity.rangeUnderflow||(value=1)) && (!validity.rangeOverflow||(value=14));
+							gatherChangedParameter(this.form, true), rebootRequired()">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_network_wlanap_channel</td>
+		</tr>
+
+		<tr class="classvisibility_network_opmode_ap classvisibility_network_wlan_fallbackap">
+			<td class="indent1">
+				<span>IP Address</span>
+			</td>
+			<td>
+				<form id="network_wlanap_ipv4_ipaddress_form">
+					<input type="text" ip-mask name="network.wlanap.ipv4.ipaddress" id="network_wlanap_ipv4_ipaddress_value"
+						placeholder="192.168.4.1" onchange="gatherChangedParameter(this.form), rebootRequired()">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_network_wlanap_ipv4_ipaddress</td>
 		</tr>
 
 		<tr>
@@ -2563,7 +2777,7 @@
 			<td>
 				<form id="system_cpufrequency_form">
 					<select name="system.cpufrequency" id="system_cpufrequency_value"
-							onchange="gatherChangedParameter(this.form, true)">
+							onchange="gatherChangedParameter(this.form, true), rebootRequired()">
 						<option value="160" selected>160 MHz</option>
 						<option value="240">240 MHz</option>
 					</select>
@@ -2666,6 +2880,7 @@
 		<tr>
 			<td>
 				<button class="button" id="button_saveConfig" onclick="saveConfigData()">Save And Apply</button>
+				<button class="button" id="button_saveConfigAndReboot" onclick="saveConfigData(true)" hidden>Save And <b>Reboot</b></button>
 			</td>
 		</tr>
 	</table>
@@ -2696,6 +2911,53 @@
 			input.attr("type", "password");
 		}
 	});
+
+
+	function setVariableInputLimits()
+    {
+        let sensorFrameSizeWidth = 1600; // Default
+        let sensorFrameSizeHeight = 1200; // Default
+        let autoExposureLimit = 2; // Default
+
+        if (jsonConfig.takeimage.camera.cameramodel == 1) { // OV2640
+            sensorFrameSizeWidth = 1600;
+            sensorFrameSizeHeight = 1200;
+
+            autoExposureLimit = 2;
+        }
+        else if (jsonConfig.takeimage.camera.cameramodel == 3) { // OV5640
+            sensorFrameSizeWidth = 2560;
+            sensorFrameSizeHeight = 1920;
+
+            autoExposureLimit = 5;
+        }
+        else {
+            firework.launch('Camera model unknown. Zoom factor range / limits may be wrong', 'warning', 5000);
+        }
+
+        $('#takeimage_camera_zoomfactor_value').attr({"max" : (sensorFrameSizeWidth * 1000) / 640});
+
+        let imageWidthZoomed = parseInt((sensorFrameSizeWidth * 1000) / $('#takeimage_camera_zoomfactor_value').val());
+        imageWidthZoomed += (imageWidthZoomed % 4); // Make it dividable by 4
+
+        let imageZoomOffsetXMax = (sensorFrameSizeWidth - imageWidthZoomed) / 2;
+        $('#takeimage_camera_zoomoffsetx_value').attr({"max" : imageZoomOffsetXMax, "min" : -1 * imageZoomOffsetXMax});
+        $('#takeimage_camera_zoomoffsetx_value').trigger('onchange');
+
+        let imageHeightZoomed = parseInt((sensorFrameSizeHeight * 1000) / $('#takeimage_camera_zoomfactor_value').val());
+        imageHeightZoomed += (imageHeightZoomed % 4); // Make it dividable by 4
+
+        let imageZoomOffsetYMax = (sensorFrameSizeHeight - imageHeightZoomed) / 2;
+        $('#takeimage_camera_zoomoffsety_value').attr({"max" : imageZoomOffsetYMax, "min" : -1 * imageZoomOffsetYMax});
+        $('#takeimage_camera_zoomoffsety_value').trigger('onchange');
+
+        $('#takeimage_camera_autoexposurelevel_value').attr({"max" : autoExposureLimit, "min" : -1 * autoExposureLimit});
+        $('#takeimage_camera_autoexposurelevel_value').trigger('onchange');
+
+        $('#takeimage_camera_manualexposurevalue_value').attr({"max" : sensorFrameSizeHeight});
+        $('#takeimage_camera_manualexposurevalue_value').trigger('onchange');
+    }
+
 
 	function initGpioSection()
 	{
@@ -2788,24 +3050,27 @@
 		let elPinMode = document.querySelectorAll('[id$="pinmode_value"]')[0];
 		let elPinCaptureMode = document.querySelectorAll('[id$="capturemode_value"]')[0];
 
-		if ((pwm && elPinMode.value == "flashlight-default") ||
-			elPinMode.value == "flashlight-pwm" ||
-			elPinMode.value == "output-pwm"
-		)
+		if ((pwm && elPinMode.value == "flashlight-default") || elPinMode.value == "flashlight-pwm" ||
+				elPinMode.value == "output-pwm") {
 			setClassVisibility("gpio_show_pwm_frequency", true);
-		else
+		}
+		else {
 			setClassVisibility("gpio_show_pwm_frequency", false);
+		}
 
-		if (elPinMode.value == "input" ||
-			elPinMode.value == "input-pullup" ||
-			elPinMode.value == "input-pulldown")
-		{
+		if (elPinMode.value == "input" || elPinMode.value == "input-pullup" || elPinMode.value == "input-pulldown") {
 			setClassVisibility("gpio_show_capture_mode", true);
 
-			if (elPinCaptureMode.value != "cyclic-polling")
+			if (elPinCaptureMode.value != "cyclic-polling") {
 				setClassVisibility("gpio_show_debounce_time", true);
-			else
+			}
+			else {
 				setClassVisibility("gpio_show_debounce_time", false);
+			}
+		}
+		else if (elPinMode.value == "trigger-cycle-start" || elPinMode.value == "resume-wlan-connection") {
+			setClassVisibility("gpio_show_capture_mode", false);
+			setClassVisibility("gpio_show_debounce_time", true);
 		}
 		else {
 			setClassVisibility("gpio_show_capture_mode", false);
@@ -2820,12 +3085,20 @@
 			setClassVisibility("gpio_show_smartled", false);
 
 
-		if (elPinMode.value .substring(0,10) == "flashlight" &&
-			elPinMode.value  != "flashlight-digital"
-		)
+		if (elPinMode.value.substring(0,10) == "flashlight" && elPinMode.value != "flashlight-digital") {
 			setClassVisibility("gpio_show_intersity_correction", true);
-		else
+		}
+		else {
 			setClassVisibility("gpio_show_intersity_correction", false);
+		}
+
+		if (elPinMode.value == "flashlight-digital" || elPinMode.value == "trigger-cycle-start" ||
+			elPinMode.value == "resume-wlan-connection") {
+			setClassVisibility("gpio_show_logiclevel", true);
+		}
+		else {
+			setClassVisibility("gpio_show_logiclevel", false);
+		}
 	}
 
 
@@ -2899,6 +3172,9 @@
 				analogModelSelection.append(new Option(modelFileArray[i].substring(0, modelFileArray[i].lastIndexOf('.')), modelFileArray[i]));
 			}
 		}
+
+		digitModelSelection.val("");
+		analogModelSelection.val("");
 	}
 
 
@@ -2911,7 +3187,7 @@
 		let certFileArray = certFileListObj.files.sort(); // Convert to array and sort
 
 		// Add empty selection
-		cacertSelection.append(new Option("None", ""));
+		cacertSelection.append(new Option("Default (Built-In Certificate Bundle)", ""));
 		clientcertSelection.append(new Option("None", ""));
 		clientkeySelection.append(new Option("None", ""));
 
@@ -2920,20 +3196,73 @@
 			clientcertSelection.append(new Option(certFileArray[i], certFileArray[i]));
 			clientkeySelection.append(new Option(certFileArray[i], certFileArray[i]));
 		}
+
+		cacertSelection.val("");
+		clientcertSelection.val("");
+		clientkeySelection.val("");
 	}
 
 
-	function saveConfigData()
+	function networkOpModeChanged(opmode)
+	{
+		if (opmode == '-1') {
+			setClassVisibility('classvisibility_network_opmode_client', 'false');
+			setClassVisibility('classvisibility_network_opmode_ap', 'false');
+			setClassVisibility('classvisibility_network_opmode_offdelay', 'false');
+		}
+		else if (opmode == '0') {
+			setClassVisibility('classvisibility_network_opmode_client', 'true');
+			setClassVisibility('classvisibility_network_opmode_ap', 'false');
+			setClassVisibility('classvisibility_network_opmode_offdelay', 'false');
+			$(network_wlan_ipv4_networkconfig_value).trigger('onchange');
+			$(network_wlan_wlanroaming_enabled_value).trigger('onchange');
+		}
+		else if (opmode == '1') {
+			setClassVisibility('classvisibility_network_opmode_client', 'true');
+			setClassVisibility('classvisibility_network_opmode_ap', 'false');
+			setClassVisibility('classvisibility_network_opmode_offdelay', 'true');
+			$(network_wlan_ipv4_networkconfig_value).trigger('onchange');
+			$(network_wlan_wlanroaming_enabled_value).trigger('onchange');
+		}
+		else if (opmode == '2') {
+			setClassVisibility('classvisibility_network_opmode_client', 'false');
+			setClassVisibility('classvisibility_network_opmode_ap', 'true');
+			setClassVisibility('classvisibility_network_opmode_offdelay', 'false');
+		}
+		else if (opmode == '3') {
+			setClassVisibility('classvisibility_network_opmode_client', 'false'),
+			setClassVisibility('classvisibility_network_opmode_ap', 'true'),
+			setClassVisibility('classvisibility_network_opmode_offdelay', 'true');
+		}
+		else {
+			console.error("Network operation mode unknown: " + opmode)
+		}
+	}
+
+
+	function rebootRequired()
+	{
+		setElVisibility(button_saveConfig, false);
+		setElVisibility(button_saveConfigAndReboot, true);
+	}
+
+
+	function saveConfigData(reboot = false)
 	{
 		if (confirm("Are you sure you want to save and apply the new configuration?")) {
 			firework.launch('Save and apply configuration...', 'success', 2000, true);
 
 			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
 				setTimeout(function() {
-					reloadConfig();
-					setTimeout(function() {
-						init();
-					}, 500);
+					if (!reboot) {
+						reloadConfig();
+						setTimeout(function() {
+							init();
+						}, 500);
+					}
+					else {
+						window.location.replace("sys_reboot_page.html?v=$COMMIT_HASH#reboot");
+					}
 				}, 500);
 			});
 		}
@@ -2955,7 +3284,12 @@
 		triggerClassElementOnChange("classvisibility_init");
 		jsonConfigModifiedDelta = {}; // Reset modified parameter container after subparameter visibilty is set
 
-		$("#wlan_reboot_note").hide(); // Hide reboot note
+		// Preset save button visibility -> Default: Save and Apply (no reboot)
+		setElVisibility(button_saveConfig, true);
+		setElVisibility(button_saveConfigAndReboot, false);
+
+		setVariableInputLimits();
+
 		$("#divloading").hide(); // Hide loading indicator
 		$("#divcontent").show(); // Show parameter content
 	}
@@ -2983,7 +3317,6 @@
 				firework.launch('Failed loading data for configuration page. Please repeat or check logs', 'danger', 30000);
 				console.error("Failed loading data for configuration page. Error: " + error.message);
 			});
-
 	}
 
 

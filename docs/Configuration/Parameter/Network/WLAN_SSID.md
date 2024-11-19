@@ -8,7 +8,7 @@
 
 ## Description
 
-SSID (WLAN Name) of the wireless network
+SSID (name of wireless network) of the wireless network
 
 
 !!! Note

@@ -7,6 +7,7 @@
 #include <cJSON.h>
 
 #include <mqtt_client.h>
+#include <esp_crt_bundle.h>
 
 #ifdef DEBUG_DETAIL_ON
 #include <esp_timer.h>
@@ -21,32 +22,41 @@
 static const char *TAG = "MQTT_IF";
 
 static const CfgData::SectionMqtt* cfgDataPtr;
-static int keepAlive;
+
 static std::string LWTTopic;
 static std::string TLSCACert;
 static std::string TLSClientCert;
 static std::string TLSClientKey;
 
-static strMqttState mqttState = {};
+static int keepAlive;
 
-static std::map<std::string, std::function<void()>>* connectFunktionMap = NULL;
-static std::map<std::string, std::function<bool(std::string, char*, int)>>* subscribeFunktionMap = NULL;
+static struct strMqttState {
+    bool mqttEnabled = false;
+    bool mqttInitialized = false;
+    bool mqttConnected = false;
+
+    int failedOnCycle = -1;
+    int mqttReconnectCnt = 0;
+} mqttState;
 
 static esp_mqtt_client_handle_t mqttClient = NULL;
 static const esp_mqtt_event_id_t mqttEventID = MQTT_EVENT_ANY;
 
+static std::map<std::string, std::function<void()>>* connectFunctionMap = NULL;
+static std::map<std::string, std::function<bool(std::string, char*, int)>>* subscribeFunctionMap = NULL;
 
-bool MQTTPublish(std::string _key, std::string _content, int _qos, bool _retainFlag)
+
+bool publishMqttData(std::string _key, std::string _content, int _qos, bool _retainFlag)
 {
-    if (!mqttState.mqttEnabled) { // MQTT sevice not started / configured (MQTT_Init not called before)
+    if (!mqttState.mqttEnabled) { // MQTT service disabled
         return false;
     }
 
-    if (mqttState.failedOnCycle == getFlowCycleCounter()) { // we already failed in this cycle, do not retry until the next cycle
+    if (mqttState.failedOnCycle == getFlowCycleCounter()) { // Already a failed transmission in this cycle
         return true; // Fail quietly
     }
 
-    MQTT_Init(); // Re-Init client if not initialized yet/anymore
+    startMqttClient(); // Restart client if not started yet/anymore
 
     if (mqttState.mqttInitialized && mqttState.mqttConnected) {
         #ifdef DEBUG_DETAIL_ON
@@ -99,17 +109,17 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             mqttState.mqttReconnectCnt = 0;
             mqttState.mqttInitialized = true;
             mqttState.mqttConnected = true;
-            MQTTconnected();
+            isConnectedState();
             break;
 
         case MQTT_EVENT_DISCONNECTED:
             mqttState.mqttConnected = false;
             mqttState.mqttReconnectCnt++;
-            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Disconnected, retry to connect");
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Disconnected. Retry to connect");
 
             if (mqttState.mqttReconnectCnt >= 5) {
                 mqttState.mqttReconnectCnt = 0;
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Disconnected, multiple reconnect attempts failed. Retry");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Multiple reconnect attempts failed. Retry to connect");
             }
             break;
 
@@ -132,10 +142,10 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
                 ESP_LOGI(TAG, "DATA=%.*s", event->data_len, event->data);
             #endif
             topic.assign(event->topic, event->topic_len);
-            if (subscribeFunktionMap != NULL) {
-                if (subscribeFunktionMap->find(topic) != subscribeFunktionMap->end()) {
+            if (subscribeFunctionMap != NULL) {
+                if (subscribeFunctionMap->find(topic) != subscribeFunctionMap->end()) {
                     //ESP_LOGD(TAG, "call subcribe function for topic %s", topic.c_str());
-                    (*subscribeFunktionMap)[topic](topic, event->data, event->data_len);
+                    (*subscribeFunctionMap)[topic](topic, event->data, event->data_len);
                 }
                 else {
                     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip request, topic not subscribed");
@@ -203,7 +213,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 }
 
 
-bool MQTT_Configure(const CfgData::SectionMqtt *_param, int keepAlive)
+bool configureMqttClient(const CfgData::SectionMqtt *_param, int keepAlive)
 {
     cfgDataPtr = _param;
     keepAlive = keepAlive;
@@ -272,31 +282,29 @@ bool MQTT_Configure(const CfgData::SectionMqtt *_param, int keepAlive)
         }
     }
 
-    mqttState.mqttConfigOK = true;
+    mqttState.mqttEnabled = true;
     return true;
 }
 
 
-int MQTT_Init()
+int startMqttClient(void)
 {
     if (mqttState.mqttInitialized) {
         return 0;
     }
 
-    if (mqttState.mqttConfigOK) {
-        mqttState.mqttEnabled = true;
-    } else {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but client is not yet configured.");
+    if (!mqttState.mqttEnabled) {
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but service is not configured");
         return 0;
     }
 
-    if (!getWIFIisConnected()) {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but WIFI is not yet connected.");
+    if (!getWifiIsConnected()) {
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but wlan is not yet connected");
         return 0;
     }
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init MQTT service");
-    MQTTdestroy_client(false);
+    deinitMqttClient();
 
     esp_mqtt_client_config_t mqtt_cfg = { };
 
@@ -309,20 +317,25 @@ int MQTT_Init()
     mqtt_cfg.session.last_will.topic = LWTTopic.c_str();
     mqtt_cfg.session.last_will.retain = 1;
     mqtt_cfg.session.last_will.msg = std::string(MQTT_STATUS_OFFLINE).c_str();
-    //mqtt_cfg.session.last_will.msg_len = (int)(std::string(MQTT_STATUS_OFFLINE).length());
     mqtt_cfg.session.keepalive = keepAlive;
     mqtt_cfg.buffer.size = 1024;                         // size of MQTT send/receive buffer (Default: 1024)
 
-    if (cfgDataPtr->authMode > AUTH_NONE) {
+    if (cfgDataPtr->authMode == AUTH_BASIC) {
         mqtt_cfg.credentials.username = cfgDataPtr->username.c_str();
         mqtt_cfg.credentials.authentication.password = cfgDataPtr->password.c_str();
     }
+    else if (cfgDataPtr->authMode == AUTH_TLS) {
+        mqtt_cfg.credentials.username = cfgDataPtr->username.c_str();
+        mqtt_cfg.credentials.authentication.password = cfgDataPtr->password.c_str();
 
-    if (cfgDataPtr->authMode == AUTH_TLS) {
         if (!TLSCACert.empty()) {
             mqtt_cfg.broker.verification.certificate = TLSCACert.c_str();
             mqtt_cfg.broker.verification.certificate_len = TLSCACert.length() + 1;
             mqtt_cfg.broker.verification.skip_cert_common_name_check = true;    // Skip any validation of server certificate CN field
+        }
+        else {
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verfication");
+            mqtt_cfg.broker.verification.crt_bundle_attach = esp_crt_bundle_attach;
         }
 
         if (!TLSClientCert.empty()) {
@@ -366,39 +379,37 @@ int MQTT_Init()
 }
 
 
-void MQTTdestroy_client(bool _disable = false)
+void deinitMqttClient(bool disable)
 {
-    if (mqttClient) {
-        if (mqttState.mqttConnected) {
-            MQTTdestroySubscribeFunction();
-            //esp_mqtt_client_disconnect(mqttClient);
-            mqttState.mqttConnected = false;
-        }
-        esp_mqtt_client_stop(mqttClient);
-        esp_mqtt_client_destroy(mqttClient);
-        mqttClient = NULL;
-        mqttState.mqttInitialized = false;
+    if (disable) {
         mqttState.mqttEnabled = false;
     }
 
-    if (_disable) // Disable MQTT service, avoid restart with MQTTPublish
-        mqttState.mqttConfigOK = false;
+    mqttState.mqttInitialized = false;
+    mqttState.mqttConnected = false;
+
+    if (mqttClient) {
+        unregisterMqttSubscribeFunction();
+        esp_mqtt_client_stop(mqttClient);
+        esp_mqtt_client_destroy(mqttClient);
+        mqttClient = NULL;
+    }
 }
 
 
-bool getMQTTisEnabled()
+bool getMqttIsEnabled(void)
 {
     return mqttState.mqttEnabled;
 }
 
 
-bool getMQTTisConnected()
+bool getMqttIsConnected(void)
 {
     return mqttState.mqttConnected;
 }
 
 
-bool getMQTTisEncrypted()
+bool getMqttIsEncrypted(void)
 {
     if (cfgDataPtr != NULL && cfgDataPtr->authMode == AUTH_TLS)
         return true;
@@ -458,14 +469,14 @@ bool mqtt_handler_set_fallbackvalue(std::string _topic, char* _data, int _data_l
 }
 
 
-void MQTTconnected()
+void isConnectedState(void)
 {
     if (mqttState.mqttConnected) {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Connected to broker");
-        MQTTPublish(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, 1, false); // Send MQTT birth message "online"
+        publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, 1, false); // Send MQTT birth message "online"
 
-        if (connectFunktionMap != NULL) {
-            for(std::map<std::string, std::function<void()>>::iterator it = connectFunktionMap->begin(); it != connectFunktionMap->end(); ++it) {
+        if (connectFunctionMap != NULL) {
+            for(std::map<std::string, std::function<void()>>::iterator it = connectFunctionMap->begin(); it != connectFunctionMap->end(); ++it) {
                 it->second();
                 //ESP_LOGD(TAG, "call connect function %s", it->first.c_str());
             }
@@ -476,21 +487,21 @@ void MQTTconnected()
         //*****************************************
         // Subcribe to [mainTopic]/process/ctrl/flow_start
         std::function<bool(std::string topic, char* data, int data_len)> subHandler1 = mqtt_handler_flow_start;
-        MQTTregisterSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/cycle_start", subHandler1);
+        registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/cycle_start", subHandler1);
 
         // Subcribe to [mainTopic]/process/ctrl/set_fallbackvalue
         std::function<bool(std::string topic, char* data, int data_len)> subHandler2 = mqtt_handler_set_fallbackvalue;
-        MQTTregisterSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/set_fallbackvalue", subHandler2);
+        registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/set_fallbackvalue", subHandler2);
 
         // Subcribe to /homeassistant/status
         if (cfgDataPtr->homeAssistant.discoveryEnabled) {
             std::function<bool(std::string topic, char* data, int data_len)> subHandler3 = mqttServer_schedulePublishHADiscoveryFromMqtt;
-            MQTTregisterSubscribeFunction(cfgDataPtr->homeAssistant.statusTopic, subHandler3);
+            registerMqttSubscribeFunction(cfgDataPtr->homeAssistant.statusTopic, subHandler3);
         }
 
-       if (subscribeFunktionMap != NULL) {
-            for(std::map<std::string, std::function<bool(std::string, char*, int)>>::iterator it = subscribeFunktionMap->begin();
-                                                                                        it != subscribeFunktionMap->end(); ++it)
+       if (subscribeFunctionMap != NULL) {
+            for(std::map<std::string, std::function<bool(std::string, char*, int)>>::iterator it = subscribeFunctionMap->begin();
+                                                                                        it != subscribeFunctionMap->end(); ++it)
             {
                 int retVal = esp_mqtt_client_subscribe(mqttClient, it->first.c_str(), 0);
                 if (retVal >= 0)
@@ -503,19 +514,19 @@ void MQTTconnected()
 }
 
 
-void MQTTregisterConnectFunction(std::string name, std::function<void()> func)
+void registerMqttConnectFunction(std::string name, std::function<void()> func)
 {
     //ESP_LOGD(TAG, "MQTTregisteronnectFunction %s\r\n", name.c_str());
-    if (connectFunktionMap == NULL) {
-        connectFunktionMap = new std::map<std::string, std::function<void()>>();
+    if (connectFunctionMap == NULL) {
+        connectFunctionMap = new std::map<std::string, std::function<void()>>();
     }
 
-    if ((*connectFunktionMap)[name] != NULL) {
+    if ((*connectFunctionMap)[name] != NULL) {
         ESP_LOGD(TAG, "Connect function %s already registred", name.c_str());
         return;
     }
 
-    (*connectFunktionMap)[name] = func;
+    (*connectFunctionMap)[name] = func;
 
     if (mqttState.mqttConnected) {
         func();
@@ -523,37 +534,37 @@ void MQTTregisterConnectFunction(std::string name, std::function<void()> func)
 }
 
 
-void MQTTunregisterConnectFunction(std::string name)
+void unregisterMqttConnectFunction(std::string name)
 {
     ESP_LOGD(TAG, "unregisterConnnectFunction %s\r\n", name.c_str());
-    if ((connectFunktionMap != NULL) && (connectFunktionMap->find(name) != connectFunktionMap->end())) {
-        connectFunktionMap->erase(name);
+    if ((connectFunctionMap != NULL) && (connectFunctionMap->find(name) != connectFunctionMap->end())) {
+        connectFunctionMap->erase(name);
     }
 }
 
 
-void MQTTregisterSubscribeFunction(std::string topic, std::function<bool(std::string, char*, int)> func)
+void registerMqttSubscribeFunction(std::string topic, std::function<bool(std::string, char*, int)> func)
 {
     //ESP_LOGD(TAG, "registerSubscribeFunction %s", topic.c_str());
-    if (subscribeFunktionMap == NULL) {
-        subscribeFunktionMap = new std::map<std::string, std::function<bool(std::string, char*, int)>>();
+    if (subscribeFunctionMap == NULL) {
+        subscribeFunctionMap = new std::map<std::string, std::function<bool(std::string, char*, int)>>();
     }
 
-    if ((*subscribeFunktionMap)[topic] != NULL) {
+    if ((*subscribeFunctionMap)[topic] != NULL) {
         ESP_LOGD(TAG, "Topic %s already registered for subscription", topic.c_str());
         return;
     }
 
-    (*subscribeFunktionMap)[topic] = func;
+    (*subscribeFunctionMap)[topic] = func;
 }
 
 
-void MQTTdestroySubscribeFunction()
+void unregisterMqttSubscribeFunction()
 {
-    if (subscribeFunktionMap != NULL) {
+    if (subscribeFunctionMap != NULL) {
         if (mqttState.mqttConnected) {
-            for(std::map<std::string, std::function<bool(std::string, char*, int)>>::iterator it = subscribeFunktionMap->begin();
-                                                                                        it != subscribeFunktionMap->end(); ++it)
+            for(std::map<std::string, std::function<bool(std::string, char*, int)>>::iterator it = subscribeFunctionMap->begin();
+                                                                                        it != subscribeFunctionMap->end(); ++it)
             {
                 int retVal = esp_mqtt_client_unsubscribe(mqttClient, it->first.c_str());
                 if (retVal >= 0)
@@ -563,9 +574,9 @@ void MQTTdestroySubscribeFunction()
             }
         }
 
-        subscribeFunktionMap->clear();
-        delete subscribeFunktionMap;
-        subscribeFunktionMap = NULL;
+        subscribeFunctionMap->clear();
+        delete subscribeFunctionMap;
+        subscribeFunctionMap = NULL;
     }
 }
 #endif //ENABLE_MQTT

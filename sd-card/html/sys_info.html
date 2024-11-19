@@ -153,6 +153,12 @@
 				<output class="badge" id="influxdbv2_status"></output>
 			</td>
 		</tr>
+		<tr>
+			<td>Webhook</td>
+			<td class="td-badge">
+				<output class="badge" id="webhook_status"></output>
+			</td>
+		</tr>
 	</table>
 
 	<table>
@@ -198,21 +204,33 @@
 			<h3>Network</h3>
 		</tr>
 		<tr>
-			<td>WLAN Status</td>
-			<td class="td-badge">
-				<output class="badge" id="wlan_status"></output>
+			<td>Operation Mode</td>
+			<td>
+				<output id="network_opmode"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>WLAN Name (SSID)</td>
+			<td>Connection Status</td>
+			<td class="td-badge">
+				<output class="badge" id="connection_status"></output>
+			</td>
+		</tr>
+		<tr>
+			<td>Network Name (SSID)</td>
 			<td>
 				<output id="wlan_ssid"></output>
 			</td>
 		</tr>
 		<tr>
-			<td>WLAN Signal (RSSI)</td>
+			<td>Signal Strength (RSSI)</td>
 			<td>
 				<output id="wlan_rssi"></output>
+			</td>
+		</tr>
+		<tr>
+			<td>WLAN Channel</td>
+			<td>
+				<output id="wlan_channel"></output>
 			</td>
 		</tr>
 		<tr>
@@ -563,6 +581,16 @@
 					addClassToElement("influxdbv2_status", "badge-error");
 				}
 
+				document.getElementById("webhook_status").value = _jsonData.webhook_status;
+				if (_jsonData.webhook_status.substring(0,7) == "Enabled")
+					addClassToElement("webhook_status", "badge-success");
+				else if (_jsonData.webhook_status == "Disabled")
+					addClassToElement("webhook_status", "badge-disabled");
+				else {
+					document.getElementById("webhook_status").value += " (Unknown Status)"
+					addClassToElement("webhook_status", "badge-error");
+				}
+
 				document.getElementById("ntp_syncstatus").value = _jsonData.ntp_syncstatus
 				if (_jsonData.ntp_syncstatus == "Synchronized")
 					addClassToElement("ntp_syncstatus", "badge-success");
@@ -587,14 +615,16 @@
 
 				document.getElementById("device_uptime").value = formatUptime(_jsonData.device_uptime);
 
-				document.getElementById("wlan_status").value = _jsonData.wlan_status;
-				if (_jsonData.wlan_status == "Connected")
-					addClassToElement("wlan_status", "badge-success");
+				document.getElementById("network_opmode").value = _jsonData.network_opmode;
+				document.getElementById("connection_status").value = _jsonData.connection_status;
+				if (_jsonData.connection_status == "Connected")
+					addClassToElement("connection_status", "badge-success");
 				else
-					addClassToElement("wlan_status", "badge-error");
+					addClassToElement("connection_status", "badge-error");
 
 				document.getElementById("wlan_ssid").value = _jsonData.wlan_ssid;
 				document.getElementById("wlan_rssi").value = _jsonData.wlan_rssi + " dBm";
+				document.getElementById("wlan_channel").value = _jsonData.wlan_channel;
 				document.getElementById("mac_address").value = _jsonData.mac_address;
 				document.getElementById("network_config").value = _jsonData.network_config;
 				document.getElementById("ipv4_address").value = _jsonData.ipv4_address;

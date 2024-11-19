@@ -8,6 +8,7 @@
 #include "ClassLogFile.h"
 #include "helper.h"
 #include "MainFlowControl.h"
+#include "connect_wlan.h"
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
@@ -23,15 +24,17 @@ extern QueueHandle_t gpio_queue_handle;
 // GPIO Pin
 //********************************************************************************
 GpioPin::GpioPin(gpio_num_t _gpio, const char* _name, gpio_pin_mode_t _mode, gpio_int_type_t _interruptType,
-                 int _debounceTime, int _frequency, bool _httpAccess, bool _mqttAccess, std::string _mqttTopic,
-                 LedType _LEDType, int _LEDQuantity, Rgb _LEDColor, int _intensityCorrection)
+                    int _debounceTime, int _frequency, bool _logicLevelActiveLow, bool _httpAccess, bool _mqttAccess,
+                    std::string _mqttTopic, LedType _LEDType, int _LEDQuantity, Rgb _LEDColor, int _intensityCorrection)
 {
     gpioISR.gpio = gpio = _gpio;
     name = _name;
     mode = _mode;
-    interruptType = mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ? GPIO_INTR_ANYEDGE : _interruptType;
-    gpioISR.debounceTime = mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ? 1000 : _debounceTime;
+    interruptType = mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+                    mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION ? GPIO_INTR_ANYEDGE : _interruptType;
+    gpioISR.debounceTime = _debounceTime;
     frequency = _frequency;
+    logicLevelActiveLow = _logicLevelActiveLow;
 
     httpAccess = _httpAccess;
     mqttAccess = _mqttAccess;
@@ -55,8 +58,9 @@ GpioPin::~GpioPin()
 
     gpio_reset_pin(gpio);
 
-    if (gpio == GPIO_FLASHLIGHT_DEFAULT)
+    if (gpio == GPIO_FLASHLIGHT_DEFAULT) {
         gpio_set_direction((gpio_num_t)GPIO_FLASHLIGHT_DEFAULT, GPIO_MODE_OUTPUT);
+    }
 }
 
 
@@ -74,8 +78,9 @@ static void IRAM_ATTR gpioPinISRHandler(void* arg)
 
         xQueueSendToBackFromISR(gpio_queue_handle, (void*)&gpioResult, &ContextSwitchRequest);
 
-        if (ContextSwitchRequest)
+        if (ContextSwitchRequest) {
             taskYIELD();
+        }
     }
 
     lastInterruptTime = interruptTime;
@@ -84,48 +89,54 @@ static void IRAM_ATTR gpioPinISRHandler(void* arg)
 
 void GpioPin::init()
 {
-    gpio_config_t io_conf;
+    gpio_config_t gpioConfig;
 
     //set interrupt
-    io_conf.intr_type = mode == GPIO_PIN_MODE_INPUT || mode == GPIO_PIN_MODE_INPUT_PULLUP ||
-                        mode == GPIO_PIN_MODE_INPUT_PULLDOWN || mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ?
-                                                                        interruptType : GPIO_INTR_DISABLE;
+    gpioConfig.intr_type = mode == GPIO_PIN_MODE_INPUT || mode == GPIO_PIN_MODE_INPUT_PULLUP ||
+                        mode == GPIO_PIN_MODE_INPUT_PULLDOWN || mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+                        mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION ? interruptType : GPIO_INTR_DISABLE;
 
     //set input / output mode
-    io_conf.mode = mode == GPIO_PIN_MODE_OUTPUT || mode == GPIO_PIN_MODE_OUTPUT_PWM ||
+    gpioConfig.mode = mode == GPIO_PIN_MODE_OUTPUT || mode == GPIO_PIN_MODE_OUTPUT_PWM ||
                    mode == GPIO_PIN_MODE_FLASHLIGHT_PWM || mode == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED ||
                    mode == GPIO_PIN_MODE_FLASHLIGHT_DIGITAL ? gpio_mode_t::GPIO_MODE_OUTPUT : gpio_mode_t::GPIO_MODE_INPUT;
 
     //bit mask of the pins that you want to set, e.g. GPIO12
-    io_conf.pin_bit_mask = (1ULL << gpio);
+    gpioConfig.pin_bit_mask = (1ULL << gpio);
 
     //set pull-down mode
-    io_conf.pull_down_en = mode == GPIO_PIN_MODE_INPUT_PULLDOWN ?
-                            gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
+    gpioConfig.pull_down_en = mode == GPIO_PIN_MODE_INPUT_PULLDOWN || (!logicLevelActiveLow && (mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+        mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION)) ? gpio_pulldown_t::GPIO_PULLDOWN_ENABLE : gpio_pulldown_t::GPIO_PULLDOWN_DISABLE;
 
     //set pull-up mode
-    io_conf.pull_up_en = mode == GPIO_PIN_MODE_INPUT_PULLUP || mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ?
-                            gpio_pullup_t::GPIO_PULLUP_ENABLE : gpio_pullup_t::GPIO_PULLUP_DISABLE;
+    gpioConfig.pull_up_en = mode == GPIO_PIN_MODE_INPUT_PULLUP || (logicLevelActiveLow && (mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+        mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION)) ? gpio_pullup_t::GPIO_PULLUP_ENABLE : gpio_pullup_t::GPIO_PULLUP_DISABLE;
 
     //configure GPIO with the given settings
-    gpio_config(&io_conf);
+    gpio_config(&gpioConfig);
 
-    if (io_conf.intr_type != GPIO_INTR_DISABLE) {
+    if (gpioConfig.intr_type != GPIO_INTR_DISABLE) {
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Register ISR handler for GPIO" + std::to_string((int)gpioISR.gpio) +
                                                 ", Debounce time: " + std::to_string(gpioISR.debounceTime));
         gpio_isr_handler_add(gpio, gpioPinISRHandler, (void*)&gpioISR); // Hook ISR handler for specific gpio pin
     }
 
-    pinState = (io_conf.pull_up_en == gpio_pullup_t::GPIO_PULLUP_ENABLE) ? 1 : 0;
+    // Set initial pin state (inputs: read actual pin state, outputs: 0)
+    updatePinState();
 
-    #ifdef ENABLE_MQTT
+    // Preset flashlight output if active low is activated
+    if ((mode == GPIO_PIN_MODE_FLASHLIGHT_DIGITAL) && logicLevelActiveLow) {
+        setPinState(true);
+    }
+
+#ifdef ENABLE_MQTT
     if (mqttAccess && (mode == GPIO_PIN_MODE_OUTPUT || mode == GPIO_PIN_MODE_OUTPUT_PWM)) {
         // Subcribe to [mainTopic]/device/gpio/[GpioName]/ctrl
         std::function<bool(std::string, char*, int)> func = std::bind(&GpioPin::mqttControlPinState, this, std::placeholders::_1,
                                                                         std::placeholders::_2, std::placeholders::_3);
-        MQTTregisterSubscribeFunction(mqttTopic + "/ctrl", func);
+        registerMqttSubscribeFunction(mqttTopic + "/ctrl", func);
     }
-    #endif //ENABLE_MQTT
+#endif //ENABLE_MQTT
 }
 
 
@@ -141,12 +152,19 @@ void GpioPin::updatePinState(int _state)
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "updatePinState: GPIO" + std::to_string((int)gpio) +
                     ", State: " + std::to_string(pinState));
 
-        if (mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START && pinState == 0) // Pullup enabled, trigger with falling edge / low level
-            triggerFlowStartByGpio();
+        // Handle special modes
+        if ((logicLevelActiveLow && pinState == 0) || (!logicLevelActiveLow && pinState == 1)) {
+            if (mode == GPIO_PIN_MODE_TRIGGER_CYCLE_START) {
+                triggerFlowStartByGpio();
+            }
+            else if (mode == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION) {
+                resumeWifiConnection("GPIO" + std::to_string((int)gpio));
+            }
+        }
 
-        #ifdef ENABLE_MQTT
+#ifdef ENABLE_MQTT
         mqttPublishPinState();
-        #endif
+#endif
     }
 }
 
@@ -160,9 +178,9 @@ esp_err_t GpioPin::setPinState(bool _value, gpio_set_source _setSource)
     pinState = _value;
     esp_err_t retVal = gpio_set_level(gpio, _value);
 
-    #ifdef ENABLE_MQTT
+#ifdef ENABLE_MQTT
     mqttPublishPinState();
-    #endif //ENABLE_MQTT
+#endif //ENABLE_MQTT
 
     return retVal;
 }
@@ -185,9 +203,9 @@ esp_err_t GpioPin::setPinState(bool _value, int _intensity, gpio_set_source _set
         ledc_update_duty(LEDC_LOW_SPEED_MODE, ledcChannel); // Apply the new value
     }
 
-    #ifdef ENABLE_MQTT
+#ifdef ENABLE_MQTT
     mqttPublishPinState(_intensity);
-    #endif //ENABLE_MQTT
+#endif //ENABLE_MQTT
 
     return ESP_OK;
 }
@@ -202,7 +220,7 @@ int GpioPin::getPinState()
 #ifdef ENABLE_MQTT
 bool GpioPin::mqttPublishPinState(int _pwmDuty)
 {
-    if (getMQTTisConnected() && mqttAccess) {
+    if (getMqttIsConnected() && mqttAccess) {
         cJSON *cJSONObject = cJSON_CreateObject();
         if (cJSONObject == NULL) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
@@ -224,7 +242,7 @@ bool GpioPin::mqttPublishPinState(int _pwmDuty)
         cJSON_Delete(cJSONObject);
 
         if (jsonChar != NULL) {
-            retVal &= MQTTPublish(mqttTopic + "/state", std::string(jsonChar), 1);
+            retVal &= publishMqttData(mqttTopic + "/state", std::string(jsonChar), 1);
             cJSON_free(jsonChar);
         }
 

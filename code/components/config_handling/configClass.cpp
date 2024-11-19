@@ -12,6 +12,7 @@
 #include <nvs_flash.h>
 #include <nvs.h>
 
+#include "configMigration.h"
 #include "webserver.h"
 #include "MainFlowControl.h"
 #include "psram.h"
@@ -112,6 +113,9 @@ ConfigClass::~ConfigClass()
 }
 
 
+//**************************************************************************************************
+// Read configuration from file (JSON notation)
+//**************************************************************************************************
 void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 {
     std::stringstream streamBuffer;
@@ -123,25 +127,20 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
     else { // Read data from file
         std::ifstream file(CONFIG_PERSISTENCE_FILE);
 
-        if (file.good() && file.is_open()) {
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "readConfigFile: Config file found");
+        if (file.is_open() && file.good()) {
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config file found");
             streamBuffer << file.rdbuf();
             file.close();
-        }
-        else {
-            if (file.is_open()) {
-               file.close();
-            }
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readConfigFile: Failed to open config file");
         }
     }
 
     // Check for empty content -> either empty file or no / bad file
     if (streamBuffer.rdbuf()->in_avail() == 0) {
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "readConfigFile: No persistent config found");
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "No persistent config found");
         streamBuffer.str("{}"); // Ensure any content
     }
 
+    portENTER_CRITICAL(&mutex);
     // Modify hook to use SPIRAM for cJSON object
     cJSON_Hooks hooks;
     hooks.malloc_fn = malloc_psram_heap_cjson;
@@ -153,6 +152,12 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 
     // Parse content to cJSON object structure
     cJsonObject = cJSON_Parse(streamBuffer.str().c_str());
+    streamBuffer.str(""); // Clear stream buffer
+
+    // Reset cJSON hooks to default
+    cJSON_InitHooks(NULL);
+    portEXIT_CRITICAL(&mutex);
+
     if (cJsonObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseConfig: Failed to parse JSON data | Fallback: Use default config");
         // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started to reconfigure.
@@ -163,6 +168,9 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 }
 
 
+//**************************************************************************************************
+// Update configuration via REST API (JSON notation)
+//**************************************************************************************************
 esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 {
     int remaining = req->content_len; // Content length of the request gives the size of the file being uploaded
@@ -192,6 +200,7 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
         remaining -= received;
     }
 
+    portENTER_CRITICAL(&mutex);
     // Modify hook to use SPIRAM for cJSON object
     cJSON_Hooks hooks;
     hooks.malloc_fn = malloc_psram_heap_cjson;
@@ -203,6 +212,11 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
     // Parse content to cJSON object structure
     cJsonObject = cJSON_Parse(jsonBuffer);
+
+    // Reset cJSON hooks to default
+    cJSON_InitHooks(NULL);
+    portEXIT_CRITICAL(&mutex);
+
     if (cJsonObject == NULL) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Failed to parse JSON data, e.g. malformed notation");
         return ESP_FAIL;
@@ -213,6 +227,9 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 }
 
 
+//**************************************************************************************************
+// Parse JSON string and save to internal struct
+//**************************************************************************************************
 esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 {
     // Config Verison
@@ -256,6 +273,10 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionTakeImage.flashlight.flashIntensity = std::clamp(objEl->valueint, 0, 100);
 
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "cameramodel");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionTakeImage.camera.imageQuality = std::clamp(objEl->valueint, 0, 14);
+
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "camerafrequency");
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionTakeImage.camera.cameraFrequency = std::clamp(objEl->valueint, 5, 20);
@@ -263,10 +284,6 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "imagequality");
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionTakeImage.camera.imageQuality = std::clamp(objEl->valueint, 8, 63);
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "imagesize");
-    if (cJSON_IsString(objEl))
-        cfgDataTemp.sectionTakeImage.camera.imageSize = objEl->valuestring;
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "brightness");
     if (cJSON_IsNumber(objEl))
@@ -282,7 +299,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "sharpness");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.sharpness = std::clamp(objEl->valueint, -4, 3);
+        cfgDataTemp.sectionTakeImage.camera.sharpness = std::clamp(objEl->valueint, -3, 3);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "exposurecontrolmode");
     if (cJSON_IsNumber(objEl))
@@ -290,11 +307,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "autoexposurelevel");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.autoExposureLevel = std::clamp(objEl->valueint, -2, 2);
+        cfgDataTemp.sectionTakeImage.camera.autoExposureLevel = std::clamp(objEl->valueint, -5, 5);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "manualexposurevalue");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.manualExposureValue = std::clamp(objEl->valueint, 0, 1200);
+        cfgDataTemp.sectionTakeImage.camera.manualExposureValue = std::clamp(objEl->valueint, 0, 1920);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "gaincontrolmode");
     if (cJSON_IsNumber(objEl))
@@ -302,7 +319,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "manualgainvalue");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.manualGainValue = std::clamp(objEl->valueint, 0, 5);
+        cfgDataTemp.sectionTakeImage.camera.manualGainValue = std::clamp(objEl->valueint, 0, 30);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "specialeffect");
     if (cJSON_IsNumber(objEl))
@@ -316,17 +333,17 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsBool(objEl))
         cfgDataTemp.sectionTakeImage.camera.flipImage = objEl->valueint;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoommode");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoomfactor");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.zoomMode = std::clamp(objEl->valueint, 0, 2);
+        cfgDataTemp.sectionTakeImage.camera.zoomFactor = std::clamp(objEl->valueint, 1000, 4000);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoomoffsetx");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.zoomOffsetX = std::clamp(objEl->valueint, 0, 960);
+        cfgDataTemp.sectionTakeImage.camera.zoomOffsetX = std::clamp(objEl->valueint, -960, 960);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoomoffsety");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionTakeImage.camera.zoomOffsetY = std::clamp(objEl->valueint, 0, 720);
+        cfgDataTemp.sectionTakeImage.camera.zoomOffsetY = std::clamp(objEl->valueint, -720, 720);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "debug"), "saverawimages");
     if (cJSON_IsBool(objEl))
@@ -360,10 +377,6 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "imagerotation");
     if (cJSON_IsString(objEl))
         cfgDataTemp.sectionImageAlignment.imageRotation = std::clamp(std::stof(objEl->valuestring), (float)-180.0, (float)180.0);
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "flipimagesize");
-    if (cJSON_IsBool(objEl))
-        cfgDataTemp.sectionImageAlignment.flipImageSize = objEl->valueint;
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "marker");
     for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
@@ -599,36 +612,34 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
             if (sequenceEl == NULL)
                 continue;
 
+
+            sequenceEl->roi.clear();
+            sequenceEl->roi.shrink_to_fit();
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "roi");
-            if (cJSON_GetArraySize(sequenceArrEl) > 0) {
-                sequenceEl->roi.clear();
-                sequenceEl->roi.shrink_to_fit();
+            for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
+                cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
+                cJSON *roiEl;
+                RoiElement roiElTemp;
 
-                for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
-                    cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
-                    cJSON *roiEl;
-                    RoiElement roiElTemp;
+                roiElTemp.roiName = sequenceEl->sequenceName + "_dig" + std::to_string(j+1);
 
-                    roiElTemp.roiName = sequenceEl->sequenceName + "_dig" + std::to_string(j+1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "x");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.x = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "x");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.x = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "y");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.y = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "y");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.y = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.dx = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.dx = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.dy = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.dy = std::max(roiEl->valueint, 1);
-
-                    sequenceEl->roi.push_back(roiElTemp);
-                }
+                sequenceEl->roi.push_back(roiElTemp);
             }
         }
     }
@@ -689,40 +700,37 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
             if (sequenceEl == NULL)
                 continue;
 
+            sequenceEl->roi.clear();
+            sequenceEl->roi.shrink_to_fit();
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "roi");
-            if (cJSON_GetArraySize(sequenceArrEl) > 0) {
-                sequenceEl->roi.clear();
-                sequenceEl->roi.shrink_to_fit();
+            for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
+                cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
+                cJSON *roiEl;
+                RoiElement roiElTemp;
 
-                for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
-                    cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
-                    cJSON *roiEl;
-                    RoiElement roiElTemp;
+                roiElTemp.roiName = sequenceEl->sequenceName + "_ana" + std::to_string(j+1);
 
-                    roiElTemp.roiName = sequenceEl->sequenceName + "_ana" + std::to_string(j+1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "x");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.x = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "x");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.x = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "y");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.y = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "y");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.y = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.dx = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.dx = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
+                if (cJSON_IsNumber(roiEl))
+                    roiElTemp.dy = std::max(roiEl->valueint, 1);
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
-                    if (cJSON_IsNumber(roiEl))
-                        roiElTemp.dy = std::max(roiEl->valueint, 1);
+                roiEl = cJSON_GetObjectItem(roiArrEl, "ccw");
+                if (cJSON_IsBool(roiEl))
+                    roiElTemp.ccw = roiEl->valueint;
 
-                    roiEl = cJSON_GetObjectItem(roiArrEl, "ccw");
-                    if (cJSON_IsBool(roiEl))
-                        roiElTemp.ccw = roiEl->valueint;
-
-                    sequenceEl->roi.push_back(roiElTemp);
-                }
+                sequenceEl->roi.push_back(roiElTemp);
             }
         }
     }
@@ -1015,7 +1023,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "authmode");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionInfluxDBv2.authMode = std::clamp(objEl->valueint, 0, 2);
+        cfgDataTemp.sectionInfluxDBv2.authMode = std::clamp(objEl->valueint, 1, 2);
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "token");
     if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
@@ -1078,6 +1086,62 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
                 validateStructure(sequenceEl->fieldKey1);
             }
         }
+    }
+
+
+    // Webhook
+    // ***************************
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "enabled");
+    if (cJSON_IsBool(objEl))
+        cfgDataTemp.sectionWebhook.enabled = objEl->valueint;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "uri");
+    if (cJSON_IsString(objEl))
+        cfgDataTemp.sectionWebhook.uri = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "apikey");
+    if (cJSON_IsString(objEl))
+        cfgDataTemp.sectionWebhook.apiKey = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "publishimage");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionWebhook.publishImage = std::clamp(objEl->valueint, 0, 2);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "authmode");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionWebhook.authMode = std::clamp(objEl->valueint, 0, 2);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "username");
+    if (cJSON_IsString(objEl))
+        cfgDataTemp.sectionWebhook.username = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "password");
+    if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
+        cfgDataTemp.sectionWebhook.password = objEl->valuestring;
+        saveDataToNVS("webhook_pw", cfgDataTemp.sectionWebhook.password);
+    }
+    else {
+        if (!unityTest) {
+            loadDataFromNVS("webhook_pw", cfgDataTemp.sectionWebhook.password);
+        }
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "cacert");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionWebhook.tls.caCert = objEl->valuestring;
+        validateStructure(cfgDataTemp.sectionWebhook.tls.caCert);
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "clientcert");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionWebhook.tls.clientCert = objEl->valuestring;
+        validateStructure(cfgDataTemp.sectionWebhook.tls.clientCert);
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "clientkey");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionWebhook.tls.clientKey = objEl->valuestring;
+        validateStructure(cfgDataTemp.sectionWebhook.tls.clientKey);
     }
 
 
@@ -1163,6 +1227,10 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         if (cJSON_IsNumber(arrEl))
             gpioElTemp->PwmFrequency = std::clamp(arrEl->valueint, 5, 1000000); // Hertz
 
+        arrEl = cJSON_GetObjectItem(objArrEl, "logicactivelow");
+        if (cJSON_IsBool(arrEl))
+            gpioElTemp->logicActiveLow = arrEl->valueint;
+
         arrEl = cJSON_GetObjectItem(objArrEl, "exposetomqtt");
         if (cJSON_IsBool(arrEl))
             gpioElTemp->exposeToMqtt = arrEl->valueint;
@@ -1221,10 +1289,13 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
 
     // Network
-    //@TODO FEATURE. WLAN operation modes not yet implemented
-    /*objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "opmode");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "opmode");
     if (cJSON_IsNumber(objEl))
-        cfgDataTemp.sectionNetwork.wlan.enabled = objEl->valueint;*/
+        cfgDataTemp.sectionNetwork.opmode = std::clamp(objEl->valueint, -1, 3);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "timedoffdelay");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionNetwork.timedOffDelay = std::max(objEl->valueint, 1);
 
     bool ssidEmpty = false;
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ssid");
@@ -1276,11 +1347,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress = objEl->valuestring;
 
     // Static IP config selected, but IP config invalid --> Fallback to DHCP
-    if (cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig == NETWORK_CONFIG_STATIC) {
+    if (cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig == NETWORK_WLAN_IP_CONFIG_STATIC) {
         if (!isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.ipAddress.c_str()) ||
             !isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.subnetMask.c_str()) ||
             !isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress.c_str())) {
-                cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = NETWORK_CONFIG_DHCP;
+                cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = NETWORK_WLAN_IP_CONFIG_DHCP;
                 LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Static network config invalid. Use DHCP as fallback");
         }
     }
@@ -1296,6 +1367,22 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "wlanroaming"), "rssithreshold");
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionNetwork.wlan.wlanRoaming.rssiThreshold = std::clamp(objEl->valueint, -100, 0);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "ssid");
+    if (cJSON_IsString(objEl))
+        cfgDataTemp.sectionNetwork.wlanAp.ssid = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "password");
+    if (cJSON_IsString(objEl) && (strlen(objEl->valuestring) == 0 || strlen(objEl->valuestring) >= 8))
+        cfgDataTemp.sectionNetwork.wlanAp.password = objEl->valuestring;
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "channel");
+    if (cJSON_IsNumber(objEl))
+        cfgDataTemp.sectionNetwork.wlanAp.channel = std::clamp(objEl->valueint, 1, 14);
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "ipv4"), "ipaddress");
+    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring))
+        cfgDataTemp.sectionNetwork.wlanAp.ipv4.ipAddress = objEl->valuestring;
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"), "timesyncenabled");
     if (cJSON_IsBool(objEl))
@@ -1339,7 +1426,10 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsNumber(objEl))
         cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.refreshTime = std::max(objEl->valueint, 1);
 
-    cJSON_InitHooks(NULL); // Reset cJSON hooks to default (cJSON_Delete -> not needed)
+    // Check for configuration migration
+    if (!unityTest) {
+        migrateConfiguration(cJsonObject);
+    }
 
     // Init active config struct with latest configuration data
     if (init) {
@@ -1366,8 +1456,12 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 }
 
 
+//**************************************************************************************************
+// Serialize internal struct to JSON string
+//**************************************************************************************************
 esp_err_t ConfigClass::serializeConfig(bool unityTest)
 {
+    portENTER_CRITICAL(&mutex);
     // Modify hook to use SPIRAM for cJSON object
     cJSON_Hooks hooks;
     hooks.malloc_fn = malloc_psram_heap_cjson;
@@ -1423,11 +1517,11 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(takeImage, "camera", camera = cJSON_CreateObject()))
         retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(camera, "cameramodel", cfgDataTemp.sectionTakeImage.camera.cameraModel) == NULL)
+        retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(camera, "camerafrequency", cfgDataTemp.sectionTakeImage.camera.cameraFrequency) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(camera, "imagequality", cfgDataTemp.sectionTakeImage.camera.imageQuality) == NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddStringToObject(camera, "imagesize", cfgDataTemp.sectionTakeImage.camera.imageSize.c_str()) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(camera, "brightness", cfgDataTemp.sectionTakeImage.camera.brightness) == NULL)
         retVal = ESP_FAIL;
@@ -1453,7 +1547,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (cJSON_AddBoolToObject(camera, "flipimage", cfgDataTemp.sectionTakeImage.camera.flipImage) == NULL)
         retVal = ESP_FAIL;
-    if (cJSON_AddNumberToObject(camera, "zoommode", cfgDataTemp.sectionTakeImage.camera.zoomMode) == NULL)
+    if (cJSON_AddNumberToObject(camera, "zoomfactor", cfgDataTemp.sectionTakeImage.camera.zoomFactor) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(camera, "zoomoffsetx", cfgDataTemp.sectionTakeImage.camera.zoomOffsetX) == NULL)
         retVal = ESP_FAIL;
@@ -1484,8 +1578,6 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(imageAlignment, "imagerotation", to_stringWithPrecision(cfgDataTemp.sectionImageAlignment.imageRotation, 1).c_str()) ==
         NULL)
-        retVal = ESP_FAIL;
-    if (cJSON_AddBoolToObject(imageAlignment, "flipimagesize", cfgDataTemp.sectionImageAlignment.flipImageSize) == NULL)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(imageAlignment, "marker", marker = cJSON_CreateArray()))
         retVal = ESP_FAIL;
@@ -1788,6 +1880,35 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     }
 
 
+    // Webhook
+    // ***************************
+    cJSON *webhook, *webhookTls;
+    if (!cJSON_AddItemToObject(cJsonObject, "webhook", webhook = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddBoolToObject(webhook, "enabled", cfgDataTemp.sectionWebhook.enabled) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhook, "uri", cfgDataTemp.sectionWebhook.uri.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhook, "apikey", cfgDataTemp.sectionWebhook.apiKey.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(webhook, "publishimage", cfgDataTemp.sectionWebhook.publishImage) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(webhook, "authmode", cfgDataTemp.sectionWebhook.authMode) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhook, "username", cfgDataTemp.sectionWebhook.username.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhook, "password", cfgDataTemp.sectionWebhook.password.empty() ? "" : "******") == NULL)
+        retVal = ESP_FAIL;
+    if (!cJSON_AddItemToObject(webhook, "tls", webhookTls = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhookTls, "cacert", cfgDataTemp.sectionWebhook.tls.caCert.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhookTls, "clientcert", cfgDataTemp.sectionWebhook.tls.clientCert.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(webhookTls, "clientkey", cfgDataTemp.sectionWebhook.tls.clientKey.c_str()) == NULL)
+        retVal = ESP_FAIL;
+
+
     // GPIO
     // ***************************
     cJSON *gpio, *gpiopin, *gpiopinEl, *gpiopinSmartled;
@@ -1814,6 +1935,8 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         if (cJSON_AddNumberToObject(gpiopinEl, "inputdebouncetime", cfgDataTemp.sectionGpio.gpioPin[i].inputDebounceTime) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddNumberToObject(gpiopinEl, "pwmfrequency", cfgDataTemp.sectionGpio.gpioPin[i].PwmFrequency) == NULL)
+            retVal = ESP_FAIL;
+        if (cJSON_AddBoolToObject(gpiopinEl, "logicactivelow", cfgDataTemp.sectionGpio.gpioPin[i].logicActiveLow) == NULL)
             retVal = ESP_FAIL;
         if (cJSON_AddBoolToObject(gpiopinEl, "exposetomqtt", cfgDataTemp.sectionGpio.gpioPin[i].exposeToMqtt) == NULL)
             retVal = ESP_FAIL;
@@ -1858,13 +1981,15 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 
     // Network
     // ***************************
-    cJSON *network, *networkIpv4, *networkWlan, *networkWlanRoaming, *networkTime, *networkTimeNtp;
+    cJSON *network, *networkWlan, *networkIpv4, *networkWlanRoaming, *networkWlanAp, *networkApIpv4, *networkTime, *networkTimeNtp;
     if (!cJSON_AddItemToObject(cJsonObject, "network", network = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(network, "opmode", cfgDataTemp.sectionNetwork.opmode) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(network, "timedoffdelay", cfgDataTemp.sectionNetwork.timedOffDelay) == NULL)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(network, "wlan", networkWlan = cJSON_CreateObject()))
         retVal = ESP_FAIL;
-    /*if (cJSON_AddNumberToObject(networkWlan, "opmode", cfgDataTemp.sectionNetwork.wlan.opmode) == NULL) //@TODO FEATURE. Not yet implemented
-        retVal = ESP_FAIL;*/
     if (cJSON_AddStringToObject(networkWlan, "ssid", cfgDataTemp.sectionNetwork.wlan.ssid.c_str()) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddStringToObject(networkWlan, "password", cfgDataTemp.sectionNetwork.wlan.password.empty() ? "" : "******") == NULL)
@@ -1888,6 +2013,18 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (cJSON_AddBoolToObject(networkWlanRoaming, "enabled", cfgDataTemp.sectionNetwork.wlan.wlanRoaming.enabled) == NULL)
         retVal = ESP_FAIL;
     if (cJSON_AddNumberToObject(networkWlanRoaming, "rssithreshold", cfgDataTemp.sectionNetwork.wlan.wlanRoaming.rssiThreshold) == NULL)
+        retVal = ESP_FAIL;
+    if (!cJSON_AddItemToObject(network, "wlanap", networkWlanAp = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(networkWlanAp, "ssid", cfgDataTemp.sectionNetwork.wlanAp.ssid.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(networkWlanAp, "password", cfgDataTemp.sectionNetwork.wlanAp.password.c_str()) == NULL)
+        retVal = ESP_FAIL;
+    if (cJSON_AddNumberToObject(networkWlanAp, "channel", cfgDataTemp.sectionNetwork.wlanAp.channel) == NULL)
+        retVal = ESP_FAIL;
+    if (!cJSON_AddItemToObject(networkWlanAp, "ipv4", networkApIpv4 = cJSON_CreateObject()))
+        retVal = ESP_FAIL;
+    if (cJSON_AddStringToObject(networkApIpv4, "ipaddress", cfgDataTemp.sectionNetwork.wlanAp.ipv4.ipAddress.c_str()) == NULL)
         retVal = ESP_FAIL;
     if (!cJSON_AddItemToObject(network, "time", networkTime = cJSON_CreateObject()))
         retVal = ESP_FAIL;
@@ -1932,17 +2069,21 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (cJSON_AddNumberToObject(webuiAutorefreshDataGraph, "refreshtime", cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.refreshTime) == NULL)
         retVal = ESP_FAIL;
 
+    cJSON_InitHooks(NULL); // Reset cJSON hooks to default
+    portEXIT_CRITICAL(&mutex);
+
     jsonBuffer[0] = '\0'; // Reset content
     // Print to preallocted buffer
     if (!cJSON_PrintPreallocated(cJsonObject, jsonBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, unityTest ? 0 : 1))
         retVal = ESP_FAIL;
 
-    cJSON_InitHooks(NULL); // Reset cJSON hooks to default (cJSON_Delete -> not needed)
-
     return retVal;
 }
 
 
+//**************************************************************************************************
+// Retrieve actual configuration via REST API (JSON notation)
+//**************************************************************************************************
 esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -1959,11 +2100,14 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 }
 
 
+//**************************************************************************************************
+// Persist actual configuration to file (JSON string)
+//**************************************************************************************************
 esp_err_t ConfigClass::writeConfigFile()
 {
     std::ofstream file(CONFIG_PERSISTENCE_FILE);
 
-    if (!file.good() || !file.is_open()) {
+    if (!file.is_open()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write JSON file");
         return ESP_FAIL;
     }
@@ -1998,7 +2142,7 @@ bool ConfigClass::loadDataFromNVS(std::string key, std::string &value)
     // Get string length
     size_t requiredSize = 0;
     err = nvs_get_str(nvshandle, key.c_str(), NULL, &requiredSize);
-    if (err != ESP_OK) {
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadDataFromNVS: nvs_get_str | Key: " + key + " length | error: " + intToHexString(err));
         nvs_close(nvshandle);
         return false;

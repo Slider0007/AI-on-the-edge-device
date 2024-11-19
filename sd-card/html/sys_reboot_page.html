@@ -33,7 +33,7 @@
 </head>
 
 
-<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
+<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;" onload="checkRebootTriggeredByHash();">
     <h2>Reboot</h2>
 
 	<div id="rebootRequest">
@@ -106,6 +106,17 @@
 				}
 			}, 2000);
 		}, 10000);
+	}
+
+	// Trigger reboot with hash #reboot
+	function checkRebootTriggeredByHash()
+	{
+		if(window.location.hash) {
+			let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+			if(hash == 'reboot') {
+				doReboot();
+			}
+		}
 	}
 
 </script>

@@ -2,7 +2,7 @@
 <html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI on the edge</title>
+    <title>AI-on-the-Edge</title>
 
     <style>
         h1 {font-size: 1.8em;}
@@ -21,7 +21,7 @@
 
 <body style="font-family: arial">
 
-    <h2>Welcome to the setup of the AI-on-the-edge-device</h2>
+    <h2>Welcome to the setup of the AI-on-the-Edge Device</h2>
 
     <p><img src="flow_overview.jpg" alt="" width="680" height="auto"></p>
     <p>
@@ -39,24 +39,16 @@
         This is an overview over the seven steps:
     </p>
     <ol>
-    <li><p>Adjust <b>lens focus</b> and check for <b>reflections of flashlight</b>.<br>
+    <li><p>Adjust <b>lens focus</b> and check for <b>reflections of flashlight</b><br>
         Ensure you camera lens has proper focus to object and flashlight do not create any distoring reflections.</p></li>
-    <li><p>Create the <b>reference image</b>.<br>
-        It is the base for the position referencing and the identification of the digits and counters.</p></li>
-    <li><p>Define two unique <b>alignment marker</b>.<br>
-        They are used to perform an orientation alignment of the taken camera images before further processing</p></li>
-    <li><p>Define <b>ROI's</b> for the <b>digits</b>.<br>
-        They will be used to digitize the digit part of your meter.<br>
-        NOTE: If your meter has no digits, this step can be skipped.</p></li>
-    <li><p>Define <b>ROI's</b> for the <b>analog counters</b>.<br>
-        They will be used to digitize the analog part of your meter.<br>
-        NOTE: If your meter has no analog counters, this step can be skipped.</p></li>
-    <li><p><b>Additional configuration:</b> List of all parameters<br>
-        Further configuration of your device can be done here.<br>
-        NOTE: This can also be performed later with regular web interface, e.g. to setup any publishing service like MQTT</p>
-    </li>
-    <li><p><b>Setup Completion:</b> End/Abort setup mode<br>
-        In the final step the setup mode needs to be properly terminated by pushing the button in this page.<br>
+    <li><p>Creation of the <b>reference image</b><br>
+        This image is used as base image to allow positioning of alignment marker, digit and analog ROIs.</p></li>
+    <li><p>Defintion of <b>alignment marker</b>.<br>
+        They are used to perform an orientation alignment of the camera image before further processing.</p></li>
+    <li><p>Definition of <b>number sequences</b><br>
+        A number sequence contains digit and/or analog ROIs which will be processed together to get a reading result.<br></p></li>
+    <li><p><b>Setup Completion:</b> Complete / abort setup mode<br>
+        In the final step the setup mode needs to be properly terminated by pushing the button on this page.<br>
         NOTE: This is important, otherwise the setup mode is recalled again after reboot.</p>
     </li>
     </ol>
@@ -65,7 +57,7 @@
 
 <p>If you need support, have a look to the <a href=https://jomjol.github.io/AI-on-the-edge-device-docs target=_blank>documentation</a> or the <a href=https://github.com/jomjol/AI-on-the-edge-device/discussions target=_blank>discussion</a> pages.</p>
 
-<p><b>Have fun with your AI-on-the-edge-device!</b></p>
+<p><b>Have fun with your AI-on-the-Edge Device!</b></p>
 
 </body>
 </html>

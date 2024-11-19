@@ -367,32 +367,8 @@
 
     function ROIPositionValidation(ROI)
     {
-        let refImageWidth, refImageHeight;
-
-        if (jsonConfig.takeimage.camera.imagesize == "QVGA") {
-            if (jsonConfig.imagealignment.flipimagesize == "false") {
-                refImageWidth = 320;
-                refImageHeight = 240;
-            }
-            else if (jsonConfig.imagealignment.flipimagesize == "true") {
-                refImageWidth = 240;
-                refImageHeight = 320;
-            }
-        }
-        else if (jsonConfig.takeimage.camera.imagesize == "VGA") {
-            if (jsonConfig.imagealignment.flipimagesize == "false") {
-                refImageWidth = 640;
-                refImageHeight = 480;
-            }
-            else if (jsonConfig.imagealignment.flipimagesize == "true") {
-                refImageWidth = 480;
-                refImageHeight = 640;
-            }
-        }
-        else {
-            firework.launch('Unknown image size. No alignment marker position validation', 'danger', 30000);
-            return;
-        }
+        let refImageWidth = 640;
+        let refImageHeight = 480;
 
         if ((parseInt(ROI.x) + parseInt(ROI.dx)) >= refImageWidth) {
                 ROI.x = refImageWidth - parseInt(ROI.dx) - 1;

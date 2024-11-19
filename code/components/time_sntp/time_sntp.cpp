@@ -122,9 +122,9 @@ void setTimeZone(std::string _tzstring)
 void timeSyncNotificationCallback(struct timeval *tv)
 {
     if (timeWasNotSetAtBoot_PrintStartBlock) {
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "=================================================");
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "==================== Start ======================");
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "== Logs before time sync -> log_1970-01-01.txt ==");
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "===================================");
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "============== Start ==============");
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "= Before sync: log_1970-01-01.txt =");
         timeWasNotSetAtBoot_PrintStartBlock = false;
     }
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Time is synced with NTP server " +
@@ -168,7 +168,6 @@ bool initTime()
     else {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "NTP service disabled");
         timeSyncEnabled = false;
-        timeServer = "";
         isTimeSynchonized = false;
     }
 

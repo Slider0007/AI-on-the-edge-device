@@ -8,15 +8,14 @@
 
 #include <nvs_flash.h>
 #include <sys/param.h>
-#include "driver/ledc.h"
-#include "driver/gpio.h"
-#include "esp_rom_gpio.h"
+#include <driver/ledc.h>
+#include <driver/gpio.h>
+#include <esp_rom_gpio.h>
 #include <esp_event.h>
 #include <esp_log.h>
 #include <esp_system.h>
-#include "esp_timer.h"
+#include <esp_timer.h>
 #include <esp_log.h>
-#include "esp_camera.h"
 
 #include "ov2640_sharpness.h"
 #include "psram.h"
@@ -29,7 +28,7 @@
 #include "MainFlowControl.h"
 
 
-static const char *TAG = "CAM_CTRL";
+static const char *TAG = "CAMCTRL";
 
 ClassControlCamera cameraCtrl;
 
@@ -39,11 +38,8 @@ static const char* _STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" 
 static const char* _STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
 static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\n\r\n";
 
-// OV2640 Camera SDE Indirect Register Access
-#define OV2640_IRA_BPADDR   0x7C
-#define OV2640_IRA_BPDATA   0x7D
 
-static camera_config_t camera_config = {
+static camera_config_t cameraConfig = {
     .pin_pwdn       = PWDN_GPIO_NUM,
     .pin_reset      = RESET_GPIO_NUM,
     .pin_xclk       = XCLK_GPIO_NUM,
@@ -75,102 +71,18 @@ static camera_config_t camera_config = {
 };
 
 
-#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-void ClassControlCamera::ledcInitFlashlightDefault(void)
-{
-    // Prepare GPIO for flashlight default
-    gpio_config_t conf = { };
-    conf.pin_bit_mask = 1LL << GPIO_FLASHLIGHT_DEFAULT;
-    conf.mode = GPIO_MODE_OUTPUT;
-    gpio_config(&conf);
-
-    // Prepare LEDC PWM timer configuration
-    ledc_timer_config_t ledc_timer = { };
-
-    ledc_timer.speed_mode       = LEDC_LOW_SPEED_MODE;
-    ledc_timer.timer_num        = FLASHLIGHT_DEFAULT_LEDC_TIMER; // Use TIMER 1 (TIMER0: camera)
-    ledc_timer.duty_resolution  = FLASHLIGHT_DEFAULT_DUTY_RESOLUTION; // 13 bit
-    ledc_timer.freq_hz          = FLASHLIGHT_DEFAULT_FREQUENCY; // Use output frequency at 5 kHz
-    ledc_timer.clk_cfg          = LEDC_USE_APB_CLK;
-
-    esp_err_t retVal = ledc_timer_config(&ledc_timer);
-
-    if (retVal != ESP_OK)
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to init LEDC timer " +
-                    std::to_string((int)FLASHLIGHT_DEFAULT_LEDC_TIMER) + ", Error: " +intToHexString(retVal));
-
-    // Prepare LEDC PWM channel configuration
-    ledc_channel_config_t ledc_channel = { };
-
-    ledc_channel.speed_mode     = LEDC_LOW_SPEED_MODE;
-    ledc_channel.channel        = FLASHLIGHT_DEFAULT_LEDC_CHANNEL; // CH0: Camera, CH2 - CH7: GPIO
-    ledc_channel.timer_sel      = FLASHLIGHT_DEFAULT_LEDC_TIMER; // Use TIMER 1 (TIMER0: camera)
-    ledc_channel.intr_type      = LEDC_INTR_DISABLE;
-    ledc_channel.gpio_num       = GPIO_FLASHLIGHT_DEFAULT; // Use default flashlight GPIO pin
-    ledc_channel.duty           = 0; // Set duty to 0%
-    ledc_channel.hpoint         = 0;
-
-    retVal = ledc_channel_config(&ledc_channel);
-
-    if (retVal != ESP_OK)
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to init LEDC channel " +
-                    std::to_string((int)FLASHLIGHT_DEFAULT_LEDC_CHANNEL) + ", Error: " +intToHexString(retVal));
-}
-#endif
-
-
 ClassControlCamera::ClassControlCamera()
 {
+    outputFrameSizeWidth = CAMERA_OUTPUT_WINDOW_SIZE_WIDTH;
+    outputFrameSizeHeight = CAMERA_OUTPUT_WINDOW_SIZE_HEIGHT;
+
     cameraInitSuccessful = false;
-
-    camParameter.flashTime = 2000; // Flash time in ms
-    camParameter.flashIntensity = 0; // Flash intensity [0 .. 100%]
-
-    camParameter.actualResolution = FRAMESIZE_VGA;
-    camParameter.actualQuality = 12;
-
-    camParameter.brightness = 0;
-    camParameter.contrast = 0;
-    camParameter.saturation = 0;
-    camParameter.sharpness = 0;
-    camParameter.exposureControlMode = 1;
-    camParameter.autoExposureLevel = 0;
-    camParameter.manualExposureValue = 300;
-    camParameter.gainControlMode = 1;
-    camParameter.manualGainValue = 0;
-    camParameter.specialEffect = 0;
-    camParameter.zoomMode = 0;
-    camParameter.zoomOffsetX = 0;
-    camParameter.zoomOffsetY = 0;
 
     demoMode = false;
 
-    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     ledcInitFlashlightDefault();
-    #endif
-}
-
-
-void ClassControlCamera::powerResetCamera()
-{
-    #if PWDN_GPIO_NUM == -1 // Use reset only if pin is available
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "No power down pin availbale to reset camera");
-    #else
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Resetting camera by power down");
-    gpio_config_t conf;
-    conf.intr_type = GPIO_INTR_DISABLE;
-    conf.pin_bit_mask = 1LL << PWDN_GPIO_NUM;
-    conf.mode = GPIO_MODE_OUTPUT;
-    conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    conf.pull_up_en = GPIO_PULLUP_DISABLE;
-    gpio_config(&conf);
-
-    // Be careful, logic is inverted compared to reset pin
-    gpio_set_level(PWDN_GPIO_NUM, 1);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    gpio_set_level(PWDN_GPIO_NUM, 0);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    #endif
+#endif
 }
 
 
@@ -179,22 +91,38 @@ esp_err_t ClassControlCamera::initCam()
     if (cameraInitSuccessful)
         deinitCam(); // De-init in case it was already initialized
 
-    esp_err_t err = esp_camera_init(&camera_config);
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    // Init camera
+    esp_err_t err = esp_camera_init(&cameraConfig);
     if (err != ESP_OK) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Camera init failed: " + intToHexString(err));
 
-            if (err == ESP_ERR_NOT_FOUND)
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Camera module not found, check camera module and electrical connection");
-            else if (err == ESP_ERR_NOT_SUPPORTED)
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Camera module or feature not supported");
+            if (err == ESP_ERR_NOT_FOUND) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "No camera detected, check camera and electrical connection");
+            }
+            else if (err == ESP_ERR_NOT_SUPPORTED) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Detected camera model or JPEG format is not supported");
+            }
 
         return err;
     }
-
-    camParameter.actualResolution = camera_config.frame_size;
-    camParameter.actualQuality = camera_config.jpeg_quality;
-
     cameraInitSuccessful = true;
+
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    // Set camera model in config struct
+    ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.cameraModel = getCamModel();
+    ConfigClass::getInstance()->reinitConfig();
+
+    // Get actual config
+    CfgData::SectionTakeImage::Camera paramCameraInternal = ConfigClass::getInstance()->get()->sectionTakeImage.camera;
+    CfgData::SectionTakeImage::Flashlight paramFlashlightInternal = ConfigClass::getInstance()->get()->sectionTakeImage.flashlight;
+
+    // Set sensor framesize dimension
+    sensorFrameSizeWidth = resolution[camera_sensor[paramCameraInternal.cameraModel].max_size].width;
+    sensorFrameSizeHeight = resolution[camera_sensor[paramCameraInternal.cameraModel].max_size].height;
+
     return ESP_OK;
 }
 
@@ -206,6 +134,29 @@ esp_err_t ClassControlCamera::deinitCam()
     powerResetCamera();
 
     return ESP_OK;
+}
+
+
+void ClassControlCamera::powerResetCamera()
+{
+#if PWDN_GPIO_NUM == -1 // Use reset only if pin is available
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "No power down pin availbale to reset camera");
+#else
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Resetting camera by power down");
+    gpio_config_t conf;
+    conf.intr_type = GPIO_INTR_DISABLE;
+    conf.pin_bit_mask = 1LL << PWDN_GPIO_NUM;
+    conf.mode = GPIO_MODE_OUTPUT;
+    conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&conf);
+
+    // Be careful, logic is inverted compared to reset pin
+    gpio_set_level(PWDN_GPIO_NUM, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    gpio_set_level(PWDN_GPIO_NUM, 0);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+#endif
 }
 
 
@@ -267,12 +218,342 @@ void ClassControlCamera::printCamConfig(void)
 }
 
 
+esp_err_t ClassControlCamera::setCameraParameter(const CfgData::SectionTakeImage::Camera *paramCamera)
+{
+    paramCameraInternal = *(CfgData::SectionTakeImage::Camera *)paramCamera;
+
+    setCameraFrequency(paramCameraInternal.cameraFrequency);
+    setImageQuality(paramCameraInternal.imageQuality);
+    setImageSize(paramCameraInternal.zoomFactor, paramCameraInternal.zoomOffsetX, paramCameraInternal.zoomOffsetY);
+    setImageManipulation(paramCameraInternal.brightness, paramCameraInternal.contrast,
+                            paramCameraInternal.saturation, paramCameraInternal.sharpness,
+                            paramCameraInternal.exposureControlMode, paramCameraInternal.autoExposureLevel,
+                            paramCameraInternal.manualExposureValue, paramCameraInternal.gainControlMode,
+                            paramCameraInternal.manualGainValue, paramCameraInternal.specialEffect,
+                            paramCameraInternal.mirrorImage, paramCameraInternal.flipImage);
+
+    return ESP_OK;
+}
+
+
+void ClassControlCamera::setCameraFrequency(int _frequency)
+{
+    if (!cameraInitSuccessful)
+        return;
+
+    paramCameraInternal.cameraFrequency = _frequency;
+
+    if (cameraConfig.xclk_freq_hz == (paramCameraInternal.cameraFrequency  * 1000000)) // If frequency is matching, return without any action
+        return;
+
+    if (paramCameraInternal.cameraFrequency  >= 5 && paramCameraInternal.cameraFrequency  <= 20)
+        cameraConfig.xclk_freq_hz = paramCameraInternal.cameraFrequency  * 1000000;
+    else
+        cameraConfig.xclk_freq_hz = 2000000;
+
+    initCam();
+    printCamInfo();
+}
+
+
+void ClassControlCamera::setImageQuality(int _qual)
+{
+    if (!cameraInitSuccessful)
+        return;
+
+    paramCameraInternal.imageQuality = std::min(63, std::max(8, _qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
+
+    sensor_t * s = esp_camera_sensor_get();
+    if (s == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setSizeQuality: Failed to get control structure");
+        return;
+    }
+    s->set_quality(s, paramCameraInternal.imageQuality);
+}
+
+
+void ClassControlCamera::setImageSize(int _zoomFactor, int _zoomOffsetX, int _zoomOffsetY)
+{
+    if (!cameraInitSuccessful)
+        return;
+
+    sensor_t *s = esp_camera_sensor_get();
+    if (s == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setImageSize: Failed to get control structure");
+        return;
+    }
+
+    // Preload internal structure
+    if (paramCameraInternal.cameraModel == CAMERA_OV2640) {
+        paramCameraInternal.zoomFactor = std::clamp(_zoomFactor, 1000, 2500); // [1.0x .. 2.5x]
+    }
+    else if (paramCameraInternal.cameraModel == CAMERA_OV5640) {
+        paramCameraInternal.zoomFactor = std::clamp(_zoomFactor, 1000, 4000); // [1.0x .. 4.0x]
+    }
+    else {
+        paramCameraInternal.zoomFactor = 1000;
+    }
+
+    paramCameraInternal.zoomOffsetX = _zoomOffsetX;
+    paramCameraInternal.zoomOffsetY = _zoomOffsetY;
+
+    // Calculate image size (keep original ratio) based on zoom factor to realize zoomed image
+    uint16_t imageWidthZoomed = (sensorFrameSizeWidth * 1000) / paramCameraInternal.zoomFactor;
+    imageWidthZoomed += (imageWidthZoomed % 4); // Make it dividable by 4
+
+    uint16_t imageHeightZoomed = (sensorFrameSizeHeight * 1000) / paramCameraInternal.zoomFactor;
+    imageHeightZoomed += (imageHeightZoomed % 4); // Make it dividable by 4
+
+    // Determine max offset values based on resulting image (with zoom factor applied)
+    const int imageZoomOffsetXMax = (sensorFrameSizeWidth - imageWidthZoomed) / 2;
+    const int imageZoomOffsetYMax = (sensorFrameSizeHeight - imageHeightZoomed) / 2;
+
+    // Sanitize user provided offset values
+    const int16_t imageZoomOffsetX = std::clamp(paramCameraInternal.zoomOffsetX, -1 * imageZoomOffsetXMax, imageZoomOffsetXMax);
+    const int16_t imageZoomOffsetY = std::clamp(paramCameraInternal.zoomOffsetY, -1 * imageZoomOffsetYMax, imageZoomOffsetYMax);
+
+    if (paramCameraInternal.cameraModel == CAMERA_OV2640) {
+        // NOTE: No sensor offset required (x = 0, y = 0 --> see ov2640_settings.h: ratio_table -> 4x3)
+        uint16_t offsetX = imageZoomOffsetXMax + imageZoomOffsetX;
+        if (offsetX % 2) { // Make it odd to avoid tinted image
+            offsetX += 1;
+        }
+        uint16_t offsetY = imageZoomOffsetYMax + imageZoomOffsetY;
+        if (offsetY % 2) { // Make it odd to avoid tinted image
+            offsetY += 1;
+        }
+
+        // Set customized resolution (and scale image to output resolution)
+        //   NOTE 1: Function offset parameter based on image top-left (0,0). imageZoomOffsetX,Y are +/- values based on image center
+        //   NOTE 2: Parameter startX --> Sensor frame size (0: 1600 x 1200)
+        //   NOTE 3: Unused parameters: startY, endX, endY, scale, binning
+        s->set_res_raw(s, 0, 0, 0, 0, offsetX, offsetY, imageWidthZoomed, imageHeightZoomed,
+                        outputFrameSizeWidth, outputFrameSizeHeight, false, false);
+    }
+    else if (paramCameraInternal.cameraModel == CAMERA_OV5640) {
+        // NOTE: Add sensor offset (x = 32, y = 16 --> see ov5640_settings.h: ratio_table -> 4x3)
+        const uint8_t sensorOffsetX = 16; // Offset / 2
+        const uint8_t sensorOffsetY = 8; // Offset / 2
+
+        uint16_t ispWindowXStart = sensorOffsetX + imageZoomOffsetX + (sensorFrameSizeWidth - imageWidthZoomed) / 2;
+        if (ispWindowXStart < sensorOffsetX) { // If too low set to sensor offset
+            ispWindowXStart = sensorOffsetX;
+        }
+        if (ispWindowXStart % 2) { // Make it odd to avoid tinted image
+            ispWindowXStart += 1;
+        }
+
+        uint16_t ispWindowYStart = sensorOffsetY + imageZoomOffsetY + (sensorFrameSizeHeight - imageHeightZoomed) / 2;
+        if (ispWindowYStart < sensorOffsetY) { // If too low set to sensor offset
+            ispWindowYStart = sensorOffsetY;
+        }
+        if (ispWindowYStart % 2) { // Make it odd to avoid tinted image
+            ispWindowYStart += 1;
+        }
+
+        const uint16_t ispWindowXEnd = ispWindowXStart + imageWidthZoomed - 1;
+        const uint16_t ispWindowYEnd = ispWindowYStart + imageHeightZoomed - 1;
+
+        // Set total sensor pixel count (incl. dark pixel) --> see ov2640_settings.h: ratio_table -> 4x3
+        const uint16_t sensorTotalPixelX = 2844;
+        const uint16_t sensorTotalPixelY = 1968;
+
+#ifdef DEBUG_DETAIL_ON
+        ESP_LOGD(TAG, "SensorSize W:%d, H:%d | ImageZoomed W:%d, H:%d | Offset X:%d, Y:%d | ISPWindowStart X:%d, Y:%d",
+                         sensorFrameSizeWidth, sensorFrameSizeHeight, imageWidthZoomed, imageHeightZoomed,
+                         imageZoomOffsetX, imageZoomOffsetY, ispWindowXStart, ispWindowXEnd);
+#endif
+
+        // Set customized resolution (and scale image to output resolution)
+        //   NOTE: Function offset parameter are not used --> Offsets are applied to start values
+        s->set_res_raw(s, ispWindowXStart, ispWindowYStart, ispWindowXEnd, ispWindowYEnd, 0, 0,
+                        sensorTotalPixelX, sensorTotalPixelY, outputFrameSizeWidth, outputFrameSizeHeight, true, false);
+    }
+    else {
+        s->set_framesize(s, FRAMESIZE_VGA);
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "setImageSize: Camera model not fully supported. Zoom functionality disabled");
+    }
+}
+
+
+bool ClassControlCamera::setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, int _exposureControlMode,
+                                                int _autoExposureLevel, int _manualExposureValue, int _gainControlMode,
+                                                int _manualGainValue, int _specialEffect, bool _mirror, bool _flip)
+{
+    if (!cameraInitSuccessful)
+        return false;
+
+    sensor_t * s = esp_camera_sensor_get();
+    if (s == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Failed to get control structure");
+        return false;
+    }
+
+    paramCameraInternal.brightness = _brightness;
+    paramCameraInternal.contrast = _contrast;
+    paramCameraInternal.saturation = _saturation;
+    paramCameraInternal.sharpness = _sharpness;
+    paramCameraInternal.exposureControlMode = _exposureControlMode;
+    paramCameraInternal.autoExposureLevel = _autoExposureLevel;
+    paramCameraInternal.manualExposureValue = _manualExposureValue;
+    paramCameraInternal.gainControlMode = _gainControlMode;
+    paramCameraInternal.manualGainValue = _manualGainValue;
+    paramCameraInternal.specialEffect = _specialEffect;
+    paramCameraInternal.mirrorImage = _mirror;
+    paramCameraInternal.flipImage = _flip;
+
+    // Basic image manipulation
+    // *********************************************************************
+    s->set_saturation(s, std::min(2, std::max(-2, paramCameraInternal.saturation))); // [-2 .. 2]
+    s->set_contrast(s, std::min(2, std::max(-2, paramCameraInternal.contrast ))); // [-2 .. 2]
+    s->set_brightness(s, std::min(2, std::max(-2, paramCameraInternal.brightness))); // [-2 .. 2] (IMPORTANT: Apply brightness after saturation and conrast)
+
+    // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
+    // *********************************************************************
+    if (paramCameraInternal.specialEffect >= 0 && paramCameraInternal.specialEffect <= 6)
+        s->set_special_effect(s, paramCameraInternal.specialEffect); // [0 .. 6]
+    // Set sepcial effect: 7: Grayscale + Negative in combination. Do grayscale on camera + negative on MCU
+    else if (paramCameraInternal.specialEffect == 7)
+        s->set_special_effect(s, 2); // 2: Grayscale
+    else {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Selected special effect unknown");
+        return false;
+    }
+
+    // Camera specific handling
+    // *********************************************************************
+    if (paramCameraInternal.cameraModel == CAMERA_OV2640) {
+        // Enable contrast (and brightness), saturation and optional special effects
+        // *********************************************************************
+        //   Workaround: Bug in camera library: Enable bits are set without using bitwise OR logic -> only latest enabled setting is used
+        //   Reference: https://esp32.com/viewtopic.php?f=19&t=14376#p93178
+
+        // Set bit 1, 2 to enable saturation, contrast
+        int registerValue = 0x06;
+
+        // Bitwise OR of special effect enable bits
+        if (paramCameraInternal.specialEffect == 1) { // Sepcial effect: 1: negative
+            registerValue |= 0x40;
+        }
+        // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
+        else if (paramCameraInternal.specialEffect >= 2 && paramCameraInternal.specialEffect <= 6) {
+            registerValue |= 0x18;
+        }
+        // Sepcial effect: 7: Grayscale + Negative in combination
+        //   NOTE: It's not possible to process both together on camera
+        else if (paramCameraInternal.specialEffect == 7) {
+            registerValue |= 0x18;      // Workaround: Do grayscale on camera + negative on MCU
+                                        // Disadvantage: Effect in combination not visible in other camera consumers like live stream / REST API
+        }
+        // Maintain DSP bank byte 0 register to keep brightness, contrast, saturation and special effect settings
+        s->set_reg(s, 0xFF, 0x01, 0); // Select DSP bank
+        s->set_reg(s, 0x7C, 0xFF, 0x00); // Select byte 0 on DSP bank (IRA_BPADDR)
+        s->set_reg(s, 0x7D, 0x5E, registerValue); // Write value (IRA_BPDATA) (bitmask 0101 1110)
+
+
+        // Sharpness manipulation (not implemented for this model, use customized function instead)
+        // *********************************************************************
+        ov2640_set_sharpness(s, std::min(3, std::max(-3, std::min(paramCameraInternal.sharpness, 3)))); // [-3 .. 3]
+    }
+    else if (paramCameraInternal.cameraModel == CAMERA_OV5640) {
+        // Sharpness manipulation
+        // *********************************************************************
+        s->set_sharpness(s, std::min(3, std::max(-3, paramCameraInternal.sharpness))); // [-3 .. 3]
+    }
+    else {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "setImageManipulation: Camera model not fully supported. "
+                            "Sharpness, brightness, contrast, saturation and special effects not properly set");
+    }
+
+    // Exposure control
+    // *********************************************************************
+    s->set_exposure_ctrl(s, paramCameraInternal.exposureControlMode > 0 ? 1 : 0); // Set exposure control
+
+    if (s->status.aec) { // Auto exposure control --> Use exposure level correction
+        s->set_ae_level(s, std:: min(5, std::max(-5, paramCameraInternal.autoExposureLevel))); // Adjust auto exposure level [-5 .. 5]
+        s->set_aec2(s, paramCameraInternal.exposureControlMode == 2 ? 1 : 0); // Switch to alternative alogrithm (aka night mode)
+    }
+    else { // Manual exposure control -> Use exposure value [0 .. sensorFrameHeight]
+        s->set_aec_value(s, std::min((int)sensorFrameSizeHeight, std::max(0, paramCameraInternal.manualExposureValue)));
+        paramCameraInternal.manualExposureValue = s->status.aec_value;
+    }
+
+    // Gain control
+    // *********************************************************************
+    // Auto: Auto control gain up to gainceiling parameter.
+    //   Limit to max 2X to also limit brightness fluctuations. If higher gain is required, switch to manual control.
+    // Manual: Manual gain control between 0 .. 30
+    //   Try to keep the gain as low as possible to keep noise at a minimum. Increase manual exposure value instead.
+    s->set_gain_ctrl(s, paramCameraInternal.gainControlMode == 1 ? 1 : 0); // Set gain control
+    if (s->status.agc) // Auto gain control
+        s->set_gainceiling(s, GAINCEILING_2X);
+    else // Manual gain control
+        s->set_agc_gain(s, std::min(30, std::max(0, paramCameraInternal.manualGainValue)));
+
+    // White balance control
+    // *********************************************************************
+    s->set_whitebal(s, 1); // Enable auto white balance control
+    s->set_awb_gain(s, 1); // Enable auto white balance gain control
+    s->set_wb_mode(s, 0); // Set white balance mode to Auto
+
+    // Image orientation
+    // *********************************************************************
+    s->set_hmirror(s, paramCameraInternal.mirrorImage ? 1 : 0);
+    s->set_vflip(s, paramCameraInternal.flipImage ? 1 : 0);
+
+#ifdef DEBUG_DETAIL_ON
+    printCamConfig();
+#endif
+
+    return true;
+}
+
+
+bool ClassControlCamera::setMirrorFlip(bool _mirror, bool _flip)
+{
+    if (!cameraInitSuccessful)
+        return false;
+
+    sensor_t * s = esp_camera_sensor_get();
+    if (s == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setMirrorFlip: Failed to get control structure");
+        return false;
+    }
+
+    paramCameraInternal.mirrorImage = _mirror;
+    paramCameraInternal.flipImage = _flip;
+
+    s->set_hmirror(s, paramCameraInternal.mirrorImage ? 1 : 0);
+    s->set_vflip(s, paramCameraInternal.flipImage ? 1 : 0);
+
+    return true;
+}
+
+
+bool ClassControlCamera::getCameraInitSuccessful()
+{
+    return cameraInitSuccessful;
+}
+
+
+camera_model_t ClassControlCamera::getCamModel(void)
+{
+    sensor_t * s = esp_camera_sensor_get();
+    if (s == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getCamType: Failed to get control structure");
+        return CAMERA_NONE;
+    }
+    camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
+    return info->model;
+}
+
+
 std::string ClassControlCamera::getCamType(void)
 {
     sensor_t * s = esp_camera_sensor_get();
     if (s == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getCamType: Failed to get control structure");
-        return "";
+        return "Unknown";
     }
     camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
     return std::string(info->name);
@@ -284,7 +565,7 @@ std::string ClassControlCamera::getCamPID(void)
     sensor_t * s = esp_camera_sensor_get();
     if (s == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getCamPID: Failed to get control structure");
-        return "";
+        return "Unknown";
     }
     camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
     return intToHexString(s->id.PID);
@@ -296,7 +577,7 @@ std::string ClassControlCamera::getCamVersion(void)
     sensor_t * s = esp_camera_sensor_get();
     if (s == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getCamVersion: Failed to get control structure");
-        return "";
+        return "Unknown";
     }
     camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
     return intToHexString(s->id.VER);
@@ -311,327 +592,33 @@ int ClassControlCamera::getCamFrequencyMhz(void)
         return -1;
     }
     camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
-    return s->xclk_freq_hz/1000000;;
+    return s->xclk_freq_hz / 1000000;
 }
 
 
-void ClassControlCamera::setCameraFrequency(int _frequency)
+void ClassControlCamera::getOutputFrameSize(int &width, int &height)
 {
-    if (camera_config.xclk_freq_hz == (_frequency * 1000000)) // If frequency is matching, return without any action
-        return;
-
-    if (_frequency >= 5 && _frequency <= 20)
-        camera_config.xclk_freq_hz = _frequency * 1000000;
-    else
-        camera_config.xclk_freq_hz = 2000000;
-
-    initCam();
-    printCamInfo();
-}
-
-
-void ClassControlCamera::setImageWidthHeightFromResolution(framesize_t _resol)
-{
-    if (_resol == FRAMESIZE_QVGA)
-    {
-        image_height = 240;
-        image_width = 320;
-    }
-    else if (_resol == FRAMESIZE_VGA)
-    {
-        image_height = 480;
-        image_width = 640;
-    }
-    else if (_resol == FRAMESIZE_SVGA)
-    {
-        image_height = 600;
-        image_width = 800;
-    }
-    else if (_resol == FRAMESIZE_XGA)
-    {
-        image_height = 768;
-        image_width = 1024;
-    }
-    else if (_resol == FRAMESIZE_HD)
-    {
-        image_height = 720;
-        image_width = 1280;
-    }
-    else if (_resol == FRAMESIZE_SXGA)
-    {
-        image_height = 1024;
-        image_width = 1280;
-    }
-    else if (_resol == FRAMESIZE_UXGA)
-    {
-        image_height = 1200;
-        image_width = 1600;
-    }
-}
-
-
-void ClassControlCamera::setSizeQuality(int _qual, framesize_t _resol, int _zoomMode,
-                                int _zoomOffsetX, int _zoomOffsetY)
-{
-    if (!getcameraInitSuccessful())
-        return;
-
-    // Set resolution
-    camParameter.actualResolution = _resol;
-    setImageWidthHeightFromResolution(camParameter.actualResolution);
-
-    // Set zoom / framesize
-    setZoom(_zoomMode, _zoomOffsetX, _zoomOffsetY);
-
-    sensor_t * s = esp_camera_sensor_get();
-    if (s == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setSizeQuality: Failed to get control structure");
-        return;
-    }
-
-    // Set quality
-    camParameter.actualQuality = std::min(63, std::max(8, _qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
-    s->set_quality(s, camParameter.actualQuality);
-}
-
-
-/*
-* resolution = 0 \\ 1600 x 1200
-* resolution = 1 \\  800 x  600
-*/
-void ClassControlCamera::setCamWindow(sensor_t *_s, int _resolution, int _xOffset, int _yOffset, int _xLength, int _yLength)
-{
-    if (_s == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setCamWindow: No valid control structure");
-        return;
-    }
-    _s->set_res_raw(_s, _resolution, 0, 0, 0, _xOffset, _yOffset, _xLength, _yLength, _xLength, _yLength, false, false);
-}
-
-
-void ClassControlCamera::setZoom(int _zoomMode, int _zoomOffsetX, int _zoomOffsetY)
-{
-    camParameter.zoomMode = _zoomMode;
-    camParameter.zoomOffsetX = _zoomOffsetX;
-    camParameter.zoomOffsetY = _zoomOffsetY;
-
-    sensor_t *s = esp_camera_sensor_get();
-    if (s == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setZoom: Failed to get control structure");
-        return;
-    }
-
-    if (camParameter.zoomMode > 0) { // zoomMode = 0 -> zoom off
-        int resolMode = camParameter.zoomMode - 1;
-        int x = camParameter.zoomOffsetX;
-        int y = camParameter.zoomOffsetY;
-
-        // Maintain correct mode, only mode 0 and 1 available
-        resolMode = std::min(resolMode, 1);
-
-        // Force mode 0 if image size is larger than 800 x 600
-        if (image_width >= 800 || image_height >= 600)
-            resolMode = 0;
-
-        // Max values depending on mode
-        int maxX = 1600 - image_width;
-        int maxY = 1200 - image_height;
-
-        if (resolMode == 1) {
-            maxX = 800 - image_width;
-            maxY = 600 - image_height;
-        }
-
-        // Maintain max x,y values
-        x = std::min(x, maxX);
-        y = std::min(y, maxY);
-
-        setCamWindow(s, resolMode, x, y, image_width, image_height);
-    }
-    else {
-        s->set_framesize(s, camParameter.actualResolution);
-    }
-}
-
-
-bool ClassControlCamera::setImageManipulation(int _brightness, int _contrast, int _saturation, int _sharpness, int _exposureControlMode,
-                                   int _autoExposureLevel, int _manualExposureValue, int _gainControlMode,
-                                   int _manualGainValue, int _specialEffect, bool _mirror, bool _flip)
-{
-    if (!getcameraInitSuccessful())
-        return false;
-
-    sensor_t * s = esp_camera_sensor_get();
-    if (s == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Failed to get control structure");
-        return false;
-    }
-
-    camParameter.brightness = _brightness;
-    camParameter.contrast = _contrast;
-    camParameter.saturation = _saturation;
-    camParameter.sharpness = _sharpness;
-    camParameter.exposureControlMode = _exposureControlMode;
-    camParameter.autoExposureLevel = _autoExposureLevel;
-    camParameter.manualExposureValue = _manualExposureValue;
-    camParameter.gainControlMode = _gainControlMode;
-    camParameter.manualGainValue = _manualGainValue;
-    camParameter.specialEffect = _specialEffect;
-    camParameter.mirrorImage = _mirror;
-    camParameter.flipImage = _flip;
-
-    // Basic image manipulation
-    s->set_saturation(s, std::min(2, std::max(-2, camParameter.saturation)));   // [-2 .. 2]
-    s->set_contrast(s, std::min(2, std::max(-2, camParameter.contrast )));       // [-2 .. 2]
-    s->set_brightness(s, std::min(2, std::max(-2, camParameter.brightness)));   // [-2 .. 2] (IMPORTANT: Apply brightness after saturation and conrast)
-    s->set_sharpness(s, 0); // Default: Sharpness not supported, use owm implementation
-
-    // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
-    if (camParameter.specialEffect >= 0 && camParameter.specialEffect <= 6)
-        s->set_special_effect(s, camParameter.specialEffect); // [0 .. 6]
-    // Set sepcial effect: 7: Grayscale + Negative in combination
-    // Potential bug in camera firmware -> Workaround: Do grayscale on camera + negative on MCU
-    else if (camParameter.specialEffect == 7)
-        s->set_special_effect(s, 2); // 2: Grayscale
-    else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Selected special effect unknown");
-        return false;
-    }
-
-    // Auto exposure control
-    s->set_exposure_ctrl(s, camParameter.exposureControlMode > 0 ? 1 : 0); // Enable auto exposure control
-
-    if (s->status.aec) { // Auto exposure control --> Use exposure level correction
-        s->set_ae_level(s, std:: min(2, std::max(-2, camParameter.autoExposureLevel))); // Adjust auto exposure level [-2 .. 2]
-        s->set_aec2(s, camParameter.exposureControlMode == 2 ? 1 : 0); // Switch to alternative auto exposure control alogrithm
-    }
-    else { // Manual exposure control -> Use exposure value
-        s->set_aec_value(s, std::min(1200, std::max(0, camParameter.manualExposureValue))); // Set manual exposure value [0 .. 1200]
-    }
-
-    // Gain control
-    s->set_gain_ctrl(s, camParameter.gainControlMode == 1 ? 1 : 0); // Enable auto gain control
-    if (s->status.agc) // Auto gain control --> Use GAINCEILING parameter (max 2X)
-        s->set_gainceiling(s, GAINCEILING_2X); // GAINCEILING_2X 4X 8X 16X 32X 64X 128X -> Limit gain
-    else // Manual gain control --> Use manual gain value [0 .. 30]
-        s->set_agc_gain(s, std::min(30, std::max(0, camParameter.manualGainValue)));
-
-    // White balance control
-    s->set_whitebal(s, 1); // Enable auto white balance control
-    s->set_awb_gain(s, 1); // Enable auto white balance gain control
-    s->set_wb_mode(s, 0); // Set white balance mode to Auto
-
-    // Image orientation
-    s->set_hmirror(s, camParameter.mirrorImage ? 1 : 0);
-    s->set_vflip(s, camParameter.flipImage ? 1 : 0);
-
-    camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&(s->id));
-    if (sensor_info == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setImageManipulation: Failed to get info structure");
-        return false;
-    }
-
-    if (sensor_info->model == CAMERA_OV2640) {
-        // Sharpness implementation (not officially supported)
-        if (camParameter.sharpness > -4) { // Sharpness == -4 -> Auto sharpness
-            ov2640_set_sharpness(s, std::min(3, std::max(-3, std::min(camParameter.sharpness, 3)))); // -3 .. 3
-        }
-        else {
-            ov2640_enable_auto_sharpness(s);
-        }
-
-        // Enable brightness, contrast, saturation and optional special effects
-        /* Workaround - bug in cam library - enable bits are set without using bitwise OR logic -> only latest enable setting is used */
-        /* Library version: https://github.com/espressif/esp32-camera/commit/5c8349f4cf169c8a61283e0da9b8cff10994d3f3 */
-        /* Reference: https://esp32.com/viewtopic.php?f=19&t=14376#p93178 */
-        //s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x02); // Optional feature - hue setting: Select byte 2 in register 0x7C to set hue value
-        //s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, 0x80); // Optional feature - hue setting: Hue value 0 - 255
-
-        int registerValue = 0x07; // Set bit 0, 1, 2 to enable saturation, contrast, brightness and hue control
-
-        // Bitwise OR of special effect enable bits
-        if (camParameter.specialEffect == 1) { // Sepcial effect: 1: negative
-            registerValue |= 0x40;
-        }
-        // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
-        else if (camParameter.specialEffect >= 2 && camParameter.specialEffect <= 6) {
-            registerValue |= 0x18;
-        }
-        // Sepcial effect: 7: Grayscale + Negative in combination
-        else if (camParameter.specialEffect == 7) {
-            //registerValue |= 0x58;    // Flags which should perform both together on camera
-            registerValue |= 0x18;      // Potential bug in camera firmware -> Workaround: Do grayscale on camera + negative on MCU
-                                        // Disadvantage: effect in combination not visible in other camera consumers like live stream / REST API
-        }
-
-        // Maintain DSP bank byte 0 register to keep brightness, contrast, saturation and special effect settings
-        s->set_reg(s, 0xFF, 0x01, 0); // Select DSP bank
-        s->set_reg(s, OV2640_IRA_BPADDR, 0xFF, 0x00); // Select byte 0 on DSP bank
-        s->set_reg(s, OV2640_IRA_BPDATA, 0xFF, registerValue); // Write value
-    }
-    else {
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "setImageManipulation: Camera model not fully supported. "
-                            "Sharpness, brightness, contrast, saturation and special effects not properly set");
-    }
-
-    return true;
-}
-
-
-bool ClassControlCamera::setMirrorFlip(bool _mirror, bool _flip)
-{
-    sensor_t * s = esp_camera_sensor_get();
-    if (s == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setMirrorFlip: Failed to get control structure");
-        return false;
-    }
-
-    camParameter.mirrorImage = _mirror;
-    camParameter.flipImage = _flip;
-
-    s->set_hmirror(s, camParameter.mirrorImage ? 1 : 0);
-    s->set_vflip(s, camParameter.flipImage ? 1 : 0);
-
-    return true;
-}
-
-
-void ClassControlCamera::setFlashIntensity(int _flashIntensity)
-{
-    camParameter.flashIntensity = std::min(std::max(0, _flashIntensity), 100);
-}
-
-
-/* Set flash time in milliseconds */
-void ClassControlCamera::setFlashTime(int _flashTime)
-{
-    camParameter.flashTime = std::max(0, _flashTime);
-}
-
-
-/* Get flash time in milliseconds */
-int ClassControlCamera::getFlashTime()
-{
-    return camParameter.flashTime;
+    width = outputFrameSizeWidth;
+    height = outputFrameSizeHeight;
 }
 
 
 esp_err_t ClassControlCamera::captureToBasisImage(CImageBasis *_Image)
 {
-    if (!getcameraInitSuccessful())
+    if (!cameraInitSuccessful)
         return ESP_FAIL;
 
-    if (camParameter.flashTime > 0) {    // Switch on for defined time if a flashTime is set
+    if (paramFlashlightInternal.flashTime > 0) {    // Switch on for defined time if a flashTime is set
         setStatusLed(true);
         setFlashlight(true);
-        vTaskDelay(camParameter.flashTime / portTICK_PERIOD_MS);
+        vTaskDelay(paramFlashlightInternal.flashTime / portTICK_PERIOD_MS);
     }
 
     camera_fb_t * fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);
     fb = esp_camera_fb_get();
 
-    if (camParameter.flashTime > 0) {    // Switch off if flashlight was on
+    if (paramFlashlightInternal.flashTime > 0) {    // Switch off if flashlight was on
         setStatusLed(false);
         setFlashlight(false);
     }
@@ -655,10 +642,10 @@ esp_err_t ClassControlCamera::captureToBasisImage(CImageBasis *_Image)
         if(!_Image->loadFromMemoryPreallocated(fb->buf, fb->len))
             return ESP_FAIL;
 
-        // Special effect: grayscale + negative in combination: Not functional due to potential bug in camera firmware
+        // Special effect: grayscale + negative in combination
         // Workaround: Do grayscale on camera + negative on MCU
-        // Disadvantage: effect in combination not visible in other camera consumers like live stream / REST API
-        if (camParameter.specialEffect == 7)
+        // Disadvantage: Effect in combination not visible in other camera consumers like live stream / REST API
+        if (paramCameraInternal.specialEffect == 7)
             _Image->createNegativeImage();
     }
     else {
@@ -672,23 +659,23 @@ esp_err_t ClassControlCamera::captureToBasisImage(CImageBasis *_Image)
 
 esp_err_t ClassControlCamera::captureToFile(std::string _nm)
 {
-    if (!getcameraInitSuccessful())
+    if (!cameraInitSuccessful)
         return ESP_FAIL;
 
     esp_err_t retVal = ESP_OK;
     std::string ftype;
 
-    if (camParameter.flashTime > 0) {    // Switch on for defined time if a flashTime is set
+    if (paramFlashlightInternal.flashTime > 0) { // Switch on for defined time if a flashTime is set
         setStatusLed(true);
         setFlashlight(true);
-        vTaskDelay(camParameter.flashTime / portTICK_PERIOD_MS);
+        vTaskDelay(paramFlashlightInternal.flashTime / portTICK_PERIOD_MS);
     }
 
     camera_fb_t * fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);
     fb = esp_camera_fb_get();
 
-    if (camParameter.flashTime > 0) {    // Switch off if flashlight was on
+    if (paramFlashlightInternal.flashTime > 0) {    // Switch off if flashlight was on
         setStatusLed(false);
         setFlashlight(false);
     }
@@ -698,21 +685,21 @@ esp_err_t ClassControlCamera::captureToFile(std::string _nm)
         return ESP_FAIL;
     }
 
-    #ifdef DEBUG_DETAIL_ON
-        ESP_LOGD(TAG, "w %d, h %d, size %d", fb->width, fb->height, fb->len);
-    #endif
+#ifdef DEBUG_DETAIL_ON
+    ESP_LOGD(TAG, "w %d, h %d, size %d", fb->width, fb->height, fb->len);
+#endif
 
     _nm = formatFileName(_nm);
 
-    #ifdef DEBUG_DETAIL_ON
-        ESP_LOGD(TAG, "Save Camera to: %s", _nm.c_str());
-    #endif
+#ifdef DEBUG_DETAIL_ON
+    ESP_LOGD(TAG, "Save Camera to: %s", _nm.c_str());
+#endif
 
     ftype = toUpper(getFileType(_nm));
 
-    #ifdef DEBUG_DETAIL_ON
-        ESP_LOGD(TAG, "Filetype: %s", ftype.c_str());
-    #endif
+#ifdef DEBUG_DETAIL_ON
+    ESP_LOGD(TAG, "Filetype: %s", ftype.c_str());
+#endif
 
     uint8_t * buf = NULL;
     size_t buf_len = 0;
@@ -724,7 +711,7 @@ esp_err_t ClassControlCamera::captureToFile(std::string _nm)
     }
     else if (ftype.compare("JPG") == 0) {
         if (fb->format != PIXFORMAT_JPEG){
-            bool jpeg_converted = frame2jpg(fb, camParameter.actualQuality, &buf, &buf_len);
+            bool jpeg_converted = frame2jpg(fb, paramCameraInternal.imageQuality, &buf, &buf_len);
             converted = true;
             if (!jpeg_converted) {
                 ESP_LOGE(TAG, "JPEG compression failed");
@@ -779,24 +766,24 @@ static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size
 
 esp_err_t ClassControlCamera::captureToHTTP(httpd_req_t *_req)
 {
-    if (!getcameraInitSuccessful())
+    if (!cameraInitSuccessful)
         return ESP_FAIL;
 
     esp_err_t res = ESP_OK;
     size_t fb_len = 0;
     int64_t fr_start = esp_timer_get_time();
 
-    if (camParameter.flashTime > 0) {
+    if (paramFlashlightInternal.flashTime > 0) {
         setStatusLed(true);
         setFlashlight(true);
-        vTaskDelay(camParameter.flashTime / portTICK_PERIOD_MS);
+        vTaskDelay(paramFlashlightInternal.flashTime / portTICK_PERIOD_MS);
     }
 
     camera_fb_t *fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);
     fb = esp_camera_fb_get();
 
-    if (camParameter.flashTime > 0) {    // Switch off if flashlight was on
+    if (paramFlashlightInternal.flashTime > 0) {    // Switch off if flashlight was on
         setStatusLed(false);
         setFlashlight(false);
     }
@@ -827,7 +814,7 @@ esp_err_t ClassControlCamera::captureToHTTP(httpd_req_t *_req)
             }
             else {
                 jpg_chunking_t jchunk = {_req, 0};
-                res = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk)?ESP_OK:ESP_FAIL;
+                res = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk) ? ESP_OK : ESP_FAIL;
                 httpd_resp_send_chunk(_req, NULL, 0);
                 fb_len = jchunk.len;
             }
@@ -844,7 +831,7 @@ esp_err_t ClassControlCamera::captureToHTTP(httpd_req_t *_req)
 
 esp_err_t ClassControlCamera::captureToStream(httpd_req_t *_req, bool _flashlightOn)
 {
-    if (!getcameraInitSuccessful())
+    if (!cameraInitSuccessful)
         return ESP_FAIL;
 
     esp_err_t res = ESP_OK;
@@ -912,46 +899,123 @@ esp_err_t ClassControlCamera::captureToStream(httpd_req_t *_req, bool _flashligh
 }
 
 
+#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+void ClassControlCamera::ledcInitFlashlightDefault(void)
+{
+    // Prepare GPIO for flashlight default
+    gpio_config_t conf = { };
+    conf.pin_bit_mask = 1LL << GPIO_FLASHLIGHT_DEFAULT;
+    conf.mode = GPIO_MODE_OUTPUT;
+    gpio_config(&conf);
+
+    // Prepare LEDC PWM timer configuration
+    ledc_timer_config_t ledc_timer = { };
+
+    ledc_timer.speed_mode       = LEDC_LOW_SPEED_MODE;
+    ledc_timer.timer_num        = FLASHLIGHT_DEFAULT_LEDC_TIMER; // Use TIMER 1 (TIMER0: camera)
+    ledc_timer.duty_resolution  = FLASHLIGHT_DEFAULT_DUTY_RESOLUTION; // 13 bit
+    ledc_timer.freq_hz          = FLASHLIGHT_DEFAULT_FREQUENCY; // Use output frequency at 5 kHz
+    ledc_timer.clk_cfg          = LEDC_USE_APB_CLK;
+
+    esp_err_t retVal = ledc_timer_config(&ledc_timer);
+
+    if (retVal != ESP_OK)
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to init LEDC timer " +
+                    std::to_string((int)FLASHLIGHT_DEFAULT_LEDC_TIMER) + ", Error: " +intToHexString(retVal));
+
+    // Prepare LEDC PWM channel configuration
+    ledc_channel_config_t ledc_channel = { };
+
+    ledc_channel.speed_mode     = LEDC_LOW_SPEED_MODE;
+    ledc_channel.channel        = FLASHLIGHT_DEFAULT_LEDC_CHANNEL; // CH0: Camera, CH2 - CH7: GPIO
+    ledc_channel.timer_sel      = FLASHLIGHT_DEFAULT_LEDC_TIMER; // Use TIMER 1 (TIMER0: camera)
+    ledc_channel.intr_type      = LEDC_INTR_DISABLE;
+    ledc_channel.gpio_num       = GPIO_FLASHLIGHT_DEFAULT; // Use default flashlight GPIO pin
+    ledc_channel.duty           = 0; // Set duty to 0%
+    ledc_channel.hpoint         = 0;
+
+    retVal = ledc_channel_config(&ledc_channel);
+
+    if (retVal != ESP_OK)
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to init LEDC channel " +
+                    std::to_string((int)FLASHLIGHT_DEFAULT_LEDC_CHANNEL) + ", Error: " +intToHexString(retVal));
+}
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+
+
+esp_err_t ClassControlCamera::setFlashlightParameter(const CfgData::SectionTakeImage::Flashlight *paramFlashlight)
+{
+    paramFlashlightInternal = *(CfgData::SectionTakeImage::Flashlight *)paramFlashlight;
+
+    setFlashIntensity(paramFlashlightInternal.flashIntensity);
+    setFlashTime(paramFlashlightInternal.flashTime);
+
+    return ESP_OK;
+}
+
+
+void ClassControlCamera::setFlashIntensity(int _flashIntensity)
+{
+    paramFlashlightInternal.flashIntensity = std::min(std::max(0, _flashIntensity), 100);
+}
+
+
+/* Set flash time in milliseconds */
+void ClassControlCamera::setFlashTime(int _flashTime)
+{
+    paramFlashlightInternal.flashTime = std::max(0, _flashTime);
+}
+
+
+/* Get flash time in milliseconds */
+int ClassControlCamera::getFlashTime()
+{
+    return paramFlashlightInternal.flashTime;
+}
+
+
 void ClassControlCamera::setFlashlight(bool _status)
 {
     GpioHandler* gpioHandler = gpio_handler_get();
-    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
+#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
     if (gpioHandler != NULL) {
-        gpioHandler->gpioFlashlightControl(_status, camParameter.flashIntensity);
+        gpioHandler->gpioFlashlightControl(_status, paramFlashlightInternal.flashIntensity);
     }
-    #else
+#else
     if (gpioHandler != NULL && gpioHandler->gpioHandlerIsEnabled()) {
-        gpioHandler->gpioFlashlightControl(_status, camParameter.flashIntensity);
+        gpioHandler->gpioFlashlightControl(_status, paramFlashlightInternal.flashIntensity);
     }
     else {
-        #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-            if (_status) {
-                int intensityValue = (camParameter.flashIntensity * FLASHLIGHT_DEFAULT_RESOLUTION_RANGE) / 100;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Default flashlight PWM: GPIO" +
-                                    std::to_string((int)GPIO_FLASHLIGHT_DEFAULT) + ", State: 1, Intensity: " +
-                                    std::to_string(intensityValue) + "/" +  std::to_string(FLASHLIGHT_DEFAULT_RESOLUTION_RANGE));
+    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+        if (_status) {
+            int intensityValue = (paramFlashlightInternal.flashIntensity * FLASHLIGHT_DEFAULT_RESOLUTION_RANGE) / 100;
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Default flashlight PWM: GPIO" +
+                                std::to_string((int)GPIO_FLASHLIGHT_DEFAULT) + ", State: 1, Intensity: " +
+                                std::to_string(intensityValue) + "/" +  std::to_string(FLASHLIGHT_DEFAULT_RESOLUTION_RANGE));
 
-                ledc_set_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL, intensityValue);
-                ledc_update_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL); // Update duty to apply the new value
-            }
-            else {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Default flashlight PWM: GPIO" +
-                                    std::to_string((int)GPIO_FLASHLIGHT_DEFAULT) + ", State: 0");
+            ledc_set_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL, intensityValue);
+            ledc_update_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL); // Update duty to apply the new value
+        }
+        else {
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Default flashlight PWM: GPIO" +
+                                std::to_string((int)GPIO_FLASHLIGHT_DEFAULT) + ", State: 0");
 
-                ledc_set_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL, 0);
-                ledc_update_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL);
-            }
-        #else
-            esp_rom_gpio_pad_select_gpio(GPIO_FLASHLIGHT_DEFAULT); // Init the GPIO
-            gpio_set_direction(GPIO_FLASHLIGHT_DEFAULT, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
+            ledc_set_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL, 0);
+            ledc_update_duty(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL);
+        }
+    #else
+        esp_rom_gpio_pad_select_gpio(GPIO_FLASHLIGHT_DEFAULT); // Init the GPIO
+        gpio_set_direction(GPIO_FLASHLIGHT_DEFAULT, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
 
-            if (_status)
-                gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 1);
-            else
-                gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 0);
-        #endif
+        if (_status) {
+            gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 1);
+        }
+        else {
+            gpio_set_level(GPIO_FLASHLIGHT_DEFAULT, 0);
+        }
+    #endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     }
-    #endif
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
 }
 
 
@@ -975,37 +1039,6 @@ void ClassControlCamera::setStatusLed(bool _status)
             gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
 #endif
     }
-}
-
-
-framesize_t ClassControlCamera::textToFramesize(const char * _size)
-{
-    if (strcmp(_size, "QVGA") == 0)
-        return FRAMESIZE_QVGA;     // 320x240
-    else if (strcmp(_size, "VGA") == 0)
-        return FRAMESIZE_VGA;      // 640x480
-    else if (strcmp(_size, "SVGA") == 0)
-        return FRAMESIZE_SVGA;     // 800x600
-    else if (strcmp(_size, "XGA") == 0)
-        return FRAMESIZE_XGA;      // 1024x768
-    else if (strcmp(_size, "SXGA") == 0)
-        return FRAMESIZE_SXGA;     // 1280x1024
-    else if (strcmp(_size, "UXGA") == 0)
-        return FRAMESIZE_UXGA;     // 1600x1200
-
-    return camParameter.actualResolution;
-}
-
-
-bool ClassControlCamera::getcameraInitSuccessful()
-{
-    return cameraInitSuccessful;
-}
-
-
-CameraParameter ClassControlCamera::getCameraParameter()
-{
-    return camParameter;
 }
 
 
@@ -1085,7 +1118,7 @@ bool ClassControlCamera::loadNextDemoImage(camera_fb_t *_fb)
 
 
 /* Free only user allocated memory without deinit of cam driver */
-void ClassControlCamera::freeMemoryOnly()
+void ClassControlCamera::freeDemoMemoryOnly()
 {
     demoFiles.clear();
     std::vector<std::string>().swap(demoFiles); // Ensure that memory allocated by vector gets freed

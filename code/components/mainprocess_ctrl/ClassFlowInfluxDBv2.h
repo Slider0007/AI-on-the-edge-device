@@ -1,8 +1,8 @@
 #include "../../include/defines.h"
 #ifdef ENABLE_INFLUXDB
 
-#ifndef CLASSFINFLUXDBv2_H
-#define CLASSFINFLUXDBv2_H
+#ifndef CLASSFLOWINFLUXDBv2_H
+#define CLASSFLOWINFLUXDBv2_H
 
 #include <string>
 
@@ -16,7 +16,6 @@ class ClassFlowInfluxDBv2 : public ClassFlow
   protected:
     const CfgData::SectionInfluxDBv2 *cfgDataPtr = NULL;
     bool InfluxDBenable;
-    ClassFlowPostProcessing *flowpostprocessing;
 
   public:
     ClassFlowInfluxDBv2();
@@ -25,10 +24,9 @@ class ClassFlowInfluxDBv2 : public ClassFlow
     bool loadParameter();
     bool doFlow(std::string time);
     void doPostProcessEventHandling();
-    bool isInfluxDBEnabled();
 
     std::string name() { return "ClassFlowInfluxDBv2"; };
 };
 
-    #endif // CLASSFINFLUXDBv2_H
+    #endif // CLASSFLOWINFLUXDBv2_H
 #endif     // ENABLE_INFLUXDB

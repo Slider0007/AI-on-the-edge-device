@@ -4,7 +4,7 @@
 |:---               |:---                 |:----
 | Parameter Name    | Exposure Control Mode | exposurecontrolmode
 | Default Value     | `Auto`              | `1`
-| Input Options     | `Manual`<br>`Auto`<br>`Auto (AEC2)` | `0` .. `2`
+| Input Options     | `Manual`<br>`Auto`<br>`Auto (AEC2)` | `0`<br>`1`<br>`2`
 
 
 ## Description
@@ -16,7 +16,7 @@ Set exposure control mode
 |:---           |:---
 | `Manual`      | Manual exposure control. Exposure can be controlled by `Manual Exposure Value`.
 | `Auto`        | Automatic exposure control. Exposure offset can be controlled by `Auto Exposure Level`.
-| `Auto (AEC2)` | Automatic exposure control using alternative AEC2 Algo (extended range). Exposure offset can be controlled by `Auto Exposure Level`.
+| `Auto (AEC2)` | Automatic exposure control using alternative AEC2 Algo ("night mode", extended control range). Exposure offset can be controlled by `Auto Exposure Level`.
 
 
 !!! Tip

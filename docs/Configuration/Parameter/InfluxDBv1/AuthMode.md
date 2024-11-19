@@ -9,14 +9,14 @@
 
 ## Description
 
-Select authentication mode for InfluxDB authentication.
+Select authentication mode for InfluxDB authentication / security.
 
 
 | Input Option               | Description
 |:---                        |:---
 | `None`                     | No authentication, anonymous
 | `Basic`                    | Authenticate with username and password
-| `TLS`                      | Authenticate with username, password and TLS certificates
+| `TLS`                      | Authenticate with username, password and/or secure with TLS certificates
 
 
 !!! Note

@@ -4,7 +4,8 @@
 |:---               |:---                 |:----
 | Parameter Name    | Manual Exposure Value | manualexposurevalue
 | Default Value     | `300`               | `300`
-| Input Options     | `0` .. `1200`       | `0` .. `1200`
+| Input Options (OV2640 2MP) | `0` .. `1200` | `0` .. `1200`
+| Input Options (OV5640 5MP) | `0` .. `1920` | `0` .. `1920`
 
 
 ## Description

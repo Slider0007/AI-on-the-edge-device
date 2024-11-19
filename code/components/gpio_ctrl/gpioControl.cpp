@@ -79,7 +79,8 @@ void GpioHandler::gpioInputStatePolling()
     if (gpioMap != NULL) {
         for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
             if (it->second->getMode() == GPIO_PIN_MODE_INPUT || it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLUP ||
-                it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START)
+                it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+                it->second->getMode() == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION)
             {
                 it->second->updatePinState();
             }
@@ -203,7 +204,8 @@ bool GpioHandler::init()
 
         // Handler task is only needed to maintain input pin state (interrupt or polling)
         if (it->second->getMode() == GPIO_PIN_MODE_INPUT || it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLUP ||
-            it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START)
+            it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
+            it->second->getMode() == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION)
         {
             initHandlerTask = true;
         }
@@ -212,7 +214,7 @@ bool GpioHandler::init()
 
     #ifdef ENABLE_MQTT
         std::function<void()> f = std::bind(&GpioHandler::handleMQTTconnect, this);
-        MQTTregisterConnectFunction("gpioHandler", f);
+        registerMqttConnectFunction("gpioHandler", f);
     #endif //ENABLE_MQTT
 
     // Handler task is only needed to maintain input pin state (interrupt or polling)
@@ -322,15 +324,17 @@ esp_err_t GpioHandler::loadParameter()
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Pin Config: GPIO" + std::to_string((int)gpioNr) +
                 ", Name: " + std::string(gpioName) + ", Mode: " + pin.pinMode + ", Interrupt Type: " +
                 pin.captureMode + ", Debounce Time: " + std::to_string(pin.inputDebounceTime) + ", Frequency: " +
-                std::to_string(pin.PwmFrequency) + ", HTTP Access: " + std::to_string(pin.exposeToRest) +
-                ", MQTT Access: " + std::to_string(mqttAccess) +", MQTT Topic: " + mqttTopic +
+                std::to_string(pin.PwmFrequency) + ", Logic Active Low: " + std::to_string(pin.logicActiveLow) +
+                ", HTTP Access: " + std::to_string(pin.exposeToRest) +
+                ", MQTT Access: " + std::to_string(mqttAccess) + ", MQTT Topic: " + mqttTopic +
                 ", LED Type: " + std::to_string(pin.smartLed.type) + ", LED Quantity: " + std::to_string(pin.smartLed.quantity) +
                 ", LED Color: R:" + std::to_string(LEDColor.r) + " | G:" + std::to_string(LEDColor.g) +
                 " | B:" + std::to_string(LEDColor.b) + ", LED Intensity Correction: " +
                 std::to_string(pin.intensityCorrectionFactor));
 
-        GpioPin* gpioPin = new GpioPin(gpioNr, gpioName, pinMode, captureMode, pin.inputDebounceTime, pin.PwmFrequency, pin.exposeToRest,
-                                mqttAccess, mqttTopic, LEDType, pin.smartLed.quantity, LEDColor, pin.intensityCorrectionFactor);
+        GpioPin* gpioPin = new GpioPin(gpioNr, gpioName, pinMode, captureMode, pin.inputDebounceTime, pin.PwmFrequency,
+                                pin.logicActiveLow, pin.exposeToRest, mqttAccess, mqttTopic, LEDType, pin.smartLed.quantity,
+                                LEDColor, pin.intensityCorrectionFactor);
         (*gpioMap)[gpioNr] = gpioPin;
     }
 
@@ -346,7 +350,7 @@ esp_err_t GpioHandler::loadParameter()
 void GpioHandler::clearData()
 {
     if (gpioMap != NULL) {
-        for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
+        for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); it++) {
             if (it->second->getSmartLed() != NULL) {
                 delete it->second->getSmartLed();
                 it->second->setSmartLed(NULL);
@@ -366,7 +370,7 @@ void GpioHandler::clearData()
 void GpioHandler::deinit()
 {
     #ifdef ENABLE_MQTT
-    MQTTunregisterConnectFunction("gpioHandler");
+    unregisterMqttConnectFunction("gpioHandler");
     #endif //ENABLE_MQTT
 
     clearData();
@@ -389,7 +393,7 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
             int intensityValueCorrected = std::min(std::max(0, it->second->getIntensityCorrection() *
                                                     _intensity * dutyResultionMaxValue / 10000), dutyResultionMaxValue);
 
-            esp_err_t retVal = it->second->setPinState(_state, intensityValueCorrected, GPIO_SET_SOURCE_INTERNAL);
+            esp_err_t retVal = it->second->setPinState(_state, intensityValueCorrected);
 
             if (retVal != ESP_OK) {
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight PWM: GPIO" + std::to_string((int)it->first) +
@@ -444,7 +448,7 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
             }
         }
         else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_DIGITAL) {
-            esp_err_t retVal = it->second->setPinState(_state, GPIO_SET_SOURCE_INTERNAL);
+            esp_err_t retVal = it->second->setPinState(it->second->getLogicLevelActiveLow() ? !_state : _state);
 
             if (retVal != ESP_OK) {
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
@@ -452,14 +456,8 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
                 return;
             }
 
-            if (_state) {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
-                                    ", State: " + std::to_string(_state));
-            }
-            else {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
-                                    ", State: " + std::to_string(_state));
-            }
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
+                                ", State: " + std::to_string(it->second->getLogicLevelActiveLow() ? !_state : _state));
         }
     }
 }
@@ -506,6 +504,8 @@ gpio_pin_mode_t GpioHandler::resolvePinMode(std::string input)
     }
     else if (input == "trigger-cycle-start")
         return GPIO_PIN_MODE_TRIGGER_CYCLE_START;
+    else if (input == "resume-wlan-connection")
+        return GPIO_PIN_MODE_RESUME_WLAN_CONNECTION;
 
     return GPIO_PIN_MODE_DISABLED;
 }
@@ -534,6 +534,8 @@ std::string GpioHandler::getPinModeDecription(gpio_pin_mode_t _mode)
             return FLASHLIGHT_DIGITAL;
         case 9:
             return "trigger-cycle-start";
+        case 10:
+            return "resume-wlan-connection";
         default:
             return "disabled";
     }
@@ -631,6 +633,7 @@ void GpioHandler::handleMQTTconnect()
     if (gpioMap != NULL) {
         for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
             it->second->mqttPublishPinState();
+            vTaskDelay(pdMS_TO_TICKS(500));
         }
     }
 }

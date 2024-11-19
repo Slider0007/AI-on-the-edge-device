@@ -60,7 +60,7 @@ bool doInit(void)
     // Init cam if init not yet done.
     // Make sure this is called between deinit and init of flow components (avoid SPIRAM fragmentation)
     // ********************************************
-    if (!cameraCtrl.getcameraInitSuccessful()) {
+    if (!cameraCtrl.getCameraInitSuccessful()) {
         cameraCtrl.powerResetCamera();
         esp_err_t camStatus = cameraCtrl.initCam();
 
@@ -890,7 +890,7 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_SETUP_MODE));
                 flowctrl.setActualProcessState(std::string(FLOW_SETUP_MODE));
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
+                    publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
                 #endif //ENABLE_MQTT
 
                 while (true) {                              // Waiting for a REQUEST
@@ -940,8 +940,8 @@ void task_autodoFlow(void *pvParameter)
                 flowctrl.setActualProcessState(std::string(FLOW_INIT_FAILED));
                 flowctrl.setFlowStateError();
                 #ifdef ENABLE_MQTT
-                if (getMQTTisConnected())
-                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
+                if (getMqttIsConnected())
+                    publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
                 #endif //ENABLE_MQTT
 
                 while (true) { // Waiting for a REQUEST
@@ -969,8 +969,8 @@ void task_autodoFlow(void *pvParameter)
                     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process start interlock: Waiting for time sync");
                     flowctrl.setActualProcessState(std::string(FLOW_INIT_WAITING_TIME_SYNC));
                     #ifdef ENABLE_MQTT
-                    if (getMQTTisConnected())
-                        MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
+                    if (getMqttIsConnected())
+                        publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
                     #endif //ENABLE_MQTT
 
                     while (true) { // Waiting for time sync
@@ -1010,7 +1010,7 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_NO_AUTOSTART));
                 flowctrl.setActualProcessState(std::string(FLOW_IDLE_NO_AUTOSTART));
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
+                    publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
                 #endif //ENABLE_MQTT
 
                 while (true) { // Waiting for a REQUEST
@@ -1027,6 +1027,12 @@ void task_autodoFlow(void *pvParameter)
                         taskAutoFlowState = FLOW_TASK_STATE_IMG_PROCESSING; // Start manual triggered single cycle of "FLOW PROCESSING"
                         break;
                     }
+                    else {
+                        // WLAN suspention handling (if activated)
+                        // Check whether WLAN set to suspended mode based on configured delay time
+                        // ********************************************
+                        suspendWifiConnection();
+                    }
                 }
             }
             else {
@@ -1039,7 +1045,7 @@ void task_autodoFlow(void *pvParameter)
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
             // Clear separation between runs
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "----------------------------------------------------------------");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "--------------------------------");
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(++cycleCounter) + " started");
             cycleStartTime = getUptime();
             cylceStartActualTime = esp_timer_get_time();
@@ -1059,8 +1065,13 @@ void task_autodoFlow(void *pvParameter)
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA) {
 
-            if (!flowctrl.doFlowPublishData(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Publish data: Process error occured");
+            if (getWifiIsConnected()) { // Skip pusblishing services if WLAN connection is not connected or suspended
+                if (!flowctrl.doFlowPublishData(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
+                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Publish data: Process error occured");
+                }
+            }
+            else {
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "No WLAN connection, skip publishing services");
             }
             taskAutoFlowState = FLOW_TASK_STATE_ADDITIONAL_TASKS;           // Continue with TASKS after FLOW FINISHED
         }
@@ -1076,7 +1087,7 @@ void task_autodoFlow(void *pvParameter)
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_POST_EVENT_HANDLING));
                 flowctrl.setActualProcessState(std::string(FLOW_POST_EVENT_HANDLING));
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
+                    publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
                 #endif
 
                 flowctrl.postProcessEventHandler();
@@ -1085,7 +1096,7 @@ void task_autodoFlow(void *pvParameter)
             else {
                 flowctrl.clearFlowStateEventInRowCounter();
                 #ifdef ENABLE_MQTT
-                    MQTTPublish(std::string(mqttServer_getMainTopic() + "/process/status/process_error"), "0", 1, false);
+                    publishMqttData(std::string(mqttServer_getMainTopic() + "/process/status/process_error"), "0", 1, false);
                 #endif
             }
 
@@ -1094,7 +1105,7 @@ void task_autodoFlow(void *pvParameter)
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_ADDITIONAL_TASKS));
             flowctrl.setActualProcessState(std::string(FLOW_ADDITIONAL_TASKS));
             #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
+                publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
             #endif //ENABLE_MQTT
 
             // Cleanup outdated log and data files (retention policy)
@@ -1166,8 +1177,13 @@ void task_autodoFlow(void *pvParameter)
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_IDLE_AUTOSTART));
             flowctrl.setActualProcessState(std::string(FLOW_IDLE_AUTOSTART));
             #ifdef ENABLE_MQTT
-                MQTTPublish(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
+                publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
             #endif //ENABLE_MQTT
+
+            // WLAN suspention handling (if activated)
+            // Check whether WLAN set to suspended mode based on configured delay time
+            // ********************************************
+            suspendWifiConnection();
 
             int64_t processIntervalDeltaTime = (esp_timer_get_time() - cylceStartActualTime) / 1000;
             if (automaticProcessInterval > processIntervalDeltaTime) {
@@ -1198,6 +1214,8 @@ void task_autodoFlow(void *pvParameter)
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "taskAutoFlowState: Invalid state called. Programming error");
             flowctrl.setActualProcessState(std::string(FLOW_INVALID_STATE));
         }
+
+        taskYIELD();
     }
 
     // Delete task if it exits from the loop above
@@ -1216,7 +1234,7 @@ void createMainFlowTask()
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_CREATE_FLOW_TASK));
     flowctrl.setActualProcessState(std::string(FLOW_CREATE_FLOW_TASK));
 
-    BaseType_t xReturned = xTaskCreatePinnedToCore(&task_autodoFlow, "task_autodoFlow", 12 * 1024, NULL, tskIDLE_PRIORITY+2, &xHandletask_autodoFlow, 0);
+    BaseType_t xReturned = xTaskCreatePinnedToCore(&task_autodoFlow, "task_autodoFlow", 12 * 1024, NULL, tskIDLE_PRIORITY + 3, &xHandletask_autodoFlow, 0);
     if( xReturned != pdPASS ) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create task_autodoFlow");
         LogFile.writeHeapInfo("CreateFlowTask: Failed to create task");

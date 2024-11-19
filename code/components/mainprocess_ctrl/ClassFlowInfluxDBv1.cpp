@@ -20,7 +20,6 @@ static const char* TAG = "INFLUXDBV1";
 ClassFlowInfluxDBv1::ClassFlowInfluxDBv1()
 {
     presetFlowStateHandler(true);
-    flowpostprocessing = NULL;
     InfluxDBenable = false;
 }
 
@@ -104,12 +103,6 @@ void ClassFlowInfluxDBv1::doPostProcessEventHandling()
 {
     // Post cycle process handling can be included here. Function is called after processing cycle is completed
 
-}
-
-
-bool ClassFlowInfluxDBv1::isInfluxDBEnabled(void)
-{
-    return InfluxDBenable;
 }
 
 

@@ -9,7 +9,7 @@
 
 ## Description
 
-Apply a special effect to the image
+Apply a special effect to the image.
 
 
 | Input Option  | Description
@@ -19,6 +19,11 @@ Apply a special effect to the image
 | `Grayscale`   | Grayscale image
 | `Gray+Negative`| Grayscale image and additionally invert colors
 
+
+!!! Warning
+    Models are usually only trained for colored images. Therefore it's
+    recommended to keep it set to `None` as long you're not trained 
+    a model using images with special effect applied.
 
 
 !!! Tip

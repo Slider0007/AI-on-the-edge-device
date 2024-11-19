@@ -1,0 +1,66 @@
+name: Update Web Installer
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  update-webinstaller:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        plat:
+         - esp32cam
+         - xiao-esp32s3-sense
+
+    # Sets permissions of the GITHUB_TOKEN to allow downloading artifacts
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
+    - name: Checkout branch gh-pages-webinstaller
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages-webinstaller
+
+    - name: Pull artifact from latest release
+      id: pull_artifacts
+      uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        regex: true
+        file: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_.*.zip"
+        target: './artifacts/'
+
+    - name: Prepare data
+      run: |
+        echo "Updating files ..."
+
+        rm -rf "./firmware/${{ matrix.plat }}/"
+        mkdir -p "./firmware/${{ matrix.plat }}/"
+
+        unzip ./artifacts/AI-on-the-edge-device__${{ matrix.plat }}__SLFork_*.zip -d ./artifacts/
+
+        cp -f ./artifacts/firmware.bin ./firmware/${{ matrix.plat }}/bootloader.bin
+        cp -f ./artifacts/partitions.bin ./firmware/${{ matrix.plat }}/partitions.bin
+        cp -f ./artifacts/firmware.bin ./firmware/${{ matrix.plat }}/firmware.bin
+
+        echo "Updating version strings (index.html, manifest) ..."
+        sed -i -E 's/Firmware: .*./\Firmware: <b\>${{ steps.pull_artifacts.outputs.version }}\<\/b\>/g' index.html
+        sed -i -E 's/"version":.*.,/"version": "${{ steps.pull_artifacts.outputs.version }}",/g' manifest_${{ matrix.plat }}.json
+
+    - name: Commit data to branch gh-pages-webinstaller
+      shell: pwsh
+      run: |
+        & git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        & git config --local user.name "github-actions[bot]"
+        & git add .
+        & git diff HEAD --exit-code | Out-Null
+        if ($LASTEXITCODE -ne 0)
+        {
+          & git commit -m "${{ matrix.plat }}: Update firmware files to ${{ steps.pull_artifacts.outputs.version }}"
+          & git push
+        }

@@ -79,20 +79,17 @@ bool ClassFlowAlignment::loadParameter()
         alignmentMarker[i].targetX = cfgDataPtr->marker[i].x;
         alignmentMarker[i].targetY = cfgDataPtr->marker[i].y;
 
-        // ROI position plausibilty check - Check Flip Image Size
-        int img_width = cameraCtrl.image_width;
-        int img_height = cameraCtrl.image_height;
-        if (cfgDataPtr->flipImageSize) {
-            img_width = cameraCtrl.image_height;
-            img_height = cameraCtrl.image_width;
-        }
+        // ROI position plausibilty check
+        int imgWidth = 640;
+        int imgHeight = 480;
+        cameraCtrl.getOutputFrameSize(imgWidth, imgHeight);
 
-        if (alignmentMarker[i].targetX < 1 || (alignmentMarker[i].targetX > (img_width - 1 - alignmentMarker[i].markerImage->width))) {
+        if (alignmentMarker[i].targetX < 1 || (alignmentMarker[i].targetX > (imgWidth - 1 - alignmentMarker[i].markerImage->width))) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (x). Check alignment marker");
             return false;
         }
 
-        if (alignmentMarker[i].targetY < 1 || (alignmentMarker[i].targetY > (img_height - 1 - alignmentMarker[i].markerImage->height))) {
+        if (alignmentMarker[i].targetY < 1 || (alignmentMarker[i].targetY > (imgHeight - 1 - alignmentMarker[i].markerImage->height))) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (y). Check alignment marker");
             return false;
         }
@@ -122,7 +119,7 @@ bool ClassFlowAlignment::doFlow(std::string time)
 
     if (imageTemp == NULL) {
         imageTemp = new CImageBasis("imageTemp", ImageBasis, 1);
-        if (imageTemp == NULL) {
+        if (imageTemp == NULL || imageTemp->rgb_image == NULL) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate imageTemp");
             LogFile.writeHeapInfo("ClassFlowAlignment-doFlow");
             return false;
@@ -137,19 +134,10 @@ bool ClassFlowAlignment::doFlow(std::string time)
         return false;
     }
 
-    CRotateImage rt("rawImageRT", alignAndCutImage, imageTemp, cfgDataPtr->flipImageSize);
-    if (cfgDataPtr->flipImageSize) {
-        int _zw = ImageBasis->height;
-        ImageBasis->height = ImageBasis->width;
-        ImageBasis->width = _zw;
-
-        _zw = imageTemp->width;
-        imageTemp->width = imageTemp->height;
-        imageTemp->height = _zw;
-    }
+    CRotateImage rt("rawImageRT", alignAndCutImage, imageTemp);
 
     float rotation = cfgDataPtr->imageRotation;
-    if ((rotation != 0) || cfgDataPtr->flipImageSize) {
+    if (rotation != 0) {
         if (alignmentMarker[0].alignmentAlgo == ALIGNALGO_OFF)  // alignment off: no initial rotation and no additional alignment algo
             rotation = 0.0;
 
@@ -315,15 +303,6 @@ bool ClassFlowAlignment::loadAlignmentMarkerData(void)
     nvs_close(align_nvshandle);
 
     return true;
-}
-
-
-bool ClassFlowAlignment::getFlipImageSize()
-{
-    if (cfgDataPtr->flipImageSize)
-        return true;
-
-    return false;
 }
 
 

@@ -45,7 +45,7 @@ std::string createNetworkInfoMetric(const std::string &metricNamePrefix)
     return "# TYPE " + metricNamePrefix + "network_info gauge\n" +
            "# HELP " + metricNamePrefix + "network_info Network info\n" +
            metricNamePrefix + "network_info{hostname=\"" + getHostname() +
-                                          "\",ipv4_address=\"" + getIPAddress() +
+                                          "\",ipv4_address=\"" + getIpAddress() +
                                           "\",mac_address=\"" + getMac() + "\"} 1\n";
 }
 

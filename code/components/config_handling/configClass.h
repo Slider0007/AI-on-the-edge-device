@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <freertos/FreeRTOS.h>
 #include <esp_log.h>
 #include <esp_heap_caps.h>
 #include <cJSON.h>
@@ -16,16 +17,17 @@
 * 1. Restore Config : readConfigFile()       > parseConfig > serializeConfig > writeConfigFile
 * 2. REST API Set   : setConfigRequest()     > parseConfig > serializeConfig > REST API Response
 * 3. REST API Get   : getConfigRequest()                   > serializeConfig > REST API Response
-* 4. Cfg Migration  : migrateConfiguration()               > serializeConfig > writeConfigFile
+* 4. Cfg Migration  : readConfigFile()       > parseConfig >  migrateConfiguration() > serializeConfig > writeConfigFile
 */
 
 class ConfigClass
 {
   private:
     static ConfigClass cfgClass; // Config class init here instead of global variable + extern declaration
-    CfgData cfgDataTemp; // Keeps last parameter modifications, but not in use by process (gets promoted to active config by reinitConfig())
-    CfgData cfgData; // Keep active parameter configuration in use by process
+    CfgData cfgDataTemp; // Keeps last parameter modifications, but not in yet used by process (gets promoted to active config by reinitConfig())
+    CfgData cfgData; // Keep parameter configuration (in use by process)
 
+    portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED;
     cJSON *cJsonObject = NULL;
     uint8_t *cJsonObjectBuffer = NULL;
     char *jsonBuffer = NULL;
@@ -59,7 +61,7 @@ class ConfigClass
     esp_err_t setConfigRequest(httpd_req_t *req);
 
     // Only for migration and internal parameter modification purpose
-    void initCfgTmp(void) { cfgDataTemp = {}; };
+    void initCfgTmp(void) { clearCfgDataTemp(); cfgDataTemp = {}; };
     CfgData *cfgTmp(void) { return &cfgDataTemp; };
     bool saveMigDataToNVS(std::string key, std::string value) { return saveDataToNVS(key, value); };
 
@@ -67,9 +69,6 @@ class ConfigClass
     CfgData *get(void) { return &cfgData; };
     char *getJsonBuffer(void) { return jsonBuffer; };
 };
-
-bool loadDataFromNVS(std::string key, std::string &value);
-bool saveDataToNVS(std::string key, std::string value);
 
 void registerConfigFileUri(httpd_handle_t server);
 

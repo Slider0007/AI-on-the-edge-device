@@ -16,12 +16,12 @@ The error code source definition can be found [here](https://github.com/Slider00
 
 | **source**    | source<br>blink count| error / warning / status              | status<br>blink count| repeat<br>infinite |
 | ------------- | -------------------- |---------------------------------------| -------------------- | -------------------|
-| WLAN_CONN     | 1                    | Disconnected (No Access Point)        | 1                    |
-| WLAN_CONN     | 1                    | Disconnected (Authentication failure) | 2                    |
-| WLAN_CONN     | 1                    | Disconnected (Timeout)                | 3                    |
+| WLAN_CONN     | 1                    | Disconnected (no access point)        | 1                    |
+| WLAN_CONN     | 1                    | Disconnected (authentication failure) | 2                    |
+| WLAN_CONN     | 1                    | Disconnected (timeout)                | 3                    |
 | WLAN_CONN     | 1                    | Disconnected (further reasons)        | 4                    |  
-| WLAN_INIT     | 2                    | SSID empty                            | 1                    | X
-| WLAN_INIT     | 2                    | WIFI init error (details console)     | 2                    | X
+| WLAN_CONN     | 1                    | Disconnected (network suspended)      | 5                    |  
+| WLAN_INIT     | 2                    | WIFI init error (details console)     | 1                    | X
 | SDCARD_NVS_INIT | 3                  | SD card filesystem mount failed       | 1                    | X
 | SDCARD_NVS_INIT | 3                  | SD card not found (0x107)             | 2                    | X
 | SDCARD_NVS_INIT | 3                  | SD card init failed (details console) | 3                    | X
@@ -38,7 +38,8 @@ The error code source definition can be found [here](https://github.com/Slider00
 | PSRAM_INIT    | 6                    | Total heap < 4MB                      | 3                    | X
 | TIME_CHECK    | 7                    | Missing time sync (check every round) | 1                    |
 | OTA_OR_AP     | 8                    | OTA process ongoing                   | 1                    | X
-| OTA_OR_AP     | 8                    | Soft AP started (for remote config)   | 2                    | X
+| OTA_OR_AP     | 8                    | AP mode (device provisioning)         | 2                    | X
+| OTA_OR_AP     | 8                    | AP mode (fallback due to connection failure) | 3             | X
 | FLASHLIGHT    | N/A                  | LED on when flashlight is on          | solid, <br> no blink | 
 
 

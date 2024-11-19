@@ -3,14 +3,15 @@
 #include <string>
 #include <regex>
 
-#include "nvs_flash.h"
-#include "esp_psram.h"
-#include "esp_vfs_fat.h"
-#include "driver/sdmmc_host.h"
+#include <nvs_flash.h>
+#include <esp_psram.h>
+#include <esp_vfs_fat.h>
+#include <esp_netif.h>
+#include <driver/sdmmc_host.h>
 
 #ifdef DISABLE_BROWNOUT_DETECTOR
-    #include "soc/soc.h"
-    #include "soc/rtc_cntl_reg.h"
+    #include <soc/soc.h>
+    #include <soc/rtc_cntl_reg.h>
 #endif
 
 #include "configClass.h"
@@ -28,16 +29,14 @@
 #include "server_file.h"
 #include "server_ota.h"
 #include "server_camera.h"
+#include "improvWifiProvisioning.h"
 
 #ifdef ENABLE_MQTT
 #include "server_mqtt.h"
 #endif //ENABLE_MQTT
 
 #include "openmetrics.h"
-
-#ifdef ENABLE_SOFTAP
-    #include "softAP.h"
-#endif //ENABLE_SOFTAP
+#include "softAP.h"
 
 
 static const char *TAG = "MAIN";
@@ -69,7 +68,7 @@ extern "C" void app_main(void)
     // ********************************************
     // Highlight start of app_main
     // ********************************************
-    ESP_LOGI(TAG, "================ Start app_main =================");
+    ESP_LOGI(TAG, "========= Start app_main ==========");
 
     // Init NVS flash
     // ********************************************
@@ -93,14 +92,15 @@ extern "C" void app_main(void)
     // Highlight start of logfile logging
     // Default Log Level: INFO -> Everything which needs to be logged during boot should be have level INFO, WARN OR ERROR
     // ********************************************
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "=================================================");
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "==================== Start ======================");
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "=================================================");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "===================================");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "============== Start ==============");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "===================================");
 
     // SD card: Create further mandatory directories (if not already existing)
     // Correct creation of these folders will be checked with function "checkSdCardFolderFilePresence"
     // ********************************************
     makeDir("/sdcard/config");           // mandatory for config handling
+    makeDir("/sdcard/config/backup");    // mandatory for config migration
     makeDir("/sdcard/config/certs");     // mandatory for TLS encryption
     makeDir("/sdcard/config/models");    // mandatory for TFLite models
     makeDir("/sdcard/firmware");         // mandatory for OTA firmware update
@@ -115,19 +115,29 @@ extern "C" void app_main(void)
     #endif
     checkOTAUpdate();
 
-    // Migrate parameter from older version to actual version
-    // Do migration task before first parameter usage
-    // ********************************************
-    migrateConfiguration();
+    // Configuration migration for legacy config.ini / wlan.ini
+    // Firmware version: v15.0 - v16.x, Config version: 0 - 2
+    // Note: Migration of v17.x and newer is handled while pasing JSON config (migrateConfiguration)
+    // ********************************************************************************
+    migrateConfigIni();
 
     // Load persistent config from file (json notation)
     ConfigClass::getInstance()->readConfigFile();
 
-    // Check for missing configuration
+    // Init network interface
+    // Call only once in application (deinit is not possible)
     // ********************************************
-    #ifdef ENABLE_SOFTAP
-        checkStartAPMode();
-    #endif
+    esp_netif_init();
+
+    // Init improv service for device provisioning via serial / USB interface
+    // ********************************************
+    improvInit();
+
+    // Start access point for device provisioning if mandatory content / config is missing
+    // Missing HTML content: html/index.html
+    // Missing config: Empty SSID in config/config.json
+    // ********************************************
+    startAPForDeviceProvisioning();
 
     // SD card: basic R/W check
     // ********************************************
@@ -193,21 +203,14 @@ extern "C" void app_main(void)
     // ********************************************
     initTime();
 
-    // Init WIFI service
+    // Init WLAN connection (init client, access point or none depending on configuration)
     // ********************************************
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WIFI service");
-    esp_err_t retVal = initWifiStation();
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WLAN network");
+    esp_err_t retVal = initWifi();
     if (retVal != ESP_OK) {
-        if (retVal == ESP_ERR_NOT_FOUND) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Device init aborted");
-            setStatusLed(WLAN_INIT, 1, true);
-            return;
-        }
-        else {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "WIFI init failed. Device init aborted");
-            setStatusLed(WLAN_INIT, 2, true);
-            return;
-        }
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init WLAN network failed. Device init aborted");
+        setStatusLed(WLAN_INIT, 1, true);
+        return;
     }
 
     // Set log level for wifi component to WARN level (default: INFO; only relevant for serial console)

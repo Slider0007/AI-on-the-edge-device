@@ -9,13 +9,13 @@
 
 ## Description
 
-Select authentication mode for InfluxDB authentication.
+Select authentication mode for InfluxDB authentication / security.
 
 
 | Input Option               | Description
 |:---                        |:---
 | `Token`                    | Authenticate with token
-| `TLS`                      | Authenticate with token and TLS certificates
+| `TLS`                      | Authenticate with token and secure with TLS certificates
 
 
 !!! Note

@@ -245,7 +245,7 @@ void checkOTAUpdate()
     deleteFile("/sdcard/update.txt");   // Prevent Boot Loop!!!
 
 	LogFile.writeToFile(ESP_LOG_INFO, TAG, "Prepare update process | File: " + file_name_update);
-    xTaskCreate(&task_ota_update, "task_ota_update", configMINIMAL_STACK_SIZE * 35, NULL, tskIDLE_PRIORITY+1, NULL);
+    xTaskCreate(&task_ota_update, "task_ota_update", configMINIMAL_STACK_SIZE * 35, NULL, tskIDLE_PRIORITY + 1, NULL);
 
     while(1) { // wait until reboot within task_do_update
         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -618,7 +618,7 @@ void task_reboot(void *DeleteMainFlow)
 
     /* Stop service tasks */
     #ifdef ENABLE_MQTT
-        MQTTdestroy_client(true);
+        deinitMqttClient(true);
     #endif //ENABLE_MQTT
 
     gpio_handler_destroy();
@@ -630,7 +630,7 @@ void task_reboot(void *DeleteMainFlow)
     httpd_stop(server);
 
     vTaskDelay(3000 / portTICK_PERIOD_MS);
-    wifiDestroy();
+    deinitWifi();
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     esp_restart();      // Reset type: CPU reset (Reset both CPUs)

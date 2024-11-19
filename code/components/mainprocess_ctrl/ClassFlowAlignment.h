@@ -39,10 +39,8 @@ class ClassFlowAlignment : public ClassFlow
     bool doFlow(std::string time);
 
     CAlignAndCutImage *getAlignAndCutImage() { return alignAndCutImage; };
-    bool getFlipImageSize();
 
     std::string name() { return "ClassFlowAlignment"; };
 };
-
 
 #endif // CLASSFLOWALIGNMENT_H

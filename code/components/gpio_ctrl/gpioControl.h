@@ -39,7 +39,6 @@ class GpioHandler
     ledc_timer_t getFreeTimer(int _frequency);
 
     gpio_num_t resolveSparePinNr(uint8_t _sparePinNr);
-    gpio_pin_mode_t resolvePinMode(std::string input);
     std::string getPinModeDecription(gpio_pin_mode_t _mode);
     gpio_int_type_t resolveIntType(std::string input);
     std::string getPinInterruptDecription(gpio_int_type_t _type);
@@ -59,6 +58,8 @@ class GpioHandler
 
     void gpioPinInterrupt(GpioResult *gpioResult);
     void gpioInputStatePolling();
+
+    gpio_pin_mode_t resolvePinMode(std::string input);
 
     void registerGpioUri();
     esp_err_t handleHttpRequest(httpd_req_t *req);
