@@ -249,7 +249,7 @@ esp_err_t GpioHandler::loadParameter()
         for (int i= 0; i < GPIO_SPARE_PIN_COUNT; ++i) {
             if (strcmp(gpio_spare_usage[i], FLASHLIGHT_SMARTLED) == 0) {
                 GpioPin* gpioPin = new GpioPin((gpio_num_t)gpio_spare[i], ("gpio" + std::to_string((int)gpio_spare[i])).c_str(),
-                                        GPIO_PIN_MODE_FLASHLIGHT_SMARTLED, GPIO_INTR_DISABLE, 200, 5000, false, false, "",
+                                        GPIO_PIN_MODE_FLASHLIGHT_SMARTLED, GPIO_INTR_DISABLE, 200, 5000, false, false, false, "",
                                         GPIO_FLASHLIGHT_DEFAULT_SMARTLED_TYPE, GPIO_FLASHLIGHT_DEFAULT_SMARTLED_QUANTITY,
                                         Rgb{255,255,255}, 100);
                 (*gpioMap)[(gpio_num_t)gpio_spare[i]] = gpioPin;
