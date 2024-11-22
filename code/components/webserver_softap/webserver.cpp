@@ -621,7 +621,7 @@ httpd_handle_t startWebserver(void)
     config.stack_size = 10240;
     config.core_id = 1;
     config.max_open_sockets = 5; // With default value 7: Error "httpd_accept_conn: error in accept"
-    config.max_uri_handlers = 23; // Max number of URI handler
+    config.max_uri_handlers = 24; // Max number of URI handler
     config.lru_purge_enable = true; // Cut old connections if new ones are needed
     config.uri_match_fn = httpd_uri_match_wildcard;
 

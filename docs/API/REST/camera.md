@@ -32,9 +32,9 @@ Payload:
         - `specialeffect` Special Effect [0 .. 2, 7] (0: None, 1: Negative, 2: Grayscale, 7: Grayscale + Negative)
         - `mirror` Image Mirror [true, false]
         - `flip` Image Flip [true, false]
-        - `zoommode` Zoom Mode [0 .. 2] (0: Off, 1: Crop only, 2: Scale & Crop)
-        - `zoomx` Zoom Offset X [0 .. 960]
-        - `zommy` Zoom Offset Y [0 .. 720]
+        - `zoomfactor` Zoom Factor 1.0x - 4.0x [1000 .. 4000]
+        - `zoomx` Zoom Offset X [-960 .. 960]
+        - `zommy` Zoom Offset Y [-720 .. 720]
       - Example: `/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0&saturation=0 &sharpness=0&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1 &manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoommode=0&zoomx=0&zoomy=0`
       - Response:
         - Content type: `HTML`

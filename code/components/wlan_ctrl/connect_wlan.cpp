@@ -572,54 +572,94 @@ std::string getAuthModeName(const wifi_auth_mode_t authMode)
 }
 
 
-void wifiScan(void)
+esp_err_t wifiScan(httpd_req_t *req, bool checkRoaming)
 {
-    wifi_scan_config_t wifiScanConfig;
+    esp_err_t retVal = ESP_OK;
+	wifi_scan_config_t wifiScanConfig;
     memset(&wifiScanConfig, 0, sizeof(wifiScanConfig));
 
-    wifiScanConfig.ssid = (uint8_t*)cfgDataPtr->wlan.ssid.c_str(); // only scan for configured SSID
-    wifiScanConfig.show_hidden = true;            // scan also hidden SSIDs
-	wifiScanConfig.channel = 0;                   // scan all channels
+    if (checkRoaming) {
+		wifiScanConfig.ssid = (uint8_t*)cfgDataPtr->wlan.ssid.c_str(); // Scan only for configured SSID
+	}
+    wifiScanConfig.show_hidden = true; // Scan also hidden SSIDs
+	wifiScanConfig.channel = 0; // Scan all channels
 
-    esp_wifi_scan_start(&wifiScanConfig, true);   // not using event handler SCAN_DONE by purpose to keep SYS_EVENT heap smaller
-                                                    // and the calling task task_autodoFlow is after scan is finish in wait state anyway
-                                                    // Scan duration: ca. (120ms + 30ms) * Number of channels -> ca. 1,5 - 2s
+    esp_wifi_scan_start(&wifiScanConfig, true); // Not using event handler SCAN_DONE by purpose to keep SYS_EVENT heap smaller
+                                                // and the calling task task_autodoFlow is after scan is finish in wait state anyway
+                                            	// Scan duration: ca. (120ms + 30ms) * Number of channels -> ca. 1,5 - 2s
 
-    uint16_t maxNumberOfApFound = 10;           // max. number of APs, value will be updated by function "esp_wifi_scan_get_ap_num"
-	esp_wifi_scan_get_ap_num(&maxNumberOfApFound); // get actual found APs
+    uint16_t maxNumberOfApFound = 10; // Max. number of APs, value will be updated by function "esp_wifi_scan_get_ap_num"
+	esp_wifi_scan_get_ap_num(&maxNumberOfApFound); // Get actual found APs
     wifi_ap_record_t* wifiApRecords = new wifi_ap_record_t[maxNumberOfApFound]; // Allocate necessary record datasets
 	if (wifiApRecords == NULL) {
-		esp_wifi_scan_get_ap_records(0, NULL); // free internal heap
+		esp_wifi_scan_get_ap_records(0, NULL); // Free internal heap
 		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "wifiScan: Failed to allocate heap for wifiApRecords");
-		return;
+		return ESP_FAIL;
 	}
 	else {
     	if (esp_wifi_scan_get_ap_records(&maxNumberOfApFound, wifiApRecords) != ESP_OK) { // Retrieve results (and free internal heap)
 			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "wifiScan: esp_wifi_scan_get_ap_records: Error retrieving datasets");
 			delete[] wifiApRecords;
-			return;
+			return ESP_FAIL;
 		}
 	}
 
-	wifi_ap_record_t currentAP;
-	esp_wifi_sta_get_ap_info(&currentAP);
+	if (checkRoaming) { // Check scanned network against actual access point to check if better AP is available
+		wifi_ap_record_t currentAP;
+		esp_wifi_sta_get_ap_info(&currentAP);
 
-	LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: Current AP BSSID=" + bssidToString((char*)currentAP.bssid));
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: Scan completed, APs found with configured SSID: " + std::to_string(maxNumberOfApFound));
-    for (int i = 0; i < maxNumberOfApFound; i++) {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: " + std::to_string(i+1) +
-                                                ": SSID=" + std::string((char*)wifiApRecords[i].ssid) +
-                                                ", BSSID=" + bssidToString((char*)wifiApRecords[i].bssid) +
-                                                ", RSSI=" + std::to_string(wifiApRecords[i].rssi) +
-                                                ", CH=" + std::to_string(wifiApRecords[i].primary) +
-                                                ", AUTH=" + getAuthModeName(wifiApRecords[i].authmode));
-		if (wifiApRecords[i].rssi > (currentAP.rssi + 5) && // RSSI is better than actual RSSI + 5 --> Avoid switching to AP with roughly same RSSI
-           (strcmp(bssidToString((char*)wifiApRecords[i].bssid).c_str(), bssidToString((char*)currentAP.bssid).c_str()) != 0))
-        {
-			wifiState.accessPointWithBetterRSSI = true;
-        }
+		LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: Current AP BSSID=" + bssidToString((char *)currentAP.bssid));
+		LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: Scan completed, APs found with configured SSID: " + std::to_string(maxNumberOfApFound));
+		for (int i = 0; i < maxNumberOfApFound; i++) {
+			LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: " + std::to_string(i+1) +
+													": SSID=" + std::string((char *)wifiApRecords[i].ssid) +
+													", BSSID=" + bssidToString((char *)wifiApRecords[i].bssid) +
+													", RSSI=" + std::to_string(wifiApRecords[i].rssi) +
+													", CH=" + std::to_string(wifiApRecords[i].primary) +
+													", AUTH=" + getAuthModeName(wifiApRecords[i].authmode));
+			if (wifiApRecords[i].rssi > (currentAP.rssi + 5) && // RSSI is better than actual RSSI + 5 --> Avoid switching to AP with roughly same RSSI
+			(strcmp(bssidToString((char*)wifiApRecords[i].bssid).c_str(), bssidToString((char *)currentAP.bssid).c_str()) != 0))
+			{
+				wifiState.accessPointWithBetterRSSI = true;
+			}
+		}
 	}
+	else if (req != NULL) { // Provide networks (REST API, JSON notation)
+		cJSON *cJSONObject = cJSON_CreateObject();
+		if (cJSONObject == NULL) {
+			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
+			return ESP_FAIL;
+		}
+		cJSON *networks, *networkEl;
+		if (!cJSON_AddItemToObject(cJSONObject, "networks", networks = cJSON_CreateArray())) {
+			cJSON_Delete(cJSONObject);
+			return ESP_FAIL;
+		}
+
+		for (uint16_t i = 0; i < maxNumberOfApFound; i++) {
+			cJSON_AddItemToArray(networks, networkEl = cJSON_CreateObject());
+			if (cJSON_AddStringToObject(networkEl, "ssid", (char *)wifiApRecords[i].ssid) == NULL)
+				retVal = ESP_FAIL;
+			if (cJSON_AddNumberToObject(networkEl, "channel", wifiApRecords[i].primary) == NULL)
+				retVal = ESP_FAIL;
+			if (cJSON_AddNumberToObject(networkEl, "rssi", wifiApRecords[i].rssi) == NULL)
+				retVal = ESP_FAIL;
+			if (cJSON_AddStringToObject(networkEl, "authmode", getAuthModeName(wifiApRecords[i].authmode).c_str()) == NULL)
+				retVal = ESP_FAIL;
+		}
+
+		char *jsonChar = cJSON_Print(cJSONObject);
+		cJSON_Delete(cJSONObject);
+
+		if (jsonChar != NULL) {
+			httpd_resp_set_type(req, "application/json");
+			retVal = httpd_resp_send(req, jsonChar, strlen(jsonChar));
+			cJSON_free(jsonChar);
+		}
+	}
+
 	delete[] wifiApRecords;
+	return retVal;
 }
 
 
@@ -627,7 +667,7 @@ void wifiRoamByScanning(void)
 {
 	if (cfgDataPtr->wlan.wlanRoaming.enabled && getWifiRssi() != -127 && getWifiRssi() < cfgDataPtr->wlan.wlanRoaming.rssiThreshold) {
 		LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: Start scan of all channels for SSID " + cfgDataPtr->wlan.ssid);
-		wifiScan();
+		wifiScan(NULL, true);
 
 		if (wifiState.accessPointWithBetterRSSI) {
 			wifiState.accessPointWithBetterRSSI = false;

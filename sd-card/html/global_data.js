@@ -88,6 +88,37 @@ function uploadContent(_content, _filename, _domainname = "")
 }
 
 
+async function getWlanNetworks()
+{
+    return new Promise(function (resolve, reject) {
+        let url = getDomainname() + '/wlan?task=scan';
+
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                    if (this.status >= 200 && this.status < 300) {
+                        return resolve(JSON.parse(xhttp.responseText));
+                    }
+                    else if (this.status >= 400) {
+                        firework.launch("WLAN scan request failed. Status: " + this.status + " " +
+                            (this.status == 404 ? "Not found" : this.responseText), 'danger', 30000);
+                        console.error("WLAN scan request failed. Status: " + this.status + " " +
+                            (this.status == 404 ? "Not found" : this.responseText));
+                    }
+                    else {
+                        firework.launch("WLAN scan request failed. Status: Rejected, no response", 'danger', 30000);
+                        return reject("WLAN network scan failed");
+                    }
+            }
+        };
+
+        xhttp.timeout = 10000; // 10 seconds
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    });
+}
+
+
 async function getDataFileList()
 {
     return new Promise(function (resolve, reject) {

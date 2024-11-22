@@ -29,6 +29,7 @@
 #include "server_file.h"
 #include "server_ota.h"
 #include "server_camera.h"
+#include "server_wlan.h"
 #include "improvWifiProvisioning.h"
 
 #ifdef ENABLE_MQTT
@@ -297,6 +298,7 @@ extern "C" void app_main(void)
     ESP_LOGD(TAG, "starting servers");
     server = startWebserver();
     registerConfigFileUri(server);
+    registerWlanUri(server);
     registerCameraUri(server);
     registerMainFlowTaskUri(server);
     registerFileserverUri(server, "/sdcard");

@@ -4,6 +4,7 @@
 #include <string>
 
 #include <esp_err.h>
+#include <esp_http_server.h>
 
 typedef enum WIFI_CONNECTION_STATUS {
     WIFI_CONNECTION_NOT_INITIALIZED = 0,
@@ -28,6 +29,8 @@ void wifiRoamingQuery(void);
 #ifdef WLAN_USE_ROAMING_BY_SCANNING
 void wifiRoamByScanning(void);
 #endif
+
+esp_err_t wifiScan(httpd_req_t *req = NULL, bool checkRoaming = false);
 
 std::string getNetworkOpmode(void);
 std::string getMac(void);
