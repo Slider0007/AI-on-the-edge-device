@@ -11,6 +11,10 @@
 SSID (name of wireless network) of the wireless network
 
 
+!!! Tip
+    Click the magnifier symbol to perform a network scan.
+
+
 !!! Note
     To apply this parameter a device reboot is required.
 
