@@ -324,15 +324,17 @@ esp_err_t GpioHandler::loadParameter()
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Pin Config: GPIO" + std::to_string((int)gpioNr) +
                 ", Name: " + std::string(gpioName) + ", Mode: " + pin.pinMode + ", Interrupt Type: " +
                 pin.captureMode + ", Debounce Time: " + std::to_string(pin.inputDebounceTime) + ", Frequency: " +
-                std::to_string(pin.PwmFrequency) + ", HTTP Access: " + std::to_string(pin.exposeToRest) +
-                ", MQTT Access: " + std::to_string(mqttAccess) +", MQTT Topic: " + mqttTopic +
+                std::to_string(pin.PwmFrequency) + ", Logic Active Low: " + std::to_string(pin.logicActiveLow) +
+                ", HTTP Access: " + std::to_string(pin.exposeToRest) +
+                ", MQTT Access: " + std::to_string(mqttAccess) + ", MQTT Topic: " + mqttTopic +
                 ", LED Type: " + std::to_string(pin.smartLed.type) + ", LED Quantity: " + std::to_string(pin.smartLed.quantity) +
                 ", LED Color: R:" + std::to_string(LEDColor.r) + " | G:" + std::to_string(LEDColor.g) +
                 " | B:" + std::to_string(LEDColor.b) + ", LED Intensity Correction: " +
                 std::to_string(pin.intensityCorrectionFactor));
 
-        GpioPin* gpioPin = new GpioPin(gpioNr, gpioName, pinMode, captureMode, pin.inputDebounceTime, pin.PwmFrequency, pin.exposeToRest,
-                                mqttAccess, mqttTopic, LEDType, pin.smartLed.quantity, LEDColor, pin.intensityCorrectionFactor);
+        GpioPin* gpioPin = new GpioPin(gpioNr, gpioName, pinMode, captureMode, pin.inputDebounceTime, pin.PwmFrequency,
+                                pin.logicActiveLow, pin.exposeToRest, mqttAccess, mqttTopic, LEDType, pin.smartLed.quantity,
+                                LEDColor, pin.intensityCorrectionFactor);
         (*gpioMap)[gpioNr] = gpioPin;
     }
 
@@ -391,7 +393,7 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
             int intensityValueCorrected = std::min(std::max(0, it->second->getIntensityCorrection() *
                                                     _intensity * dutyResultionMaxValue / 10000), dutyResultionMaxValue);
 
-            esp_err_t retVal = it->second->setPinState(_state, intensityValueCorrected, GPIO_SET_SOURCE_INTERNAL);
+            esp_err_t retVal = it->second->setPinState(_state, intensityValueCorrected);
 
             if (retVal != ESP_OK) {
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight PWM: GPIO" + std::to_string((int)it->first) +
@@ -446,7 +448,7 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
             }
         }
         else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_DIGITAL) {
-            esp_err_t retVal = it->second->setPinState(_state, GPIO_SET_SOURCE_INTERNAL);
+            esp_err_t retVal = it->second->setPinState(it->second->getLogicLevelActiveLow() ? !_state : _state);
 
             if (retVal != ESP_OK) {
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
@@ -454,14 +456,8 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
                 return;
             }
 
-            if (_state) {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
-                                    ", State: " + std::to_string(_state));
-            }
-            else {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
-                                    ", State: " + std::to_string(_state));
-            }
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
+                                ", State: " + std::to_string(it->second->getLogicLevelActiveLow() ? !_state : _state));
         }
     }
 }

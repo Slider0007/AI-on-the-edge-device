@@ -56,6 +56,7 @@ class GpioPin
         gpio_int_type_t interruptType;
         int frequency;
         GpioISR gpioISR;
+        bool logicLevelActiveLow;
 
         bool httpAccess = false;
         bool mqttAccess = false;
@@ -71,14 +72,14 @@ class GpioPin
 
     public:
         GpioPin(gpio_num_t _gpio, const char* _name, gpio_pin_mode_t _mode, gpio_int_type_t _interruptType,
-                int _debounceTime, int _frequency, bool _httpAccess, bool _mqttAccess, std::string _mqttTopic,
-                LedType _LEDType, int _LEDQuantity, Rgb _LEDColor, int _intensityCorrection);
+                int _debounceTime, int _frequency, bool _logicLevelActiveLow, bool _httpAccess, bool _mqttAccess,
+                std::string _mqttTopic, LedType _LEDType, int _LEDQuantity, Rgb _LEDColor, int _intensityCorrection);
         ~GpioPin();
         void init();
 
         void updatePinState(int state = -1);
-        esp_err_t setPinState(bool _state, gpio_set_source _setSource);
-        esp_err_t setPinState(bool _state, int _ledIntensity, gpio_set_source _setSource);
+        esp_err_t setPinState(bool _state, gpio_set_source _setSource = GPIO_SET_SOURCE_INTERNAL);
+        esp_err_t setPinState(bool _state, int _ledIntensity, gpio_set_source _setSource = GPIO_SET_SOURCE_INTERNAL);
         int getPinState();
 
         #ifdef ENABLE_MQTT
@@ -88,6 +89,7 @@ class GpioPin
 
         gpio_num_t getGPIO() { return gpio; };
         gpio_pin_mode_t getMode() { return mode; };
+        bool getLogicLevelActiveLow() {  return logicLevelActiveLow; };
         gpio_int_type_t getInterruptType() { return interruptType; };
         int getFrequency() { return frequency; };
         bool getHttpAccess() { return httpAccess; };

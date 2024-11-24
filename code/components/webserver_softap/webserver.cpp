@@ -28,7 +28,7 @@
 #include "interface_webhook.h"
 
 
-static const char *TAG = "MAIN_SERVER";
+static const char *TAG = "SERVER_MAIN";
 
 httpd_handle_t server = NULL;
 struct HttpServerData *httpServerData = NULL;

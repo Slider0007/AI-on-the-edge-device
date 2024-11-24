@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <esp_camera.h>
 #include <esp_log.h>
 
 //************************************************
@@ -153,6 +154,7 @@ struct GpioElement {
     std::string captureMode = "cyclic-polling";
     int inputDebounceTime = 200;
     int PwmFrequency = 5000;
+    bool logicActiveLow = false;
     bool exposeToMqtt = false;
     bool exposeToRest = false;
     struct SmartLed {
@@ -174,8 +176,7 @@ struct GpioElement {
 struct CfgData {
     // Config File
     struct SectionConfig {
-        int desiredConfigVersion = 3; // Set version in configMigration.cpp
-        int version = 3;
+        int version = 4; // NOTE: Increment when existing parameter name changed and add migration routine
         std::string lastModified = "";
     } sectionConfig;
 
@@ -193,9 +194,9 @@ struct CfgData {
             int flashIntensity = 50;
         } flashlight;
         struct Camera {
+            camera_model_t cameraModel = CAMERA_OV2640;
             int cameraFrequency = 20;
             int imageQuality = 12;
-            std::string imageSize = "VGA";
             int brightness = 0;
             int contrast = 0;
             int saturation = 0;
@@ -208,7 +209,7 @@ struct CfgData {
             int specialEffect = 0;
             bool mirrorImage = false;
             bool flipImage = false;
-            int zoomMode = 0;
+            int zoomFactor = 1000; // 1.000x
             int zoomOffsetX = 0;
             int zoomOffsetY = 0;
         } camera;
@@ -229,7 +230,6 @@ struct CfgData {
             int y = 20;
         } searchField;
         float imageRotation = 0.0;
-        bool flipImageSize = false;
         struct Marker {
             int x = 1;
             int y = 1;

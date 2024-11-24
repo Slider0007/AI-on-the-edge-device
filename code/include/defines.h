@@ -57,21 +57,28 @@
 // GLOBAL GENERAL FLAGS
 //**************************************************************************************
 
-//compiler optimization for tflite-micro-esp-examples
+// Compiler optimization for tflite-micro-esp-examples
+//******************************
 #define XTENSA
-//#define CONFIG_IDF_TARGET_ARCH_XTENSA // not needed with platformio/espressif32 @ 5.2.0
 
 
-//ConfigClass
+// ConfigClass
+//******************************
 #define CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE 32768 // Size of preallocated buffer for larger files (cJSON Object, JSON string buffer)
 
 
-//ClassControlCamera
+// ClassControlCamera
+//******************************
+// Camera image size which is used for further processing (Max. 640 x 480 due to RAM restrictions)
+#define CAMERA_OUTPUT_WINDOW_SIZE_WIDTH 640
+#define CAMERA_OUTPUT_WINDOW_SIZE_HEIGHT 480
+
 #define CAM_LIVESTREAM_REFRESHRATE 500 // Camera livestream feature: Waiting time in milliseconds to refresh image
 #define DEMO_IMAGE_SIZE 30000 // Max size of demo image in bytes
 
 
-//server_GPIO + server_file + SoftAP + ClassFlowControl + Main + SoftAP
+// server_GPIO + server_file + SoftAP + ClassFlowControl + Main
+//******************************
 #define CONFIG_PERSISTENCE_FILE "/sdcard/config/config.json" // Config persistence file for firmware v17.x and newer
 #define CONFIG_PERSISTENCE_FILE_BACKUP "/sdcard/config/backup/config_json.bak" // Config persistence backup file for firmware v17.x and newer
 
@@ -81,11 +88,13 @@
 #define CONFIG_WIFI_FILE_BACKUP_LEGACY "/sdcard/config/backup/wlan_ini.bak"
 
 
-// server_file + Helper
+// Server_file + Helper
+//******************************
 #define FILE_PATH_MAX (255) //Max length a file path can have on storage
 
 
-//server_file +(ota_page.html + upload_script.html)
+// Server_file + (ota_page.html + upload_script.html)
+//******************************
 #define MAX_FILE_SIZE   (8000*1024) // 8 MB Max size of an individual file. Make sure this value
                                     // is same as that set in upload_script.html and ota_page.html!
 #define MAX_FILE_SIZE_STR "8MB"
@@ -96,23 +105,27 @@
 #define SERVER_OTA_SCRATCH_BUFSIZE  1024
 
 
-//server_file + server_help
+// Server_file + server_help
+//******************************
 #define IS_FILE_EXT(filename, ext) \
             (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
 
 
-//server_ota
+// Server_ota
+//******************************
 #define HASH_LEN 32 // SHA-256 digest length
 #define OTA_URL_SIZE 256
 
 
-//ClassFlow + ClassLogImage + server_tflite
+//ClassFlow + ClassLogImage
+// ******************************
 #define DEFAULT_TIME_FORMAT             "%Y%m%d-%H%M%S"
 #define DEFAULT_TIME_FORMAT_DATE_EXTR   substr(0, 8)
 #define DEFAULT_TIME_FORMAT_HOUR_EXTR   substr(9, 2)
 
 
-//ClassLogFile.cpp
+// ClassLogFile.cpp
+//******************************
 #define LOG_FILE_TIME_FORMAT            "log_%Y-%m-%d.txt"
 #define DATA_FILE_TIME_FORMAT           "data_%Y-%m-%d.csv"
 #define DEBUG_FOLDER_TIME_FORMAT        "%Y%m%d"
@@ -130,12 +143,14 @@
 //#define KEEP_LOGFILE_OPEN_FOR_APPENDING
 
 
-//ClassFlowPostProcessing + Influxdb + Influxdbv2
+// ClassFlowPostProcessing + Influxdb + Influxdbv2
+//******************************
 #define TIME_FORMAT_OUTPUT              "%Y-%m-%dT%H:%M:%S%z"
 #define FALLBACKVALUE_TIME_FORMAT_INPUT "%d-%d-%dT%d:%d:%d"
 
 
-//ClassFlowControl
+// ClassFlowControl
+//******************************
 #define READOUT_TYPE_TIMESTAMP_PROCESSED     0
 #define READOUT_TYPE_TIMESTAMP_FALLBACKVALUE 1
 #define READOUT_TYPE_VALUE                   2
@@ -146,14 +161,16 @@
 #define READOUT_TYPE_RATE_PER_INTERVAL       7
 
 
-//ClassFlowMQTT
+// ClassFlowMQTT
+//******************************
 #define MQTT_STATUS_TOPIC           "/device/status/connection"
 #define MQTT_STATUS_ONLINE          "online"
 #define MQTT_STATUS_OFFLINE         "offline"
 #define MQTT_QOS                    1
 
 
-//CImageBasis
+// CImageBasis
+//******************************
 #define HTTP_BUFFER_SENT 1024
 #define MAX_JPG_SIZE 128000
 
@@ -165,14 +182,15 @@
                        // https://github.com/jomjol/AI-on-the-edge-device/issues/1721)
 
 
-//interface_influxdb
+// interface_influxdbv1 + interface_influxdbv2 + webhook
+//******************************
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 
 
 // connect_wlan.cpp
 //******************************
-#define WLAN_CONNECTION_RETRIES_INITIAL_CONNECT     5
-#define WLAN_CONNECTION_RETRIES_ERROR_MSG           10
+#define WLAN_CONNECT_FALLBACK_AP_DELAY 120 // Delay in seconds after which the device fall back to AP mode if no connection can be established initially
+#define WLAN_RECONNECT_RETRIES_ERROR_MSG 10 // Number of retries after error message will be shown after connection was already successfully established
 
 /* WIFI roaming functionalities 802.11k+v (uses ca. 6kB - 8kB internal RAM; if SCAN CACHE activated: + 1kB / beacon)
 PLEASE BE AWARE: The following CONFIG parameters have to to be set in
@@ -192,7 +210,8 @@ CONFIG_WPA_11R_SUPPORT=n
 #define WLAN_USE_ROAMING_BY_SCANNING
 
 
-//ClassFlowCNNGeneral
+// ClassFlowCNNGeneral
+//******************************
 #define Analog_error                        3  // 0.3
 #define Digital_Uncertainty                 2  // 0.2
 #define DigitalBand                         3  // 0.3
@@ -201,6 +220,7 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
 // ClassFlowPostProcessing.cpp: Post-Processing result value status
+//******************************
 #define VALUE_STATUS_000_VALID              "000 Valid"
 #define VALUE_STATUS_W01_EMPTY_DATA         "W01 Empty data"
 #define VALUE_STATUS_001_DATA_N_SUBST       "E90 No data to substitute N"
@@ -209,8 +229,8 @@ CONFIG_WPA_11R_SUPPORT=n
 #define VALUE_STATUS_004_RATE_TOO_HIGH_POS  "E93 Rate too high (>)"
 
 
-/* MAIN FLOW CONTROL */
-/*********************/
+// MAIN FLOW CONTROL
+//******************************
 // Flow task states
 #define FLOW_TASK_STATE_INIT_DELAYED        0
 #define FLOW_TASK_STATE_INIT                1
@@ -248,9 +268,11 @@ CONFIG_WPA_11R_SUPPORT=n
 #define FLOW_INVALID_STATE          "Invalid State"
 
 // Process state misc
+//******************************
 #define FLOWSTATE_ERROR_DEVIATION_IN_ROW_LIMIT   3
 
 // Global flashlight definitions
+//******************************
 #define FLASHLIGHT_DEFAULT_LEDC_TIMER           LEDC_TIMER_1
 #define FLASHLIGHT_DEFAULT_LEDC_CHANNEL         LEDC_CHANNEL_1
 #define FLASHLIGHT_DEFAULT_FREQUENCY            (5000) // 5kHz

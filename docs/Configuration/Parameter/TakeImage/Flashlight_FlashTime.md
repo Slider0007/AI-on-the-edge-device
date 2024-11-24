@@ -10,11 +10,7 @@
 
 ## Description
 
-Flash on time before taking the image
-
-
-!!! Note
-    A shorter flash duration than 500ms is not recommended.
+Flash duration before taking the picture
 
 
 !!! Tip

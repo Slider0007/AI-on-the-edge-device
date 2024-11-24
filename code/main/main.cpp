@@ -101,6 +101,7 @@ extern "C" void app_main(void)
     // Correct creation of these folders will be checked with function "checkSdCardFolderFilePresence"
     // ********************************************
     makeDir("/sdcard/config");           // mandatory for config handling
+    makeDir("/sdcard/config/backup");    // mandatory for config migration
     makeDir("/sdcard/config/certs");     // mandatory for TLS encryption
     makeDir("/sdcard/config/models");    // mandatory for TFLite models
     makeDir("/sdcard/firmware");         // mandatory for OTA firmware update
@@ -115,10 +116,11 @@ extern "C" void app_main(void)
     #endif
     checkOTAUpdate();
 
-    // Migrate parameter from older version to actual version
-    // Do migration task before first parameter usage
-    // ********************************************
-    migrateConfiguration();
+    // Configuration migration for legacy config.ini / wlan.ini
+    // Firmware version: v15.0 - v16.x, Config version: 0 - 2
+    // Note: Migration of v17.x and newer is handled while pasing JSON config (migrateConfiguration)
+    // ********************************************************************************
+    migrateConfigIni();
 
     // Load persistent config from file (json notation)
     ConfigClass::getInstance()->readConfigFile();

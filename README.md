@@ -43,15 +43,22 @@ As a result, you get the digitized value of your meter. There are several option
 
 
 ## Supported Hardware
+### Board
 | Board Type                                                                     | SOC      | Firmware Release | Remarks                       
 |:---                                                                            |:---      |:---           |:--- 
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           | - Only boards with >4MB RAM are supported<br>- Beware of inferior quality Chinese clones
-| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |- No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) necessary<br>- Running quite hot, small heat sink recommended
+| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           |⚠️ Only boards with >4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones
+| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |⚠️ Running quite hot, a small heat sink is recommended<br>ℹ️ No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) required
+
+### Camera
+| Camera Type                                                                             | Sensor Resolution  | Digital Zoom | Firmware Release | Remarks                       
+|:---                                                                                     |:---                |:---          |:---              |:--- 
+| [OV2640](https://www.arducam.com/ov2640/)                                               | 2MP                | 1.0x - 2.5x  | All              | ℹ️ Officially EOL since 2009, but still very popular<br>ℹ️ Pin and function compatible Chinese clones are supported
+| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP                | 1.0x - 4.0x  | $\ge$ v17.0.0    |ℹ️ Officially EOL since 2019, but still very popular<br>ℹ️ Autofocus is not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Running quite hot, a small heat sink is recommended to get stable image quality<br>⚠️ ESP32-CAM: Camera functional. Deviation of core + I/O voltage supply (board: 1.2V / 3.3V, camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Camera functional. Small deviation of core voltage supply (board: 1.3V, camera: 1.5V).
 
 
 ## Inform Yourself
 There is growing [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/) which provides you with a lot of information. Head there to get a start, how to set it up and configure it.<br>
-⚠️ Not every description is 100% suitable for this fork. Therefore please check `docs` folder of this repository for any fork specific documentation.
+ℹ️ Not every description is 100% suitable for this fork. Therefore please check `docs` folder of this repository for any fork specific documentation.
 
 Small selection of youtube videos which might give you an idea how to getting started:<br>[Video 1](https://www.youtube.com/watch?v=HKBofb1cnNc), [Video 2](https://www.youtube.com/watch?v=yyf0ORNLCk4), [Video 3](https://www.youtube.com/watch?v=XxmTubGek6M), [Video 4](https://www.youtube.com/watch?v=mDIJEyElkAU), [Video 5](https://www.youtube.com/watch?v=SssiPkyKVVs), [Video 6](https://www.youtube.com/watch?v=MAHE_QyHZFQ), [Video 7](https://www.youtube.com/watch?v=Uap_6bwtILQ)
 
@@ -68,7 +75,7 @@ A possibly already available development version (upcoming release version) can 
 
 ---
 ### Over The Air (OTA) Update
-After the device is intially installed using one of the following options, it is **strongly recommended** to perform any further firmware update using the **web interface built-in OTA functionality**.
+After the device is initially installed using one of the following installation options, it is **strongly recommended** to perform any further firmware update using the **web interface built-in OTA functionality**.
 
 ---
 ### Option 1: Web Installer (Only For Released Versions)
@@ -86,19 +93,19 @@ Further details can be found in [Manual Provisioning Documentation](docs/Install
 ## API Description
 ### REST API
 See [REST API Documentation](docs/API/REST/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > REST API`).<br>
-⚠️ Read API documenation carefully. REST API is not fully compatible with jomjol's original firmware.
+ℹ️ Read API documenation carefully. REST API is not fully compatible with jomjol's original firmware.
 
 ### MQTT API
 See [MQTT API Documentation](docs/API/MQTT/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > MQTT API`).<br>
-⚠️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
+ℹ️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
 
 ### Prometheus Exporter
 See [Prometheus API Documentation](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Prometheus API`).<br>
-⚠️ Read API documenation carefully. Prometheus API is not fully compatible with jomjol's original firmware.
+ℹ️ Read API documenation carefully. Prometheus API is not fully compatible with jomjol's original firmware.
 
 ### Webhook API
 See [Webhook API Documentation](docs/API/Webhook/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Webhook API`).<br>
-⚠️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
+ℹ️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
 
 
 ## Build Yourself
@@ -106,4 +113,4 @@ See [Build / Debug Instructions](code/README.md)
 
 
 ## Support
-⚠️ This is a forked version of [jomjol´s great software](https://github.com/jomjol/AI-on-the-edge-device) which is intented to use for my personal purposes only.
+ℹ️ This is a forked version of [jomjol´s great software](https://github.com/jomjol/AI-on-the-edge-device) which is intented to use for my personal purposes only.

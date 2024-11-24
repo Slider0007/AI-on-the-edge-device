@@ -60,7 +60,7 @@ bool doInit(void)
     // Init cam if init not yet done.
     // Make sure this is called between deinit and init of flow components (avoid SPIRAM fragmentation)
     // ********************************************
-    if (!cameraCtrl.getcameraInitSuccessful()) {
+    if (!cameraCtrl.getCameraInitSuccessful()) {
         cameraCtrl.powerResetCamera();
         esp_err_t camStatus = cameraCtrl.initCam();
 

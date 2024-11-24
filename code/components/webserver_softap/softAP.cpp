@@ -17,7 +17,7 @@
 #include "server_ota.h"
 
 
-static const char *TAG = "WIFI_AP";
+static const char *TAG = "WLAN_AP";
 
 static bool credentialsSet = false;
 static bool SDCardContentExisting = false;
