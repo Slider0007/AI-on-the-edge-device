@@ -1,5 +1,5 @@
-#ifndef JOMJOL_CONTROLCAMERA_H
-#define JOMJOL_CONTROLCAMERA_H
+#ifndef SERVER_CAMERA_H
+#define SERVER_CAMERA_H
 
 #include <esp_log.h>
 #include <esp_http_server.h>
