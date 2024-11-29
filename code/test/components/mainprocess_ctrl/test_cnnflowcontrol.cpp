@@ -2,15 +2,14 @@
 
 class UnderTestCNN : public ClassFlowCNNGeneral
 {
-    public:
+  public:
+    using ClassFlowCNNGeneral::ClassFlowCNNGeneral;
     using ClassFlowCNNGeneral::evalAnalogNumber;
     using ClassFlowCNNGeneral::evalDigitNumber;
-    using ClassFlowCNNGeneral::ClassFlowCNNGeneral;
-
 };
 
 // Helper to enter value as float (1.0 -> 10, 4.5 -> 45)
-#define FLOAT_AS_INT(x) (int)(x*10)
+#define FLOAT_AS_INT(x) (int)(x * 10)
 
 
 /**
@@ -34,7 +33,6 @@ void test_EvalAnalogNumber()
 
     // the 4.5 (digital100) is not above 5  and the previous digit (analog) too (9.6)
     TEST_ASSERT_EQUAL(4, undertest.evalAnalogNumber(FLOAT_AS_INT(4.5), 9));
-
 }
 
 

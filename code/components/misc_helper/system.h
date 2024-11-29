@@ -11,7 +11,7 @@ typedef enum {
     SPIRAMCategory_16MB = 2,
     SPIRAMCategory_32MB = 3,
     SPIRAMCategory_MAX = 4
-}SPIRAMCategory_t;
+} SPIRAMCategory_t;
 
 std::string getBoardType(void);
 std::string getChipModel(void);
@@ -44,17 +44,17 @@ SPIRAMCategory_t getSPIRAMCategory();
 /* Error bit fields
    One bit per error
    Make sure it matches https://jomjol.github.io/AI-on-the-edge-device-docs/Error-Codes */
-enum SystemStatusFlag_t {          // One bit per error
+enum SystemStatusFlag_t { // One bit per error
     // First Byte
-    SYSTEM_STATUS_PSRAM_BAD         = 1 << 0, //  1, Critical Error
-    SYSTEM_STATUS_HEAP_TOO_SMALL    = 1 << 1, //  2, Critical Error
-    SYSTEM_STATUS_CAM_BAD           = 1 << 2, //  4, Critical Error
-    SYSTEM_STATUS_SDCARD_CHECK_BAD  = 1 << 3, //  8, Critical Error
-    SYSTEM_STATUS_FOLDER_CHECK_BAD  = 1 << 4, //  16, Critical Error
+    SYSTEM_STATUS_PSRAM_BAD = 1 << 0,        //  1, Critical Error
+    SYSTEM_STATUS_HEAP_TOO_SMALL = 1 << 1,   //  2, Critical Error
+    SYSTEM_STATUS_CAM_BAD = 1 << 2,          //  4, Critical Error
+    SYSTEM_STATUS_SDCARD_CHECK_BAD = 1 << 3, //  8, Critical Error
+    SYSTEM_STATUS_FOLDER_CHECK_BAD = 1 << 4, //  16, Critical Error
 
     // Second Byte
-    SYSTEM_STATUS_CAM_FB_BAD        = 1 << (0+8), //  8, Flow still might work
-    SYSTEM_STATUS_NTP_BAD           = 1 << (1+8), //  9, Flow will work but time will be wrong
+    SYSTEM_STATUS_CAM_FB_BAD = 1 << (0 + 8), //  8, Flow still might work
+    SYSTEM_STATUS_NTP_BAD = 1 << (1 + 8),    //  9, Flow will work but time will be wrong
 };
 
 void setSystemStatusFlag(SystemStatusFlag_t flag);
@@ -67,7 +67,7 @@ std::string getResetReason(void);
 void checkIsPlannedReboot();
 bool getIsPlannedReboot();
 
-void saveSDCardInfo(sdmmc_card_t* card);
+void saveSDCardInfo(sdmmc_card_t *card);
 std::string parseSDCardManufacturerID(int);
 std::string getSDCardManufacturer(void);
 std::string getSDCardName(void);
@@ -77,4 +77,4 @@ int getSDCardPartitionAllocationSize(void);
 int getSDCardCapacity(void);
 int getSDCardSectorSize(void);
 
-#endif //ESP_SYSTEM_H
+#endif // ESP_SYSTEM_H

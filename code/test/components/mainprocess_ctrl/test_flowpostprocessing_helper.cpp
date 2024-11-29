@@ -31,8 +31,8 @@ UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType)
 }
 
 
-UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType,
-                            bool extendedResolution, int decimalShift, bool checkDigitIncreaseConsistency)
+UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType, bool extendedResolution, int decimalShift,
+                          bool checkDigitIncreaseConsistency)
 {
     UnderTestPost *_underTestPost = setUpClassFlowPostprocessing(digType, CNNTYPE_ANALOG_CLASS100);
 
@@ -49,7 +49,7 @@ UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs,
         // Fill ROI to global config due to name request
         for (int i = 0; i < digits.size(); i++) {
             RoiElement roiEl = RoiElement{};
-            roiEl.roiName = "main_dig" + std::to_string(i+1);
+            roiEl.roiName = "main_dig" + std::to_string(i + 1);
             ConfigClass::getInstance()->get()->sectionDigit.sequence[0].roi.push_back(roiEl);
         }
 
@@ -82,7 +82,7 @@ UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs,
         // Fill ROI to global config due to name request
         for (int i = 0; i < analogs.size(); i++) {
             RoiElement roiEl = RoiElement{};
-            roiEl.roiName = "main_ana" + std::to_string(i+1);
+            roiEl.roiName = "main_ana" + std::to_string(i + 1);
             ConfigClass::getInstance()->get()->sectionAnalog.sequence[0].roi.push_back(roiEl);
         }
 
@@ -124,8 +124,8 @@ std::string processDoFlow(UnderTestPost *_underTestPost)
 }
 
 
-std::string processDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType,
-                            bool extendedResolution, int decimalShift, bool checkDigitIncreaseConsistency)
+std::string processDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType, bool extendedResolution, int decimalShift,
+                          bool checkDigitIncreaseConsistency)
 {
     UnderTestPost *_underTestPost = initDoFlow(digits, analogs, digType, extendedResolution, decimalShift, checkDigitIncreaseConsistency);
 

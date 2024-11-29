@@ -47,10 +47,10 @@ void test_createSequenceMetrics()
 
     std::string expected1 = "# TYPE " + metricNamePrefix + "actual_value gauge\n# HELP " + metricNamePrefix +
                             "actual_value Actual value of meter\n" + metricNamePrefix + "actual_value{sequence=\"" +
-                            sequence1->sequenceName + "\"} " + sequence1->sActualValue + "\n" +
-                            "# TYPE " + metricNamePrefix + "rate_per_minute gauge\n# HELP " + metricNamePrefix +
-                            "rate_per_minute Rate per minute of meter\n" + metricNamePrefix + "rate_per_minute{sequence=\"" +
-                            sequence1->sequenceName + "\"} " + sequence1->sRatePerMin + "\n";
+                            sequence1->sequenceName + "\"} " + sequence1->sActualValue + "\n" + "# TYPE " + metricNamePrefix +
+                            "rate_per_minute gauge\n# HELP " + metricNamePrefix + "rate_per_minute Rate per minute of meter\n" +
+                            metricNamePrefix + "rate_per_minute{sequence=\"" + sequence1->sequenceName + "\"} " + sequence1->sRatePerMin +
+                            "\n";
     TEST_ASSERT_EQUAL_STRING(expected1.c_str(), createSequenceMetrics(metricNamePrefix, sequenceData).c_str());
 
     SequenceData *sequence2 = new SequenceData;
@@ -61,12 +61,12 @@ void test_createSequenceMetrics()
 
     std::string expected2 = "# TYPE " + metricNamePrefix + "actual_value gauge\n# HELP " + metricNamePrefix +
                             "actual_value Actual value of meter\n" + metricNamePrefix + "actual_value{sequence=\"" +
-                            sequence1->sequenceName + "\"} " + sequence1->sActualValue + "\n" + metricNamePrefix + "actual_value{sequence=\"" +
-                            sequence2->sequenceName + "\"} " + sequence2->sActualValue + "\n" +
-                            "# TYPE " + metricNamePrefix + "rate_per_minute gauge\n# HELP " + metricNamePrefix +
+                            sequence1->sequenceName + "\"} " + sequence1->sActualValue + "\n" + metricNamePrefix +
+                            "actual_value{sequence=\"" + sequence2->sequenceName + "\"} " + sequence2->sActualValue + "\n" + "# TYPE " +
+                            metricNamePrefix + "rate_per_minute gauge\n# HELP " + metricNamePrefix +
                             "rate_per_minute Rate per minute of meter\n" + metricNamePrefix + "rate_per_minute{sequence=\"" +
-                            sequence1->sequenceName + "\"} " + sequence1->sRatePerMin + "\n" + metricNamePrefix + "rate_per_minute{sequence=\"" +
-                            sequence2->sequenceName + "\"} " + sequence2->sRatePerMin + "\n";
+                            sequence1->sequenceName + "\"} " + sequence1->sRatePerMin + "\n" + metricNamePrefix +
+                            "rate_per_minute{sequence=\"" + sequence2->sequenceName + "\"} " + sequence2->sRatePerMin + "\n";
     TEST_ASSERT_EQUAL_STRING(expected2.c_str(), createSequenceMetrics(metricNamePrefix, sequenceData).c_str());
 }
 

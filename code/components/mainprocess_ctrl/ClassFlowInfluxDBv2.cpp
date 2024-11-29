@@ -14,7 +14,7 @@
 #include "connect_wlan.h"
 
 
-static const char* TAG = "INFLUXDBV2";
+static const char *TAG = "INFLUXDBV2";
 
 
 ClassFlowInfluxDBv2::ClassFlowInfluxDBv2()
@@ -58,14 +58,16 @@ bool ClassFlowInfluxDBv2::loadParameter()
     // Check measurementname and fieldkey
     for (const auto &sequence : cfgDataPtr->sequence) {
         if (sequence.measurementName.empty() || sequence.fieldKey1.empty()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init failed, missing or invalid parameter \'Measurement Name\' or \'Field Key\' for sequence: " +
-                                                        sequence.sequenceName);
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                "Init failed, missing or invalid parameter \'Measurement Name\' or \'Field Key\' for sequence: " +
+                                    sequence.sequenceName);
             InfluxDBenable = false;
             return InfluxDBenable;
         }
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init: URI: " + cfgDataPtr->uri + ", Bucket: " + cfgDataPtr->bucket +
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                        "Init: URI: " + cfgDataPtr->uri + ", Bucket: " + cfgDataPtr->bucket +
                             ", AuthMode: " + std::to_string(cfgDataPtr->authMode));
 
     InfluxDBenable = influxDBv2Init(cfgDataPtr);
@@ -76,8 +78,9 @@ bool ClassFlowInfluxDBv2::loadParameter()
 
 bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
 {
-    if (!InfluxDBenable)
+    if (!InfluxDBenable) {
         return true;
+    }
 
     presetFlowStateHandler(false, zwtime);
 
@@ -87,13 +90,14 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
         }
 
         if (ESP_OK != influxDBv2Publish(sequence->paramInfluxDBv2->measurementName, sequence->paramInfluxDBv2->fieldKey1,
-                            sequence->sActualValue, sequence->sTimeProcessed)) {
+                                        sequence->sActualValue, sequence->sTimeProcessed)) {
             setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
         }
     }
 
-    if (!getFlowState()->isSuccessful)
+    if (!getFlowState()->isSuccessful) {
         return false;
+    }
 
     return true;
 }
@@ -102,7 +106,6 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
 void ClassFlowInfluxDBv2::doPostProcessEventHandling()
 {
     // Post cycle process handling can be included here. Function is called after processing cycle is completed
-
 }
 
 
@@ -111,4 +114,4 @@ ClassFlowInfluxDBv2::~ClassFlowInfluxDBv2()
     // nothing to do
 }
 
-#endif //ENABLE_INFLUXDB
+#endif // ENABLE_INFLUXDB

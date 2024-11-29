@@ -21,11 +21,11 @@ bool getMqttIsEncrypted(void);
 
 void registerMqttConnectFunction(std::string name, std::function<void()> func);
 void unregisterMqttConnectFunction(std::string name);
-void registerMqttSubscribeFunction(std::string topic, std::function<bool(std::string, char*, int)> func);
+void registerMqttSubscribeFunction(std::string topic, std::function<bool(std::string, char *, int)> func);
 void unregisterMqttSubscribeFunction();
 void isConnectedState(void);
 
 void deinitMqttClient(bool disable = false);
 
-#endif //INTERFACE_MQTT_H
-#endif //#ENABLE_MQTT
+#endif // INTERFACE_MQTT_H
+#endif // #ENABLE_MQTT

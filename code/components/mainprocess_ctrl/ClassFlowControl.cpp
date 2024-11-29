@@ -25,16 +25,16 @@ extern "C" {
 #include "gpioControl.h"
 
 #ifdef ENABLE_MQTT
-    #include "interface_mqtt.h"
-    #include "server_mqtt.h"
-#endif //ENABLE_MQTT
+#include "interface_mqtt.h"
+#include "server_mqtt.h"
+#endif // ENABLE_MQTT
 
 
-static const char* TAG = "FLOWCTRL";
+static const char *TAG = "FLOWCTRL";
 
-//#define DEBUG_DETAIL_ON
+// #define DEBUG_DETAIL_ON
 
-std::vector<SequenceData *>ClassFlow::sequenceData = {};
+std::vector<SequenceData *> ClassFlow::sequenceData = {};
 
 
 ClassFlowControl::ClassFlowControl()
@@ -50,18 +50,18 @@ ClassFlowControl::ClassFlowControl()
     flowanalog = NULL;
     flowpostprocessing = NULL;
 
-    #ifdef ENABLE_MQTT
+#ifdef ENABLE_MQTT
     flowMQTT = NULL;
-    #endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
-    #ifdef ENABLE_INFLUXDB
-	flowInfluxDBv1 = NULL;
-	flowInfluxDBv2 = NULL;
-    #endif //ENABLE_INFLUXDB
+#ifdef ENABLE_INFLUXDB
+    flowInfluxDBv1 = NULL;
+    flowInfluxDBv2 = NULL;
+#endif // ENABLE_INFLUXDB
 
-    #ifdef ENABLE_WEBHOOK
+#ifdef ENABLE_WEBHOOK
     flowWebhook = NULL;
-    #endif //ENABLE_WEBHOOK
+#endif // ENABLE_WEBHOOK
 
     setActualProcessState(std::string(FLOW_NO_TASK));
     flowStateErrorInRow = 0;
@@ -128,7 +128,7 @@ bool ClassFlowControl::initFlow()
 
     // Prepare sequence data struct
     for (const auto &sequenceCfgData : cfgClassPtr->get()->sectionNumberSequences.sequence) {
-        SequenceData* sequence = new SequenceData{};
+        SequenceData *sequence = new SequenceData{};
         sequence->sequenceId = sequenceCfgData.sequenceId;
         sequence->sequenceName = sequenceCfgData.sequenceName;
         sequenceData.push_back(sequence);
@@ -184,7 +184,7 @@ bool ClassFlowControl::initFlow()
             retVal = false;
         }
     }
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
 #ifdef ENABLE_INFLUXDB
     if (cfgClassPtr->get()->sectionInfluxDBv1.enabled) {
@@ -204,7 +204,7 @@ bool ClassFlowControl::initFlow()
             retVal = false;
         }
     }
-#endif //ENABLE_INFLUXDB
+#endif // ENABLE_INFLUXDB
 
 #ifdef ENABLE_WEBHOOK
     if (cfgClassPtr->get()->sectionWebhook.enabled) {
@@ -230,54 +230,54 @@ bool ClassFlowControl::initFlow()
 void ClassFlowControl::deinitFlow(void)
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Deinit flow");
-    //LogFile.writeHeapInfo("deinitFlow start");
+    // LogFile.writeHeapInfo("deinitFlow start");
 
-    #ifdef ENABLE_WEBHOOK
-	delete flowWebhook;
+#ifdef ENABLE_WEBHOOK
+    delete flowWebhook;
     flowWebhook = NULL;
-    //LogFile.writeHeapInfo("After WEBHOOK");
-    #endif //ENABLE_WEBHOOK
+// LogFile.writeHeapInfo("After WEBHOOK");
+#endif // ENABLE_WEBHOOK
 
-    #ifdef ENABLE_INFLUXDB
+#ifdef ENABLE_INFLUXDB
     delete flowInfluxDBv2;
     flowInfluxDBv2 = NULL;
-    //LogFile.writeHeapInfo("After INFLUXv2");
+    // LogFile.writeHeapInfo("After INFLUXv2");
 
     delete flowInfluxDBv1;
     flowInfluxDBv1 = NULL;
-    //LogFile.writeHeapInfo("After INFLUX");
-    #endif //ENABLE_INFLUXDB
+// LogFile.writeHeapInfo("After INFLUX");
+#endif // ENABLE_INFLUXDB
 
-    #ifdef ENABLE_MQTT
-	delete flowMQTT;
+#ifdef ENABLE_MQTT
+    delete flowMQTT;
     flowMQTT = NULL;
-    //LogFile.writeHeapInfo("After MQTT");
-    #endif //ENABLE_MQTT
+// LogFile.writeHeapInfo("After MQTT");
+#endif // ENABLE_MQTT
 
     delete flowpostprocessing;
     flowpostprocessing = NULL;
-    //LogFile.writeHeapInfo("After POSTPROC");
+    // LogFile.writeHeapInfo("After POSTPROC");
 
     delete flowanalog;
     flowanalog = NULL;
-    //LogFile.writeHeapInfo("After ANALOG");
+    // LogFile.writeHeapInfo("After ANALOG");
 
     delete flowdigit;
     flowdigit = NULL;
-    //LogFile.writeHeapInfo("After DIGIT");
+    // LogFile.writeHeapInfo("After DIGIT");
 
     delete flowalignment;
     flowalignment = NULL;
-    //LogFile.writeHeapInfo("After ALIGN");
+    // LogFile.writeHeapInfo("After ALIGN");
 
     delete flowtakeimage;
     flowtakeimage = NULL;
-    //LogFile.writeHeapInfo("After TAKEIMG");
+    // LogFile.writeHeapInfo("After TAKEIMG");
 
     cameraCtrl.freeDemoMemoryOnly(); // Free user allocated memory, but no cam driver deinit
     cameraCtrl.setFlashlight(false);
     setStatusLedOff();
-    //LogFile.writeHeapInfo("After camera");
+    // LogFile.writeHeapInfo("After camera");
 
     FlowControlImage.clear();
     FlowControlPublish.clear();
@@ -308,15 +308,15 @@ bool ClassFlowControl::doFlowImageEvaluation(std::string time)
     FlowStateEvaluationEvent.shrink_to_fit();
 
     for (int i = 0; i < FlowControlImage.size(); ++i) {
-        #ifdef DEBUG_DETAIL_ON
-            LogFile.writeHeapInfo("ClassFlowControl::doFlow: " + FlowControlImage[i]->name());
-        #endif
+#ifdef DEBUG_DETAIL_ON
+        LogFile.writeHeapInfo("ClassFlowControl::doFlow: " + FlowControlImage[i]->name());
+#endif
 
         setActualProcessState(translateActualProcessState(FlowControlImage[i]->name()));
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + getActualProcessState());
-        #ifdef ENABLE_MQTT
-            publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
-        #endif //ENABLE_MQTT
+#ifdef ENABLE_MQTT
+        publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
+#endif // ENABLE_MQTT
 
         if (!FlowControlImage[i]->doFlow(time)) {
             FlowStateEvaluationEvent.push_back(FlowControlImage[i]->getFlowState());
@@ -353,15 +353,15 @@ bool ClassFlowControl::doFlowPublishData(std::string time)
     FlowStatePublishEvent.shrink_to_fit();
 
     for (int i = 0; i < FlowControlPublish.size(); ++i) {
-        #ifdef DEBUG_DETAIL_ON
-            LogFile.writeHeapInfo("ClassFlowControl::doFlow: " + FlowControlPublish[i]->name());
-        #endif
+#ifdef DEBUG_DETAIL_ON
+        LogFile.writeHeapInfo("ClassFlowControl::doFlow: " + FlowControlPublish[i]->name());
+#endif
 
         setActualProcessState(translateActualProcessState(FlowControlPublish[i]->name()));
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + getActualProcessState());
-        #ifdef ENABLE_MQTT
-            publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
-        #endif //ENABLE_MQTT
+#ifdef ENABLE_MQTT
+        publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", getActualProcessState(), 1, false);
+#endif // ENABLE_MQTT
 
         if (!FlowControlPublish[i]->doFlow(time)) {
             FlowStatePublishEvent.push_back(FlowControlPublish[i]->getFlowState());
@@ -465,13 +465,13 @@ void ClassFlowControl::postProcessEventHandler()
 
 
 bool ClassFlowControl::getStatusSetupModus()
- {
+{
     if (cfgClassPtr->get()->sectionOperationMode.opMode == OPMODE_SETUP) {
         return true;
     }
 
     return false;
- }
+}
 
 
 float ClassFlowControl::getProcessInterval(void)
@@ -542,7 +542,7 @@ std::string ClassFlowControl::translateActualProcessState(std::string classname)
     else if (classname.compare("ClassFlowMQTT") == 0) {
         return std::string(FLOW_PUBLISH_MQTT);
     }
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 #ifdef ENABLE_INFLUXDB
     else if (classname.compare("ClassFlowInfluxDBv1") == 0) {
         return std::string(FLOW_PUBLISH_INFLUXDB);
@@ -553,7 +553,7 @@ std::string ClassFlowControl::translateActualProcessState(std::string classname)
     else if (classname.compare("ClassFlowWebhook") == 0) {
         return std::string(FLOW_PUBLISH_WEBHOOK);
     }
-#endif //ENABLE_INFLUXDB
+#endif // ENABLE_INFLUXDB
     else {
         return "Unkown State (" + classname + ")";
     }
@@ -585,7 +585,7 @@ bool ClassFlowControl::initMqttService()
 
     return flowMQTT->initMqttService(cfgClassPtr->get()->sectionOperationMode.automaticProcessInterval);
 }
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
 
 // Return values for all number sequences and a given value type
@@ -651,13 +651,13 @@ std::string ClassFlowControl::getFallbackValue(std::string _sequenceName)
 bool ClassFlowControl::setFallbackValue(std::string _sequenceName, std::string _newvalue)
 {
     double newValueAsDouble;
-    char* p;
+    char *p;
 
     _newvalue = trim(_newvalue);
-    //ESP_LOGD(TAG, "Input setFallbackValue: %s", _newvalue.c_str());
+    // ESP_LOGD(TAG, "Input setFallbackValue: %s", _newvalue.c_str());
 
-    if (_newvalue.substr(0,8).compare("0.000000") == 0 || _newvalue.compare("0.0") == 0 || _newvalue.compare("0") == 0) {
-        newValueAsDouble = 0;   // preset to value = 0
+    if (_newvalue.substr(0, 8).compare("0.000000") == 0 || _newvalue.compare("0.0") == 0 || _newvalue.compare("0") == 0) {
+        newValueAsDouble = 0; // preset to value = 0
     }
     else {
         newValueAsDouble = strtod(_newvalue.c_str(), &p);
@@ -682,7 +682,7 @@ bool ClassFlowControl::setFallbackValue(std::string _sequenceName, std::string _
 }
 
 
-CImageBasis* ClassFlowControl::getRawImage()
+CImageBasis *ClassFlowControl::getRawImage()
 {
     if (flowtakeimage) {
         return flowtakeimage->rawImage;
@@ -705,9 +705,9 @@ esp_err_t ClassFlowControl::sendRawJPG(httpd_req_t *req)
 
 esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
 {
-    #ifdef DEBUG_DETAIL_ON
-        LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - Start");
-    #endif
+#ifdef DEBUG_DETAIL_ON
+    LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - Start");
+#endif
 
     CImageBasis *_send = NULL;
     esp_err_t result = ESP_FAIL;
@@ -715,7 +715,7 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
 
     if (_fn == "alg_roi.jpg") {
         if (getTaskAutoFlowState() == FLOW_TASK_STATE_INIT_DELAYED) {
-            FILE* file = fopen("/sdcard/html/flowstate_initialization_delayed.jpg", "rb");
+            FILE *file = fopen("/sdcard/html/flowstate_initialization_delayed.jpg", "rb");
 
             if (!file) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_initialization_delayed.jpg not found");
@@ -730,10 +730,11 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
             long fileSize = ftell(file);
             fseek(file, 0, SEEK_SET);
 
-            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
 
             if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
                 fclose(file);
                 return ESP_FAIL;
             }
@@ -746,7 +747,7 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
             free(fileBuffer);
         }
         else if (getTaskAutoFlowState() == FLOW_TASK_STATE_INIT) {
-            FILE* file = fopen("/sdcard/html/flowstate_initialization.jpg", "rb");
+            FILE *file = fopen("/sdcard/html/flowstate_initialization.jpg", "rb");
 
             if (!file) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_initialization.jpg not found");
@@ -761,10 +762,11 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
             long fileSize = ftell(file);
             fseek(file, 0, SEEK_SET);
 
-            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
 
             if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
                 fclose(file);
                 return ESP_FAIL;
             }
@@ -777,7 +779,7 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
             free(fileBuffer);
         }
         else if (getTaskAutoFlowState() == FLOW_TASK_STATE_SETUPMODE) {
-            FILE* file = fopen("/sdcard/html/flowstate_setup_mode.jpg", "rb");
+            FILE *file = fopen("/sdcard/html/flowstate_setup_mode.jpg", "rb");
 
             if (!file) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_setup_mode.jpg not found");
@@ -792,10 +794,11 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
             long fileSize = ftell(file);
             fseek(file, 0, SEEK_SET);
 
-            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
 
             if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
                 fclose(file);
                 return ESP_FAIL;
             }
@@ -808,9 +811,10 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
             free(fileBuffer);
         }
         // Show only before first cycle started or error occured, otherwise result will be shown till next start
-        else if ((getActualProcessState() == std::string(FLOW_IDLE_NO_AUTOSTART) && (flowtakeimage != NULL) && !flowtakeimage->getFlowState()->getExecuted) ||
-                    (getActualProcessState() == std::string(FLOW_TAKE_IMAGE) && !isAutoStart() && flowStateEventOccured())) {
-            FILE* file = fopen("/sdcard/html/flowstate_idle_no_autostart.jpg", "rb");
+        else if ((getActualProcessState() == std::string(FLOW_IDLE_NO_AUTOSTART) && (flowtakeimage != NULL) &&
+                  !flowtakeimage->getFlowState()->getExecuted) ||
+                 (getActualProcessState() == std::string(FLOW_TAKE_IMAGE) && !isAutoStart() && flowStateEventOccured())) {
+            FILE *file = fopen("/sdcard/html/flowstate_idle_no_autostart.jpg", "rb");
 
             if (!file) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_idle_no_autostart.jpg not found");
@@ -825,10 +829,11 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
             long fileSize = ftell(file);
             fseek(file, 0, SEEK_SET);
 
-            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
 
             if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
                 fclose(file);
                 return ESP_FAIL;
             }
@@ -842,7 +847,7 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
         }
         else if (getActualProcessState() == std::string(FLOW_TAKE_IMAGE)) {
             if (flowalignment && flowalignment->AlgROI) {
-                FILE* file = fopen("/sdcard/html/flowstate_take_image.jpg", "rb");
+                FILE *file = fopen("/sdcard/html/flowstate_take_image.jpg", "rb");
 
                 if (!file) {
                     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_take_image.jpg not found");
@@ -858,8 +863,9 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
                 fseek(file, 0, SEEK_SET);
 
                 if (flowalignment->AlgROI->size > MAX_JPG_SIZE) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_take_image.jpg (" + std::to_string(flowalignment->AlgROI->size) +
-                                                            ") > allocated buffer (" + std::to_string(MAX_JPG_SIZE) + ")");
+                    LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                        "File /sdcard/html/flowstate_take_image.jpg (" + std::to_string(flowalignment->AlgROI->size) +
+                                            ") > allocated buffer (" + std::to_string(MAX_JPG_SIZE) + ")");
                     fclose(file);
                     return ESP_FAIL;
                 }
@@ -871,7 +877,8 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
                 result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
             }
             else {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ClassFlowControl::getJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "ClassFlowControl::getJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
                 if (flowalignment && flowalignment->ImageBasis->imageOkay()) {
                     _send = flowalignment->ImageBasis;
                 }
@@ -882,7 +889,7 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
             }
         }
         else if (getActualProcessState() == std::string(FLOW_TAKE_IMAGE) && isAutoStart() && flowStateEventOccured()) {
-            FILE* file = fopen("/sdcard/html/flowstate_idle_autostart.jpg", "rb");
+            FILE *file = fopen("/sdcard/html/flowstate_idle_autostart.jpg", "rb");
 
             if (!file) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_idle_autostart.jpg not found");
@@ -895,12 +902,13 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
 
             fseek(file, 0, SEEK_END);
             long fileSize = ftell(file); /* how long is the file ? */
-            fseek(file, 0, SEEK_SET); /* reset */
+            fseek(file, 0, SEEK_SET);    /* reset */
 
-            unsigned char* fileBuffer = (unsigned char*) malloc(fileSize);
+            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
 
             if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
                 fclose(file);
                 return ESP_FAIL;
             }
@@ -918,7 +926,8 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
                 result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
             }
             else {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ClassFlowControl::getJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "ClassFlowControl::getJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
                 if (flowalignment && flowalignment->ImageBasis->imageOkay()) {
                     _send = flowalignment->ImageBasis;
                 }
@@ -951,8 +960,9 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
                     break;
                 }
             }
-            if (_send)
+            if (_send) {
                 break;
+            }
 
             for (const auto &roi : sequence->analogRoi) {
                 if (roi->param->roiName + ".jpg" == _fn) {
@@ -965,14 +975,15 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
                     break;
                 }
             }
-            if (_send)
+            if (_send) {
                 break;
+            }
         }
     }
 
-    #ifdef DEBUG_DETAIL_ON
-        LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - before send");
-    #endif
+#ifdef DEBUG_DETAIL_ON
+    LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - before send");
+#endif
 
     if (_send) {
         setContentTypeFromFile(req, _fn.c_str());
@@ -986,10 +997,9 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
         _send = NULL;
     }
 
-    #ifdef DEBUG_DETAIL_ON
-        LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - done");
-    #endif
+#ifdef DEBUG_DETAIL_ON
+    LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - done");
+#endif
 
     return result;
 }
-

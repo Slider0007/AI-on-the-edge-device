@@ -22,9 +22,9 @@
 static const char *TAG = "SERVER_MQTT";
 
 
-extern const char* libfive_git_version(void);
-extern const char* libfive_git_revision(void);
-extern const char* libfive_git_branch(void);
+extern const char *libfive_git_version(void);
+extern const char *libfive_git_revision(void);
+extern const char *libfive_git_branch(void);
 
 static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, int _qos);
 static bool publishHADiscoveryTopicDeviceInfo = true;
@@ -40,8 +40,9 @@ static std::string meterType, valueUnit, timeUnit, rateUnit;
 // Publish device info topics (common topics, static, retained)
 bool mqttServer_publishDeviceInfo(int _qos)
 {
-    if (!publishDeviceInfoScheduled)
+    if (!publishDeviceInfoScheduled) {
         return true;
+    }
 
     if (!getMqttIsConnected()) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip publish device info, not (yet) connected to broker");
@@ -65,16 +66,21 @@ bool mqttServer_publishDeviceInfo(int _qos)
         retVal = false;
     }
     else {
-        if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "board_type", getBoardType().c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "board_type", getBoardType().c_str()) == NULL) {
             retVal = false;
-        if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "chip_model", getChipModel().c_str()) == NULL)
+        }
+        if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "chip_model", getChipModel().c_str()) == NULL) {
             retVal = false;
-        if (cJSON_AddNumberToObject(cJSONObjectHardwareBoard, "chip_cores", getChipCoreCount()) == NULL)
+        }
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareBoard, "chip_cores", getChipCoreCount()) == NULL) {
             retVal = false;
-        if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "chip_revision", getChipRevision().c_str()) == NULL)
+        }
+        if (cJSON_AddStringToObject(cJSONObjectHardwareBoard, "chip_revision", getChipRevision().c_str()) == NULL) {
             retVal = false;
-        if (cJSON_AddNumberToObject(cJSONObjectHardwareBoard, "chip_frequency", esp_clk_cpu_freq()/1000000) == NULL)
+        }
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareBoard, "chip_frequency", esp_clk_cpu_freq() / 1000000) == NULL) {
             retVal = false;
+        }
     }
 
     cJSON *cJSONObjectHardwareCamera = cJSON_AddObjectToObject(cJSONObject, "camera");
@@ -82,10 +88,12 @@ bool mqttServer_publishDeviceInfo(int _qos)
         retVal = false;
     }
     else {
-        if (cJSON_AddStringToObject(cJSONObjectHardwareCamera, "type", cameraCtrl.getCamType().c_str()) == NULL)
+        if (cJSON_AddStringToObject(cJSONObjectHardwareCamera, "type", cameraCtrl.getCamType().c_str()) == NULL) {
             retVal = false;
-        if (cJSON_AddNumberToObject(cJSONObjectHardwareCamera, "frequency", cameraCtrl.getCamFrequencyMhz()) == NULL)
+        }
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareCamera, "frequency", cameraCtrl.getCamFrequencyMhz()) == NULL) {
             retVal = false;
+        }
     }
 
     cJSON *cJSONObjectHardwareSDCard = cJSON_AddObjectToObject(cJSONObject, "sdcard");
@@ -93,10 +101,12 @@ bool mqttServer_publishDeviceInfo(int _qos)
         retVal = false;
     }
     else {
-        if (cJSON_AddNumberToObject(cJSONObjectHardwareSDCard, "capacity", getSDCardCapacity()) == NULL)
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareSDCard, "capacity", getSDCardCapacity()) == NULL) {
             retVal = false;
-        if (cJSON_AddNumberToObject(cJSONObjectHardwareSDCard, "partition_size", getSDCardPartitionSize()) == NULL)
+        }
+        if (cJSON_AddNumberToObject(cJSONObjectHardwareSDCard, "partition_size", getSDCardPartitionSize()) == NULL) {
             retVal = false;
+        }
     }
 
     char *jsonChar = cJSON_PrintBuffered(cJSONObject, 384, 1); // Print to predefined buffer, reduce dynamic allocations
@@ -115,12 +125,15 @@ bool mqttServer_publishDeviceInfo(int _qos)
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
         return false;
     }
-    if (cJSON_AddStringToObject(cJSONObject, "hostname", getHostname().c_str()) == NULL)
+    if (cJSON_AddStringToObject(cJSONObject, "hostname", getHostname().c_str()) == NULL) {
         retVal = false;
-    if (cJSON_AddStringToObject(cJSONObject, "ipv4_address", getIpAddress().c_str()) == NULL)
+    }
+    if (cJSON_AddStringToObject(cJSONObject, "ipv4_address", getIpAddress().c_str()) == NULL) {
         retVal = false;
-    if (cJSON_AddStringToObject(cJSONObject, "mac_address", getMac().c_str()) == NULL)
+    }
+    if (cJSON_AddStringToObject(cJSONObject, "mac_address", getMac().c_str()) == NULL) {
         retVal = false;
+    }
 
     jsonChar = cJSON_Print(cJSONObject);
     cJSON_Delete(cJSONObject);
@@ -134,8 +147,9 @@ bool mqttServer_publishDeviceInfo(int _qos)
 
     // Prepare topic: device/info/version
     std::string firmwareVersion = std::string(libfive_git_version());
-    if (firmwareVersion == "" || firmwareVersion == "N/A")
+    if (firmwareVersion == "" || firmwareVersion == "N/A") {
         firmwareVersion = std::string(libfive_git_branch()) + " (" + std::string(libfive_git_revision()) + ")";
+    }
 
     retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceInfoTopic + "firmware_version", firmwareVersion, _qos, true);
 
@@ -165,27 +179,35 @@ bool mqttServer_publishDeviceStatus(int _qos)
     retVal &= publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, _qos, false);
     retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "device_uptime", std::to_string(getUptime()), _qos, false);
     retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "wlan_rssi", std::to_string(getWifiRssi()), _qos, false);
-    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "chip_temp", to_stringWithPrecision(getSOCTemperature(), 0), _qos, false);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "chip_temp", to_stringWithPrecision(getSOCTemperature(), 0), _qos,
+                              false);
 
     cJSON *cJSONObject = cJSON_CreateObject();
     if (cJSONObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
         return false;
     }
-    if (cJSON_AddNumberToObject(cJSONObject, "heap_total_free", getESPHeapSizeTotalFree()) == NULL)
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_total_free", getESPHeapSizeTotalFree()) == NULL) {
         retVal = false;
-    if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_free", getESPHeapSizeInternalFree()) == NULL)
+    }
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_free", getESPHeapSizeInternalFree()) == NULL) {
         retVal = false;
-    if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_largest_free", getESPHeapSizeInternalLargestFree()) == NULL)
+    }
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_largest_free", getESPHeapSizeInternalLargestFree()) == NULL) {
         retVal = false;
-    if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_min_free", getESPHeapSizeInternalMinFree()) == NULL)
+    }
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_internal_min_free", getESPHeapSizeInternalMinFree()) == NULL) {
         retVal = false;
-    if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_free", getESPHeapSizeSPIRAMFree()) == NULL)
+    }
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_free", getESPHeapSizeSPIRAMFree()) == NULL) {
         retVal = false;
-    if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_largest_free", getESPHeapSizeSPIRAMLargestFree()) == NULL)
+    }
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_largest_free", getESPHeapSizeSPIRAMLargestFree()) == NULL) {
         retVal = false;
-    if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_min_free", getESPHeapSizeSPIRAMMinFree()) == NULL)
+    }
+    if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_min_free", getESPHeapSizeSPIRAMMinFree()) == NULL) {
         retVal = false;
+    }
 
     char *jsonChar = cJSON_Print(cJSONObject);
     cJSON_Delete(cJSONObject);
@@ -195,7 +217,8 @@ bool mqttServer_publishDeviceStatus(int _qos)
         cJSON_free(jsonChar);
     }
 
-    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "sd_partition_free", std::to_string(getSDCardFreePartitionSpace()), _qos, false);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "sd_partition_free",
+                              std::to_string(getSDCardFreePartitionSpace()), _qos, false);
     retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "ntp_syncstatus", getNTPSyncStatus().c_str(), _qos, false);
 
     if (!retVal) {
@@ -207,7 +230,8 @@ bool mqttServer_publishDeviceStatus(int _qos)
 }
 
 
-void mqttServer_setParameter(const CfgData::SectionMqtt *_cfgDataPtr, const std::vector<SequenceData *> *_sequenceData, const float _processingInterval)
+void mqttServer_setParameter(const CfgData::SectionMqtt *_cfgDataPtr, const std::vector<SequenceData *> *_sequenceData,
+                             const float _processingInterval)
 {
     cfgDataPtr = _cfgDataPtr;
     sequenceData = _sequenceData;
@@ -248,9 +272,9 @@ void mqttServer_schedulePublishHADiscovery()
 }
 
 
-bool mqttServer_schedulePublishHADiscoveryFromMqtt(std::string _topic, char* _data, int _data_len)
+bool mqttServer_schedulePublishHADiscoveryFromMqtt(std::string _topic, char *_data, int _data_len)
 {
-    if (_data_len > 0) {    // Check if data length > 0
+    if (_data_len > 0) { // Check if data length > 0
         if (strncmp("online", _data, _data_len) == 0) {
             publishHADiscoveryScheduled = true;
         }
@@ -262,20 +286,19 @@ bool mqttServer_schedulePublishHADiscoveryFromMqtt(std::string _topic, char* _da
 
 esp_err_t handler_mqtt(httpd_req_t *req)
 {
-    const char* APIName = "mqtt:v2"; // API name and version
+    const char *APIName = "mqtt:v2"; // API name and version
     char _query[64];
     char _valuechar[30];
     std::string task;
 
     // Default usage message when handler gets called without any parameter
-    const std::string RESTUsageInfo =
-        "Handler usage:<br>"
-        "1. Schedule publication of Home Assistant discovery MQTT topics:<br>"
-        " - '/mqtt?task=publish_ha_discovery'<br>"
-        "2. Schedule publication of device info MQTT topics:<br>"
-        " - '/mqtt?task=publish_device_info'<br>"
-        "3. Print API name and version<br>"
-        " - '/mqtt?task=api_name'";
+    const std::string RESTUsageInfo = "Handler usage:<br>"
+                                      "1. Schedule publication of Home Assistant discovery MQTT topics:<br>"
+                                      " - '/mqtt?task=publish_ha_discovery'<br>"
+                                      "2. Schedule publication of device info MQTT topics:<br>"
+                                      " - '/mqtt?task=publish_device_info'<br>"
+                                      "3. Print API name and version<br>"
+                                      " - '/mqtt?task=api_name'";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
@@ -285,7 +308,7 @@ esp_err_t handler_mqtt(httpd_req_t *req)
             task = std::string(_valuechar);
         }
     }
-    else {  // if no parameter is provided, print handler usage
+    else { // if no parameter is provided, print handler usage
         httpd_resp_set_type(req, "text/html");
         httpd_resp_sendstr(req, RESTUsageInfo.c_str());
         return ESP_OK;
@@ -315,16 +338,18 @@ esp_err_t handler_mqtt(httpd_req_t *req)
 // Publish HA discovery topics (no retained)
 bool mqttServer_publishHADiscovery(int _qos)
 {
-    if (!cfgDataPtr->homeAssistant.discoveryEnabled || !publishHADiscoveryScheduled) // Continue if enabled and scheduled
+    if (!cfgDataPtr->homeAssistant.discoveryEnabled || !publishHADiscoveryScheduled) { // Continue if enabled and scheduled
         return true;
+    }
 
     if (!getMqttIsConnected()) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip publish HA discovery, not (yet) connected to broker");
         return false;
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Publish HA discovery | Sensor device class: " + meterType +
-                                    ", Value unit: " + valueUnit + " , Rate unit: " + rateUnit);
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                        "Publish HA discovery | Sensor device class: " + meterType + ", Value unit: " + valueUnit +
+                            " , Rate unit: " + rateUnit);
 
     publishHADiscoveryTopicDeviceInfo = true; // Publish full common device info data only once
     bool publishOK = true;
@@ -336,7 +361,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topicName = "ipv4_address",
         .friendlyName = "IP Address",
         .icon = "network-outline",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -347,7 +372,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topicName = "mac_address",
         .friendlyName = "MAC Address",
         .icon = "network-outline",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -358,7 +383,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topicName = "hostname",
         .friendlyName = "Hostname",
         .icon = "network-outline",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -369,7 +394,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .friendlyName = "Uptime",
         .icon = "clock-time-eight-outline",
         .unit = "s",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -382,7 +407,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .icon = "memory",
         .unit = "B",
         .stateClass = "measurement",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -395,7 +420,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .icon = "memory",
         .unit = "B",
         .stateClass = "measurement",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -409,7 +434,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .unit = "dBm",
         .deviceClass = "signal_strength",
         .stateClass = "measurement",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -422,7 +447,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .unit = "°C",
         .deviceClass = "temperature",
         .stateClass = "measurement",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -432,7 +457,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topicName = "ntp_syncstatus",
         .friendlyName = "NTP Sync Status",
         .icon = "network-outline",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -442,7 +467,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topicName = "process_status",
         .friendlyName = "Process Status",
         .icon = "list-status",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -453,7 +478,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .friendlyName = "Process Interval",
         .icon = "clock-time-eight-outline",
         .unit = "min",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -465,7 +490,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .icon = "clock-time-eight-outline",
         .unit = "s",
         .stateClass = "measurement",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -475,7 +500,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topicName = "process_state",
         .friendlyName = "Process State",
         .icon = "list-status",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -485,7 +510,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topicName = "process_error",
         .friendlyName = "Process Error State",
         .icon = "alert-outline",
-        .deviceClass = "problem"
+        .deviceClass = "problem" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -495,7 +520,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topicName = "process_error_value",
         .friendlyName = "Process Error Value",
         .icon = "alert-outline",
-        .entityCategory = "diagnostic"
+        .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -511,7 +536,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .icon = "gauge",
             .unit = valueUnit,
             .deviceClass = meterType,
-            .stateClass = sequence->paramPostProc->allowNegativeRate ? "measurement" : "total_increasing"
+            .stateClass = sequence->paramPostProc->allowNegativeRate ? "measurement" : "total_increasing" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -527,7 +552,7 @@ bool mqttServer_publishHADiscovery(int _qos)
                 .unit = valueUnit,
                 .deviceClass = meterType,
                 .stateClass = "measurement",
-                .entityCategory = "diagnostic"
+                .entityCategory = "diagnostic" //
             };
             publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
         }
@@ -543,7 +568,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .unit = valueUnit,
             .deviceClass = meterType,
             .stateClass = "measurement",
-            .entityCategory = "diagnostic"
+            .entityCategory = "diagnostic" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -555,7 +580,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .topicName = "value_status",
             .friendlyName = "Value Status",
             .icon = "alert-circle-outline",
-            .entityCategory = "diagnostic"
+            .entityCategory = "diagnostic" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -569,7 +594,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .icon = "swap-vertical",
             .unit = rateUnit,
             .deviceClass = meterType == "energy" ? "power" : "volume_flow_rate",
-            .stateClass = "measurement"
+            .stateClass = "measurement" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -583,7 +608,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .icon = "arrow-expand-vertical",
             .unit = valueUnit != "" ? valueUnit + "/" + to_stringWithPrecision(processingInterval, 1) + "min" : "",
             .stateClass = "measurement",
-            .entityCategory = "diagnostic"
+            .entityCategory = "diagnostic" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -596,7 +621,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Last Processed",
             .icon = "clock-time-eight-outline",
             .deviceClass = "timestamp",
-            .entityCategory = "diagnostic"
+            .entityCategory = "diagnostic" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
     }
@@ -606,7 +631,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topic = "/process/ctrl/cycle_start",
         .topicName = "cycle_start",
         .friendlyName = "Manual Cycle Start",
-        .icon = "timer-play-outline",
+        .icon = "timer-play-outline" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -626,7 +651,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .topic = "/device/gpio/" + gpioName + "/state",
             .topicName = "state",
             .friendlyName = "State",
-            .entityCategory = "diagnostic"
+            .entityCategory = "diagnostic" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -638,7 +663,7 @@ bool mqttServer_publishHADiscovery(int _qos)
                 .topic = "/device/gpio/" + gpioName + "/state",
                 .topicName = "pwm_duty",
                 .friendlyName = "PWM Duty",
-                .entityCategory = "diagnostic"
+                .entityCategory = "diagnostic" //
             };
             publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
         }
@@ -658,8 +683,9 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
 {
     // Use MQTT maintopic without path structure as nodeID
     std::string nodeID = cfgDataPtr->mainTopic;
-    if ((cfgDataPtr->mainTopic.find_last_of('/')) != -1)
-        nodeID = cfgDataPtr->mainTopic.substr(cfgDataPtr->mainTopic.find_last_of('/')+1);
+    if ((cfgDataPtr->mainTopic.find_last_of('/')) != -1) {
+        nodeID = cfgDataPtr->mainTopic.substr(cfgDataPtr->mainTopic.find_last_of('/') + 1);
+    }
 
     // Add name prefix for number sequences to make ID and friendly names unique
     std::string topicNameID = _data->topicName;
@@ -670,45 +696,44 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
     }
 
     // Define configuration topic (default component: sensor)
-    std::string configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix  + "/sensor/" + nodeID + "/" + topicNameID + "/config";
+    std::string configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/sensor/" + nodeID + "/" + topicNameID + "/config";
 
     if (_data->topicName == "process_error") { // Special case: Process error
         configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/binary_sensor/" + nodeID + "/" + topicNameID + "/config";
     }
     else if (_data->topicName == "cycle_start") { // Special case: Cycle start
-        configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix  + "/button/" + nodeID + "/" + topicNameID + "/config";
+        configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/button/" + nodeID + "/" + topicNameID + "/config";
     }
     else if (_data->topic.contains("/gpio/")) { // Special case: GPIO
-        if (_data->topicName == "state") { // State
+        if (_data->topicName == "state") {      // State
             configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/binary_sensor/" + nodeID + "/" + topicNameID + "/config";
         }
         else { // PWM duty
-            configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix  + "/sensor/" + nodeID + "/" + topicNameID + "/config";
+            configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/sensor/" + nodeID + "/" + topicNameID + "/config";
         }
     }
 
     // Define payload for configuration topic
     // See https://www.home-assistant.io/docs/mqtt/discovery/
     // Abbreviations: https://www.home-assistant.io/integrations/mqtt/#supported-abbreviations-in-mqtt-discovery-messages
-    std::string payload =
-        "{\"~\":\"" + cfgDataPtr->mainTopic + "\","  +
-        "\"uniq_id\":\"" + nodeID + "_" + topicNameID + "\"," +
-        //"\"obj_id\":\"" + nodeID + "_" + topicNameID + "\"," + // This used to generate the entity ID
-        "\"name\":\"" + friendlyName + "\",";
+    std::string payload = "{\"~\":\"" + cfgDataPtr->mainTopic + "\"," + "\"uniq_id\":\"" + nodeID + "_" + topicNameID + "\"," +
+                          //"\"obj_id\":\"" + nodeID + "_" + topicNameID + "\"," + // This used to generate the entity ID
+                          "\"name\":\"" + friendlyName + "\",";
 
-    if (!_data->icon.empty())
+    if (!_data->icon.empty()) {
         payload += "\"ic\":\"mdi:" + _data->icon + "\",";
+    }
 
     // Define command or status topic
-    if (_data->topicName == "cycle_start") { // Special case: cyle_start command
+    if (_data->topicName == "cycle_start") {               // Special case: cyle_start command
         payload += "\"cmd_t\":\"~" + _data->topic + "\","; // Add command topic
         payload += "\"pl_prs\":\"1\",";
     }
-    else if (_data->topic.contains("/gpio/")) { // Special case: GPIO
+    else if (_data->topic.contains("/gpio/")) {             // Special case: GPIO
         payload += "\"stat_t\":\"~" + _data->topic + "\","; // Add status topic
 
-        if (_data->topicName == "state") { // GPIO state
-            payload += "\"pl_on\":\"1\","; // payload "ON"
+        if (_data->topicName == "state") {  // GPIO state
+            payload += "\"pl_on\":\"1\",";  // payload "ON"
             payload += "\"pl_off\":\"0\","; // payload "OFF"
         }
     }
@@ -754,17 +779,12 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
             firmwareVersion = std::string(libfive_git_branch()) + " (" + std::string(libfive_git_revision()) + ")";
         }
 
-        payload += std::string(", \"dev\": {")  +
-            "\"ids\":[\"" + nodeID + "\"],"  +
-            "\"name\":\"" + nodeID + "\","  +
-            "\"mdl\":\"AI-on-the-Edge device [" + getBoardType() + "]\","  +
-            "\"mf\":\"AI-on-the-Edge\","  +
-            "\"sw\":\"" + firmwareVersion + " [SLFork]\","  +
-            "\"cu\":\"http://" + getIpAddress() + "\"}";
+        payload += std::string(", \"dev\": {") + "\"ids\":[\"" + nodeID + "\"]," + "\"name\":\"" + nodeID + "\"," +
+                   "\"mdl\":\"AI-on-the-Edge device [" + getBoardType() + "]\"," + "\"mf\":\"AI-on-the-Edge\"," + "\"sw\":\"" +
+                   firmwareVersion + " [SLFork]\"," + "\"cu\":\"http://" + getIpAddress() + "\"}";
     }
     else { // Publish device reference only to group data together
-        payload += std::string(", \"dev\": {")  +
-                                 "\"ids\":[\"" + nodeID + "\"]}";
+        payload += std::string(", \"dev\": {") + "\"ids\":[\"" + nodeID + "\"]}";
     }
 
     payload += "}";
@@ -781,13 +801,13 @@ void registerMqttUri(httpd_handle_t server)
 {
     ESP_LOGI(TAG, "Registering URI handlers");
 
-    httpd_uri_t uri = { };
-    uri.method    = HTTP_GET;
+    httpd_uri_t uri = {};
+    uri.method = HTTP_GET;
 
-    uri.uri       = "/mqtt";
-    uri.handler   = handler_mqtt;
-    uri.user_ctx  = NULL;
+    uri.uri = "/mqtt";
+    uri.handler = handler_mqtt;
+    uri.user_ctx = NULL;
     httpd_register_uri_handler(server, &uri);
 }
 
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT

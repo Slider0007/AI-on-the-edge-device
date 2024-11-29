@@ -21,7 +21,7 @@
 
 static const char *TAG = "MQTT_IF";
 
-static const CfgData::SectionMqtt* cfgDataPtr;
+static const CfgData::SectionMqtt *cfgDataPtr;
 
 static std::string LWTTopic;
 static std::string TLSCACert;
@@ -42,8 +42,8 @@ static struct strMqttState {
 static esp_mqtt_client_handle_t mqttClient = NULL;
 static const esp_mqtt_event_id_t mqttEventID = MQTT_EVENT_ANY;
 
-static std::map<std::string, std::function<void()>>* connectFunctionMap = NULL;
-static std::map<std::string, std::function<bool(std::string, char*, int)>>* subscribeFunctionMap = NULL;
+static std::map<std::string, std::function<void()>> *connectFunctionMap = NULL;
+static std::map<std::string, std::function<bool(std::string, char *, int)>> *subscribeFunctionMap = NULL;
 
 
 bool publishMqttData(std::string _key, std::string _content, int _qos, bool _retainFlag)
@@ -53,28 +53,28 @@ bool publishMqttData(std::string _key, std::string _content, int _qos, bool _ret
     }
 
     if (mqttState.failedOnCycle == getFlowCycleCounter()) { // Already a failed transmission in this cycle
-        return true; // Fail quietly
+        return true;                                        // Fail quietly
     }
 
     startMqttClient(); // Restart client if not started yet/anymore
 
     if (mqttState.mqttInitialized && mqttState.mqttConnected) {
-        #ifdef DEBUG_DETAIL_ON
-            long long int starttime = esp_timer_get_time();
-        #endif
+#ifdef DEBUG_DETAIL_ON
+        long long int starttime = esp_timer_get_time();
+#endif
         int msg_id = esp_mqtt_client_publish(mqttClient, _key.c_str(), _content.c_str(), 0, _qos, _retainFlag);
-        #ifdef DEBUG_DETAIL_ON
-            ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime)/1000);
-        #endif
+#ifdef DEBUG_DETAIL_ON
+        ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime) / 1000);
+#endif
         if (msg_id == -1) {
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "Failed to publish topic '" + _key + "', retry");
-            #ifdef DEBUG_DETAIL_ON
-                starttime = esp_timer_get_time();
-            #endif
+#ifdef DEBUG_DETAIL_ON
+            starttime = esp_timer_get_time();
+#endif
             msg_id = esp_mqtt_client_publish(mqttClient, _key.c_str(), _content.c_str(), 0, _qos, _retainFlag);
-            #ifdef DEBUG_DETAIL_ON
-                ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime)/1000);
-            #endif
+#ifdef DEBUG_DETAIL_ON
+            ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime) / 1000);
+#endif
             if (msg_id == -1) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish topic '" + _key + "', retry in next cycle");
                 mqttState.failedOnCycle = getFlowCycleCounter();
@@ -87,7 +87,8 @@ bool publishMqttData(std::string _key, std::string _content, int _qos, bool _ret
             _content.append("..");
         }
 
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Published topic: " + _key + ", content: " + _content + " | msg_id: " + std::to_string(msg_id));
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                            "Published topic: " + _key + ", content: " + _content + " | msg_id: " + std::to_string(msg_id));
         return true;
     }
     else {
@@ -137,14 +138,14 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
 
         case MQTT_EVENT_DATA:
             ESP_LOGD(TAG, "MQTT_EVENT_DATA");
-            #ifdef DEBUG_DETAIL_ON
-                ESP_LOGI(TAG, "TOPIC=%.*s", event->topic_len, event->topic);
-                ESP_LOGI(TAG, "DATA=%.*s", event->data_len, event->data);
-            #endif
+#ifdef DEBUG_DETAIL_ON
+            ESP_LOGI(TAG, "TOPIC=%.*s", event->topic_len, event->topic);
+            ESP_LOGI(TAG, "DATA=%.*s", event->data_len, event->data);
+#endif
             topic.assign(event->topic, event->topic_len);
             if (subscribeFunctionMap != NULL) {
                 if (subscribeFunctionMap->find(topic) != subscribeFunctionMap->end()) {
-                    //ESP_LOGD(TAG, "call subcribe function for topic %s", topic.c_str());
+                    // ESP_LOGD(TAG, "call subcribe function for topic %s", topic.c_str());
                     (*subscribeFunctionMap)[topic](topic, event->data, event->data_len);
                 }
                 else {
@@ -181,20 +182,21 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
 
             // Log any ESP-TLS error: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html
             if (cfgDataPtr->authMode == AUTH_TLS && (event->error_handle->esp_tls_last_esp_err != ESP_OK)) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Connection refused, TLS error code: " +
-                        intToHexString(event->error_handle->esp_tls_last_esp_err) +
+                LogFile.writeToFile(
+                    ESP_LOG_ERROR, TAG,
+                    "Connection refused, TLS error code: " + intToHexString(event->error_handle->esp_tls_last_esp_err) +
                         " (More infos: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html");
             }
 
-            #ifdef DEBUG_DETAIL_ON
-                ESP_LOGI(TAG, "MQTT_EVENT_ERROR - esp_mqtt_error_codes:");
-                ESP_LOGI(TAG, "error_type:%d", event->error_handle->error_type);
-                ESP_LOGI(TAG, "connect_return_code:%d", event->error_handle->connect_return_code);
-                ESP_LOGI(TAG, "esp_transport_sock_errno:%d", event->error_handle->esp_transport_sock_errno);
-                ESP_LOGI(TAG, "esp_tls_last_esp_err:%d", event->error_handle->esp_tls_last_esp_err);
-                ESP_LOGI(TAG, "esp_tls_stack_err:%d", event->error_handle->esp_tls_stack_err);
-                ESP_LOGI(TAG, "esp_tls_cert_verify_flags:%d", event->error_handle->esp_tls_cert_verify_flags);
-            #endif
+#ifdef DEBUG_DETAIL_ON
+            ESP_LOGI(TAG, "MQTT_EVENT_ERROR - esp_mqtt_error_codes:");
+            ESP_LOGI(TAG, "error_type:%d", event->error_handle->error_type);
+            ESP_LOGI(TAG, "connect_return_code:%d", event->error_handle->connect_return_code);
+            ESP_LOGI(TAG, "esp_transport_sock_errno:%d", event->error_handle->esp_transport_sock_errno);
+            ESP_LOGI(TAG, "esp_tls_last_esp_err:%d", event->error_handle->esp_tls_last_esp_err);
+            ESP_LOGI(TAG, "esp_tls_stack_err:%d", event->error_handle->esp_tls_stack_err);
+            ESP_LOGI(TAG, "esp_tls_cert_verify_flags:%d", event->error_handle->esp_tls_cert_verify_flags);
+#endif
 
             break;
 
@@ -208,8 +210,8 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
-    //ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%d", base, (int)event_id);
-    mqtt_event_handler_cb((esp_mqtt_event_handle_t) event_data);
+    // ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%d", base, (int)event_id);
+    mqtt_event_handler_cb((esp_mqtt_event_handle_t)event_data);
 }
 
 
@@ -225,19 +227,19 @@ bool configureMqttClient(const CfgData::SectionMqtt *_param, int keepAlive)
 
     LWTTopic = cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC;
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "URI: " + cfgDataPtr->uri + ", clientID: " + cfgDataPtr->clientID +
-                        ", username: " + cfgDataPtr->username + ", password: *****, mainTopic: " + cfgDataPtr->mainTopic +
-                        ", last-will-topic: " + LWTTopic + ", keepAlive: " + std::to_string(keepAlive) +
-                        ", RetainProcessData: " + std::to_string(cfgDataPtr->retainProcessData) +
-                        ", AuthMode: " + std::to_string(cfgDataPtr->authMode));
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                        "URI: " + cfgDataPtr->uri + ", clientID: " + cfgDataPtr->clientID + ", username: " + cfgDataPtr->username +
+                            ", password: *****, mainTopic: " + cfgDataPtr->mainTopic + ", last-will-topic: " + LWTTopic + ", keepAlive: " +
+                            std::to_string(keepAlive) + ", RetainProcessData: " + std::to_string(cfgDataPtr->retainProcessData) +
+                            ", AuthMode: " + std::to_string(cfgDataPtr->authMode));
 
     if (cfgDataPtr->authMode == AUTH_TLS) {
-        if (cfgDataPtr->uri.substr(0,8) != "mqtts://") {
+        if (cfgDataPtr->uri.substr(0, 8) != "mqtts://") {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: URI parameter needs to be configured with \'mqtts://\'");
             return false;
         }
 
-        if (cfgDataPtr->uri.substr(cfgDataPtr->uri.find_last_of(":")+1, 4) != "8883") {
+        if (cfgDataPtr->uri.substr(cfgDataPtr->uri.find_last_of(":") + 1, 4) != "8883") {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: URI parameter not using default MQTT TLS port \'8883\'");
         }
 
@@ -272,12 +274,12 @@ bool configureMqttClient(const CfgData::SectionMqtt *_param, int keepAlive)
         }
     }
     else {
-        if (cfgDataPtr->uri.substr(0,7) != "mqtt://") {
+        if (cfgDataPtr->uri.substr(0, 7) != "mqtt://") {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "URI parameter needs to be configured with \'mqtt://\'");
             return false;
         }
 
-        if (cfgDataPtr->uri.substr(cfgDataPtr->uri.find_last_of(":")+1, 4) != "1883") {
+        if (cfgDataPtr->uri.substr(cfgDataPtr->uri.find_last_of(":") + 1, 4) != "1883") {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "URI parameter not using default MQTT port \'1883\'");
         }
     }
@@ -306,19 +308,19 @@ int startMqttClient(void)
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init MQTT service");
     deinitMqttClient();
 
-    esp_mqtt_client_config_t mqtt_cfg = { };
+    esp_mqtt_client_config_t mqtt_cfg = {};
 
     mqtt_cfg.broker.address.uri = cfgDataPtr->uri.c_str();
     mqtt_cfg.credentials.client_id = cfgDataPtr->clientID.c_str();
-    mqtt_cfg.network.disable_auto_reconnect = false;     // Reconnection routine active (Default: false)
-    mqtt_cfg.network.reconnect_timeout_ms = 15000;       // Try to reconnect to broker (Default: 10000ms)
-    mqtt_cfg.network.timeout_ms = 10000;                 // Network Timeout (Default: 10000ms)
-    mqtt_cfg.session.message_retransmit_timeout = 3000;  // Time after message resent when broker not acknowledged (QoS1, QoS2)
+    mqtt_cfg.network.disable_auto_reconnect = false;    // Reconnection routine active (Default: false)
+    mqtt_cfg.network.reconnect_timeout_ms = 15000;      // Try to reconnect to broker (Default: 10000ms)
+    mqtt_cfg.network.timeout_ms = 10000;                // Network Timeout (Default: 10000ms)
+    mqtt_cfg.session.message_retransmit_timeout = 3000; // Time after message resent when broker not acknowledged (QoS1, QoS2)
     mqtt_cfg.session.last_will.topic = LWTTopic.c_str();
     mqtt_cfg.session.last_will.retain = 1;
     mqtt_cfg.session.last_will.msg = std::string(MQTT_STATUS_OFFLINE).c_str();
     mqtt_cfg.session.keepalive = keepAlive;
-    mqtt_cfg.buffer.size = 1024;                         // size of MQTT send/receive buffer (Default: 1024)
+    mqtt_cfg.buffer.size = 1024; // size of MQTT send/receive buffer (Default: 1024)
 
     if (cfgDataPtr->authMode == AUTH_BASIC) {
         mqtt_cfg.credentials.username = cfgDataPtr->username.c_str();
@@ -331,7 +333,7 @@ int startMqttClient(void)
         if (!TLSCACert.empty()) {
             mqtt_cfg.broker.verification.certificate = TLSCACert.c_str();
             mqtt_cfg.broker.verification.certificate_len = TLSCACert.length() + 1;
-            mqtt_cfg.broker.verification.skip_cert_common_name_check = true;    // Skip any validation of server certificate CN field
+            mqtt_cfg.broker.verification.skip_cert_common_name_check = true; // Skip any validation of server certificate CN field
         }
         else {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verfication");
@@ -352,8 +354,7 @@ int startMqttClient(void)
     mqttClient = esp_mqtt_client_init(&mqtt_cfg);
     if (mqttClient) {
         esp_err_t ret = esp_mqtt_client_register_event(mqttClient, mqttEventID, mqtt_event_handler, mqttClient);
-        if (ret != ESP_OK)
-        {
+        if (ret != ESP_OK) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Could not register event (ret=" + std::to_string(ret) + ")");
             mqttState.mqttInitialized = false;
             return -1;
@@ -411,16 +412,17 @@ bool getMqttIsConnected(void)
 
 bool getMqttIsEncrypted(void)
 {
-    if (cfgDataPtr != NULL && cfgDataPtr->authMode == AUTH_TLS)
+    if (cfgDataPtr != NULL && cfgDataPtr->authMode == AUTH_TLS) {
         return true;
+    }
 
     return false;
 }
 
 
-bool mqtt_handler_flow_start(std::string _topic, char* _data, int _data_len)
+bool mqtt_handler_flow_start(std::string _topic, char *_data, int _data_len)
 {
-    //ESP_LOGD(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
+    // ESP_LOGD(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
 
     if (_data_len > 0) {
         triggerFlowStartByMqtt(_topic);
@@ -433,20 +435,21 @@ bool mqtt_handler_flow_start(std::string _topic, char* _data, int _data_len)
 }
 
 
-bool mqtt_handler_set_fallbackvalue(std::string _topic, char* _data, int _data_len)
+bool mqtt_handler_set_fallbackvalue(std::string _topic, char *_data, int _data_len)
 {
-    //ESP_LOGD(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
-    //example: {"sequence": "main", "value": 12345.1234567}
+    // ESP_LOGD(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
+    // example: {"sequence": "main", "value": 12345.1234567}
 
-    if (_data_len > 0) {    // Check if data length > 0
+    if (_data_len > 0) { // Check if data length > 0
         cJSON *jsonData = cJSON_Parse(_data);
         cJSON *sequenceName = cJSON_GetObjectItemCaseSensitive(jsonData, "sequence");
         cJSON *value = cJSON_GetObjectItemCaseSensitive(jsonData, "value");
 
-        if (cJSON_IsString(sequenceName) && (sequenceName->valuestring != NULL)) {    // Check if sequenceName is valid
-            if (cJSON_IsNumber(value)) {   // Check if value is a number
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "handler_set_fallbackvalue called: sequence: " + std::string(sequenceName->valuestring) +
-                                                                                         ", value: " + std::to_string(value->valuedouble));
+        if (cJSON_IsString(sequenceName) && (sequenceName->valuestring != NULL)) { // Check if sequenceName is valid
+            if (cJSON_IsNumber(value)) {                                           // Check if value is a number
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                    "handler_set_fallbackvalue called: sequence: " + std::string(sequenceName->valuestring) +
+                                        ", value: " + std::to_string(value->valuedouble));
                 if (flowctrl.setFallbackValue(std::string(sequenceName->valuestring), std::to_string(value->valuedouble))) {
                     cJSON_Delete(jsonData);
                     return true;
@@ -476,9 +479,10 @@ void isConnectedState(void)
         publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, 1, false); // Send MQTT birth message "online"
 
         if (connectFunctionMap != NULL) {
-            for(std::map<std::string, std::function<void()>>::iterator it = connectFunctionMap->begin(); it != connectFunctionMap->end(); ++it) {
+            for (std::map<std::string, std::function<void()>>::iterator it = connectFunctionMap->begin(); it != connectFunctionMap->end();
+                 ++it) {
                 it->second();
-                //ESP_LOGD(TAG, "call connect function %s", it->first.c_str());
+                // ESP_LOGD(TAG, "call connect function %s", it->first.c_str());
             }
         }
 
@@ -486,28 +490,29 @@ void isConnectedState(void)
         // Note: Further subsriptions are handled in GPIO class
         //*****************************************
         // Subcribe to [mainTopic]/process/ctrl/flow_start
-        std::function<bool(std::string topic, char* data, int data_len)> subHandler1 = mqtt_handler_flow_start;
+        std::function<bool(std::string topic, char *data, int data_len)> subHandler1 = mqtt_handler_flow_start;
         registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/cycle_start", subHandler1);
 
         // Subcribe to [mainTopic]/process/ctrl/set_fallbackvalue
-        std::function<bool(std::string topic, char* data, int data_len)> subHandler2 = mqtt_handler_set_fallbackvalue;
+        std::function<bool(std::string topic, char *data, int data_len)> subHandler2 = mqtt_handler_set_fallbackvalue;
         registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/set_fallbackvalue", subHandler2);
 
         // Subcribe to /homeassistant/status
         if (cfgDataPtr->homeAssistant.discoveryEnabled) {
-            std::function<bool(std::string topic, char* data, int data_len)> subHandler3 = mqttServer_schedulePublishHADiscoveryFromMqtt;
+            std::function<bool(std::string topic, char *data, int data_len)> subHandler3 = mqttServer_schedulePublishHADiscoveryFromMqtt;
             registerMqttSubscribeFunction(cfgDataPtr->homeAssistant.statusTopic, subHandler3);
         }
 
-       if (subscribeFunctionMap != NULL) {
-            for(std::map<std::string, std::function<bool(std::string, char*, int)>>::iterator it = subscribeFunctionMap->begin();
-                                                                                        it != subscribeFunctionMap->end(); ++it)
-            {
+        if (subscribeFunctionMap != NULL) {
+            for (std::map<std::string, std::function<bool(std::string, char *, int)>>::iterator it = subscribeFunctionMap->begin();
+                 it != subscribeFunctionMap->end(); ++it) {
                 int retVal = esp_mqtt_client_subscribe(mqttClient, it->first.c_str(), 0);
-                if (retVal >= 0)
+                if (retVal >= 0) {
                     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Topic subscribed: " + it->first);
-                else
+                }
+                else {
                     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to subscribe topic: " + it->first);
+                }
             }
         }
     }
@@ -516,7 +521,7 @@ void isConnectedState(void)
 
 void registerMqttConnectFunction(std::string name, std::function<void()> func)
 {
-    //ESP_LOGD(TAG, "MQTTregisteronnectFunction %s\r\n", name.c_str());
+    // ESP_LOGD(TAG, "MQTTregisteronnectFunction %s\r\n", name.c_str());
     if (connectFunctionMap == NULL) {
         connectFunctionMap = new std::map<std::string, std::function<void()>>();
     }
@@ -543,11 +548,11 @@ void unregisterMqttConnectFunction(std::string name)
 }
 
 
-void registerMqttSubscribeFunction(std::string topic, std::function<bool(std::string, char*, int)> func)
+void registerMqttSubscribeFunction(std::string topic, std::function<bool(std::string, char *, int)> func)
 {
-    //ESP_LOGD(TAG, "registerSubscribeFunction %s", topic.c_str());
+    // ESP_LOGD(TAG, "registerSubscribeFunction %s", topic.c_str());
     if (subscribeFunctionMap == NULL) {
-        subscribeFunctionMap = new std::map<std::string, std::function<bool(std::string, char*, int)>>();
+        subscribeFunctionMap = new std::map<std::string, std::function<bool(std::string, char *, int)>>();
     }
 
     if ((*subscribeFunctionMap)[topic] != NULL) {
@@ -563,14 +568,15 @@ void unregisterMqttSubscribeFunction()
 {
     if (subscribeFunctionMap != NULL) {
         if (mqttState.mqttConnected) {
-            for(std::map<std::string, std::function<bool(std::string, char*, int)>>::iterator it = subscribeFunctionMap->begin();
-                                                                                        it != subscribeFunctionMap->end(); ++it)
-            {
+            for (std::map<std::string, std::function<bool(std::string, char *, int)>>::iterator it = subscribeFunctionMap->begin();
+                 it != subscribeFunctionMap->end(); ++it) {
                 int retVal = esp_mqtt_client_unsubscribe(mqttClient, it->first.c_str());
-                if (retVal >= 0)
+                if (retVal >= 0) {
                     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Topic unsubscribed: " + it->first);
-                else
+                }
+                else {
                     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to unsubscribe topic: " + it->first);
+                }
             }
         }
 
@@ -579,4 +585,4 @@ void unregisterMqttSubscribeFunction()
         subscribeFunctionMap = NULL;
     }
 }
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT

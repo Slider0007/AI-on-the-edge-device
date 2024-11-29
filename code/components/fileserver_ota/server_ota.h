@@ -20,4 +20,4 @@ void forceReboot();
 
 void registerOtaRebootUri(httpd_handle_t server);
 
-#endif //SERVEROTA_H
+#endif // SERVEROTA_H

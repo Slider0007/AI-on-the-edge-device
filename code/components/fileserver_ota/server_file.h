@@ -13,4 +13,4 @@ esp_err_t sendFile(httpd_req_t *req, std::string filename);
 
 void registerFileserverUri(httpd_handle_t server, const char *basePath);
 
-#endif //SERVERFILE_H
+#endif // SERVERFILE_H

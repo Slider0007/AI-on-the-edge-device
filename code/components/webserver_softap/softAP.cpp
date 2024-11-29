@@ -34,14 +34,17 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     if (!credentialsSet) {
         message = "<h3>1. Configure WLAN network and set credentials</h3>";
         message += "<table>";
-        message += "<tr><td>Network Name (SSID)</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"ssid\" id=\"ssid\"></td>";
+        message += "<tr><td>Network Name (SSID)</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"ssid\" "
+                   "id=\"ssid\"></td>";
         message += "<td>Enter the name of WLAN network</td></tr>";
-        message += "<tr><td>Network Password</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"password\" id=\"password\"></td>";
+        message += "<tr><td>Network Password</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"password\" "
+                   "id=\"password\"></td>";
         message += "<td>Enter the WLAN network password (NOTE: The password is transmitted to the device as plain text!)</td><tr>";
         message += "</table><br><br>";
         message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" onclick=\"wr()\">Save config</button>";
         message += "<script language=\"JavaScript\">async function wr(){";
-        message += "api = \"/config?\"+\"ssid=\"+document.getElementById(\"ssid\").value+\"&pwd=\"+document.getElementById(\"password\").value;";
+        message +=
+            "api = \"/config?\"+\"ssid=\"+document.getElementById(\"ssid\").value+\"&pwd=\"+document.getElementById(\"password\").value;";
         message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();}</script>";
         httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
         credentialsSet = true;
@@ -52,7 +55,9 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message = "<h3>2. Upload firmware package</h3><p>";
         message += "Upload a firmware package \"AI-on-the-edge-device__{Board Type}__*.zip\" to install the SD card content.<p>";
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
-        message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doUpdate\" onclick=\"upload()\">Upload File</button><p>";
+        message +=
+            "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doUpdate\" onclick=\"upload()\">Upload "
+            "File</button><p>";
         message += "The upload might take up to 60s. After the package has been successfully uploaded, the page is automatically reloaded.";
         message += "<script language=\"JavaScript\">";
         message += "function upload() {";
@@ -60,7 +65,8 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message += "xhttp.onreadystatechange = function() {if (xhttp.readyState == 4) {if (xhttp.status == 200) {location.reload();}}};";
         message += "let filePath = document.getElementById(\"newfile\").value.split(/[\\\\/]/).pop();";
         message += "let file = document.getElementById(\"newfile\").files[0];";
-        message += "if (!file.name.includes(\"AI-on-the-edge-device__\")){if (!confirm(\"The zip file name should contain 'AI-on-the-edge-device__'. ";
+        message += "if (!file.name.includes(\"AI-on-the-edge-device__\")){if (!confirm(\"The zip file name should contain "
+                   "'AI-on-the-edge-device__'. ";
         message += "Are you sure that you have chosen the correct file?\"))return;};";
         message += "let upload_path = \"/upload/firmware/\" + filePath; xhttp.open(\"POST\", upload_path, true); xhttp.send(file);";
         message += "document.getElementById(\"doUpdate\").disabled = true;}</script>";
@@ -73,8 +79,10 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     message += "The device is going to reboot and install the provided package. This process can take up to 3 minutes.<br>";
     message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).<br>";
     message += "If device is provisioned using web installer, just wait until installation is completed and refresh browser window.<br>";
-    message += "Switch WLAN network and access the device using device name (default: watermeter) or IP address (check router logs).<br><br>";
-    message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To Proceed</button>";
+    message +=
+        "Switch WLAN network and access the device using device name (default: watermeter) or IP address (check router logs).<br><br>";
+    message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To "
+               "Proceed</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
     message += "api = \"/reboot\";";
     message += "fetch(api);await new Promise(resolve => setTimeout(resolve, 1000));location.reload();";
@@ -170,7 +178,7 @@ esp_err_t upload_handler_AP(httpd_req_t *req)
     fclose(fd);
     SDCardContentExisting = true;
 
-    FILE* pfile = fopen("/sdcard/update.txt", "w");
+    FILE *pfile = fopen("/sdcard/update.txt", "w");
     std::string zw = "/sdcard" + std::string(filename);
     fwrite(zw.c_str(), strlen(zw.c_str()), 1, pfile);
     fclose(pfile);
@@ -200,34 +208,34 @@ httpd_handle_t start_webserverAP(void)
     httpd_start(&server, &config);
 
     httpd_uri_t reboot_handle = {
-        .uri       = "/reboot",
-        .method    = HTTP_GET,
-        .handler   = reboot_handler_AP,
-        .user_ctx  = NULL
+        .uri = "/reboot", // Reboot handler
+        .method = HTTP_GET,
+        .handler = reboot_handler_AP,
+        .user_ctx = NULL //
     };
     httpd_register_uri_handler(server, &reboot_handle);
 
     httpd_uri_t config_handleAP = {
-        .uri       = "/config",
-        .method    = HTTP_GET,
-        .handler   = config_handler_AP,
-        .user_ctx  = NULL
+        .uri = "/config", // Config handler
+        .method = HTTP_GET,
+        .handler = config_handler_AP,
+        .user_ctx = NULL //
     };
     httpd_register_uri_handler(server, &config_handleAP);
 
     httpd_uri_t file_uploadAP = {
-        .uri       = "/upload/*",
-        .method    = HTTP_POST,
-        .handler   = upload_handler_AP,
-        .user_ctx  = NULL
+        .uri = "/upload/*", // Upload handler
+        .method = HTTP_POST,
+        .handler = upload_handler_AP,
+        .user_ctx = NULL //
     };
     httpd_register_uri_handler(server, &file_uploadAP);
 
     httpd_uri_t main_handlerAP = {
-        .uri      = "*",
-        .method   = HTTP_GET,
-        .handler  = main_handler_AP,
-        .user_ctx = NULL
+        .uri = "*", // Main handler
+        .method = HTTP_GET,
+        .handler = main_handler_AP,
+        .user_ctx = NULL //
     };
     httpd_register_uri_handler(server, &main_handlerAP);
 
@@ -238,8 +246,9 @@ httpd_handle_t start_webserverAP(void)
 void startAPForDeviceProvisioning()
 {
     SDCardContentExisting = fileExists("/sdcard/html/index.html");
-    if (!SDCardContentExisting)
+    if (!SDCardContentExisting) {
         ESP_LOGW(TAG, "HTML content not found on SD card (html/index.html)");
+    }
 
     if (ConfigClass::getInstance()->get()->sectionNetwork.wlan.ssid.empty() || !SDCardContentExisting) {
         ESP_LOGI(TAG, "Starting access point for device provisioning");
@@ -247,7 +256,7 @@ void startAPForDeviceProvisioning()
         initWifiAp(true);
         start_webserverAP();
 
-        while(1) { // wait until reboot
+        while (1) { // wait until reboot
             vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
     }
@@ -255,9 +264,9 @@ void startAPForDeviceProvisioning()
 
 
 /** This function is only used to switch the Improv provisioning service where
-* step 1, WLAN configuration, is provisioned via serial / USB console,
-* continued with step 2 and step 3 defined in softAP.cpp -> function 'main_handler_AP'
-*/
+ * step 1, WLAN configuration, is provisioned via serial / USB console,
+ * continued with step 2 and step 3 defined in softAP.cpp -> function 'main_handler_AP'
+ */
 void stopAPForDeviceProvisioning(void)
 {
     setStatusLedOff();

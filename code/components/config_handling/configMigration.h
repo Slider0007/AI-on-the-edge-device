@@ -15,4 +15,4 @@ std::vector<std::string> splitStringWLAN(std::string input, std::string _delimit
 bool replaceString(std::string &s, std::string const &toReplace, std::string const &replaceWith);
 bool replaceString(std::string &s, std::string const &toReplace, std::string const &replaceWith, bool logIt);
 
-#endif //CONFIGMIGRATION_H
+#endif // CONFIGMIGRATION_H

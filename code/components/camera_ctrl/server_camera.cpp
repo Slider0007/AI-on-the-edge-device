@@ -15,7 +15,7 @@ static const char *TAG = "SERVER_CAM";
 
 esp_err_t handler_camera(httpd_req_t *req)
 {
-    const char* APIName = "camera:v2"; // API name and version
+    const char *APIName = "camera:v2"; // API name and version
     char _query[384];
     char _valuechar[30], _flashtime[30], _filename[100];
     std::string task;
@@ -27,8 +27,8 @@ esp_err_t handler_camera(httpd_req_t *req)
         "Handler usage:<br>"
         "1. Set camera parameter:<br>"
         "-  '/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0& "
-            "saturation=0&sharpness=1&exposurecontrolmode=0&autoexposurelevel=0&manualexposurevalue=1200& "
-            "gaincontrolmode=0&manualgainvalue=2&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&zoomx=0&zoomy=0'<br>"
+        "saturation=0&sharpness=1&exposurecontrolmode=0&autoexposurelevel=0&manualexposurevalue=1200& "
+        "gaincontrolmode=0&manualgainvalue=2&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&zoomx=0&zoomy=0'<br>"
         "2. Capture image<br>"
         "  - '/camera?task=capture' : Capture without flashlight<br>"
         "  - '/camera?task=capture_with_flashlight&flashtime=1000' : Capture with flashlight (flashtime in ms)<br>"
@@ -52,7 +52,7 @@ esp_err_t handler_camera(httpd_req_t *req)
             fn.append(_filename);
         }
     }
-    else {  // if no parameter is provided, print handler usage
+    else { // if no parameter is provided, print handler usage
         httpd_resp_set_type(req, "text/html");
         httpd_resp_sendstr(req, RESTUsageInfo.c_str());
         return ESP_OK;
@@ -91,7 +91,7 @@ esp_err_t handler_camera(httpd_req_t *req)
             paramCamera.sharpness = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "exposurecontrolmode", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            paramCamera.exposureControlMode  = stoi(std::string(_valuechar));
+            paramCamera.exposureControlMode = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "autoexposurelevel", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             paramCamera.autoExposureLevel = stoi(std::string(_valuechar));
@@ -109,12 +109,12 @@ esp_err_t handler_camera(httpd_req_t *req)
             paramCamera.specialEffect = stoi(std::string(_valuechar));
         }
         if (httpd_query_key_value(_query, "mirror", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ?
-                paramCamera.mirrorImage = true : paramCamera.mirrorImage = false;
+            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? paramCamera.mirrorImage = true
+                                                                                  : paramCamera.mirrorImage = false;
         }
         if (httpd_query_key_value(_query, "flip", _valuechar, sizeof(_valuechar)) == ESP_OK) {
-            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ?
-                paramCamera.flipImage = true : paramCamera.flipImage = false;
+            (std::string(_valuechar) == "1" || std::string(_valuechar) == "true") ? paramCamera.flipImage = true
+                                                                                  : paramCamera.flipImage = false;
         }
         if (httpd_query_key_value(_query, "zoomfactor", _valuechar, sizeof(_valuechar)) == ESP_OK) {
             paramCamera.zoomFactor = stoi(std::string(_valuechar));
@@ -149,7 +149,7 @@ esp_err_t handler_camera(httpd_req_t *req)
     else if (task.compare("capture_with_flashlight") == 0) {
         if (flashtime == 0) {
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
-                "E93: No flashtime provided, e.g. '/capture?task=capture_with_flashlight&flashtime=1000'");
+                                "E93: No flashtime provided, e.g. '/capture?task=capture_with_flashlight&flashtime=1000'");
             return ESP_FAIL;
         }
 
@@ -169,13 +169,15 @@ esp_err_t handler_camera(httpd_req_t *req)
     }
     else if (task.compare("capture_to_file") == 0) {
         if (flashtime == 0) {
-            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
+            httpd_resp_send_err(
+                req, HTTPD_400_BAD_REQUEST,
                 "E93: No flashtime provided, e.g. '/capture?task=capture_to_file&flashtime=1000&filename=/img_tmp/test.jpg'");
             return ESP_FAIL;
         }
 
         if (fn.compare("/sdcard/") == 0) {
-            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
+            httpd_resp_send_err(
+                req, HTTPD_400_BAD_REQUEST,
                 "E94: No destination provided, e.g. '/capture?task=capture_to_file&flashtime=1000&filename=/img_tmp/test.jpg'");
             return ESP_FAIL;
         }
@@ -224,11 +226,11 @@ void registerCameraUri(httpd_handle_t server)
 {
     ESP_LOGI(TAG, "Registering URI handlers");
 
-    httpd_uri_t camuri = { };
-    camuri.method    = HTTP_GET;
+    httpd_uri_t camuri = {};
+    camuri.method = HTTP_GET;
 
-    camuri.uri       = "/camera";
-    camuri.handler   = handler_camera;
-    camuri.user_ctx  = NULL;
+    camuri.uri = "/camera";
+    camuri.handler = handler_camera;
+    camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 }

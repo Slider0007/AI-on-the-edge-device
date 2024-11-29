@@ -38,7 +38,7 @@ extern "C" {
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
 
 static const char *TAG = "SERVER_FILE";
@@ -219,21 +219,10 @@ esp_err_t sendFile(httpd_req_t *req, std::string filename)
     // httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     // For all files with the following file extention tell the webbrowser to cache them for a long period
-    if (endsWith(filename, ".html") ||
-        endsWith(filename, ".htm") ||
-        endsWith(filename, ".css") ||
-        endsWith(filename, ".js") ||
-        endsWith(filename, ".map") ||
-        endsWith(filename, ".jpg") ||
-        endsWith(filename, ".jpeg") ||
-        endsWith(filename, ".ico") ||
-        endsWith(filename, ".gif") ||
-        endsWith(filename, ".svg") ||
-        endsWith(filename, ".png") ||
-        endsWith(filename, ".md") ||
-        endsWith(filename, ".webmanifest") ||
-        endsWith(filename, ".txt"))
-    {
+    if (endsWith(filename, ".html") || endsWith(filename, ".htm") || endsWith(filename, ".css") || endsWith(filename, ".js") ||
+        endsWith(filename, ".map") || endsWith(filename, ".jpg") || endsWith(filename, ".jpeg") || endsWith(filename, ".ico") ||
+        endsWith(filename, ".gif") || endsWith(filename, ".svg") || endsWith(filename, ".png") || endsWith(filename, ".md") ||
+        endsWith(filename, ".webmanifest") || endsWith(filename, ".txt")) {
         if (filename == "/sdcard/html/index.html") {
             httpd_resp_set_hdr(req, "Cache-Control", "max-age=0");
         }
@@ -248,7 +237,7 @@ esp_err_t sendFile(httpd_req_t *req, std::string filename)
     setContentTypeFromFile(req, filename.c_str());
 
     /* Retrieve the pointer to scratch buffer for temporary storage */
-    char *chunk = (char *) ((struct HttpServerData *)req->user_ctx)->scratch;
+    char *chunk = (char *)((struct HttpServerData *)req->user_ctx)->scratch;
     size_t chunksize;
     do {
         /* Read file in chunks into the scratch buffer */
@@ -281,15 +270,17 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
     FILE *fd = NULL;
     std::string currentfilename = LogFile.getCurrentFileName();
 
-    //ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
+    // ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
 
     // !!! Do not close actual logfile to avoid software exception !!!
-    //LogFile.closeLogFileAppendHandle();
+    // LogFile.closeLogFileAppendHandle();
 
     fd = fopen(currentfilename.c_str(), "r");
     if (fd == NULL) {
-        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
-        httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
+        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to read file: " + currentfilename); // It's not a fault if no file
+        // is available
+        httpd_resp_send(req, "No recent log entries",
+                        HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
         return ESP_OK;
     }
 
@@ -318,8 +309,9 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos);
 
             if (fseek(fd, pos, SEEK_SET)) { // Go to start position
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to go back " +
-                                    std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "sendLogfile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) +
+                                        " bytes within the file");
                 return ESP_FAIL;
             }
         }
@@ -350,7 +342,7 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
             return ESP_FAIL;
         }
 
-    /* Keep looping till the whole file is sent */
+        /* Keep looping till the whole file is sent */
     } while (chunksize != 0);
 
     /* Close file after sending complete */
@@ -365,7 +357,7 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
 
 static esp_err_t handler_logfiles(httpd_req_t *req)
 {
-    const char* APIName = "log:v2"; // API name and version
+    const char *APIName = "log:v2"; // API name and version
     char query[100];
     char valuechar[30];
     std::string type;
@@ -402,7 +394,7 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
     FILE *fd = NULL;
     std::string currentfilename = LogFile.getCurrentFileNameData();
 
-    //ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
+    // ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
@@ -410,8 +402,10 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
 
     fd = fopen(currentfilename.c_str(), "r");
     if (fd == NULL) {
-        //LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendDatafile: Failed to read file: " + currentfilename); // It's not a fault if no file is available
-        httpd_resp_send(req, "No recent data entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no data available from today
+        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendDatafile: Failed to read file: " + currentfilename); // It's not a fault if no file
+        // is available
+        httpd_resp_send(req, "No recent data entries",
+                        HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no data available from today
         return ESP_OK;
     }
 
@@ -436,8 +430,9 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos);
 
             if (fseek(fd, pos, SEEK_SET)) { // Go to start position
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendDatafile: Failed to go back " +
-                                    std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) + " bytes within the file");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "sendDatafile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) +
+                                        " bytes within the file");
                 return ESP_FAIL;
             }
         }
@@ -483,7 +478,7 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
 
 static esp_err_t handler_datafiles(httpd_req_t *req)
 {
-    const char* APIName = "data:v2"; // API name and version
+    const char *APIName = "data:v2"; // API name and version
     char query[100];
     char valuechar[30];
     std::string type;
@@ -516,7 +511,7 @@ static esp_err_t handler_datafiles(httpd_req_t *req)
 
 
 // Response with a run-time generated html consisting all files and folders of requested path
-static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const char* uripath, bool readonly)
+static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const char *uripath, bool readonly)
 {
     char entrypath[FILE_PATH_MAX];
     char entrysize[16];
@@ -528,9 +523,11 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     char dirpath_corrected[FILE_PATH_MAX];
     strcpy(dirpath_corrected, dirpath);
 
-    HttpServerData * server_data = (HttpServerData *) req->user_ctx;
-    if ((strlen(dirpath_corrected)-1) > strlen(server_data->basePathFileserver))      // if dirpath is not mountpoint, the last "\" needs to be removed
-        dirpath_corrected[strlen(dirpath_corrected)-1] = '\0';
+    HttpServerData *server_data = (HttpServerData *)req->user_ctx;
+    if ((strlen(dirpath_corrected) - 1) >
+        strlen(server_data->basePathFileserver)) { // if dirpath is not mountpoint, the last "\" needs to be removed
+        dirpath_corrected[strlen(dirpath_corrected) - 1] = '\0';
+    }
 
     DIR *dir = opendir(dirpath_corrected);
 
@@ -551,7 +548,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
 
     /* Send HTML file header */
-    //httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>"); --> This is already part of 'sys_fileserver.html' file
+    // httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>"); --> This is already part of 'sys_fileserver.html' file
 
     /////////////////////////////////////////////////
     if (!readonly) {
@@ -565,8 +562,8 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
         size_t chunksize;
         do {
             chunksize = fread(chunk, 1, WEBSERVER_SCRATCH_BUFSIZE, fd);
-            //ESP_LOGD(TAG, "Chunksize %d", chunksize);
-            if (chunksize > 0){
+            // ESP_LOGD(TAG, "Chunksize %d", chunksize);
+            if (chunksize > 0) {
                 if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
                     fclose(fd);
                     std::string msg_txt = "http_resp_dir_html: File sending failed: /sdcard/html/sys_fileserver.html";
@@ -578,7 +575,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
             }
         } while (chunksize != 0);
         fclose(fd);
-        //ESP_LOGD(TAG, "File sending complete");
+        // ESP_LOGD(TAG, "File sending complete");
     }
     ///////////////////////////////
 
@@ -589,16 +586,15 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
 
     /* Send file-list table definition and column labels */
     httpd_resp_sendstr_chunk(req,
-        "<table id=\"files_table\">"
-        "<col style=\"width:800px\"><col style=\"width:300px\"><col style=\"width:300px\"><col style=\"width:100px\">"
-        "<thead><tr><th>Name</th><th>Type</th><th>Size</th>");
+                             "<table id=\"files_table\">"
+                             "<col style=\"width:800px\"><col style=\"width:300px\"><col style=\"width:300px\"><col style=\"width:100px\">"
+                             "<thead><tr><th>Name</th><th>Type</th><th>Size</th>");
     if (!readonly) {
         httpd_resp_sendstr_chunk(req, "<th>"
-            "<form method=\"post\" action=\"");
+                                      "<form method=\"post\" action=\"");
         httpd_resp_sendstr_chunk(req, _zw.c_str());
-        httpd_resp_sendstr_chunk(req,
-            "\"><button type=\"submit\">DELETE ALL!</button></form>"
-            "</th></tr>");
+        httpd_resp_sendstr_chunk(req, "\"><button type=\"submit\">DELETE ALL!</button></form>"
+                                      "</th></tr>");
     }
     httpd_resp_sendstr_chunk(req, "</thead><tbody>\n");
 
@@ -615,8 +611,8 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
         strlcpy(entrypath + dirpath_len, entry->d_name, sizeof(entrypath) - dirpath_len);
         ESP_LOGD(TAG, "Entrypath: %s", entrypath);
         if (stat(entrypath, &entry_stat) == -1) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to read " +
-                                std::string(entrytype) + ": " + std::string(entry->d_name));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                "http_resp_dir_html: Failed to read " + std::string(entrytype) + ": " + std::string(entry->d_name));
             continue;
         }
 
@@ -679,7 +675,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     struct stat file_stat;
 
     const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
-                                             req->uri  + sizeof("/fileserver") - 1, sizeof(filepath));
+                                          req->uri + sizeof("/fileserver") - 1, sizeof(filepath));
 
     if (!filename) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "download_get_handler: Filename is too long");
@@ -713,10 +709,8 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     // Reject unavailable files
     if (stat(filepath, &file_stat) == -1) {
         // Special case: Do not log special config files in log to avoid confusion because they are missing before finalizing initial setup
-        if (strcmp("/sdcard/config/reference.jpg", filepath) != 0 &&
-            strcmp("/sdcard/config/marker1.jpg", filepath) != 0 &&
-            strcmp("/sdcard/config/marker2.jpg", filepath) != 0)
-        {
+        if (strcmp("/sdcard/config/reference.jpg", filepath) != 0 && strcmp("/sdcard/config/marker1.jpg", filepath) != 0 &&
+            strcmp("/sdcard/config/marker2.jpg", filepath) != 0) {
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "download_get_handler: File not found: " + std::string(filepath));
         }
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File not found");
@@ -725,8 +719,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 
     //  Reject special files with sensitive data
     if (strcmp("/sdcard/wlan.ini", filepath) == 0 || strcmp("/sdcard/config/backup/wlan_ini.bak", filepath) == 0 ||
-        strcmp("/sdcard/config/config.ini", filepath) == 0 || strcmp("/sdcard/config/backup/config_ini.bak", filepath) == 0)
-    {
+        strcmp("/sdcard/config/config.ini", filepath) == 0 || strcmp("/sdcard/config/backup/config_ini.bak", filepath) == 0) {
         httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "File request forbidden (sensitive data)");
         return ESP_FAIL;
     }
@@ -790,7 +783,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     /* Skip leading "/upload" from URI to get filename */
     /* Note sizeof() counts NULL termination hence the -1 */
     const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
-                                             req->uri + sizeof("/upload") - 1, sizeof(filepath));
+                                          req->uri + sizeof("/upload") - 1, sizeof(filepath));
     if (!filename) {
         httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "upload_post_handler: Filename too long");
         return ESP_FAIL;
@@ -882,35 +875,33 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 
 
     std::string directory = std::string(filepath);
-	size_t zw = directory.find("/");
-	size_t found = zw;
-	while (zw != std::string::npos) {
-		zw = directory.find("/", found+1);
-		if (zw != std::string::npos)
-			found = zw;
-	}
+    size_t zw = directory.find("/");
+    size_t found = zw;
+    while (zw != std::string::npos) {
+        zw = directory.find("/", found + 1);
+        if (zw != std::string::npos) {
+            found = zw;
+        }
+    }
 
     int start_fn = strlen(((struct HttpServerData *)req->user_ctx)->basePathFileserver);
     ESP_LOGD(TAG, "Directory: %s, start_fn: %d, found: %d", directory.c_str(), start_fn, found);
-	directory = directory.substr(start_fn, found - start_fn + 1);
+    directory = directory.substr(start_fn, found - start_fn + 1);
     directory = "/fileserver" + directory;
     //    ESP_LOGD(TAG, "Directory danach 2: %s", directory.c_str());
 
     /* Redirect onto root to see the updated file list */
-    if (strcmp(filename, "/config/marker1.jpg") == 0 ||
-        strcmp(filename, "/config/marker2.jpg") == 0 ||
-        strcmp(filename, "/config/reference.jpg") == 0 ||
-        strcmp(filename, "/img_tmp/marker1.jpg") == 0 ||
-        strcmp(filename, "/img_tmp/marker2.jpg") == 0 ||
-        strcmp(filename, "/img_tmp/reference.jpg") == 0 )
-    {
+    if (strcmp(filename, "/config/marker1.jpg") == 0 || strcmp(filename, "/config/marker2.jpg") == 0 ||
+        strcmp(filename, "/config/reference.jpg") == 0 || strcmp(filename, "/img_tmp/marker1.jpg") == 0 ||
+        strcmp(filename, "/img_tmp/marker2.jpg") == 0 || strcmp(filename, "/img_tmp/reference.jpg") == 0) {
         httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
     }
     else {
         httpd_resp_set_status(req, "303 See Other"); // Respond with redirection request
     }
 
-    httpd_resp_set_hdr(req, "Location", directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for fileserver action)
+    httpd_resp_set_hdr(req, "Location",
+                       directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for fileserver action)
     httpd_resp_sendstr(req, "File uploaded successfully");
 
     return ESP_OK;
@@ -942,13 +933,13 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         /* Skip leading "/delete" from URI to get filename */
         /* Note sizeof() counts NULL termination hence the -1 */
         const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
-                                                req->uri  + sizeof("/delete") - 1, sizeof(filepath));
+                                              req->uri + sizeof("/delete") - 1, sizeof(filepath));
         if (!filename) {
             httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "delete_post_handler: Filename too long");
             return ESP_FAIL;
         }
         zw = std::string(filename);
-        zw = zw.substr(0, zw.length()-1);
+        zw = zw.substr(0, zw.length() - 1);
         directory = "/fileserver" + zw + "/";
         zw = "/sdcard" + zw;
         ESP_LOGD(TAG, "Directory to delete: %s", zw.c_str());
@@ -960,7 +951,7 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         /* Skip leading "/delete" from URI to get filename */
         /* Note sizeof() counts NULL termination hence the -1 */
         const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
-                                                req->uri  + sizeof("/delete") - 1, sizeof(filepath));
+                                              req->uri + sizeof("/delete") - 1, sizeof(filepath));
         if (!filename) {
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "delete_post_handler: Filename too long");
             return ESP_FAIL;
@@ -975,7 +966,8 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
 
         if (stat(filepath, &file_stat) == -1) { // File does not exist
             /* This is ok, we would delete it anyway */
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Deletion triggered, but file not existing: " + std::string(filename));
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                "delete_post_handler: Deletion triggered, but file not existing: " + std::string(filename));
         }
         else {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Deleting file: " + std::string(filename));
@@ -984,13 +976,9 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         }
 
         /* Avoid redirect to root folder after deletion for system processed files */
-        if (strcmp(filename, "/config/marker1.jpg") == 0 ||
-            strcmp(filename, "/config/marker2.jpg") == 0 ||
-            strcmp(filename, "/config/reference.jpg") == 0 ||
-            strcmp(filename, "/img_tmp/marker1.jpg") == 0 ||
-            strcmp(filename, "/img_tmp/marker2.jpg") == 0 ||
-            strcmp(filename, "/img_tmp/reference.jpg") == 0 )
-        {
+        if (strcmp(filename, "/config/marker1.jpg") == 0 || strcmp(filename, "/config/marker2.jpg") == 0 ||
+            strcmp(filename, "/config/reference.jpg") == 0 || strcmp(filename, "/img_tmp/marker1.jpg") == 0 ||
+            strcmp(filename, "/img_tmp/marker2.jpg") == 0 || strcmp(filename, "/img_tmp/reference.jpg") == 0) {
             httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
         }
         else {
@@ -1001,10 +989,11 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         *pos = '\0'; // Cut off filename -> From here filename is not valid anymore
         directory = std::string(filename);
         directory = "/fileserver" + directory + "/";
-        //ESP_LOGI(TAG, "DELETE HANDLER2: Directory: %s", directory.c_str());
+        // ESP_LOGI(TAG, "DELETE HANDLER2: Directory: %s", directory.c_str());
     }
 
-    httpd_resp_set_hdr(req, "Location", directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for fileserver action)
+    httpd_resp_set_hdr(req, "Location",
+                       directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for fileserver action)
     httpd_resp_sendstr(req, "File successfully deleted");
     return ESP_OK;
 }
@@ -1030,17 +1019,15 @@ static std::string printCoreDumpBacktraceInfo(const esp_core_dump_summary_t *sum
         }
     }
 
-    return std::string("Backtrace: " + std::string(results) +
-            "\nDepth: " + std::to_string((int)summary->exc_bt_info.depth) +
-            "\nCorrupted: " + std::to_string(summary->exc_bt_info.corrupted) +
-            "\nPC: " + std::to_string((int)summary->exc_pc) +
-            "\nFirmware version: " + getFwVersion());
+    return std::string("Backtrace: " + std::string(results) + "\nDepth: " + std::to_string((int)summary->exc_bt_info.depth) +
+                       "\nCorrupted: " + std::to_string(summary->exc_bt_info.corrupted) + "\nPC: " + std::to_string((int)summary->exc_pc) +
+                       "\nFirmware version: " + getFwVersion());
 }
 
 
 static esp_err_t coredump_handler(httpd_req_t *req)
 {
-    const char* APIName = "coredump:v1"; // API name and version
+    const char *APIName = "coredump:v1"; // API name and version
     char query[200];
     char valuechar[30];
     std::string task;
@@ -1055,8 +1042,7 @@ static esp_err_t coredump_handler(httpd_req_t *req)
     }
 
     // Check if coredump partition is available
-    const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
-                                            ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
+    const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
     if (partition == NULL) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Partition 'coredump' not found");
         return ESP_FAIL;
@@ -1151,61 +1137,61 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
 
     /* Validate file storage base path */
     if (!basePath) {
-        //if (!basePath || strcmp(basePath, "/spiffs") != 0) {
+        // if (!basePath || strcmp(basePath, "/spiffs") != 0) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "basePath for fileserver root folder not set");
-        //return ESP_ERR_INVALID_ARG;
+        // return ESP_ERR_INVALID_ARG;
     }
 
     strlcpy(httpServerData->basePathFileserver, basePath, sizeof(httpServerData->basePathFileserver));
 
     httpd_uri_t file_download = {
-        .uri       = "/fileserver*", // Match all URIs of type /path/to/file
-        .method    = HTTP_GET,
-        .handler   = download_get_handler,
-        .user_ctx  = httpServerData // Pass server data as context
+        .uri = "/fileserver*", // Match all URIs of type /path/to/file
+        .method = HTTP_GET,
+        .handler = download_get_handler,
+        .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &file_download);
 
     /* URI handler for uploading files to server */
     httpd_uri_t file_upload = {
-        .uri       = "/upload/*", // Match all URIs of type /upload/path/to/file
-        .method    = HTTP_POST,
-        .handler   = upload_post_handler,
-        .user_ctx  = httpServerData // Pass server data as context
+        .uri = "/upload/*", // Match all URIs of type /upload/path/to/file
+        .method = HTTP_POST,
+        .handler = upload_post_handler,
+        .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &file_upload);
 
     /* URI handler for deleting files from server */
     httpd_uri_t file_delete = {
-        .uri       = "/delete/*", // Match all URIs of type /delete/path/to/file
-        .method    = HTTP_POST,
-        .handler   = delete_post_handler,
-        .user_ctx  = httpServerData // Pass server data as context
+        .uri = "/delete/*", // Match all URIs of type /delete/path/to/file
+        .method = HTTP_POST,
+        .handler = delete_post_handler,
+        .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &file_delete);
 
     /* URI handler for deleting files from server */
     httpd_uri_t coredump = {
-        .uri       = "/coredump",
-        .method    = HTTP_GET,
-        .handler   = coredump_handler,
-        .user_ctx  = httpServerData // Pass server data as context
+        .uri = "/coredump",
+        .method = HTTP_GET,
+        .handler = coredump_handler,
+        .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &coredump);
 
     httpd_uri_t handler_logfile = {
-        .uri       = "/log",
-        .method    = HTTP_GET,
-        .handler   = handler_logfiles,
-        .user_ctx  = httpServerData // Pass server data as context
+        .uri = "/log",
+        .method = HTTP_GET,
+        .handler = handler_logfiles,
+        .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &handler_logfile);
 
     httpd_uri_t handler_datafile = {
-        .uri       = "/data",
-        .method    = HTTP_GET,
-        .handler   = handler_datafiles,
-        .user_ctx  = httpServerData // Pass server data as context
+        .uri = "/data",
+        .method = HTTP_GET,
+        .handler = handler_datafiles,
+        .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &handler_datafile);
 }

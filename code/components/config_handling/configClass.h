@@ -14,18 +14,19 @@
 
 
 /* Function calls
-* 1. Restore Config : readConfigFile()       > parseConfig > serializeConfig > writeConfigFile
-* 2. REST API Set   : setConfigRequest()     > parseConfig > serializeConfig > REST API Response
-* 3. REST API Get   : getConfigRequest()                   > serializeConfig > REST API Response
-* 4. Cfg Migration  : readConfigFile()       > parseConfig >  migrateConfiguration() > serializeConfig > writeConfigFile
-*/
+ * 1. Restore Config : readConfigFile()       > parseConfig > serializeConfig > writeConfigFile
+ * 2. REST API Set   : setConfigRequest()     > parseConfig > serializeConfig > REST API Response
+ * 3. REST API Get   : getConfigRequest()                   > serializeConfig > REST API Response
+ * 4. Cfg Migration  : readConfigFile()       > parseConfig >  migrateConfiguration() > serializeConfig > writeConfigFile
+ */
 
 class ConfigClass
 {
   private:
     static ConfigClass cfgClass; // Config class init here instead of global variable + extern declaration
-    CfgData cfgDataTemp; // Keeps last parameter modifications, but not in yet used by process (gets promoted to active config by reinitConfig())
-    CfgData cfgData; // Keep parameter configuration (in use by process)
+    CfgData cfgDataTemp;         // Keeps last parameter modifications, but not in yet used by process (gets promoted to active config by
+                                 // reinitConfig())
+    CfgData cfgData;             // Keep parameter configuration (in use by process)
 
     portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED;
     cJSON *cJsonObject = NULL;
@@ -40,8 +41,8 @@ class ConfigClass
     bool loadDataFromNVS(std::string key, std::string &value);
     bool saveDataToNVS(std::string key, std::string value);
 
-    void validatePath(std::string& path, bool withFile = false);
-    void validateStructure(std::string& structureName);
+    void validatePath(std::string &path, bool withFile = false);
+    void validateStructure(std::string &structureName);
 
   public:
     ConfigClass();
@@ -52,7 +53,11 @@ class ConfigClass
 
     void readConfigFile(bool unityTest = false, std::string unityTestData = "{}");
     void reinitConfig(void) { cfgData = cfgDataTemp; };
-    void persistConfig(void) { serializeConfig(); writeConfigFile(); };
+    void persistConfig(void)
+    {
+        serializeConfig();
+        writeConfigFile();
+    };
 
     static ConfigClass *getInstance(void) { return &cfgClass; }
     const CfgData *get(void) const { return &cfgData; };
@@ -61,7 +66,11 @@ class ConfigClass
     esp_err_t setConfigRequest(httpd_req_t *req);
 
     // Only for migration and internal parameter modification purpose
-    void initCfgTmp(void) { clearCfgDataTemp(); cfgDataTemp = {}; };
+    void initCfgTmp(void)
+    {
+        clearCfgDataTemp();
+        cfgDataTemp = {};
+    };
     CfgData *cfgTmp(void) { return &cfgDataTemp; };
     bool saveMigDataToNVS(std::string key, std::string value) { return saveDataToNVS(key, value); };
 

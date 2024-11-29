@@ -48,4 +48,4 @@ wifi_connection_status_t getWifiConnectionStatus(void);
 
 void deinitWifi(void);
 
-#endif //CONNECT_WLAN_H
+#endif // CONNECT_WLAN_H

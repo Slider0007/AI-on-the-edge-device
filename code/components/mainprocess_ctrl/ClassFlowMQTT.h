@@ -31,5 +31,5 @@ class ClassFlowMQTT : public ClassFlow
 
     std::string name() { return "ClassFlowMQTT"; };
 };
-    #endif // CLASSFFLOWMQTT_H
-#endif     // ENABLE_MQTT
+#endif // CLASSFFLOWMQTT_H
+#endif // ENABLE_MQTT

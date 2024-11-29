@@ -12,16 +12,15 @@ static const char *TAG = "SERVER_WLAN";
 
 esp_err_t handler_wlan(httpd_req_t *req)
 {
-    const char* APIName = "wlan:v1"; // API name and version
+    const char *APIName = "wlan:v1"; // API name and version
     char _query[384];
     char _valuechar[30];
     std::string task;
 
     // Default usage message when handler gets called without any parameter
-    const std::string RESTUsageInfo =
-        "Handler usage:<br>"
-        "1. '/wlan?task=scan': Scan WLAN networks<br>"
-        "2. '/wlan?task=api_name' : Print API name and version";
+    const std::string RESTUsageInfo = "Handler usage:<br>"
+                                      "1. '/wlan?task=scan': Scan WLAN networks<br>"
+                                      "2. '/wlan?task=api_name' : Print API name and version";
 
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
@@ -30,7 +29,7 @@ esp_err_t handler_wlan(httpd_req_t *req)
             task = std::string(_valuechar);
         }
     }
-    else {  // If no parameter is provided, print handler usage
+    else { // If no parameter is provided, print handler usage
         httpd_resp_set_type(req, "text/html");
         httpd_resp_sendstr(req, RESTUsageInfo.c_str());
         return ESP_OK;
@@ -57,11 +56,11 @@ void registerWlanUri(httpd_handle_t server)
 {
     ESP_LOGI(TAG, "Registering URI handlers");
 
-    httpd_uri_t camuri = { };
-    camuri.method    = HTTP_GET;
+    httpd_uri_t camuri = {};
+    camuri.method = HTTP_GET;
 
-    camuri.uri       = "/wlan";
-    camuri.handler   = handler_wlan;
-    camuri.user_ctx  = NULL;
+    camuri.uri = "/wlan";
+    camuri.handler = handler_wlan;
+    camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 }
