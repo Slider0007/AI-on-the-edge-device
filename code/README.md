@@ -121,6 +121,15 @@ in `<path>/.platformio/packages`.
     ```
 
 ---
+## Source Code Style Guide
+| Type               | Style                | Example
+|--------------------|----------------------|-----
+| Classes            | Pascal Case          | `ClassName`
+| Structs            | Pascal Case          | `StructName`
+| Functions          | Camel Case           | `callFunction1`
+| Variables          | Camel Case           | `testVariable1`
+| Constants          | Screaming Snake Case | `#define DEFINITION_1`
+
 ## Automatic Source Code Formatting
 
 ### Configuration
