@@ -215,6 +215,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
         "capturemode": "cyclic-polling",
         "inputdebouncetime": 200,
         "pwmfrequency": 5000,
+        "logicactivelow":	false,
         "exposetomqtt": false,
         "exposetorest": false,
         "smartled": {
@@ -235,6 +236,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
         "capturemode": "cyclic-polling",
         "inputdebouncetime": 200,
         "pwmfrequency": 5000,
+        "logicactivelow":	false,
         "exposetomqtt": false,
         "exposetorest": false,
         "smartled": {
@@ -255,6 +257,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
         "capturemode": "cyclic-polling",
         "inputdebouncetime": 200,
         "pwmfrequency": 5000,
+        "logicactivelow":	false,
         "exposetomqtt": false,
         "exposetorest": false,
         "smartled": {
@@ -275,6 +278,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
         "capturemode": "cyclic-polling",
         "inputdebouncetime": 200,
         "pwmfrequency": 5000,
+        "logicactivelow":	false,
         "exposetomqtt": false,
         "exposetorest": false,
         "smartled": {
@@ -295,6 +299,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
         "capturemode": "cyclic-polling",
         "inputdebouncetime": 200,
         "pwmfrequency": 5000,
+        "logicactivelow":	false,
         "exposetomqtt": false,
         "exposetorest": false,
         "smartled": {
