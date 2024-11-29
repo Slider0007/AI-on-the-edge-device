@@ -55,9 +55,8 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         message = "<h3>2. Upload firmware package</h3><p>";
         message += "Upload a firmware package \"AI-on-the-edge-device__{Board Type}__*.zip\" to install the SD card content.<p>";
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
-        message +=
-            "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doUpdate\" onclick=\"upload()\">Upload "
-            "File</button><p>";
+        message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doUpdate\" "
+                   "onclick=\"upload()\">Upload File</button><p>";
         message += "The upload might take up to 60s. After the package has been successfully uploaded, the page is automatically reloaded.";
         message += "<script language=\"JavaScript\">";
         message += "function upload() {";
@@ -208,7 +207,7 @@ httpd_handle_t start_webserverAP(void)
     httpd_start(&server, &config);
 
     httpd_uri_t reboot_handle = {
-        .uri = "/reboot", // Reboot handler
+        .uri = "/reboot",
         .method = HTTP_GET,
         .handler = reboot_handler_AP,
         .user_ctx = NULL //
@@ -216,7 +215,7 @@ httpd_handle_t start_webserverAP(void)
     httpd_register_uri_handler(server, &reboot_handle);
 
     httpd_uri_t config_handleAP = {
-        .uri = "/config", // Config handler
+        .uri = "/config",
         .method = HTTP_GET,
         .handler = config_handler_AP,
         .user_ctx = NULL //
@@ -224,7 +223,7 @@ httpd_handle_t start_webserverAP(void)
     httpd_register_uri_handler(server, &config_handleAP);
 
     httpd_uri_t file_uploadAP = {
-        .uri = "/upload/*", // Upload handler
+        .uri = "/upload/*",
         .method = HTTP_POST,
         .handler = upload_handler_AP,
         .user_ctx = NULL //
@@ -232,7 +231,7 @@ httpd_handle_t start_webserverAP(void)
     httpd_register_uri_handler(server, &file_uploadAP);
 
     httpd_uri_t main_handlerAP = {
-        .uri = "*", // Main handler
+        .uri = "*",
         .method = HTTP_GET,
         .handler = main_handler_AP,
         .user_ctx = NULL //

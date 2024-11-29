@@ -362,10 +362,8 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
                     roi->sCNNResult = to_stringWithPrecision(roi->CNNResult / 10.0, 1);
 
                     /*std::string zw = "num (p, m): " + std::to_string(_num) + " (" + std::to_string(_numplus) + " , " +
-                    std::to_string(_numminus) +
-                                    "), val (p, m): " + std::to_string(_val) + " (" + std::to_string(_valplus) + " , " +
-                    std::to_string(_valminus) +
-                                    "), result: " + roi->sCNNResult + ", fit: " + std::to_string(_fit);
+                    std::to_string(_numminus) + "), val (p, m): " + std::to_string(_val) + " (" + std::to_string(_valplus) + " , " +
+                    std::to_string(_valminus) + "), result: " + roi->sCNNResult + ", fit: " + std::to_string(_fit);
                     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, zw);
                     */
 

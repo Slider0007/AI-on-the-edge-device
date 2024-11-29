@@ -279,8 +279,8 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
     if (fd == NULL) {
         // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to read file: " + currentfilename); // It's not a fault if no file
         // is available
-        httpd_resp_send(req, "No recent log entries",
-                        HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from today
+        httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from
+                                                                              // today
         return ESP_OK;
     }
 
@@ -404,8 +404,8 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
     if (fd == NULL) {
         // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendDatafile: Failed to read file: " + currentfilename); // It's not a fault if no file
         // is available
-        httpd_resp_send(req, "No recent data entries",
-                        HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no data available from today
+        httpd_resp_send(req, "No recent data entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no data available from
+                                                                               // today
         return ESP_OK;
     }
 
@@ -900,8 +900,8 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         httpd_resp_set_status(req, "303 See Other"); // Respond with redirection request
     }
 
-    httpd_resp_set_hdr(req, "Location",
-                       directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for fileserver action)
+    httpd_resp_set_hdr(req, "Location", directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for
+                                                            // fileserver action)
     httpd_resp_sendstr(req, "File uploaded successfully");
 
     return ESP_OK;
@@ -992,8 +992,8 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         // ESP_LOGI(TAG, "DELETE HANDLER2: Directory: %s", directory.c_str());
     }
 
-    httpd_resp_set_hdr(req, "Location",
-                       directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for fileserver action)
+    httpd_resp_set_hdr(req, "Location", directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for
+                                                            // fileserver action)
     httpd_resp_sendstr(req, "File successfully deleted");
     return ESP_OK;
 }

@@ -38,8 +38,8 @@ bool ClassFlowTakeImage::loadParameter()
     ConfigClass::getInstance()->get()->sectionOperationMode.useDemoImages ? cameraCtrl.enableDemoMode() : cameraCtrl.disableDemoMode();
 
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-    cameraCtrl.ledcInitFlashlightDefault(); // PWM init needs to be done here due to parameter reload
-                                            // (Camera class not to be deleted completely)
+    cameraCtrl.ledcInitFlashlightDefault(); // PWM init needs to be done here due to parameter reload (camera class not to be deleted
+                                            // completely)
 #endif
 
     cameraCtrl.setCameraParameter(&cfgDataPtr->camera);

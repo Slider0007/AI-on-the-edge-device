@@ -106,8 +106,8 @@ int IRAM_ATTR CAlignAndCutImage::alignImage(AlignmentMarker *_temp1, AlignmentMa
         rt.translateImage(0, dy1 / 2); // correct only by half because some correction already happen with rotation
     }
     else {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "Align: Correction by rotation only"); // only rotate because no obviuos linear motion detected
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Align: Correction by rotation only"); // only rotate because no obviuos linear motion
+                                                                                       // detected
         rt.rotateImage(angle_deviation, width / 2, height / 2);
     }
 

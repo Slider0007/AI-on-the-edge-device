@@ -286,6 +286,7 @@ extern "C" void app_main(void)
             }
         }
     }
+
     // Init SOC temperature sensor (if supported by hardware)
     // ********************************************
 #ifdef SOC_TEMP_SENSOR_SUPPORTED
@@ -408,7 +409,7 @@ esp_err_t initSDCard()
         .format_if_mount_failed = false,
         .max_files = 12,
         .allocation_unit_size = 16 * 1024,
-        .disk_status_check_enable = 0 // Disable status check
+        .disk_status_check_enable = 0 //
     };
 
     sdmmc_card_t *card;

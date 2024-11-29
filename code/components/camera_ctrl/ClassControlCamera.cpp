@@ -414,8 +414,8 @@ bool ClassControlCamera::setImageManipulation(int _brightness, int _contrast, in
     // *********************************************************************
     s->set_saturation(s, std::min(2, std::max(-2, paramCameraInternal.saturation))); // [-2 .. 2]
     s->set_contrast(s, std::min(2, std::max(-2, paramCameraInternal.contrast)));     // [-2 .. 2]
-    s->set_brightness(s, std::min(2, std::max(-2, paramCameraInternal.brightness))); // [-2 .. 2] (IMPORTANT: Apply after saturation and
-                                                                                     // conrast)
+    s->set_brightness(s, std::min(2, std::max(-2, paramCameraInternal.brightness))); // [-2 .. 2] (IMPORTANT: Apply brightness after
+                                                                                     // saturation and conrast)
 
     // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
     // *********************************************************************

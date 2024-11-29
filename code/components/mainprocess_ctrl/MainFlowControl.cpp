@@ -777,8 +777,7 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
         txt += "<table style=\"width:660px;border-collapse:collapse;table-layout:fixed;\">";
         txt +=
             "<tr><td style=\"font-weight:bold;width:40%;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid "
-            "lightgrey\">Number "
-            "Sequence</td>"
+            "lightgrey\">Number Sequence</td>"
             "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Raw Value</td>"
             "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Actual "
             "Value</td></tr>";

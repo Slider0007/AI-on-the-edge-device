@@ -925,9 +925,9 @@ void migrateConfigIni(void)
                         migrated = migrated | replaceString(configLines[i], ";", "");           // Enable it
                     }
 
-                    migrated = migrated | replaceString(configLines[i], ";FlipImageSize = true",
-                                                        ";FlipImageSize = false");                          // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";FlipImageSize", "FlipImageSize"); // Enable it
+                    migrated = migrated | replaceString(configLines[i], ";FlipImageSize = true", ";FlipImageSize = false"); // Set it to its
+                                                                                                                            // default value
+                    migrated = migrated | replaceString(configLines[i], ";FlipImageSize", "FlipImageSize");                 // Enable it
 
                     migrated = migrated | replaceString(configLines[i], "InitialMirror", "UNUSED"); // Mark as unused
                 }
@@ -1040,8 +1040,8 @@ void migrateConfigIni(void)
                         migrated = migrated | replaceString(configLines[i], ";", "");                         // Enable it
                     }
 
-                    migrated = migrated | replaceString(configLines[i], "SetRetainFlag",
-                                                        "RetainMessages"); // First rename it, enable it with its default value
+                    migrated = migrated | replaceString(configLines[i], "SetRetainFlag", "RetainMessages"); // First rename it, enable it
+                                                                                                            // with its default value
                     migrated = migrated | replaceString(configLines[i], ";RetainMessages = true",
                                                         ";RetainMessages = false");                           // Set it to its default value
                     migrated = migrated | replaceString(configLines[i], ";RetainMessages", "RetainMessages"); // Enable it
@@ -1128,9 +1128,9 @@ void migrateConfigIni(void)
 
                 if (section == "[DataLogging]") {
                     /* DataLogActive is true by default! */
-                    migrated = migrated | replaceString(configLines[i], ";DataLogActive = false",
-                                                        ";DataLogActive = true");                           // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";DataLogActive", "DataLogActive"); // Enable it
+                    migrated = migrated | replaceString(configLines[i], ";DataLogActive = false", ";DataLogActive = true"); // Set it to its
+                                                                                                                            // default value
+                    migrated = migrated | replaceString(configLines[i], ";DataLogActive", "DataLogActive");                 // Enable it
 
                     migrated = migrated | replaceString(configLines[i], "DataLogRetentionInDays", "DataFilesRetention");
                 }
@@ -1144,8 +1144,8 @@ void migrateConfigIni(void)
                 }
 
                 if (section == "[Debug]") {
-                    migrated = migrated | replaceString(configLines[i], "Logfile ",
-                                                        "LogLevel "); // Whitespace needed so it does not match `LogfileRetentionInDays`
+                    migrated = migrated | replaceString(configLines[i], "Logfile ", "LogLevel "); // Whitespace needed so it does not match
+                                                                                                  // `LogfileRetentionInDays`
                     /* LogLevel (resp. LogFile) was originally a boolean, but we switched it to an int
                      * For both cases (true/false), we set it to level 2 (WARNING) */
                     migrated = migrated | replaceString(configLines[i], "LogLevel = true", "LogLevel = 2");
@@ -1180,8 +1180,8 @@ void migrateConfigIni(void)
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
                     }
 
-                    migrated = migrated | replaceString(configLines[i], "AutoAdjustSummertime",
-                                                        ";UNUSED_PARAMETER"); // This parameter is no longer used
+                    migrated = migrated | replaceString(configLines[i], "AutoAdjustSummertime", ";UNUSED_PARAMETER"); // This parameter is
+                                                                                                                      // no longer used
 
                     migrated = migrated |
                                replaceString(configLines[i], ";SetupMode = true", ";SetupMode = false"); // Set it to its default value
