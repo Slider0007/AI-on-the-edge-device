@@ -41,5 +41,7 @@ InsertBraces: true
 InsertNewlineAtEOF: true
 MaxEmptyLinesToKeep: 2
 PenaltyBreakAssignment : 60
+PenaltyBreakComment: 50
+PenaltyBreakOpenParenthesis: 60
 PenaltyReturnTypeOnItsOwnLine: 200
 SortIncludes: Never

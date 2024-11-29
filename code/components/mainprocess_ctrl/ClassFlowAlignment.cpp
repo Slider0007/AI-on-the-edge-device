@@ -158,8 +158,8 @@ bool ClassFlowAlignment::doFlow(std::string time)
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Initial rotation: " + to_stringWithPrecision(rotation, 1));
 
-    if (alignmentMarker[0].alignmentAlgo <=
-        ALIGNALGO_FAST) { // Only if any additional alignment algo is used: "default", "highaccuracy" or "fast"
+    if (alignmentMarker[0].alignmentAlgo <= ALIGNALGO_FAST) { // Only if any additional alignment algo is used: "default", "highaccuracy" or
+                                                              // "fast"
         int AlignRetval = alignAndCutImage->alignImage(&alignmentMarker[0], &alignmentMarker[1]);
 
         if (AlignRetval >= 0) {
@@ -172,8 +172,8 @@ bool ClassFlowAlignment::doFlow(std::string time)
     }
 
     if (AlgROI) {
-        if (alignmentMarker[0].alignmentAlgo <=
-            ALIGNALGO_FAST) { // Only if any additional alignment algo is used: "default", "highaccuracy" or "fast"
+        if (alignmentMarker[0].alignmentAlgo <= ALIGNALGO_FAST) { // Only if any additional alignment algo is used: "default",
+                                                                  // "highaccuracy" or "fast"
             drawAlignmentMarker(imageTemp);
         }
         if (getFlowState()->isSuccessful) {
@@ -204,8 +204,8 @@ void ClassFlowAlignment::doPostProcessEventHandling()
 {
     // Post cycle process handling can be included here. Function is called after processing cycle is completed
     for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
-        if (cfgDataPtr->debug.saveDebugInfo &&
-            getFlowState()->EventCode[i] == -1) { // If saving error logs enabled and alignment failed event
+        if (cfgDataPtr->debug.saveDebugInfo && getFlowState()->EventCode[i] == -1) { // If saving error logs enabled and alignment failed
+                                                                                     // event
             time_t actualtime;
             time(&actualtime);
 

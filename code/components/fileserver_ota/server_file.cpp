@@ -524,8 +524,8 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
     strcpy(dirpath_corrected, dirpath);
 
     HttpServerData *server_data = (HttpServerData *)req->user_ctx;
-    if ((strlen(dirpath_corrected) - 1) >
-        strlen(server_data->basePathFileserver)) { // if dirpath is not mountpoint, the last "\" needs to be removed
+    if ((strlen(dirpath_corrected) - 1) > strlen(server_data->basePathFileserver)) { // if dirpath is not mountpoint, the last "\" needs to
+                                                                                     // be removed
         dirpath_corrected[strlen(dirpath_corrected) - 1] = '\0';
     }
 

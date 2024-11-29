@@ -160,8 +160,8 @@ bool GpioHandler::init()
 
         if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init SmartLED (Flashlight): GPIO" + std::to_string((int)it->second->getGPIO()));
-            it->second->setSmartLed(
-                new SmartLed(it->second->getLEDType(), it->second->getLEDQuantity(), it->second->getGPIO(), smartLedChannel, DoubleBuffer));
+            it->second->setSmartLed(new SmartLed(it->second->getLEDType(), it->second->getLEDQuantity(), it->second->getGPIO(),
+                                                 smartLedChannel, DoubleBuffer));
             smartLedChannel++;
             if (smartLedChannel == detail::CHANNEL_COUNT) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient SmartLED channels");

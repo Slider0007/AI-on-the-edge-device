@@ -128,8 +128,8 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         printRoamingFeatureSupport();
 
 #ifdef WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES
-        // wifiRoamingQuery();	// Avoid client triggered query during processing flow (reduce risk of heap shortage).
-        // Request will be triggered at the end of every cycle anyway
+        // wifiRoamingQuery();	// Avoid client triggered query during processing flow (reduce risk of heap shortage). Request will be
+        // triggered at the end of every cycle anyway
 #endif // WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES
 #endif // WLAN_USE_MESH_ROAMING
 
@@ -374,8 +374,8 @@ esp_err_t initWifiClient(void)
     wifiConfig.sta.btm_enabled = 1; // 802.11v (BSS Transition Management)
     // wifiConfig.sta.mbo_enabled = 1;	 // Multiband Operation (better use of Wi-Fi network resources in roaming decisions) -> not
     // activated to save heap
-    wifiConfig.sta.pmf_cfg.capable =
-        1; // 802.11w (Protected Management Frame, activated by default if other device also advertizes PMF capability)
+    wifiConfig.sta.pmf_cfg.capable = 1; // 802.11w (Protected Management Frame, activated by default if other device also advertizes PMF
+                                        // capability)
     // wifiConfig.sta.ft_enabled = 1;	 // 802.11r (BSS Fast Transition) -> Upcoming IDF version 5.0 will support 11r
 #endif
 
@@ -618,8 +618,8 @@ esp_err_t wifiScan(httpd_req_t *req, bool checkRoaming)
                                     ", BSSID=" + bssidToString((char *)wifiApRecords[i].bssid) +
                                     ", RSSI=" + std::to_string(wifiApRecords[i].rssi) + ", CH=" + std::to_string(wifiApRecords[i].primary) +
                                     ", AUTH=" + getAuthModeName(wifiApRecords[i].authmode));
-            if (wifiApRecords[i].rssi >
-                    (currentAP.rssi + 5) && // RSSI is better than actual RSSI + 5 --> Avoid switching to AP with roughly same RSSI
+            if (wifiApRecords[i].rssi > (currentAP.rssi + 5) && // RSSI is better than actual RSSI + 5 --> Avoid switching to AP with
+                                                                // roughly same RSSI
                 (strcmp(bssidToString((char *)wifiApRecords[i].bssid).c_str(), bssidToString((char *)currentAP.bssid).c_str()) != 0)) {
                 wifiState.accessPointWithBetterRSSI = true;
             }

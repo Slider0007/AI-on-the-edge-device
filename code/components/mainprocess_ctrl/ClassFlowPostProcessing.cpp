@@ -301,8 +301,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                 /* Update Rates */
                 // Calculate delta time between this reading und last valid reading in seconds
-                long timeDeltaToFallbackValue = abs(
-                    (long)difftime(sequence->timeProcessed, sequence->timeFallbackValue)); // absolute delta in seconds
+                long timeDeltaToFallbackValue = abs((long)difftime(sequence->timeProcessed, sequence->timeFallbackValue)); // Abs. delta [s]
 
                 if (timeDeltaToFallbackValue > 0) {
                     sequence->ratePerMin = (sequence->actualValue - sequence->fallbackValue) /
@@ -349,8 +348,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                         LogFile.writeToFile(ESP_LOG_WARN, TAG,
                                             "Sequence: " + sequence->sequenceName + ", Status: " + sequence->sValueStatus);
                         sequence->isActualValueConfirmed = false;
-                        setFlowStateHandlerEvent(
-                            1); // Set warning event code for post cycle error handler 'doPostProcessEventHandling' (only warning level)
+                        setFlowStateHandlerEvent(1); // Set warning event code for post cycle error handler 'doPostProcessEventHandling'
+                                                     // (only warning level)
                     }
                 }
 

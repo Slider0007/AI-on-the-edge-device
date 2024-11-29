@@ -5,8 +5,6 @@
 #include <vector>
 
 #include "ClassFlowDefineTypes.h"
-// #include "helper.h"
-// #include "CImageBasis.h"
 
 
 struct strFlowState {

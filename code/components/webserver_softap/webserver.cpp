@@ -79,11 +79,11 @@ esp_err_t handler_get_info(httpd_req_t *req)
         }
 
 #ifdef ENABLE_MQTT
-        if (cJSON_AddStringToObject(
-                cJSONObject, "mqtt_status",
-                getMqttIsEnabled()
-                    ? (getMqttIsConnected() ? (getMqttIsEncrypted() ? "Connected (Encrypted)" : "Connected") : "Disconnected")
-                    : "Disabled") == NULL) {
+        if (cJSON_AddStringToObject(cJSONObject, "mqtt_status",
+                                    getMqttIsEnabled()
+                                        ? (getMqttIsConnected() ? (getMqttIsEncrypted() ? "Connected (Encrypted)" : "Connected")
+                                                                : "Disconnected")
+                                        : "Disabled") == NULL) {
             retVal = ESP_FAIL;
         }
 #else

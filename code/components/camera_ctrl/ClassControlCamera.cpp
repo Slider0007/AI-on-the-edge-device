@@ -243,8 +243,8 @@ void ClassControlCamera::setCameraFrequency(int _frequency)
 
     paramCameraInternal.cameraFrequency = _frequency;
 
-    if (cameraConfig.xclk_freq_hz ==
-        (paramCameraInternal.cameraFrequency * 1000000)) { // If frequency is matching, return without any action
+    if (cameraConfig.xclk_freq_hz == (paramCameraInternal.cameraFrequency * 1000000)) { // If frequency is matching, return without any
+                                                                                        // action
         return;
     }
 
@@ -266,8 +266,8 @@ void ClassControlCamera::setImageQuality(int _qual)
         return;
     }
 
-    paramCameraInternal.imageQuality = std::min(63,
-                                                std::max(8, _qual)); // Limit quality from 8..63 (values lower than 8 tent to be unstable)
+    paramCameraInternal.imageQuality = std::min(63, std::max(8, _qual)); // Limit quality from 8..63 (values lower than 8 tent to be
+                                                                         // unstable)
 
     sensor_t *s = esp_camera_sensor_get();
     if (s == NULL) {
@@ -414,8 +414,8 @@ bool ClassControlCamera::setImageManipulation(int _brightness, int _contrast, in
     // *********************************************************************
     s->set_saturation(s, std::min(2, std::max(-2, paramCameraInternal.saturation))); // [-2 .. 2]
     s->set_contrast(s, std::min(2, std::max(-2, paramCameraInternal.contrast)));     // [-2 .. 2]
-    s->set_brightness(
-        s, std::min(2, std::max(-2, paramCameraInternal.brightness))); // [-2 .. 2] (IMPORTANT: Apply after saturation and conrast)
+    s->set_brightness(s, std::min(2, std::max(-2, paramCameraInternal.brightness))); // [-2 .. 2] (IMPORTANT: Apply after saturation and
+                                                                                     // conrast)
 
     // Set special effect (0: None, 1: Negative, 2: Grayscale, 3: Reddish, 4: Greenish, 5: Blueish, 6: Sepia)
     // *********************************************************************

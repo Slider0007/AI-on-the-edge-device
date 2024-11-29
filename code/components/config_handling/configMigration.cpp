@@ -194,8 +194,8 @@ void migrateConfigIni(void)
                                                                                                             1000); // Flashtime in ms
                     }
                     else if ((toUpper(splitted[0]) == "FLASHINTENSITY") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.flashlight.flashIntensity = std::max(
-                            0, std::min(std::stoi(splitted[1]), 100));
+                        ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.flashlight.flashIntensity =
+                            std::max(0, std::min(std::stoi(splitted[1]), 100));
                     }
                     else if ((toUpper(splitted[0]) == "CAMERAFREQUENCY") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionTakeImage.camera.cameraFrequency = std::stoi(splitted[1]);
@@ -837,8 +837,8 @@ void migrateConfigIni(void)
                                                                                                                 "TRUE");
                     }
                     else if (toUpper(splitted[0]) == "DATAGRAPHAUTOREFRESHTIME") {
-                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.dataGraphPage.refreshTime = atoi(
-                            splitted[1].c_str());
+                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.dataGraphPage.refreshTime =
+                            atoi(splitted[1].c_str());
                     }
                 }
             }
@@ -1057,27 +1057,27 @@ void migrateConfigIni(void)
                         migrated = migrated | replaceString(configLines[i], "HAMeterType = other", "HAMeterType = water_m3"); // Enable it
                     }
 
-                    if (configLines[i].rfind("Topic", 0) !=
-                        std::string::npos) { // only if string starts with "Topic" (Was the naming in very old version)
+                    if (configLines[i].rfind("Topic", 0) != std::string::npos) { // only if string starts with "Topic" (Was the naming in
+                                                                                 // very old version)
                         migrated = migrated | replaceString(configLines[i], "Topic", "MainTopic");
                     }
                 }
 
                 if (section == "[InfluxDB]") {
-                    if (isInString(configLines[i], "Uri") &&
-                        isInString(configLines[i], ";")) {                            // It is the parameter "Uri" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is
+                                                                                                // commented out
+                        migrated = migrated | replaceString(configLines[i], ";", "");           // Enable it
                     }
 
-                    if (isInString(configLines[i], "Database") &&
-                        isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and
+                                                                                                     // it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", "");                // Enable it
                     }
 
                     /* Measurement has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Measurement") &&
-                        isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement"
+                                                                                                        // and is it disabled
+                        migrated = migrated | replaceString(configLines[i], ";", "");                   // Enable it
                     }
 
                     /* Fieldname has a <NUMBER> as prefix! */
@@ -1087,30 +1087,30 @@ void migrateConfigIni(void)
                     }
 
                     /* Field has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Field") &&
-                        isInString(configLines[i], ";")) {                            // It is the parameter "Field" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it
+                                                                                                  // disabled
+                        migrated = migrated | replaceString(configLines[i], ";", "");             // Enable it
                     }
                 }
 
                 if (section == "[InfluxDBv2]") {
-                    if (isInString(configLines[i], "Uri") &&
-                        isInString(configLines[i], ";")) {                            // It is the parameter "Uri" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    if (isInString(configLines[i], "Uri") && isInString(configLines[i], ";")) { // It is the parameter "Uri" and it is
+                                                                                                // commented out
+                        migrated = migrated | replaceString(configLines[i], ";", "");           // Enable it
                     }
 
-                    if (isInString(configLines[i], "Database") &&
-                        isInString(configLines[i], ";")) { // It is the parameter "Database" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    if (isInString(configLines[i], "Database") && isInString(configLines[i], ";")) { // It is the parameter "Database" and
+                                                                                                     // it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", "");                // Enable it
                     }
                     if (isInString(configLines[i], "Database")) {                                  // It is the parameter "Database"
                         migrated = migrated | replaceString(configLines[i], "Database", "Bucket"); // Rename it to Bucket
                     }
 
                     /* Measurement has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Measurement") &&
-                        isInString(configLines[i], ";")) { // It is the parameter "Measurement" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    if (isInString(configLines[i], "Measurement") && isInString(configLines[i], ";")) { // It is the parameter "Measurement"
+                                                                                                        // and is it disabled
+                        migrated = migrated | replaceString(configLines[i], ";", "");                   // Enable it
                     }
 
                     /* Fieldname has a <NUMBER> as prefix! */
@@ -1120,9 +1120,9 @@ void migrateConfigIni(void)
                     }
 
                     /* Field has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "Field") &&
-                        isInString(configLines[i], ";")) {                            // It is the parameter "Field" and is it disabled
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    if (isInString(configLines[i], "Field") && isInString(configLines[i], ";")) { // It is the parameter "Field" and is it
+                                                                                                  // disabled
+                        migrated = migrated | replaceString(configLines[i], ";", "");             // Enable it
                     }
                 }
 
@@ -1161,13 +1161,13 @@ void migrateConfigIni(void)
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
                     }
 
-                    if (isInString(configLines[i], "TimeZone") &&
-                        isInString(configLines[i], ";")) { // It is the parameter "TimeZone" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
+                    if (isInString(configLines[i], "TimeZone") && isInString(configLines[i], ";")) { // It is the parameter "TimeZone" and
+                                                                                                     // it is commented out
+                        migrated = migrated | replaceString(configLines[i], ";", "");                // Enable it
                     }
 
-                    if (isInString(configLines[i], "Hostname") &&
-                        isInString(configLines[i], ";")) { // It is the parameter "Hostname" and is it disabled
+                    if (isInString(configLines[i], "Hostname") && isInString(configLines[i], ";")) { // It is the parameter "Hostname" and
+                                                                                                     // is it disabled
                         migrated = migrated | replaceString(configLines[i], "undefined", "watermeter");
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
                     }

@@ -90,8 +90,8 @@ int IRAM_ATTR CAlignAndCutImage::alignImage(AlignmentMarker *_temp1, AlignmentMa
     }
 
     CRotateImage rt("Align", this, imageTMP);
-    if ((dx1 > 0 && dx2 > 0 && dy1 > 0 && dy2 > 0) ||
-        (dx1 < 0 && dx2 < 0 && dy1 < 0 && dy2 < 0)) { // only move linaer because no rotative motion obviuos
+    if ((dx1 > 0 && dx2 > 0 && dy1 > 0 && dy2 > 0) || (dx1 < 0 && dx2 < 0 && dy1 < 0 && dy2 < 0)) { // only move linaer because no rotative
+                                                                                                    // motion obviuos
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Align: Correction by linear dx + dy only");
         rt.translateImage(dx1, dy1);
     }
