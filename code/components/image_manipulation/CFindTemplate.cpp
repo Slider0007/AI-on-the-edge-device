@@ -62,7 +62,7 @@ bool IRAM_ATTR CFindTemplate::findTemplate(AlignmentMarker *_ref, bool _noFast)
                          std::to_string(_ref->algoFastY);
         // LogFile.WriteToDedicatedFile("/sdcard/alignment.txt", zw);
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Fast Algo: " + zw);
-#endif
+#endif // DEBUG_DETAIL_ON
 
         if (isSimilar) {
             _ref->foundX = _ref->algoFastX;

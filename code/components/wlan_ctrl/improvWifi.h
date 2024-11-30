@@ -92,4 +92,4 @@ class ImprovWiFi
     bool isConnected(bool improvProvisioning = true);
 };
 
-#endif /* IMPROV_WIFI_H */
+#endif // IMPROV_WIFI_H

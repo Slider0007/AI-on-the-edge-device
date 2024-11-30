@@ -246,7 +246,7 @@ void ClassLogFile::writeToFile(esp_log_level_t level, std::string tag, std::stri
         ESP_LOGE(TAG, "writeToFile: Failed to open logfile %s", logpath.c_str());
         return;
     }
-#endif
+#endif // KEEP_LOGFILE_OPEN_FOR_APPENDING
 
     /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
@@ -259,7 +259,7 @@ void ClassLogFile::writeToFile(esp_log_level_t level, std::string tag, std::stri
     fsync(fileno(logFileAppendHandle));
 #else
     closeLogFileAppendHandle();
-#endif
+#endif // KEEP_LOGFILE_OPEN_FOR_APPENDING
 }
 
 

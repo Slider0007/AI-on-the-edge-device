@@ -120,7 +120,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
     ESP_LOGI(TAG, "Quantity of number sequences: %d", sequenceData.size());
-#endif
+#endif // DEBUG_DETAIL_ON
 
     /* Post-processing for all defined number sequences */
     for (auto &sequence : sequenceData) {
@@ -150,7 +150,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "After analog->getReadout: RawValue %s", sRawValue.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
         /* Add decimal separator */
         if (!sequence->digitRoi.empty() && !sequence->analogRoi.empty()) {
@@ -170,7 +170,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "After digit->getReadout: RawValue %s", sRawValue.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
         /* Check for any data */
         if (sRawValue.empty()) {
@@ -189,7 +189,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "After shiftDecimal: RawValue %s", sRawValue.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
         /* Remove leading N */
         if (sequence->paramPostProc->ignoreLeadingNaN) {
@@ -200,7 +200,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "After IgnoreLeadingNaN: RawValue %s", sRawValue.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
         /* Use fully processed "Raw Value" and transfer to "Value" for further processing */
 
@@ -238,7 +238,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "After substitudeN: ActualValue %s", sActualValue.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
         /* Delete leading zeros (unless there is only one 0 left) */
         while ((sActualValue.length() > 1) && (sActualValue[0] == '0')) {
@@ -247,7 +247,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "After removeLeadingZeros: ActualValue %s", sActualValue.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
         /* Convert actual value to double interpretation */
         if (!sActualValue.empty()) {
@@ -265,7 +265,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "After converting to double: sActualValue: %s, actualValue: %f", sActualValue.c_str(), sequence->actualValue);
-#endif
+#endif // DEBUG_DETAIL_ON
 
         if (sequence->paramPostProc->useFallbackValue) {
             /* Load fallback value if not yet loaded during init due to missing valid system time */
@@ -297,7 +297,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
                 ESP_LOGI(TAG, "After checkDigitIncreaseConsistency: actualValue %f", sequence->actualValue);
-#endif
+#endif // DEBUG_DETAIL_ON
 
                 /* Update Rates */
                 // Calculate delta time between this reading und last valid reading in seconds
@@ -355,7 +355,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
                 ESP_LOGI(TAG, "After MaxRateCheck: actualValue %f", sequence->actualValue);
-#endif
+#endif // DEBUG_DETAIL_ON
 
                 /* Check for negative rate */
                 if (!sequence->paramPostProc->allowNegativeRate && sequence->isActualValueConfirmed) {
@@ -379,7 +379,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
                 ESP_LOGI(TAG, "After allowNegativeRates: actualValue %f", sequence->actualValue);
-#endif
+#endif // DEBUG_DETAIL_ON
             }
             else { // Fallback value is outdated or age indeterminable (could be the case after a reboot) -> force rates to zero
                 sequence->ratePerMin = 0;
@@ -518,7 +518,7 @@ void ClassFlowPostProcessing::setDecimalShift()
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "setDecimalShift: Sequence %s, decimalPlace %i, DecShift %i", sequence->sequenceName.c_str(),
                  sequence->decimalPlaceCount, sequence->correctedDecimalShift);
-#endif
+#endif // DEBUG_DETAIL_ON
     }
 }
 
@@ -612,7 +612,7 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decimals
 
 #ifdef DEBUG_DETAIL_ON
     ESP_LOGD(TAG, "checkDigitConsistency: pot=%d, decimalShift=%d", pot, _decimalshift);
-#endif
+#endif // DEBUG_DETAIL_ON
 
     pot_max = ((int)log10(input)) + 1;
     while (pot <= pot_max) {
@@ -641,7 +641,7 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decimals
 
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGD(TAG, "checkDigitConsistency: input=%f", input);
-#endif
+#endif // DEBUG_DETAIL_ON
 
         pot++;
     }
@@ -685,7 +685,7 @@ void ClassFlowPostProcessing::writeDataLog(std::string sequenceName)
 #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "writeDataLog: %s, %s, %s, %s, %s", sequence->sRawValue.c_str(), sequence->sActualValue.c_str(),
                      sequence->sValueStatus.substr(0, 3).c_str(), digit.c_str(), analog.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
             break;
         }
@@ -709,7 +709,7 @@ bool ClassFlowPostProcessing::setFallbackValue(double value, std::string sequenc
 {
 #ifdef DEBUG_DETAIL_ON
     ESP_LOGI(TAG, "setFallbackValue: %f, %s", value, sequenceName.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
     for (const auto &sequence : sequenceData) {
         if (sequence->sequenceName == sequenceName) {
@@ -833,7 +833,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
 
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "loadFallbackValue: Sequence: %s, Time: %s, Value: %s", cName, cTime, cValue);
-#endif
+#endif // DEBUG_DETAIL_ON
 
         for (const auto &sequence : sequenceData) {
             if (std::string(cName) == sequence->sequenceName) {
@@ -929,7 +929,7 @@ bool ClassFlowPostProcessing::saveFallbackValue()
         ESP_LOGI(TAG, "saveFallbackValue: Sequence: %s, Time: %s, Value: %s", sequenceData[i]->sequenceName.c_str(),
                  (sequenceData[i]->sTimeFallbackValue).c_str(),
                  (to_stringWithPrecision(sequenceData[i]->fallbackValue, sequenceData[i]->decimalPlaceCount)).c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
         err = nvs_set_str(fallbackvalue_nvshandle, ("name" + std::to_string(i)).c_str(), sequenceData[i]->sequenceName.c_str());
         if (err != ESP_OK) {

@@ -182,7 +182,7 @@ bool CTfLiteClass::LoadInputImageBasis(CImageBasis *rs)
 {
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("LoadInputImageBasis - Start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     if (rs == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadInputImageBasis: No image data");
@@ -218,7 +218,7 @@ bool CTfLiteClass::LoadInputImageBasis(CImageBasis *rs)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("LoadInputImageBasis - done");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     return true;
 }
@@ -277,7 +277,7 @@ void CTfLiteClass::GetInputTensorSize()
     float *zw = input;
     int test = sizeof(zw);
     ESP_LOGD(TAG, "Input Tensor Dimension: %d", test);
-#endif
+#endif // DEBUG_DETAIL_ON
 }
 
 
@@ -287,7 +287,7 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("ReadFileToModel: start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     size_t size = getFileSize(_fn);
     if (size <= 0) {
@@ -319,7 +319,7 @@ bool CTfLiteClass::ReadFileToModel(std::string _fn)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("ReadFileToModel: done");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     return true;
 }

@@ -1148,7 +1148,7 @@ void task_autodoFlow(void *pvParameter)
                 flowctrl.setActualProcessState(std::string(FLOW_POST_EVENT_HANDLING));
 #ifdef ENABLE_MQTT
                 publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
-#endif
+#endif // ENABLE_MQTT
 
                 flowctrl.postProcessEventHandler();
                 LogFile.removeOldDebugFiles();
@@ -1157,7 +1157,7 @@ void task_autodoFlow(void *pvParameter)
                 flowctrl.clearFlowStateEventInRowCounter();
 #ifdef ENABLE_MQTT
                 publishMqttData(std::string(mqttServer_getMainTopic() + "/process/status/process_error"), "0", 1, false);
-#endif
+#endif // ENABLE_MQTT
             }
 
             // Additional tasks
@@ -1194,13 +1194,13 @@ void task_autodoFlow(void *pvParameter)
             // ********************************************
 #if (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES)
             wifiRoamingQuery();
-#endif
+#endif // WLAN_USE_MESH_ROAMING
 
             // Scan channels and check if an AP with better RSSI is available, then disconnect and try to reconnect to AP with better RSSI
             // NOTE: Keep this at the end of this state, because scan is done in blocking mode and this takes ca. 1,5 - 2s.
 #ifdef WLAN_USE_ROAMING_BY_SCANNING
             wifiRoamByScanning();
-#endif
+#endif // WLAN_USE_ROAMING_BY_SCANNING
 
             // Check if triggerd reload config or manually triggered single cycle
             // ********************************************
@@ -1289,7 +1289,7 @@ void createMainFlowTask()
 {
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CreateFlowTask: start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_CREATE_FLOW_TASK));
     flowctrl.setActualProcessState(std::string(FLOW_CREATE_FLOW_TASK));
@@ -1305,7 +1305,7 @@ void createMainFlowTask()
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CreateFlowTask: end");
-#endif
+#endif // DEBUG_DETAIL_ON
 }
 
 
@@ -1313,14 +1313,14 @@ void deleteMainFlowTask()
 {
 #ifdef DEBUG_DETAIL_ON
     ESP_LOGD(TAG, "deleteMainFlowTask: xHandletask_autodoFlow: %ld", (long)xHandletask_autodoFlow);
-#endif
+#endif // DEBUG_DETAIL_ON
     if (xHandletask_autodoFlow != NULL) {
         vTaskDelete(xHandletask_autodoFlow);
         xHandletask_autodoFlow = NULL;
     }
 #ifdef DEBUG_DETAIL_ON
     ESP_LOGD(TAG, "Killed: xHandletask_autodoFlow");
-#endif
+#endif // DEBUG_DETAIL_ON
 }
 
 

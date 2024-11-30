@@ -11,7 +11,7 @@
 
 #ifdef TASK_ANALYSIS_ON
 #include "psram.h"
-#endif
+#endif // TASK_ANALYSIS_ON
 
 #include "../main/version.h" // Only include once
 #include "MainFlowControl.h"
@@ -90,7 +90,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "mqtt_status", "E01: Service not compiled (#define ENABLE_MQTT)") == NULL) {
             retVal = ESP_FAIL;
         }
-#endif
+#endif // ENABLE_MQTT
 
 #ifdef ENABLE_INFLUXDB
         if (cJSON_AddStringToObject(cJSONObject, "influxdbv1_status",
@@ -113,7 +113,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "influxdbv2_status", "E02: Service not compiled (#define ENABLE_INFLUXDB)") == NULL) {
             retVal = ESP_FAIL;
         }
-#endif
+#endif // ENABLE_INFLUXDB
 
 #ifdef ENABLE_WEBHOOK
         if (cJSON_AddStringToObject(cJSONObject, "webhook_status",
@@ -126,7 +126,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "webhook_status", "E02: Service not compiled (#define ENABLE_WEBHOOK)") == NULL) {
             retVal = ESP_FAIL;
         }
-#endif
+#endif // ENABLE_WEBHOOK
 
         if (cJSON_AddStringToObject(cJSONObject, "ntp_syncstatus", getNTPSyncStatus().c_str()) == NULL) {
             retVal = ESP_FAIL;
@@ -329,7 +329,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED, "E01: Service not compiled (#define ENABLE_MQTT)");
         return ESP_FAIL;
     }
-#endif
+#endif // ENABLE_MQTT
 
 #ifdef ENABLE_INFLUXDB
     else if (type.compare("influxdbv1_status") == 0) {
@@ -353,7 +353,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED, "E02: Service not compiled (#define ENABLE_INFLUXDB)");
         return ESP_FAIL;
     }
-#endif
+#endif // ENABLE_INFLUXDB
 
     else if (type.compare("ntp_syncstatus") == 0) {
         httpd_resp_sendstr(req, getNTPSyncStatus().c_str());
@@ -526,7 +526,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED, "E01: Service not compiled (#define TASK_ANALYSIS_ON)");
         return ESP_FAIL;
     }
-#endif
+#endif // TASK_ANALYSIS_ON
     else if (type.compare("git_branch") == 0) {
         httpd_resp_sendstr(req, libfive_git_branch());
         return ESP_OK;

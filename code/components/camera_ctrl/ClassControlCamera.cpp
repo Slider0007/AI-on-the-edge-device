@@ -82,7 +82,7 @@ ClassControlCamera::ClassControlCamera()
 
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     ledcInitFlashlightDefault();
-#endif
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
 }
 
 
@@ -157,7 +157,7 @@ void ClassControlCamera::powerResetCamera()
     vTaskDelay(pdMS_TO_TICKS(1000));
     gpio_set_level(PWDN_GPIO_NUM, 0);
     vTaskDelay(pdMS_TO_TICKS(1000));
-#endif
+#endif // PWDN_GPIO_NUM == -1
 }
 
 
@@ -369,7 +369,7 @@ void ClassControlCamera::setImageSize(int _zoomFactor, int _zoomOffsetX, int _zo
         ESP_LOGD(TAG, "SensorSize W:%d, H:%d | ImageZoomed W:%d, H:%d | Offset X:%d, Y:%d | ISPWindowStart X:%d, Y:%d",
                  sensorFrameSizeWidth, sensorFrameSizeHeight, imageWidthZoomed, imageHeightZoomed, imageZoomOffsetX, imageZoomOffsetY,
                  ispWindowXStart, ispWindowXEnd);
-#endif
+#endif // DEBUG_DETAIL_ON
 
         // Set customized resolution (and scale image to output resolution)
         //   NOTE: Function offset parameter are not used --> Offsets are applied to start values
@@ -518,7 +518,7 @@ bool ClassControlCamera::setImageManipulation(int _brightness, int _contrast, in
 
 #ifdef DEBUG_DETAIL_ON
     printCamConfig();
-#endif
+#endif // DEBUG_DETAIL_ON
 
     return true;
 }
@@ -707,19 +707,19 @@ esp_err_t ClassControlCamera::captureToFile(std::string _nm)
 
 #ifdef DEBUG_DETAIL_ON
     ESP_LOGD(TAG, "w %d, h %d, size %d", fb->width, fb->height, fb->len);
-#endif
+#endif // DEBUG_DETAIL_ON
 
     _nm = formatFileName(_nm);
 
 #ifdef DEBUG_DETAIL_ON
     ESP_LOGD(TAG, "Save Camera to: %s", _nm.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
     ftype = toUpper(getFileType(_nm));
 
 #ifdef DEBUG_DETAIL_ON
     ESP_LOGD(TAG, "Filetype: %s", ftype.c_str());
-#endif
+#endif // DEBUG_DETAIL_ON
 
     uint8_t *buf = NULL;
     size_t buf_len = 0;

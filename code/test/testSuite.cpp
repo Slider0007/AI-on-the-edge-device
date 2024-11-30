@@ -104,14 +104,14 @@ extern "C" void app_main()
         return; // Stop here, SD card is needed for proper operation
     }
 
-// Check for updates before start testing
-// It is possbile to update thr firmware also by placing 'firmware.bin' to '/sdcard/firmware' and
-// file 'update.txt' with content '/sdcard/firmware/firmware.bin' to sd card root folder.
-// Note: OTA Status check only necessary if OTA rollback feature is enabled
-// ********************************************
+    // Check for updates before start testing
+    // It is possbile to update thr firmware also by placing 'firmware.bin' to '/sdcard/firmware' and
+    // file 'update.txt' with content '/sdcard/firmware/firmware.bin' to sd card root folder.
+    // Note: OTA Status check only necessary if OTA rollback feature is enabled
+    // ********************************************
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
     checkOTAPartitionState();
-#endif
+#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
     checkOTAUpdate();
 
     // Set log level to DEBUG
@@ -170,7 +170,7 @@ esp_err_t initSDCard()
     slot_config.clk = GPIO_SDCARD_CLK;
     slot_config.cmd = GPIO_SDCARD_CMD;
     slot_config.d0 = GPIO_SDCARD_D0;
-#endif
+#endif // SOC_SDMMC_USE_GPIO_MATRIX
 
 #ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
     slot_config.width = 1;
@@ -179,9 +179,9 @@ esp_err_t initSDCard()
     slot_config.d1 = GPIO_SDCARD_D1;
     slot_config.d2 = GPIO_SDCARD_D2;
     slot_config.d3 = GPIO_SDCARD_D3;
-#endif
+#endif // SOC_SDMMC_USE_GPIO_MATRIX
     slot_config.width = 4;
-#endif
+#endif // BOARD_SDCARD_SDMMC_BUS_WIDTH_1
 
     // Enable internal pullups on enabled pins. The internal pullups
     // are insufficient however, please make sure 10k external pullups are

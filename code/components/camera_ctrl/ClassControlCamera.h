@@ -67,7 +67,7 @@ class ClassControlCamera
 
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     void ledcInitFlashlightDefault(void);
-#endif
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     esp_err_t setFlashlightParameter(const CfgData::SectionTakeImage::Flashlight *paramFlashlight);
     void setFlashIntensity(int _flashIntensity);
     void setFlashTime(int _flashTime);
@@ -82,4 +82,4 @@ class ClassControlCamera
 
 extern ClassControlCamera cameraCtrl;
 
-#endif
+#endif // CLASSCONTROLCAMERA_H

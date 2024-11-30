@@ -394,7 +394,7 @@ std::string formatFileName(std::string input)
     std::string os = "/";
     std::string ns = "\\";
     findReplace(input, os, ns);
-#endif
+#endif // ISWINDOWS_TRUE
     return input;
 }
 

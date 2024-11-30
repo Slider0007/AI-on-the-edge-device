@@ -40,7 +40,8 @@ bool ClassFlowTakeImage::loadParameter()
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     cameraCtrl.ledcInitFlashlightDefault(); // PWM init needs to be done here due to parameter reload (camera class not to be deleted
                                             // completely)
-#endif
+
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
 
     cameraCtrl.setCameraParameter(&cfgDataPtr->camera);
     cameraCtrl.setFlashlightParameter(&cfgDataPtr->flashlight);
@@ -77,7 +78,7 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - Start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     if (!takeImage()) {
         setFlowStateHandlerEvent(-1); // Set error code for post cycle error handler 'doPostProcessEventHandling' (error level)
@@ -86,7 +87,7 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - After takeImage");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     logImage(logPath, "raw", CNNTYPE_NONE, -1, zwtime, rawImage);
 
@@ -94,7 +95,7 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - Done");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     return true;
 }

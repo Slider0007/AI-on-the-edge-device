@@ -355,7 +355,7 @@ esp_err_t initWifiClient(void)
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_event_handler_register - BSS_RSSI_LOW: Error: " + std::to_string(retVal));
         return retVal;
     }
-#endif
+#endif // WLAN_USE_MESH_ROAMING
 
     retVal = esp_wifi_set_mode(WIFI_MODE_STA);
     if (retVal != ESP_OK) {
@@ -377,7 +377,7 @@ esp_err_t initWifiClient(void)
     wifiConfig.sta.pmf_cfg.capable = 1; // 802.11w (Protected Management Frame, activated by default if other device also advertizes PMF
                                         // capability)
     // wifiConfig.sta.ft_enabled = 1;	 // 802.11r (BSS Fast Transition) -> Upcoming IDF version 5.0 will support 11r
-#endif
+#endif // WLAN_USE_MESH_ROAMING
 
     if (cfgDataPtr->wlan.ssid.empty()) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "SSID empty");
@@ -1162,7 +1162,7 @@ void deinitWifi(void)
     esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, event_handler);
 #ifdef WLAN_USE_MESH_ROAMING
     esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_STA_BSS_RSSI_LOW, esp_bss_rssi_low_handler);
-#endif
+#endif // WLAN_USE_MESH_ROAMING
 
     esp_wifi_disconnect();
     esp_wifi_stop();

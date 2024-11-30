@@ -61,4 +61,4 @@ class ClassFlowCNNGeneral : public ClassLogImage
     std::string name() { return "ClassFlowCNNGeneral - " + cnnname; };
 };
 
-#endif
+#endif // CLASSFLOWCNNGENERAL_H

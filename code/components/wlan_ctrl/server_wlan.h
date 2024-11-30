@@ -7,4 +7,4 @@
 
 void registerWlanUri(httpd_handle_t server);
 
-#endif
+#endif // SERVER_WLAN_H

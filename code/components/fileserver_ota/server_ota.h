@@ -9,7 +9,7 @@
 void checkOTAUpdate();
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
 void checkOTAPartitionState();
-#endif
+#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
 
 std::string unzipOTA(std::string _in_zip_file, std::string _root_folder = "/sdcard/");
 void unzip(std::string _in_zip_file, std::string _target_directory);

@@ -24,7 +24,7 @@ int getConfigVersion(void);
 
 #ifdef SOC_TEMP_SENSOR_SUPPORTED
 void initSOCTemperatureSensor();
-#endif
+#endif // SOC_TEMP_SENSOR_SUPPORTED
 float getSOCTemperature();
 
 bool setCPUFrequency(void);

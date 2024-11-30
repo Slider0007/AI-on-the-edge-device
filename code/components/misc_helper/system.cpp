@@ -142,7 +142,7 @@ float getSOCTemperature()
 {
     return -1.0;
 }
-#endif
+#endif // SOC_TEMP_SENSOR_SUPPORTED
 
 
 bool setCPUFrequency(void)

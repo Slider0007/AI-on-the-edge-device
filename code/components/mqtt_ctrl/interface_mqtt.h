@@ -28,4 +28,4 @@ void isConnectedState(void);
 void deinitMqttClient(bool disable = false);
 
 #endif // INTERFACE_MQTT_H
-#endif // #ENABLE_MQTT
+#endif // ENABLE_MQTT

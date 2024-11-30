@@ -11,7 +11,7 @@
 
 #ifdef DEBUG_DETAIL_ON
 #include <esp_timer.h>
-#endif
+#endif // DEBUG_DETAIL_ON
 
 #include "MainFlowControl.h"
 #include "ClassLogFile.h"
@@ -61,20 +61,20 @@ bool publishMqttData(std::string _key, std::string _content, int _qos, bool _ret
     if (mqttState.mqttInitialized && mqttState.mqttConnected) {
 #ifdef DEBUG_DETAIL_ON
         long long int starttime = esp_timer_get_time();
-#endif
+#endif // DEBUG_DETAIL_ON
         int msg_id = esp_mqtt_client_publish(mqttClient, _key.c_str(), _content.c_str(), 0, _qos, _retainFlag);
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime) / 1000);
-#endif
+#endif // DEBUG_DETAIL_ON
         if (msg_id == -1) {
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "Failed to publish topic '" + _key + "', retry");
 #ifdef DEBUG_DETAIL_ON
             starttime = esp_timer_get_time();
-#endif
+#endif // DEBUG_DETAIL_ON
             msg_id = esp_mqtt_client_publish(mqttClient, _key.c_str(), _content.c_str(), 0, _qos, _retainFlag);
 #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime) / 1000);
-#endif
+#endif // DEBUG_DETAIL_ON
             if (msg_id == -1) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish topic '" + _key + "', retry in next cycle");
                 mqttState.failedOnCycle = getFlowCycleCounter();
@@ -141,7 +141,7 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
 #ifdef DEBUG_DETAIL_ON
             ESP_LOGI(TAG, "TOPIC=%.*s", event->topic_len, event->topic);
             ESP_LOGI(TAG, "DATA=%.*s", event->data_len, event->data);
-#endif
+#endif // DEBUG_DETAIL_ON
             topic.assign(event->topic, event->topic_len);
             if (subscribeFunctionMap != NULL) {
                 if (subscribeFunctionMap->find(topic) != subscribeFunctionMap->end()) {
@@ -196,7 +196,7 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             ESP_LOGI(TAG, "esp_tls_last_esp_err:%d", event->error_handle->esp_tls_last_esp_err);
             ESP_LOGI(TAG, "esp_tls_stack_err:%d", event->error_handle->esp_tls_stack_err);
             ESP_LOGI(TAG, "esp_tls_cert_verify_flags:%d", event->error_handle->esp_tls_cert_verify_flags);
-#endif
+#endif // DEBUG_DETAIL_ON
 
             break;
 

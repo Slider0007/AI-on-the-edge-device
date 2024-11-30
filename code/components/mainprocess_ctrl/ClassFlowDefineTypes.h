@@ -83,4 +83,4 @@ struct SequenceData {
     const struct InfluxDBPerSequence *paramInfluxDBv2 = NULL;
 };
 
-#endif
+#endif // CLASSFLOWDEFINETYPES_H

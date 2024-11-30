@@ -173,7 +173,7 @@ void GpioPin::updatePinState(int _state)
 
 #ifdef ENABLE_MQTT
         mqttPublishPinState();
-#endif
+#endif // ENABLE_MQTT
     }
 }
 

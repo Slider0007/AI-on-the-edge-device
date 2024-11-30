@@ -258,7 +258,7 @@ esp_err_t GpioHandler::loadParameter()
 
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Default flashlight configured as SmartLED, but no valid GPIO config found");
         return ESP_FAIL;
-#endif
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
 
         return ESP_ERR_NOT_FOUND;
     }
@@ -325,7 +325,7 @@ esp_err_t GpioHandler::loadParameter()
 #else
         bool mqttAccess = false;
         std::string mqttTopic = "";
-#endif
+#endif // ENABLE_MQTT
 
         LogFile.writeToFile(
             ESP_LOG_DEBUG, TAG,
@@ -523,7 +523,7 @@ gpio_pin_mode_t GpioHandler::resolvePinMode(std::string input)
         return GPIO_PIN_MODE_FLASHLIGHT_SMARTLED;
 #else
         return GPIO_PIN_MODE_FLASHLIGHT_DIGITAL;
-#endif
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     }
     else if (input == "trigger-cycle-start") {
         return GPIO_PIN_MODE_TRIGGER_CYCLE_START;

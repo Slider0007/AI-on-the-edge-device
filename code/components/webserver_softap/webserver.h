@@ -1,5 +1,5 @@
-#ifndef SERVER_MAIN_H
-#define SERVER_MAIN_H
+#ifndef WEBSERVER_H
+#define WEBSERVER_H
 
 #include <esp_http_server.h>
 #include <esp_vfs.h>
@@ -21,4 +21,4 @@ void allocateWebserverHelperMemory(void);
 httpd_handle_t startWebserver(void);
 void registerWebserverUri(httpd_handle_t server, const char *basePath);
 
-#endif
+#endif // WEBSERVER_H

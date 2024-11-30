@@ -215,7 +215,7 @@ bool ClassFlowControl::initFlow()
             retVal = false;
         }
     }
-#endif
+#endif // ENABLE_WEBHOOK
 
     // Load parameter handled in this class
     this->loadParameter();
@@ -235,7 +235,7 @@ void ClassFlowControl::deinitFlow(void)
 #ifdef ENABLE_WEBHOOK
     delete flowWebhook;
     flowWebhook = NULL;
-// LogFile.writeHeapInfo("After WEBHOOK");
+    // LogFile.writeHeapInfo("After WEBHOOK");
 #endif // ENABLE_WEBHOOK
 
 #ifdef ENABLE_INFLUXDB
@@ -245,13 +245,13 @@ void ClassFlowControl::deinitFlow(void)
 
     delete flowInfluxDBv1;
     flowInfluxDBv1 = NULL;
-// LogFile.writeHeapInfo("After INFLUX");
+    // LogFile.writeHeapInfo("After INFLUX");
 #endif // ENABLE_INFLUXDB
 
 #ifdef ENABLE_MQTT
     delete flowMQTT;
     flowMQTT = NULL;
-// LogFile.writeHeapInfo("After MQTT");
+    // LogFile.writeHeapInfo("After MQTT");
 #endif // ENABLE_MQTT
 
     delete flowpostprocessing;
@@ -310,7 +310,7 @@ bool ClassFlowControl::doFlowImageEvaluation(std::string time)
     for (int i = 0; i < FlowControlImage.size(); ++i) {
 #ifdef DEBUG_DETAIL_ON
         LogFile.writeHeapInfo("ClassFlowControl::doFlow: " + FlowControlImage[i]->name());
-#endif
+#endif // DEBUG_DETAIL_ON
 
         setActualProcessState(translateActualProcessState(FlowControlImage[i]->name()));
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + getActualProcessState());
@@ -355,7 +355,7 @@ bool ClassFlowControl::doFlowPublishData(std::string time)
     for (int i = 0; i < FlowControlPublish.size(); ++i) {
 #ifdef DEBUG_DETAIL_ON
         LogFile.writeHeapInfo("ClassFlowControl::doFlow: " + FlowControlPublish[i]->name());
-#endif
+#endif // DEBUG_DETAIL_ON
 
         setActualProcessState(translateActualProcessState(FlowControlPublish[i]->name()));
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + getActualProcessState());
@@ -550,10 +550,12 @@ std::string ClassFlowControl::translateActualProcessState(std::string classname)
     else if (classname.compare("ClassFlowInfluxDBv2") == 0) {
         return std::string(FLOW_PUBLISH_INFLUXDB2);
     }
+#endif // ENABLE_INFLUXDB
+#ifdef ENABLE_WEBHOOK
     else if (classname.compare("ClassFlowWebhook") == 0) {
         return std::string(FLOW_PUBLISH_WEBHOOK);
     }
-#endif // ENABLE_INFLUXDB
+#endif // ENABLE_WEBHOOK
     else {
         return "Unkown State (" + classname + ")";
     }
@@ -707,7 +709,7 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
 {
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - Start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     CImageBasis *_send = NULL;
     esp_err_t result = ESP_FAIL;
@@ -983,7 +985,7 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - before send");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     if (_send) {
         setContentTypeFromFile(req, _fn.c_str());
@@ -999,7 +1001,7 @@ esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - done");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     return result;
 }

@@ -59,7 +59,7 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_copyfrom - Start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     memsize = width * height * channels;
 
@@ -78,7 +78,7 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_copyfrom - done");
-#endif
+#endif // DEBUG_DETAIL_ON
 }
 
 
@@ -96,7 +96,7 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom, int add)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_copyfrom - Start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     memsize = (width * height * channels) + add;
 
@@ -115,7 +115,7 @@ CImageBasis::CImageBasis(std::string _name, CImageBasis *_copyfrom, int add)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_copyfrom - done");
-#endif
+#endif // DEBUG_DETAIL_ON
 }
 
 
@@ -133,7 +133,7 @@ CImageBasis::CImageBasis(std::string _name, int _width, int _height, int _channe
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_width,height,ch - Start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     memsize = width * height * channels;
 
@@ -151,7 +151,7 @@ CImageBasis::CImageBasis(std::string _name, int _width, int _height, int _channe
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_width,height,ch - done");
-#endif
+#endif // DEBUG_DETAIL_ON
 }
 
 
@@ -172,7 +172,7 @@ CImageBasis::CImageBasis(std::string _name, std::string _image)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_image - Start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     rgb_image = stbi_load(_image.c_str(), &width, &height, &bpp, channels);
 
@@ -189,11 +189,11 @@ CImageBasis::CImageBasis(std::string _name, std::string _image)
     std::string zw = "CImageBasis after load " + _image;
     ESP_LOGD(TAG, "%s", zw.c_str());
     ESP_LOGD(TAG, "w %d, h %d, b %d, c %d", width, height, bpp, channels);
-#endif
+#endif // DEBUG_DETAIL_ON
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_image - done");
-#endif
+#endif // DEBUG_DETAIL_ON
 }
 
 
@@ -214,7 +214,7 @@ CImageBasis::CImageBasis(std::string _name, std::string _image, bool _externalIm
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_image - Start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     rgb_image = stbi_load(_image.c_str(), &width, &height, &bpp, channels);
 
@@ -231,11 +231,11 @@ CImageBasis::CImageBasis(std::string _name, std::string _image, bool _externalIm
     std::string zw = "CImageBasis after load " + _image;
     ESP_LOGD(TAG, "%s", zw.c_str());
     ESP_LOGD(TAG, "w %d, h %d, b %d, c %d", width, height, bpp, channels);
-#endif
+#endif // DEBUG_DETAIL_ON
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis_image - done");
-#endif
+#endif // DEBUG_DETAIL_ON
 }
 
 
@@ -257,7 +257,7 @@ uint8_t *CImageBasis::rgbImageLock(int _waitmaxsec)
     if (islocked) {
 #ifdef DEBUG_DETAIL_ON
         ESP_LOGD(TAG, "Image is locked: sleep for: %ds", _waitmaxsec);
-#endif
+#endif // DEBUG_DETAIL_ON
         TickType_t xDelay;
         xDelay = 1000 / portTICK_PERIOD_MS;
         for (int i = 0; i <= _waitmaxsec; ++i) {
@@ -305,7 +305,7 @@ bool CImageBasis::createEmptyImage(int _width, int _height, int _channels)
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("createEmptyImage");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     memsize = width * height * channels;
 
@@ -347,7 +347,7 @@ bool CImageBasis::createEmptyImage(int _width, int _height, int _channels, int a
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("createEmptyImage");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     memsize = (width * height * channels) + add;
 
@@ -382,7 +382,7 @@ void CImageBasis::emptyImage()
 {
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("emptyImage");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     stbi_uc *p_source;
 
@@ -470,7 +470,7 @@ bool CImageBasis::loadFromFilePreallocated(std::string _name, std::string _image
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis-loadFromFilePreallocated - Start");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     rgb_image = stbi_load(filename.c_str(), &width, &height, &bpp, channels);
 
@@ -487,11 +487,11 @@ bool CImageBasis::loadFromFilePreallocated(std::string _name, std::string _image
     std::string zw = "CImageBasis loadFromFilePreallocated after load " + _image;
     ESP_LOGI(TAG, "%s", zw.c_str());
     ESP_LOGI(TAG, "w %d, h %d, b %d, c %d", width, height, bpp, channels);
-#endif
+#endif // DEBUG_DETAIL_ON
 
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("CImageBasis-loadFromFilePreallocated - done");
-#endif
+#endif // DEBUG_DETAIL_ON
 
     return true;
 }
@@ -521,7 +521,7 @@ void CImageBasis::memCopy(uint8_t *_source, uint8_t *_target, int _size)
     }
 #else
     memcpy(_target, _source, _size);
-#endif
+#endif // _ESP32_PSRAM
 }
 
 
@@ -612,7 +612,7 @@ void CImageBasis::saveToFile(std::string _imageout)
     if ((typ == "bmp") || (typ == "BMP")) {
         stbi_write_bmp(_imageout.c_str(), width, height, channels, rgb_image);
     }
-#endif
+#endif // STBI_ONLY_JPEG
     rgbImageRelease();
 }
 

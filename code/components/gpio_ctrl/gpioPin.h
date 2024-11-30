@@ -85,7 +85,7 @@ class GpioPin
 #ifdef ENABLE_MQTT
     bool mqttPublishPinState(int _pwmDuty = 0);
     bool mqttControlPinState(std::string _topic, char *data, int data_len);
-#endif
+#endif // ENABLE_MQTT
 
     gpio_num_t getGPIO() { return gpio; };
     gpio_pin_mode_t getMode() { return mode; };

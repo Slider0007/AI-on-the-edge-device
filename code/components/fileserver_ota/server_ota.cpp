@@ -54,7 +54,7 @@ static void infinite_loop(void)
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
-#endif
+#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
 
 
 // OTA update: 3rd step
@@ -135,7 +135,7 @@ static bool ota_update_firmware(std::string fn)
                     infinite_loop();
                 }
                 */
-#endif
+#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
 
                 image_header_was_checked = true;
 
@@ -320,7 +320,7 @@ void checkOTAPartitionState(void)
         }
     }
 }
-#endif
+#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
 //****************************************************************************
 
 

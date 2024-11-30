@@ -77,7 +77,7 @@ int IRAM_ATTR CAlignAndCutImage::alignImage(AlignmentMarker *_temp1, AlignmentMa
 
 #ifdef DEBUG_DETAIL_ON
     ESP_LOGI(TAG, "Align: dx1 %d, dy1 %d, dx2 %d, dy2 %d, angle dev %f", dx1, dy1, dx2, dy2, angle_deviation);
-#endif
+#endif // DEBUG_DETAIL_ON
 
     if (fabs(angle_deviation) > 45 || abs(dx1) >= _temp1->searchX || abs(dy1) >= _temp1->searchY || abs(dx2) >= _temp2->searchX ||
         abs(dy2) >= _temp2->searchY) {
@@ -158,7 +158,7 @@ void IRAM_ATTR CAlignAndCutImage::cutAndSaveImage(std::string _template1, int x1
     stbi_write_jpg(_template1.c_str(), dx, dy, channels, odata, 100);
 #else
     stbi_write_bmp(_template1.c_str(), dx, dy, channels, odata);
-#endif
+#endif // STBI_ONLY_JPEG
 
     rgbImageRelease();
 
