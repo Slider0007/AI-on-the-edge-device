@@ -287,8 +287,7 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + roi->param->roiName);
 
             switch (cnnType) {
-                case CNNTYPE_DIGIT_CLASS11: // for models dig-class11*
-                {
+                case CNNTYPE_DIGIT_CLASS11: { // for models dig-class11*
                     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Digit (dig-class11)");
 
                     roi->CNNResult = tflite->GetClassFromImageBasis(roi->imageRoiResized); // 0-9 + 10 => NaN
@@ -307,8 +306,7 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
                     }
                 } break;
 
-                case CNNTYPE_DIGIT_DOUBLE_HYBRID10: // for models dig-cont*
-                {
+                case CNNTYPE_DIGIT_DOUBLE_HYBRID10: { // for models dig-cont*
                     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Digit (dig-cont)");
 
                     int LogImageResult;
@@ -387,9 +385,8 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
                     }
                 } break;
 
-                case CNNTYPE_ANALOG_CLASS100:
-                case CNNTYPE_DIGIT_CLASS100: // for models dig-class100*
-                {
+                case CNNTYPE_ANALOG_CLASS100:  // for models ana-class100*
+                case CNNTYPE_DIGIT_CLASS100: { // for models dig-class100*
                     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Analog / Digit (ana-class100 / dig-class100)");
 
                     if (tflite->LoadInputImageBasis(roi->imageRoiResized)) {
@@ -431,8 +428,7 @@ bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
                     }
                 } break;
 
-                case CNNTYPE_ANALOG_CONT: // for models ana-cont*
-                {
+                case CNNTYPE_ANALOG_CONT: { // for models ana-cont*
                     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Analog (ana-cont)");
 
                     if (tflite->LoadInputImageBasis(roi->imageRoiResized)) {
