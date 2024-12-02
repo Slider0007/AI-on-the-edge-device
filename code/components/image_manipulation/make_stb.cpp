@@ -6,9 +6,9 @@
 #include "psram.h"
 
 
-#define STBI_MALLOC(sz)           malloc_psram_heap_STBI("STBI", sz, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT)
-#define STBI_REALLOC(p,newsz)     realloc_psram_heap("STBI", p, newsz, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT)
-#define STBI_FREE(p)              free_psram_heap("STBI", p)
+#define STBI_MALLOC(sz)        malloc_psram_heap_STBI("STBI", sz, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT)
+#define STBI_REALLOC(p, newsz) realloc_psram_heap("STBI", p, newsz, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT)
+#define STBI_FREE(p)           free_psram_heap("STBI", p)
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"

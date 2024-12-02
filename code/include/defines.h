@@ -1,6 +1,10 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+// Disable clang-format to keep better readability of e.g. nested PPDirectives
+// clang-format off
+
+
 //**************************************************************************************
 // ENABLE/DISABLE SOFTWARE MODULE
 //**************************************************************************************

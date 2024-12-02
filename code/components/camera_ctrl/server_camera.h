@@ -7,4 +7,4 @@
 
 void registerCameraUri(httpd_handle_t server);
 
-#endif
+#endif // SERVER_CAMERA_H

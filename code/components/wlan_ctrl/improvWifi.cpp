@@ -38,8 +38,7 @@ void ImprovWiFi::onErrorCallback(ImprovTypes::Error err)
 bool ImprovWiFi::onCommandCallback(ImprovTypes::ImprovCommand cmd)
 {
     switch (cmd.command) {
-        case ImprovTypes::Command::GET_CURRENT_STATE:
-        {
+        case ImprovTypes::Command::GET_CURRENT_STATE: {
             if (isConnected()) {
                 setState(ImprovTypes::State::STATE_PROVISIONED);
                 sendDeviceUrl(cmd.command);
@@ -50,8 +49,7 @@ bool ImprovWiFi::onCommandCallback(ImprovTypes::ImprovCommand cmd)
 
             break;
         }
-        case ImprovTypes::Command::WIFI_SETTINGS:
-        {
+        case ImprovTypes::Command::WIFI_SETTINGS: {
             if (cmd.ssid.empty()) {
                 setError(ImprovTypes::Error::ERROR_INVALID_RPC);
                 break;
@@ -81,20 +79,18 @@ bool ImprovWiFi::onCommandCallback(ImprovTypes::ImprovCommand cmd)
 
             break;
         }
-        case ImprovTypes::Command::GET_DEVICE_INFO:
-        {
+        case ImprovTypes::Command::GET_DEVICE_INFO: {
             std::vector<std::string> infos = {
-                improvWiFiParams.firmwareName, // Firmware name
-                improvWiFiParams.firmwareVersion, // Firmware version
+                improvWiFiParams.firmwareName,                 // Firmware name
+                improvWiFiParams.firmwareVersion,              // Firmware version
                 CHIP_FAMILY_DESC[improvWiFiParams.chipFamily], // Hardware chip/variant
-                improvWiFiParams.deviceName // Device name
+                improvWiFiParams.deviceName                    // Device name
             };
             std::vector<uint8_t> data = build_rpc_response(ImprovTypes::GET_DEVICE_INFO, infos, false);
             sendResponse(data);
             break;
         }
-        case ImprovTypes::Command::GET_WIFI_NETWORKS:
-        {
+        case ImprovTypes::Command::GET_WIFI_NETWORKS: {
             getWifiNetworks();
             break;
         }
@@ -108,8 +104,8 @@ bool ImprovWiFi::onCommandCallback(ImprovTypes::ImprovCommand cmd)
 }
 
 
-void ImprovWiFi::setDeviceInfo(ImprovTypes::ChipFamily chipFamily, const char *firmwareName,
-                               const char *firmwareVersion, const char *deviceName)
+void ImprovWiFi::setDeviceInfo(ImprovTypes::ChipFamily chipFamily, const char *firmwareName, const char *firmwareVersion,
+                               const char *deviceName)
 {
     improvWiFiParams.chipFamily = chipFamily;
     improvWiFiParams.firmwareName = firmwareName;
@@ -239,36 +235,45 @@ void ImprovWiFi::getWifiNetworks()
 
 bool ImprovWiFi::parseImprovSerial(size_t position, uint8_t byte, const uint8_t *buffer)
 {
-    if (position == 0)
+    if (position == 0) {
         return byte == 'I';
-    if (position == 1)
+    }
+    if (position == 1) {
         return byte == 'M';
-    if (position == 2)
+    }
+    if (position == 2) {
         return byte == 'P';
-    if (position == 3)
+    }
+    if (position == 3) {
         return byte == 'R';
-    if (position == 4)
+    }
+    if (position == 4) {
         return byte == 'O';
-    if (position == 5)
+    }
+    if (position == 5) {
         return byte == 'V';
+    }
 
     if (position == 6) {
         return byte == ImprovTypes::IMPROV_SERIAL_VERSION;
     }
 
-    if (position <= 8)
+    if (position <= 8) {
         return true;
+    }
 
     uint8_t type = buffer[7];
     uint8_t data_len = buffer[8];
 
-    if (position <= 8 + data_len)
+    if (position <= 8 + data_len) {
         return true;
+    }
 
     if (position == 8 + data_len + 1) {
         uint8_t checksum = 0x00;
-        for (size_t i = 0; i < position; i++)
+        for (size_t i = 0; i < position; i++) {
             checksum += buffer[i];
+        }
 
         if (checksum != byte) {
             _position = 0;
@@ -399,7 +404,7 @@ void ImprovWiFi::sendResponse(std::vector<uint8_t> &response)
 }
 
 
-std::vector<uint8_t> ImprovWiFi::build_rpc_response( ImprovTypes::Command command, const std::vector<std::string> &datum, bool add_checksum)
+std::vector<uint8_t> ImprovWiFi::build_rpc_response(ImprovTypes::Command command, const std::vector<std::string> &datum, bool add_checksum)
 {
     std::vector<uint8_t> out;
     uint32_t length = 0;

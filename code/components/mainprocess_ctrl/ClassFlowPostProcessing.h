@@ -26,14 +26,12 @@ class ClassFlowPostProcessing : public ClassFlow
     void setDecimalShift();
     std::string shiftDecimal(std::string in, int _decShift);
     std::string substitudeN(std::string, double _fallbackValue);
-    float checkDigitConsistency(double _value, int _decimalshift,
-                                bool _isanalog, double _fallbackValue);
+    float checkDigitConsistency(double _value, int _decimalshift, bool _isanalog, double _fallbackValue);
 
     void writeDataLog(std::string sequenceName);
 
   public:
-    ClassFlowPostProcessing(ClassFlowTakeImage *_flowTakeImage, ClassFlowCNNGeneral *_flowDigit,
-                                ClassFlowCNNGeneral *_flowAnalog);
+    ClassFlowPostProcessing(ClassFlowTakeImage *_flowTakeImage, ClassFlowCNNGeneral *_flowDigit, ClassFlowCNNGeneral *_flowAnalog);
     virtual ~ClassFlowPostProcessing();
     bool loadParameter();
     bool doFlow(std::string time);

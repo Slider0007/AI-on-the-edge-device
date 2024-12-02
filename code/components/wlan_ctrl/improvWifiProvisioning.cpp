@@ -137,7 +137,7 @@ void improvWifiScan(unsigned char *scanResponse, int bufLen, uint16_t *networkNu
     memset(&wifiScanConfig, 0, sizeof(wifiScanConfig));
 
     wifiScanConfig.show_hidden = true; // Scan also hidden SSIDs
-	wifiScanConfig.channel = 0; // Scan all channels
+    wifiScanConfig.channel = 0;        // Scan all channels
 
     // Start scan. If in wrong state disconnect first and restart scan again
     if (esp_wifi_scan_start(&wifiScanConfig, true) == ESP_ERR_WIFI_STATE) {
@@ -157,26 +157,26 @@ void improvWifiScan(unsigned char *scanResponse, int bufLen, uint16_t *networkNu
         esp_wifi_scan_start(&wifiScanConfig, true); // Scan in blocking mode
     }
 
-    *networkNum = 10; // Max. number of APs, value will be updated by function "esp_wifi_scan_get_ap_num"
-	retVal = esp_wifi_scan_get_ap_num(networkNum); // Get actual found APs
+    *networkNum = 10;                              // Max. number of APs, value will be updated by function "esp_wifi_scan_get_ap_num"
+    retVal = esp_wifi_scan_get_ap_num(networkNum); // Get actual found APs
     if (retVal != ESP_OK) {
-      	LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvWifiScan: esp_wifi_scan_get_ap_num: Error: " + intToHexString(retVal));
-		return;
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvWifiScan: esp_wifi_scan_get_ap_num: Error: " + intToHexString(retVal));
+        return;
     }
-    wifi_ap_record_t* apInfo = new wifi_ap_record_t[*networkNum]; // Allocate necessary record datasets
-	if (apInfo == NULL) {
-		esp_wifi_scan_get_ap_records(0, NULL); // Free internal heap
-		LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvWifiScan: Failed to allocate heap for apInfo");
-		return;
-	}
-	else {
+    wifi_ap_record_t *apInfo = new wifi_ap_record_t[*networkNum]; // Allocate necessary record datasets
+    if (apInfo == NULL) {
+        esp_wifi_scan_get_ap_records(0, NULL); // Free internal heap
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvWifiScan: Failed to allocate heap for apInfo");
+        return;
+    }
+    else {
         retVal = esp_wifi_scan_get_ap_records(networkNum, apInfo);
-    	if (retVal != ESP_OK) { // Retrieve results (and free internal heap)
-			LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvWifiScan: esp_wifi_scan_get_ap_records: Error: " + intToHexString(retVal));
-			delete[] apInfo;
-			return;
-		}
-	}
+        if (retVal != ESP_OK) { // Retrieve results (and free internal heap)
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvWifiScan: esp_wifi_scan_get_ap_records: Error: " + intToHexString(retVal));
+            delete[] apInfo;
+            return;
+        }
+    }
 
     // Build response string
     scanResponse[0] = 0;
@@ -222,8 +222,8 @@ bool improvWifiConnect(const char *ssid, const char *password)
     esp_wifi_get_config(WIFI_IF_STA, &wifiConfig);
 
     // Set new credentials
-    strcpy((char*)wifiConfig.sta.ssid, (const char*)ConfigClass::getInstance()->get()->sectionNetwork.wlan.ssid.c_str());
-    strcpy((char*)wifiConfig.sta.password, (const char*)ConfigClass::getInstance()->get()->sectionNetwork.wlan.password.c_str());
+    strcpy((char *)wifiConfig.sta.ssid, (const char *)ConfigClass::getInstance()->get()->sectionNetwork.wlan.ssid.c_str());
+    strcpy((char *)wifiConfig.sta.password, (const char *)ConfigClass::getInstance()->get()->sectionNetwork.wlan.password.c_str());
     esp_wifi_set_config(WIFI_IF_STA, &wifiConfig);
 
     // Disconnect and reconnect

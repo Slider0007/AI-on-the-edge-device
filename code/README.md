@@ -120,3 +120,38 @@ in `<path>/.platformio/packages`.
     esp-coredump info_corefile --gdb <path to tool-xtensa-esp-elf-gdb/bin/xtensa-esp32-elf-gdb.exe> --rom-elf esp32_rev0_rom.elf --core-format raw --core firmware_ESP32CAM_coredump-elf.bin firmware.elf
     ```
 
+---
+## Source Code Style Guide
+| Type               | Style                | Example
+|--------------------|----------------------|-----
+| Classes            | Pascal Case          | `ClassName`
+| Structs            | Pascal Case          | `StructName`
+| Functions          | Camel Case           | `callFunction1`
+| Variables          | Camel Case           | `testVariable1`
+| Constants          | Screaming Snake Case | `#define DEFINITION_1`
+
+## Automatic Source Code Formatting
+
+### Configuration
+#### Pre-Condition
+- Development environment has an automatic formatter function (e.g. VSCode)
+- Formatting rule file (`.clang-format`) needs to be available in project root folder
+- Every developer needs to use defined formatting rules to avoid unnecessary style changes
+
+#### VSCode development environment
+- No extention necessary (Using VSCode default formatter which is able to handle clang format)
+- The formatting is applied automatically whenever pasting or saving the file by adding the following content to project specific `settings.json` file located in project subfolder `.vscode`. 
+  ```
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "[cpp]": {
+      "editor.formatOnSave": true,
+      "editor.formatOnPaste": true
+  }
+  ```
+- With this settings it only applies per project and is enabled only for the language C++ (cpp, h files), but could also be configured globally.
+- Formatting exlusion: Formating of file `defines.h` is disabled (`// clang-format off`) to keep better readability (nested PPDirectives)
+
+### Formating rules (clang-format)
+- Formatting rule file: [.clang-format](../.clang-format)
+- [Online Configurator](https://clang-format-configurator.site/)

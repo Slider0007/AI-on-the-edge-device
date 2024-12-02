@@ -35,7 +35,8 @@ class ClassFlowCNNGeneral : public ClassLogImage
     bool saveAllFiles;
 
     int evalAnalogNumber(int _value, int _resultPreviousNumber);
-    int evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool isPreviousAnalog = false, int analogDigitSyncValue = 92);
+    int evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool isPreviousAnalog = false,
+                        int analogDigitSyncValue = 92);
     int evalAnalogToDigitTransition(int _value, int _valuePreviousNumber, int _resultPreviousNumber, int analogDigitSyncValue);
 
     bool resolveNetworkParameter();
@@ -60,4 +61,4 @@ class ClassFlowCNNGeneral : public ClassLogImage
     std::string name() { return "ClassFlowCNNGeneral - " + cnnname; };
 };
 
-#endif
+#endif // CLASSFLOWCNNGENERAL_H

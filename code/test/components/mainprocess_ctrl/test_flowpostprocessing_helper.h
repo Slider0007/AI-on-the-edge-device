@@ -10,14 +10,15 @@
 
 class UnderTestPost : public ClassFlowPostProcessing
 {
-    public:
-        UnderTestPost(ClassFlowTakeImage *takeimage, ClassFlowCNNGeneral *analog, ClassFlowCNNGeneral *digit)
-                        : ClassFlowPostProcessing::ClassFlowPostProcessing(takeimage, digit, analog) {}
+  public:
+    UnderTestPost(ClassFlowTakeImage *takeimage, ClassFlowCNNGeneral *analog, ClassFlowCNNGeneral *digit)
+        : ClassFlowPostProcessing::ClassFlowPostProcessing(takeimage, digit, analog)
+    {}
 
-        SequenceData *sequenceDataPtr = NULL;
+    SequenceData *sequenceDataPtr = NULL;
 
-        using ClassFlowPostProcessing::flowDigit;
-        using ClassFlowPostProcessing::flowAnalog;
+    using ClassFlowPostProcessing::flowAnalog;
+    using ClassFlowPostProcessing::flowDigit;
 };
 
 
@@ -28,7 +29,7 @@ class UnderTestPost : public ClassFlowPostProcessing
  * @param anaType Model type for analogs
  * @return UnderTestPost* Testobject (created but not configured)
  */
-UnderTestPost* setUpClassFlowPostprocessing(CNNType digType, CNNType anaType);
+UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType);
 
 
 /**
@@ -42,9 +43,8 @@ UnderTestPost* setUpClassFlowPostprocessing(CNNType digType, CNNType anaType);
  * @param checkConsistency Sets CheckConsistency check (default = false) (Only for class11 models)
  * @return UnderTestPost* Testobject
  */
-UnderTestPost* initDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType = CNNTYPE_DIGIT_CLASS100,
-                            bool extendedResolution=false, int decimalShift=0, bool checkConsistency=false);
-
+UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType = CNNTYPE_DIGIT_CLASS100,
+                          bool extendedResolution = false, int decimalShift = 0, bool checkConsistency = false);
 
 
 /**
@@ -59,8 +59,7 @@ UnderTestPost* initDoFlow(std::vector<float> digits, std::vector<float> analogs,
  * @return Actual Value
  */
 std::string processDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType = CNNTYPE_DIGIT_CLASS100,
-                            bool extendedResolution=false, int decimalShift=0, bool checkConsistency=false);
-
+                          bool extendedResolution = false, int decimalShift = 0, bool checkConsistency = false);
 
 
 /**
@@ -69,7 +68,7 @@ std::string processDoFlow(std::vector<float> digits, std::vector<float> analogs,
  * @param _underTestPost Test object
  * @return Actual Value
  */
-std::string processDoFlow(UnderTestPost* _underTestPost);
+std::string processDoFlow(UnderTestPost *_underTestPost);
 
 
 /**
@@ -118,7 +117,7 @@ void setAnalogDigitSyncValue(float _analogdigitSyncValue);
  * @param _underTestPost Test object
  * @param _fallbackValue Fallback value
  */
-void setFallbackValue(UnderTestPost* _underTestPost, double _fallbackValue);
+void setFallbackValue(UnderTestPost *_underTestPost, double _fallbackValue);
 
 
 /**
@@ -128,6 +127,6 @@ void setFallbackValue(UnderTestPost* _underTestPost, double _fallbackValue);
  * @return Number of decimal places
  *
  */
-int getDecimalPlaceCount(UnderTestPost* _underTestPost);
+int getDecimalPlaceCount(UnderTestPost *_underTestPost);
 
 #endif // TEST_FLOWPOSTPROCESSING_HELPER_H

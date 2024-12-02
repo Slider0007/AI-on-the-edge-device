@@ -13,7 +13,7 @@
 #include "MainFlowControl.h"
 
 
-static const char* TAG = "TAKEIMAGE";
+static const char *TAG = "TAKEIMAGE";
 
 
 ClassFlowTakeImage::ClassFlowTakeImage() : ClassLogImage(TAG)
@@ -38,8 +38,10 @@ bool ClassFlowTakeImage::loadParameter()
     ConfigClass::getInstance()->get()->sectionOperationMode.useDemoImages ? cameraCtrl.enableDemoMode() : cameraCtrl.disableDemoMode();
 
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-    cameraCtrl.ledcInitFlashlightDefault(); // PWM init needs to be done here due to parameter reload (camera class not to be deleted completely)
-#endif
+    cameraCtrl.ledcInitFlashlightDefault(); // PWM init needs to be done here due to parameter reload (camera class not to be deleted
+                                            // completely)
+
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
 
     cameraCtrl.setCameraParameter(&cfgDataPtr->camera);
     cameraCtrl.setFlashlightParameter(&cfgDataPtr->flashlight);
@@ -50,7 +52,7 @@ bool ClassFlowTakeImage::loadParameter()
 
     rawImage = new CImageBasis("rawImage");
     if (rawImage) {
-        if(!rawImage->createEmptyImage(imgWidth, imgHeight, STBI_rgb, 1)) {
+        if (!rawImage->createEmptyImage(imgWidth, imgHeight, STBI_rgb, 1)) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create rawimage");
             return false;
         }
@@ -74,26 +76,26 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
     presetFlowStateHandler(false, zwtime);
     std::string logPath = createLogFolder(zwtime);
 
-    #ifdef DEBUG_DETAIL_ON
-        LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - Start");
-    #endif
+#ifdef DEBUG_DETAIL_ON
+    LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - Start");
+#endif // DEBUG_DETAIL_ON
 
     if (!takeImage()) {
         setFlowStateHandlerEvent(-1); // Set error code for post cycle error handler 'doPostProcessEventHandling' (error level)
         return false;
     }
 
-    #ifdef DEBUG_DETAIL_ON
-        LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - After takeImage");
-    #endif
+#ifdef DEBUG_DETAIL_ON
+    LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - After takeImage");
+#endif // DEBUG_DETAIL_ON
 
     logImage(logPath, "raw", CNNTYPE_NONE, -1, zwtime, rawImage);
 
     removeOldLogs();
 
-    #ifdef DEBUG_DETAIL_ON
-        LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - Done");
-    #endif
+#ifdef DEBUG_DETAIL_ON
+    LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - Done");
+#endif // DEBUG_DETAIL_ON
 
     return true;
 }
@@ -105,7 +107,7 @@ void ClassFlowTakeImage::doPostProcessEventHandling()
     for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
         if (getFlowState()->EventCode[i] == -1) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Camera init or framebuffer access failed, reinit camera");
-            cameraCtrl.deinitCam(); // Reinit will be done here: MainFlowControl.cpp -> DoInit()
+            cameraCtrl.deinitCam();                     // Reinit will be done here: MainFlowControl.cpp -> DoInit()
             setTaskAutoFlowState(FLOW_TASK_STATE_INIT); // Do fully init process to avoid SPIRAM fragmentation
         }
     }
@@ -137,11 +139,11 @@ esp_err_t ClassFlowTakeImage::sendRawJPG(httpd_req_t *req)
 {
     time(&timeImageTaken);
 
-    return cameraCtrl.captureToHTTP(req);   // Capture with configured flash time
+    return cameraCtrl.captureToHTTP(req); // Capture with configured flash time
 }
 
 
-ImageData* ClassFlowTakeImage::sendRawImage()
+ImageData *ClassFlowTakeImage::sendRawImage()
 {
     CImageBasis *imgTmp = new CImageBasis("sendRawImage", rawImage);
     ImageData *id = NULL;

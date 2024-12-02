@@ -28,5 +28,5 @@ class ClassFlowInfluxDBv2 : public ClassFlow
     std::string name() { return "ClassFlowInfluxDBv2"; };
 };
 
-    #endif // CLASSFLOWINFLUXDBv2_H
-#endif     // ENABLE_INFLUXDB
+#endif // CLASSFLOWINFLUXDBv2_H
+#endif // ENABLE_INFLUXDB

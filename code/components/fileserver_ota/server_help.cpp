@@ -37,7 +37,7 @@ bool endsWith(std::string const &str, std::string const &suffix)
 
 /* Copies the full path into destination buffer and returns
  * pointer to path (skipping the preceding base path) */
-const char* getPathFromUri(char *dest, const char *basePath, const char *uri, size_t destsize)
+const char *getPathFromUri(char *dest, const char *basePath, const char *uri, size_t destsize)
 {
     const size_t basePathLength = strlen(basePath);
     size_t pathLength = strlen(uri);

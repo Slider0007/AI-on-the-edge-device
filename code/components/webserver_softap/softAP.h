@@ -8,4 +8,4 @@
 void startAPForDeviceProvisioning(void);
 void stopAPForDeviceProvisioning(void);
 
-#endif  //SOFTAP_H
+#endif // SOFTAP_H

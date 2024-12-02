@@ -32,7 +32,6 @@ class ClassFlowAlignment : public ClassFlow
     ImageData *AlgROI;
 
     ClassFlowAlignment();
-    //ClassFlowAlignment(ClassFlowTakeImage *_flowTakeImage);
     virtual ~ClassFlowAlignment();
 
     bool loadParameter();
