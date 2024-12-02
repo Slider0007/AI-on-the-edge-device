@@ -23,20 +23,21 @@ static std::string TLSClientKey;
 
 static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
-    switch(evt->event_id) {
+    switch (evt->event_id) {
         case HTTP_EVENT_ERROR:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Error event");
             break;
         case HTTP_EVENT_ON_CONNECTED:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Connected");
-            //ESP_LOGI(TAG, "HTTP Client Connected");
+            // ESP_LOGI(TAG, "HTTP Client Connected");
             break;
         case HTTP_EVENT_HEADERS_SENT:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Headers sent");
             break;
         case HTTP_EVENT_ON_HEADER:
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Received header: key: " + std::string(evt->header_key) +
-                                                    " | value: " + std::string(evt->header_value));
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                "HTTP client: Received header: key: " + std::string(evt->header_key) +
+                                    " | value: " + std::string(evt->header_value));
             break;
         case HTTP_EVENT_ON_DATA:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Received data: length:" + std::to_string(evt->data_len));
@@ -44,7 +45,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_FINISH:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Session finished");
             break;
-         case HTTP_EVENT_DISCONNECTED:
+        case HTTP_EVENT_DISCONNECTED:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Disconnected");
             break;
         case HTTP_EVENT_REDIRECT:
@@ -60,7 +61,7 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
     cfgDataPtr = _cfgDataPtr;
 
     if (cfgDataPtr->authMode == AUTH_TLS) {
-        if (cfgDataPtr->uri.substr(0,8) != "https://") {
+        if (cfgDataPtr->uri.substr(0, 8) != "https://") {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: URI parameter needs to be configured with \'https://\'");
             return false;
         }
@@ -96,7 +97,7 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
         }
     }
     else {
-        if (cfgDataPtr->uri.substr(0,7) != "http://") {
+        if (cfgDataPtr->uri.substr(0, 7) != "http://") {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "URI parameter needs to be configured with \'http://\'");
             return false;
         }
@@ -106,13 +107,14 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
 }
 
 
-esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &_fieldkey1, const std::string &_fieldvalue1, const std::string &_timestamp)
+esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &_fieldkey1, const std::string &_fieldvalue1,
+                            const std::string &_timestamp)
 {
     esp_http_client_config_t httpConfig = {
-       .user_agent = "AI-on-the-Edge Device",
-       .method = HTTP_METHOD_POST,
-       .event_handler = http_event_handler,
-       .buffer_size = MAX_HTTP_OUTPUT_BUFFER
+        .user_agent = "AI-on-the-Edge Device",
+        .method = HTTP_METHOD_POST,
+        .event_handler = http_event_handler,
+        .buffer_size = MAX_HTTP_OUTPUT_BUFFER // Receive buffer
     };
 
     if (cfgDataPtr->authMode == AUTH_BASIC) {
@@ -129,7 +131,7 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
         if (!TLSCACert.empty()) {
             httpConfig.cert_pem = TLSCACert.c_str();
             httpConfig.cert_len = TLSCACert.length() + 1;
-            httpConfig.skip_cert_common_name_check = true;    // Skip any validation of server certificate CN field
+            httpConfig.skip_cert_common_name_check = true; // Skip any validation of server certificate CN field
         }
         else {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verification");
@@ -147,8 +149,9 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
         }
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "influxDBv1Publish: field key 1: " + _fieldkey1 + ", field value 1: " +
-                                            _fieldvalue1 + ", timestamp: " + _timestamp);
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                        "influxDBv1Publish: field key 1: " + _fieldkey1 + ", field value 1: " + _fieldvalue1 +
+                            ", timestamp: " + _timestamp);
 
     esp_err_t retVal = ESP_OK;
     std::string payload;
@@ -165,7 +168,7 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
         t = mktime(&tm);
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Timestamp: " + _timestamp + ", Timestamp (UTC): " + std::to_string(t));
 
-        sprintf(nowTimestamp,"%ld000000000", (long) t); // UTC
+        sprintf(nowTimestamp, "%ld000000000", (long)t); // UTC
         payload = _measurement + " " + _fieldkey1 + "=" + _fieldvalue1 + " " + nowTimestamp;
     }
     else {
@@ -190,10 +193,10 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Initialized");
 
     esp_http_client_set_header(httpClient, "Content-Type", "text/plain");
-    //LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Header setting done");
+    // LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Header setting done");
 
     ESP_ERROR_CHECK(esp_http_client_set_post_field(httpClient, payload.c_str(), payload.length()));
-    //LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Payload post completed");
+    // LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Payload post completed");
 
     retVal = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(httpClient));
 
@@ -217,10 +220,11 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
 
 bool getInfluxDBv1isEncrypted()
 {
-    if (cfgDataPtr != NULL && cfgDataPtr->authMode == AUTH_TLS)
+    if (cfgDataPtr != NULL && cfgDataPtr->authMode == AUTH_TLS) {
         return true;
+    }
 
     return false;
 }
 
-#endif //ENABLE_INFLUXDB
+#endif // ENABLE_INFLUXDB

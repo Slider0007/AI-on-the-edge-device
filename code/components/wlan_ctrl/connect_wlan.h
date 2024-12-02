@@ -24,11 +24,11 @@ bool resumeWifiConnection(std::string source = "unknown");
 
 #if (defined WLAN_USE_MESH_ROAMING && defined WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES)
 void wifiRoamingQuery(void);
-#endif
+#endif // WLAN_USE_MESH_ROAMING
 
 #ifdef WLAN_USE_ROAMING_BY_SCANNING
 void wifiRoamByScanning(void);
-#endif
+#endif // WLAN_USE_ROAMING_BY_SCANNING
 
 esp_err_t wifiScan(httpd_req_t *req = NULL, bool checkRoaming = false);
 
@@ -48,4 +48,4 @@ wifi_connection_status_t getWifiConnectionStatus(void);
 
 void deinitWifi(void);
 
-#endif //CONNECT_WLAN_H
+#endif // CONNECT_WLAN_H

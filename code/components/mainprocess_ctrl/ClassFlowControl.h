@@ -12,16 +12,16 @@
 #include "ClassFlowPostProcessing.h"
 
 #ifdef ENABLE_MQTT
-    #include "ClassFlowMQTT.h"
+#include "ClassFlowMQTT.h"
 #endif // ENABLE_MQTT
 
 #ifdef ENABLE_INFLUXDB
-    #include "ClassFlowInfluxDBv1.h"
-    #include "ClassFlowInfluxDBv2.h"
+#include "ClassFlowInfluxDBv1.h"
+#include "ClassFlowInfluxDBv2.h"
 #endif // ENABLE_INFLUXDB
 
 #ifdef ENABLE_WEBHOOK
-    #include "ClassFlowWebhook.h"
+#include "ClassFlowWebhook.h"
 #endif // ENABLE_WEBHOOK
 
 
@@ -94,9 +94,9 @@ class ClassFlowControl : public ClassFlow
     void drawDigitRoi(CImageBasis *image);
     void drawAnalogRoi(CImageBasis *image);
 
-    #ifdef ENABLE_MQTT
+#ifdef ENABLE_MQTT
     bool initMqttService();
-    #endif // ENABLE_MQTT
+#endif // ENABLE_MQTT
 
     const std::vector<SequenceData *> &getSequenceData() const { return sequenceData; };
     std::string getSequenceResultInline(int type, std::string sequenceName = "");

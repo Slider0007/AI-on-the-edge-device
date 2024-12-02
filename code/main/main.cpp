@@ -10,9 +10,9 @@
 #include <driver/sdmmc_host.h>
 
 #ifdef DISABLE_BROWNOUT_DETECTOR
-    #include <soc/soc.h>
-    #include <soc/rtc_cntl_reg.h>
-#endif
+#include <soc/soc.h>
+#include <soc/rtc_cntl_reg.h>
+#endif // DISABLE_BROWNOUT_DETECTOR
 
 #include "configClass.h"
 #include "configMigration.h"
@@ -34,7 +34,7 @@
 
 #ifdef ENABLE_MQTT
 #include "server_mqtt.h"
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
 #include "openmetrics.h"
 #include "softAP.h"
@@ -45,10 +45,10 @@ static const char *TAG = "MAIN";
 
 std::string deviceStartTimestamp = "";
 
-extern const char* GIT_TAG;
-extern const char* GIT_REV;
-extern const char* GIT_BRANCH;
-extern const char* BUILD_TIME;
+extern const char *GIT_TAG;
+extern const char *GIT_REV;
+extern const char *GIT_BRANCH;
+extern const char *BUILD_TIME;
 
 extern std::string getFwVersion(void);
 extern std::string getHTMLversion(void);
@@ -62,9 +62,10 @@ extern "C" void app_main(void)
 {
     deviceStartTimestamp = getCurrentTimeString(TIME_FORMAT_OUTPUT);
 
-    #ifdef DISABLE_BROWNOUT_DETECTOR
-        WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
-    #endif
+#ifdef DISABLE_BROWNOUT_DETECTOR
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
+
+#endif // DISABLE_BROWNOUT_DETECTOR
 
     // ********************************************
     // Highlight start of app_main
@@ -100,20 +101,20 @@ extern "C" void app_main(void)
     // SD card: Create further mandatory directories (if not already existing)
     // Correct creation of these folders will be checked with function "checkSdCardFolderFilePresence"
     // ********************************************
-    makeDir("/sdcard/config");           // mandatory for config handling
-    makeDir("/sdcard/config/backup");    // mandatory for config migration
-    makeDir("/sdcard/config/certs");     // mandatory for TLS encryption
-    makeDir("/sdcard/config/models");    // mandatory for TFLite models
-    makeDir("/sdcard/firmware");         // mandatory for OTA firmware update
-    makeDir("/sdcard/img_tmp");          // mandatory for setting up alignment marker
-    makeDir("/sdcard/demo");             // mandatory for demo mode
+    makeDir("/sdcard/config");        // mandatory for config handling
+    makeDir("/sdcard/config/backup"); // mandatory for config migration
+    makeDir("/sdcard/config/certs");  // mandatory for TLS encryption
+    makeDir("/sdcard/config/models"); // mandatory for TFLite models
+    makeDir("/sdcard/firmware");      // mandatory for OTA firmware update
+    makeDir("/sdcard/img_tmp");       // mandatory for setting up alignment marker
+    makeDir("/sdcard/demo");          // mandatory for demo mode
 
     // Check for updates
     // Note: OTA status check only necessary if OTA rollback feature is enabled
     // ********************************************
-    #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
+#ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
     checkOTAPartitionState();
-    #endif
+#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
     checkOTAUpdate();
 
     // Configuration migration for legacy config.ini / wlan.ini
@@ -167,23 +168,26 @@ extern "C" void app_main(void)
     // ********************************************
     LogFile.writeToFile(ESP_LOG_INFO, TAG, getFwVersion() + " | Build time: " + std::string(BUILD_TIME) + " | WebUI: " + getHTMLversion());
 
-    if (getHTMLcommit().substr(0, 7) == "?")
+    if (getHTMLcommit().substr(0, 7) == "?") {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse WebUI version"));
+    }
 
     if (getHTMLcommit().substr(0, 7) != std::string(GIT_REV).substr(0, 7)) { // Compare the first 7 characters of both hashes
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "WebUI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "WebUI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using AI-on-the-edge-device__board_type__*.zip");
     }
 
     // Check reboot reason
     // ********************************************
     checkIsPlannedReboot();
-    if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {  // If system reboot was not triggered by user and reboot was caused by execption
+    if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "The device was restarted due to a software exception. The log level is set to DEBUG "
-                                               "until the next reboot. Process init is delayed by 5 minutes to allow checking logs, "
-                                               "downloading the dump file or performing an OTA update. Keep the device running until "
-                                               "another crash happens and review once the device is back online");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "The device was restarted due to a software exception. The log level is set to DEBUG "
+                            "until the next reboot. Process init is delayed by 5 minutes to allow checking logs, "
+                            "downloading the dump file or performing an OTA update. Keep the device running until "
+                            "another crash happens and review once the device is back online");
         LogFile.setLogLevel(ESP_LOG_DEBUG);
         setTaskAutoFlowState(FLOW_TASK_STATE_INIT_DELAYED);
     }
@@ -221,19 +225,20 @@ extern "C" void app_main(void)
     // Init external PSRAM
     // ********************************************
     esp_err_t PSRAMStatus = esp_psram_init();
-    if (PSRAMStatus == ESP_FAIL) {  // Failed to init PSRAM
+    if (PSRAMStatus == ESP_FAIL) { // Failed to init PSRAM
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "PSRAM init failed (" + std::to_string(PSRAMStatus) + ")! PSRAM not found or defective");
         setSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD);
         setStatusLed(PSRAM_INIT, 1, true);
     }
     else { // PSRAM init not failed --> continue to check PSRAM size
         size_t psram_size = esp_psram_get_size();
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "PSRAM size: " + std::to_string(psram_size) + " byte (" + std::to_string(psram_size/1024/1024) +
-                                               "MB / " + std::to_string(psram_size/1024/1024*8) + "MBit)");
+        LogFile.writeToFile(ESP_LOG_INFO, TAG,
+                            "PSRAM size: " + std::to_string(psram_size) + " byte (" + std::to_string(psram_size / 1024 / 1024) + "MB / " +
+                                std::to_string(psram_size / 1024 / 1024 * 8) + "MBit)");
 
         // Check PSRAM size
         // ********************************************
-        if (psram_size < (4*1024*1024)) { // PSRAM is below 4 MBytes (32Mbit)
+        if (psram_size < (4 * 1024 * 1024)) { // PSRAM is below 4 MBytes (32Mbit)
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "PSRAM size >= 4MB (32Mbit) is mandatory to run this application");
             setSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD);
             setStatusLed(PSRAM_INIT, 2, true);
@@ -244,7 +249,7 @@ extern "C" void app_main(void)
 
             // Check heap memory
             // ********************************************
-            if (_hsize < 4000000) { // Check available Heap memory for a bit less than 4 MB (a test on a good device showed 4187558 bytes to be available)
+            if (_hsize < 4000000) { // Check available Heap memory for a bit less than 4 MB
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Total heap >= 4000000 byte is mandatory to run this application");
                 setSystemStatusFlag(SYSTEM_STATUS_HEAP_TOO_SMALL);
                 setStatusLed(PSRAM_INIT, 3, true);
@@ -252,14 +257,18 @@ extern "C" void app_main(void)
             else { // HEAP size OK --> continue to camera init
                 // Set SPIRAM memory category
                 size_t SPIRAMFree = getESPHeapSizeSPIRAMFree();
-                if (SPIRAMFree >= 32000000)
+                if (SPIRAMFree >= 32000000) {
                     setSPIRAMCategory(SPIRAMCategory_32MB);
-                else if (SPIRAMFree >= 16000000)
+                }
+                else if (SPIRAMFree >= 16000000) {
                     setSPIRAMCategory(SPIRAMCategory_16MB);
-                else if (SPIRAMFree >= 8000000)
+                }
+                else if (SPIRAMFree >= 8000000) {
                     setSPIRAMCategory(SPIRAMCategory_8MB);
-                else
+                }
+                else {
                     setSPIRAMCategory(SPIRAMCategory_4MB);
+                }
 
                 // Init camera
                 // ********************************************
@@ -281,9 +290,9 @@ extern "C" void app_main(void)
 
     // Init SOC temperature sensor (if supported by hardware)
     // ********************************************
-    #ifdef SOC_TEMP_SENSOR_SUPPORTED
+#ifdef SOC_TEMP_SENSOR_SUPPORTED
     initSOCTemperatureSensor();
-    #endif
+#endif // SOC_TEMP_SENSOR_SUPPORTED
 
     // Print Device info
     // ********************************************
@@ -291,8 +300,9 @@ extern "C" void app_main(void)
 
     // Print SD-Card info
     // ********************************************
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "SD card info: Name: " + getSDCardName() + ", Capacity: " +
-            std::to_string(getSDCardCapacity()) + "MB, Free: " + std::to_string(getSDCardFreePartitionSpace()) + "MB");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG,
+                        "SD card info: Name: " + getSDCardName() + ", Capacity: " + std::to_string(getSDCardCapacity()) +
+                            "MB, Free: " + std::to_string(getSDCardFreePartitionSpace()) + "MB");
 
 
     // Start webserver + register URI handler
@@ -305,9 +315,9 @@ extern "C" void app_main(void)
     registerMainFlowTaskUri(server);
     registerFileserverUri(server, "/sdcard");
     registerOtaRebootUri(server);
-    #ifdef ENABLE_MQTT
+#ifdef ENABLE_MQTT
     registerMqttUri(server);
-    #endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
     registerOpenmetricsUri(server);
     createGpioHandler(server);
     registerWebserverUri(server, "/sdcard");
@@ -319,7 +329,8 @@ extern "C" void app_main(void)
         createMainFlowTask(); // Create main task
     }
     // Critical error(s) occured which do not allow to continue with regular boot sequence.
-    // Provding only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: server_main.cpp -> hello_main_handler()
+    // Provding only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: server_main.cpp ->
+    // hello_main_handler()
     else {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed");
     }
@@ -359,7 +370,7 @@ esp_err_t initSDCard()
 {
     esp_err_t ret = ESP_OK;
 
-    ESP_LOGI(TAG,"Initializing SD card: Using SDMMC peripheral");
+    ESP_LOGI(TAG, "Initializing SD card: Using SDMMC peripheral");
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
 
     // Pullup SD card D3 pin to ensure SD init using MMC mode
@@ -370,22 +381,22 @@ esp_err_t initSDCard()
     // Modify slot_config.gpio_cd and slot_config.gpio_wp if your board has these signals.
     sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
 
-    #ifdef SOC_SDMMC_USE_GPIO_MATRIX
-        slot_config.clk = GPIO_SDCARD_CLK;
-        slot_config.cmd = GPIO_SDCARD_CMD;
-        slot_config.d0 = GPIO_SDCARD_D0;
-    #endif
+#ifdef SOC_SDMMC_USE_GPIO_MATRIX
+    slot_config.clk = GPIO_SDCARD_CLK;
+    slot_config.cmd = GPIO_SDCARD_CMD;
+    slot_config.d0 = GPIO_SDCARD_D0;
+#endif // SOC_SDMMC_USE_GPIO_MATRIX
 
-    #ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
-        slot_config.width = 1;
-    #else
-        #ifdef SOC_SDMMC_USE_GPIO_MATRIX
-            slot_config.d1 = GPIO_SDCARD_D1;
-            slot_config.d2 = GPIO_SDCARD_D2;
-            slot_config.d3 = GPIO_SDCARD_D3;
-        #endif
-        slot_config.width = 4;
-    #endif
+#ifdef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
+    slot_config.width = 1;
+#else
+#ifdef SOC_SDMMC_USE_GPIO_MATRIX
+    slot_config.d1 = GPIO_SDCARD_D1;
+    slot_config.d2 = GPIO_SDCARD_D2;
+    slot_config.d3 = GPIO_SDCARD_D3;
+#endif // SOC_SDMMC_USE_GPIO_MATRIX
+    slot_config.width = 4;
+#endif // BOARD_SDCARD_SDMMC_BUS_WIDTH_1
 
     // Enable internal pullups on enabled pins. The internal pullups
     // are insufficient however, please make sure 10k external pullups are
@@ -397,12 +408,12 @@ esp_err_t initSDCard()
     // formatted in case when mounting fails.
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,
-        .max_files = 12,                         // previously -> 2022-09-21: 5, 2023-01-02: 7
+        .max_files = 12,
         .allocation_unit_size = 16 * 1024,
-        .disk_status_check_enable = 0
+        .disk_status_check_enable = 0 //
     };
 
-    sdmmc_card_t* card;
+    sdmmc_card_t *card;
 
     // Use settings defined above to initialize SD card and mount FAT filesystem.
     // Note: esp_vfs_fat_sdmmc_mount is an all-in-one convenience function.

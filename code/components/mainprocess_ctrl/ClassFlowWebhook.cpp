@@ -14,7 +14,7 @@
 #include "connect_wlan.h"
 
 
-static const char* TAG = "WEBHOOK";
+static const char *TAG = "WEBHOOK";
 
 
 ClassFlowWebhook::ClassFlowWebhook(ClassFlowAlignment *_flowAlignment)
@@ -42,8 +42,9 @@ bool ClassFlowWebhook::loadParameter()
         return webhookEnable;
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init: URI: " + cfgDataPtr->uri + ", API Key: " + cfgDataPtr->apiKey +
-         ", PublishImage: " + std::to_string(cfgDataPtr->publishImage) + ", AuthMode: " + std::to_string(cfgDataPtr->authMode));
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                        "Init: URI: " + cfgDataPtr->uri + ", API Key: " + cfgDataPtr->apiKey + ", PublishImage: " +
+                            std::to_string(cfgDataPtr->publishImage) + ", AuthMode: " + std::to_string(cfgDataPtr->authMode));
 
     webhookEnable = webhookInit(cfgDataPtr);
 
@@ -53,8 +54,9 @@ bool ClassFlowWebhook::loadParameter()
 
 bool ClassFlowWebhook::doFlow(std::string zwtime)
 {
-    if (!webhookEnable)
+    if (!webhookEnable) {
         return true;
+    }
 
     presetFlowStateHandler(false, zwtime);
 
@@ -91,8 +93,8 @@ bool ClassFlowWebhook::doFlow(std::string zwtime)
 
         // Check if sequence has rate too high error
         if (cfgDataPtr->publishImage == WEBHOOK_PUBLISH_IMAGE_ON_ERROR_ONLY) {
-            if (sequence->sValueStatus.substr(0,3) == std::string(VALUE_STATUS_003_RATE_TOO_HIGH_NEG).substr(0,3) ||
-                sequence->sValueStatus.substr(0,3) == std::string(VALUE_STATUS_004_RATE_TOO_HIGH_POS).substr(0,3)) {
+            if (sequence->sValueStatus.substr(0, 3) == std::string(VALUE_STATUS_003_RATE_TOO_HIGH_NEG).substr(0, 3) ||
+                sequence->sValueStatus.substr(0, 3) == std::string(VALUE_STATUS_004_RATE_TOO_HIGH_POS).substr(0, 3)) {
                 sequencesWithError = true;
             }
         }
@@ -103,7 +105,7 @@ bool ClassFlowWebhook::doFlow(std::string zwtime)
 
     if (jsonChar != NULL) {
         if ((cfgDataPtr->publishImage == WEBHOOK_PUBLISH_IMAGE_ENABLED ||
-                ((cfgDataPtr->publishImage == WEBHOOK_PUBLISH_IMAGE_ON_ERROR_ONLY) && sequencesWithError))) {
+             ((cfgDataPtr->publishImage == WEBHOOK_PUBLISH_IMAGE_ON_ERROR_ONLY) && sequencesWithError))) {
             if (flowAlignment && flowAlignment->AlgROI) {
                 if (webhookPublish(jsonChar, flowAlignment->AlgROI, timeProcessedUtc) != ESP_OK) {
                     setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
@@ -112,7 +114,7 @@ bool ClassFlowWebhook::doFlow(std::string zwtime)
             else {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish image. No image data available (flowAlignment->AlgROI)");
                 setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
-                webhookPublish(jsonChar); // Fallback, only publish data
+                webhookPublish(jsonChar);    // Fallback, only publish data
             }
         }
         else {
@@ -123,8 +125,9 @@ bool ClassFlowWebhook::doFlow(std::string zwtime)
         cJSON_free(jsonChar);
     }
 
-    if (!getFlowState()->isSuccessful)
+    if (!getFlowState()->isSuccessful) {
         return false;
+    }
 
     return true;
 }
@@ -133,7 +136,6 @@ bool ClassFlowWebhook::doFlow(std::string zwtime)
 void ClassFlowWebhook::doPostProcessEventHandling()
 {
     // Post cycle process handling can be included here. Function is called after processing cycle is completed
-
 }
 
 
@@ -142,4 +144,4 @@ ClassFlowWebhook::~ClassFlowWebhook()
     // nothing to do
 }
 
-#endif //ENABLE_WEBHOOK
+#endif // ENABLE_WEBHOOK

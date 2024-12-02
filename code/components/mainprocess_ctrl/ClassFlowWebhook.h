@@ -30,5 +30,5 @@ class ClassFlowWebhook : public ClassFlow
     std::string name() { return "ClassFlowWebhook"; };
 };
 
-    #endif // CLASSFLOWWEBHOOK_H
-#endif     // ENABLE_WEBHOOK
+#endif // CLASSFLOWWEBHOOK_H
+#endif // ENABLE_WEBHOOK

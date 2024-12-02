@@ -19,7 +19,7 @@
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
 #include "server_mqtt.h"
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
 
 static const char *TAG = "GPIOCTRL";
@@ -47,7 +47,7 @@ GpioHandler::~GpioHandler()
 }
 
 
-void GpioHandler::gpioPinInterrupt(GpioResult* gpioResult)
+void GpioHandler::gpioPinInterrupt(GpioResult *gpioResult)
 {
     if ((gpioMap != NULL) && (gpioMap->find(gpioResult->gpio) != gpioMap->end())) {
         (*gpioMap)[gpioResult->gpio]->updatePinState(gpioResult->state);
@@ -57,18 +57,18 @@ void GpioHandler::gpioPinInterrupt(GpioResult* gpioResult)
 
 static void gpioHandlerTask(void *arg)
 {
-    while(1) {
-        if(uxQueueMessagesWaiting(gpio_queue_handle)) {
-            while(uxQueueMessagesWaiting(gpio_queue_handle)) {
+    while (1) {
+        if (uxQueueMessagesWaiting(gpio_queue_handle)) {
+            while (uxQueueMessagesWaiting(gpio_queue_handle)) {
                 GpioResult gpioResult;
-                xQueueReceive(gpio_queue_handle, (void*)&gpioResult, 5);
-                //LogFile.writeToFile(ESP_LOG_INFO, TAG, "Pin interrupt: GPIO" + std::to_string((int)gpioResult.gpio) +
-                //                    ", State: " + std::to_string(gpioResult.state));
-                ((GpioHandler*)arg)->gpioPinInterrupt(&gpioResult);
+                xQueueReceive(gpio_queue_handle, (void *)&gpioResult, 5);
+                // LogFile.writeToFile(ESP_LOG_INFO, TAG, "Pin interrupt: GPIO" + std::to_string((int)gpioResult.gpio) +
+                //                     ", State: " + std::to_string(gpioResult.state));
+                ((GpioHandler *)arg)->gpioPinInterrupt(&gpioResult);
             }
         }
 
-        ((GpioHandler*)arg)->gpioInputStatePolling();
+        ((GpioHandler *)arg)->gpioInputStatePolling();
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -77,11 +77,10 @@ static void gpioHandlerTask(void *arg)
 void GpioHandler::gpioInputStatePolling()
 {
     if (gpioMap != NULL) {
-        for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
+        for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
             if (it->second->getMode() == GPIO_PIN_MODE_INPUT || it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLUP ||
                 it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
-                it->second->getMode() == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION)
-            {
+                it->second->getMode() == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION) {
                 it->second->updatePinState();
             }
         }
@@ -91,48 +90,50 @@ void GpioHandler::gpioInputStatePolling()
 
 void GpioHandler::ledcInitGpio(ledc_timer_t _timer, ledc_channel_t _channel, int _gpioNum, int _frequency)
 {
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init LEDC timer " + std::to_string((int)_timer) +
-                            ", Frequency: " + std::to_string(_frequency) +
+    LogFile.writeToFile(ESP_LOG_INFO, TAG,
+                        "Init LEDC timer " + std::to_string((int)_timer) + ", Frequency: " + std::to_string(_frequency) +
                             ", Duty Resolution: " + std::to_string((int)calcDutyResolution(_frequency)));
 
     // Prepare and then apply the LEDC PWM timer configuration
-    ledc_timer_config_t ledc_timer = { };
+    ledc_timer_config_t ledc_timer = {};
 
-    ledc_timer.speed_mode       = LEDC_LOW_SPEED_MODE;
-    ledc_timer.timer_num        = _timer;
-    ledc_timer.duty_resolution  = calcDutyResolution(_frequency);
-    ledc_timer.freq_hz          = _frequency;
-    ledc_timer.clk_cfg          = LEDC_USE_APB_CLK;
+    ledc_timer.speed_mode = LEDC_LOW_SPEED_MODE;
+    ledc_timer.timer_num = _timer;
+    ledc_timer.duty_resolution = calcDutyResolution(_frequency);
+    ledc_timer.freq_hz = _frequency;
+    ledc_timer.clk_cfg = LEDC_USE_APB_CLK;
 
     esp_err_t retVal = ledc_timer_config(&ledc_timer);
 
-    if (retVal != ESP_OK)
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to init LEDC timer " +
-                    std::to_string((int)_timer) + ", Error: " +intToHexString(retVal));
+    if (retVal != ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                            "Failed to init LEDC timer " + std::to_string((int)_timer) + ", Error: " + intToHexString(retVal));
+    }
 
     // Prepare and then apply the LEDC PWM channel configuration
-    ledc_channel_config_t ledc_channel = { };
+    ledc_channel_config_t ledc_channel = {};
 
-    ledc_channel.speed_mode     = LEDC_LOW_SPEED_MODE;
-    ledc_channel.channel        = _channel;
-    ledc_channel.timer_sel      = _timer;
-    ledc_channel.intr_type      = LEDC_INTR_DISABLE;
-    ledc_channel.gpio_num       = _gpioNum;
-    ledc_channel.duty           = 0; // Set duty to 0%
-    ledc_channel.hpoint         = 0;
+    ledc_channel.speed_mode = LEDC_LOW_SPEED_MODE;
+    ledc_channel.channel = _channel;
+    ledc_channel.timer_sel = _timer;
+    ledc_channel.intr_type = LEDC_INTR_DISABLE;
+    ledc_channel.gpio_num = _gpioNum;
+    ledc_channel.duty = 0; // Set duty to 0%
+    ledc_channel.hpoint = 0;
 
     retVal = ledc_channel_config(&ledc_channel);
 
-    if (retVal != ESP_OK)
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to init LEDC channel " +
-                    std::to_string((int)_channel) + ", Error: " +intToHexString(retVal));
+    if (retVal != ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                            "Failed to init LEDC channel " + std::to_string((int)_channel) + ", Error: " + intToHexString(retVal));
+    }
 }
 
 
 bool GpioHandler::init()
 {
     if (gpioMap == NULL) {
-        gpioMap = new std::map<gpio_num_t, GpioPin*>();
+        gpioMap = new std::map<gpio_num_t, GpioPin *>();
     }
     else {
         clearData();
@@ -151,16 +152,16 @@ bool GpioHandler::init()
     }
 
     int smartLedChannel = 0; // max. 8 channels
-    int ledcChannel = 1; // max 8 channels (CH0: camera, CH1 - CH7: spare)
+    int ledcChannel = 1;     // max 8 channels (CH0: camera, CH1 - CH7: spare)
     bool initHandlerTask = false;
 
-    for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
+    for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
         it->second->init();
 
         if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init SmartLED (Flashlight): GPIO" + std::to_string((int)it->second->getGPIO()));
-            it->second->setSmartLed(new SmartLed(it->second->getLEDType(), it->second->getLEDQuantity(),
-                                                 it->second->getGPIO(), smartLedChannel, DoubleBuffer));
+            it->second->setSmartLed(new SmartLed(it->second->getLEDType(), it->second->getLEDQuantity(), it->second->getGPIO(),
+                                                 smartLedChannel, DoubleBuffer));
             smartLedChannel++;
             if (smartLedChannel == detail::CHANNEL_COUNT) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient SmartLED channels");
@@ -205,25 +206,23 @@ bool GpioHandler::init()
         // Handler task is only needed to maintain input pin state (interrupt or polling)
         if (it->second->getMode() == GPIO_PIN_MODE_INPUT || it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLUP ||
             it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
-            it->second->getMode() == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION)
-        {
+            it->second->getMode() == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION) {
             initHandlerTask = true;
         }
-
     }
 
-    #ifdef ENABLE_MQTT
-        std::function<void()> f = std::bind(&GpioHandler::handleMQTTconnect, this);
-        registerMqttConnectFunction("gpioHandler", f);
-    #endif //ENABLE_MQTT
+#ifdef ENABLE_MQTT
+    std::function<void()> f = std::bind(&GpioHandler::handleMQTTconnect, this);
+    registerMqttConnectFunction("gpioHandler", f);
+#endif // ENABLE_MQTT
 
     // Handler task is only needed to maintain input pin state (interrupt or polling)
     if (initHandlerTask && xHandleTaskGpio == NULL) {
         gpio_queue_handle = xQueueCreate(10, sizeof(GpioResult));
-        BaseType_t xReturned = xTaskCreate(&gpioHandlerTask, "gpioHandlerTask", 3 * 1024, (void *)this,
-                                            tskIDLE_PRIORITY + 4, &xHandleTaskGpio);
+        BaseType_t xReturned = xTaskCreate(&gpioHandlerTask, "gpioHandlerTask", 3 * 1024, (void *)this, tskIDLE_PRIORITY + 4,
+                                           &xHandleTaskGpio);
 
-        if (xReturned != pdPASS ) {
+        if (xReturned != pdPASS) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create gpioHandlerTask");
             return false;
         }
@@ -246,12 +245,12 @@ esp_err_t GpioHandler::loadParameter()
     if (!cfgDataPtr->customizationEnabled) {
 #if defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
         // Special case: Flashlight default uses SmartLED functionality -> init smartLED functionality only
-        for (int i= 0; i < GPIO_SPARE_PIN_COUNT; ++i) {
+        for (int i = 0; i < GPIO_SPARE_PIN_COUNT; ++i) {
             if (strcmp(gpio_spare_usage[i], FLASHLIGHT_SMARTLED) == 0) {
-                GpioPin* gpioPin = new GpioPin((gpio_num_t)gpio_spare[i], ("gpio" + std::to_string((int)gpio_spare[i])).c_str(),
-                                        GPIO_PIN_MODE_FLASHLIGHT_SMARTLED, GPIO_INTR_DISABLE, 200, 5000, false, false, "",
-                                        GPIO_FLASHLIGHT_DEFAULT_SMARTLED_TYPE, GPIO_FLASHLIGHT_DEFAULT_SMARTLED_QUANTITY,
-                                        Rgb{255,255,255}, 100);
+                GpioPin *gpioPin = new GpioPin((gpio_num_t)gpio_spare[i], ("gpio" + std::to_string((int)gpio_spare[i])).c_str(),
+                                               GPIO_PIN_MODE_FLASHLIGHT_SMARTLED, GPIO_INTR_DISABLE, 200, 5000, false, false, "",
+                                               GPIO_FLASHLIGHT_DEFAULT_SMARTLED_TYPE, GPIO_FLASHLIGHT_DEFAULT_SMARTLED_QUANTITY,
+                                               Rgb{255, 255, 255}, 100);
                 (*gpioMap)[(gpio_num_t)gpio_spare[i]] = gpioPin;
                 return ESP_OK;
             }
@@ -259,7 +258,7 @@ esp_err_t GpioHandler::loadParameter()
 
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Default flashlight configured as SmartLED, but no valid GPIO config found");
         return ESP_FAIL;
-#endif
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
 
         return ESP_ERR_NOT_FOUND;
     }
@@ -268,8 +267,9 @@ esp_err_t GpioHandler::loadParameter()
 
     for (const auto &pin : cfgDataPtr->gpioPin) {
         // Skip pin if disabled
-        if (!pin.pinEnabled)
+        if (!pin.pinEnabled) {
             continue;
+        }
 
         gpio_num_t gpioNr = (gpio_num_t)pin.gpioNumber;
 
@@ -285,25 +285,31 @@ esp_err_t GpioHandler::loadParameter()
         }
 
         LedType LEDType = LED_WS2812;
-        if (pin.smartLed.type == LEDTYPE_WS2812)
+        if (pin.smartLed.type == LEDTYPE_WS2812) {
             LEDType = LED_WS2812;
-        else if (pin.smartLed.type == LEDTYPE_WS2812B_UNIVERSAL)
+        }
+        else if (pin.smartLed.type == LEDTYPE_WS2812B_UNIVERSAL) {
             LEDType = LED_WS2812B;
-        else if (pin.smartLed.type == LEDTYPE_WS2812B_NEW_VARIANT)
+        }
+        else if (pin.smartLed.type == LEDTYPE_WS2812B_NEW_VARIANT) {
             LEDType = LED_WS2812B_NEWVARIANT;
-        else if (pin.smartLed.type == LEDTYPE_WS2812B_OLD_VARIANT)
+        }
+        else if (pin.smartLed.type == LEDTYPE_WS2812B_OLD_VARIANT) {
             LEDType = LED_WS2812B_OLDVARIANT;
-        else if (pin.smartLed.type == LEDTYPE_SK6812)
+        }
+        else if (pin.smartLed.type == LEDTYPE_SK6812) {
             LEDType = LED_SK6812;
-        else if (pin.smartLed.type == LEDTYPE_WS2813)
+        }
+        else if (pin.smartLed.type == LEDTYPE_WS2813) {
             LEDType = LED_WS2813;
+        }
         else {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readConfig: Unknown LED type");
             return ESP_FAIL;
         }
 
         Rgb LEDColor = Rgb{(uint8_t)pin.smartLed.colorRedChannel, (uint8_t)pin.smartLed.colorGreenChannel,
-                            (uint8_t)pin.smartLed.colorBlueChannel};
+                           (uint8_t)pin.smartLed.colorBlueChannel};
 
         char gpioName[32];
         if (!pin.pinName.empty()) {
@@ -319,22 +325,22 @@ esp_err_t GpioHandler::loadParameter()
 #else
         bool mqttAccess = false;
         std::string mqttTopic = "";
-#endif
+#endif // ENABLE_MQTT
 
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Pin Config: GPIO" + std::to_string((int)gpioNr) +
-                ", Name: " + std::string(gpioName) + ", Mode: " + pin.pinMode + ", Interrupt Type: " +
-                pin.captureMode + ", Debounce Time: " + std::to_string(pin.inputDebounceTime) + ", Frequency: " +
-                std::to_string(pin.PwmFrequency) + ", Logic Active Low: " + std::to_string(pin.logicActiveLow) +
-                ", HTTP Access: " + std::to_string(pin.exposeToRest) +
-                ", MQTT Access: " + std::to_string(mqttAccess) + ", MQTT Topic: " + mqttTopic +
-                ", LED Type: " + std::to_string(pin.smartLed.type) + ", LED Quantity: " + std::to_string(pin.smartLed.quantity) +
-                ", LED Color: R:" + std::to_string(LEDColor.r) + " | G:" + std::to_string(LEDColor.g) +
-                " | B:" + std::to_string(LEDColor.b) + ", LED Intensity Correction: " +
-                std::to_string(pin.intensityCorrectionFactor));
+        LogFile.writeToFile(
+            ESP_LOG_DEBUG, TAG,
+            "Pin Config: GPIO" + std::to_string((int)gpioNr) + ", Name: " + std::string(gpioName) + ", Mode: " + pin.pinMode +
+                ", Interrupt Type: " + pin.captureMode + ", Debounce Time: " + std::to_string(pin.inputDebounceTime) +
+                ", Frequency: " + std::to_string(pin.PwmFrequency) + ", Logic Active Low: " + std::to_string(pin.logicActiveLow) +
+                ", HTTP Access: " + std::to_string(pin.exposeToRest) + ", MQTT Access: " + std::to_string(mqttAccess) +
+                ", MQTT Topic: " + mqttTopic + ", LED Type: " + std::to_string(pin.smartLed.type) +
+                ", LED Quantity: " + std::to_string(pin.smartLed.quantity) + ", LED Color: R:" + std::to_string(LEDColor.r) +
+                " | G:" + std::to_string(LEDColor.g) + " | B:" + std::to_string(LEDColor.b) +
+                ", LED Intensity Correction: " + std::to_string(pin.intensityCorrectionFactor));
 
-        GpioPin* gpioPin = new GpioPin(gpioNr, gpioName, pinMode, captureMode, pin.inputDebounceTime, pin.PwmFrequency,
-                                pin.logicActiveLow, pin.exposeToRest, mqttAccess, mqttTopic, LEDType, pin.smartLed.quantity,
-                                LEDColor, pin.intensityCorrectionFactor);
+        GpioPin *gpioPin = new GpioPin(gpioNr, gpioName, pinMode, captureMode, pin.inputDebounceTime, pin.PwmFrequency, pin.logicActiveLow,
+                                       pin.exposeToRest, mqttAccess, mqttTopic, LEDType, pin.smartLed.quantity, LEDColor,
+                                       pin.intensityCorrectionFactor);
         (*gpioMap)[gpioNr] = gpioPin;
     }
 
@@ -350,7 +356,7 @@ esp_err_t GpioHandler::loadParameter()
 void GpioHandler::clearData()
 {
     if (gpioMap != NULL) {
-        for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); it++) {
+        for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); it++) {
             if (it->second->getSmartLed() != NULL) {
                 delete it->second->getSmartLed();
                 it->second->setSmartLed(NULL);
@@ -369,9 +375,9 @@ void GpioHandler::clearData()
 
 void GpioHandler::deinit()
 {
-    #ifdef ENABLE_MQTT
+#ifdef ENABLE_MQTT
     unregisterMqttConnectFunction("gpioHandler");
-    #endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
     clearData();
 
@@ -384,31 +390,34 @@ void GpioHandler::deinit()
 
 void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
 {
-    if (gpioMap == NULL)
+    if (gpioMap == NULL) {
         return;
+    }
 
-    for (std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
+    for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
         if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM) {
             int dutyResultionMaxValue = calcDutyResolutionMaxValue(it->second->getFrequency());
-            int intensityValueCorrected = std::min(std::max(0, it->second->getIntensityCorrection() *
-                                                    _intensity * dutyResultionMaxValue / 10000), dutyResultionMaxValue);
+            int intensityValueCorrected = std::min(
+                std::max(0, it->second->getIntensityCorrection() * _intensity * dutyResultionMaxValue / 10000), dutyResultionMaxValue);
 
             esp_err_t retVal = it->second->setPinState(_state, intensityValueCorrected);
 
             if (retVal != ESP_OK) {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight PWM: GPIO" + std::to_string((int)it->first) +
-                    " failed to set state | Error: " + intToHexString(retVal));
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                    "Flashlight PWM: GPIO" + std::to_string((int)it->first) +
+                                        " failed to set state | Error: " + intToHexString(retVal));
                 return;
             }
 
             if (_state) {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight PWM: GPIO" + std::to_string((int)it->first) +
-                                    ", State: " + std::to_string(_state) + ", Intensity: " + std::to_string(intensityValueCorrected) +
-                                    "/" +  std::to_string(dutyResultionMaxValue));
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                    "Flashlight PWM: GPIO" + std::to_string((int)it->first) + ", State: " + std::to_string(_state) +
+                                        ", Intensity: " + std::to_string(intensityValueCorrected) + "/" +
+                                        std::to_string(dutyResultionMaxValue));
             }
             else {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight PWM: GPIO" + std::to_string((int)it->first) +
-                                    ", State: " + std::to_string(_state));
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                    "Flashlight PWM: GPIO" + std::to_string((int)it->first) + ", State: " + std::to_string(_state));
             }
         }
         else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED) {
@@ -424,40 +433,44 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
                     (*it->second->getSmartLed())[i] = LEDColorIntensityCorrected;
                 }
 
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight SmartLED: GPIO" + std::to_string((int)it->first) +
-                                    ", State: " + std::to_string(_state) + ", Intensity: " + std::to_string(intensityValueCorrected) +
-                                    "/8191, | R: " + std::to_string(LEDColorIntensityCorrected.r) +
-                                    ", G:" + std::to_string(LEDColorIntensityCorrected.g) +
-                                    ", B:" + std::to_string(LEDColorIntensityCorrected.b));
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                    "Flashlight SmartLED: GPIO" + std::to_string((int)it->first) + ", State: " + std::to_string(_state) +
+                                        ", Intensity: " + std::to_string(intensityValueCorrected) +
+                                        "/8191, | R: " + std::to_string(LEDColorIntensityCorrected.r) +
+                                        ", G:" + std::to_string(LEDColorIntensityCorrected.g) +
+                                        ", B:" + std::to_string(LEDColorIntensityCorrected.b));
             }
             else {
                 for (int i = 0; i < it->second->getLEDQuantity(); ++i) {
                     (*it->second->getSmartLed())[i] = Rgb{0, 0, 0};
                 }
 
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight SmartLED: GPIO" + std::to_string((int)it->first) +
-                                        ", State: " + std::to_string(_state));
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                    "Flashlight SmartLED: GPIO" + std::to_string((int)it->first) + ", State: " + std::to_string(_state));
             }
 
             esp_err_t retVal = it->second->getSmartLed()->show();
             it->second->updatePinState(_state ? 1 : 0);
 
             if (retVal != ESP_OK) {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight SmartLED: GPIO" + std::to_string((int)it->first) +
-                " failed to set state | Error: " + intToHexString(retVal));
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                    "Flashlight SmartLED: GPIO" + std::to_string((int)it->first) +
+                                        " failed to set state | Error: " + intToHexString(retVal));
             }
         }
         else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_DIGITAL) {
             esp_err_t retVal = it->second->setPinState(it->second->getLogicLevelActiveLow() ? !_state : _state);
 
             if (retVal != ESP_OK) {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
-                    " failed to set state | Error: " + intToHexString(retVal));
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                    "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
+                                        " failed to set state | Error: " + intToHexString(retVal));
                 return;
             }
 
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
-                                ", State: " + std::to_string(it->second->getLogicLevelActiveLow() ? !_state : _state));
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
+                                    ", State: " + std::to_string(it->second->getLogicLevelActiveLow() ? !_state : _state));
         }
     }
 }
@@ -466,8 +479,9 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
 gpio_num_t GpioHandler::resolveSparePinNr(uint8_t _sparePinNr)
 {
     for (int i = 0; i < GPIO_SPARE_PIN_COUNT; ++i) {
-        if (gpio_spare[i] == _sparePinNr)
+        if (gpio_spare[i] == _sparePinNr) {
             return gpio_spare[i];
+        }
     }
     return GPIO_NUM_NC;
 }
@@ -475,37 +489,48 @@ gpio_num_t GpioHandler::resolveSparePinNr(uint8_t _sparePinNr)
 
 gpio_pin_mode_t GpioHandler::resolvePinMode(std::string input)
 {
-    if (input == "disabled")
+    if (input == "disabled") {
         return GPIO_PIN_MODE_DISABLED;
-    else if (input == "input")
-        return GPIO_PIN_MODE_INPUT;
-    if (input == "input-pullup")
-        return GPIO_PIN_MODE_INPUT_PULLUP;
-    else if (input == "input-pulldown")
-        return GPIO_PIN_MODE_INPUT_PULLDOWN;
-    else if (input == "output")
-        return GPIO_PIN_MODE_OUTPUT;
-    else if (input == "output-pwm")
-        return GPIO_PIN_MODE_OUTPUT_PWM;
-    else if (input == FLASHLIGHT_PWM)
-        return GPIO_PIN_MODE_FLASHLIGHT_PWM;
-    else if (input == FLASHLIGHT_SMARTLED)
-        return GPIO_PIN_MODE_FLASHLIGHT_SMARTLED;
-    else if (input == FLASHLIGHT_DIGITAL)
-        return GPIO_PIN_MODE_FLASHLIGHT_DIGITAL;
-    else if (input == FLASHLIGHT_DEFAULT) {
-        #if defined(GPIO_FLASHLIGHT_DEFAULT_USE_PWM)
-            return GPIO_PIN_MODE_FLASHLIGHT_PWM;
-        #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
-            return GPIO_PIN_MODE_FLASHLIGHT_SMARTLED;
-        #else
-            return GPIO_PIN_MODE_FLASHLIGHT_DIGITAL;
-        #endif
     }
-    else if (input == "trigger-cycle-start")
+    else if (input == "input") {
+        return GPIO_PIN_MODE_INPUT;
+    }
+    if (input == "input-pullup") {
+        return GPIO_PIN_MODE_INPUT_PULLUP;
+    }
+    else if (input == "input-pulldown") {
+        return GPIO_PIN_MODE_INPUT_PULLDOWN;
+    }
+    else if (input == "output") {
+        return GPIO_PIN_MODE_OUTPUT;
+    }
+    else if (input == "output-pwm") {
+        return GPIO_PIN_MODE_OUTPUT_PWM;
+    }
+    else if (input == FLASHLIGHT_PWM) {
+        return GPIO_PIN_MODE_FLASHLIGHT_PWM;
+    }
+    else if (input == FLASHLIGHT_SMARTLED) {
+        return GPIO_PIN_MODE_FLASHLIGHT_SMARTLED;
+    }
+    else if (input == FLASHLIGHT_DIGITAL) {
+        return GPIO_PIN_MODE_FLASHLIGHT_DIGITAL;
+    }
+    else if (input == FLASHLIGHT_DEFAULT) {
+#if defined(GPIO_FLASHLIGHT_DEFAULT_USE_PWM)
+        return GPIO_PIN_MODE_FLASHLIGHT_PWM;
+#elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
+        return GPIO_PIN_MODE_FLASHLIGHT_SMARTLED;
+#else
+        return GPIO_PIN_MODE_FLASHLIGHT_DIGITAL;
+#endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+    }
+    else if (input == "trigger-cycle-start") {
         return GPIO_PIN_MODE_TRIGGER_CYCLE_START;
-    else if (input == "resume-wlan-connection")
+    }
+    else if (input == "resume-wlan-connection") {
         return GPIO_PIN_MODE_RESUME_WLAN_CONNECTION;
+    }
 
     return GPIO_PIN_MODE_DISABLED;
 }
@@ -513,7 +538,7 @@ gpio_pin_mode_t GpioHandler::resolvePinMode(std::string input)
 
 std::string GpioHandler::getPinModeDecription(gpio_pin_mode_t _mode)
 {
-    switch(_mode) {
+    switch (_mode) {
         case 0:
             return "disabled";
         case 1:
@@ -544,18 +569,24 @@ std::string GpioHandler::getPinModeDecription(gpio_pin_mode_t _mode)
 
 gpio_int_type_t GpioHandler::resolveIntType(std::string input)
 {
-    if ( input == "cyclic-polling" )
+    if (input == "cyclic-polling") {
         return GPIO_INTR_DISABLE;
-    else if ( input == "interrupt-rising-edge" )
+    }
+    else if (input == "interrupt-rising-edge") {
         return GPIO_INTR_POSEDGE;
-    else if ( input == "interrupt-falling-edge" )
+    }
+    else if (input == "interrupt-falling-edge") {
         return GPIO_INTR_NEGEDGE;
-    else if ( input == "interrupt-rising-falling" )
-        return GPIO_INTR_ANYEDGE ;
-    else if ( input == "interrupt-low-level" )
+    }
+    else if (input == "interrupt-rising-falling") {
+        return GPIO_INTR_ANYEDGE;
+    }
+    else if (input == "interrupt-low-level") {
         return GPIO_INTR_LOW_LEVEL;
-    else if ( input == "interrupt-high-level" )
+    }
+    else if (input == "interrupt-high-level") {
         return GPIO_INTR_HIGH_LEVEL;
+    }
 
     return GPIO_INTR_DISABLE;
 }
@@ -563,7 +594,7 @@ gpio_int_type_t GpioHandler::resolveIntType(std::string input)
 
 std::string GpioHandler::getPinInterruptDecription(gpio_int_type_t _type)
 {
-    switch(_type) {
+    switch (_type) {
         case 0:
             return "cyclic-polling";
         case 1:
@@ -592,7 +623,7 @@ ledc_timer_bit_t GpioHandler::calcDutyResolution(int frequency)
 {
     // Calculate max duty resultion derived from device clock (LEDC_USE_APB_CLK == 80Mhz)
     // Limit max duty resolution to 14 bit (due to compability with ESP32S3)
-    return static_cast<ledc_timer_bit_t>(std::min((int)log2(80000000/frequency), 14));
+    return static_cast<ledc_timer_bit_t>(std::min((int)log2(80000000 / frequency), 14));
 }
 
 
@@ -601,8 +632,9 @@ ledc_timer_t GpioHandler::getFreeTimer(int _frequency)
     auto it = frequencyTable.find(_frequency);
 
     // Return timer related to already registered frequency
-    if (it != frequencyTable.end())
+    if (it != frequencyTable.end()) {
         return it->second;
+    }
 
     // Insert new frequency and return timer
     if (frequencyTable.size() == 0) {
@@ -624,27 +656,26 @@ ledc_timer_t GpioHandler::getFreeTimer(int _frequency)
 }
 
 
-
 // MQTT GPIO state publish
 // ***********************************
 #ifdef ENABLE_MQTT
 void GpioHandler::handleMQTTconnect()
 {
     if (gpioMap != NULL) {
-        for(std::map<gpio_num_t, GpioPin*>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
+        for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
             it->second->mqttPublishPinState();
             vTaskDelay(pdMS_TO_TICKS(500));
         }
     }
 }
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
 
 // Handle HTTP GPIO request
 // ***********************************
 esp_err_t callHandleHttpRequest(httpd_req_t *req)
 {
-    GpioHandler *gpioHandler = (GpioHandler*)req->user_ctx;
+    GpioHandler *gpioHandler = (GpioHandler *)req->user_ctx;
     return gpioHandler->handleHttpRequest(req);
 }
 
@@ -706,7 +737,7 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
             return ESP_OK;
         }
 
-        if  (!(*gpioMap)[gpioNum]->getHttpAccess()) {
+        if (!(*gpioMap)[gpioNum]->getHttpAccess()) {
             httpd_resp_set_type(req, "text/plain");
             httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Skip request, HTTP access disabled");
             return ESP_FAIL;
@@ -716,10 +747,9 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
             requestedGpioState = "{ \"state\": " + std::to_string((*gpioMap)[gpioNum]->getPinState());
 
             if ((*gpioMap)[gpioNum]->getMode() == GPIO_PIN_MODE_OUTPUT_PWM ||
-                (*gpioMap)[gpioNum]->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM)
-            {
-                requestedGpioState += ", \"pwm_duty\": " + std::to_string(ledc_get_duty(LEDC_LOW_SPEED_MODE,
-                                                (*gpioMap)[gpioNum]->getLedcChannel()));
+                (*gpioMap)[gpioNum]->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM) {
+                requestedGpioState += ", \"pwm_duty\": " +
+                                      std::to_string(ledc_get_duty(LEDC_LOW_SPEED_MODE, (*gpioMap)[gpioNum]->getLedcChannel()));
             }
 
             requestedGpioState += " }";
@@ -730,8 +760,7 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
         }
         else if (task.compare("set_state") == 0) {
             requestedGpioState = toUpper(requestedGpioState);
-            if (requestedGpioState != "0" && requestedGpioState != "1")
-            {
+            if (requestedGpioState != "0" && requestedGpioState != "1") {
                 respStr = "Skip request, invalid state: " + requestedGpioState;
                 httpd_resp_set_type(req, "text/plain");
                 httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, respStr.c_str());
@@ -741,15 +770,13 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
             esp_err_t retVal = ESP_OK;
             if (requestedPWMDuty == -1) { // Use ON/OFF
                 retVal = (*gpioMap)[gpioNum]->setPinState(requestedGpioState == "1", GPIO_SET_SOURCE_HTTP);
-                respStr = "GPIO" + std::to_string(requestedGpioNum) +
-                        ", State: " + std::to_string((*gpioMap)[gpioNum]->getPinState());
+                respStr = "GPIO" + std::to_string(requestedGpioNum) + ", State: " + std::to_string((*gpioMap)[gpioNum]->getPinState());
             }
             else { // Use PWM
                 requestedPWMDuty = std::min(std::max(0, requestedPWMDuty), calcDutyResolutionMaxValue((*gpioMap)[gpioNum]->getFrequency()));
                 retVal = (*gpioMap)[gpioNum]->setPinState(requestedGpioState == "1", requestedPWMDuty, GPIO_SET_SOURCE_HTTP);
-                respStr = "GPIO" + std::to_string(requestedGpioNum) +
-                        ", State: " + std::to_string((*gpioMap)[gpioNum]->getPinState()) +
-                        ", PWM Duty: " + std::to_string(requestedPWMDuty);
+                respStr = "GPIO" + std::to_string(requestedGpioNum) + ", State: " + std::to_string((*gpioMap)[gpioNum]->getPinState()) +
+                          ", PWM Duty: " + std::to_string(requestedPWMDuty);
             }
 
             if (retVal != ESP_OK) {
@@ -777,12 +804,12 @@ void GpioHandler::registerGpioUri()
 {
     ESP_LOGI(TAG, "Registering URI handlers");
 
-    httpd_uri_t camuri = { };
-    camuri.method    = HTTP_GET;
+    httpd_uri_t camuri = {};
+    camuri.method = HTTP_GET;
 
-    camuri.uri       = "/gpio";
-    camuri.handler   = callHandleHttpRequest;
-    camuri.user_ctx  = (void*)this;
+    camuri.uri = "/gpio";
+    camuri.handler = callHandleHttpRequest;
+    camuri.user_ctx = (void *)this;
     httpd_register_uri_handler(httpServer, &camuri);
 }
 
@@ -791,8 +818,9 @@ void GpioHandler::registerGpioUri()
 // ***********************************
 void createGpioHandler(httpd_handle_t _server)
 {
-    if (gpioHandler == NULL)
+    if (gpioHandler == NULL) {
         gpioHandler = new GpioHandler(_server);
+    }
 }
 
 
@@ -809,7 +837,7 @@ void gpio_handler_deinit()
 {
     if (gpioHandler != NULL) {
         gpioHandler->deinit();
-   }
+    }
 }
 
 
@@ -823,7 +851,7 @@ void gpio_handler_destroy()
 }
 
 
-GpioHandler* gpio_handler_get()
+GpioHandler *gpio_handler_get()
 {
     return gpioHandler;
 }

@@ -20,7 +20,7 @@ static bool timeWasNotSetAtBoot_PrintStartBlock = false;
 static bool isTimeSynchonized = false;
 
 
-std::string convertTimeToString(time_t _time, const char * frm)
+std::string convertTimeToString(time_t _time, const char *frm)
 {
     struct tm timeinfo;
     char strftime_buf[64];
@@ -31,7 +31,7 @@ std::string convertTimeToString(time_t _time, const char * frm)
 }
 
 
-std::string getCurrentTimeString(const char * frm)
+std::string getCurrentTimeString(const char *frm)
 {
     time_t now;
 
@@ -76,10 +76,12 @@ bool getTimeIsSynced(void)
 std::string getNTPSyncStatus(void)
 {
     if (timeSyncEnabled) {
-        if (isTimeSynchonized)
+        if (isTimeSynchonized) {
             return "Synchronized";
-        else
+        }
+        else {
             return "Not Synchronized";
+        }
     }
 
     return "Disabled";
@@ -96,7 +98,7 @@ std::string getServerName(void)
 {
     char buf[128];
 
-    if (esp_sntp_getservername(0)){
+    if (esp_sntp_getservername(0)) {
         snprintf(buf, sizeof(buf), "%s", esp_sntp_getservername(0));
         return std::string(buf);
     }
@@ -127,8 +129,8 @@ void timeSyncNotificationCallback(struct timeval *tv)
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "= Before sync: log_1970-01-01.txt =");
         timeWasNotSetAtBoot_PrintStartBlock = false;
     }
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Time is synced with NTP server " +
-            getServerName() + ": " + getCurrentTimeString("%Y-%m-%d %H:%M:%S"));
+    LogFile.writeToFile(ESP_LOG_INFO, TAG,
+                        "Time is synced with NTP server " + getServerName() + ": " + getCurrentTimeString("%Y-%m-%d %H:%M:%S"));
     isTimeSynchonized = true;
 }
 
@@ -150,7 +152,7 @@ bool initTime()
 
     // Configure time server
     timeServer = ConfigClass::getInstance()->get()->sectionNetwork.time.ntp.timeServer;
-    if (timeServer.empty()) { // parameter part is empty
+    if (timeServer.empty()) {        // parameter part is empty
         timeServer = "pool.ntp.org"; // Use Default
     }
 
@@ -190,8 +192,9 @@ bool initTime()
  */
 void reconfigureTimeZone(std::string _timeZone)
 {
-    if (timeZone == _timeZone)
+    if (timeZone == _timeZone) {
         return;
+    }
 
     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Time zone has been modified");
 
@@ -211,7 +214,7 @@ void reconfigureTimeZone(std::string _timeZone)
  */
 void reconfigureTime(bool _timeSyncEnabled, std::string _timeServer, std::string _timeZone)
 {
-    if (_timeServer.empty()) { // parameter is empty
+    if (_timeServer.empty()) {        // parameter is empty
         _timeServer = "pool.ntp.org"; // Use Default
     }
 
@@ -220,8 +223,9 @@ void reconfigureTime(bool _timeSyncEnabled, std::string _timeServer, std::string
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "No time zone set, using default: " + timeZone);
     }
 
-    if (timeSyncEnabled == _timeSyncEnabled && timeServer == _timeServer && timeZone == _timeZone)
+    if (timeSyncEnabled == _timeSyncEnabled && timeServer == _timeServer && timeZone == _timeZone) {
         return;
+    }
 
     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Time configuration has been modified");
 

@@ -18,7 +18,7 @@ size_t getFileSize(const std::string &filename);
 std::string getDirectory(std::string filename);
 bool makeDir(std::string _what);
 int makeDirRecursive(const char *dir, const mode_t mode);
-int removeFolder(const char* folderPath, const char* logTag);
+int removeFolder(const char *folderPath, const char *logTag);
 void deleteAllFilesInDirectory(std::string directory);
 void moveAllFilesWithFiletype(std::string sourceDir, std::string destinationDir, std::string filetype);
 
@@ -40,7 +40,7 @@ time_t addDays(time_t startTime, int days);
 time_t getUptime(void);
 std::string getFormatedUptime(bool compact);
 
-const char* get404(void);
-std::string urlDecode(const std::string& value);
+const char *get404(void);
+std::string urlDecode(const std::string &value);
 
-#endif //HELPER_H
+#endif // HELPER_H
