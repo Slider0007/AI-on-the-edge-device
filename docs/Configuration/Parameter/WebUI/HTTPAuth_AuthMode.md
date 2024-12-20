@@ -3,7 +3,7 @@
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Authentication      | authmode
-| Default Value     | `Enabled`           | `1`
+| Default Value     | `Disabled`          | `0`
 | Input Options     | `Disabled`<br>`Enabled` | `0`<br>`1`
 
 

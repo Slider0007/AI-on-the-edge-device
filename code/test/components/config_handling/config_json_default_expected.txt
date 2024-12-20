@@ -365,7 +365,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
   },
   "webui": {
     "httpauth": {
-      "authmode": 1,
+      "authmode": 0,
       "username": "aiote",
       "password": ""
     },

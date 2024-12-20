@@ -83,7 +83,7 @@ void test_configJsonParseAndSerialization()
         "Device\",\"password\":\"\",\"channel\":11,\"ipv4\":{\"ipaddress\":\"192.168.4.1\"}},\"time\":{\"timezone\":\"CET-1CEST,M3.5.0,"
         "M10.5.0/"
         "3\",\"ntp\":{\"timesyncenabled\":true,\"timeserver\":\"\",\"processstartinterlock\":true}}},\"system\":{\"cpufrequency\":160},"
-        "\"webui\":{\"httpauth\":{\"authmode\":1,\"username\":\"aiote\",\"password\":\"\"},\"autorefresh\":{\"overviewpage\":{"
+        "\"webui\":{\"httpauth\":{\"authmode\":0,\"username\":\"aiote\",\"password\":\"\"},\"autorefresh\":{\"overviewpage\":{"
         "\"enabled\":true,\"refreshtime\":5},\"datagraphpage\":{\"enabled\":false,\"refreshtime\":60}}}}";
     // std::string cfgDataExpexcted(config_json_default_expected_start, config_json_default_expected_end -
     // config_json_default_expected_start);

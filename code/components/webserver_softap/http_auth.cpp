@@ -56,14 +56,10 @@ esp_err_t handleHttpAuthBasic(httpd_req_t *req, esp_err_t httpHandler(httpd_req_
         free(buf);
     }
 
-    // Skip HTTP authorization check if
+    // Skip authorization check if
     // 1. HTTP authorization is disabled
-    // 2. At a critical system state (reduced web interface)
-    // 3. Enter setup mode with default username + password
-    if (ConfigClass::getInstance()->get()->sectionWebUi.httpAuth.authMode == HTTP_AUTH_DISABLED || getSystemStatus() > 0 ||
-        (ConfigClass::getInstance()->get()->sectionOperationMode.opMode == OPMODE_SETUP &&
-         ConfigClass::getInstance()->get()->sectionWebUi.httpAuth.username == "aiote" &&
-         ConfigClass::getInstance()->get()->sectionWebUi.httpAuth.password.empty())) {
+    // 2. At critical system state (reduced web interface)
+    if (ConfigClass::getInstance()->get()->sectionWebUi.httpAuth.authMode == HTTP_AUTH_DISABLED || getSystemStatus() > 0) {
         return httpHandler(req);
     }
 
