@@ -101,7 +101,7 @@
         showRelativeValues = document.getElementById("showRelativeValues").checked;
         //alert("Auslesen: " + datefile + " " + numbername);
 
-        fetch(getDomainname() + '/fileserver/log/data/' + datefile)
+        fetch(getDomainname() + '/fileserver/log/data/' + datefile, {credentials: 'include'})
         .then(response => {
             // handle the response
             if (response.status == 404) {

@@ -6,6 +6,7 @@
 #include <esp_log.h>
 #include "esp_camera.h"
 
+#include "http_auth.h"
 #include "ClassControlCamera.h"
 #include "ClassLogFile.h"
 
@@ -38,8 +39,6 @@ esp_err_t handler_camera(httpd_req_t *req)
         "  - '/camera?task=flashlight_on' : Flashlight on<br>"
         "  - '/camera?task=flashlight_off' : Flashlight off<br>"
         "4. '/camera?task=api_name' : Print API name and version<br>";
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
@@ -230,7 +229,7 @@ void registerCameraUri(httpd_handle_t server)
     camuri.method = HTTP_GET;
 
     camuri.uri = "/camera";
-    camuri.handler = handler_camera;
+    camuri.handler = HTTP_AUTH_BASIC(handler_camera);
     camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 }

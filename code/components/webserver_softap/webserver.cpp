@@ -14,6 +14,7 @@
 #endif // TASK_ANALYSIS_ON
 
 #include "../main/version.h" // Only include once
+#include "http_auth.h"
 #include "MainFlowControl.h"
 #include "ClassLogFile.h"
 #include "server_file.h"
@@ -274,7 +275,6 @@ esp_err_t handler_get_info(httpd_req_t *req)
         }
         cJSON_Delete(cJSONObject);
 
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "application/json");
 
         if (retVal == ESP_OK) {
@@ -288,7 +288,6 @@ esp_err_t handler_get_info(httpd_req_t *req)
     }
 
     /* Legacy: Provide single data as text response */
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
@@ -734,17 +733,17 @@ void registerWebserverUri(httpd_handle_t server, const char *basePath)
     camuri.method = HTTP_GET;
 
     camuri.uri = "/info";
-    camuri.handler = handler_get_info;
+    camuri.handler = HTTP_AUTH_BASIC(handler_get_info);
     camuri.user_ctx = httpServerData; // Pass server data as context
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri = "/img_tmp/*";
-    camuri.handler = handler_img_tmp_virtual;
+    camuri.handler = HTTP_AUTH_BASIC(handler_img_tmp_virtual);
     camuri.user_ctx = httpServerData; // Pass server data as context
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri = "/*";
-    camuri.handler = handler_main;
+    camuri.handler = HTTP_AUTH_BASIC(handler_main);
     camuri.user_ctx = httpServerData; // Pass server data as context
     httpd_register_uri_handler(server, &camuri);
 }

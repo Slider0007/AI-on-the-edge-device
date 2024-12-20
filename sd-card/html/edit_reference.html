@@ -580,6 +580,7 @@
 
         xhttp.timeout = 10000;  // 10 seconds
         xhttp.open("GET", initialConfigUrl, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 
@@ -666,6 +667,7 @@
 
         xhttp.timeout = 10000;  // 10 seconds
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 

@@ -16,66 +16,205 @@
             text-size-adjust: 100%;
         }
 
+        .table {
+			border: 0pt;
+			border-collapse: collapse;
+			table-layout: fixed;
+			width:660px;
+			margin-block-start: 10px;
+		}
+
+		th {
+			vertical-align: middle;
+			text-align: left;
+			font-size: 1em;
+			background-color: lightgray;
+			padding: 5px;
+		}
+
+        td {
+			padding: 10px;
+			vertical-align: middle;
+		}
+
+        input[type=text], input[type=password] {
+			width: 96%;
+			min-width:240px;
+			max-width:96%;
+			margin-right: 10px;
+			padding: 3px 5px;
+			display: inline-block;
+			border: 1px solid #ccc;
+			font-size: 1em;
+			vertical-align: middle;
+		}
+
+        select {
+			min-width: 72px;
+			max-width: 100%;
+			padding: 3px 5px;
+			display: inline-block;
+			border: 1px solid #ccc;
+			font-size: 1em;
+			margin-right: 10px;
+			vertical-align: middle;
+		}
+
         .button {
             padding: 5px 10px;
             width: 205px;
             font-size: 16px;
         }
+
+        .field-icon {
+			float: right;
+			margin-left: -22px;
+			margin-top: -22px;
+			position: relative;
+			z-index: 2;
+		}
     </style>
 
     <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
+    <link rel="stylesheet" href="mkdocs_theme.css?v=$COMMIT_HASH">
+    <link rel="stylesheet" href="mkdocs_theme_extra.css?v=$COMMIT_HASH">
     <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
     <script src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
 <body style="font-family: arial">
 
-    <h4>Step 5 / 5: Initial setup completed</h4>
+    <h4>Step 5 / 5: Configure WebUI Security & Complete Initial Setup</h4>
 
-    <p>
-        Congratulations! You have completed the initial setup and you are now ready to switch to the regular web interface!
-    </p>
-    <p>
-        Once you push the button below, the setup mode will be completed and the device will be automatically switch to
-        regular web interface. If configuration is error free, the device will automatically start with first processing.
-        It will take some time until you get the first reading.
-    </p>
-    <p>
-        <button class="button" onclick="completeSetup()">Complete Setup</button>
-    </p>
+	<table class="table">
+		<colgroup>
+			<col span="1" style="width:310px">
+			<col span="1" style="width:310px;">
+			<col span="1">
+		</colgroup>
+		<tr>
+			<th colspan="3">WebUI Security</th>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<span>Authentication</span>
+			</td>
+			<td>
+				<form id="webui_httpauth_authmode_form">
+					<select class="classvisibility_init" name="webui.httpauth.authmode" id="webui_httpauth_authmode_value"
+							onchange="setClassVisibility('classvisibility_webui_httpauth', this.value === '1');
+								gatherChangedParameter(this.form, true)">
+						<option value="0" selected>Disabled</option>
+						<option value="1">Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webui_httpauth_authmode</td>
+		</tr>
+
+		<tr class="classvisibility_webui_httpauth">
+			<td class="indent2">
+				<span>Username</span>
+			</td>
+			<td>
+				<form id="webui_httpauth_username_form">
+					<input type="text" name="webui.httpauth.username" id="webui_httpauth_username_value"
+						onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webui_httpauth_uername</td>
+		</tr>
+
+		<tr class="classvisibility_webui_httpauth">
+			<td class="indent2">
+				<span>Password</span>
+			</td>
+			<td>
+				<form class="wrapper" id="webui_httpauth_password_form">
+					<input type="password" name="webui.httpauth.password" id="webui_httpauth_password_value" autocomplete="on"
+						onchange="gatherChangedParameter(this.form)">
+						<span toggle="#webui_httpauth_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webui_httpauth_password</td>
+		</tr>
+        <tr>
+			<th colspan="3">Complete Initial Setup</th>
+		</tr>
+        <tr>
+            <td colspan="3">
+                <p>
+                    Congratulations! You have completed the initial setup and you are now ready to switch to the regular web interface!
+                </p>
+                <p>
+                    Once you push the button below, the setup mode will be completed and the device will be automatically switch to
+                    regular web interface. If configuration is error free, the device will automatically start with first processing.
+                    It will take some time until you get the first reading.
+                </p>
+                <p>
+                    <button class="button" onclick="completeSetup()">Complete Setup</button>
+                </p>
+            </td>
+        </tr>
+    </table>
+
+
 
 <script src="global_common.js?v=$COMMIT_HASH"></script>
 <script src="global_data.js?v=$COMMIT_HASH"></script>
 <script>
 
-    function reboot()
-    {
-        firework.launch('Setup completed', 'success', 5000);
-        jsonConfig = getConfigFromStorage(); // Get config
-        jsonConfig.operationmode.opmode = 1;
+    // Toggle password view
+	$(".toggle-password").click(function()
+	{
+		let input = $($(this).attr("toggle"));
 
-        saveConfig(JSON.stringify(jsonConfig)).then(() => {
-            setTimeout(function() {
-                reloadConfig();
-            }, 500);
-        });
-
-        firework.launch('Regular web interface gets loaded in a few seconds...', 'success', 10000);
-        setTimeout(function() {
-            let stringota = getDomainname();
-            parent.location = stringota;
-            parent.location.href = stringota;
-            parent.location.assign(stringota);
-            parent.location.replace(stringota);
-        }, 7000);
-    }
-
+		if (input.attr("type") == "password") {
+			input.attr("type", "text");
+		}
+		else {
+			input.attr("type", "password");
+		}
+	});
 
     function completeSetup()
     {
-        if (confirm("Do you want to complete the setup mode and switch to regular web interface?"))
-            loadConfig().then(() => reboot());
+        if (confirm("Do you want to complete the setup mode and switch to regular web interface?")) {
+            firework.launch('Setup completed', 'success', 5000);
+
+            jsonConfig.operationmode.opmode = 1; // AUTO mode
+            jsonConfig.webui.httpauth.authmode = $("#webui_httpauth_authmode_value").val();
+            jsonConfig.webui.httpauth.username = $("#webui_httpauth_username_value").val();
+            jsonConfig.webui.httpauth.password = $("#webui_httpauth_password_value").val();
+
+            saveConfig(JSON.stringify(jsonConfig)).then(() => {
+                setTimeout(function() {
+                    reloadConfig();
+                }, 500);
+            });
+
+            firework.launch('Regular web interface gets loaded in a few seconds...', 'success', 10000);
+            setTimeout(function() {
+                let stringota = getDomainname();
+                parent.location = stringota;
+                parent.location.href = stringota;
+                parent.location.assign(stringota);
+                parent.location.replace(stringota);
+            }, 7000);
+        }
     }
+
+    function loadConfigData()
+    {
+        jsonConfig = getConfigFromStorage(); // Get config
+        $("#webui_httpauth_authmode_value").val(jsonConfig.webui.httpauth.authmode);
+        $("#webui_httpauth_username_value").val(jsonConfig.webui.httpauth.username);
+        $("#webui_httpauth_password_value").val(jsonConfig.webui.httpauth.password);
+		triggerClassElementOnChange("classvisibility_init");
+    }
+
+    loadConfig().then(() => loadConfigData());
 
 </script>
 

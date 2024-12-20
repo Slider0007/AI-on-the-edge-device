@@ -177,7 +177,6 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
     int received = 0;
     jsonBuffer[0] = '\0'; // Reset buffer content before usage
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "application/json");
 
     char *httpBuffer = (char *)((struct HttpServerData *)req->user_ctx)->scratch;
@@ -1571,6 +1570,27 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     // WebUI
     // ***************************
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "httpauth"), "authmode");
+    if (cJSON_IsNumber(objEl)) {
+        cfgDataTemp.sectionWebUi.httpAuth.authMode = std::clamp(objEl->valueint, 0, 1);
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "httpauth"), "username");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionWebUi.httpAuth.username = objEl->valuestring;
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "httpauth"), "password");
+    if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
+        cfgDataTemp.sectionWebUi.httpAuth.password = objEl->valuestring;
+        saveDataToNVS("webui_httpauth", cfgDataTemp.sectionWebUi.httpAuth.password);
+    }
+    else {
+        if (!unityTest) {
+            loadDataFromNVS("webui_httpauth", cfgDataTemp.sectionWebUi.httpAuth.password);
+        }
+    }
+
     objEl = cJSON_GetObjectItem(
         cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "overviewpage"), "enabled");
     if (cJSON_IsBool(objEl)) {
@@ -2454,8 +2474,20 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 
     // WebUI
     // ***************************
-    cJSON *webui, *webuiAutorefresh, *webuiAutorefreshOverview, *webuiAutorefreshDataGraph;
+    cJSON *webui, *webuiHttpAuth, *webuiAutorefresh, *webuiAutorefreshOverview, *webuiAutorefreshDataGraph;
     if (!cJSON_AddItemToObject(cJsonObject, "webui", webui = cJSON_CreateObject())) {
+        retVal = ESP_FAIL;
+    }
+    if (!cJSON_AddItemToObject(webui, "httpauth", webuiHttpAuth = cJSON_CreateObject())) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddNumberToObject(webuiHttpAuth, "authmode", cfgDataTemp.sectionWebUi.httpAuth.authMode) == NULL) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddStringToObject(webuiHttpAuth, "username", cfgDataTemp.sectionWebUi.httpAuth.username.c_str()) == NULL) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddStringToObject(webuiHttpAuth, "password", cfgDataTemp.sectionWebUi.httpAuth.password.empty() ? "" : "******") == NULL) {
         retVal = ESP_FAIL;
     }
     if (!cJSON_AddItemToObject(webui, "autorefresh", webuiAutorefresh = cJSON_CreateObject())) {
@@ -2500,7 +2532,6 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 //**************************************************************************************************
 esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 {
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "application/json");
 
     if (serializeConfig() == ESP_OK) {
@@ -2695,13 +2726,13 @@ void registerConfigFileUri(httpd_handle_t server)
     httpd_uri_t camuri = {};
 
     camuri.uri = "/config";
-    camuri.handler = handlerGetConfigRequest;
+    camuri.handler = HTTP_AUTH_BASIC(handlerGetConfigRequest);
     camuri.method = HTTP_GET;
     camuri.user_ctx = httpServerData; // Pass server data as context
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri = "/config";
-    camuri.handler = handlerSetConfigRequest;
+    camuri.handler = HTTP_AUTH_BASIC(handlerSetConfigRequest);
     camuri.method = HTTP_POST,
     camuri.user_ctx = httpServerData; // Pass server data as context
     httpd_register_uri_handler(server, &camuri);

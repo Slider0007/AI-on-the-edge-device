@@ -109,7 +109,6 @@ esp_err_t config_handler_AP(httpd_req_t *req)
     }
     ConfigClass::getInstance()->persistConfig();
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_sendstr(req, "WLAN config set");
     return ESP_OK;
 }

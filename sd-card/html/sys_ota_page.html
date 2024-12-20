@@ -171,6 +171,7 @@
         };
 
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 
@@ -193,6 +194,7 @@
     {
         let xhttp = new XMLHttpRequest();
         xhttp.open("GET", "/reboot", true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 
@@ -222,6 +224,7 @@
 
         let _toDo = domainname + "/ota?task=emptyfirmwaredir";
         xhttp.open("GET", _toDo, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 
@@ -251,7 +254,7 @@
 
                             if (action_runtime > 10) { // After 30 seconds, start to check if we are up again
                                 /* Check if the device is up again and forward to index page if so */
-                                fetch(getDomainname(), {mode: 'no-cors'})
+                                fetch(getDomainname(), {mode: 'no-cors', credentials: 'include'})
                                     .then(r=>{
                                         parent.location.href=('index.html');
                                     });
@@ -281,6 +284,7 @@
         filePath = file_name.split(/[\\\/]/).pop();
         let _toDo = domainname + "/ota?task=update&file=" + filePath;
         xhttp.open("GET", _toDo, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 
@@ -307,6 +311,7 @@
         ajax.addEventListener("abort", abortHandler, false);
 
         ajax.open("POST", upload_path);
+        ajax.withCredentials = true;
         ajax.send(file);
     }
 

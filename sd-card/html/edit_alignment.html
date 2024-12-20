@@ -297,6 +297,7 @@
 
         xhttp.timeout = 10000;  // 10 seconds
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 
@@ -622,8 +623,9 @@
         const context = canvas.getContext('2d');
         const img = document.getElementById(el);
 
-        if (getTestEnvironmentActive()) // Avoid error in testing mode: The canvas has been tainted by cross-origin data.
-            img.crossOrigin = "Anonymous";
+        if (getTestEnvironmentActive()) { // Avoid error in testing mode: The canvas has been tainted by cross-origin data.
+            img.crossOrigin = "use-credentials";
+        }
 
         canvas.width = img.width;
         canvas.height = img.height;

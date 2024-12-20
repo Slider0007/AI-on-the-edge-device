@@ -2881,6 +2881,50 @@
 		</tr>
 
 		<tr>
+			<td class="indent1">
+				<span>Authentication</span>
+			</td>
+			<td>
+				<form id="webui_httpauth_authmode_form">
+					<select class="classvisibility_init" name="webui.httpauth.authmode" id="webui_httpauth_authmode_value"
+							onchange="setClassVisibility('classvisibility_webui_authmode', this.value === '1');
+								gatherChangedParameter(this.form, true)">
+						<option value="0" selected>Disabled</option>
+						<option value="1">Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webui_httpauth_authmode</td>
+		</tr>
+
+		<tr class="classvisibility_webui_authmode">
+			<td class="indent2">
+				<span>Username</span>
+			</td>
+			<td>
+				<form id="webui_httpauth_username_form">
+					<input type="text" name="webui.httpauth.username" id="webui_httpauth_username_value"
+						onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webui_httpauth_uername</td>
+		</tr>
+
+		<tr class="classvisibility_webui_authmode">
+			<td class="indent2">
+				<span>Password</span>
+			</td>
+			<td>
+				<form class="wrapper" id="webui_httpauth_password_form">
+					<input type="password" name="webui.httpauth.password" id="webui_httpauth_password_value" autocomplete="on"
+						onchange="gatherChangedParameter(this.form)">
+						<span toggle="#webui_httpauth_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webui_httpauth_password</td>
+		</tr>
+
+		<tr>
 			<td style="padding-top:25px" colspan="3">
 				<b>Overview</b>
 			</td>
