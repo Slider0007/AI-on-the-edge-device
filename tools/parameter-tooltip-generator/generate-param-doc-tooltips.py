@@ -81,7 +81,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
     setupSecurityPageContent = setupSecurityPageContent.replace("<td style=\"visibility:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>",
                                                                   "<td>" + htmlTooltip + "</td>")
 
-    with open(docsMainFolder + "/" + referenceImagePage, 'w') as setupSecurityPageHandle:
+    with open(docsMainFolder + "/" + setupSecurityPage, 'w') as setupSecurityPageHandle:
         setupSecurityPageHandle.write(setupSecurityPageContent)
 
 

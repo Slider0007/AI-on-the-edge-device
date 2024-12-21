@@ -15,7 +15,7 @@ Select authentication mode for WebUI / REST API authentication.
 | Input Option               | Description
 |:---                        |:---
 | `Disabled`                 | WebUI / REST API endpoint authentication disabled, anonymous access allowed
-| `Enabled`                  | WebUI / REST API endpoint authentication with username and password (HTTP basic access)
+| `Enabled`                  | WebUI / REST API endpoint authentication with username and password
 
 
 !!! Warning
