@@ -84,7 +84,7 @@ esp_err_t handleHttpAuthBasic(httpd_req_t *req, esp_err_t httpHandler(httpd_req_
                 LogFile.writeToFile(ESP_LOG_WARN, TAG, "Access denied. Wrong username or password");
                 httpd_resp_set_status(req, "401 Unauthorized");
                 httpd_resp_set_type(req, "text/html");
-                httpd_resp_set_hdr(req, "WWW-Authenticate", "Basic realm=\"AIOTE\"");
+                httpd_resp_set_hdr(req, "WWW-Authenticate", "Basic realm=\"AI-on-the-Edge\"");
                 httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Access denied. Wrong username or password");
             }
 
@@ -94,7 +94,7 @@ esp_err_t handleHttpAuthBasic(httpd_req_t *req, esp_err_t httpHandler(httpd_req_
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "Access denied. No or invalid authorization data");
             httpd_resp_set_status(req, "401 Unauthorized");
             httpd_resp_set_type(req, "text/html");
-            httpd_resp_set_hdr(req, "WWW-Authenticate", "Basic realm=\"AIOTE\"");
+            httpd_resp_set_hdr(req, "WWW-Authenticate", "Basic realm=\"AI-on-the-Edge\"");
             httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Access denied. No or invalid authorization data");
         }
 
@@ -104,7 +104,7 @@ esp_err_t handleHttpAuthBasic(httpd_req_t *req, esp_err_t httpHandler(httpd_req_
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Access denied. No authorization header");
         httpd_resp_set_status(req, "401 Unauthorized");
         httpd_resp_set_type(req, "application/json");
-        httpd_resp_set_hdr(req, "WWW-Authenticate", "Basic realm=\"AIOTE\"");
+        httpd_resp_set_hdr(req, "WWW-Authenticate", "Basic realm=\"AI-on-the-Edge\"");
         httpd_resp_send(req, NULL, 0);
     }
 
