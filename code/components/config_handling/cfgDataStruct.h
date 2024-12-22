@@ -94,7 +94,7 @@ enum NetworkOperationMode {
 };
 
 
-enum HttpAuthLevel {
+enum HttpAuthMode {
     HTTP_AUTH_DISABLED = 0,
     HTTP_AUTH_ENABLED = 1
 };
