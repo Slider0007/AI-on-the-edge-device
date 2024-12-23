@@ -6,6 +6,7 @@
 #include <string>
 
 #include "../../include/defines.h"
+#include "http_auth.h"
 
 struct HttpServerData {
     char basePathRoot[ESP_VFS_PATH_MAX + 1];       // Base path of main storage

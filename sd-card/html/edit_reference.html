@@ -69,78 +69,9 @@
             font-size: 16px;
             margin-right: 10px;
         }
-
-		.tooltip {
-			position: relative;
-			display: inline-block;
-		}
-
-		.tooltip .tooltiptext {
-			visibility: hidden;
-			min-width: 310px;
-			max-width: 310px;
-			width: 310px;
-			background-color: #dfdfdf;
-			padding-top: 5px;
-			padding-bottom: 10px;
-			padding-left: 10px;
-			padding-right: 10px;
-			border: solid black 1px;
-			position: absolute; /* Position the tooltip */
-			z-index: 99;
-			top: 100%;
-			margin-left: -40px;
-		}
-
-		.tooltip:hover .tooltiptext {
-			visibility: visible;
-		}
-
-		.tooltip .tooltiptext table {
-			border-collapse: collapse;
-		}
-
-		.tooltip .tooltiptext table th, .tooltip .tooltiptext table td {
-			border: 1px solid darkgray;
-			padding: 5px;
-		}
-
-		.tooltip .tooltiptext h1 { /* Tooltip headline, e.g. parameter name */
-			font-size: 1.5em;
-			margin-top: 0.2em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip .tooltiptext h2 { /* Tooltip sub-headline, e.g. description*/
-			font-size: 1.2em;
-			margin-top: 1em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip .tooltiptext h3 {
-			font-size: 1.05em;
-			margin-top: 1em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip .tooltiptext h4 {
-			font-size: 0.83em;
-			margin-top: 1em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip .tooltiptext p {
-			margin-top: 0.3em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip-content {
-			width: calc(100% - 2px);
-			height: calc(100% - 2px);
-			padding: 1px;
-		}
     </style>
 
+    <link rel="stylesheet" href="param_tooltip.css?v=$COMMIT_HASH">
     <link rel="stylesheet" href="mkdocs_theme.css?v=$COMMIT_HASH">
     <link rel="stylesheet" href="mkdocs_theme_extra.css?v=$COMMIT_HASH">
     <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
@@ -580,6 +511,7 @@
 
         xhttp.timeout = 10000;  // 10 seconds
         xhttp.open("GET", initialConfigUrl, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 
@@ -666,6 +598,7 @@
 
         xhttp.timeout = 10000;  // 10 seconds
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 

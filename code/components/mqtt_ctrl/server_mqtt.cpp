@@ -10,6 +10,7 @@
 #include <esp_private/esp_clk.h>
 #include <cJSON.h>
 
+#include "http_auth.h"
 #include "MainFlowControl.h"
 #include "ClassLogFile.h"
 #include "connect_wlan.h"
@@ -300,7 +301,6 @@ esp_err_t handler_mqtt(httpd_req_t *req)
                                       "3. Print API name and version<br>"
                                       " - '/mqtt?task=api_name'";
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
@@ -805,7 +805,7 @@ void registerMqttUri(httpd_handle_t server)
     uri.method = HTTP_GET;
 
     uri.uri = "/mqtt";
-    uri.handler = handler_mqtt;
+    uri.handler = HTTP_AUTH_BASIC(handler_mqtt);
     uri.user_ctx = NULL;
     httpd_register_uri_handler(server, &uri);
 }

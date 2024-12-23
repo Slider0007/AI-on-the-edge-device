@@ -198,6 +198,7 @@
 
         xhttp.timeout = 10000;  // 10 seconds
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     }
 
@@ -229,6 +230,7 @@
 
         xhttp_sequence.timeout = 10000;  // 10 seconds
         xhttp_sequence.open("GET", url_sequence, true);
+        xhttp_sequence.withCredentials = true;
         xhttp_sequence.send();
 
         // Get current RAW Value
@@ -261,6 +263,7 @@
 
         xhttp_rawvalue.timeout = 10000;  // 10 seconds
         xhttp_rawvalue.open("GET", url_rawvalue, true);
+        xhttp_rawvalue.withCredentials = true;
         xhttp_rawvalue.send();
 
         // Reset result

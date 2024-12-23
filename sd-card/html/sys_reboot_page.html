@@ -73,6 +73,7 @@
 
 		xhttp.timeout = 10000;
         xhttp.open("GET", getDomainname() + "/reboot", true);
+		xhttp.withCredentials = true;
         xhttp.send();
     }
 
@@ -90,7 +91,7 @@
 			// Check every 2 seconds for availability
 			let checkInterval = setInterval(function() {
 				checkCounter += 1;
-				fetch(getDomainname(), {mode: 'no-cors'})
+				fetch(getDomainname(), {mode: 'no-cors', credentials: 'include'})
 					.then(r=>{
 						parent.location.href=('index.html');
 					});

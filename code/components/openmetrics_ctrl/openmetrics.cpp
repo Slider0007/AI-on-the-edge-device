@@ -7,6 +7,7 @@
 #include <esp_log.h>
 #include <esp_private/esp_clk.h>
 
+#include "http_auth.h"
 #include "system.h"
 #include "ClassFlowDefineTypes.h"
 #include "MainFlowControl.h"
@@ -172,12 +173,10 @@ std::string createSequenceMetrics(const std::string &metricNamePrefix, const std
 esp_err_t handler_openmetrics(httpd_req_t *req)
 {
     if (getTaskAutoFlowState() <= FLOW_TASK_STATE_INIT) {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E95: Request rejected, flow not initialized");
         return ESP_FAIL;
     }
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain"); // application/openmetrics-text is not yet supported by prometheus so we use text/plain for now
 
     // Metric name prefix
@@ -245,7 +244,7 @@ void registerOpenmetricsUri(httpd_handle_t server)
     camuri.method = HTTP_GET;
 
     camuri.uri = "/metrics";
-    camuri.handler = handler_openmetrics;
+    camuri.handler = HTTP_AUTH_BASIC(handler_openmetrics);
     camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 }

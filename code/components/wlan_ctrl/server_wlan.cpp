@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "http_auth.h"
 #include "ClassLogFile.h"
 #include "connect_wlan.h"
 
@@ -21,8 +22,6 @@ esp_err_t handler_wlan(httpd_req_t *req)
     const std::string RESTUsageInfo = "Handler usage:<br>"
                                       "1. '/wlan?task=scan': Scan WLAN networks<br>"
                                       "2. '/wlan?task=api_name' : Print API name and version";
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
@@ -60,7 +59,7 @@ void registerWlanUri(httpd_handle_t server)
     camuri.method = HTTP_GET;
 
     camuri.uri = "/wlan";
-    camuri.handler = handler_wlan;
+    camuri.handler = HTTP_AUTH_BASIC(handler_wlan);
     camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 }
