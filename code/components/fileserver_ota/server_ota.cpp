@@ -334,8 +334,6 @@ esp_err_t handler_ota_update(httpd_req_t *req)
     std::string task = "";
     bool deleteFileRequest = false;
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
     if (httpd_req_get_url_query_str(req, query, 200) == ESP_OK) {
         if (httpd_query_key_value(query, "task", valuechar, sizeof(valuechar)) == ESP_OK) {
             task = std::string(valuechar);
@@ -684,7 +682,6 @@ esp_err_t handler_reboot(httpd_req_t *req)
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "handler_reboot");
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
     httpd_resp_sendstr(req, "Reboot initiated");
@@ -702,13 +699,13 @@ void registerOtaRebootUri(httpd_handle_t server)
     httpd_uri_t camuri = {};
     camuri.method = HTTP_GET;
     camuri.uri = "/ota";
-    camuri.handler = handler_ota_update;
+    camuri.handler = HTTP_AUTH_BASIC(handler_ota_update);
     camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.method = HTTP_GET;
     camuri.uri = "/reboot";
-    camuri.handler = handler_reboot;
+    camuri.handler = HTTP_AUTH_BASIC(handler_reboot);
     camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 }

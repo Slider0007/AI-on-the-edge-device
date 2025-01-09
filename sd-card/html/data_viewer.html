@@ -78,7 +78,7 @@
     }
 
     async function funcRequest(url){
-        await fetch(url)
+        await fetch(url, {credentials: 'include'})
         .then((res) => {
             if (!res.ok) {
                 document.getElementById("data").innerHTML = "HTTP error " + res.status;

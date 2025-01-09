@@ -26,6 +26,7 @@ async function fileCopyOnServer(_source, _target, _domainname = "", async = fals
             xhttp.timeout = 10000;  // 10 seconds
 
         xhttp.open("GET", url, async);
+        xhttp.withCredentials = true;
         xhttp.send();
     });
 }
@@ -52,6 +53,7 @@ function fileDeleteOnServer(_filename, _domainname = "")
     };
 
     xhttp.open("POST", url, false);
+    xhttp.withCredentials = true;
     xhttp.send();
 
     return okay;
@@ -82,6 +84,7 @@ function uploadContent(_content, _filename, _domainname = "")
     };
 
     xhttp.open("POST", url, false);
+    xhttp.withCredentials = true;
     xhttp.send(_content);
 
     return okay;
@@ -114,6 +117,7 @@ async function getWlanNetworks()
 
         xhttp.timeout = 10000; // 10 seconds
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     });
 }
@@ -141,6 +145,7 @@ async function getDataFileList()
 
         xhttp.timeout = 10000; // 10 seconds
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     });
 }
@@ -168,6 +173,7 @@ async function getTfliteFileList()
 
         xhttp.timeout = 10000; // 10 seconds
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     });
 }
@@ -195,6 +201,7 @@ async function getCertFileList()
 
         xhttp.timeout = 10000; // 10 seconds
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     });
 }
@@ -230,6 +237,7 @@ function reloadConfig()
 
     xhttp.timeout = 10000;  // 10 seconds
     xhttp.open("GET", url, true);
+    xhttp.withCredentials = true;
     xhttp.send();
 }
 
@@ -260,6 +268,7 @@ async function saveConfig(data)
         };
 
         xhttp.open("POST", url, true);
+        xhttp.withCredentials = true;
         xhttp.send(data);
     });
 }
@@ -288,6 +297,7 @@ async function loadConfig()
 
         xhttp.timeout = 10000;  // 10 seconds
         xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
         xhttp.send();
     });
 }

@@ -49,7 +49,6 @@ esp_err_t getDataFileList(httpd_req_t *req)
     esp_err_t retVal = ESP_FAIL;
     const char verz_name[] = "/sdcard/log/data";
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
@@ -103,7 +102,6 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
     esp_err_t retVal = ESP_FAIL;
     const char verz_name[] = "/sdcard/config/models";
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
@@ -157,7 +155,6 @@ esp_err_t getCertFileList(httpd_req_t *req)
     esp_err_t retVal = ESP_FAIL;
     const char verz_name[] = "/sdcard/config/certs";
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
@@ -216,7 +213,6 @@ esp_err_t sendFile(httpd_req_t *req, std::string filename)
     setvbuf(fd, NULL, _IOFBF, 512);
 
     // ESP_LOGI(TAG, "Sending file: %s", filename.c_str());
-    // httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     // For all files with the following file extention tell the webbrowser to cache them for a long period
     if (endsWith(filename, ".html") || endsWith(filename, ".htm") || endsWith(filename, ".css") || endsWith(filename, ".js") ||
@@ -288,7 +284,6 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(fd, NULL, _IOFBF, 512);
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
@@ -375,13 +370,11 @@ static esp_err_t handler_logfiles(httpd_req_t *req)
         return sendLogfile(req, true);
     }
     else if (type.compare("api_name") == 0) {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, APIName);
         return ESP_OK;
     }
     else {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E91: Parameter not found");
         return ESP_FAIL;
@@ -396,7 +389,6 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
 
     // ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
@@ -496,13 +488,11 @@ static esp_err_t handler_datafiles(httpd_req_t *req)
         return sendDatafile(req, true);
     }
     else if (type.compare("api_name") == 0) {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, APIName);
         return ESP_OK;
     }
     else {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E91: Parameter not found");
         return ESP_FAIL;
@@ -544,7 +534,6 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
         return ESP_FAIL;
     }
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
 
     /* Send HTML file header */
@@ -735,7 +724,6 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(fd, NULL, _IOFBF, 512);
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
 
     ESP_LOGD(TAG, "Sending file: %s (%ld bytes)", filename, file_stat.st_size);
@@ -777,8 +765,6 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     char filepath[FILE_PATH_MAX];
     FILE *fd = NULL;
     struct stat file_stat;
-
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
 
     /* Skip leading "/upload" from URI to get filename */
     /* Note sizeof() counts NULL termination hence the -1 */
@@ -920,8 +906,6 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
     std::string directory;
     std::string zw;
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
         if (httpd_query_key_value(query, "task", valuechar, sizeof(valuechar)) == ESP_OK) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Task: " + std::string(valuechar));
@@ -1032,7 +1016,6 @@ static esp_err_t coredump_handler(httpd_req_t *req)
     char valuechar[30];
     std::string task;
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
@@ -1147,7 +1130,7 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
     httpd_uri_t file_download = {
         .uri = "/fileserver*", // Match all URIs of type /path/to/file
         .method = HTTP_GET,
-        .handler = download_get_handler,
+        .handler = HTTP_AUTH_BASIC(download_get_handler),
         .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &file_download);
@@ -1156,7 +1139,7 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
     httpd_uri_t file_upload = {
         .uri = "/upload/*", // Match all URIs of type /upload/path/to/file
         .method = HTTP_POST,
-        .handler = upload_post_handler,
+        .handler = HTTP_AUTH_BASIC(upload_post_handler),
         .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &file_upload);
@@ -1165,7 +1148,7 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
     httpd_uri_t file_delete = {
         .uri = "/delete/*", // Match all URIs of type /delete/path/to/file
         .method = HTTP_POST,
-        .handler = delete_post_handler,
+        .handler = HTTP_AUTH_BASIC(delete_post_handler),
         .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &file_delete);
@@ -1174,7 +1157,7 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
     httpd_uri_t coredump = {
         .uri = "/coredump",
         .method = HTTP_GET,
-        .handler = coredump_handler,
+        .handler = HTTP_AUTH_BASIC(coredump_handler),
         .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &coredump);
@@ -1182,7 +1165,7 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
     httpd_uri_t handler_logfile = {
         .uri = "/log",
         .method = HTTP_GET,
-        .handler = handler_logfiles,
+        .handler = HTTP_AUTH_BASIC(handler_logfiles),
         .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &handler_logfile);
@@ -1190,7 +1173,7 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
     httpd_uri_t handler_datafile = {
         .uri = "/data",
         .method = HTTP_GET,
-        .handler = handler_datafiles,
+        .handler = HTTP_AUTH_BASIC(handler_datafiles),
         .user_ctx = httpServerData // Pass server data as context
     };
     httpd_register_uri_handler(server, &handler_datafile);

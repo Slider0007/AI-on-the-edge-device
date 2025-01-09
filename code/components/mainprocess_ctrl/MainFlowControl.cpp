@@ -104,7 +104,6 @@ bool doInit(void)
 
 esp_err_t triggerReloadConfig(httpd_req_t *req)
 {
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
     if (taskAutoFlowState == FLOW_TASK_STATE_INIT || taskAutoFlowState == FLOW_TASK_STATE_SETUPMODE ||
@@ -190,7 +189,6 @@ void triggerFlowStartByGpio()
 
 esp_err_t handler_cycle_start(httpd_req_t *req)
 {
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
     if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART || taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART ||
@@ -235,7 +233,6 @@ esp_err_t handler_cycle_start(httpd_req_t *req)
 esp_err_t handler_fallbackvalue(httpd_req_t *req)
 {
     if (taskAutoFlowState <= FLOW_TASK_STATE_INIT) {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E95: Request rejected, flow not initialized");
         return ESP_FAIL;
@@ -258,7 +255,6 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
     char numberSequence[50];
     char value[20] = ""; // Default: empty value
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
@@ -353,19 +349,16 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
         copyFile(in, out);
 
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, "Copy Done");
     }
     else if (task.compare("cutref") == 0) {
         if (taskAutoFlowState < FLOW_TASK_STATE_INIT_DELAYED) {
-            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
             httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
             return ESP_FAIL;
         }
         // Interlock request for memory category 4MB due to memory limitation
         else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING && getSPIRAMCategory() == SPIRAMCategory_4MB) {
-            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
             httpd_resp_send_err(req, HTTPD_405_METHOD_NOT_ALLOWED,
                                 ("E91: Request rejected, flow in process | Actual State: " + flowctrl.getActualProcessState()).c_str());
             return ESP_FAIL;
@@ -408,12 +401,10 @@ esp_err_t handler_editflow(httpd_req_t *req)
         caic->cutAndSaveImage(out, x, y, dx, dy);
         delete caic;
 
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, "CutImage Done");
     }
     else {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E92: Task not found");
         return ESP_FAIL;
     }
@@ -425,7 +416,6 @@ esp_err_t handler_editflow(httpd_req_t *req)
 esp_err_t handler_process_data(httpd_req_t *req)
 {
     if (!bTaskAutoFlowCreated) {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "E90: Request rejected, flow not initialized");
         return ESP_FAIL;
     }
@@ -560,7 +550,6 @@ esp_err_t handler_process_data(httpd_req_t *req)
 
         cJSON_Delete(cJSONObject);
 
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         httpd_resp_set_type(req, "application/json");
 
         if (retVal == ESP_OK) {
@@ -574,7 +563,6 @@ esp_err_t handler_process_data(httpd_req_t *req)
     }
 
     /* Legacy: Provide single data as text response */
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/plain");
 
     if (type.compare("api_name") == 0) {
@@ -732,7 +720,6 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
         }
     }
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     httpd_resp_set_type(req, "text/html");
 
     if (type.compare("api_name") == 0) {
@@ -1332,27 +1319,27 @@ void registerMainFlowTaskUri(httpd_handle_t server)
     camuri.method = HTTP_GET;
 
     camuri.uri = "/cycle_start";
-    camuri.handler = handler_cycle_start;
+    camuri.handler = HTTP_AUTH_BASIC(handler_cycle_start);
     camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri = "/set_fallbackvalue";
-    camuri.handler = handler_fallbackvalue;
+    camuri.handler = HTTP_AUTH_BASIC(handler_fallbackvalue);
     camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri = "/editflow";
-    camuri.handler = handler_editflow;
+    camuri.handler = HTTP_AUTH_BASIC(handler_editflow);
     camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri = "/process_data";
-    camuri.handler = handler_process_data;
+    camuri.handler = HTTP_AUTH_BASIC(handler_process_data);
     camuri.user_ctx = httpServerData; // Pass server data as context
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri = "/recognition_details";
-    camuri.handler = handler_recognition_details;
+    camuri.handler = HTTP_AUTH_BASIC(handler_recognition_details);
     camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 }

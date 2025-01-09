@@ -147,81 +147,6 @@
 			font-size: 1em;
 		}
 
-		.tooltip {
-			position: relative;
-			display: inline-block;
-		}
-
-		.tooltip .tooltiptext {
-			visibility: hidden;
-			min-width: 600px;
-			max-width: 600px;
-			width: 600px;
-			background-color: #f1f1f1;
-
-			padding-top: 5px;
-			padding-bottom: 10px;
-			padding-left: 10px;
-			padding-right: 10px;
-
-			border: solid black 1px;
-
-			/* Position the tooltip */
-			position: absolute;
-			z-index: 99;
-			top: 100%;
-			left: 100%;
-			margin-left: -620px;
-		}
-
-		.tooltip:hover .tooltiptext {
-			visibility: visible;
-		}
-
-		.tooltip .tooltiptext table {
-			border-collapse: collapse;
-		}
-
-		.tooltip .tooltiptext table th, .tooltip .tooltiptext table td {
-			border: 1px solid darkgray;
-			padding: 5px;
-		}
-
-		.tooltip .tooltiptext h1 { /* Tooltip headline, e.g. parameter name */
-			font-size: 1.5em;
-			margin-top: 0.2em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip .tooltiptext h2 { /* Tooltip sub-headline, e.g. description*/
-			font-size: 1.2em;
-			margin-top: 1em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip .tooltiptext h3 {
-			font-size: 1.05em;
-			margin-top: 1em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip .tooltiptext h4 {
-			font-size: 0.83em;
-			margin-top: 1em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip .tooltiptext p {
-			margin-top: 0.3em !important;
-			margin-bottom: 0.3em !important;
-		}
-
-		.tooltip-content {
-			width: calc(100% - 2px);
-			height: calc(100% - 2px);
-			padding: 1px;
-		}
-
 		details {
 			text-align: justify;
 			font-size: 1em;
@@ -319,6 +244,7 @@
 		}
 	</style>
 
+	<link rel="stylesheet" href="param_tooltip.css?v=$COMMIT_HASH">
 	<link rel="stylesheet" href="mkdocs_theme.css?v=$COMMIT_HASH">
 	<link rel="stylesheet" href="mkdocs_theme_extra.css?v=$COMMIT_HASH">
     <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
@@ -2878,6 +2804,50 @@
 		</colgroup>
 		<tr>
 			<th colspan="3">WebUI</th>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<span>Authentication</span>
+			</td>
+			<td>
+				<form id="webui_httpauth_authmode_form">
+					<select class="classvisibility_init" name="webui.httpauth.authmode" id="webui_httpauth_authmode_value"
+							onchange="setClassVisibility('classvisibility_webui_authmode', this.value === '1');
+								gatherChangedParameter(this.form, true)">
+						<option value="0" selected>Disabled</option>
+						<option value="1">Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webui_httpauth_authmode</td>
+		</tr>
+
+		<tr class="classvisibility_webui_authmode">
+			<td class="indent2">
+				<span>Username</span>
+			</td>
+			<td>
+				<form id="webui_httpauth_username_form">
+					<input type="text" name="webui.httpauth.username" id="webui_httpauth_username_value"
+						onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webui_httpauth_username</td>
+		</tr>
+
+		<tr class="classvisibility_webui_authmode">
+			<td class="indent2">
+				<span>Password</span>
+			</td>
+			<td>
+				<form class="wrapper" id="webui_httpauth_password_form">
+					<input type="password" name="webui.httpauth.password" id="webui_httpauth_password_value" autocomplete="on"
+						onchange="gatherChangedParameter(this.form)">
+						<span toggle="#webui_httpauth_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webui_httpauth_password</td>
 		</tr>
 
 		<tr>

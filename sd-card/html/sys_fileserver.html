@@ -184,6 +184,7 @@
 
             xhttp.timeout = 10000;  // 10 seconds
             xhttp.open("POST", upload_path, true);
+            xhttp.withCredentials = true;
             xhttp.send(file);
         }
     }

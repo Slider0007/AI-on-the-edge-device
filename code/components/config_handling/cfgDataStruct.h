@@ -94,6 +94,12 @@ enum NetworkOperationMode {
 };
 
 
+enum HttpAuthMode {
+    HTTP_AUTH_DISABLED = 0,
+    HTTP_AUTH_ENABLED = 1
+};
+
+
 //************************************************
 // Additional subelement structs
 //************************************************
@@ -420,6 +426,11 @@ struct CfgData {
 
     // WebUI
     struct SectionWebUi {
+        struct HttpAuth {
+            int authMode = HTTP_AUTH_DISABLED;
+            std::string username = "aiote";
+            std::string password = "";
+        } httpAuth;
         struct AutoRefresh {
             struct OverviewPage {
                 bool enabled = true;

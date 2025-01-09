@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "http_auth.h"
 #include "ClassLogFile.h"
 #include "helper.h"
 
@@ -690,8 +691,6 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
     int requestedGpioNum = -1;
     int requestedPWMDuty = -1;
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-
     if (httpd_req_get_url_query_str(req, query, 200) == ESP_OK) {
         if (httpd_query_key_value(query, "task", value, sizeof(value)) == ESP_OK) {
             task = std::string(value);
@@ -808,7 +807,7 @@ void GpioHandler::registerGpioUri()
     camuri.method = HTTP_GET;
 
     camuri.uri = "/gpio";
-    camuri.handler = callHandleHttpRequest;
+    camuri.handler = HTTP_AUTH_BASIC(callHandleHttpRequest);
     camuri.user_ctx = (void *)this;
     httpd_register_uri_handler(httpServer, &camuri);
 }

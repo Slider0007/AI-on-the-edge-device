@@ -364,6 +364,11 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "cpufrequency": 160
   },
   "webui": {
+    "httpauth": {
+      "authmode": 0,
+      "username": "aiote",
+      "password": ""
+    },
     "autorefresh": {
       "overviewpage": {
         "enabled": true,

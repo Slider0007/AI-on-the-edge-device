@@ -10,6 +10,7 @@ parameterDocsFolder = "./docs/Configuration/Parameter"
 docsMainFolder = "./sd-card/html"
 configPage = "edit_config_param.html"
 referenceImagePage = "edit_reference.html"
+setupSecurityPage = "setup_explain_5.html"
 
 htmlTooltipPrefix = """
     <div class="rst-content"><div class="tooltip"><img src="help.png" width="20px"><span class="tooltiptext">
@@ -45,6 +46,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
 
     htmlTooltip = htmlTooltipPrefix + htmlTooltip + htmlTooltipSuffix
 
+
     ####### configPage: Add tooltips
     with open(docsMainFolder + "/" + configPage, 'r') as configPageHandle:
         configPageContent = configPageHandle.read()
@@ -58,6 +60,7 @@ def generateHtmlTooltip(section, parameter, markdownFile):
     with open(docsMainFolder + "/" + configPage, 'w') as configPageHandle:
         configPageHandle.write(configPageContent)
 
+
     ####### referenceImagePage: Add tooltips
     with open(docsMainFolder + "/" + referenceImagePage, 'r') as referenceImagePageHandle:
         referenceImagePageContent = referenceImagePageHandle.read()
@@ -68,6 +71,18 @@ def generateHtmlTooltip(section, parameter, markdownFile):
 
     with open(docsMainFolder + "/" + referenceImagePage, 'w') as referenceImagePageHandle:
         referenceImagePageHandle.write(referenceImagePageContent)
+
+
+    ####### setupSecurityPage: Add tooltips
+    with open(docsMainFolder + "/" + setupSecurityPage, 'r') as setupSecurityPageHandle:
+        setupSecurityPageContent = setupSecurityPageHandle.read()
+
+    # print("replacing $TOOLTIP_" + section + "_" + parameter + " with the tooltip content...")
+    setupSecurityPageContent = setupSecurityPageContent.replace("<td style=\"visibility:hidden\">$TOOLTIP_" + section + "_" + parameter + "</td>",
+                                                                  "<td>" + htmlTooltip + "</td>")
+
+    with open(docsMainFolder + "/" + setupSecurityPage, 'w') as setupSecurityPageHandle:
+        setupSecurityPageHandle.write(setupSecurityPageContent)
 
 
 print("Generating Tooltips...")
