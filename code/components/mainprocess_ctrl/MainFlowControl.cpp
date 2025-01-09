@@ -72,13 +72,6 @@ bool doInit(void)
         cameraCtrl.printCamInfo();
     }
 
-    // Init main flow components
-    // ********************************************
-    if (!flowctrl.initFlow()) {
-        flowctrl.deinitFlow();
-        return false;
-    }
-
     // Init GPIO handler
     // Note: It has to be initialized before MQTT (topic subscription)
     // and after flow init (MQTT main topic parameter)
@@ -94,6 +87,13 @@ bool doInit(void)
         bRetVal = false;
     }
 #endif // ENABLE_MQTT
+
+    // Init main flow components
+    // ********************************************
+    if (!flowctrl.initFlow()) {
+        flowctrl.deinitFlow();
+        return false;
+    }
 
     // heap_caps_dump(MALLOC_CAP_INTERNAL);
     // heap_caps_dump(MALLOC_CAP_SPIRAM);
@@ -936,6 +936,8 @@ void task_autodoFlow(void *pvParameter)
 #ifdef ENABLE_MQTT
                 publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1, false);
 #endif // ENABLE_MQTT
+
+                gpio_handler_init(); // Init GPIO handler to handle flashlight requests during setup
 
                 while (true) { // Waiting for a REQUEST
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
