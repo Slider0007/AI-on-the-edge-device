@@ -74,10 +74,16 @@ bool doInit(void)
 
     // Init GPIO handler
     // Note: It has to be initialized before MQTT (topic subscription)
-    // and after flow init (MQTT main topic parameter)
     // ********************************************
     if (!gpio_handler_init()) {
         bRetVal = false;
+    }
+
+    // Init main flow components
+    // ********************************************
+    if (!flowctrl.initFlow()) {
+        flowctrl.deinitFlow();
+        return false;
     }
 
     // Init MQTT service
@@ -87,13 +93,6 @@ bool doInit(void)
         bRetVal = false;
     }
 #endif // ENABLE_MQTT
-
-    // Init main flow components
-    // ********************************************
-    if (!flowctrl.initFlow()) {
-        flowctrl.deinitFlow();
-        return false;
-    }
 
     // heap_caps_dump(MALLOC_CAP_INTERNAL);
     // heap_caps_dump(MALLOC_CAP_SPIRAM);
