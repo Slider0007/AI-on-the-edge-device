@@ -1187,6 +1187,25 @@
             canvas.height = this.height;
             RefreshDraw();
 
+            canvas.addEventListener('mousedown', mouseDown, false);
+            canvas.addEventListener('mouseup', mouseUp, false);
+            canvas.addEventListener('mousemove', mouseMove, false);
+
+            $("#img_loading").hide();
+            $("#canvas").show();
+        };
+
+        imageObj.onerror = function() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.textBaseline = "top";
+            context.textAlign = "left";
+            context.font = "16px arial";
+            context.fillText("No reference image", 10, 10);
+
+            canvas.removeEventListener('mousedown', mouseDown, false);
+            canvas.removeEventListener('mouseup', mouseUp, false);
+            canvas.removeEventListener('mousemove', mouseMove, false);
+
             $("#img_loading").hide();
             $("#canvas").show();
         };
@@ -1534,9 +1553,6 @@
     function loadReferenceImage()
     {
         loadCanvas(getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
-        canvas.addEventListener('mousedown', mouseDown, false);
-        canvas.addEventListener('mouseup', mouseUp, false);
-        canvas.addEventListener('mousemove', mouseMove, false);
     }
 
 
@@ -1551,6 +1567,7 @@
         jsonConfigModifiedDelta.analog = new Object();
         jsonConfigModifiedDelta.analog = structuredClone(jsonConfig.analog);
 
+        loadReferenceImage();
         fillSequenceSelectionOptions();
         analogProcessingChanged(true);
         digitProcessingChanged(true);
@@ -1566,7 +1583,6 @@
         openDescription();
 
         $("#img_loading").attr("src", getDomainname() + '/img_loading.gif?v=$COMMIT_HASH');
-        loadReferenceImage();
 
         //if (noConfigInStorage())
 			loadConfig().then(() => loadConfigData());

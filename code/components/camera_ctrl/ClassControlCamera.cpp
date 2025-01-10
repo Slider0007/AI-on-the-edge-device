@@ -1151,14 +1151,12 @@ bool ClassControlCamera::loadNextDemoImage(camera_fb_t *_fb)
 /* Free only user allocated memory without deinit of cam driver */
 void ClassControlCamera::freeDemoMemoryOnly()
 {
-    demoFiles.clear();
-    std::vector<std::string>().swap(demoFiles); // Ensure that memory allocated by vector gets freed
+    disableDemoMode();
 }
 
 
 ClassControlCamera::~ClassControlCamera()
 {
+    disableDemoMode();
     deinitCam();
-    demoFiles.clear();
-    std::vector<std::string>().swap(demoFiles); // Ensure that memory allocated by vector gets freed
 }

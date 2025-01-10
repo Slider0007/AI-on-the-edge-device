@@ -110,7 +110,10 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Multiple reconnect attempts failed. Retry to connect");
             }
         }
-        else {
+        // Fallback to AP needs to be retested with newer ESP IDF versions again.
+        // Sporadic execeptions occur after AP init is successful (LoadProhibited).
+        // Workaround: Use IMPROV service or direct SD card access to reconfigure a wrong WLAN configuration
+        /*else {
             // Fallback to AP mode if initial connection cannot be established after defined time since boot [seconds]
             if (getUptime() >= WLAN_CONNECT_FALLBACK_AP_DELAY) {
                 wifiState.reconnectCnt = 0;
@@ -119,7 +122,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
                 deinitWifi();
                 initWifiAp(wifiState.fallbackApActive);
             }
-        }
+        }*/
     }
     else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_CONNECTED) {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Connected to: " + cfgDataPtr->wlan.ssid + ", RSSI: " + std::to_string(getWifiRssi()));

@@ -172,4 +172,5 @@ time_t ClassFlowTakeImage::getTimeImageTaken()
 ClassFlowTakeImage::~ClassFlowTakeImage()
 {
     delete rawImage;
+    cameraCtrl.freeDemoMemoryOnly();
 }
