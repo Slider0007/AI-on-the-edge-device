@@ -28,16 +28,20 @@ esp_err_t handler_camera(httpd_req_t *req)
     const std::string RESTUsageInfo =
         "Handler usage:<br>"
         "1. Capture (single shot) image with temporary camera parameter set (partial or full parameter set supported):<br>"
-        "(Adding 'filename' parameter save image to SD card with given filename instead of response image)<br>"
-        "- '/camera?task=capture&flashtime=2000&flashintensity=50&brightness=0&contrast=0&"
-        "saturation=0&sharpness=1&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&"
+        "- /camera?task=capture&flashtime=2000&flashintensity=50&brightness=0&contrast=0&"
+        "saturation=0&sharpness=0&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&"
         "gaincontrolmode=1&manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&"
-        "zoomx=0&zoomy=0&filename=/img_tmp/filename.jpg'<br>"
-        "2. Control flashlight:<br>"
-        "- '/camera?task=flashlight_on' : Flashlight on<br>"
-        "- '/camera?task=flashlight_off' : Flashlight off<br>"
-        "3. Print API name and version:<br>"
-        "- '/camera?task=api_name'";
+        "zoomx=0&zoomy=0<br>"
+        "2. Adding 'filename' parameter save image to SD card with given filename instead of response image:<br>"
+        "- /camera?task=capture&flashtime=2000&flashintensity=50&brightness=0&contrast=0&"
+        "saturation=0&sharpness=0&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&"
+        "gaincontrolmode=1&manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&"
+        "zoomx=0&zoomy=0&filename=/img_tmp/filename.jpg<br>"
+        "3. Control flashlight:<br>"
+        "- /camera?task=flashlight_on : Flashlight on<br>"
+        "- /camera?task=flashlight_off : Flashlight off<br>"
+        "4. Print API name and version:<br>"
+        "- /camera?task=api_name";
 
     if (httpd_req_get_url_query_str(req, _query, sizeof(_query)) == ESP_OK) {
         if (httpd_query_key_value(_query, "task", _valuechar, sizeof(_valuechar)) == ESP_OK) {
