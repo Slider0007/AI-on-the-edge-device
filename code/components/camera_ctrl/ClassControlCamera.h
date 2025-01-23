@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include <freertos/FreeRTOS.h>
+
 #include <esp_http_server.h>
 #include <esp_camera.h>
 
@@ -20,6 +22,7 @@ typedef struct {
 class ClassControlCamera
 {
   protected:
+    SemaphoreHandle_t camMutex;
     CfgData::SectionTakeImage::Camera paramCameraInternal;
     CfgData::SectionTakeImage::Flashlight paramFlashlightInternal;
     bool cameraInitSuccessful;
@@ -62,8 +65,10 @@ class ClassControlCamera
     void getOutputFrameSize(int &width, int &height);
 
     esp_err_t captureToBasisImage(CImageBasis *_Image);
-    esp_err_t captureToFile(std::string _nm);
-    esp_err_t captureToHTTP(httpd_req_t *_req);
+    esp_err_t captureToFile(std::string _nm, CfgData::SectionTakeImage::Camera *paramCameraTemp = NULL,
+                            CfgData::SectionTakeImage::Flashlight *paramFlashlightTemp = NULL);
+    esp_err_t captureToHTTP(httpd_req_t *_req, CfgData::SectionTakeImage::Camera *paramCameraTemp = NULL,
+                            CfgData::SectionTakeImage::Flashlight *paramFlashlightTemp = NULL);
     esp_err_t captureToStream(httpd_req_t *_req, bool _flashlightOn);
 
     void initFlashlight(void);

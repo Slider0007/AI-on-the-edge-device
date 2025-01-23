@@ -3,7 +3,7 @@
 * NOTE: And you also might have to disable CORS in your webbrowser.
 * IMPORTANT: For regular WebUI operation this IP parameter is not needed at all!
 */
-let DUTDeviceIP = "192.168.2.66";      // Set the IP of physical device under test
+let DUTDeviceIP = "192.168.2.20";      // Set the IP of physical device under test
 let TestEnvironmentActive = false;
 
 

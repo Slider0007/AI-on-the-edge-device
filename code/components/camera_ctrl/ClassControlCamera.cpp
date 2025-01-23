@@ -73,6 +73,7 @@ static camera_config_t cameraConfig = {
 
 ClassControlCamera::ClassControlCamera()
 {
+    camMutex = xSemaphoreCreateMutex();
     outputFrameSizeWidth = CAMERA_OUTPUT_WINDOW_SIZE_WIDTH;
     outputFrameSizeHeight = CAMERA_OUTPUT_WINDOW_SIZE_HEIGHT;
 
@@ -151,18 +152,22 @@ void ClassControlCamera::skipFrames(uint8_t n)
 {
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Skip camera frames");
 
-    setStatusLed(true);
-    setFlashlight(true);
+    if (xSemaphoreTake(camMutex, portMAX_DELAY) == pdTRUE) {
+        setStatusLed(true);
+        setFlashlight(true);
 
-    camera_fb_t *fb = NULL;
-    for (uint8_t i = 0; i < n; ++i) {
-        vTaskDelay(pdMS_TO_TICKS(100));
-        fb = esp_camera_fb_get();
-        esp_camera_fb_return(fb);
+        camera_fb_t *fb = NULL;
+        for (uint8_t i = 0; i < n; ++i) {
+            vTaskDelay(pdMS_TO_TICKS(100));
+            fb = esp_camera_fb_get();
+            esp_camera_fb_return(fb);
+        }
+
+        setFlashlight(false);
+        setStatusLed(false);
+
+        xSemaphoreGive(camMutex);
     }
-
-    setFlashlight(false);
-    setStatusLed(false);
 }
 
 
@@ -578,7 +583,7 @@ camera_model_t ClassControlCamera::getCamModel(void)
 {
     sensor_t *s = esp_camera_sensor_get();
     if (s == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getCamType: Failed to get control structure");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getCamModel: Failed to get control structure");
         return CAMERA_NONE;
     }
     camera_sensor_info_t *info = esp_camera_sensor_get_info(&s->id);
@@ -647,19 +652,28 @@ esp_err_t ClassControlCamera::captureToBasisImage(CImageBasis *_Image)
         return ESP_FAIL;
     }
 
-    if (paramFlashlightInternal.flashTime > 0) { // Switch on for defined time if a flashTime is set
-        setStatusLed(true);
-        setFlashlight(true);
-        vTaskDelay(paramFlashlightInternal.flashTime / portTICK_PERIOD_MS);
+    camera_fb_t *fb = NULL;
+    if (xSemaphoreTake(camMutex, portMAX_DELAY) == pdTRUE) {
+        if (paramFlashlightInternal.flashTime > 0) { // Switch on for defined time if a flashTime is set
+            setStatusLed(true);
+            setFlashlight(true);
+            vTaskDelay(pdMS_TO_TICKS(paramFlashlightInternal.flashTime));
+        }
+
+        fb = esp_camera_fb_get();
+        esp_camera_fb_return(fb);
+        fb = esp_camera_fb_get();
+
+        if (paramFlashlightInternal.flashTime > 0) { // Switch off if flashlight was on
+            setStatusLed(false);
+            setFlashlight(false);
+        }
+
+        xSemaphoreGive(camMutex);
     }
-
-    camera_fb_t *fb = esp_camera_fb_get();
-    esp_camera_fb_return(fb);
-    fb = esp_camera_fb_get();
-
-    if (paramFlashlightInternal.flashTime > 0) { // Switch off if flashlight was on
-        setStatusLed(false);
-        setFlashlight(false);
+    else {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "captureToBasisImage: Failed to get camera mutex");
+        return ESP_FAIL;
     }
 
     if (fb == NULL) {
@@ -698,7 +712,8 @@ esp_err_t ClassControlCamera::captureToBasisImage(CImageBasis *_Image)
 }
 
 
-esp_err_t ClassControlCamera::captureToFile(std::string _nm)
+esp_err_t ClassControlCamera::captureToFile(std::string _nm, CfgData::SectionTakeImage::Camera *paramCameraTemp,
+                                            CfgData::SectionTakeImage::Flashlight *paramFlashlightTemp)
 {
     if (!cameraInitSuccessful) {
         return ESP_FAIL;
@@ -707,19 +722,44 @@ esp_err_t ClassControlCamera::captureToFile(std::string _nm)
     esp_err_t retVal = ESP_OK;
     std::string ftype;
 
-    if (paramFlashlightInternal.flashTime > 0) { // Switch on for defined time if a flashTime is set
-        setStatusLed(true);
-        setFlashlight(true);
-        vTaskDelay(paramFlashlightInternal.flashTime / portTICK_PERIOD_MS);
+    camera_fb_t *fb = NULL;
+    if (xSemaphoreTake(camMutex, portMAX_DELAY) == pdTRUE) {
+        // Load temporary config
+        if (paramCameraTemp != NULL) {
+            setCameraParameter(paramCameraTemp);
+        }
+        if (paramFlashlightTemp != NULL) {
+            setFlashlightParameter(paramFlashlightTemp);
+        }
+
+        if (paramFlashlightInternal.flashTime > 0) { // Switch on for defined time if a flashTime is set
+            setStatusLed(true);
+            setFlashlight(true);
+            vTaskDelay(pdMS_TO_TICKS(paramFlashlightInternal.flashTime));
+        }
+
+        fb = esp_camera_fb_get();
+        esp_camera_fb_return(fb);
+        fb = esp_camera_fb_get();
+
+        if (paramFlashlightInternal.flashTime > 0) { // Switch off if flashlight was on
+            setStatusLed(false);
+            setFlashlight(false);
+        }
+
+        // Restore persistent config
+        if (paramCameraTemp != NULL) {
+            setCameraParameter(&ConfigClass::getInstance()->get()->sectionTakeImage.camera);
+        }
+        if (paramFlashlightTemp != NULL) {
+            setFlashlightParameter(&ConfigClass::getInstance()->get()->sectionTakeImage.flashlight);
+        }
+
+        xSemaphoreGive(camMutex);
     }
-
-    camera_fb_t *fb = esp_camera_fb_get();
-    esp_camera_fb_return(fb);
-    fb = esp_camera_fb_get();
-
-    if (paramFlashlightInternal.flashTime > 0) { // Switch off if flashlight was on
-        setStatusLed(false);
-        setFlashlight(false);
+    else {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "captureToFile: Failed to get camera mutex");
+        return ESP_FAIL;
     }
 
     if (fb == NULL) {
@@ -807,7 +847,8 @@ static size_t jpg_encode_stream(void *arg, size_t index, const void *data, size_
 }
 
 
-esp_err_t ClassControlCamera::captureToHTTP(httpd_req_t *_req)
+esp_err_t ClassControlCamera::captureToHTTP(httpd_req_t *_req, CfgData::SectionTakeImage::Camera *paramCameraTemp,
+                                            CfgData::SectionTakeImage::Flashlight *paramFlashlightTemp)
 {
     if (!cameraInitSuccessful) {
         return ESP_FAIL;
@@ -817,23 +858,48 @@ esp_err_t ClassControlCamera::captureToHTTP(httpd_req_t *_req)
     size_t fb_len = 0;
     int64_t fr_start = esp_timer_get_time();
 
-    if (paramFlashlightInternal.flashTime > 0) {
-        setStatusLed(true);
-        setFlashlight(true);
-        vTaskDelay(paramFlashlightInternal.flashTime / portTICK_PERIOD_MS);
+    camera_fb_t *fb = NULL;
+    if (xSemaphoreTake(camMutex, portMAX_DELAY) == pdTRUE) {
+        // Load temporary config
+        if (paramCameraTemp != NULL) {
+            setCameraParameter(paramCameraTemp);
+        }
+        if (paramFlashlightTemp != NULL) {
+            setFlashlightParameter(paramFlashlightTemp);
+        }
+
+        if (paramFlashlightInternal.flashTime > 0) {
+            setStatusLed(true);
+            setFlashlight(true);
+            vTaskDelay(pdMS_TO_TICKS(paramFlashlightInternal.flashTime));
+        }
+
+        fb = esp_camera_fb_get();
+        esp_camera_fb_return(fb);
+        fb = esp_camera_fb_get();
+
+        if (paramFlashlightInternal.flashTime > 0) { // Switch off if flashlight was on
+            setStatusLed(false);
+            setFlashlight(false);
+        }
+
+        // Restore persistent config
+        if (paramCameraTemp != NULL) {
+            setCameraParameter(&ConfigClass::getInstance()->get()->sectionTakeImage.camera);
+        }
+        if (paramFlashlightTemp != NULL) {
+            setFlashlightParameter(&ConfigClass::getInstance()->get()->sectionTakeImage.flashlight);
+        }
+
+        xSemaphoreGive(camMutex);
     }
-
-    camera_fb_t *fb = esp_camera_fb_get();
-    esp_camera_fb_return(fb);
-    fb = esp_camera_fb_get();
-
-    if (paramFlashlightInternal.flashTime > 0) { // Switch off if flashlight was on
-        setStatusLed(false);
-        setFlashlight(false);
+    else {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "captureToHTTP: Failed to get camera mutex");
+        return ESP_FAIL;
     }
 
     if (fb == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "captureToFile: Failed to get camera framebuffer");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "captureToHTTP: Failed to get camera framebuffer");
         httpd_resp_send_500(_req);
         return ESP_FAIL;
     }
@@ -880,39 +946,53 @@ esp_err_t ClassControlCamera::captureToStream(httpd_req_t *_req, bool _flashligh
     }
 
     esp_err_t res = ESP_OK;
-    size_t fb_len = 0;
-    int64_t fr_start;
+    size_t fbLen = 0;
+    size_t hlen = 0;
+    int64_t frStart = 0;
+    int64_t frEnd = 0;
+    int64_t frDeltaMs = 0;
+    camera_fb_t *fb = NULL;
     char *part_buf[64];
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Live stream started");
-
-    if (_flashlightOn) {
-        setStatusLed(true);
-        setFlashlight(true);
-    }
-
-    // httpd_resp_set_hdr(_req, "Access-Control-Allow-Origin", "*");  //stream is blocking web interface, only serving to local
 
     httpd_resp_set_type(_req, _STREAM_CONTENT_TYPE);
     httpd_resp_send_chunk(_req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
 
     while (1) {
-        fr_start = esp_timer_get_time();
-        camera_fb_t *fb = esp_camera_fb_get();
-        esp_camera_fb_return(fb);
-        fb = esp_camera_fb_get();
-        if (fb == NULL) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "captureToStream: Failed to get camera framebuffer");
+        frStart = esp_timer_get_time();
+
+        if (xSemaphoreTake(camMutex, portMAX_DELAY) == pdTRUE) {
+            if (_flashlightOn) {
+                setStatusLed(true);
+                setFlashlight(true);
+            }
+
+            fb = esp_camera_fb_get();
+            esp_camera_fb_return(fb);
+            fb = esp_camera_fb_get();
+
+            xSemaphoreGive(camMutex);
+        }
+        else {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "captureToStream: Failed to get camera mutex");
+            res = ESP_FAIL;
             break;
         }
-        fb_len = fb->len;
+
+        if (fb == NULL) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "captureToStream: Failed to get camera framebuffer");
+            res = ESP_FAIL;
+            break;
+        }
+        fbLen = fb->len;
 
         if (res == ESP_OK) {
-            size_t hlen = snprintf((char *)part_buf, sizeof(part_buf), _STREAM_PART, fb_len);
+            hlen = snprintf((char *)part_buf, sizeof(part_buf), _STREAM_PART, fbLen);
             res = httpd_resp_send_chunk(_req, (const char *)part_buf, hlen);
         }
         if (res == ESP_OK) {
-            res = httpd_resp_send_chunk(_req, (const char *)fb->buf, fb_len);
+            res = httpd_resp_send_chunk(_req, (const char *)fb->buf, fbLen);
         }
         if (res == ESP_OK) {
             res = httpd_resp_send_chunk(_req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
@@ -920,16 +1000,16 @@ esp_err_t ClassControlCamera::captureToStream(httpd_req_t *_req, bool _flashligh
 
         esp_camera_fb_return(fb);
 
-        int64_t fr_end = esp_timer_get_time();
-        ESP_LOGD(TAG, "JPG: %dKB %dms", (int)(fb_len / 1024), (int)((fr_end - fr_start) / 1000));
+        frEnd = esp_timer_get_time();
+        ESP_LOGD(TAG, "JPG: %dKB %dms", (int)(fbLen / 1024), (int)((frEnd - frStart) / 1000));
 
         if (res != ESP_OK) { // Exit loop, e.g. also when closing the webpage
             break;
         }
 
-        int64_t fr_delta_ms = (fr_end - fr_start) / 1000;
-        if (CAM_LIVESTREAM_REFRESHRATE > fr_delta_ms) {
-            const TickType_t xDelay = (CAM_LIVESTREAM_REFRESHRATE - fr_delta_ms) / portTICK_PERIOD_MS;
+        frDeltaMs = (frEnd - frStart) / 1000;
+        if (CAM_LIVESTREAM_REFRESHRATE > frDeltaMs) {
+            const TickType_t xDelay = pdMS_TO_TICKS(CAM_LIVESTREAM_REFRESHRATE - frDeltaMs);
             ESP_LOGD(TAG, "Stream: sleep for: %ldms", (long)xDelay * 10);
             vTaskDelay(xDelay);
         }
