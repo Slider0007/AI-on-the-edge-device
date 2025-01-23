@@ -86,6 +86,12 @@ extern "C" void app_main(void)
         return; // Stop here, SD card is needed for proper operation
     }
 
+    // Init SOC temperature sensor (if supported by hardware)
+    // ********************************************
+#ifdef SOC_TEMP_SENSOR_SUPPORTED
+    initSOCTemperatureSensor();
+#endif // SOC_TEMP_SENSOR_SUPPORTED
+
     // SD card: Create log directories (if not already existing)
     // ********************************************
     LogFile.createLogDirectories(); // mandatory for logging + image saving
@@ -254,8 +260,7 @@ extern "C" void app_main(void)
                 setSystemStatusFlag(SYSTEM_STATUS_HEAP_TOO_SMALL);
                 setStatusLed(PSRAM_INIT, 3, true);
             }
-            else { // HEAP size OK --> continue to camera init
-                // Set SPIRAM memory category
+            else { // HEAP size OK --> Set SPIRAM memory category
                 size_t SPIRAMFree = getESPHeapSizeSPIRAMFree();
                 if (SPIRAMFree >= 32000000) {
                     setSPIRAMCategory(SPIRAMCategory_32MB);
@@ -269,36 +274,29 @@ extern "C" void app_main(void)
                 else {
                     setSPIRAMCategory(SPIRAMCategory_4MB);
                 }
-
-                // Init camera
-                // ********************************************
-                esp_err_t camStatus = cameraCtrl.initCam();
-                cameraCtrl.setFlashlight(false);
-
-                // Check camera init
-                // ********************************************
-                if (camStatus != ESP_OK) { // Camera init failed, try to reinit during flow init (MainFlowControl.cpp -> doInit())
-                    setStatusLed(CAM_INIT, 1, false);
-                }
-                else { // ESP_OK -> Camera init OK
-                    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init camera successful");
-                    cameraCtrl.printCamInfo();
-                }
             }
         }
     }
 
-    // Init SOC temperature sensor (if supported by hardware)
+    // Create GPIO handler
+    // Note: GPIO handler interface has to be created before flashlight init
     // ********************************************
-#ifdef SOC_TEMP_SENSOR_SUPPORTED
-    initSOCTemperatureSensor();
-#endif // SOC_TEMP_SENSOR_SUPPORTED
+    createGpioHandler();
 
-    // Print Device info
+    // Init camera + flashlight
+    // Note: Basic flashlight init has to be performed before camera init
+    // ********************************************
+    cameraCtrl.initFlashlight();
+
+    if (cameraCtrl.initCam() != ESP_OK) { // Camera init failed, try to reinit during flow init (MainFlowControl.cpp -> doInit())
+        setStatusLed(CAM_INIT, 1, false);
+    }
+
+    // Show device info
     // ********************************************
     printDeviceInfo();
 
-    // Print SD-Card info
+    // Show SD card info
     // ********************************************
     LogFile.writeToFile(ESP_LOG_INFO, TAG,
                         "SD card info: Name: " + getSDCardName() + ", Capacity: " + std::to_string(getSDCardCapacity()) +
@@ -307,7 +305,6 @@ extern "C" void app_main(void)
 
     // Start webserver + register URI handler
     // ********************************************
-    ESP_LOGD(TAG, "starting servers");
     server = startWebserver();
     registerConfigFileUri(server);
     registerWlanUri(server);
@@ -319,7 +316,7 @@ extern "C" void app_main(void)
     registerMqttUri(server);
 #endif // ENABLE_MQTT
     registerOpenmetricsUri(server);
-    createGpioHandler(server);
+    gpio_handler_get()->registerGpioUri(server);
     registerWebserverUri(server, "/sdcard");
 
     // Check basic device init status
@@ -329,8 +326,8 @@ extern "C" void app_main(void)
         createMainFlowTask(); // Create main task
     }
     // Critical error(s) occured which do not allow to continue with regular boot sequence.
-    // Provding only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: server_main.cpp ->
-    // hello_main_handler()
+    // Provding only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: webserver.cpp ->
+    // handler_main()
     else {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed");
     }

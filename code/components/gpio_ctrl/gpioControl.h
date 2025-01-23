@@ -7,6 +7,7 @@
 #include <hal/gpio_types.h>
 #include <esp_http_server.h>
 #include <map>
+#include <esp_rom_gpio.h>
 #include <driver/gpio.h>
 #include <driver/ledc.h>
 
@@ -47,7 +48,7 @@ class GpioHandler
 #endif // ENABLE_MQTT
 
   public:
-    GpioHandler(httpd_handle_t _httpServer);
+    GpioHandler();
     ~GpioHandler();
     bool init();
     void deinit();
@@ -60,13 +61,13 @@ class GpioHandler
 
     gpio_pin_mode_t resolvePinMode(std::string input);
 
-    void registerGpioUri();
+    void registerGpioUri(httpd_handle_t server);
     esp_err_t handleHttpRequest(httpd_req_t *req);
 };
 
 esp_err_t callHandleHttpRequest(httpd_req_t *req);
 
-void createGpioHandler(httpd_handle_t server);
+void createGpioHandler();
 bool gpio_handler_init();
 void gpio_handler_deinit();
 void gpio_handler_destroy();

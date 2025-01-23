@@ -79,20 +79,16 @@ ClassControlCamera::ClassControlCamera()
     cameraInitSuccessful = false;
 
     demoMode = false;
-
-#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-    ledcInitFlashlightDefault();
-#endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
 }
 
 
 esp_err_t ClassControlCamera::initCam()
 {
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init camera");
+
     if (cameraInitSuccessful) {
         deinitCam(); // De-init in case it was already initialized
     }
-
-    vTaskDelay(pdMS_TO_TICKS(100));
 
     // Init camera
     esp_err_t err = esp_camera_init(&cameraConfig);
@@ -124,6 +120,19 @@ esp_err_t ClassControlCamera::initCam()
     sensorFrameSizeWidth = resolution[camera_sensor[paramCameraInternal.cameraModel].max_size].width;
     sensorFrameSizeHeight = resolution[camera_sensor[paramCameraInternal.cameraModel].max_size].height;
 
+    // Set camera and flashlight config
+    setCameraParameter(&paramCameraInternal);
+    setFlashlightParameter(&paramFlashlightInternal);
+
+    // Skip first frames to allow camera auto routines (AWB, AGC, ...) to adapt to actual environment
+    // Note: Handle it for all camera models, but especially OV2640 has quite slow auto routines
+    skipFrames(10);
+
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init camera successful");
+
+    // Print camera info
+    printCamInfo();
+
     return ESP_OK;
 }
 
@@ -132,18 +141,45 @@ esp_err_t ClassControlCamera::deinitCam()
 {
     cameraInitSuccessful = false;
     esp_camera_deinit(); // De-init in case it was already initialized (returns ESP_FAIL if deinit is already done)
-    powerResetCamera();
+    powerCycle();
 
     return ESP_OK;
 }
 
 
-void ClassControlCamera::powerResetCamera()
+void ClassControlCamera::skipFrames(uint8_t n)
 {
-#if PWDN_GPIO_NUM == -1 // Use reset only if pin is available
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "No power down pin availbale to reset camera");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Skip camera frames");
+
+    setStatusLed(true);
+    setFlashlight(true);
+
+    camera_fb_t *fb = NULL;
+    for (uint8_t i = 0; i < n; ++i) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+        fb = esp_camera_fb_get();
+        esp_camera_fb_return(fb);
+    }
+
+    setFlashlight(false);
+    setStatusLed(false);
+}
+
+
+void ClassControlCamera::powerCycle()
+{
+#if PWDN_GPIO_NUM == -1 // Power down pin not wired
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Power down pin not wired. Resetting by software");
+
+    sensor_t *s = esp_camera_sensor_get();
+    if (s == NULL) {
+        return;
+    }
+    s->reset(s); // Software reset
+    vTaskDelay(pdMS_TO_TICKS(100));
 #else
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Resetting camera by power down");
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Resetting by power cycle");
+
     gpio_config_t conf;
     conf.intr_type = GPIO_INTR_DISABLE;
     conf.pin_bit_mask = 1LL << PWDN_GPIO_NUM;
@@ -152,26 +188,11 @@ void ClassControlCamera::powerResetCamera()
     conf.pull_up_en = GPIO_PULLUP_DISABLE;
     gpio_config(&conf);
 
-    // Be careful, logic is inverted compared to reset pin
-    gpio_set_level(PWDN_GPIO_NUM, 1);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio_set_level(PWDN_GPIO_NUM, 0);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    gpio_set_level(PWDN_GPIO_NUM, 1); // Power down (low active)
+    vTaskDelay(pdMS_TO_TICKS(100));
+    gpio_set_level(PWDN_GPIO_NUM, 0); // Power up (low active)
+    vTaskDelay(pdMS_TO_TICKS(100));
 #endif // PWDN_GPIO_NUM == -1
-}
-
-
-bool ClassControlCamera::testCamera(void)
-{
-    bool retval;
-    camera_fb_t *fb = esp_camera_fb_get();
-    if (fb == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Camera framebuffer check failed");
-        return false;
-    }
-
-    esp_camera_fb_return(fb);
-    return true;
 }
 
 
@@ -230,6 +251,7 @@ esp_err_t ClassControlCamera::setCameraParameter(const CfgData::SectionTakeImage
                          paramCameraInternal.sharpness, paramCameraInternal.exposureControlMode, paramCameraInternal.autoExposureLevel,
                          paramCameraInternal.manualExposureValue, paramCameraInternal.gainControlMode, paramCameraInternal.manualGainValue,
                          paramCameraInternal.specialEffect, paramCameraInternal.mirrorImage, paramCameraInternal.flipImage);
+    vTaskDelay(pdMS_TO_TICKS(100));
 
     return ESP_OK;
 }
@@ -919,6 +941,19 @@ esp_err_t ClassControlCamera::captureToStream(httpd_req_t *_req, bool _flashligh
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Live stream stopped");
 
     return res;
+}
+
+
+void ClassControlCamera::initFlashlight(void)
+{
+#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+    ledcInitFlashlightDefault();
+#elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
+    if (!gpio_handler_get()->gpioHandlerIsEnabled()) {
+        gpio_handler_init();
+    }
+#endif
+    cameraCtrl.setFlashlight(false);
 }
 
 
