@@ -948,8 +948,15 @@ void ClassControlCamera::initFlashlight(void)
 {
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     ledcInitFlashlightDefault();
+
+    // Init GPIO handler to handle flashlight
+    if (ConfigClass::getInstance()->get()->sectionGpio.customizationEnabled) {
+        if (!(gpio_handler_get() != NULL && gpio_handler_get()->gpioHandlerIsEnabled())) {
+            gpio_handler_init();
+        }
+    }
 #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
-    if (!gpio_handler_get()->gpioHandlerIsEnabled()) {
+    if (!(gpio_handler_get() != NULL && gpio_handler_get()->gpioHandlerIsEnabled())) {
         gpio_handler_init();
     }
 #endif
