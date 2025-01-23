@@ -35,11 +35,12 @@ class ClassControlCamera
   public:
     ClassControlCamera();
     ~ClassControlCamera();
-    void powerResetCamera();
     esp_err_t initCam();
     esp_err_t deinitCam();
 
-    bool testCamera(void);
+    void skipFrames(uint8_t n = 10);
+    void powerCycle();
+
     void printCamInfo(void);
     void printCamConfig(void);
 
@@ -65,6 +66,7 @@ class ClassControlCamera
     esp_err_t captureToHTTP(httpd_req_t *_req);
     esp_err_t captureToStream(httpd_req_t *_req, bool _flashlightOn);
 
+    void initFlashlight(void);
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     void ledcInitFlashlightDefault(void);
 #endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
