@@ -128,14 +128,14 @@ esp_err_t handler_camera(httpd_req_t *req)
 
         // Capture image (single shot) with modified config
         esp_err_t retVal = ESP_FAIL;
-        if (!saveToFile) {
-            retVal = cameraCtrl.captureToHTTP(req, &paramCamera, &paramFlashlight);
-        }
-        else {
+        if (saveToFile) {
             retVal = cameraCtrl.captureToFile(fn, &paramCamera, &paramFlashlight);
             if (retVal == ESP_OK) {
                 httpd_resp_sendstr(req, "001: Capture to file successful");
             }
+        }
+        else {
+            retVal = cameraCtrl.captureToHTTP(req, &paramCamera, &paramFlashlight);
         }
 
         return retVal;
