@@ -117,7 +117,7 @@
                 <input class="button" type="button" value="Show Actual Reference" onclick="showReference()">
             </td>
             <td>
-                <input class="button" type="button" id="createreference" value="Create New Reference" onclick="loadRawImage(false)">
+                <input class="button" type="button" id="createreference" value="Create New Reference" onclick="loadRawImage()">
             </td>
             <td></td>
         </tr>
@@ -443,7 +443,6 @@
     let context = canvas.getContext('2d');
     let imageObj = new Image();
     let isActReference = false;
-    let initialConfigUrl = "";
 
 
     function setVariableInputLimits()
@@ -489,30 +488,6 @@
 
         $('#takeimage_camera_manualexposurevalue_value').attr({"max" : sensorFrameSizeHeight});
         $('#takeimage_camera_manualexposurevalue_value').trigger('onchange');
-    }
-
-
-    function restoreCamSettings()
-    {
-        let xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4) {
-                if (this.status >= 200 && this.status < 300) {
-                    // Nothing do do
-                }
-                else {
-                    document.getElementById("createreference").disabled = false;
-                    firework.launch("Restore image parameter failed (Response status: " + this.status +
-                                    "). Repeat action or save configuration.", 'danger', 30000);
-                    console.error("Restore image parameter failed. Response status: " + this.status);
-                }
-            }
-        };
-
-        xhttp.timeout = 10000;  // 10 seconds
-        xhttp.open("GET", initialConfigUrl, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
     }
 
 
@@ -562,23 +537,19 @@
         let zoomOffsetY = document.getElementById("takeimage_camera_zoomoffsety_value").value;
         if (zoomOffsetX == "") zoomOffsetX = "0";
 
-        url = getDomainname() + "/camera?task=set_parameter&flashtime=" + flashtime + "&flashintensity=" + flashintensity +
+        url = getDomainname() + "/camera?task=capture&flashtime=" + flashtime + "&flashintensity=" + flashintensity +
                 "&brightness=" + brightness + "&contrast=" + contrast + "&saturation=" + saturation + "&sharpness=" + sharpness +
                 "&exposurecontrolmode=" + exposureControlMode + "&autoexposurelevel=" + autoExposureLevel +
                 "&manualexposurevalue=" + manualExposureValue + "&gaincontrolmode=" + gainControlMode +
                 "&manualgainvalue=" + manualGainValue + "&specialeffect=" + specialeffect + "&mirror=" + mirror + "&flip=" + flip +
                 "&zoomfactor=" + zoomFactor + "&zoomx=" + zoomOffsetX + "&zoomy=" + zoomOffsetY;
 
-        if (initialConfigUrl == "")
-            initialConfigUrl = url;
-
         let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4) {
                 if (this.status >= 200 && this.status < 300) {
-                    setTimeout(function() {
-                        loadRawImage(true);
-                    }, 100);
+                    loadCanvas(window.URL.createObjectURL(xhttp.response), true);
+                    isActReference = false;
                 }
                 else if (this.status == 403) {
                     document.getElementById("createreference").disabled = false;
@@ -596,33 +567,26 @@
             }
         };
 
-        xhttp.timeout = 10000;  // 10 seconds
+        xhttp.responseType = 'blob';
+        xhttp.timeout = 30000;  // 30 seconds (time has to be longer than usual flashlight time)
         xhttp.open("GET", url, true);
         xhttp.withCredentials = true;
         xhttp.send();
     }
 
 
-    function loadRawImage(new_image)
+    function loadRawImage()
     {
         document.getElementById("take").disabled = true;
+        document.getElementById("createreference").disabled = true;
+        document.getElementById("savereference").disabled = true;
+        document.getElementById("take").disabled = false;
 
-        if (new_image) {
-            let url = getDomainname() + "/img_tmp/raw.jpg?" + Math.floor((Math.random() * 1000000) + 1);
-            loadCanvas(url, true);
-            isActReference = false;
-        }
-        else {
-            document.getElementById("createreference").disabled = true;
-            document.getElementById("savereference").disabled = true;
-            document.getElementById("take").disabled = false;
+        setClassEnabled("camParameter", true); // Release input for all camera parameter
+        triggerClassElementOnChange("classvisibility_init"); // Init subparameter lock
+        jsonConfigModifiedDelta = {}; // Reset modified parameter container after visibility update
 
-            setClassEnabled("camParameter", true); // Release input for all camera parameter
-            triggerClassElementOnChange("classvisibility_init"); // Init subparameter lock
-            jsonConfigModifiedDelta = {}; // Reset modified parameter container after visibility update
-
-            doTake();
-        }
+        doTake();
     }
 
 
@@ -710,9 +674,6 @@
 
             $("#img_loading").hide();
             $("#canvas").show();
-
-            if (initialConfigUrl !="")
-                restoreCamSettings();
         };
 
         imageObj.onerror = function() {
