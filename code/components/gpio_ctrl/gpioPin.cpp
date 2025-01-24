@@ -230,34 +230,17 @@ int GpioPin::getPinState()
 bool GpioPin::mqttPublishPinState(int _pwmDuty)
 {
     if (getMqttIsConnected() && mqttAccess) {
-        cJSON *cJSONObject = cJSON_CreateObject();
-        if (cJSONObject == NULL) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
-            return false;
-        }
-
-        bool retVal = true;
-
-        if (cJSON_AddNumberToObject(cJSONObject, "state", pinState) == NULL) {
-            retVal = false;
-        }
+        // Construct json notation manually. Not using cJSON library by purpose due to possbile concurrent usage / access
+        // Note: State changes could be triggered by interrupt quickly
+        std::string jsonData = "{ \"state\": " + std::to_string(pinState);
 
         if (mode == GPIO_PIN_MODE_OUTPUT_PWM || mode == GPIO_PIN_MODE_FLASHLIGHT_PWM) {
-            if (cJSON_AddNumberToObject(cJSONObject, "pwm_duty", _pwmDuty) == NULL) {
-                retVal = false;
-            }
+            jsonData += ", \"pwm_duty\": " + std::to_string(_pwmDuty);
         }
 
-        char *jsonChar = NULL;
-        jsonChar = cJSON_Print(cJSONObject);
-        cJSON_Delete(cJSONObject);
+        jsonData += " }";
 
-        if (jsonChar != NULL) {
-            retVal &= publishMqttData(mqttTopic + "/state", std::string(jsonChar), 1);
-            cJSON_free(jsonChar);
-        }
-
-        if (!retVal) {
+        if (!publishMqttData(mqttTopic + "/state", jsonData, 1)) {
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "GPIO" + std::to_string((int)gpio) + ": Failed to publish state to MQTT broker");
             return false;
         }
