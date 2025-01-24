@@ -7,7 +7,6 @@
 
 Get logs from log file 
 
-
 ### General
 
 Each row represents one log entry.

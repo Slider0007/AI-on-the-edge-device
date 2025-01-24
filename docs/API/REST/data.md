@@ -7,7 +7,6 @@
 
 Get data from data file 
 
-
 ### General
 Each row represents one processed cycle.
 
