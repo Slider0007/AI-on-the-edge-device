@@ -732,10 +732,10 @@ esp_err_t ClassControlCamera::captureToFile(std::string _file, CfgData::SectionT
         }
 
         // Restore persistent config
-        if (paramCameraTemp != NULL) {
+        if (_paramCameraTemp != NULL) {
             setCameraParameter(&ConfigClass::getInstance()->get()->sectionTakeImage.camera);
         }
-        if (paramFlashlightTemp != NULL) {
+        if (_paramFlashlightTemp != NULL) {
             setFlashlightParameter(&ConfigClass::getInstance()->get()->sectionTakeImage.flashlight);
         }
 
@@ -858,10 +858,10 @@ esp_err_t ClassControlCamera::captureToHTTP(httpd_req_t *_req, CfgData::SectionT
         }
 
         // Restore persistent config
-        if (paramCameraTemp != NULL) {
+        if (_paramCameraTemp != NULL) {
             setCameraParameter(&ConfigClass::getInstance()->get()->sectionTakeImage.camera);
         }
-        if (paramFlashlightTemp != NULL) {
+        if (_paramFlashlightTemp != NULL) {
             setFlashlightParameter(&ConfigClass::getInstance()->get()->sectionTakeImage.flashlight);
         }
 
