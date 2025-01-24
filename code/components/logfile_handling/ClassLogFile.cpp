@@ -1,5 +1,4 @@
 #include "ClassLogFile.h"
-#include "../../include/defines.h"
 
 #include <cstring>
 #include <sys/types.h>
@@ -29,6 +28,9 @@ ClassLogFile LogFile(LOG_LOGS_ROOT_FOLDER, LOG_FILE_TIME_FORMAT, LOG_DATA_ROOT_F
 ClassLogFile::ClassLogFile(std::string _logFileRootFolder, std::string _logfile, std::string _dataFileRootFolder, std::string _datafile,
                            std::string _debugFileRootFolder, std::string _debugfolder)
 {
+    logfileMutex = xSemaphoreCreateMutex();
+    logfileHandle = NULL;
+
     logFileRootFolder = _logFileRootFolder;
     logfile = _logfile;
     dataFileRootFolder = _dataFileRootFolder;
@@ -57,16 +59,10 @@ void ClassLogFile::writeToData(std::string _timestamp, std::string _name, std::s
                                std::string _sValueStatus, std::string _digital, std::string _analog)
 {
     time_t rawtime;
-
     time(&rawtime);
     std::string logpath = dataFileRootFolder + "/" + convertTimeToString(rawtime, datafile.c_str());
 
-    FILE *pFile;
-    std::string zwtime;
-
-    // ESP_LOGD(TAG, "Datalogfile: %s", logpath.c_str());
-    pFile = fopen(logpath.c_str(), "a+");
-
+    FILE *pFile = fopen(logpath.c_str(), "a+");
     if (pFile == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to open data file: " + logpath);
         return;
@@ -166,27 +162,20 @@ bool ClassLogFile::getDataLogToSDStatus()
 }
 
 
-static FILE *logFileAppendHandle = NULL;
-std::string fileNameDate;
-
 void ClassLogFile::writeToFile(esp_log_level_t level, std::string tag, std::string message, bool _time)
 {
-    if (level > loglevel) { // Skip logging if defined message loglevel is more verbose than configured threshold loglevel
+    // Skip logging if defined message loglevel is more verbose than configured threshold loglevel
+    if (level > loglevel) {
         return;
     }
 
-    std::string fileNameDateNew;
-    std::string zwtime;
-    std::string ntpTime = "";
-
     time_t rawtime;
-
     time(&rawtime);
-    fileNameDateNew = convertTimeToString(rawtime, logfile.c_str());
+    std::string logfileName = convertTimeToString(rawtime, logfile.c_str());
 
     std::replace(message.begin(), message.end(), '\n', ' '); // Replace all newline characters
 
-    if (tag != "") {
+    if (!tag.empty()) {
         ESP_LOG_LEVEL(level, tag.c_str(), "%s", message.c_str());
         message = "[" + tag + "] " + message;
     }
@@ -194,8 +183,9 @@ void ClassLogFile::writeToFile(esp_log_level_t level, std::string tag, std::stri
         ESP_LOG_LEVEL(level, "", "%s", message.c_str());
     }
 
+    std::string timestamp;
     if (_time) {
-        ntpTime = convertTimeToString(rawtime, "%Y-%m-%dT%H:%M:%S");
+        timestamp = convertTimeToString(rawtime, "%Y-%m-%dT%H:%M:%S");
     }
 
     std::string loglevelString;
@@ -221,54 +211,46 @@ void ClassLogFile::writeToFile(esp_log_level_t level, std::string tag, std::stri
             break;
     }
 
-    std::string fullmessage = "[" + getFormatedUptime(true) + "] " + ntpTime + "\t<" + loglevelString + ">\t" + message + "\n";
+    std::string fullmessage = "[" + getFormatedUptime(true) + "] " + timestamp + "\t<" + loglevelString + ">\t" + message + "\n";
 
-
+    if (xSemaphoreTake(logfileMutex, pdMS_TO_TICKS(2000)) == pdTRUE) {
 #ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING
-    if (fileNameDateNew != fileNameDate) { // Filename changed
-        // Make sure each day gets its own logfile
-        // Also we need to re-open it in case it needed to get closed for reading
-        std::string logpath = logFileRootFolder + "/" + fileNameDateNew;
-
-        ESP_LOGI(TAG, "Opening logfile %s for appending", logpath.c_str());
-        logFileAppendHandle = fopen(logpath.c_str(), "a");
-        if (logFileAppendHandle == NULL) {
+        if (logfileName != logfileNameOpen) { // Filename changed
+            // Make sure each day gets its own logfile
+            // Also we need to re-open it in case it needed to get closed for reading
+            std::string logpath = logFileRootFolder + "/" + logfileName;
+            logfileHandle = fopen(logpath.c_str(), "a");
+            if (logfileHandle == NULL) {
+                ESP_LOGE(TAG, "writeToFile: Failed to open logfile %s", logpath.c_str());
+                return;
+            }
+            logfileNameOpen = logfileName;
+        }
+#else
+        std::string logpath = logFileRootFolder + "/" + logfileName;
+        logfileHandle = fopen(logpath.c_str(), "a");
+        if (logfileHandle == NULL) {
             ESP_LOGE(TAG, "writeToFile: Failed to open logfile %s", logpath.c_str());
             return;
         }
-
-        fileNameDate = fileNameDateNew;
-    }
-#else
-    std::string logpath = logFileRootFolder + "/" + fileNameDateNew;
-    logFileAppendHandle = fopen(logpath.c_str(), "a");
-    if (logFileAppendHandle == NULL) {
-        ESP_LOGE(TAG, "writeToFile: Failed to open logfile %s", logpath.c_str());
-        return;
-    }
 #endif // KEEP_LOGFILE_OPEN_FOR_APPENDING
 
-    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(logFileAppendHandle, NULL, _IOFBF, 512);
-
-    fputs(fullmessage.c_str(), logFileAppendHandle);
+        /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+        // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+        setvbuf(logfileHandle, NULL, _IOFBF, 512);
+        fputs(fullmessage.c_str(), logfileHandle);
 
 #ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING
-    fflush(logFileAppendHandle);
-    fsync(fileno(logFileAppendHandle));
+        fflush(logfileHandle);
+        fsync(fileno(logfileHandle));
 #else
-    closeLogFileAppendHandle();
+        if (logfileHandle != NULL) {
+            fclose(logfileHandle);
+            logfileHandle = NULL;
+        }
 #endif // KEEP_LOGFILE_OPEN_FOR_APPENDING
-}
 
-
-void ClassLogFile::closeLogFileAppendHandle()
-{
-    if (logFileAppendHandle != NULL) {
-        fclose(logFileAppendHandle);
-        logFileAppendHandle = NULL;
-        fileNameDate = "";
+        xSemaphoreGive(logfileMutex);
     }
 }
 
@@ -282,7 +264,6 @@ void ClassLogFile::writeToFile(esp_log_level_t level, std::string tag, std::stri
 std::string ClassLogFile::getCurrentFileNameData()
 {
     time_t rawtime;
-
     time(&rawtime);
     std::string logpath = dataFileRootFolder + "/" + convertTimeToString(rawtime, datafile.c_str());
 
@@ -293,7 +274,6 @@ std::string ClassLogFile::getCurrentFileNameData()
 std::string ClassLogFile::getCurrentFileName()
 {
     time_t rawtime;
-
     time(&rawtime);
     std::string logpath = logFileRootFolder + "/" + convertTimeToString(rawtime, logfile.c_str());
 
