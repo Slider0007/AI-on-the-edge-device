@@ -5,8 +5,9 @@
 `http://IP-ADDRESS/data`
 
 
-Get all data entries from today
+Get data from data file 
 
+### General
 Each row represents one processed cycle.
 
 CSV separated format: `time, sequence name, raw value, actual value, fallback value, rate per min, rate per processing, value status, results of digit ROIs, results of analog ROIs`
@@ -18,13 +19,31 @@ Process status:
 - `E93`: Positive rate larger than specified max rate (error)
 
 
-Payload:
-- No payload needed
+### Syntax
 
-Response:
-- Content type: `HTML`
-- Content: Content of file
-- Example: `2024-02-01T14:39:33+0100,main,146.364,146.364,146.364,0.0000,0.000,000,1.2,4.0,6.3,3.5,6.4`
+1. Get last entries (max. 80kB) of today's data file
+    - Payload:
+      - `/data` No payload parameter needed
+    - Response:
+      - Content type: `HTML`
+      - Content: Content of file
+      - Example: `2024-02-01T14:39:33+0100,main,146.364,146.364,146.364,0.0000,0.000,000,1.2,4.0,6.3,3.5,6.4`
+
+2. Get all entries of today's data file
+    - Payload:
+      - `/data?type=full`
+    - Response:
+      - Content type: `HTML`
+      - Content: Content of file
+      - Example: `2024-02-01T14:39:33+0100,main,146.364,146.364,146.364,0.0000,0.000,000,1.2,4.0,6.3,3.5,6.4`
+
+3. Get API name and version:
+    - Payload:
+      - `/log?type=api_name`
+    - Response:
+      - Content type: `HTML`
+      - Content: HTML query response, e.g. `data:vX`
+
 
 !!! __Tip__: 
     Get log entries from previous days: Use [/fileserver](fileserver.md) endpoint.
