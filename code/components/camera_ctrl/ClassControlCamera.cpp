@@ -172,7 +172,7 @@ void ClassControlCamera::powerCycle()
 
     gpio_config_t gpioConfig;
     gpioConfig.intr_type = GPIO_INTR_DISABLE;
-    gpioConfigonf.pin_bit_mask = 1LL << PWDN_GPIO_NUM;
+    gpioConfig.pin_bit_mask = 1LL << PWDN_GPIO_NUM;
     gpioConfig.mode = GPIO_MODE_OUTPUT;
     gpioConfig.pull_down_en = GPIO_PULLDOWN_DISABLE;
     gpioConfig.pull_up_en = GPIO_PULLUP_DISABLE;
