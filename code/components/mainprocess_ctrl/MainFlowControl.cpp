@@ -52,8 +52,14 @@ bool doInit(void)
     // ********************************************
     flowctrl.deinitFlow();
 
-    // heap_caps_dump(MALLOC_CAP_INTERNAL);
-    // heap_caps_dump(MALLOC_CAP_SPIRAM);
+#ifdef DEBUG_DETAIL_ON
+    heap_caps_dump(MALLOC_CAP_INTERNAL);
+    heap_caps_dump(MALLOC_CAP_SPIRAM);
+#endif // DEBUG_DETAIL_ON
+
+    // Apply actual config
+    // ********************************************
+    ConfigClass::getInstance()->reinitConfig();
 
     // Init GPIO handler
     // Note: GPIO has to be initialized before MQTT (topic subscription)
@@ -67,11 +73,8 @@ bool doInit(void)
     // Note: Make sure this is called between deinit and init
     // of flow components (avoid SPIRAM fragmentation)
     // ********************************************
-    if (!cameraCtrl.getCameraInitSuccessful()) {
-        cameraCtrl.powerCycle();
-        if (cameraCtrl.initCam() != ESP_OK) { // Camera init failed
-            return false;
-        }
+    if (cameraCtrl.initCam() != ESP_OK) { // Camera init failed
+        return false;
     }
 
     // Init main flow components
@@ -89,8 +92,10 @@ bool doInit(void)
     }
 #endif // ENABLE_MQTT
 
-    // heap_caps_dump(MALLOC_CAP_INTERNAL);
-    // heap_caps_dump(MALLOC_CAP_SPIRAM);
+#ifdef DEBUG_DETAIL_ON
+    heap_caps_dump(MALLOC_CAP_INTERNAL);
+    heap_caps_dump(MALLOC_CAP_SPIRAM);
+#endif // DEBUG_DETAIL_ON
 
     return bRetVal;
 }
