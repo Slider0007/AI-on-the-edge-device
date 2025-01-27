@@ -959,13 +959,18 @@ esp_err_t ClassControlCamera::captureToStream(httpd_req_t *_req, bool _flashligh
 void ClassControlCamera::initFlashlight()
 {
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-    ledcInitFlashlightDefault();
-
     // Init GPIO handler to handle flashlight
     if (ConfigClass::getInstance()->get()->sectionGpio.customizationEnabled) {
+        // Disable default flashlight
+        ledc_stop(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL, 0);
+
         if (!(gpio_handler_get() != NULL && gpio_handler_get()->gpioHandlerIsEnabled())) {
             gpio_handler_init();
         }
+    }
+    else {
+        // Disable default flashlight
+        ledcInitFlashlightDefault();
     }
 #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
     if (!(gpio_handler_get() != NULL && gpio_handler_get()->gpioHandlerIsEnabled())) {
