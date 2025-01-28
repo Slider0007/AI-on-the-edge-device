@@ -124,8 +124,6 @@ bool ClassFlowControl::initFlow()
     bool retVal = true;
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init flow");
 
-    ConfigClass::getInstance()->reinitConfig();
-
     // Prepare sequence data struct
     for (const auto &sequenceCfgData : cfgClassPtr->get()->sectionNumberSequences.sequence) {
         SequenceData *sequence = new SequenceData{};
