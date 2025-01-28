@@ -266,9 +266,10 @@ esp_err_t ClassControlCamera::setCameraParameter(const CfgData::SectionTakeImage
         paramCameraInternal = *(CfgData::SectionTakeImage::Camera *)_paramCamera;
     }
 
+    // NOTE: Keep this order of init
     setImageQuality();
-    setImageManipulation();
     setImageSize();
+    setImageManipulation();
 
     vTaskDelay(pdMS_TO_TICKS(100));
 
