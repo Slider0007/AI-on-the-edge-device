@@ -48,6 +48,7 @@ As a result, you get the digitized value of your meter. There are several option
 |:---                                                                            |:---      |:---           |:--- 
 | [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           |⚠️ Only boards with >4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones
 | [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |⚠️ Running quite hot, a small heat sink is recommended<br>ℹ️ No onboard illumination: Separate illumination (PWM controlable LED / Intelligent LED) required
+| [ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8 | $\ge$ v17.0.0 |ℹ️ SOC and pin compatible borads of Freenove ESP32S3-WROOM with 16MB flash and 8MB RAM supported
 
 ### Camera
 | Camera Type                                                                             | Sensor Resolution  | Digital Zoom | Firmware Release | Remarks                       
