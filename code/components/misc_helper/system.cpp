@@ -5,7 +5,10 @@
 #include "esp_chip_info.h"
 #include "hal/efuse_hal.h"
 #include "esp_vfs_fat.h"
+
+#ifdef SOC_TEMP_SENSOR_SUPPORTED
 #include "driver/temperature_sensor.h"
+#endif // SOC_TEMP_SENSOR_SUPPORTED
 
 #include "configClass.h"
 #include "helper.h"
