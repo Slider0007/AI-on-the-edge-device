@@ -103,7 +103,10 @@ static float socTemperature = -1;
 void taskSocTemp(void *pvParameter)
 {
     temperature_sensor_handle_t socTempSensor = NULL;
-    temperature_sensor_config_t socTempSensorConfig = TEMPERATURE_SENSOR_CONFIG_DEFAULT(20, 100);
+    temperature_sensor_config_t socTempSensorConfig = {};
+    socTempSensorConfig.range_min = 20;
+    socTempSensorConfig.range_max = 100;
+
     temperature_sensor_install(&socTempSensorConfig, &socTempSensor);
     temperature_sensor_enable(socTempSensor);
 
