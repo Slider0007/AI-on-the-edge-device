@@ -288,7 +288,7 @@ extern "C" void app_main(void)
     // ********************************************
     cameraCtrl.initFlashlight();
 
-    if (cameraCtrl.initCam() != ESP_OK) { // Camera init failed, try to reinit during flow init (MainFlowControl.cpp -> doInit())
+    if (cameraCtrl.initCam(true) != ESP_OK) { // Camera init failed, try to reinit during flow init (MainFlowControl.cpp -> doInit())
         setStatusLed(CAM_INIT, 1, false);
     }
 
