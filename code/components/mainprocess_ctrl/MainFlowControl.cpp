@@ -48,6 +48,10 @@ bool doInit(void)
 {
     bool bRetVal = true;
 
+    // Deinit main flow components before init all ressources again
+    // ********************************************
+    flowctrl.deinitFlow();
+
 #ifdef DEBUG_DETAIL_ON
     heap_caps_dump(MALLOC_CAP_INTERNAL);
     heap_caps_dump(MALLOC_CAP_SPIRAM);
