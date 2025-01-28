@@ -110,12 +110,11 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
 esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &_fieldkey1, const std::string &_fieldvalue1,
                             const std::string &_timestamp)
 {
-    esp_http_client_config_t httpConfig = {
-        .user_agent = "AI-on-the-Edge Device",
-        .method = HTTP_METHOD_POST,
-        .event_handler = http_event_handler,
-        .buffer_size = MAX_HTTP_OUTPUT_BUFFER // Receive buffer
-    };
+    esp_http_client_config_t httpConfig = {};
+    httpConfig.user_agent = "AI-on-the-Edge Device";
+    httpConfig.method = HTTP_METHOD_POST;
+    httpConfig.event_handler = http_event_handler;
+    httpConfig.buffer_size = MAX_HTTP_OUTPUT_BUFFER; // Receive buffer
 
     if (cfgDataPtr->authMode == AUTH_BASIC) {
         httpConfig.auth_type = HTTP_AUTH_TYPE_BASIC;
