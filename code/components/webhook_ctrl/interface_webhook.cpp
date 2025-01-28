@@ -66,7 +66,7 @@ bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr)
             return false;
         }
 
-        if (!cfgDataPtr->tls.caCert.empty()) { // TLS parameter activated and not empty
+        if (!cfgDataPtr->tls.caCert.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: /config/certs/" + cfgDataPtr->tls.caCert);
             std::ifstream ifs("/sdcard/config/certs/" + cfgDataPtr->tls.caCert);
             TLSCACert = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
@@ -74,6 +74,9 @@ bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr)
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load CA certificate");
                 return false;
             }
+        }
+        else {
+            TLSCACert = "";
         }
 
         if (!cfgDataPtr->tls.clientCert.empty()) {
@@ -85,6 +88,9 @@ bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr)
                 return false;
             }
         }
+        else {
+            TLSClientCert = "";
+        }
 
         if (!cfgDataPtr->tls.clientKey.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client key file: /config/certs/" + cfgDataPtr->tls.clientKey);
@@ -94,6 +100,9 @@ bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr)
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client key");
                 return false;
             }
+        }
+        else {
+            TLSClientKey = "";
         }
     }
     else {
