@@ -29,11 +29,9 @@ static GpioHandler *gpioHandler = NULL;
 QueueHandle_t gpio_queue_handle = NULL;
 
 
-GpioHandler::GpioHandler(httpd_handle_t _httpServer)
+GpioHandler::GpioHandler()
 {
-    httpServer = _httpServer;
-
-    registerGpioUri();
+    // No action
 }
 
 
@@ -799,7 +797,7 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
 }
 
 
-void GpioHandler::registerGpioUri()
+void GpioHandler::registerGpioUri(httpd_handle_t server)
 {
     ESP_LOGI(TAG, "Registering URI handlers");
 
@@ -809,16 +807,16 @@ void GpioHandler::registerGpioUri()
     camuri.uri = "/gpio";
     camuri.handler = HTTP_AUTH_BASIC(callHandleHttpRequest);
     camuri.user_ctx = (void *)this;
-    httpd_register_uri_handler(httpServer, &camuri);
+    httpd_register_uri_handler(server, &camuri);
 }
 
 
 // GPIO handler interface
 // ***********************************
-void createGpioHandler(httpd_handle_t _server)
+void createGpioHandler(void)
 {
     if (gpioHandler == NULL) {
-        gpioHandler = new GpioHandler(_server);
+        gpioHandler = new GpioHandler();
     }
 }
 

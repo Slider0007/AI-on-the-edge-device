@@ -66,7 +66,7 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
             return false;
         }
 
-        if (!cfgDataPtr->tls.caCert.empty()) { // TLS parameter activated and not empty
+        if (!cfgDataPtr->tls.caCert.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: /config/certs/" + cfgDataPtr->tls.caCert);
             std::ifstream ifs("/sdcard/config/certs/" + cfgDataPtr->tls.caCert);
             TLSCACert = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
@@ -74,6 +74,9 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load CA certificate");
                 return false;
             }
+        }
+        else {
+            TLSCACert = "";
         }
 
         if (!cfgDataPtr->tls.clientCert.empty()) {
@@ -85,6 +88,9 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
                 return false;
             }
         }
+        else {
+            TLSClientCert = "";
+        }
 
         if (!cfgDataPtr->tls.clientKey.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client key file: /config/certs/" + cfgDataPtr->tls.clientKey);
@@ -94,6 +100,9 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client key");
                 return false;
             }
+        }
+        else {
+            TLSClientKey = "";
         }
     }
     else {
@@ -110,12 +119,11 @@ bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr)
 esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &_fieldkey1, const std::string &_fieldvalue1,
                             const std::string &_timestamp)
 {
-    esp_http_client_config_t httpConfig = {
-        .user_agent = "AI-on-the-Edge Device",
-        .method = HTTP_METHOD_POST,
-        .event_handler = http_event_handler,
-        .buffer_size = MAX_HTTP_OUTPUT_BUFFER // Receive buffer
-    };
+    esp_http_client_config_t httpConfig = {};
+    httpConfig.user_agent = "AI-on-the-Edge Device";
+    httpConfig.method = HTTP_METHOD_POST;
+    httpConfig.event_handler = http_event_handler;
+    httpConfig.buffer_size = MAX_HTTP_OUTPUT_BUFFER; // Receive buffer
 
     if (cfgDataPtr->authMode == AUTH_BASIC) {
         httpConfig.auth_type = HTTP_AUTH_TYPE_BASIC;

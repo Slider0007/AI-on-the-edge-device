@@ -5,7 +5,10 @@
 #include "esp_chip_info.h"
 #include "hal/efuse_hal.h"
 #include "esp_vfs_fat.h"
+
+#ifdef SOC_TEMP_SENSOR_SUPPORTED
 #include "driver/temperature_sensor.h"
+#endif // SOC_TEMP_SENSOR_SUPPORTED
 
 #include "configClass.h"
 #include "helper.h"
@@ -100,7 +103,10 @@ static float socTemperature = -1;
 void taskSocTemp(void *pvParameter)
 {
     temperature_sensor_handle_t socTempSensor = NULL;
-    temperature_sensor_config_t socTempSensorConfig = TEMPERATURE_SENSOR_CONFIG_DEFAULT(20, 100);
+    temperature_sensor_config_t socTempSensorConfig = {};
+    socTempSensorConfig.range_min = 20;
+    socTempSensorConfig.range_max = 100;
+
     temperature_sensor_install(&socTempSensorConfig, &socTempSensor);
     temperature_sensor_enable(socTempSensor);
 

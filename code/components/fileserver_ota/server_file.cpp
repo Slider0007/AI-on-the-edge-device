@@ -268,9 +268,6 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
 
     // ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
 
-    // !!! Do not close actual logfile to avoid software exception !!!
-    // LogFile.closeLogFileAppendHandle();
-
     fd = fopen(currentfilename.c_str(), "r");
     if (fd == NULL) {
         // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to read file: " + currentfilename); // It's not a fault if no file

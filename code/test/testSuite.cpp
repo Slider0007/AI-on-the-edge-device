@@ -11,9 +11,9 @@
 #endif
 #include <cmath>
 
-#include "nvs_flash.h"
-#include "esp_vfs_fat.h"
-#include "driver/sdmmc_host.h"
+#include <nvs_flash.h>
+#include <esp_vfs_fat.h>
+#include <driver/sdmmc_host.h>
 
 #include "server_ota.h"
 
@@ -191,12 +191,9 @@ esp_err_t initSDCard()
     // Options for mounting the filesystem.
     // If format_if_mount_failed is set to true, SD card will be partitioned and
     // formatted in case when mounting fails.
-    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-        .format_if_mount_failed = false,
-        .max_files = 12,
-        .allocation_unit_size = 16 * 1024,
-        .disk_status_check_enable = 0 //
-    };
+    esp_vfs_fat_sdmmc_mount_config_t mount_config = VFS_FAT_MOUNT_DEFAULT_CONFIG();
+    mount_config.max_files = 12;
+    mount_config.allocation_unit_size = 16 * 1024;
 
     sdmmc_card_t *card;
 

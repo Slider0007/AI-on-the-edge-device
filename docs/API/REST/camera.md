@@ -15,7 +15,7 @@ Payload:
       - Response:
         - Content type: `HTML`
         - Content: `camera:vx`
-    - `set_parameter` Set camera parameter
+    - `capture` Capture image (single shot) with given parameter set and response either to REST API or save to SD card
       - Full or delta parameter update is possible
       - Possible parameter:
         - `flashtime` Flash Time [100 .. &infin; milliseconds]
@@ -35,53 +35,36 @@ Payload:
         - `zoomfactor` Zoom Factor [1000 .. 4000] (1000: 1.0x, 4000: 4.0x | Max. zoom factor is depending on hardware capabilities)
         - `zoomx` Zoom Offset X [0 .. max. 960] (Max. Offset is limited in firmware depending on actual zoom factor | Lower zoom --> lower limits)
         - `zommy` Zoom Offset Y [0 .. max. 720] (Max. Offset is limited in firmware depending on actual zoom factor | Lower zoom --> lower limits)
-      - Example: `/camera?task=set_parameter&flashtime=0.1&flashintensity=1&brightness=-2&contrast=0&saturation=0 &sharpness=0&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1 &manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&zoomx=0&zoomy=0`
+        - `filename` Filename incl. path on SD card (e.g. `/foldername/filename.jpg`)
+      - Example 1 (Reponse image via REST API): `/camera?task=capture&flashtime=2000&flashintensity=50&brightness=0&contrast=0&saturation=0&sharpness=1&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1&manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&zoomx=0&zoomy=0`
+      - Response:
+        - Content type: `JPEG`
+        - Content: Image (JPG file)
+      - Example 2 (Save image to SD card): `/camera?task=capture&flashtime=2000&flashintensity=50&brightness=0&contrast=0&saturation=0&sharpness=1&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1&manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&zoomx=0&zoomy=0&filename=/img_tmp/filename.jpg`
       - Response:
         - Content type: `HTML`
-        - Content: `001: Camer parameter set`
-    - `capture` Capture image without flashlight
-      - Example: `/camera?task=capture`
-      - Response:
-        - Content type: `HTML`
-        - Content: Raw image (JPG file)
-    - `capture_with_flashlight` Capture with flashlight
-      - Parameter:
-        - `flashtime` Flashlight time in ms
-      - Example: `/camera?task=capture_with_flashlight&flashtime=1000`
-      - Response:
-        - Content type: `HTML`
-        - Content: Raw image (JPG file)<br>
-          (Response delayed by flash duration)
-    - `capture_to_file` Capture image with flashlight and save onto SD card
-      - Parameter:
-        - `flashtime` Flashlight time in ms
-        - `filename` Filename incl. path on SD card
-      - Example: `/camera?task=capture_to_file&flashtime=1000&filename=/img_tmp/filename.jpg`
-      - Response:
-        - Content type: `HTML`
-        - Content: `/img_tmp/test.jpg`<br>
-          (Response delayed by flash duration)
+        - Content: `001: Capture to file successful`
     - `flashlight_on` Flashlight on
       - Example: `/camera?task=flashlight_on`
       - Response:
         - Content type: `HTML`
-        - Content: `005: Flashlight on`
+        - Content: `002: Flashlight on`
     - `flashlight_off` Flashlight off
       - Example: `/camera?task=flashlight_off`
       - Response:
         - Content type: `HTML`
-        - Content: `006: Flashlight off`
+        - Content: `003: Flashlight off`
     - `stream` Camera livestream without flashlight<br>
       __IMPORTANT__: A running stream is blocking the entire web interface (to limit memory usage for 
                      this function). Please ensure to close stream before continue with WebUI.
       - Example: `/camera?task=stream`
       - Response:
         - Content type: `HTML`
-        - Content: `007: Camera livestream`
+        - Content: `004: Camera livestream`
     - `stream_flashlight` Camera livestream with flashlight<br>
       __IMPORTANT__: A running stream is blocking the entire web interface (to limit memory usage for 
                      this function). Please ensure to close stream before continue with WebUI.
       - Example: `/camera?task=stream_flashlight`
       - Response:
         - Content type: `HTML`
-        - Content: `008: Camera livestream with flashlight`
+        - Content: `005: Camera livestream with flashlight`

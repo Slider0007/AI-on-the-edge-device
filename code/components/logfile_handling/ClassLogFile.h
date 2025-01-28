@@ -1,15 +1,24 @@
 #ifndef CLASSLOGFILE_H
 #define CLASSLOGFILE_H
 
-
 #include <string>
 
+#include <freertos/FreeRTOS.h>
 #include <esp_log.h>
+
+#include "../../include/defines.h"
 
 
 class ClassLogFile
 {
   private:
+    SemaphoreHandle_t logfileMutex;
+    FILE *logfileHandle;
+
+#ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING
+    std::string logfileNameOpen;
+#endif // KEEP_LOGFILE_OPEN_FOR_APPENDING
+
     std::string logFileRootFolder;
     std::string logfile;
     std::string dataFileRootFolder;
@@ -21,7 +30,6 @@ class ClassLogFile
     int debugFilesRetentionInDays;
     bool dataLogToSDEnabled;
     esp_log_level_t loglevel;
-
 
   public:
     ClassLogFile(std::string _logFileRootFolder, std::string _logfile, std::string _dataFileRootFolder, std::string _datafile,
@@ -38,9 +46,6 @@ class ClassLogFile
 
     void writeToFile(esp_log_level_t level, std::string tag, std::string message, bool _time);
     void writeToFile(esp_log_level_t level, std::string tag, std::string message);
-
-    void closeLogFileAppendHandle();
-
     bool createLogDirectories();
     void removeOldLogFile();
     void removeOldDataLog();

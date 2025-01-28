@@ -1,3 +1,3 @@
 idf_component_register(SRC_DIRS "."
                        INCLUDE_DIRS "."
-                       REQUIRES jomjol_fileserver_ota vfs nvs_flash unity)
+                       REQUIRES unity esp_driver_sdmmc vfs nvs_flash jomjol_fileserver_ota)

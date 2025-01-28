@@ -48,28 +48,33 @@ bool doInit(void)
 {
     bool bRetVal = true;
 
-    // Deinit GPIO handler
-    gpio_handler_deinit();
-
     // Deinit main flow components before init all ressources again
     // ********************************************
     flowctrl.deinitFlow();
-    // heap_caps_dump(MALLOC_CAP_INTERNAL);
-    // heap_caps_dump(MALLOC_CAP_SPIRAM);
 
-    // Init cam if init not yet done.
-    // Make sure this is called between deinit and init of flow components (avoid SPIRAM fragmentation)
+#ifdef DEBUG_DETAIL_ON
+    heap_caps_dump(MALLOC_CAP_INTERNAL);
+    heap_caps_dump(MALLOC_CAP_SPIRAM);
+#endif // DEBUG_DETAIL_ON
+
+    // Apply actual config
     // ********************************************
-    if (!cameraCtrl.getCameraInitSuccessful()) {
-        cameraCtrl.powerResetCamera();
-        esp_err_t camStatus = cameraCtrl.initCam();
+    ConfigClass::getInstance()->reinitConfig();
 
-        if (camStatus != ESP_OK) { // Camera init failed
-            return false;
-        }
+    // Init GPIO handler
+    // Note: GPIO has to be initialized before MQTT (topic subscription)
+    // ********************************************
+    gpio_handler_deinit();
+    if (!gpio_handler_init()) {
+        bRetVal = false;
+    }
 
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init camera successful");
-        cameraCtrl.printCamInfo();
+    // Init camera
+    // Note: Make sure this is called between deinit and init
+    // of flow components (avoid SPIRAM fragmentation)
+    // ********************************************
+    if (cameraCtrl.initCam() != ESP_OK) { // Camera init failed
+        return false;
     }
 
     // Init GPIO handler
@@ -94,8 +99,10 @@ bool doInit(void)
     }
 #endif // ENABLE_MQTT
 
-    // heap_caps_dump(MALLOC_CAP_INTERNAL);
-    // heap_caps_dump(MALLOC_CAP_SPIRAM);
+#ifdef DEBUG_DETAIL_ON
+    heap_caps_dump(MALLOC_CAP_INTERNAL);
+    heap_caps_dump(MALLOC_CAP_SPIRAM);
+#endif // DEBUG_DETAIL_ON
 
     return bRetVal;
 }
