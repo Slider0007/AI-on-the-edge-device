@@ -2,6 +2,9 @@
 
 #include <esp_timer.h>
 #include <esp_log.h>
+#include <esp_rom_gpio.h>
+#include <driver/gpio.h>
+#include <driver/ledc.h>
 
 #include "psram.h"
 #include "helper.h"

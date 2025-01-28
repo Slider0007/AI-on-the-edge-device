@@ -3,8 +3,9 @@
 
 #include "../../include/defines.h"
 
-#include "hal/gpio_types.h"
 #include <string>
+
+#include "hal/gpio_types.h"
 #include "driver/ledc.h"
 #include "SmartLeds.h"
 

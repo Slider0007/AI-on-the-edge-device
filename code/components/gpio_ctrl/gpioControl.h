@@ -4,9 +4,9 @@
 #include "../../include/defines.h"
 
 #include <esp_log.h>
-#include <hal/gpio_types.h>
 #include <esp_http_server.h>
 #include <map>
+#include <hal/gpio_types.h>
 #include <esp_rom_gpio.h>
 #include <driver/gpio.h>
 #include <driver/ledc.h>
