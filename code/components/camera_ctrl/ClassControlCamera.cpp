@@ -959,24 +959,26 @@ esp_err_t ClassControlCamera::captureToStream(httpd_req_t *_req, bool _flashligh
 void ClassControlCamera::initFlashlight()
 {
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-    // Init GPIO handler to handle flashlight
     if (ConfigClass::getInstance()->get()->sectionGpio.customizationEnabled) {
         // Disable default flashlight
         ledc_stop(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL, 0);
 
+        // Init GPIO handler to handle flashlight
         if (!(gpio_handler_get() != NULL && gpio_handler_get()->gpioHandlerIsEnabled())) {
             gpio_handler_init();
         }
     }
     else {
-        // Disable default flashlight
+        // Init default flashlight
         ledcInitFlashlightDefault();
     }
 #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
+    // Init GPIO handler to handle flashlight
     if (!(gpio_handler_get() != NULL && gpio_handler_get()->gpioHandlerIsEnabled())) {
         gpio_handler_init();
     }
 #endif
+
     cameraCtrl.setFlashlight(false);
 }
 
@@ -1012,7 +1014,7 @@ void ClassControlCamera::ledcInitFlashlightDefault()
 
     ledcChannel.speed_mode = LEDC_LOW_SPEED_MODE;
     ledcChannel.channel = FLASHLIGHT_DEFAULT_LEDC_CHANNEL; // CH0: Camera, CH2 - CH7: GPIO
-    ledcChannel.timer_sel = FLASHLIGHT_DEFAULT_LEDC_TIMER; // Use TIMER 1 (TIMER0: camera)
+    ledcChannel.timer_sel = FLASHLIGHT_DEFAULT_LEDC_TIMER; // Use TIMER1 (TIMER0: camera)
     ledcChannel.intr_type = LEDC_INTR_DISABLE;
     ledcChannel.gpio_num = GPIO_FLASHLIGHT_DEFAULT; // Use default flashlight GPIO pin
     ledcChannel.duty = 0;                           // Set duty to 0%
