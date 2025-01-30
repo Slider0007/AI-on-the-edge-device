@@ -71,6 +71,14 @@ ClassControlCamera::ClassControlCamera()
     outputFrameSizeHeight = CAMERA_OUTPUT_WINDOW_SIZE_HEIGHT;
 
     demoMode = false;
+
+#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
+    // Prepare default flashlight GPIO already here (to ensure flashlight off in early boot stage)
+    gpio_config_t gpioConfig = {};
+    gpioConfig.pin_bit_mask = 1LL << GPIO_FLASHLIGHT_DEFAULT;
+    gpioConfig.mode = GPIO_MODE_OUTPUT;
+    gpio_config(&gpioConfig);
+#endif
 }
 
 
