@@ -4,9 +4,13 @@
 #include <netdb.h>
 #include <esp_system.h>
 #include <esp_wifi.h>
+
+#ifdef WLAN_USE_MESH_ROAMING
 #include <esp_wnm.h>
 #include <esp_rrm.h>
 #include <esp_mbo.h>
+#endif // WLAN_USE_MESH_ROAMING
+
 #include <esp_mac.h>
 #include <esp_log.h>
 #include <esp_netif.h>
@@ -21,6 +25,7 @@
 #include "ClassLogFile.h"
 #include "helper.h"
 #include "statusled.h"
+#include "mdns_service.h"
 
 
 static const char *TAG = "WLAN";
@@ -416,6 +421,9 @@ esp_err_t initWifiClient(void)
         }
     }
 
+    // Init mDNS service
+    mDnsInit(cfgDataPtr->wlan.hostname);
+
     wifiState.initialized = true;
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init client mode successful");
@@ -551,6 +559,20 @@ esp_err_t initWifiAp(bool _useDefaultConfig)
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_start: Error: " + intToHexString(retVal));
         return retVal;
     }
+
+    // Set hostname
+    if (!cfgDataPtr->wlan.hostname.empty()) {
+        retVal = esp_netif_set_hostname(wifiAp, cfgDataPtr->wlan.hostname.c_str());
+        if (retVal != ESP_OK) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_netif_set_hostname: Error: " + intToHexString(retVal));
+        }
+        else {
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Assigned hostname: " + cfgDataPtr->wlan.hostname);
+        }
+    }
+
+    // Init mDNS service
+    mDnsInit(cfgDataPtr->wlan.hostname);
 
     wifiState.initialized = true;
 
@@ -1159,6 +1181,8 @@ wifi_connection_status_t getWifiConnectionStatus(void)
 
 void deinitWifi(void)
 {
+    mDnsDeinit();
+
     wifiState.initialized = false;
 
     esp_event_handler_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, event_handler);

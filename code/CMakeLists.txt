@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.16.0)
 
+list(APPEND EXTRA_COMPONENT_DIRS components/esp-protocols/components/mdns)
+
 if(EXISTS "${SDKCONFIG}.defaults")
     if(EXISTS "sdkconfig.defaults")
         set(SDKCONFIG_DEFAULTS "${SDKCONFIG}.defaults;sdkconfig.defaults")

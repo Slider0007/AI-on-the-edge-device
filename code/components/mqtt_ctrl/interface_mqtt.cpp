@@ -391,19 +391,19 @@ int startMqttClient(void)
 
 void deinitMqttClient(bool disable)
 {
-    if (disable) {
-        mqttState.mqttEnabled = false;
-    }
-
-    mqttState.mqttInitialized = false;
-    mqttState.mqttConnected = false;
-
     if (mqttClient) {
         unregisterMqttSubscribeFunction();
         esp_mqtt_client_stop(mqttClient);
         esp_mqtt_client_destroy(mqttClient);
         mqttClient = NULL;
     }
+
+    if (disable) {
+        mqttState.mqttEnabled = false;
+    }
+
+    mqttState.mqttInitialized = false;
+    mqttState.mqttConnected = false;
 }
 
 
