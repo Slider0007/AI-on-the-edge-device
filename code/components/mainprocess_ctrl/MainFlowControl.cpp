@@ -61,12 +61,15 @@ bool doInit(void)
     // ********************************************
     ConfigClass::getInstance()->reinitConfig();
 
-    // Init GPIO handler
-    // Note: GPIO has to be initialized before MQTT (topic subscription)
+    // Init GPIO handler (for generic usage)
+    // Note 1: GPIO has to be initialized before MQTT (topic subscription)
+    // Note 2: GPIO handler gets either init here or in cameraCtrl.initFlashlight() to control flashlight
     // ********************************************
     gpio_handler_deinit();
-    if (!gpio_handler_init()) {
-        bRetVal = false;
+    if (ConfigClass::getInstance()->get()->sectionGpio.customizationEnabled) {
+        if (!gpio_handler_init()) {
+            bRetVal = false;
+        }
     }
 
     // Init camera
