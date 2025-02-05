@@ -356,12 +356,17 @@ void GpioHandler::clearData()
 {
     if (gpioMap != NULL) {
         for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); it++) {
-            if (it->second->getSmartLed() != NULL) {
+            // Free smartLED instances
+            if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED && it->second->getSmartLed() != NULL) {
                 delete it->second->getSmartLed();
                 it->second->setSmartLed(NULL);
             }
+            // Disable LEDC channels
+            else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM || it->second->getMode() == GPIO_PIN_MODE_OUTPUT_PWM) {
+                ledc_stop(LEDC_LOW_SPEED_MODE, it->second->getLedcChannel(), 0);
+            }
 
-            delete it->second;
+            delete it->second; // Free GPIO pin instance
         }
         gpioMap->clear();
     }
