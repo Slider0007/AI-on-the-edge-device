@@ -639,8 +639,8 @@ esp_err_t ClassControlCamera::captureToBasisImage(CImageBasis *_image)
             return ESP_FAIL;
         }
 
-        if (demoMode) {            // Use images stored on SD card instead of camera image
-            loadNextDemoImage(fb); // Replace Framebuffer with image from SDcard
+        if (demoMode) {            // Use images stored on SD card instead of real camera image
+            loadNextDemoImage(fb); // Replace framebuffer with image from SD card
         }
 
         if (_image != NULL) {
