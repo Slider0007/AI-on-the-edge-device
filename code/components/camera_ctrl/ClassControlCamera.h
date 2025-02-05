@@ -51,8 +51,6 @@ class ClassControlCamera
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     void ledcInitFlashlightDefault(void);
 #endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-    void setFlashIntensity(void);
-    void setFlashTime(void);
 
     void setStatusLed(bool status);
     bool loadNextDemoImage(camera_fb_t *_fb);
