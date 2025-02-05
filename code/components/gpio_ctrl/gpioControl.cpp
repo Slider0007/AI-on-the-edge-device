@@ -379,18 +379,11 @@ void GpioHandler::clearData()
 
 void GpioHandler::deinit()
 {
+    gpioHandlerEnabled = false;
+
 #ifdef ENABLE_MQTT
     unregisterMqttConnectFunction("gpioHandler");
 #endif // ENABLE_MQTT
-
-    // Disable LEDC channels
-    if (gpioMap != NULL) {
-        for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
-            if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM || it->second->getMode() == GPIO_PIN_MODE_OUTPUT_PWM) {
-                ledc_stop(LEDC_LOW_SPEED_MODE, it->second->getLedcChannel(), 0);
-            }
-        }
-    }
 
     clearData();
 
