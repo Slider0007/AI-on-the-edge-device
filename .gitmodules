@@ -10,3 +10,6 @@
 [submodule "code/components/smartleds"]
 	path = code/components/smartleds
 	url = https://github.com/RoboticsBrno/SmartLeds.git
+[submodule "code/components/esp-protocols"]
+	path = code/components/esp-protocols
+	url = https://github.com/espressif/esp-protocols/
