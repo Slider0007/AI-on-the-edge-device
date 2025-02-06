@@ -84,8 +84,9 @@
 // server_GPIO + server_file + SoftAP + ClassFlowControl + Main
 //******************************
 #define CONFIG_PERSISTENCE_FILE "/sdcard/config/config.json" // Config persistence file
-#define CONFIG_PERSISTENCE_FILE_FALLBACK "/sdcard/config/backup/config_fallback.json" // Config fallback persistence file
-#define CONFIG_PERSISTENCE_FILE_BACKUP "/sdcard/config/backup/config_json.bak" // Config persistence backup file (migration)
+#define CONFIG_PERSISTENCE_FILE_FALLBACK "/sdcard/config/backup/config_fallback.json" // Config persistence file (fallback)
+#define CONFIG_PERSISTENCE_FILE_INVALID "/sdcard/config/backup/config_invalid.json" // Config persistence file (invalid, save for debug)
+#define CONFIG_PERSISTENCE_FILE_BACKUP "/sdcard/config/backup/config_json.bak" // Config persistence file (migration backup)
 
 #define CONFIG_FILE_LEGACY "/sdcard/config/config.ini" // Config file for firmware v16.x and older
 #define CONFIG_FILE_BACKUP_LEGACY "/sdcard/config/backup/config_ini.bak"

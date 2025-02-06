@@ -174,6 +174,9 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 
     // Check for invalid content -> bad/malformed syntax
     if (cJsonObject == NULL) {
+        // Save invalid config file for debug purpose
+        copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_INVALID);
+
         if (!fallbackCfgChecked) { // Try read fallback file if not yet read
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "Invalid persistent config data | Check for fallback config file");
             std::ifstream file(CONFIG_PERSISTENCE_FILE_FALLBACK, std::ifstream::in);
