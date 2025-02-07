@@ -119,13 +119,14 @@ ConfigClass::~ConfigClass()
 void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 {
     std::stringstream streamBuffer;
+    bool fallbackCfgChecked = false;
 
     if (unityTest) {                     // Unity test
         clearCfgDataTemp();              // Clear internal struct
         streamBuffer.str(unityTestData); // Inject test data
     }
     else { // Read data from file
-        std::ifstream file(CONFIG_PERSISTENCE_FILE);
+        std::ifstream file(CONFIG_PERSISTENCE_FILE, std::ifstream::in);
 
         if (file.is_open() && file.good()) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config file found");
@@ -136,8 +137,22 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 
     // Check for empty content -> either empty file or no / bad file
     if (streamBuffer.rdbuf()->in_avail() == 0) {
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "No persistent config found");
-        streamBuffer.str("{}"); // Ensure any content
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "No persistent config data | Check for fallback config file");
+
+        std::ifstream file(CONFIG_PERSISTENCE_FILE_FALLBACK, std::ifstream::in);
+        if (file.is_open() && file.good()) {
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Fallback config file found");
+            streamBuffer << file.rdbuf();
+            file.close();
+        }
+
+        if (streamBuffer.rdbuf()->in_avail() == 0) {
+            streamBuffer.str("{}"); // Ensure any content
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "No persistent config data | Use default config");
+            // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started to reconfigure.
+        }
+
+        fallbackCfgChecked = true;
     }
 
     portENTER_CRITICAL(&mutex);
@@ -152,15 +167,48 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 
     // Parse content to cJSON object structure
     cJsonObject = cJSON_Parse(streamBuffer.str().c_str());
-    streamBuffer.str(""); // Clear stream buffer
 
     // Reset cJSON hooks to default
     cJSON_InitHooks(NULL);
     portEXIT_CRITICAL(&mutex);
 
+    // Check for invalid content -> bad/malformed syntax
     if (cJsonObject == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseConfig: Failed to parse JSON data | Fallback: Use default config");
-        // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started to reconfigure.
+        // Save invalid config file for debug purpose
+        copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_INVALID);
+
+        if (!fallbackCfgChecked) { // Try read fallback file if not yet read
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Invalid persistent config data | Check for fallback config file");
+            std::ifstream file(CONFIG_PERSISTENCE_FILE_FALLBACK, std::ifstream::in);
+            if (file.is_open() && file.good()) {
+                LogFile.writeToFile(ESP_LOG_INFO, TAG, "Fallback config file found");
+                streamBuffer.str(""); // Clear stream buffer
+                streamBuffer << file.rdbuf();
+                file.close();
+
+                portENTER_CRITICAL(&mutex);
+                // Modify hook to use SPIRAM for cJSON object
+                cJSON_Hooks hooks;
+                hooks.malloc_fn = malloc_psram_heap_cjson;
+                hooks.free_fn = free_psram_heap_cjson;
+                cJSON_InitHooks(&hooks);
+                cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
+                cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
+                cJSONObjectPSRAM.usedMemory = 0;
+
+                // Parse content to cJSON object structure
+                cJsonObject = cJSON_Parse(streamBuffer.str().c_str());
+
+                // Reset cJSON hooks to default
+                cJSON_InitHooks(NULL);
+                portEXIT_CRITICAL(&mutex);
+            }
+        }
+
+        if (cJsonObject == NULL) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invalid persistent config data | Use default config");
+            // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started to reconfigure.
+        }
     }
 
     // Parse config out of cJSON object structure
@@ -2550,7 +2598,7 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 //**************************************************************************************************
 esp_err_t ConfigClass::writeConfigFile()
 {
-    std::ofstream file(CONFIG_PERSISTENCE_FILE);
+    std::ofstream file(CONFIG_PERSISTENCE_FILE, std::ofstream::out);
 
     if (!file.is_open()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write JSON file");
@@ -2559,6 +2607,9 @@ esp_err_t ConfigClass::writeConfigFile()
 
     file << jsonBuffer;
     file.close();
+
+    // Save config file additionally as fallback config file
+    copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK);
 
     return ESP_OK;
 }
