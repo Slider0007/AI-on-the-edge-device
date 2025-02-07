@@ -561,7 +561,7 @@ esp_err_t initWifiAp(bool _useDefaultConfig)
     }
 
     // Force bandwidth to 20Mhz to reduce risk of interference with other channels (Default: WIFI_BW_HT40)
-    retVal = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
+    retVal = esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
     if (retVal != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_bandwidth: Error: " + intToHexString(retVal));
     }
