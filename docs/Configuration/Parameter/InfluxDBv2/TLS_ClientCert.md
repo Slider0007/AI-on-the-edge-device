@@ -3,7 +3,7 @@
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Client Certificate  | clientcert
-| Default Value     | empty               | empty
+| Default Value     | None                | empty
 
 
 ## Description

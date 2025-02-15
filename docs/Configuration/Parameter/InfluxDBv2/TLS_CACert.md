@@ -3,7 +3,7 @@
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | CA Certificate      | cacert
-| Default Value     | empty               | empty
+| Default Value     | Default (Built-In Certificate Bundle) | empty
 
 
 ## Description
