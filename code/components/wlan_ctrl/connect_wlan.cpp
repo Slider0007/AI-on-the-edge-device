@@ -166,17 +166,15 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
                                 ", DNS: " + ipCfg.dnsServer);
 
         // Start NTP service
-        if (getUseNtp()) {
+        if (getTimeSyncEnabled()) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Start NTP service");
             esp_netif_sntp_start();
         }
 
 #ifdef ENABLE_MQTT
         // Start MQTT serivce
-        if (getMqttIsEnabled()) {
-            vTaskDelay(pdMS_TO_TICKS(1000));
-            startMqttClient();
-        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        startMqttClient();
 #endif // ENABLE_MQTT
     }
     else if (event_id == WIFI_EVENT_AP_START) {

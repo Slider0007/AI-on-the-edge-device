@@ -997,6 +997,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         }
     }
 
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "tls"), "servercertverification");
+    if (cJSON_IsNumber(objEl)) {
+        cfgDataTemp.sectionMqtt.tls.serverCertVerification = std::clamp(objEl->valueint, 0, 2);
+    }
+
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "tls"), "cacert");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionMqtt.tls.caCert = objEl->valuestring;
@@ -1091,6 +1096,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         }
     }
 
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "tls"), "servercertverification");
+    if (cJSON_IsNumber(objEl)) {
+        cfgDataTemp.sectionInfluxDBv1.tls.serverCertVerification = std::clamp(objEl->valueint, 0, 2);
+    }
+
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "tls"), "cacert");
     if (cJSON_IsString(objEl)) {
         cfgDataTemp.sectionInfluxDBv1.tls.caCert = objEl->valuestring;
@@ -1180,6 +1190,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         if (!unityTest) {
             loadDataFromNVS("influxdbv2_pw", cfgDataTemp.sectionInfluxDBv2.token);
         }
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "tls"), "servercertverification");
+    if (cJSON_IsNumber(objEl)) {
+        cfgDataTemp.sectionInfluxDBv2.tls.serverCertVerification = std::clamp(objEl->valueint, 0, 2);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "tls"), "cacert");
@@ -1277,6 +1292,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         if (!unityTest) {
             loadDataFromNVS("webhook_pw", cfgDataTemp.sectionWebhook.password);
         }
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "servercertverification");
+    if (cJSON_IsNumber(objEl)) {
+        cfgDataTemp.sectionWebhook.tls.serverCertVerification = std::clamp(objEl->valueint, 0, 2);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "cacert");
@@ -2123,6 +2143,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (!cJSON_AddItemToObject(mqtt, "tls", mqttTls = cJSON_CreateObject())) {
         retVal = ESP_FAIL;
     }
+    if (cJSON_AddNumberToObject(mqttTls, "servercertverification", cfgDataTemp.sectionMqtt.tls.serverCertVerification) == NULL) {
+        retVal = ESP_FAIL;
+    }
     if (cJSON_AddStringToObject(mqttTls, "cacert", cfgDataTemp.sectionMqtt.tls.caCert.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
@@ -2186,6 +2209,10 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (!cJSON_AddItemToObject(influxdbv1, "tls", influxdbv1Tls = cJSON_CreateObject())) {
         retVal = ESP_FAIL;
     }
+    if (cJSON_AddNumberToObject(influxdbv1Tls, "servercertverification", cfgDataTemp.sectionInfluxDBv1.tls.serverCertVerification) ==
+        NULL) {
+        retVal = ESP_FAIL;
+    }
     if (cJSON_AddStringToObject(influxdbv1Tls, "cacert", cfgDataTemp.sectionInfluxDBv1.tls.caCert.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
@@ -2243,6 +2270,10 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     }
     if (!cJSON_AddItemToObject(influxdbv2, "tls", influxdbv2Tls = cJSON_CreateObject())) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddNumberToObject(influxdbv2Tls, "servercertverification", cfgDataTemp.sectionInfluxDBv2.tls.serverCertVerification) ==
+        NULL) {
         retVal = ESP_FAIL;
     }
     if (cJSON_AddStringToObject(influxdbv2Tls, "cacert", cfgDataTemp.sectionInfluxDBv2.tls.caCert.c_str()) == NULL) {
@@ -2305,6 +2336,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     }
     if (!cJSON_AddItemToObject(webhook, "tls", webhookTls = cJSON_CreateObject())) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddNumberToObject(webhookTls, "servercertverification", cfgDataTemp.sectionWebhook.tls.serverCertVerification) == NULL) {
         retVal = ESP_FAIL;
     }
     if (cJSON_AddStringToObject(webhookTls, "cacert", cfgDataTemp.sectionWebhook.tls.caCert.c_str()) == NULL) {

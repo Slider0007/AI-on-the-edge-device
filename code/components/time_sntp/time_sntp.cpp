@@ -8,6 +8,7 @@
 #include "configClass.h"
 #include "ClassLogFile.h"
 #include "helper.h"
+#include "interface_mqtt.h"
 
 
 static const char *TAG = "SNTP";
@@ -57,7 +58,7 @@ bool getTimeIsSet(void)
 }
 
 
-bool getUseNtp(void)
+bool getTimeSyncEnabled(void)
 {
     return timeSyncEnabled;
 }
@@ -69,7 +70,7 @@ bool getTimeIsSynced(void)
         return isTimeSynchonized;
     }
 
-    return true;
+    return false;
 }
 
 
@@ -132,6 +133,11 @@ void timeSyncNotificationCallback(struct timeval *tv)
     LogFile.writeToFile(ESP_LOG_INFO, TAG,
                         "Time is synced with NTP server " + getServerName() + ": " + getCurrentTimeString("%Y-%m-%d %H:%M:%S"));
     isTimeSynchonized = true;
+
+#ifdef ENABLE_MQTT
+    // Start MQTT serivce
+    startMqttClient();
+#endif // ENABLE_MQTT
 }
 
 

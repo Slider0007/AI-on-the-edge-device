@@ -1282,7 +1282,7 @@
 			</td>
 			<td>
 				<form id="mqtt_uri_form">
-					<input required type="text" name="mqtt.uri" id="mqtt_uri_value" placeholder="mqtt://192.168.x.x:1883"
+					<input required type="text" name="mqtt.uri" id="mqtt_uri_value" placeholder="mqtt(s)://mqtt-server:1883"
 						onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
@@ -1322,10 +1322,12 @@
 			<td>
 				<form id="mqtt_authmode_form">
 					<select name="mqtt.authmode" id="mqtt_authmode_value"
-							onchange="this.value == '1' ? (setClassVisibility('classvisibility_mqtt_authmode_1', true),
+							onchange="$(mqtt_tls_servercertverification_value).trigger('onchange');
+									  this.value == '1' ? (setClassVisibility('classvisibility_mqtt_authmode_1', true),
 														   setClassVisibility('classvisibility_mqtt_authmode_2', false)) :
 	   								  this.value == '2' ? (setClassVisibility('classvisibility_mqtt_authmode_1', true),
 										 				   setClassVisibility('classvisibility_mqtt_authmode_2', true),
+															$(mqtt_tls_servercertverification_value).trigger('onchange'),
 									  						gatherChangedParameter(mqtt_tls_cacert_form),
 															gatherChangedParameter(mqtt_tls_clientcert_form),
 															gatherChangedParameter(mqtt_tls_clientkey_form)) :
@@ -1369,6 +1371,24 @@
 		</tr>
 
 		<tr class="classvisibility_mqtt_enabled classvisibility_mqtt_authmode_2">
+			<td class="indent2">
+				<span>Server Certificate Verification</span>
+			</td>
+			<td>
+				<form id="mqtt_tls_servercertverification_form">
+					<select name="mqtt.tls.servercertverification" id="mqtt_tls_servercertverification_value"
+							onchange="setClassVisibility('classvisibility_mqtt_authmode_2_ca', this.value != '0');
+										gatherChangedParameter(this.form, true)">
+						<option value="0">Disabled</option>
+						<option value="1">Enabled (No Name Validation)</option>
+						<option value="2" selected>Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_mqtt_tls_servercertverification</td>
+		</tr>
+
+		<tr class="classvisibility_mqtt_enabled classvisibility_mqtt_authmode_2 classvisibility_mqtt_authmode_2_ca">
 			<td class="indent2">
 				<span>CA Certificate</span>
 			</td>
@@ -1562,7 +1582,7 @@
 			</td>
 			<td>
 				<form id="influxdbv1_uri_form">
-					<input required type="text" name="influxdbv1.uri" id="influxdbv1_uri_value" placeholder="http://192.168.x.x:8086"
+					<input required type="text" name="influxdbv1.uri" id="influxdbv1_uri_value" placeholder="http(s)://influxdb-server:8086"
 						onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
@@ -1589,10 +1609,11 @@
 			<td>
 				<form id="influxdbv1_authmode_form">
 					<select name="influxdbv1.authmode" id="influxdbv1_authmode_value"
-							onload=""
-							onchange="this.value == '1' ? (setClassVisibility('classvisibility_influxdbv1_authtls', 'false'),
+							onchange="$(influxdbv1_tls_servercertverification_value).trigger('onchange');
+									  this.value == '1' ? (setClassVisibility('classvisibility_influxdbv1_authtls', 'false'),
 														   setClassVisibility('classvisibility_influxdbv1_authbasic', 'true')) :
 									  this.value == '2' ? (setClassVisibility('classvisibility_influxdbv1_authtls', 'true'),
+									  						$(influxdbv1_tls_servercertverification_value).trigger('onchange'),
 									  						gatherChangedParameter(influxdbv1_tls_cacert_form),
 															gatherChangedParameter(influxdbv1_tls_clientcert_form),
 															gatherChangedParameter(influxdbv1_tls_clientkey_form)) :
@@ -1636,6 +1657,24 @@
 		</tr>
 
 		<tr class="classvisibility_influxdbv1_enabled classvisibility_influxdbv1_authtls">
+			<td class="indent2">
+				<span>Server Certificate Verification</span>
+			</td>
+			<td>
+				<form id="influxdbv1_tls_servercertverification_form">
+					<select name="influxdbv1.tls.servercertverification" id="influxdbv1_tls_servercertverification_value"
+							onchange="setClassVisibility('classvisibility_influxdbv1_authtls_ca', this.value != '0');
+										gatherChangedParameter(this.form, true)">
+						<option value="0">Disabled</option>
+						<option value="1">Enabled (No Name Validation)</option>
+						<option value="2" selected>Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_influxdbv1_tls_servercertverification</td>
+		</tr>
+
+		<tr class="classvisibility_influxdbv1_enabled classvisibility_influxdbv1_authtls classvisibility_influxdbv1_authtls_ca">
 			<td class="indent2">
 				<span>CA Certificate</span>
 			</td>
@@ -1751,7 +1790,7 @@
 			</td>
 			<td>
 				<form id="influxdbv2_uri_form">
-					<input required type="text" name="influxdbv2.uri" id="influxdbv2_uri_value" placeholder="http://192.168.x.x:8086"
+					<input required type="text" name="influxdbv2.uri" id="influxdbv2_uri_value" placeholder="http(s)://influxdb-server:8086"
 						onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
@@ -1791,7 +1830,9 @@
 			<td>
 				<form id="influxdbv2_authmode_form">
 					<select name="influxdbv2.authmode" id="influxdbv2_authmode_value"
-							onchange="this.value == '2' ? (setClassVisibility('classvisibility_influxdbv2_authmode_2', 'true'),
+							onchange="$(influxdbv2_tls_servercertverification_value).trigger('onchange');
+									  this.value == '2' ? (setClassVisibility('classvisibility_influxdbv2_authmode_2', 'true'),
+															$(influxdbv2_tls_servercertverification_value).trigger('onchange'),
 															gatherChangedParameter(influxdbv2_tls_cacert_form),
 															gatherChangedParameter(influxdbv2_tls_clientcert_form),
 															gatherChangedParameter(influxdbv2_tls_clientkey_form)) :
@@ -1820,6 +1861,24 @@
 		</tr>
 
 		<tr class="classvisibility_influxdbv2_enabled classvisibility_influxdbv2_authmode_2">
+			<td class="indent2">
+				<span>Server Certificate Verification</span>
+			</td>
+			<td>
+				<form id="influxdbv2_tls_servercertverification_form">
+					<select name="influxdbv2.tls.servercertverification" id="influxdbv2_tls_servercertverification_value"
+							onchange="setClassVisibility('classvisibility_influxdbv2_authmode_2_ca', this.value != '0');
+										gatherChangedParameter(this.form, true)">
+						<option value="0">Disabled</option>
+						<option value="1">Enabled (No Name Validation)</option>
+						<option value="2" selected>Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_influxdbv2_tls_servercertverification</td>
+		</tr>
+
+		<tr class="classvisibility_influxdbv2_enabled classvisibility_influxdbv2_authmode_2 classvisibility_influxdbv2_authmode_2_ca">
 			<td class="indent2">
 				<span>CA Certificate</span>
 			</td>
@@ -1935,7 +1994,7 @@
 			</td>
 			<td>
 				<form id="webhook_uri_form">
-					<input required type="text" name="webhook.uri" id="webhook_uri_value" placeholder="http://"
+					<input required type="text" name="webhook.uri" id="webhook_uri_value" placeholder="http(s)://webhook-address"
 						onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
@@ -1948,7 +2007,7 @@
 			</td>
 			<td>
 				<form id="webhook_database_form">
-					<input required type="text" name="webhook.apikey" id="webhook_apikey_value"
+					<input required type="text" name="webhook.apikey" id="webhook_apikey_value" placeholder="aiote"
 						onchange="gatherChangedParameter(this.form)">
 				</form>
 			</td>
@@ -1979,10 +2038,11 @@
 			<td>
 				<form id="webhook_authmode_form">
 					<select name="webhook.authmode" id="webhook_authmode_value"
-							onload=""
-							onchange="this.value == '1' ? (setClassVisibility('classvisibility_webhook_authtls', 'false'),
+							onchange="$(webhook_tls_servercertverification_value).trigger('onchange');
+									  this.value == '1' ? (setClassVisibility('classvisibility_webhook_authtls', 'false'),
 														   setClassVisibility('classvisibility_webhook_authbasic', 'true')) :
 									  this.value == '2' ? (setClassVisibility('classvisibility_webhook_authtls', 'true'),
+									  						$(webhook_tls_servercertverification_value).trigger('onchange'),
 									  						gatherChangedParameter(webhook_tls_cacert_form),
 															gatherChangedParameter(webhook_tls_clientcert_form),
 															gatherChangedParameter(webhook_tls_clientkey_form)) :
@@ -2026,6 +2086,24 @@
 		</tr>
 
 		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authtls">
+			<td class="indent2">
+				<span>Server Certificate Verification</span>
+			</td>
+			<td>
+				<form id="webhook_tls_servercertverification_form">
+					<select name="webhook.tls.servercertverification" id="webhook_tls_servercertverification_value"
+							onchange="setClassVisibility('classvisibility_webhook_authtls_ca', this.value != '0');
+										gatherChangedParameter(this.form, true)">
+						<option value="0">Disabled</option>
+						<option value="1">Enabled (No Name Validation)</option>
+						<option value="2" selected>Enabled</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_webhook_tls_servercertverification</td>
+		</tr>
+
+		<tr class="classvisibility_webhook_enabled classvisibility_webhook_authtls classvisibility_webhook_authtls_ca">
 			<td class="indent2">
 				<span>CA Certificate</span>
 			</td>

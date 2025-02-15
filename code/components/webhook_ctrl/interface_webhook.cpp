@@ -3,15 +3,16 @@
 
 #ifdef ENABLE_WEBHOOK
 #include <fstream>
-// #include <time.h>
 
 #include <esp_http_client.h>
+#include <esp_tls_errors.h>
 #include <esp_crt_bundle.h>
 #include <esp_log.h>
 
 #include "ClassLogFile.h"
 #include "psram.h"
 #include "helper.h"
+#include "time_sntp.h"
 
 
 static const char *TAG = "WEBHOOK_IF";
@@ -26,6 +27,15 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
     switch (evt->event_id) {
         case HTTP_EVENT_ERROR:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Error event");
+            // ESP-IDF error codes: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html
+            // mbedTLS error codes / Cert (X509) verify codes: https://github.com/wolfeidau/mbedtls/blob/master/mbedtls/x509.h
+            if (cfgDataPtr->authMode == AUTH_TLS && ((esp_tls_error_handle_t)evt->data)->last_error != ESP_OK) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Connection refused | ESP-IDF error: " +
+                                        intToHexString(((esp_tls_error_handle_t)evt->data)->last_error) +
+                                        ", mbedTLS error: " + intToHexString(((esp_tls_error_handle_t)evt->data)->esp_tls_error_code) +
+                                        ", Cert verify code: " + intToHexString(((esp_tls_error_handle_t)evt->data)->esp_tls_flags));
+            }
             break;
         case HTTP_EVENT_ON_CONNECTED:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Connected");
@@ -40,7 +50,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
                                     " | value: " + std::string(evt->header_value));
             break;
         case HTTP_EVENT_ON_DATA:
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Received data: length:" + std::to_string(evt->data_len));
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Received data: length: " + std::to_string(evt->data_len));
             break;
         case HTTP_EVENT_ON_FINISH:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Session finished");
@@ -136,43 +146,52 @@ esp_err_t webhookPublish(const char *_jsonData, ImageData *_imgData, time_t _ima
         httpConfig.password = cfgDataPtr->password.c_str();
         httpConfig.transport_type = HTTP_TRANSPORT_OVER_SSL;
 
-        if (!TLSCACert.empty()) {
-            httpConfig.cert_pem = TLSCACert.c_str();
-            httpConfig.cert_len = TLSCACert.length() + 1;
-            httpConfig.skip_cert_common_name_check = true; // Skip any validation of server certificate CN field
+        if (cfgDataPtr->tls.serverCertVerification == TLS_SERVER_CERT_VERIFICATION_NONE) {
+            // Warning: Server certificate verification disabled, use only for testing purpose
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Server certificate verification disabled");
         }
         else {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verification");
-            httpConfig.crt_bundle_attach = esp_crt_bundle_attach;
-        }
+            // Skip request if no valid time is set to verify server certificate
+            if (!getTimeIsSet()) {
+                LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip publish request: No valid time for server certificate verification");
+                return ESP_FAIL;
+            }
 
-        if (!TLSClientCert.empty()) {
-            httpConfig.client_cert_pem = TLSClientCert.c_str();
-            httpConfig.client_cert_len = TLSClientCert.length() + 1;
-        }
+            if (!TLSCACert.empty()) {
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Server certificate verification enabled | Use user provided certificate");
+                httpConfig.cert_pem = TLSCACert.c_str();
+                httpConfig.cert_len = TLSCACert.length() + 1;
+            }
+            else {
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Server certificate verification enabled | Use built-in certificate bundle");
+                httpConfig.crt_bundle_attach = esp_crt_bundle_attach;
+            }
 
-        if (!TLSClientKey.empty()) {
-            httpConfig.client_key_pem = TLSClientKey.c_str();
-            httpConfig.client_key_len = TLSClientKey.length() + 1;
+            // Configure validation of certificate name to identify server
+            // - 1. Only if available: Subject alternative names (SAN fields: DNS or IP) for multi-domain usage: Aliases for server name
+            // - 2. Check common name (CN field): Server name
+            // Warning: If name validation is disabled, MITM attacks are possible (fake server)
+            if (cfgDataPtr->tls.serverCertVerification == TLS_SERVER_CERT_VERIFICATION_NO_NAME_VALIDATION) {
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Server certificate verification | Name validation disabled");
+                httpConfig.skip_cert_common_name_check = true;
+            }
         }
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "webhookPublish: Publish data: " + std::string(_jsonData, strlen(_jsonData)));
-
-    esp_err_t retVal = ESP_OK;
     esp_http_client_handle_t httpClient = esp_http_client_init(&httpConfig);
     if (httpClient == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "HTTP client: Initialization failed");
         return ESP_FAIL;
     }
-
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Initialized");
+
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Publish data: " + std::string(_jsonData, strlen(_jsonData)));
 
     esp_http_client_set_header(httpClient, "APIKEY", cfgDataPtr->apiKey.c_str());
     esp_http_client_set_header(httpClient, "Content-Type", "application/json");
     esp_http_client_set_post_field(httpClient, _jsonData, strlen(_jsonData));
 
-    retVal = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(httpClient));
+    esp_err_t retVal = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(httpClient));
     if (retVal == ESP_OK) {
         int statusCode = esp_http_client_get_status_code(httpClient);
         if (statusCode < 300) {
@@ -211,6 +230,7 @@ esp_err_t webhookPublish(const char *_jsonData, ImageData *_imgData, time_t _ima
     }
 
     esp_http_client_cleanup(httpClient);
+
     return retVal;
 }
 

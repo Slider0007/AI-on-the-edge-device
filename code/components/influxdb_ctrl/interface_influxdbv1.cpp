@@ -3,15 +3,16 @@
 
 #ifdef ENABLE_INFLUXDB
 #include <fstream>
-#include <time.h>
 
 #include <esp_http_client.h>
+#include <esp_tls_errors.h>
 #include <esp_crt_bundle.h>
 #include <esp_log.h>
 
 #include "ClassLogFile.h"
 #include "psram.h"
 #include "helper.h"
+#include "time_sntp.h"
 
 
 static const char *TAG = "INFLUXDBV1_IF";
@@ -26,6 +27,15 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
     switch (evt->event_id) {
         case HTTP_EVENT_ERROR:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Error event");
+            // ESP-IDF error codes: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html
+            // mbedTLS error codes / Cert (X509) verify codes: https://github.com/wolfeidau/mbedtls/blob/master/mbedtls/x509.h
+            if (cfgDataPtr->authMode == AUTH_TLS && ((esp_tls_error_handle_t)evt->data)->last_error != ESP_OK) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Connection refused | ESP-IDF error: " +
+                                        intToHexString(((esp_tls_error_handle_t)evt->data)->last_error) +
+                                        ", mbedTLS error: " + intToHexString(((esp_tls_error_handle_t)evt->data)->esp_tls_error_code) +
+                                        ", Cert verify code: " + intToHexString(((esp_tls_error_handle_t)evt->data)->esp_tls_flags));
+            }
             break;
         case HTTP_EVENT_ON_CONNECTED:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Connected");
@@ -40,7 +50,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
                                     " | value: " + std::string(evt->header_value));
             break;
         case HTTP_EVENT_ON_DATA:
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Received data: length:" + std::to_string(evt->data_len));
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Received data: length: " + std::to_string(evt->data_len));
             break;
         case HTTP_EVENT_ON_FINISH:
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Session finished");
@@ -136,14 +146,35 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
         httpConfig.password = cfgDataPtr->password.c_str();
         httpConfig.transport_type = HTTP_TRANSPORT_OVER_SSL;
 
-        if (!TLSCACert.empty()) {
-            httpConfig.cert_pem = TLSCACert.c_str();
-            httpConfig.cert_len = TLSCACert.length() + 1;
-            httpConfig.skip_cert_common_name_check = true; // Skip any validation of server certificate CN field
+        if (cfgDataPtr->tls.serverCertVerification == TLS_SERVER_CERT_VERIFICATION_NONE) {
+            // Warning: Server certificate verification disabled, use only for testing purpose
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Server certificate verification disabled");
         }
         else {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verification");
-            httpConfig.crt_bundle_attach = esp_crt_bundle_attach;
+            // Skip request if no valid time is set to verify server certificate
+            if (!getTimeIsSet()) {
+                LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip publish request: No valid time for server certificate verification");
+                return ESP_FAIL;
+            }
+
+            if (!TLSCACert.empty()) {
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Server certificate verification enabled | Use user provided certificate");
+                httpConfig.cert_pem = TLSCACert.c_str();
+                httpConfig.cert_len = TLSCACert.length() + 1;
+            }
+            else {
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Server certificate verification enabled | Use built-in certificate bundle");
+                httpConfig.crt_bundle_attach = esp_crt_bundle_attach;
+            }
+
+            // Configure validation of certificate name to identify server
+            // - 1. Only if available: Subject alternative names (SAN fields: DNS or IP) for multi-domain usage: Aliases for server name
+            // - 2. Check common name (CN field): Server name
+            // Warning: If name validation is disabled, MITM attacks are possible (fake server)
+            if (cfgDataPtr->tls.serverCertVerification == TLS_SERVER_CERT_VERIFICATION_NO_NAME_VALIDATION) {
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Server certificate verification | Name validation disabled");
+                httpConfig.skip_cert_common_name_check = true;
+            }
         }
 
         if (!TLSClientCert.empty()) {
@@ -157,38 +188,7 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
         }
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                        "influxDBv1Publish: field key 1: " + _fieldkey1 + ", field value 1: " + _fieldvalue1 +
-                            ", timestamp: " + _timestamp);
-
-    esp_err_t retVal = ESP_OK;
-    std::string payload;
-    char nowTimestamp[21];
-
-    if (_timestamp.length() > 0) {
-        struct tm tm;
-
-        time_t t;
-        time(&t);
-        localtime_r(&t, &tm); // Extract DST setting from actual time to consider it for timestamp evaluation
-
-        strptime(_timestamp.c_str(), TIME_FORMAT_OUTPUT, &tm);
-        t = mktime(&tm);
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Timestamp: " + _timestamp + ", Timestamp (UTC): " + std::to_string(t));
-
-        sprintf(nowTimestamp, "%ld000000000", (long)t); // UTC
-        payload = _measurement + " " + _fieldkey1 + "=" + _fieldvalue1 + " " + nowTimestamp;
-    }
-    else {
-        payload = _measurement + " " + _fieldkey1 + "=" + _fieldvalue1;
-    }
-
-    payload.shrink_to_fit();
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Payload: " + payload);
-
-    // use the default retention policy of the database
     std::string apiURI = cfgDataPtr->uri + "/write?db=" + cfgDataPtr->database;
-    apiURI.shrink_to_fit();
     httpConfig.url = apiURI.c_str();
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "URI: " + apiURI);
 
@@ -197,17 +197,34 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "HTTP client: Initialization failed");
         return ESP_FAIL;
     }
-
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "HTTP client: Initialized");
 
+    std::string payload;
+
+    if (_timestamp.length() > 0) {
+        struct tm tm;
+        time_t t;
+        time(&t);
+        localtime_r(&t, &tm); // Extract DST setting from actual time to consider it for timestamp evaluation
+
+        strptime(_timestamp.c_str(), TIME_FORMAT_OUTPUT, &tm);
+        t = mktime(&tm);
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Timestamp: " + _timestamp + ", Timestamp (UTC): " + std::to_string(t));
+
+        char nowTimestamp[21];
+        sprintf(nowTimestamp, "%ld000000000", (long)t); // UTC
+        payload = _measurement + " " + _fieldkey1 + "=" + _fieldvalue1 + " " + nowTimestamp;
+    }
+    else {
+        payload = _measurement + " " + _fieldkey1 + "=" + _fieldvalue1;
+    }
+
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Payload: " + payload);
+
     esp_http_client_set_header(httpClient, "Content-Type", "text/plain");
-    // LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Header setting done");
-
     ESP_ERROR_CHECK(esp_http_client_set_post_field(httpClient, payload.c_str(), payload.length()));
-    // LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Payload post completed");
 
-    retVal = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(httpClient));
-
+    esp_err_t retVal = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(httpClient));
     if (retVal == ESP_OK) {
         int status_code = esp_http_client_get_status_code(httpClient);
         if (status_code < 300) {
@@ -221,7 +238,9 @@ esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &
     else {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "HTTP client: Request failed. Error: " + intToHexString(retVal));
     }
+
     esp_http_client_cleanup(httpClient);
+
     return retVal;
 }
 

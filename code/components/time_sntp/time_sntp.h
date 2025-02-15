@@ -9,7 +9,7 @@ std::string getCurrentTimeString(const char *frm);
 std::string convertTimeToString(time_t _time, const char *frm);
 
 bool getTimeIsSet(void);
-bool getUseNtp(void);
+bool getTimeSyncEnabled(void);
 bool getTimeIsSynced(void);
 std::string getNTPSyncStatus(void);
 bool getTimeWasNotSetAtBoot(void);
