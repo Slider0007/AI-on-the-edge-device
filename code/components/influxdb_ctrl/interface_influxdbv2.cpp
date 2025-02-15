@@ -76,7 +76,7 @@ bool influxDBv2Init(const CfgData::SectionInfluxDBv2 *_cfgDataPtr)
             return false;
         }
 
-        if (!cfgDataPtr->tls.caCert.empty()) {
+        if (cfgDataPtr->tls.serverCertVerification != TLS_SERVER_CERT_VERIFICATION_NONE && !cfgDataPtr->tls.caCert.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: /config/certs/" + cfgDataPtr->tls.caCert);
             std::ifstream ifs("/sdcard/config/certs/" + cfgDataPtr->tls.caCert);
             TLSCACert = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());

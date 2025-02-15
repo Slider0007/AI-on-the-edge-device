@@ -24,7 +24,7 @@ enum AuthMode {
 };
 
 
-enum ServerCertVerification {
+enum TlsServerCertVerification {
     TLS_SERVER_CERT_VERIFICATION_NONE = 0,
     TLS_SERVER_CERT_VERIFICATION_NO_NAME_VALIDATION = 1,
     TLS_SERVER_CERT_VERIFICATION_FULL = 2,
