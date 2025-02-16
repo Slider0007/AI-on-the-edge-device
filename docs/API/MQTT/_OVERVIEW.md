@@ -3,7 +3,10 @@
 The device is capable to register to a MQTT broker to publish data and subscribe to specific topics.
 
 !!! __Note__: 
-    Only MQTT v3.1.1 is supported.
+    Only MQTT v.3.1 / v3.1.1 is supported.
+
+!!! __Note__: 
+    Encrypted connection is supported. Only TLS v1.2 is supported. For further details, check parameter description (tooltips).
 
 ### Parametrization
 The MQTT service has to be enabled and configured properly via web interface (`Settings` > `Configuration` > section `MQTT`). 

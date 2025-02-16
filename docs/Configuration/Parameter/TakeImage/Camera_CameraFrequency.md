@@ -14,13 +14,15 @@
 
 ## Description
 
-This parameter sets the internally used camera frequency.
+Set the camera frequency
 
 
 !!! Note
-    Usually there is no need to adapt this setting. Some ESP32CAM modules do have issues
-    with bad responsivness. One possible root cause could be possible disturbances due to
-    bad PCB routing of the frequency wire from SOC to the attached camera module. Modifying the
-    camera frequency could possibly improve the situation. If this is not improving only hardware
-    related optimizations are possible like shielding the respective area by copper foil, etc...
+    The camera frequency could have negative impact on wireless connection quality 
+    (interference with WLAN signal), especially using low quality boards or boards 
+    with onboard antenna. Depending on used hardware combination, try to find the 
+    best camera frequency (default: 20Mhz) under the evaluation of network 
+    responiveness and resulting image quality.<br>
+    If this is not improving the situation only hardware related optimizations are 
+    possible like shielding the respective area by copper foil, etc...
     
