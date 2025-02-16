@@ -230,6 +230,7 @@ void ClassLogFile::writeToFile(esp_log_level_t level, std::string tag, std::stri
         std::string logpath = logFileRootFolder + "/" + logfileName;
         logfileHandle = fopen(logpath.c_str(), "a");
         if (logfileHandle == NULL) {
+            xSemaphoreGive(logfileMutex);
             ESP_LOGE(TAG, "writeToFile: Failed to open logfile %s", logpath.c_str());
             return;
         }
