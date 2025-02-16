@@ -1173,8 +1173,8 @@ void task_autodoFlow(void *pvParameter)
                                 "Cycle #" + std::to_string(cycleCounter) + " completed (" + std::to_string(processingTime) + "s)");
 
             // Check if time is synchronized (if NTP is configured)
-            if (getUseNtp() && !getTimeIsSynced()) {
-                LogFile.writeToFile(ESP_LOG_WARN, TAG, "Time server is configured, but time is not yet set");
+            if (getTimeSyncEnabled() && !getTimeIsSynced()) {
+                LogFile.writeToFile(ESP_LOG_WARN, TAG, "Time synchronization is enabled, but time is not yet set");
                 setStatusLed(TIME_CHECK, 1, false);
             }
 

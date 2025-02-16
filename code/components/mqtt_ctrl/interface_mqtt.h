@@ -13,11 +13,12 @@
 
 bool publishMqttData(std::string _key, std::string _content, int qos, bool _retainFlag = false);
 bool configureMqttClient(const CfgData::SectionMqtt *cfgDataPtr, int keepAlive);
-int startMqttClient(void);
+esp_err_t startMqttClient(void);
 
 bool getMqttIsEnabled(void);
 bool getMqttIsConnected(void);
 bool getMqttIsEncrypted(void);
+bool getMqttTlsCertVerifyRequiresTime(void);
 
 void registerMqttConnectFunction(std::string name, std::function<void()> func);
 void unregisterMqttConnectFunction(std::string name);

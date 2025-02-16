@@ -39,6 +39,13 @@ CONFIG_RMT_ISR_IRAM_SAFE=y
 #
 CONFIG_ESP_TLS_USING_MBEDTLS=y
 CONFIG_MBEDTLS_EXTERNAL_MEM_ALLOC=y
+CONFIG_MBEDTLS_HAVE_TIME_DATE=y
+CONFIG_MBEDTLS_SSL_PROTO_TLS1_3=n
+
+# Disable server certificate verification: Only applicable if no other
+# verification method is selected (user provided cert, cert bundle, ...)
+CONFIG_ESP_TLS_INSECURE=y
+CONFIG_ESP_TLS_SKIP_SERVER_CERT_VERIFY=y
 
 
 #

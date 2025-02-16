@@ -1,4 +1,4 @@
-# Parameter: Pin Selection
+# Pin Selection
 
 
 ## Description

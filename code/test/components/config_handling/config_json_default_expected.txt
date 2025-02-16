@@ -133,6 +133,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "username": "",
     "password": "",
     "tls": {
+      "servercertverification":	2,
       "cacert": "",
       "clientcert": "",
       "clientkey": ""
@@ -155,6 +156,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "username": "",
     "password": "",
     "tls": {
+      "servercertverification":	2,
       "cacert": "",
       "clientcert": "",
       "clientkey": ""
@@ -176,6 +178,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "authmode": 1,
     "token": "",
     "tls": {
+      "servercertverification":	2,
       "cacert": "",
       "clientcert": "",
       "clientkey": ""
@@ -198,6 +201,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
       "username": "",
       "password": "",
       "tls": {
+          "servercertverification":	2,
           "cacert": "",
           "clientcert": "",
           "clientkey": ""

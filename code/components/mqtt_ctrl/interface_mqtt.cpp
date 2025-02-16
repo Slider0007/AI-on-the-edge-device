@@ -13,14 +13,17 @@
 #include <esp_timer.h>
 #endif // DEBUG_DETAIL_ON
 
+#include "configClass.h"
 #include "MainFlowControl.h"
 #include "ClassLogFile.h"
 #include "connect_wlan.h"
 #include "server_mqtt.h"
+#include "time_sntp.h"
 
 
 static const char *TAG = "MQTT_IF";
 
+static SemaphoreHandle_t mqttStartMutex = xSemaphoreCreateMutex();
 static const CfgData::SectionMqtt *cfgDataPtr;
 
 static std::string LWTTopic;
@@ -58,43 +61,44 @@ bool publishMqttData(std::string _key, std::string _content, int _qos, bool _ret
 
     startMqttClient(); // Restart client if not started yet/anymore
 
-    if (mqttState.mqttInitialized && mqttState.mqttConnected) {
-#ifdef DEBUG_DETAIL_ON
-        long long int starttime = esp_timer_get_time();
-#endif // DEBUG_DETAIL_ON
-        int msg_id = esp_mqtt_client_publish(mqttClient, _key.c_str(), _content.c_str(), 0, _qos, _retainFlag);
-#ifdef DEBUG_DETAIL_ON
-        ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime) / 1000);
-#endif // DEBUG_DETAIL_ON
-        if (msg_id == -1) {
-            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Failed to publish topic '" + _key + "', retry");
-#ifdef DEBUG_DETAIL_ON
-            starttime = esp_timer_get_time();
-#endif // DEBUG_DETAIL_ON
-            msg_id = esp_mqtt_client_publish(mqttClient, _key.c_str(), _content.c_str(), 0, _qos, _retainFlag);
-#ifdef DEBUG_DETAIL_ON
-            ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime) / 1000);
-#endif // DEBUG_DETAIL_ON
-            if (msg_id == -1) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish topic '" + _key + "', retry in next cycle");
-                mqttState.failedOnCycle = getFlowCycleCounter();
-                return false;
-            }
-        }
-
-        if (_content.length() > 80) { // Truncate message if too long
-            _content.resize(80);
-            _content.append("..");
-        }
-
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "Published topic: " + _key + ", content: " + _content + " | msg_id: " + std::to_string(msg_id));
-        return true;
-    }
-    else {
+    if (!mqttState.mqttInitialized || !mqttState.mqttConnected) {
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Skip publish request: Not connected to broker | Topic: " + _key);
         return false;
     }
+
+#ifdef DEBUG_DETAIL_ON
+    int64_t starttime = esp_timer_get_time();
+#endif // DEBUG_DETAIL_ON
+    int msg_id = esp_mqtt_client_publish(mqttClient, _key.c_str(), _content.c_str(), 0, _qos, _retainFlag);
+#ifdef DEBUG_DETAIL_ON
+    ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime) / 1000);
+#endif // DEBUG_DETAIL_ON
+
+    if (msg_id == -1) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Failed to publish topic '" + _key + "', retry");
+#ifdef DEBUG_DETAIL_ON
+        starttime = esp_timer_get_time();
+#endif // DEBUG_DETAIL_ON
+        msg_id = esp_mqtt_client_publish(mqttClient, _key.c_str(), _content.c_str(), 0, _qos, _retainFlag);
+#ifdef DEBUG_DETAIL_ON
+        ESP_LOGI(TAG, "Publish msg_id %d in %lld ms", msg_id, (esp_timer_get_time() - starttime) / 1000);
+#endif // DEBUG_DETAIL_ON
+
+        if (msg_id == -1) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish topic '" + _key + "', retry in next cycle");
+            mqttState.failedOnCycle = getFlowCycleCounter();
+            return false;
+        }
+    }
+
+    if (_content.length() > 80) { // Truncate message if too long
+        _content.resize(80);
+        _content.append("..");
+    }
+
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Published topic: " + _key + ", content: " + _content + " | msg_id: " + std::to_string(msg_id));
+
+    return true;
 }
 
 
@@ -180,12 +184,13 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Connection refused, not authorized (0x05)");
             }
 
-            // Log any ESP-TLS error: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html
-            if (cfgDataPtr->authMode == AUTH_TLS && (event->error_handle->esp_tls_last_esp_err != ESP_OK)) {
-                LogFile.writeToFile(
-                    ESP_LOG_ERROR, TAG,
-                    "Connection refused, TLS error code: " + intToHexString(event->error_handle->esp_tls_last_esp_err) +
-                        " (More infos: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html");
+            // ESP-IDF error codes: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html
+            // mbedTLS error codes / Cert (X509) verify codes: https://github.com/wolfeidau/mbedtls/blob/master/mbedtls/x509.h
+            if (cfgDataPtr->authMode == AUTH_TLS && event->error_handle->esp_tls_last_esp_err != ESP_OK) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Connection refused | ESP-IDF error: " + intToHexString(event->error_handle->esp_tls_last_esp_err) +
+                                        ", mbedTLS error: " + intToHexString(event->error_handle->esp_tls_stack_err) +
+                                        ", Cert verify code: " + intToHexString(event->error_handle->esp_tls_cert_verify_flags));
             }
 
 #ifdef DEBUG_DETAIL_ON
@@ -243,7 +248,7 @@ bool configureMqttClient(const CfgData::SectionMqtt *_param, int keepAlive)
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: URI parameter not using default MQTT TLS port \'8883\'");
         }
 
-        if (!cfgDataPtr->tls.caCert.empty()) {
+        if (cfgDataPtr->tls.serverCertVerification != TLS_SERVER_CERT_VERIFICATION_NONE && !cfgDataPtr->tls.caCert.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: /config/certs/" + cfgDataPtr->tls.caCert);
             std::ifstream ifs("/sdcard/config/certs/" + cfgDataPtr->tls.caCert);
             TLSCACert = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
@@ -298,112 +303,142 @@ bool configureMqttClient(const CfgData::SectionMqtt *_param, int keepAlive)
 }
 
 
-int startMqttClient(void)
+esp_err_t startMqttClient(void)
 {
-    if (mqttState.mqttInitialized) {
-        return 0;
+    // Return if already started or service is not enabled
+    if (mqttState.mqttInitialized || !mqttState.mqttEnabled) {
+        return ESP_ERR_NOT_ALLOWED;
     }
 
-    if (!mqttState.mqttEnabled) {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but service is not configured");
-        return 0;
-    }
-
+    // Start only with established network connection
     if (!getWifiIsConnected()) {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init called, but wlan is not yet connected");
-        return 0;
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init postponed: Network connection not yet established");
+        return ESP_ERR_NOT_ALLOWED;
     }
 
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init MQTT service");
-    deinitMqttClient();
-
-    esp_mqtt_client_config_t mqtt_cfg = {};
-
-    mqtt_cfg.broker.address.uri = cfgDataPtr->uri.c_str();
-    mqtt_cfg.credentials.client_id = cfgDataPtr->clientID.c_str();
-    mqtt_cfg.network.disable_auto_reconnect = false;    // Reconnection routine active (Default: false)
-    mqtt_cfg.network.reconnect_timeout_ms = 15000;      // Try to reconnect to broker (Default: 10000ms)
-    mqtt_cfg.network.timeout_ms = 10000;                // Network Timeout (Default: 10000ms)
-    mqtt_cfg.session.message_retransmit_timeout = 3000; // Time after message resent when broker not acknowledged (QoS1, QoS2)
-    mqtt_cfg.session.last_will.topic = LWTTopic.c_str();
-    mqtt_cfg.session.last_will.retain = 1;
-    mqtt_cfg.session.last_will.msg = std::string(MQTT_STATUS_OFFLINE).c_str();
-    mqtt_cfg.session.keepalive = keepAlive;
-    mqtt_cfg.buffer.size = 1024; // size of MQTT send/receive buffer (Default: 1024)
-
-    if (cfgDataPtr->authMode == AUTH_BASIC) {
-        mqtt_cfg.credentials.username = cfgDataPtr->username.c_str();
-        mqtt_cfg.credentials.authentication.password = cfgDataPtr->password.c_str();
-    }
-    else if (cfgDataPtr->authMode == AUTH_TLS) {
-        mqtt_cfg.credentials.username = cfgDataPtr->username.c_str();
-        mqtt_cfg.credentials.authentication.password = cfgDataPtr->password.c_str();
-
-        if (!TLSCACert.empty()) {
-            mqtt_cfg.broker.verification.certificate = TLSCACert.c_str();
-            mqtt_cfg.broker.verification.certificate_len = TLSCACert.length() + 1;
-            mqtt_cfg.broker.verification.skip_cert_common_name_check = true; // Skip any validation of server certificate CN field
+    if (xSemaphoreTake(mqttStartMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+        esp_mqtt_client_config_t mqtt_cfg = {};
+        if (cfgDataPtr->authMode == AUTH_BASIC) {
+            mqtt_cfg.credentials.username = cfgDataPtr->username.c_str();
+            mqtt_cfg.credentials.authentication.password = cfgDataPtr->password.c_str();
         }
-        else {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CA Certificate empty, use certification bundle for server verfication");
-            mqtt_cfg.broker.verification.crt_bundle_attach = esp_crt_bundle_attach;
+        else if (cfgDataPtr->authMode == AUTH_TLS) {
+            mqtt_cfg.credentials.username = cfgDataPtr->username.c_str();
+            mqtt_cfg.credentials.authentication.password = cfgDataPtr->password.c_str();
+
+            if (cfgDataPtr->tls.serverCertVerification == TLS_SERVER_CERT_VERIFICATION_NONE) {
+                // Warning: Server certificate verification disabled, use only for testing purpose
+                LogFile.writeToFile(ESP_LOG_WARN, TAG, "Server certificate verification disabled");
+            }
+            else {
+                // Skip request if no valid time is set to verify server certificate
+                // Note: A warning message will be set in flow state "Publish to MQTT" (ClassFlowMQTT.cpp)
+                //       to give the system some time to set proper time
+                if (!getTimeIsSet()) {
+                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init postponed: No valid time for server certificate verification");
+                    xSemaphoreGive(mqttStartMutex);
+                    return ESP_ERR_NOT_ALLOWED;
+                }
+
+                if (!TLSCACert.empty()) {
+                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Server certificate verification enabled | Use user provided certificate");
+                    mqtt_cfg.broker.verification.certificate = TLSCACert.c_str();
+                    mqtt_cfg.broker.verification.certificate_len = TLSCACert.length() + 1;
+                }
+                else {
+                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Server certificate verification enabled | Use built-in certificate bundle");
+                    mqtt_cfg.broker.verification.crt_bundle_attach = esp_crt_bundle_attach;
+                }
+
+                // Configure validation of certificate name to identify server
+                // - 1. Only if available: Subject alternative names (SAN fields: DNS or IP) for multi-domain usage: Aliases for server name
+                // - 2. Check common name (CN field): Server name
+                // Warning: If name validation is disabled, MITM attacks are possible (fake server)
+                if (cfgDataPtr->tls.serverCertVerification == TLS_SERVER_CERT_VERIFICATION_NO_NAME_VALIDATION) {
+                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Server certificate verification | Name validation disabled");
+                    mqtt_cfg.broker.verification.skip_cert_common_name_check = true;
+                }
+            }
+
+            if (!TLSClientCert.empty()) {
+                mqtt_cfg.credentials.authentication.certificate = TLSClientCert.c_str();
+                mqtt_cfg.credentials.authentication.certificate_len = TLSClientCert.length() + 1;
+            }
+
+            if (!TLSClientKey.empty()) {
+                mqtt_cfg.credentials.authentication.key = TLSClientKey.c_str();
+                mqtt_cfg.credentials.authentication.key_len = TLSClientKey.length() + 1;
+            }
         }
 
-        if (!TLSClientCert.empty()) {
-            mqtt_cfg.credentials.authentication.certificate = TLSClientCert.c_str();
-            mqtt_cfg.credentials.authentication.certificate_len = TLSClientCert.length() + 1;
+        mqtt_cfg.broker.address.uri = cfgDataPtr->uri.c_str();
+        mqtt_cfg.credentials.client_id = cfgDataPtr->clientID.c_str();
+        mqtt_cfg.network.disable_auto_reconnect = false;    // Reconnection routine active (Default: false)
+        mqtt_cfg.network.reconnect_timeout_ms = 15000;      // Try to reconnect to broker (Default: 10000ms)
+        mqtt_cfg.network.timeout_ms = 10000;                // Network Timeout (Default: 10000ms)
+        mqtt_cfg.session.message_retransmit_timeout = 3000; // Time after message resent when broker not acknowledged (QoS1, QoS2)
+        mqtt_cfg.session.last_will.topic = LWTTopic.c_str();
+        mqtt_cfg.session.last_will.retain = 1;
+        mqtt_cfg.session.last_will.msg = std::string(MQTT_STATUS_OFFLINE).c_str();
+        mqtt_cfg.session.keepalive = keepAlive;
+        mqtt_cfg.buffer.size = 1024; // size of MQTT send/receive buffer (Default: 1024)
+
+
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init MQTT client");
+
+        deinitMqttClient();
+
+        mqttClient = esp_mqtt_client_init(&mqtt_cfg);
+        if (mqttClient == NULL) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init failed: No handle created");
+            mqttState.mqttInitialized = false;
+            xSemaphoreGive(mqttStartMutex);
+            return ESP_FAIL;
         }
 
-        if (!TLSClientKey.empty()) {
-            mqtt_cfg.credentials.authentication.key = TLSClientKey.c_str();
-            mqtt_cfg.credentials.authentication.key_len = TLSClientKey.length() + 1;
-        }
-    }
-
-    mqttClient = esp_mqtt_client_init(&mqtt_cfg);
-    if (mqttClient) {
         esp_err_t ret = esp_mqtt_client_register_event(mqttClient, mqttEventID, mqtt_event_handler, mqttClient);
         if (ret != ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Could not register event (ret=" + std::to_string(ret) + ")");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Could not register event | Error: " + intToHexString(ret));
             mqttState.mqttInitialized = false;
-            return -1;
+            xSemaphoreGive(mqttStartMutex);
+            return ESP_FAIL;
         }
 
         ret = esp_mqtt_client_start(mqttClient);
         if (ret != ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Client start failed (retval=" + std::to_string(ret) + ")");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Client start failed | Error: " + intToHexString(ret));
             mqttState.mqttInitialized = false;
-            return -1;
+            xSemaphoreGive(mqttStartMutex);
+            return ESP_FAIL;
         }
-        else {
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Client started, waiting for established connection");
-            mqttState.mqttInitialized = true;
-            return 1;
-        }
+
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Client started: Waiting for established connection");
+        mqttState.mqttInitialized = true;
+        xSemaphoreGive(mqttStartMutex);
+        return ESP_OK;
     }
-    else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init failed, no handle created");
-        mqttState.mqttInitialized = false;
-        return -1;
-    }
+
+    // Return if semaphore cannot be taken
+    return ESP_ERR_NOT_FINISHED;
 }
 
 
 void deinitMqttClient(bool disable)
 {
+    if (mqttClient) {
+        unregisterMqttSubscribeFunction();
+        esp_mqtt_client_stop(mqttClient);
+        esp_mqtt_client_unregister_event(mqttClient, mqttEventID, mqtt_event_handler);
+        esp_mqtt_client_destroy(mqttClient);
+        mqttClient = NULL;
+    }
+
     if (disable) {
         mqttState.mqttEnabled = false;
     }
 
     mqttState.mqttInitialized = false;
     mqttState.mqttConnected = false;
-
-    if (mqttClient) {
-        unregisterMqttSubscribeFunction();
-        esp_mqtt_client_stop(mqttClient);
-        esp_mqtt_client_destroy(mqttClient);
-        mqttClient = NULL;
-    }
 }
 
 
@@ -422,6 +457,17 @@ bool getMqttIsConnected(void)
 bool getMqttIsEncrypted(void)
 {
     if (cfgDataPtr != NULL && cfgDataPtr->authMode == AUTH_TLS) {
+        return true;
+    }
+
+    return false;
+}
+
+
+bool getMqttTlsCertVerifyRequiresTime()
+{
+    if (cfgDataPtr == NULL ||
+        (cfgDataPtr->authMode == AUTH_TLS && cfgDataPtr->tls.serverCertVerification != TLS_SERVER_CERT_VERIFICATION_NONE)) {
         return true;
     }
 

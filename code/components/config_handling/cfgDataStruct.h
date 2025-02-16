@@ -24,6 +24,13 @@ enum AuthMode {
 };
 
 
+enum TlsServerCertVerification {
+    TLS_SERVER_CERT_VERIFICATION_NONE = 0,
+    TLS_SERVER_CERT_VERIFICATION_NO_NAME_VALIDATION = 1,
+    TLS_SERVER_CERT_VERIFICATION_FULL = 2,
+};
+
+
 enum AlignmentAlgo {
     ALIGNALGO_DEFAULT = 0,
     ALIGNALGO_HIGH_ACCURACY = 1,
@@ -299,6 +306,7 @@ struct CfgData {
         std::string username = "";
         std::string password = "";
         struct TLS {
+            uint8_t serverCertVerification = TLS_SERVER_CERT_VERIFICATION_FULL;
             std::string caCert = "";
             std::string clientCert = "";
             std::string clientKey = "";
@@ -323,6 +331,7 @@ struct CfgData {
         std::string username = "";
         std::string password = "";
         struct TLS {
+            uint8_t serverCertVerification = TLS_SERVER_CERT_VERIFICATION_FULL;
             std::string caCert = "";
             std::string clientCert = "";
             std::string clientKey = "";
@@ -339,6 +348,7 @@ struct CfgData {
         int authMode = AUTH_BASIC; // AUTH_BASIC: Tokenized authentication
         std::string token = "";
         struct TLS {
+            uint8_t serverCertVerification = TLS_SERVER_CERT_VERIFICATION_FULL;
             std::string caCert = "";
             std::string clientCert = "";
             std::string clientKey = "";
@@ -356,6 +366,7 @@ struct CfgData {
         std::string username = "";
         std::string password = "";
         struct TLS {
+            uint8_t serverCertVerification = TLS_SERVER_CERT_VERIFICATION_FULL;
             std::string caCert = "";
             std::string clientCert = "";
             std::string clientKey = "";

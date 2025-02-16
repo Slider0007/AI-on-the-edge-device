@@ -13,6 +13,7 @@
 #include "ClassFlowControl.h"
 #include "interface_mqtt.h"
 #include "server_mqtt.h"
+#include "time_sntp.h"
 
 
 static const char *TAG = "MQTT";
@@ -105,6 +106,9 @@ bool ClassFlowMQTT::doFlow(std::string zwtime)
     bool retValCommon = true, retValStatus = true, retValData = true;
 
     if (!getMqttIsConnected()) {
+        if (getMqttTlsCertVerifyRequiresTime() && !getTimeIsSet()) {
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Init postponed: No valid time for server certificate verification");
+        }
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip process state: Not connected to broker");
         setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
         return false;

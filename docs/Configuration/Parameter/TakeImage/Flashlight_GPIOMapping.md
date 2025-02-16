@@ -1,4 +1,4 @@
-# Parameter: Flashlight GPIO Mapping
+# Flashlight GPIO Mapping
 
 ## Description
 
