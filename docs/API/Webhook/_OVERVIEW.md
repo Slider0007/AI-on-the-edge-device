@@ -3,6 +3,9 @@
 
 Number sequence data / results and related camera image are pushed to a HTTP / HTTPS URL endpoint.
 
+!!! __Note__: 
+    Encrypted connection is supported. Only TLS v1.2 is supported. For further details, check parameter description (tooltips).
+
 ### Message types
 #### 1. Data message
 
