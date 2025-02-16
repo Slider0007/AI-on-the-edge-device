@@ -8,7 +8,7 @@
 
 ## Description
 
-Select CA (Certificate Authority) certificate file<br>
+Select CA (Certificate Authority) certificate<br>
 The CA certificate is used by the client to check whether the broker (server) 
 is the one it claims to be (TLS handshake).
 
