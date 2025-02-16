@@ -9,7 +9,7 @@
 
 ## Description
 
-Set broker / TLS server certificate validation method
+Set TLS server certificate verification / validation method
 
 
 ### Input Options
@@ -28,7 +28,7 @@ Set broker / TLS server certificate validation method
 
 
 !!! Tipp
-    Error code reference:<br>
+    TLS error code reference:<br>
     - [ESP-IDF Error Codes](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/error-codes.html)<br>
     - [MbedTLS Error Codes](https://github.com/Mbed-TLS/mbedtls/blob/development/include/mbedtls/x509.h)<br>
     - [Cert Verify Codes](https://github.com/Mbed-TLS/mbedtls/blob/development/include/mbedtls/x509.h)

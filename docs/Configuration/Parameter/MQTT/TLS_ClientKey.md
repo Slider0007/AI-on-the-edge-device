@@ -8,7 +8,7 @@
 
 ## Description
 
-Select client private key file<br>
+Select client private key<br>
 The client key and respective client certificate is used by the MQTT client 
 to prove its identity to the MQTT broker (mutual authentification: mTLS). Set it 
 to `None` if mutual authentication is not required. If configured, 

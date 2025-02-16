@@ -8,7 +8,7 @@
 
 ## Description
 
-Select client private key file<br>
+Select client private key<br>
 The client key and respective client certificate key is used by the client 
 to prove its identity to the InfluxDB server (mutual authentification: mTLS). Set it 
 to `None` if mutual authentication is not required. If configured, 
