@@ -62,15 +62,6 @@ jobs:
         echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
         echo "branch=$(echo ${{ github.ref_name }} | tr / __)" >> $GITHUB_OUTPUT
 
-    - name: Cache pip & platformIO cache files
-      uses: actions/cache@v4
-      with:
-        path: |
-            ~/.cache/pip
-            ~/.platformio/.cache
-        key: platformio-${{ github.run_id }}
-        restore-keys: platformio # This matches above key as it is only used as a prefix. It restores the nearest cache
-
     - name: Cache PIO build files
       if: ${{ ! needs.prepare-release.outputs.release_created }} # do not use cached data when building a release
       uses: actions/cache@v4
