@@ -2,7 +2,7 @@
 <html lang="en" xml:lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI on the edge</title>
+    <title>AI on the Edge | Initial Setup Wizard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -68,6 +68,17 @@
             obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 50 + 'px';
         }
     </script>
+
+    <link rel="prefetch" href="setup_explain_0.html?v=$COMMIT_HASH" as="document"/>
+    <link rel="prefetch" href="setup_explain_1.html?v=$COMMIT_HASH" as="document"/>
+    <link rel="prefetch" href="setup_explain_2.html?v=$COMMIT_HASH" as="document"/>
+    <link rel="prefetch" href="edit_reference.html?v=$COMMIT_HASH" as="document"/>
+    <link rel="prefetch" href="setup_explain_3.html?v=$COMMIT_HASH" as="document"/>
+    <link rel="prefetch" href="edit_alignment.html?v=$COMMIT_HASH" as="document"/>
+    <link rel="prefetch" href="setup_explain_4.html?v=$COMMIT_HASH" as="document"/>
+    <link rel="prefetch" href="edit_sequence.html?v=$COMMIT_HASH" as="document"/>
+    <link rel="prefetch" href="setup_explain_5.html?v=$COMMIT_HASH" as="document"/>
+    <link rel="prefetch" href="setup_explain_5_abort.html?v=$COMMIT_HASH" as="document"/>
 </head>
 
 <body style="font-family: arial">
@@ -111,153 +122,145 @@
 
 <script src="global_common.js?v=$COMMIT_HASH"></script>
 <script>
-    var aktstep = 0;
-    var setupCompleted = false;
+    let step = parseInt(sessionStorage.getItem("setupStep")); // Load actual setup step from session storage
+    let setupCompleted = false;
     document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
     document.getElementById("progressBar").value = 0;
 
+    function saveStep()
+    {
+        sessionStorage.setItem("setupStep", step); // Store actual setup step into session storage
+    }
 
     function clickStart()
     {
-        aktstep = 0;
+        step = 0;
+        saveStep();
         setupCompleted = false;
         document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
     }
-
 
     function clickAbort()
     {
         setupCompleted = false;
-        aktstep = 5;
+        step = 5;
+        saveStep();
         document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
     }
 
-
-   function clickNext()
-   {
-        aktstep++;
-        if (aktstep > 5) {
-            aktstep = 5;
+    function clickNext()
+    {
+        step++;
+        if (step > 5) {
+            step = 5;
         }
+        saveStep();
         document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
     }
 
-
-   function clickPrevious()
-   {
-        aktstep--;
-        if (aktstep < 0) {
-            aktstep = 0;
+    function clickPrevious()
+    {
+        step--;
+        if (step < 0) {
+            step = 0;
         }
+        saveStep();
         document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
-   }
+    }
 
+    function LoadStep()
+    {
+        if (isNaN(step)) {
+            step = 0;
+        }
 
-   function LoadStep()
-   {
-      loadRSSI();
-      switch (aktstep) {
+        switch (step) {
         case 0: // Start page
             document.getElementById('maincontent').src = 'setup_explain_0.html?v=$COMMIT_HASH';
             document.getElementById('maincontent').style.display = "";
-
             document.getElementById('h_iframe_explain').style.display = "none";
-
             document.getElementById("restart").disabled = true;
             document.getElementById("previous").disabled = true;
             document.getElementById("next").disabled = false;
             document.getElementById("skip").disabled = false;
-
             document.getElementById("progressBar").value = 0;
             setupCompleted = false;
             break;
 
         case 1: // Live stream
             document.getElementById('maincontent').style.display = "none";
-
+            document.getElementById('maincontent').src = '';
             document.getElementById('h_iframe_explain').style.display = "";
-            document.getElementById('h_iframe_explain').style="height:155px;"
-            document.getElementById('explaincontent').style="height:155px;"
-            document.getElementById('explaincontent').scrolling="yes"
+            document.getElementById('h_iframe_explain').style="height:320px;"
+            document.getElementById('explaincontent').style="height:370px;"
+            document.getElementById('explaincontent').scrolling="no"
             document.getElementById('explaincontent').src = 'setup_explain_1.html?v=$COMMIT_HASH';
-
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
             document.getElementById("next").disabled = false;
             document.getElementById("skip").disabled = false;
-
             document.getElementById('h_iframe').style="height:480px;"
             document.getElementById('stream').style="height:480px;"
-
             document.getElementById("progressBar").value = 1;
             setupCompleted = false;
 
-            // needs to be the last statement because it's blocking webserver
+            // Needs to be the last statement because it's blocking webserver
             setTimeout(function() {
                 document.getElementById('stream').src = getDomainname() + '/camera?task=stream_flashlight';
                 document.getElementById('stream').style.display = "";
-            }, 500);
+            }, 100);
             break;
 
         case 2: // Reference image
             document.getElementById('maincontent').src = 'edit_reference.html?v=$COMMIT_HASH#description';
             document.getElementById('maincontent').style.display = "";
-
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
             document.getElementById('explaincontent').src = 'setup_explain_2.html?v=$COMMIT_HASH';
-
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
             document.getElementById("next").disabled = false;
             document.getElementById("skip").disabled = false;
-
             document.getElementById("progressBar").value = 2;
             setupCompleted = false;
             break;
 
         case 3: // Alignment marker
             document.getElementById('maincontent').src = 'edit_alignment.html?v=$COMMIT_HASH#description';
-
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
             document.getElementById('explaincontent').src = 'setup_explain_3.html?v=$COMMIT_HASH';
-
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
             document.getElementById("next").disabled = false;
             document.getElementById("skip").disabled = false;
-
             document.getElementById("progressBar").value = 3;
             setupCompleted = false;
             break;
 
         case 4: // Number sequences incl. ROIs
             document.getElementById('maincontent').src = 'edit_sequence.html?v=$COMMIT_HASH#description';
-
             document.getElementById('h_iframe_explain').style.display = "";
             document.getElementById('h_iframe_explain').style="height:45px;"
             document.getElementById('explaincontent').style="height:45px;"
             document.getElementById('explaincontent').scrolling="no"
             document.getElementById('explaincontent').src = 'setup_explain_4.html?v=$COMMIT_HASH';
-
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
             document.getElementById("next").disabled = false;
             document.getElementById("skip").disabled = false;
-
             document.getElementById("progressBar").value = 4;
             setupCompleted = true;
             break;
@@ -265,6 +268,7 @@
         case 5: // Setup completed / aborted
             document.getElementById('h_iframe').style="height:660px;"
             document.getElementById('maincontent').style="height:660px;"
+
             if (setupCompleted) {
                 document.getElementById('maincontent').src = 'setup_explain_5.html?v=$COMMIT_HASH';
             }
@@ -274,50 +278,48 @@
             }
 
             document.getElementById('h_iframe_explain').style.display = "none";
-
             document.getElementById("skip").disabled = true;
             document.getElementById("restart").disabled = false;
             document.getElementById("next").disabled = true;
-
             document.getElementById("progressBar").value = 5;
             break;
         }
-   }
 
+        loadRSSI();
+    }
 
-   function loadRSSI()
-   {
-		let url = getDomainname() + '/info?type=wlan_rssi';
+    function loadRSSI()
+    {
+        let url = getDomainname() + '/info?type=wlan_rssi';
 
-		let xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				let _rsp = xhttp.responseText;
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                let _rsp = xhttp.responseText;
 
-				if (_rsp >= -55) {
-					document.getElementById('rssi').value = ("WLAN Signal: Excellent (" + _rsp + "dBm)");
-				}
-				else if (_rsp < -55 && _rsp >= -67) {
-					document.getElementById('rssi').value = ("WLAN Signal: Good (" + _rsp + "dBm)");
-				}
-				else if (_rsp < -67 && _rsp >= -78) {
-					document.getElementById('rssi').value = ("WLAN Signal: Fair (" + _rsp + "dBm)");
-				}
-				else if (_rsp < -78 && _rsp >= -85) {
-					document.getElementById('rssi').value = ("WLAN Signal: Weak (" + _rsp + "dBm)");
-				}
-				else {
-					document.getElementById('rssi').value = ("WLAN Signal: Unreliable (" + _rsp + "dBm)");
-				}
-			}
-		};
+                if (_rsp >= -55) {
+                    document.getElementById('rssi').value = ("WLAN Signal: Excellent (" + _rsp + "dBm)");
+                }
+                else if (_rsp < -55 && _rsp >= -67) {
+                    document.getElementById('rssi').value = ("WLAN Signal: Good (" + _rsp + "dBm)");
+                }
+                else if (_rsp < -67 && _rsp >= -78) {
+                    document.getElementById('rssi').value = ("WLAN Signal: Fair (" + _rsp + "dBm)");
+                }
+                else if (_rsp < -78 && _rsp >= -85) {
+                    document.getElementById('rssi').value = ("WLAN Signal: Weak (" + _rsp + "dBm)");
+                }
+                else {
+                    document.getElementById('rssi').value = ("WLAN Signal: Unreliable (" + _rsp + "dBm)");
+                }
+            }
+        };
 
         xhttp.timeout = 10000;  // 10 seconds
-		xhttp.open("GET", url, true);
+        xhttp.open("GET", url, true);
         xhttp.withCredentials = true;
-		xhttp.send();
-	}
-
+        xhttp.send();
+    }
 
     LoadStep();
 
