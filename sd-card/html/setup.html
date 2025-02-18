@@ -122,19 +122,19 @@
 
 <script src="global_common.js?v=$COMMIT_HASH"></script>
 <script>
-    let actStep = parseInt(sessionStorage.getItem("setupActStep")); // Load actual setup step from session storage
+    let step = parseInt(sessionStorage.getItem("setupStep")); // Load actual setup step from session storage
     let setupCompleted = false;
     document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
     document.getElementById("progressBar").value = 0;
 
     function saveActStep()
     {
-        sessionStorage.setItem("setupActStep", actStep); // Store actual setup step into session storage
+        sessionStorage.setItem("setupStep", step); // Store actual setup step into session storage
     }
 
     function clickStart()
     {
-        actStep = 0;
+        step = 0;
         saveActStep();
         setupCompleted = false;
         document.getElementById('stream').src = "";
@@ -145,7 +145,7 @@
     function clickAbort()
     {
         setupCompleted = false;
-        actStep = 5;
+        step = 5;
         saveActStep();
         document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
@@ -154,9 +154,9 @@
 
     function clickNext()
     {
-        actStep++;
-        if (actStep > 5) {
-            actStep = 5;
+        step++;
+        if (step > 5) {
+            step = 5;
         }
         saveActStep();
         document.getElementById('stream').src = "";
@@ -166,9 +166,9 @@
 
     function clickPrevious()
     {
-        actStep--;
-        if (actStep < 0) {
-            actStep = 0;
+        step--;
+        if (step < 0) {
+            step = 0;
         }
         saveActStep();
         document.getElementById('stream').src = "";
@@ -178,11 +178,11 @@
 
     function LoadStep()
     {
-        if (isNaN(actStep)) {
-            actStep = 0;
+        if (isNaN(step)) {
+            step = 0;
         }
 
-        switch (actStep) {
+        switch (step) {
         case 0: // Start page
             document.getElementById('maincontent').src = 'setup_explain_0.html?v=$COMMIT_HASH';
             document.getElementById('maincontent').style.display = "";
