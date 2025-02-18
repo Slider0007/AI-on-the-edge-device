@@ -197,10 +197,11 @@
 
         case 1: // Live stream
             document.getElementById('maincontent').style.display = "none";
+            document.getElementById('maincontent').src = '';
             document.getElementById('h_iframe_explain').style.display = "";
-            document.getElementById('h_iframe_explain').style="height:155px;"
-            document.getElementById('explaincontent').style="height:155px;"
-            document.getElementById('explaincontent').scrolling="yes"
+            document.getElementById('h_iframe_explain').style="height:320px;"
+            document.getElementById('explaincontent').style="height:370px;"
+            document.getElementById('explaincontent').scrolling="no"
             document.getElementById('explaincontent').src = 'setup_explain_1.html?v=$COMMIT_HASH';
             document.getElementById("restart").disabled = false;
             document.getElementById("previous").disabled = false;
@@ -211,11 +212,11 @@
             document.getElementById("progressBar").value = 1;
             setupCompleted = false;
 
-            // needs to be the last statement because it's blocking webserver
+            // Needs to be the last statement because it's blocking webserver
             setTimeout(function() {
                 document.getElementById('stream').src = getDomainname() + '/camera?task=stream_flashlight';
                 document.getElementById('stream').style.display = "";
-            }, 500);
+            }, 200);
             break;
 
         case 2: // Reference image
