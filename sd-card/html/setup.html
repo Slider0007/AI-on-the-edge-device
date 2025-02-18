@@ -127,7 +127,7 @@
     document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
     document.getElementById("progressBar").value = 0;
 
-    function saveActStep()
+    function saveStep()
     {
         sessionStorage.setItem("setupStep", step); // Store actual setup step into session storage
     }
@@ -135,7 +135,7 @@
     function clickStart()
     {
         step = 0;
-        saveActStep();
+        saveStep();
         setupCompleted = false;
         document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
@@ -146,7 +146,7 @@
     {
         setupCompleted = false;
         step = 5;
-        saveActStep();
+        saveStep();
         document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
@@ -158,7 +158,7 @@
         if (step > 5) {
             step = 5;
         }
-        saveActStep();
+        saveStep();
         document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
@@ -170,7 +170,7 @@
         if (step < 0) {
             step = 0;
         }
-        saveActStep();
+        saveStep();
         document.getElementById('stream').src = "";
         document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
         LoadStep();
@@ -216,7 +216,7 @@
             setTimeout(function() {
                 document.getElementById('stream').src = getDomainname() + '/camera?task=stream_flashlight';
                 document.getElementById('stream').style.display = "";
-            }, 200);
+            }, 100);
             break;
 
         case 2: // Reference image
