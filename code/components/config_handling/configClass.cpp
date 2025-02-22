@@ -1049,7 +1049,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "metertype");
     if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionMqtt.homeAssistant.meterType = std::clamp(objEl->valueint, 0, 10);
+        cfgDataTemp.sectionMqtt.homeAssistant.meterType = std::clamp(objEl->valueint, 0, 16);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "retaindiscovery");

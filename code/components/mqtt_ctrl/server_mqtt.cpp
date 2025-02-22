@@ -35,7 +35,7 @@ static bool publishDeviceInfoScheduled = true;
 static const CfgData::SectionMqtt *cfgDataPtr = NULL;
 static const std::vector<SequenceData *> *sequenceData;
 static float processingInterval; // Minutes
-static std::string meterType, valueUnit, timeUnit, rateUnit;
+static HAMeterConfig meterConfig;
 
 
 // Publish device info topics (common topics, static, retained)
@@ -240,18 +240,121 @@ void mqttServer_setParameter(const CfgData::SectionMqtt *_cfgDataPtr, const std:
 }
 
 
-void mqttServer_setMeterType(std::string _meterType, std::string _valueUnit, std::string _timeUnit, std::string _rateUnit)
+void mqttServer_setHaMeterType(const int _haMeterType)
 {
-    meterType = _meterType;
-    valueUnit = _valueUnit;
-    timeUnit = _timeUnit;
-    rateUnit = _rateUnit;
+    // Preconfigure meter configuration
+    // Check for avialable units:
+    // https://developers.home-assistant.io/docs/core/entity/sensor/
+    // https://github.com/home-assistant/core/blob/master/homeassistant/components/sensor/const.py
+    // DONT'T FORGET, see further down: Device / state class validation (in loop for publish number sequence related topics)
+    if (_haMeterType == WATER_M3) {
+        meterConfig.meterType = "water";
+        meterConfig.valueUnit = "m³";
+        meterConfig.timeUnit = "h";
+        meterConfig.rateUnit = "m³/h";
+    }
+    else if (_haMeterType == WATER_L) {
+        meterConfig.meterType = "water";
+        meterConfig.valueUnit = "L";
+        meterConfig.timeUnit = "h";
+        meterConfig.rateUnit = "L/h"; // Legacy: L/h is no valid rate unit in home assistant
+    }
+    else if (_haMeterType == WATER_LMIN) {
+        meterConfig.meterType = "water";
+        meterConfig.valueUnit = "L";
+        meterConfig.timeUnit = "min";
+        meterConfig.rateUnit = "L/min";
+    }
+    else if (_haMeterType == WATER_FT3) {
+        meterConfig.meterType = "water";
+        meterConfig.valueUnit = "ft³";
+        meterConfig.timeUnit = "min";
+        meterConfig.rateUnit = "ft³/min";
+    }
+    else if (_haMeterType == WATER_GAL) {
+        meterConfig.meterType = "water";
+        meterConfig.valueUnit = "gal";
+        meterConfig.timeUnit = "h";
+        meterConfig.rateUnit = "gal/h";
+    }
+    else if (_haMeterType == WATER_GALMIN) {
+        meterConfig.meterType = "water";
+        meterConfig.valueUnit = "gal";
+        meterConfig.timeUnit = "min";
+        meterConfig.rateUnit = "gal/min";
+    }
+    else if (_haMeterType == GAS_M3) {
+        meterConfig.meterType = "gas";
+        meterConfig.valueUnit = "m³";
+        meterConfig.timeUnit = "h";
+        meterConfig.rateUnit = "m³/h";
+    }
+    else if (_haMeterType == GAS_FT3) {
+        meterConfig.meterType = "gas";
+        meterConfig.valueUnit = "ft³";
+        meterConfig.timeUnit = "min";
+        meterConfig.rateUnit = "ft³/min";
+    }
+    else if (_haMeterType == ENERGY_WH) {
+        meterConfig.meterType = "energy";
+        meterConfig.valueUnit = "Wh";
+        meterConfig.timeUnit = "h";
+        meterConfig.rateUnit = "W";
+    }
+    else if (_haMeterType == ENERGY_KWH) {
+        meterConfig.meterType = "energy";
+        meterConfig.valueUnit = "kWh";
+        meterConfig.timeUnit = "h";
+        meterConfig.rateUnit = "kW";
+    }
+    else if (_haMeterType == ENERGY_MWH) {
+        meterConfig.meterType = "energy";
+        meterConfig.valueUnit = "MWh";
+        meterConfig.timeUnit = "h";
+        meterConfig.rateUnit = "MW";
+    }
+    else if (_haMeterType == ENERGY_GJ) {
+        meterConfig.meterType = "energy";
+        meterConfig.valueUnit = "GJ";
+        meterConfig.timeUnit = "h";
+        meterConfig.rateUnit = "GJ/h"; // Legacy: GJ/h is no valid rate unit in home assistant
+    }
+    else if (_haMeterType == TEMPERATURE_C) {
+        meterConfig.meterType = "temperature";
+        meterConfig.valueUnit = "°C";
+        meterConfig.timeUnit = "min";
+        meterConfig.rateUnit = "K/min";
+    }
+    else if (_haMeterType == TEMPERATURE_F) {
+        meterConfig.meterType = "temperature";
+        meterConfig.valueUnit = "°F";
+        meterConfig.timeUnit = "min";
+        meterConfig.rateUnit = "K/min";
+    }
+    else if (_haMeterType == PRESSURE_BAR) {
+        meterConfig.meterType = "pressure";
+        meterConfig.valueUnit = "bar";
+        meterConfig.timeUnit = "min";
+        meterConfig.rateUnit = "bar/min";
+    }
+    else if (_haMeterType == PRESSURE_PSI) {
+        meterConfig.meterType = "pressure";
+        meterConfig.valueUnit = "psi";
+        meterConfig.timeUnit = "min";
+        meterConfig.rateUnit = "psi/min";
+    }
+    else {
+        meterConfig.meterType = "";
+        meterConfig.valueUnit = "";
+        meterConfig.timeUnit = "Unknown";
+        meterConfig.rateUnit = "";
+    }
 }
 
 
 std::string mqttServer_getTimeUnit(void)
 {
-    return timeUnit;
+    return meterConfig.timeUnit;
 }
 
 
@@ -348,8 +451,8 @@ bool mqttServer_publishHADiscovery(int _qos)
     }
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                        "Publish HA discovery | Sensor device class: " + meterType + ", Value unit: " + valueUnit +
-                            " , Rate unit: " + rateUnit);
+                        "Publish HA discovery | Meter type: " + meterConfig.meterType + ", Value unit: " + meterConfig.valueUnit +
+                            " , Rate unit: " + meterConfig.rateUnit);
 
     publishHADiscoveryTopicDeviceInfo = true; // Publish full common device info data only once
     bool publishOK = true;
@@ -526,6 +629,37 @@ bool mqttServer_publishHADiscovery(int _qos)
 
     // Publish number sequence related topics
     for (const auto &sequence : *sequenceData) {
+        // Device / state class validation
+        // Check for valid device class / state class combinations:
+        // https://github.com/home-assistant/core/blob/master/homeassistant/components/sensor/const.py
+        if (meterConfig.meterType == "water" || meterConfig.meterType == "gas") {
+            meterConfig.valueStateClass = sequence->paramPostProc->allowNegativeRate ? "total" : "total_increasing";
+            if (meterConfig.rateUnit != "L/h" && meterConfig.rateUnit != "gal/h") { // Legacy: L/h and gal/h are no valid rate units in home
+                                                                                    // assistant: Use device class `None`
+                meterConfig.rateDeviceClass = "volume_flow_rate";
+            }
+            else {
+                meterConfig.rateDeviceClass = ""; // Device class: None
+            }
+        }
+        else if (meterConfig.meterType == "energy") {
+            meterConfig.valueStateClass = sequence->paramPostProc->allowNegativeRate ? "total" : "total_increasing";
+            if (meterConfig.rateUnit != "GJ/h") { // Legacy: GJ/h is no valid rate unit in home assistant: Use device class `None`
+                meterConfig.rateDeviceClass = "power";
+            }
+            else {
+                meterConfig.rateDeviceClass = ""; // Device class: None
+            }
+        }
+        else if (meterConfig.meterType == "temperature" || meterConfig.meterType == "pressure") {
+            meterConfig.valueStateClass = "measurement";
+            meterConfig.rateDeviceClass = "";
+        }
+        else {
+            meterConfig.valueStateClass = "measurement";
+            meterConfig.rateDeviceClass = "";
+        }
+
         HADiscoveryData = {};
         HADiscoveryData = {
             .structureName = sequence->sequenceName,
@@ -534,9 +668,9 @@ bool mqttServer_publishHADiscovery(int _qos)
             .topicName = "actual_value",
             .friendlyName = "Actual Value",
             .icon = "gauge",
-            .unit = valueUnit,
-            .deviceClass = meterType,
-            .stateClass = sequence->paramPostProc->allowNegativeRate ? "measurement" : "total_increasing" //
+            .unit = meterConfig.valueUnit,
+            .deviceClass = meterConfig.meterType,
+            .stateClass = meterConfig.valueStateClass //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
@@ -549,9 +683,9 @@ bool mqttServer_publishHADiscovery(int _qos)
                 .topicName = "fallback_value",
                 .friendlyName = "Fallback Value",
                 .icon = "gauge",
-                .unit = valueUnit,
-                .deviceClass = meterType,
-                .stateClass = "measurement",
+                .unit = meterConfig.valueUnit,
+                .deviceClass = meterConfig.meterType,
+                .stateClass = meterConfig.valueStateClass,
                 .entityCategory = "diagnostic" //
             };
             publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -565,9 +699,9 @@ bool mqttServer_publishHADiscovery(int _qos)
             .topicName = "raw_value",
             .friendlyName = "Raw Value",
             .icon = "gauge",
-            .unit = valueUnit,
-            .deviceClass = meterType,
-            .stateClass = "measurement",
+            .unit = meterConfig.valueUnit,
+            .deviceClass = meterConfig.meterType,
+            .stateClass = meterConfig.valueStateClass,
             .entityCategory = "diagnostic" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -592,8 +726,8 @@ bool mqttServer_publishHADiscovery(int _qos)
             .topicName = "rate_per_time_unit",
             .friendlyName = "Rate",
             .icon = "swap-vertical",
-            .unit = rateUnit,
-            .deviceClass = meterType == "energy" ? "power" : "volume_flow_rate",
+            .unit = meterConfig.rateUnit,
+            .deviceClass = meterConfig.rateDeviceClass,
             .stateClass = "measurement" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -604,9 +738,10 @@ bool mqttServer_publishHADiscovery(int _qos)
             .isTopicJSONNotation = true,
             .topic = "/process/data/" + std::to_string(sequence->sequenceId) + "/json",
             .topicName = "rate_per_interval",
-            .friendlyName = "Rate / Interval",
+            .friendlyName = "Rate / Interval (" + to_stringWithPrecision(processingInterval, 1) + "min)",
             .icon = "arrow-expand-vertical",
-            .unit = valueUnit != "" ? valueUnit + "/" + to_stringWithPrecision(processingInterval, 1) + "min" : "",
+            .unit = meterConfig.valueUnit,
+            //.deviceClass = meterConfig.rateDeviceClass, // Special case, not using any common rate unit --> None
             .stateClass = "measurement",
             .entityCategory = "diagnostic" //
         };
@@ -780,7 +915,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
         }
 
         payload += std::string(", \"dev\": {") + "\"ids\":[\"" + nodeID + "\"]," + "\"name\":\"" + nodeID + "\"," +
-                   "\"mdl\":\"AI-on-the-Edge device [" + getBoardType() + "]\"," + "\"mf\":\"AI-on-the-Edge\"," + "\"sw\":\"" +
+                   "\"mdl\":\"AI-on-the-Edge device (" + getBoardType() + ")\"," + "\"mf\":\"AI-on-the-Edge\"," + "\"sw\":\"" +
                    firmwareVersion + " [SLFork]\"," + "\"cu\":\"http://" + getIpAddress() + "\"}";
     }
     else { // Publish device reference only to group data together

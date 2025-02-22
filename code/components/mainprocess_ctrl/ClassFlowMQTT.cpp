@@ -36,38 +36,8 @@ bool ClassFlowMQTT::loadParameter()
         return false;
     }
 
-    if (cfgDataPtr->homeAssistant.meterType == WATER_M3) {
-        mqttServer_setMeterType("water", "m³", "h", "m³/h");
-    }
-    else if (cfgDataPtr->homeAssistant.meterType == WATER_L) {
-        mqttServer_setMeterType("water", "L", "h", "L/h");
-    }
-    else if (cfgDataPtr->homeAssistant.meterType == WATER_FT3) {
-        mqttServer_setMeterType("water", "ft³", "m", "ft³/m"); // Minutes
-    }
-    else if (cfgDataPtr->homeAssistant.meterType == WATER_GAL) {
-        mqttServer_setMeterType("water", "gal", "h", "gal/h");
-    }
-    else if (cfgDataPtr->homeAssistant.meterType == GAS_M3) {
-        mqttServer_setMeterType("gas", "m³", "h", "m³/h");
-    }
-    else if (cfgDataPtr->homeAssistant.meterType == GAS_FT3) {
-        mqttServer_setMeterType("gas", "ft³", "m", "ft³/m"); // Minutes
-    }
-    else if (cfgDataPtr->homeAssistant.meterType == ENERGY_WH) {
-        mqttServer_setMeterType("energy", "Wh", "h", "W");
-    }
-    else if (cfgDataPtr->homeAssistant.meterType == ENERGY_KWH) {
-        mqttServer_setMeterType("energy", "kWh", "h", "kW");
-    }
-    else if (cfgDataPtr->homeAssistant.meterType == ENERGY_MWH) {
-        mqttServer_setMeterType("energy", "MWh", "h", "MW");
-    }
-    else if (cfgDataPtr->homeAssistant.meterType == ENERGY_GJ) {
-        mqttServer_setMeterType("energy", "GJ", "h", "GJ/h");
-    }
-    else {
-        mqttServer_setMeterType("", "", "", "");
+    if (cfgDataPtr->homeAssistant.discoveryEnabled) {
+        mqttServer_setHaMeterType(cfgDataPtr->homeAssistant.meterType);
     }
 
     return true;
