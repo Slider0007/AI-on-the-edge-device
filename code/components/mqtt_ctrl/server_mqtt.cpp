@@ -257,7 +257,7 @@ void mqttServer_setHaMeterType(const int _haMeterType)
         meterConfig.meterType = "water";
         meterConfig.valueUnit = "L";
         meterConfig.timeUnit = "h";
-        meterConfig.rateUnit = "L/h"; // Legacy: L/h is no valid rate unit in home assistant
+        meterConfig.rateUnit = "L/h"; // Legacy: Keep, even this is not a valid unit in home assistant
     }
     else if (_haMeterType == WATER_LMIN) {
         meterConfig.meterType = "water";
@@ -265,23 +265,23 @@ void mqttServer_setHaMeterType(const int _haMeterType)
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "L/min";
     }
-    else if (_haMeterType == WATER_FT3) {
-        meterConfig.meterType = "water";
-        meterConfig.valueUnit = "ft³";
-        meterConfig.timeUnit = "min";
-        meterConfig.rateUnit = "ft³/min";
-    }
     else if (_haMeterType == WATER_GAL) {
         meterConfig.meterType = "water";
         meterConfig.valueUnit = "gal";
         meterConfig.timeUnit = "h";
-        meterConfig.rateUnit = "gal/h";
+        meterConfig.rateUnit = "gal/h"; // Legacy: Keep, even this is not a valid unit in home assistant
     }
     else if (_haMeterType == WATER_GALMIN) {
         meterConfig.meterType = "water";
         meterConfig.valueUnit = "gal";
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "gal/min";
+    }
+    else if (_haMeterType == WATER_FT3) {
+        meterConfig.meterType = "water";
+        meterConfig.valueUnit = "ft³";
+        meterConfig.timeUnit = "min";
+        meterConfig.rateUnit = "ft³/min";
     }
     else if (_haMeterType == GAS_M3) {
         meterConfig.meterType = "gas";
@@ -317,7 +317,7 @@ void mqttServer_setHaMeterType(const int _haMeterType)
         meterConfig.meterType = "energy";
         meterConfig.valueUnit = "GJ";
         meterConfig.timeUnit = "h";
-        meterConfig.rateUnit = "GJ/h"; // Legacy: GJ/h is no valid rate unit in home assistant
+        meterConfig.rateUnit = "GJ/h"; //  Legacy: Keep, even this is not a valid unit in home assistant
     }
     else if (_haMeterType == TEMPERATURE_C) {
         meterConfig.meterType = "temperature";
@@ -634,7 +634,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         // https://github.com/home-assistant/core/blob/master/homeassistant/components/sensor/const.py
         if (meterConfig.meterType == "water" || meterConfig.meterType == "gas") {
             meterConfig.valueStateClass = sequence->paramPostProc->allowNegativeRate ? "total" : "total_increasing";
-            if (meterConfig.rateUnit != "L/h" && meterConfig.rateUnit != "gal/h") { // Legacy: L/h and gal/h are no valid rate units in home
+            if (meterConfig.rateUnit != "L/h" && meterConfig.rateUnit != "gal/h") { // Legacy: L/h and gal/h are not valid units in home
                                                                                     // assistant: Use device class `None`
                 meterConfig.rateDeviceClass = "volume_flow_rate";
             }
@@ -644,7 +644,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         }
         else if (meterConfig.meterType == "energy") {
             meterConfig.valueStateClass = sequence->paramPostProc->allowNegativeRate ? "total" : "total_increasing";
-            if (meterConfig.rateUnit != "GJ/h") { // Legacy: GJ/h is no valid rate unit in home assistant: Use device class `None`
+            if (meterConfig.rateUnit != "GJ/h") { // Legacy: GJ/h is not a valid unit in home assistant: Use device class `None`
                 meterConfig.rateDeviceClass = "power";
             }
             else {
