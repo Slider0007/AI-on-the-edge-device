@@ -32,7 +32,7 @@ void test_configJsonParseAndSerialization()
     std::string cfgDataExpexcted =
         "{\"config\":{\"version\":4,\"lastmodified\":\"\"},\"operationmode\":{\"opmode\":-1,\"automaticprocessinterval\":\"1.0\","
         "\"usedemoimages\":false},\"takeimage\":{\"flashlight\":{\"flashtime\":2000,\"flashintensity\":50},\"camera\":{\"cameramodel\":1,"
-        "\"camerafrequency\":20,\"imagequality\":12,\"brightness\":0,\"contrast\":0,\"saturation\":0,\"sharpness\":0,"
+        "\"camerafrequency\":10,\"imagequality\":12,\"brightness\":0,\"contrast\":0,\"saturation\":0,\"sharpness\":0,"
         "\"exposurecontrolmode\":1,\"autoexposurelevel\":0,\"manualexposurevalue\":300,\"gaincontrolmode\":1,\"manualgainvalue\":0,"
         "\"specialeffect\":0,\"mirrorimage\":false,\"flipimage\":false,\"zoomfactor\":1000,\"zoomoffsetx\":0,\"zoomoffsety\":0},\"debug\":"
         "{\"saverawimages\":false,\"rawimageslocation\":\"/log/"
