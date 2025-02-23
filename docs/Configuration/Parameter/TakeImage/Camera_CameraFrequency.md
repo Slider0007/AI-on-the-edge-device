@@ -19,10 +19,10 @@ Set the camera frequency
 
 !!! Note
     The camera clock frequency might have negative impact (interfere with WLAN signal) 
-    on wireless network responiveness (slow loading WebUI, higher latency), especially 
+    on wireless network responsiveness (slow loading WebUI, higher latency), especially 
     using low quality boards or boards with onboard antenna. Depending on used hardware 
     combination and WIFI channel, try to find the best camera clock frequency under the 
-    evaluation of network responiveness and resulting image quality.<br>
+    evaluation of network responsiveness and resulting image quality.<br>
     If this is not improving the situation only hardware related optimizations are 
     possible like shielding the respective area by copper foil, etc...
     
