@@ -293,7 +293,7 @@ bool ClassControlCamera::setCameraFrequency()
         return false; // Frequency unchanged
     }
 
-    cameraConfig.xclk_freq_hz = std::clamp(paramCameraInternal.cameraFrequency, 6, 24) * 1000000;
+    cameraConfig.xclk_freq_hz = std::clamp(paramCameraInternal.cameraFrequency, 6, 20) * 1000000;
     return true; // Frequency changed
 }
 
