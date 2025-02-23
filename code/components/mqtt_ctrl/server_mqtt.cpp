@@ -634,22 +634,16 @@ bool mqttServer_publishHADiscovery(int _qos)
         // https://github.com/home-assistant/core/blob/master/homeassistant/components/sensor/const.py
         if (meterConfig.meterType == "water" || meterConfig.meterType == "gas") {
             meterConfig.valueStateClass = sequence->paramPostProc->allowNegativeRate ? "total" : "total_increasing";
-            if (meterConfig.rateUnit != "L/h" && meterConfig.rateUnit != "gal/h") { // Legacy: L/h and gal/h are not valid units in home
-                                                                                    // assistant: Use device class `None`
-                meterConfig.rateDeviceClass = "volume_flow_rate";
-            }
-            else {
-                meterConfig.rateDeviceClass = ""; // Device class: None
-            }
+
+            // Legacy: L/h and gal/h are not valid units in home assistant: Use device class `None`
+            ((meterConfig.rateUnit != "L/h") && (meterConfig.rateUnit != "gal/h")) ? meterConfig.rateDeviceClass = "volume_flow_rate"
+                                                                                   : meterConfig.rateDeviceClass = "";
         }
         else if (meterConfig.meterType == "energy") {
             meterConfig.valueStateClass = sequence->paramPostProc->allowNegativeRate ? "total" : "total_increasing";
-            if (meterConfig.rateUnit != "GJ/h") { // Legacy: GJ/h is not a valid unit in home assistant: Use device class `None`
-                meterConfig.rateDeviceClass = "power";
-            }
-            else {
-                meterConfig.rateDeviceClass = ""; // Device class: None
-            }
+
+            // Legacy: GJ/h is not a valid unit in home assistant: Use device class `None`
+            meterConfig.rateUnit != "GJ/h" ? meterConfig.rateDeviceClass = "power" : meterConfig.rateDeviceClass = "";
         }
         else if (meterConfig.meterType == "temperature" || meterConfig.meterType == "pressure") {
             meterConfig.valueStateClass = "measurement";
@@ -741,7 +735,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Rate / Interval (" + to_stringWithPrecision(processingInterval, 1) + "min)",
             .icon = "arrow-expand-vertical",
             .unit = meterConfig.valueUnit,
-            //.deviceClass = meterConfig.rateDeviceClass, // Special case, not using any common rate unit --> None
+            .deviceClass = "", // Special case, not using any common rate unit: Use Device class 'None'
             .stateClass = "measurement",
             .entityCategory = "diagnostic" //
         };
