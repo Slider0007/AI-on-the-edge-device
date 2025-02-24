@@ -58,14 +58,20 @@ enum HAMeterType {
     TYPE_NONE = 0,
     WATER_M3 = 1,
     WATER_L = 2,
-    WATER_FT3 = 3,
-    WATER_GAL = 4,
+    WATER_GAL = 3,
+    WATER_FT3 = 4,
     GAS_M3 = 5,
     GAS_FT3 = 6,
     ENERGY_WH = 7,
     ENERGY_KWH = 8,
     ENERGY_MWH = 9,
     ENERGY_GJ = 10,
+    TEMPERATURE_C = 11,
+    TEMPERATURE_F = 12,
+    PRESSURE_BAR = 13,
+    PRESSURE_PSI = 14,
+    WATER_LMIN = 15,
+    WATER_GALMIN = 16
 };
 
 

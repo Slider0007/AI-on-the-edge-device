@@ -1515,17 +1515,23 @@
 					<!--  See https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes -->
 					<select class="select_large" name="mqtt.homeassistant.metertype" id="mqtt_homeassistant_metertype_value"
 							onchange="gatherChangedParameter(this.form, true)">
-						<option value="0">None (no Units)</option>
-						<option value="1" selected>Watermeter (Value: m³, Rate: m³/h)</option>
-						<option value="2">Watermeter (Value: l, Rate: l/h)</option>
-						<option value="3">Watermeter (Value: gal, Rate: gal/h)</option>
-						<option value="4">Watermeter (Value: ft³, Rate: ft³/m)</option>
-						<option value="5">Gasmeter (Value: m³, Rate: m³/h)</option>
-						<option value="6">Gasmeter (Value: ft³, Rate: ft³/m)</option>
-						<option value="7">Energymeter (Value: Wh, Rate: W)</option>
-						<option value="8">Energymeter (Value: kWh, Rate: kW)</option>
-						<option value="9">Energymeter (Value: MWh, Rate: MW)</option>
-						<option value="10">Energymeter (Value: GJ, Rate: GJ/h)</option>
+						<option value="0">Generic (No Units)</option>
+						<option value="1" selected>Water (Value: m³, Rate: m³/h)</option>
+						<option value="2">Water (Value: L, Rate: L/h*)</option>
+						<option value="15">Water (Value: L, Rate: L/min)</option>
+						<option value="3">Water (Value: gal, Rate: gal/h*)</option>
+						<option value="16">Water (Value: gal, Rate: gal/min)</option>
+						<option value="4">Water (Value: ft³, Rate: ft³/min)</option>
+						<option value="5">Gas (Value: m³, Rate: m³/h)</option>
+						<option value="6">Gas (Value: ft³, Rate: ft³/min)</option>
+						<option value="7">Energy (Value: Wh, Rate: W)</option>
+						<option value="8">Energy (Value: kWh, Rate: kW)</option>
+						<option value="9">Energy (Value: MWh, Rate: MW)</option>
+						<option value="10">Energy (Value: GJ, Rate: GJ/h*)</option>
+						<option value="11">Temperature (Value: °C, Rate: °C/min)</option>
+						<option value="12">Temperature (Value: °F, Rate: °F/min)</option>
+						<option value="13">Pressure (Value: bar, Rate: bar/min)</option>
+						<option value="14">Pressure (Value: psi, Rate: psi/min)</option>
 					</select>
 				</form>
 			</td>

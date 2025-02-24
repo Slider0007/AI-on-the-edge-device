@@ -6,6 +6,17 @@
 
 #include "ClassFlowDefineTypes.h"
 #include "ClassFlowMQTT.h"
+#include "configClass.h"
+
+
+struct HAMeterConfig {
+    std::string deviceClass = "";
+    std::string valueUnit = "";
+    std::string timeUnit = "Unknown";
+    std::string rateUnit = "";
+    std::string valueStateClass = "";
+    std::string rateDeviceClass = "";
+};
 
 
 struct strHADiscoveryData {
@@ -28,8 +39,7 @@ bool mqttServer_publishDeviceStatus(int _qos);
 
 void mqttServer_setParameter(const CfgData::SectionMqtt *_cfgDataPtr, const std::vector<SequenceData *> *_sequenceData,
                              const float _processingInterval);
-void mqttServer_setMeterType(const std::string _meterType, const std::string _valueUnit, const std::string _timeUnit,
-                             const std::string _rateUnit);
+void mqttServer_setHaMeterType(const int _meterType);
 std::string mqttServer_getMainTopic();
 std::string mqttServer_getTimeUnit();
 
