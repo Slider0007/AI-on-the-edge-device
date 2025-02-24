@@ -248,103 +248,103 @@ void mqttServer_setHaMeterType(const int _haMeterType)
     // https://github.com/home-assistant/core/blob/master/homeassistant/components/sensor/const.py
     // DONT'T FORGET, see further down: Device / state class validation (in loop for publish number sequence related topics)
     if (_haMeterType == WATER_M3) {
-        meterConfig.meterType = "water";
+        meterConfig.deviceClass = "water";
         meterConfig.valueUnit = "m³";
         meterConfig.timeUnit = "h";
         meterConfig.rateUnit = "m³/h";
     }
     else if (_haMeterType == WATER_L) {
-        meterConfig.meterType = "water";
+        meterConfig.deviceClass = "water";
         meterConfig.valueUnit = "L";
         meterConfig.timeUnit = "h";
         meterConfig.rateUnit = "L/h"; // Legacy: Keep, even this is not a valid unit in home assistant
     }
     else if (_haMeterType == WATER_LMIN) {
-        meterConfig.meterType = "water";
+        meterConfig.deviceClass = "water";
         meterConfig.valueUnit = "L";
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "L/min";
     }
     else if (_haMeterType == WATER_GAL) {
-        meterConfig.meterType = "water";
+        meterConfig.deviceClass = "water";
         meterConfig.valueUnit = "gal";
         meterConfig.timeUnit = "h";
         meterConfig.rateUnit = "gal/h"; // Legacy: Keep, even this is not a valid unit in home assistant
     }
     else if (_haMeterType == WATER_GALMIN) {
-        meterConfig.meterType = "water";
+        meterConfig.deviceClass = "water";
         meterConfig.valueUnit = "gal";
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "gal/min";
     }
     else if (_haMeterType == WATER_FT3) {
-        meterConfig.meterType = "water";
+        meterConfig.deviceClass = "water";
         meterConfig.valueUnit = "ft³";
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "ft³/min";
     }
     else if (_haMeterType == GAS_M3) {
-        meterConfig.meterType = "gas";
+        meterConfig.deviceClass = "gas";
         meterConfig.valueUnit = "m³";
         meterConfig.timeUnit = "h";
         meterConfig.rateUnit = "m³/h";
     }
     else if (_haMeterType == GAS_FT3) {
-        meterConfig.meterType = "gas";
+        meterConfig.deviceClass = "gas";
         meterConfig.valueUnit = "ft³";
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "ft³/min";
     }
     else if (_haMeterType == ENERGY_WH) {
-        meterConfig.meterType = "energy";
+        meterConfig.deviceClass = "energy";
         meterConfig.valueUnit = "Wh";
         meterConfig.timeUnit = "h";
         meterConfig.rateUnit = "W";
     }
     else if (_haMeterType == ENERGY_KWH) {
-        meterConfig.meterType = "energy";
+        meterConfig.deviceClass = "energy";
         meterConfig.valueUnit = "kWh";
         meterConfig.timeUnit = "h";
         meterConfig.rateUnit = "kW";
     }
     else if (_haMeterType == ENERGY_MWH) {
-        meterConfig.meterType = "energy";
+        meterConfig.deviceClass = "energy";
         meterConfig.valueUnit = "MWh";
         meterConfig.timeUnit = "h";
         meterConfig.rateUnit = "MW";
     }
     else if (_haMeterType == ENERGY_GJ) {
-        meterConfig.meterType = "energy";
+        meterConfig.deviceClass = "energy";
         meterConfig.valueUnit = "GJ";
         meterConfig.timeUnit = "h";
         meterConfig.rateUnit = "GJ/h"; //  Legacy: Keep, even this is not a valid unit in home assistant
     }
     else if (_haMeterType == TEMPERATURE_C) {
-        meterConfig.meterType = "temperature";
+        meterConfig.deviceClass = "temperature";
         meterConfig.valueUnit = "°C";
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "K/min";
     }
     else if (_haMeterType == TEMPERATURE_F) {
-        meterConfig.meterType = "temperature";
+        meterConfig.deviceClass = "temperature";
         meterConfig.valueUnit = "°F";
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "K/min";
     }
     else if (_haMeterType == PRESSURE_BAR) {
-        meterConfig.meterType = "pressure";
+        meterConfig.deviceClass = "pressure";
         meterConfig.valueUnit = "bar";
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "bar/min";
     }
     else if (_haMeterType == PRESSURE_PSI) {
-        meterConfig.meterType = "pressure";
+        meterConfig.deviceClass = "pressure";
         meterConfig.valueUnit = "psi";
         meterConfig.timeUnit = "min";
         meterConfig.rateUnit = "psi/min";
     }
     else {
-        meterConfig.meterType = "";
+        meterConfig.deviceClass = "";
         meterConfig.valueUnit = "";
         meterConfig.timeUnit = "Unknown";
         meterConfig.rateUnit = "";
@@ -451,7 +451,7 @@ bool mqttServer_publishHADiscovery(int _qos)
     }
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                        "Publish HA discovery | Meter type: " + meterConfig.meterType + ", Value unit: " + meterConfig.valueUnit +
+                        "Publish HA discovery | Meter type: " + meterConfig.deviceClass + ", Value unit: " + meterConfig.valueUnit +
                             " , Rate unit: " + meterConfig.rateUnit);
 
     publishHADiscoveryTopicDeviceInfo = true; // Publish full common device info data only once
@@ -632,20 +632,20 @@ bool mqttServer_publishHADiscovery(int _qos)
         // Device / state class validation
         // Check for valid device class / state class combinations:
         // https://github.com/home-assistant/core/blob/master/homeassistant/components/sensor/const.py
-        if (meterConfig.meterType == "water" || meterConfig.meterType == "gas") {
+        if (meterConfig.deviceClass == "water" || meterConfig.deviceClass == "gas") {
             meterConfig.valueStateClass = sequence->paramPostProc->allowNegativeRate ? "total" : "total_increasing";
 
             // Legacy: L/h and gal/h are not valid units in home assistant: Use device class `None`
             ((meterConfig.rateUnit != "L/h") && (meterConfig.rateUnit != "gal/h")) ? meterConfig.rateDeviceClass = "volume_flow_rate"
                                                                                    : meterConfig.rateDeviceClass = "";
         }
-        else if (meterConfig.meterType == "energy") {
+        else if (meterConfig.deviceClass == "energy") {
             meterConfig.valueStateClass = sequence->paramPostProc->allowNegativeRate ? "total" : "total_increasing";
 
             // Legacy: GJ/h is not a valid unit in home assistant: Use device class `None`
             meterConfig.rateUnit != "GJ/h" ? meterConfig.rateDeviceClass = "power" : meterConfig.rateDeviceClass = "";
         }
-        else if (meterConfig.meterType == "temperature" || meterConfig.meterType == "pressure") {
+        else if (meterConfig.deviceClass == "temperature" || meterConfig.deviceClass == "pressure") {
             meterConfig.valueStateClass = "measurement";
             meterConfig.rateDeviceClass = "";
         }
@@ -663,7 +663,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Actual Value",
             .icon = "gauge",
             .unit = meterConfig.valueUnit,
-            .deviceClass = meterConfig.meterType,
+            .deviceClass = meterConfig.deviceClass,
             .stateClass = meterConfig.valueStateClass //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -678,7 +678,7 @@ bool mqttServer_publishHADiscovery(int _qos)
                 .friendlyName = "Fallback Value",
                 .icon = "gauge",
                 .unit = meterConfig.valueUnit,
-                .deviceClass = meterConfig.meterType,
+                .deviceClass = meterConfig.deviceClass,
                 .stateClass = meterConfig.valueStateClass,
                 .entityCategory = "diagnostic" //
             };
@@ -694,7 +694,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Raw Value",
             .icon = "gauge",
             .unit = meterConfig.valueUnit,
-            .deviceClass = meterConfig.meterType,
+            .deviceClass = meterConfig.deviceClass,
             .stateClass = meterConfig.valueStateClass,
             .entityCategory = "diagnostic" //
         };
@@ -735,7 +735,7 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Rate / Interval (" + to_stringWithPrecision(processingInterval, 1) + "min)",
             .icon = "arrow-expand-vertical",
             .unit = meterConfig.valueUnit,
-            .deviceClass = "", // Special case, not using any common rate unit: Use Device class 'None'
+            .deviceClass = "", // Special case, not using any common rate unit: Use device class 'None'
             .stateClass = "measurement",
             .entityCategory = "diagnostic" //
         };

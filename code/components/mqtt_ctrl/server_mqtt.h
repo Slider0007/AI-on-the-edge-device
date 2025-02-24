@@ -10,7 +10,7 @@
 
 
 struct HAMeterConfig {
-    std::string meterType = "";
+    std::string deviceClass = "";
     std::string valueUnit = "";
     std::string timeUnit = "Unknown";
     std::string rateUnit = "";
