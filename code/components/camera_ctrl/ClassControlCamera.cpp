@@ -44,7 +44,7 @@ static camera_config_t cameraConfig = {
     .pin_href = HREF_GPIO_NUM,
     .pin_pclk = PCLK_GPIO_NUM,
 
-    .xclk_freq_hz = 20000000, // Frequency (20Mhz)
+    .xclk_freq_hz = 10000000, // Frequency (10Mhz)
 
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0,
@@ -293,7 +293,7 @@ bool ClassControlCamera::setCameraFrequency()
         return false; // Frequency unchanged
     }
 
-    cameraConfig.xclk_freq_hz = std::clamp(paramCameraInternal.cameraFrequency, 5, 20) * 1000000;
+    cameraConfig.xclk_freq_hz = std::clamp(paramCameraInternal.cameraFrequency, 6, 20) * 1000000;
     return true; // Frequency changed
 }
 

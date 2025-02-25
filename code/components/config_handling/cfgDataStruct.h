@@ -214,7 +214,7 @@ struct CfgData {
         } flashlight;
         struct Camera {
             camera_model_t cameraModel = CAMERA_OV2640;
-            int cameraFrequency = 20;
+            int cameraFrequency = 10;
             int imageQuality = 12;
             int brightness = 0;
             int contrast = 0;

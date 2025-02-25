@@ -17,7 +17,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     },
     "camera": {
       "cameramodel": 1,
-      "camerafrequency": 20,
+      "camerafrequency": 10,
       "imagequality": 12,
       "brightness": 0,
       "contrast": 0,

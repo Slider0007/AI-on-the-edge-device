@@ -57,7 +57,7 @@ As a result, you get the digitized value of your meter. There are several option
 | [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP                | 1.0x - 4.0x  | $\ge$ v17.0.0    |ℹ️ Officially EOL since 2019, but still very popular<br>ℹ️ Autofocus is not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Running quite hot, a small heat sink or a reduced camera frequency is recommended<br>⚠️ ESP32-CAM: Camera functional. Deviation of core + I/O voltage supply (board: 1.2V / 3.3V, camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Camera functional. Small deviation of core voltage supply (board: 1.3V, camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Camera functional. Deviation of core voltage supply + I/O voltage supply (board: 1.2V / 3.3V, camera: 1.5V / 2.8V).
 
 #### Important Note
-The camera frequency (configurable via WebUI or config file) could have negative impact on wireless connection quality (interference with WLAN signal), especially using low quality boards or boards with onboard antenna. Depending on used hardware combination, try to find the best camera frequency (default: 20Mhz) under the evaluation of network responiveness and resulting image quality.
+The camera clock frequency (configurable via WebUI or config file) might have negative impact (interfere with WLAN signal) on wireless network responsiveness (slow loading WebUI, higher latency), especially using low quality boards or boards with onboard antenna. Depending on used hardware combination and WIFI channel, try to find the best camera clock frequency under the evaluation of network responsiveness and resulting image quality.
 
 
 ## Inform Yourself
