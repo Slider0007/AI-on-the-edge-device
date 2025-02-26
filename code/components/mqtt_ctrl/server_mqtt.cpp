@@ -693,9 +693,11 @@ bool mqttServer_publishHADiscovery(int _qos)
             .topicName = "raw_value",
             .friendlyName = "Raw Value",
             .icon = "gauge",
-            .unit = meterConfig.valueUnit,
-            .deviceClass = meterConfig.deviceClass,
-            .stateClass = meterConfig.valueStateClass,
+            // Special case: If value could have 'NaN' parts (e.g. 2N234.333)
+            // --> Use value as string, no long-term statistics possible
+            //.unit = meterConfig.valueUnit,
+            //.deviceClass = meterConfig.deviceClass,
+            //.stateClass = meterConfig.valueStateClass,
             .entityCategory = "diagnostic" //
         };
         publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -735,7 +737,8 @@ bool mqttServer_publishHADiscovery(int _qos)
             .friendlyName = "Rate / Interval (" + to_stringWithPrecision(processingInterval, 1) + "min)",
             .icon = "arrow-expand-vertical",
             .unit = meterConfig.valueUnit,
-            .deviceClass = "", // Special case, not using any common rate unit: Use device class 'None'
+            // Special case: This rate is not using any common rate unit
+            //.deviceClass = "", // Use device class 'None'
             .stateClass = "measurement",
             .entityCategory = "diagnostic" //
         };
