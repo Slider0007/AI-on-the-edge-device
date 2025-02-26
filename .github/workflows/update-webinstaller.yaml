@@ -14,6 +14,7 @@ jobs:
         plat:
          - esp32cam
          - xiao-esp32s3-sense
+         - freenove-esp32s3-n16r8
 
     # Sets permissions of the GITHUB_TOKEN to allow downloading artifacts
     permissions:
