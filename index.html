@@ -48,23 +48,18 @@
 
     <p><b>HowTo</b></p>
     <ul>
-        Precondition: Supported device + FAT formated (empty) SD card inserted in SD card slot
+        <li>Precondition: Supported device + FAT formated (empty) SD card inserted in SD card slot</li>
         <li>1. Switch the device into bootloader mode (Keeping the "FLASH" button pressed while the "RESET" button gets relesed
             or device gets powered. If there is no "FLASH" button, you need to pull pin labeld "GPIO0" or "IO0" to "GND" signal.)</li>
         <li>2. Select device, connect to the device and install firmware ("Install Device").</li>
         <li>3. Perform a power cycle after installtion is completed.</li>
-        <li>4. Install the SD card content and configure the WLAN connection manually 
-            <a href="https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#manual-flashing" target="_blank">(Access Point / Manual Installation)</a>.
-        </li>
-        <!--<li>4. Reconnect to the device again and configure the Wi-Fi connection ("Connect to Wi-Fi").</li>
+        <li>4. Reconnect to the device again and configure the Wi-Fi connection ("Connect to Wi-Fi").</li>
         <li>5. After Wi-Fi connection is established, goto to the device ("Visit device").</li>
-        <li>6. To prepare the SD card content, download firmware zip file from github release page and upload the package to the device 
-            using basic setup web interface.
-        </li>
+        <li>6. To prepare the SD card content, download firmware zip file from github release page and upload the package to the device
+            using device provisioning web interface.</li>
         <li>7. Reboot the device, wait until installation is completed and refresh your browser window.<br>
-                Note: To view console logs switch back to web installer browser window and open console ("Logs & Console").
-        </li>
-        <li>8. Process inital setup wizard (Reference image, alignment marker and number sequence creation).</li>-->
+                Note: To view console logs switch back to web installer browser window and open console ("Logs & Console").</li>
+        <li>8. Process inital setup wizard (Creation of reference image, alignment marker and number sequences).</li>
     </ul>
 
     <p><b>Select your device</b></p>
@@ -72,12 +67,12 @@
         <li>
             <label><input type="radio" name="type" value="esp32cam">ESP32CAM</label>
         </li>
-        <!--<li>
+        <li>
             <label><input type="radio" name="type" value="xiao-esp32s3-sense">XIAO ESP32S3 Sense</label>
         </li>
         <li>
-            <label><input type="radio" name="type" value="freenove-esp32s3-wroom-n16r8">Freenove ESP32S3 WROOM N16R8</label>
-        </li>-->
+            <label><input type="radio" name="type" value="freenove-esp32s3-wroom-n16r8">Freenove (clone) ESP32S3 WROOM N16R8</label>
+        </li>
     </ul>
     <p class="button-row">
         <esp-web-install-button class="invisible"></esp-web-install-button>
