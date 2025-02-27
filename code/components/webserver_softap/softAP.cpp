@@ -78,8 +78,8 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     message += "The device is going to reboot and install the provided package. This process can take up to 3 minutes.<br>";
     message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).<br>";
     message += "If device is provisioned using web installer, just wait until installation is completed and refresh browser window.<br>";
-    message +=
-        "Switch WLAN network and access the device using device name (default: watermeter) or IP address (check router logs).<br><br>";
+    message += "Reconnect to default WLAN network and access the device by name (default: http://watermeter | http://watermeter.local)<br>";
+    message += " or IP address automatically assigned by local DHCP server (e.g. FritzBox, check router logs).<br><br>";
     message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To "
                "Proceed</button>";
     message += "<script language=\"JavaScript\">async function rb(){";
