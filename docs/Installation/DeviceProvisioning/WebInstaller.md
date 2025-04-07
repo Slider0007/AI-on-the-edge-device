@@ -1,7 +1,7 @@
 ## Device Provisioning
 
 ### Web Installer
-Please follow the instructions mentioned here:
+Please follow the instructions mentioned here:<br>
 <img src="../../../images/webinstaller_home.jpg">
 
 #### Workflow Step 2: Initial connection to flash firmware
@@ -23,5 +23,5 @@ Please follow the instructions mentioned here:
 <img src="../../../images/webinstaller_install_sdcard_content.jpg">
 
 #### Workflow Step 8:
-Please follow the instruction of 'Inital Setup Wizard':
+Please follow the instruction of 'Inital Setup Wizard':<br>
 <img src="../../../images/initial_setup_wizard.jpg">

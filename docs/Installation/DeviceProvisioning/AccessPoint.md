@@ -1,7 +1,7 @@
 ## Device Provisioning
 
 ### Access Point
-1. Connect to device's WLAN access point `AI-on-the-Edge` (WLAN Channel 11 | Open Network | DHCP Server enabled)
+1. Insert formated SD card and power pre-flashed device. Connect to device's WLAN access point `AI-on-the-Edge` (WLAN Channel 11 | Open Network | DHCP Server enabled)
 
 2. Browse to http://192.168.4.1 and follow the instructions<br>
 2.1. Provide WLAN configuration and credentials<br>
@@ -18,4 +18,4 @@ Please follow the instruction of 'Inital Setup Wizard':
 <img src="../../../images/initial_setup_wizard.jpg">
 
 Compare also [jomjol documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#remote-setup-using-the-built-in-access-point).
-:warning: Be aware, not all content is 
+Be aware, not all content is suitable for this fork.

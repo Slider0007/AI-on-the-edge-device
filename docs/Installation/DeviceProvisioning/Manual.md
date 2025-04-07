@@ -12,7 +12,7 @@ There are different ways to flash the microcontroller:
 - [Espressif Flash Tool](https://www.espressif.com/sites/default/files/tools/flash_download_tool_3.9.5.zip)<br>
 - [ESPtool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
-Check readme file in firmware package and [jomjol documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/#manual-flashing) for further details.
+Check readme file in firmware zip package for further details.
 
 
 #### Step 2: Installation Of SD Card Content

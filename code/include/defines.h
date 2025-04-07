@@ -305,6 +305,10 @@ CONFIG_WPA_11R_SUPPORT=n
 #define BOARD_TYPE_NAME    "XIAO-ESP32S3-Sense"     // Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
 
+#elif defined(BOARD_FREENOVE_ESP32S3_N8R8)
+#define BOARD_TYPE_NAME     "Freenove-ESP32S3-N8R8" // Keep Board type equal to main board environment name.
+                                                    // This is used for OTA update package verification (converted to lower case)
+
 #elif defined(BOARD_FREENOVE_ESP32S3_N16R8)
 #define BOARD_TYPE_NAME     "Freenove-ESP32S3-N16R8"// Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
@@ -518,7 +522,7 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SPARE_6                    GPIO_NUM_6
     #define GPIO_SPARE_6_USAGE              "spare"
 
-#elif defined(BOARD_FREENOVE_ESP32S3_N16R8)
+#elif defined(BOARD_FREENOVE_ESP32S3_N8R8) || defined(BOARD_FREENOVE_ESP32S3_N16R8)
     #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
         #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1              // Only 1 line SD card operation is supported (hardware related)
     #endif
