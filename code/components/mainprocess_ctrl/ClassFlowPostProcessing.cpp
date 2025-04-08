@@ -57,33 +57,20 @@ bool ClassFlowPostProcessing::loadParameter()
             return false;
         }
 
-        // Plausibility checks
-        // Fallback Value is mandatory to evaluate negative rates
+        // Parameter plausibility checks
+        // Print note: Fallback value is mandatory to evaluate negative rates
         if (sequence->paramPostProc->maxRateCheckType > RATE_CHECK_OFF && sequence->paramPostProc->allowNegativeRate &&
             !sequence->paramPostProc->useFallbackValue) {
             LogFile.writeToFile(ESP_LOG_WARN, TAG,
                                 sequence->sequenceName + ": Activate parameter \'Use Fallback Value\' to use negative rate evaluation");
         }
 
-        // Only valid for Class11 models
-        if (sequence->paramPostProc->checkDigitIncreaseConsistency) {
-            if (flowDigit != NULL && flowDigit->getCNNType() != CNNTYPE_DIGIT_CLASS11) {
-                LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                                    sequence->sequenceName +
-                                        ": Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models");
-            }
-
-            if (!sequence->paramPostProc->useFallbackValue) {
-                LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                                    sequence->sequenceName +
-                                        ": Activate parameter \'Use Fallback Value\' to be able use \'Digit Increase Consistency\' check");
-            }
-        }
-
-        if (sequence->paramPostProc->ignoreLeadingNaN) {
-            if (flowDigit != NULL && flowDigit->getCNNType() != CNNTYPE_DIGIT_CLASS11) {
-                LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip \'Ignore Leading NaN\' check, only applicable for dig-class11 models");
-            }
+        // Print note: Fallback value is mandatory to use 'Digit Increase Consistency' (only valid for class11 models)
+        if (flowDigit != NULL && flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11 && !sequence->paramPostProc->useFallbackValue &&
+            sequence->paramPostProc->checkDigitIncreaseConsistency) {
+            LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                                sequence->sequenceName +
+                                    ": Activate parameter \'Use Fallback Value\' to be able use \'Digit Increase Consistency\' check");
         }
 
         // Check if fallbackvalue usage is activated (at least in one sequence)
@@ -209,10 +196,11 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         /* Substitute any N position with last valid number if available */
         if (findDelimiterPos(sActualValue, "N") != std::string::npos) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Substitude N positions for number sequence: " + sequence->sequenceName);
-            if (sequence->paramPostProc->useFallbackValue && sequence->isFallbackValueValid) { // fallbackValue can be used to replace the N
+            // FallbackValue can be used to replace the N
+            if (sequence->paramPostProc->useFallbackValue && sequence->isFallbackValueValid) {
                 sActualValue = substitudeN(sActualValue, sequence->fallbackValue);
             }
-            else { // fallbackValue not valid to replace any N
+            else { // FallbackValue not valid to replace any N
                 if (!sequence->paramPostProc->useFallbackValue) {
                     LogFile.writeToFile(ESP_LOG_WARN, TAG,
                                         sequence->sequenceName +
@@ -300,8 +288,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 #endif // DEBUG_DETAIL_ON
 
                 /* Update Rates */
-                // Calculate delta time between this reading und last valid reading in seconds
-                long timeDeltaToFallbackValue = abs((long)difftime(sequence->timeProcessed, sequence->timeFallbackValue)); // Abs. delta [s]
+                // Calculate abs. delta time between this reading und last valid reading in seconds
+                long timeDeltaToFallbackValue = abs((long)difftime(sequence->timeProcessed, sequence->timeFallbackValue));
 
                 if (timeDeltaToFallbackValue > 0) {
                     sequence->ratePerMin = (sequence->actualValue - sequence->fallbackValue) /
@@ -320,8 +308,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     RatePerSelection = sequence->ratePerMin;
                 }
                 else {
-                    RatePerSelection = sequence->ratePerInterval; // If Rate check is off, use 'ratePerInterval' for display only purpose
-                                                                  // (easier to interprete)
+                    // If Rate check is off, use 'ratePerInterval' for display only purpose (easier to interprete)
+                    RatePerSelection = sequence->ratePerInterval;
                 }
 
                 /* Check for rate too high */
@@ -331,8 +319,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                         if (RatePerSelection < 0) {
                             sequence->sValueStatus = std::string(VALUE_STATUS_003_RATE_TOO_HIGH_NEG);
 
-                            /* Update timestamp of fallback value to be prepared to identify next negative movement larger than max. rate
-                             * threshold (diagnostic purpose) */
+                            // Update timestamp of fallback value to be prepared to identify next negative movement
+                            // larger than max. rate threshold (diagnostic purpose)
                             sequence->timeFallbackValue = sequence->timeProcessed;
                             sequence->sTimeFallbackValue = convertTimeToString(sequence->timeFallbackValue, TIME_FORMAT_OUTPUT);
                         }
