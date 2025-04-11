@@ -6,20 +6,14 @@
 #include "ClassFlowAlignment.h"
 #include "CTfLiteClass.h"
 #include "ClassLogImage.h"
+#include "configClass.h"
 
-
-// Helper struct to multiuse class without adapting variable names
-// @TODO: Not ideal, could this be done more effcient to avoid this helper?
-struct SequenceDataInternal {
-    int sequenceId;                 // Sequence ID
-    std::string sequenceName;       // Sequence Name
-    std::vector<RoiData *> roiData; // ROI Data
-};
 
 class ClassFlowCNNGeneral : public ClassLogImage
 {
   protected:
-    std::vector<SequenceDataInternal *> sequenceDataInternal;
+    const CfgData::SectionDigit *sectionDigitPtr = nullptr;
+    const CfgData::SectionAnalog *sectionAnalogPtr = nullptr;
 
     ClassFlowAlignment *flowalignment;
     std::string cnnname;
@@ -27,10 +21,10 @@ class ClassFlowCNNGeneral : public ClassLogImage
 
     CTfLiteClass *tflite;
     std::string cnnmodelfile;
-    float CNNGoodThreshold;
     int modelxsize;
     int modelysize;
     int modelchannel;
+    float CNNGoodThreshold;
 
     bool saveAllFiles;
 
@@ -40,11 +34,11 @@ class ClassFlowCNNGeneral : public ClassLogImage
     int evalAnalogToDigitTransition(int _value, int _valuePreviousNumber, int _resultPreviousNumber, int analogDigitSyncValue);
 
     bool resolveNetworkParameter();
-    bool doAlignAndCut(std::string time);
-    bool doNeuralNetwork(std::string time);
+    bool doExtractRoi(const std::string time);
+    bool doInvokeCnn(const std::string time);
 
   public:
-    ClassFlowCNNGeneral(ClassFlowAlignment *_flowalignment, std::string _cnnname, CNNType _cnntype = CNNTYPE_AUTODETECT);
+    ClassFlowCNNGeneral(ClassFlowAlignment *_flowalignment, const std::string _cnnname, const CNNType _cnntype = CNNTYPE_AUTODETECT);
     virtual ~ClassFlowCNNGeneral();
 
     bool loadParameter();
@@ -55,8 +49,8 @@ class ClassFlowCNNGeneral : public ClassLogImage
 
     void drawROI(CImageBasis *image);
 
-    CNNType getCNNType() { return cnnType; };
-    bool cnnTypeAllowExtendedResolution();
+    CNNType getCNNType() const { return cnnType; };
+    bool cnnTypeAllowExtendedResolution() const;
 
     std::string name() { return "ClassFlowCNNGeneral - " + cnnname; };
 };

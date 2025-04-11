@@ -73,7 +73,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
   "digit": {
     "enabled": true,
     "model": "dig-class100_0173_s2_q.tflite",
-    "cnngoodthreshold": "0.00",
+    "cnngoodthreshold": "0.50",
     "sequence": [
       {
         "sequenceid": 0,
