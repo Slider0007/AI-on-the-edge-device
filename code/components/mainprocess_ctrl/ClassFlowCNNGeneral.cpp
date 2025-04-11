@@ -762,19 +762,19 @@ void ClassFlowCNNGeneral::drawROI(CImageBasis *image)
         const auto &color = colors[colorIndex % colors.size()];
 
         for (const auto &roi : roiList) {
-            if (cnnType == CNNTYPE_ANALOG_CONT || cnnType == CNNTYPE_ANALOG_CLASS100) {
-                // image->drawRect(roi->param->x, roi->param->y, roi->param->dx, roi->param->dy, color[0], color[1], color[2], 1);
-                image->drawEllipse((int)(roi->param->x + roi->param->dx / 2), (int)(roi->param->y + roi->param->dy / 2),
-                                   (int)(roi->param->dx / 2), (int)(roi->param->dy / 2), color[0], color[1], color[2], 2);
-                image->drawLine((int)(roi->param->x + roi->param->dx / 2), (int)roi->param->y, (int)(roi->param->x + roi->param->dx / 2),
-                                (int)(roi->param->y + roi->param->dy), color[0], color[1], color[2], 2);
-                image->drawLine((int)roi->param->x, (int)(roi->param->y + roi->param->dy / 2), (int)roi->param->x + roi->param->dx,
-                                (int)(roi->param->y + roi->param->dy / 2), color[0], color[1], color[2], 2);
+            if (cnnType == CNNTYPE_ANALOG_CLASS100 || cnnType == CNNTYPE_ANALOG_CONT) {
+                image->drawEllipse(roi->param->x + roi->param->dx / 2, roi->param->y + roi->param->dy / 2, roi->param->dx / 2,
+                                   roi->param->dy / 2, color[0], color[1], color[2], 2);
+                image->drawLine(roi->param->x + roi->param->dx / 2, roi->param->y, roi->param->x + roi->param->dx / 2,
+                                roi->param->y + roi->param->dy, color[0], color[1], color[2], 2);
+                image->drawLine(roi->param->x, roi->param->y + roi->param->dy / 2, roi->param->x + roi->param->dx,
+                                roi->param->y + roi->param->dy / 2, color[0], color[1], color[2], 2);
             }
             else {
                 image->drawRect(roi->param->x, roi->param->y, roi->param->dx, roi->param->dy, color[0], color[1], color[2], 2);
             }
         }
+        colorIndex++;
     }
 }
 
