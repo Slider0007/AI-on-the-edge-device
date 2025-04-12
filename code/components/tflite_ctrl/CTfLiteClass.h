@@ -11,16 +11,18 @@ class CTfLiteClass
 {
   protected:
     tflite::MicroMutableOpResolver<10> microOpResolver;
-    uint8_t *modelFile;
+    uint8_t *modelFile = nullptr;
     const tflite::Model *model;
-    int kTensorArenaSize;
-    uint8_t *tensorArena;
-    tflite::MicroInterpreter *interpreter;
-    TfLiteTensor *output;
+    int kTensorArenaSize = 0;
+    uint8_t *tensorArena = nullptr;
+    tflite::MicroInterpreter *interpreter = nullptr;
+    TfLiteTensor *output = nullptr;
 
-    int imHeight, imWidth, imChannel;
+    int imHeight = 0;
+    int imWidth = 0;
+    int imChannel = 0;
 
-    bool readFileToModel(std::string fileName);
+    bool readFileToModel(const std::string &fileName);
     void loadOpResolver(void);
 
   public:
@@ -29,7 +31,7 @@ class CTfLiteClass
     void deleteInterpreter();
 
     bool makeAllocate();
-    bool loadModel(std::string fileName);
+    bool loadModel(const std::string &fileName);
     bool loadInputImage(CImageBasis *image);
     bool invoke();
 

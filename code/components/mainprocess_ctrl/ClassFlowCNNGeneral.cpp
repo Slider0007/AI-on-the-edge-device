@@ -16,18 +16,16 @@
 static const char *TAG = "CNN";
 
 
-ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalignment, const std::string _cnnname, const CNNType _cnntype)
-    : ClassLogImage(TAG)
+ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowAlignment, std::string _cnnName, CNNType _cnnType) : ClassLogImage(TAG)
 {
-    flowalignment = _flowalignment;
-    cnnname = _cnnname;
-    cnnType = _cnntype;
+    flowAlignment = _flowAlignment;
+    cnnName = _cnnName;
+    cnnType = _cnnType;
     tflite = new CTfLiteClass;
-    cnnmodelfile = "";
-    modelxsize = 32;
-    modelysize = 32;
-    modelchannel = STBI_rgb;
-    CNNGoodThreshold = 0.50;
+    modelWidth = 32;
+    modelHeight = 32;
+    modelChannel = STBI_rgb;
+    cnnGoodThreshold = 0.50;
     saveAllFiles = false;
     presetFlowStateHandler(true);
 }
@@ -56,18 +54,18 @@ bool roiPositionPlausibilityCheck(RoiData *roiEl)
 
 bool ClassFlowCNNGeneral::loadParameter()
 {
-    if (cnnname != "Digit" && cnnname != "Analog") {
+    if (cnnName != "Digit" && cnnName != "Analog") {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Unknown CNN class name");
         return false;
     }
 
-    // Assign pointers based on cnnname
-    const bool isDigit = (cnnname == "Digit");
+    // Assign pointers based on cnnName
+    const bool isDigit = (cnnName == "Digit");
     sectionDigitPtr = isDigit ? &ConfigClass::getInstance()->get()->sectionDigit : nullptr;
     sectionAnalogPtr = !isDigit ? &ConfigClass::getInstance()->get()->sectionAnalog : nullptr;
 
-    cnnmodelfile = "/sdcard/config/models/" + (isDigit ? sectionDigitPtr->model : sectionAnalogPtr->model);
-    CNNGoodThreshold = isDigit ? sectionDigitPtr->cnnGoodThreshold : 0.0;
+    cnnModelFile = "/sdcard/config/models/" + (isDigit ? sectionDigitPtr->model : sectionAnalogPtr->model);
+    cnnGoodThreshold = isDigit ? sectionDigitPtr->cnnGoodThreshold : 0.0;
 
     saveImagesEnabled = isDigit ? sectionDigitPtr->debug.saveRoiImages : sectionAnalogPtr->debug.saveRoiImages;
     imagesLocation = "/sdcard" + (isDigit ? sectionDigitPtr->debug.roiImagesLocation : sectionAnalogPtr->debug.roiImagesLocation);
@@ -106,7 +104,7 @@ bool ClassFlowCNNGeneral::loadParameter()
         const auto &roiList = sectionDigitPtr ? sequence->digitRoi : sequence->analogRoi;
 
         for (const auto &roi : roiList) {
-            roi->imageRoiResized = new CImageBasis(roi->param->roiName, modelxsize, modelysize, modelchannel);
+            roi->imageRoiResized = new CImageBasis(roi->param->roiName, modelWidth, modelHeight, modelChannel);
             roi->imageRoi = new CImageBasis(roi->param->roiName + "_org", roi->param->dx, roi->param->dy, STBI_rgb);
         }
     }
@@ -143,7 +141,7 @@ void ClassFlowCNNGeneral::doPostProcessEventHandling()
 
 bool ClassFlowCNNGeneral::doExtractRoi(const std::string time)
 {
-    CAlignAndCutImage *caic = flowalignment->getAlignAndCutImage();
+    CAlignAndCutImage *caic = flowAlignment->getAlignAndCutImage();
 
     if (caic == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "doAlignAndCut: Aligned image not available");
@@ -160,7 +158,7 @@ bool ClassFlowCNNGeneral::doExtractRoi(const std::string time)
                 roi->imageRoi->saveToFile(formatFileName("/sdcard/img_tmp/" + roi->param->roiName + "_org.jpg"));
             }
 
-            roi->imageRoi->resizeImage(modelxsize, modelysize, roi->imageRoiResized);
+            roi->imageRoi->resizeImage(modelWidth, modelHeight, roi->imageRoiResized);
 
             if (saveAllFiles) {
                 roi->imageRoiResized->saveToFile(formatFileName("/sdcard/img_tmp/" + roi->param->roiName + ".jpg"));
@@ -174,8 +172,8 @@ bool ClassFlowCNNGeneral::doExtractRoi(const std::string time)
 
 bool ClassFlowCNNGeneral::resolveNetworkParameter()
 {
-    if (!tflite->loadModel(formatFileName(cnnmodelfile))) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Failed to load model: " + cnnmodelfile);
+    if (!tflite->loadModel(formatFileName(cnnModelFile))) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Failed to load model: " + cnnModelFile);
         LogFile.writeHeapInfo("resolveNetworkParameter-LoadModel");
         return false;
     }
@@ -192,9 +190,9 @@ bool ClassFlowCNNGeneral::resolveNetworkParameter()
             return false;
         }
 
-        modelxsize = tflite->getInputDimension(0);
-        modelysize = tflite->getInputDimension(1);
-        modelchannel = tflite->getInputDimension(2);
+        modelWidth = tflite->getInputDimension(0);
+        modelHeight = tflite->getInputDimension(1);
+        modelChannel = tflite->getInputDimension(2);
 
         int outputDims = tflite->getOutputDimension();
         if (outputDims == -1) {
@@ -219,7 +217,7 @@ bool ClassFlowCNNGeneral::resolveNetworkParameter()
                 break;
 
             case 100:
-                cnnType = (modelxsize == 32 && modelysize == 32) ? CNNTYPE_ANALOG_CLASS100 : CNNTYPE_DIGIT_CLASS100;
+                cnnType = (modelWidth == 32 && modelHeight == 32) ? CNNTYPE_ANALOG_CLASS100 : CNNTYPE_DIGIT_CLASS100;
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                     "Type: " + std::string((cnnType == CNNTYPE_ANALOG_CLASS100) ? "Analog (ana-class100)"
                                                                                                 : "Digit (dig-class100)"));
@@ -231,7 +229,7 @@ bool ClassFlowCNNGeneral::resolveNetworkParameter()
         }
     }
 
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Network parameter loaded: " + cnnmodelfile);
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Network parameter loaded: " + cnnModelFile);
 
     tflite->deleteInterpreter();
 
@@ -313,7 +311,7 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
                     roi->CNNResult = (int)std::clamp(result * 10.0f, 0.0f, 99.0f);
                     roi->sCNNResult = to_stringWithPrecision(roi->CNNResult / 10.0, 1);
 
-                    roi->isRejected = (fit < CNNGoodThreshold);
+                    roi->isRejected = (fit < cnnGoodThreshold);
                     logImageResult = roi->isRejected ? -roi->CNNResult : roi->CNNResult;
 
 #ifdef DEBUG_DETAIL_ON
@@ -327,7 +325,7 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
                     if (roi->isRejected) {
                         LogFile.writeToFile(ESP_LOG_WARN, TAG,
                                             "Result rejected - bad fit (Fit: " + std::to_string(fit) +
-                                                ", Threshold: " + std::to_string(CNNGoodThreshold) + ")");
+                                                ", Threshold: " + std::to_string(cnnGoodThreshold) + ")");
                     }
 
                     break;
@@ -743,7 +741,7 @@ bool ClassFlowCNNGeneral::cnnTypeAllowExtendedResolution() const
 
 void ClassFlowCNNGeneral::drawROI(CImageBasis *image)
 {
-    if (!image->imageOkay()) {
+    if (!image || !image->imageOkay()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawROI: Invalid image");
         return;
     }

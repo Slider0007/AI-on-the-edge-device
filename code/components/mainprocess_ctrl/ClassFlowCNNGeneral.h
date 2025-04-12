@@ -15,16 +15,16 @@ class ClassFlowCNNGeneral : public ClassLogImage
     const CfgData::SectionDigit *sectionDigitPtr = nullptr;
     const CfgData::SectionAnalog *sectionAnalogPtr = nullptr;
 
-    ClassFlowAlignment *flowalignment;
-    std::string cnnname;
+    ClassFlowAlignment *flowAlignment = nullptr;
+    std::string cnnName;
     CNNType cnnType;
 
-    CTfLiteClass *tflite;
-    std::string cnnmodelfile;
-    int modelxsize;
-    int modelysize;
-    int modelchannel;
-    float CNNGoodThreshold;
+    CTfLiteClass *tflite = nullptr;
+    std::string cnnModelFile;
+    int modelWidth;
+    int modelHeight;
+    int modelChannel;
+    float cnnGoodThreshold;
 
     bool saveAllFiles;
 
@@ -38,7 +38,7 @@ class ClassFlowCNNGeneral : public ClassLogImage
     bool doInvokeCnn(const std::string time);
 
   public:
-    ClassFlowCNNGeneral(ClassFlowAlignment *_flowalignment, const std::string _cnnname, const CNNType _cnntype = CNNTYPE_AUTODETECT);
+    ClassFlowCNNGeneral(ClassFlowAlignment *_flowAlignment, std::string _cnnName, CNNType _cnnType = CNNTYPE_AUTODETECT);
     virtual ~ClassFlowCNNGeneral();
 
     bool loadParameter();
@@ -52,7 +52,7 @@ class ClassFlowCNNGeneral : public ClassLogImage
     CNNType getCNNType() const { return cnnType; };
     bool cnnTypeAllowExtendedResolution() const;
 
-    std::string name() { return "ClassFlowCNNGeneral - " + cnnname; };
+    std::string name() { return "ClassFlowCNNGeneral - " + cnnName; };
 };
 
 #endif // CLASSFLOWCNNGENERAL_H

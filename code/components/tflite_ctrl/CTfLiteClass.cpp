@@ -70,7 +70,7 @@ bool CTfLiteClass::makeAllocate()
 }
 
 
-bool CTfLiteClass::readFileToModel(std::string fileName)
+bool CTfLiteClass::readFileToModel(const std::string &fileName)
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "readFileToModel: Read TFLite model file: " + fileName);
 
@@ -117,7 +117,7 @@ bool CTfLiteClass::readFileToModel(std::string fileName)
 }
 
 
-bool CTfLiteClass::loadModel(std::string fileName)
+bool CTfLiteClass::loadModel(const std::string &fileName)
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Loading TFLite model");
 
