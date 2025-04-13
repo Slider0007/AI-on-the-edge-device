@@ -36,11 +36,11 @@ class CTfLiteClass
     bool invoke();
 
     bool parseInputDimension();
-    int getInputDimension(int dim);
+    int getInputDimension(int dim) const;
 
-    int getOutputDimension();
-    int getOutClassification(int from = -1, int to = -1);
-    float getOutputValue(int index);
+    int getOutputDimension() const;
+    int getOutClassification(int from = -1, int to = -1) const;
+    float getOutputValue(int index) const;
 };
 
 #endif // CTFLITECLASS_H

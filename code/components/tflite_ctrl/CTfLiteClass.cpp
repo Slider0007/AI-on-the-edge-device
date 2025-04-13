@@ -224,7 +224,7 @@ bool CTfLiteClass::parseInputDimension()
 }
 
 
-int CTfLiteClass::getInputDimension(int dim)
+int CTfLiteClass::getInputDimension(int dim) const
 {
     switch (dim) {
         case 0:
@@ -239,7 +239,7 @@ int CTfLiteClass::getInputDimension(int dim)
 }
 
 
-int CTfLiteClass::getOutputDimension()
+int CTfLiteClass::getOutputDimension() const
 {
     TfLiteTensor *outputTensor = interpreter->output(0);
 
@@ -270,7 +270,7 @@ int CTfLiteClass::getOutputDimension()
 }
 
 
-int CTfLiteClass::getOutClassification(int from, int to)
+int CTfLiteClass::getOutClassification(int from, int to) const
 {
     TfLiteTensor *outputTensor = interpreter->output(0);
 
@@ -309,7 +309,7 @@ int CTfLiteClass::getOutClassification(int from, int to)
 }
 
 
-float CTfLiteClass::getOutputValue(int index)
+float CTfLiteClass::getOutputValue(int index) const
 {
     TfLiteTensor *outputTensor = interpreter->output(0);
 

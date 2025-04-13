@@ -385,7 +385,7 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
 }
 
 
-std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePreviousNumber, int resultPreviousNumber)
+std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePreviousNumber, int resultPreviousNumber) const
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                         "getReadout: Number sequence: " + sequence->sequenceName +
@@ -519,7 +519,7 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
 
 
 /* Evaluate analog number pointer */
-int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber)
+int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber) const
 {
     int result = -1;
 
@@ -570,7 +570,7 @@ int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber)
 
 /* Evaluate digit number */
 int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool _isPreviousAnalog,
-                                         int digitalAnalogTransitionStart)
+                                         int digitalAnalogTransitionStart) const
 {
     int result = -1;
     int resultIntergerPart = _value / 10;
@@ -679,7 +679,7 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
 
 /* Evaluate analog to digit number transition */
 int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePreviousNumber, int _resultPreviousNumber,
-                                                     int analogDigitSyncValue)
+                                                     int analogDigitSyncValue) const
 {
     int result = -1;
     int resultIntergerPart = _value / 10;
