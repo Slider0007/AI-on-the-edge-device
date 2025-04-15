@@ -200,63 +200,72 @@ esp_err_t getCertFileList(httpd_req_t *req)
 }
 
 
-esp_err_t sendFile(httpd_req_t *req, std::string filename)
+esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disableCache)
 {
-    FILE *fd = fopen(filename.c_str(), "r");
+    FILE *fd = fopen(filename.c_str(), "rb");
     if (fd == NULL) {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
         return ESP_FAIL;
     }
 
-    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(fd, NULL, _IOFBF, 512);
 
-    // ESP_LOGI(TAG, "Sending file: %s", filename.c_str());
+    if (disableCache) {
+        httpd_resp_set_hdr(req, "Cache-Control", "max-age=0");
+    }
+    else {
+        bool cacheFile = false;
+        const char *cacheControl = "max-age=0";
 
-    // For all files with the following file extention tell the webbrowser to cache them for a long period
-    if (endsWith(filename, ".html") || endsWith(filename, ".htm") || endsWith(filename, ".css") || endsWith(filename, ".js") ||
-        endsWith(filename, ".map") || endsWith(filename, ".jpg") || endsWith(filename, ".jpeg") || endsWith(filename, ".ico") ||
-        endsWith(filename, ".gif") || endsWith(filename, ".svg") || endsWith(filename, ".png") || endsWith(filename, ".md") ||
-        endsWith(filename, ".webmanifest") || endsWith(filename, ".txt")) {
-        if (filename == "/sdcard/html/index.html") {
-            httpd_resp_set_hdr(req, "Cache-Control", "max-age=0");
+        const std::set<std::string> fileTypes = {".html", ".htm", ".css", ".js",  ".map", ".jpg",         ".jpeg",
+                                                 ".ico",  ".gif", ".svg", ".png", ".md",  ".webmanifest", ".txt"};
+
+        for (const auto &type : fileTypes) {
+            if (endsWith(filename, type)) {
+                cacheFile = true;
+                if (filename == "/sdcard/html/index.html") {
+                    cacheControl = "max-age=0"; // Do not cache index.html
+                }
+                else if (filename == "/sdcard/html/setup.html") {
+                    httpd_resp_set_hdr(req, "Clear-Site-Data", "\"*\"");
+                }
+                else {
+                    cacheControl = "max-age=31536000"; // Cache other assets for a long time
+                }
+                break;
+            }
         }
-        else if (filename == "/sdcard/html/setup.html") {
-            httpd_resp_set_hdr(req, "Clear-Site-Data", "\"*\"");
-        }
-        else {
-            httpd_resp_set_hdr(req, "Cache-Control", "max-age=31536000");
+
+        if (cacheFile) {
+            httpd_resp_set_hdr(req, "Cache-Control", cacheControl);
         }
     }
 
-    setContentTypeFromFile(req, filename.c_str());
+    setContentTypeFromFile(req, filename.c_str()); // Set the Content-Type based on file extension
 
-    /* Retrieve the pointer to scratch buffer for temporary storage */
     char *chunk = (char *)((struct HttpServerData *)req->user_ctx)->scratch;
     size_t chunksize;
+
     do {
-        /* Read file in chunks into the scratch buffer */
         chunksize = fread(chunk, 1, WEBSERVER_SCRATCH_BUFSIZE, fd);
 
-        /* Send the buffer contents as HTTP response chunk */
-        if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
-            fclose(fd);
-            std::string msg_txt = "sendFile: Failed to send file: " + filename;
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
-            httpd_resp_sendstr_chunk(req, NULL);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
-            return ESP_FAIL;
+        if (chunksize > 0) {
+            if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
+                fclose(fd);
+                std::string msgTxt = "sendFile: Failed to send file: " + filename;
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msgTxt);
+                httpd_resp_sendstr_chunk(req, NULL); // Send empty chunk for closure
+                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msgTxt.c_str());
+                return ESP_FAIL;
+            }
         }
+    } while (chunksize > 0);
 
-        /* Keep looping till the whole file is sent */
-    } while (chunksize != 0);
-
-    /* Close file after sending complete */
     fclose(fd);
 
-    /* Respond with an empty chunk to signal HTTP response completion */
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_send_chunk(req, NULL, 0); // Respond with an empty chunk to signal HTTP response completion
     return ESP_OK;
 }
 
