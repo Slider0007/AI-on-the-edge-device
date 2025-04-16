@@ -216,7 +216,7 @@ esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disabl
     static const std::set<std::string> specialNoCacheFiles = {"/sdcard/html/index.html", "/sdcard/html/setup.html"};
     bool doNotCacheFile = specialNoCacheFiles.count(filename) > 0;
 
-    // Default cache behaviour -> no caching
+    // Default cache behaviour -> disable caching
     const char *cacheControl = "max-age=0";
 
     if (!disableCache && !doNotCacheFile) {
@@ -227,7 +227,7 @@ esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disabl
         // Check if file type is matching
         for (const auto &type : fileTypes) {
             if (endsWith(filename, type)) {
-                cacheControl = "max-age=31536000";
+                cacheControl = "max-age=31536000"; // Cache for a long time (1 year)
                 break;
             }
         }
@@ -256,7 +256,7 @@ esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disabl
 
     fclose(file);
 
-    httpd_resp_send_chunk(req, NULL); // Respond with an empty chunk to signal HTTP response completion
+    httpd_resp_sendstr_chunk(req, NULL); // Respond with an empty chunk to signal HTTP response completion
     return ESP_OK;
 }
 
