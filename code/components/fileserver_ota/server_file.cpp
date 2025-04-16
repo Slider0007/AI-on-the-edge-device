@@ -202,58 +202,49 @@ esp_err_t getCertFileList(httpd_req_t *req)
 
 esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disableCache)
 {
-    FILE *fd = fopen(filename.c_str(), "rb");
-    if (fd == NULL) {
+    FILE *file = fopen(filename.c_str(), "rb");
+    if (file == NULL) {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
         return ESP_FAIL;
     }
 
     // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(fd, NULL, _IOFBF, 512);
+    setvbuf(file, NULL, _IOFBF, 512);
 
-    if (disableCache) {
-        httpd_resp_set_hdr(req, "Cache-Control", "max-age=0");
-    }
-    else {
-        bool cacheFile = false;
-        const char *cacheControl = "max-age=0";
+    // Files listed are never be cached (declared static to avoid reallocation)
+    static const std::set<std::string> specialNoCacheFiles = {"/sdcard/html/index.html", "/sdcard/html/setup.html"};
+    bool doNotCacheFile = specialNoCacheFiles.count(filename) > 0;
 
-        const std::set<std::string> fileTypes = {".html", ".htm", ".css", ".js",  ".map", ".jpg",         ".jpeg",
-                                                 ".ico",  ".gif", ".svg", ".png", ".md",  ".webmanifest", ".txt"};
+    // Default cache behaviour -> no caching
+    const char *cacheControl = "max-age=0";
 
+    if (!disableCache && !doNotCacheFile) {
+        // Files types listed shall be cached (Declared static to avoid reallocation)
+        static const std::set<std::string> fileTypes = {".html", ".htm", ".css", ".js",  ".map", ".jpg",         ".jpeg",
+                                                        ".ico",  ".gif", ".svg", ".png", ".md",  ".webmanifest", ".txt"};
+
+        // Check if file type is matching
         for (const auto &type : fileTypes) {
             if (endsWith(filename, type)) {
-                cacheFile = true;
-                if (filename == "/sdcard/html/index.html") {
-                    cacheControl = "max-age=0"; // Do not cache index.html
-                }
-                else if (filename == "/sdcard/html/setup.html") {
-                    httpd_resp_set_hdr(req, "Clear-Site-Data", "\"*\"");
-                }
-                else {
-                    cacheControl = "max-age=31536000"; // Cache other assets for a long time
-                }
+                cacheControl = "max-age=31536000";
                 break;
             }
         }
-
-        if (cacheFile) {
-            httpd_resp_set_hdr(req, "Cache-Control", cacheControl);
-        }
     }
 
-    setContentTypeFromFile(req, filename.c_str()); // Set the Content-Type based on file extension
+    httpd_resp_set_hdr(req, "Cache-Control", cacheControl); // Set cache control header
+    setContentTypeFromFile(req, filename.c_str());          // Set content-type header based on file type (extention)
 
     char *chunk = (char *)((struct HttpServerData *)req->user_ctx)->scratch;
     size_t chunksize;
 
     do {
-        chunksize = fread(chunk, 1, WEBSERVER_SCRATCH_BUFSIZE, fd);
+        chunksize = fread(chunk, 1, WEBSERVER_SCRATCH_BUFSIZE, file);
 
         if (chunksize > 0) {
             if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
-                fclose(fd);
+                fclose(file);
                 std::string msgTxt = "sendFile: Failed to send file: " + filename;
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msgTxt);
                 httpd_resp_sendstr_chunk(req, NULL); // Send empty chunk for closure
@@ -263,9 +254,9 @@ esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disabl
         }
     } while (chunksize > 0);
 
-    fclose(fd);
+    fclose(file);
 
-    httpd_resp_send_chunk(req, NULL, 0); // Respond with an empty chunk to signal HTTP response completion
+    httpd_resp_send_chunk(req, NULL); // Respond with an empty chunk to signal HTTP response completion
     return ESP_OK;
 }
 
