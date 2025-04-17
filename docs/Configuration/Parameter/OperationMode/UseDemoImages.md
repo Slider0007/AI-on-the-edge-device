@@ -2,7 +2,7 @@
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Use Demo Images     | Usedemoimages
+| Parameter Name    | Use Demo Images     | usedemoimages
 | Default Value     | `false`             | `false`
 | Input Options     | `false`<br>`true`   | `false`<br>`true` 
 
