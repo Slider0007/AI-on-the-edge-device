@@ -16,27 +16,26 @@
 static const char *TAG = "CNN";
 
 
-ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowalignment, std::string _cnnname, CNNType _cnntype) : ClassLogImage(TAG)
+ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowAlignment, std::string _cnnName, CNNType _cnnType) : ClassLogImage(TAG)
 {
-    presetFlowStateHandler(true);
-    flowalignment = _flowalignment;
-    cnnname = _cnnname;
-    cnnType = _cnntype;
+    flowAlignment = _flowAlignment;
+    cnnName = _cnnName;
+    cnnType = _cnnType;
     tflite = new CTfLiteClass;
-    cnnmodelfile = "";
-    modelxsize = 32;
-    modelysize = 32;
-    modelchannel = STBI_rgb;
-    CNNGoodThreshold = 0.0;
+    modelWidth = 32;
+    modelHeight = 32;
+    modelChannel = STBI_rgb;
+    cnnGoodThreshold = 0.50;
     saveAllFiles = false;
+    presetFlowStateHandler(true);
 }
 
 
 bool roiPositionPlausibilityCheck(RoiData *roiEl)
 {
     // ROI position plausibilty check
-    int imgWidth = 640;
-    int imgHeight = 480;
+    int imgWidth = CAMERA_OUTPUT_WINDOW_SIZE_WIDTH;
+    int imgHeight = CAMERA_OUTPUT_WINDOW_SIZE_HEIGHT;
     cameraCtrl.getOutputFrameSize(imgWidth, imgHeight);
 
     if (roiEl->param->x < 1 || (roiEl->param->x > (imgWidth - 1 - roiEl->param->dx))) {
@@ -52,69 +51,47 @@ bool roiPositionPlausibilityCheck(RoiData *roiEl)
     return true;
 }
 
+
 bool ClassFlowCNNGeneral::loadParameter()
 {
-    if (cnnname != "Digit" && cnnname != "Analog") {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Unkown CNN class name");
+    if (cnnName != "Digit" && cnnName != "Analog") {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Unknown CNN class name");
         return false;
     }
 
-    // Prepare internal sequence data struct (class instance related helper)
-    for (const auto &sequence : sequenceData) {
-        SequenceDataInternal *sequenceInternal = new SequenceDataInternal{};
-        sequenceInternal->sequenceId = sequence->sequenceId;
-        sequenceInternal->sequenceName = sequence->sequenceName;
-        sequenceDataInternal.push_back(sequenceInternal);
-    }
+    // Assign pointers based on cnnName
+    const bool isDigit = (cnnName == "Digit");
+    sectionDigitPtr = isDigit ? &ConfigClass::getInstance()->get()->sectionDigit : nullptr;
+    sectionAnalogPtr = !isDigit ? &ConfigClass::getInstance()->get()->sectionAnalog : nullptr;
 
-    if (cnnname == "Digit") {
-        cnnmodelfile = "/sdcard/config/models/" + ConfigClass::getInstance()->get()->sectionDigit.model;
-        CNNGoodThreshold = ConfigClass::getInstance()->get()->sectionDigit.cnnGoodThreshold;
+    cnnModelFile = "/sdcard/config/models/" + (isDigit ? sectionDigitPtr->model : sectionAnalogPtr->model);
+    cnnGoodThreshold = isDigit ? sectionDigitPtr->cnnGoodThreshold : 0.0;
 
-        saveImagesEnabled = ConfigClass::getInstance()->get()->sectionDigit.debug.saveRoiImages;
-        imagesLocation = "/sdcard" + ConfigClass::getInstance()->get()->sectionDigit.debug.roiImagesLocation;
-        imagesRetention = ConfigClass::getInstance()->get()->sectionDigit.debug.roiImagesRetention;
-        saveAllFiles = ConfigClass::getInstance()->get()->sectionDigit.debug.saveAllFiles;
+    saveImagesEnabled = isDigit ? sectionDigitPtr->debug.saveRoiImages : sectionAnalogPtr->debug.saveRoiImages;
+    imagesLocation = "/sdcard" + (isDigit ? sectionDigitPtr->debug.roiImagesLocation : sectionAnalogPtr->debug.roiImagesLocation);
+    imagesRetention = isDigit ? sectionDigitPtr->debug.roiImagesRetention : sectionAnalogPtr->debug.roiImagesRetention;
+    saveAllFiles = isDigit ? sectionDigitPtr->debug.saveAllFiles : sectionAnalogPtr->debug.saveAllFiles;
 
-        for (int i = 0; i < ConfigClass::getInstance()->get()->sectionDigit.sequence.size(); i++) {
-            for (int j = 0; j < ConfigClass::getInstance()->get()->sectionDigit.sequence[i].roi.size(); j++) {
-                RoiData *roiEl = new RoiData{};
-                roiEl->param = &ConfigClass::getInstance()->get()->sectionDigit.sequence[i].roi[j];
-
-                if (!roiPositionPlausibilityCheck(roiEl)) {
-                    return false;
-                }
-
-                if (i < sequenceData.size()) {
-                    sequenceData[i]->digitRoi.push_back(roiEl);
-                    // Fill internal struct as well to make class internal processing independent of source (digit or analog)
-                    sequenceDataInternal[i]->roiData.push_back(roiEl);
-                }
-            }
+    const auto &sequences = isDigit ? sectionDigitPtr->sequence : sectionAnalogPtr->sequence;
+    for (size_t i = 0; i < sequences.size(); i++) {
+        if (i >= sequenceData.size()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invalid sequence index");
+            return false;
         }
-    }
-    else if (cnnname == "Analog") {
-        cnnmodelfile = "/sdcard/config/models/" + ConfigClass::getInstance()->get()->sectionAnalog.model;
 
-        saveImagesEnabled = ConfigClass::getInstance()->get()->sectionAnalog.debug.saveRoiImages;
-        imagesLocation = "/sdcard" + ConfigClass::getInstance()->get()->sectionAnalog.debug.roiImagesLocation;
-        imagesRetention = ConfigClass::getInstance()->get()->sectionAnalog.debug.roiImagesRetention;
-        saveAllFiles = ConfigClass::getInstance()->get()->sectionDigit.debug.saveAllFiles;
+        for (size_t j = 0; j < sequences[i].roi.size(); j++) {
+            auto *roiEl = new RoiData{};
+            roiEl->param = &sequences[i].roi[j];
 
-        for (int i = 0; i < ConfigClass::getInstance()->get()->sectionAnalog.sequence.size(); i++) {
-            for (int j = 0; j < ConfigClass::getInstance()->get()->sectionAnalog.sequence[i].roi.size(); j++) {
-                RoiData *roiEl = new RoiData{};
-                roiEl->param = &ConfigClass::getInstance()->get()->sectionAnalog.sequence[i].roi[j];
+            if (!roiPositionPlausibilityCheck(roiEl)) {
+                return false;
+            }
 
-                if (!roiPositionPlausibilityCheck(roiEl)) {
-                    return false;
-                }
-
-                if (i < sequenceData.size()) {
-                    sequenceData[i]->analogRoi.push_back(roiEl);
-                    // Fill internal struct as well to make class internal processing independent of source (digit or analog)
-                    sequenceDataInternal[i]->roiData.push_back(roiEl);
-                }
+            if (isDigit) {
+                sequenceData[i]->digitRoi.push_back(roiEl);
+            }
+            else {
+                sequenceData[i]->analogRoi.push_back(roiEl);
             }
         }
     }
@@ -123,23 +100,13 @@ bool ClassFlowCNNGeneral::loadParameter()
         return false;
     }
 
-    for (int i = 0; auto &sequence : sequenceDataInternal) {
-        for (int j = 0; auto &roi : sequence->roiData) {
-            roi->imageRoiResized = new CImageBasis(roi->param->roiName, modelxsize, modelysize, modelchannel);
-            roi->imageRoi = new CImageBasis(roi->param->roiName + "_org", roi->param->dx, roi->param->dy, STBI_rgb);
+    for (const auto &sequence : sequenceData) {
+        const auto &roiList = sectionDigitPtr ? sequence->digitRoi : sequence->analogRoi;
 
-            // Set image pointer in global struct as well
-            if (cnnname == "Digit") {
-                sequenceData[i]->digitRoi[j]->imageRoiResized = roi->imageRoiResized;
-                sequenceData[i]->digitRoi[j]->imageRoi = roi->imageRoi;
-            }
-            else if (cnnname == "Analog") {
-                sequenceData[i]->analogRoi[j]->imageRoiResized = roi->imageRoiResized;
-                sequenceData[i]->analogRoi[j]->imageRoi = roi->imageRoi;
-            }
-            j++;
+        for (const auto &roi : roiList) {
+            roi->imageRoiResized = new CImageBasis(roi->param->roiName, modelWidth, modelHeight, modelChannel);
+            roi->imageRoi = new CImageBasis(roi->param->roiName + "_org", roi->param->dx, roi->param->dy, STBI_rgb);
         }
-        i++;
     }
 
     return true;
@@ -151,22 +118,18 @@ bool ClassFlowCNNGeneral::doFlow(std::string time)
     presetFlowStateHandler(false, time);
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Process ROI extraction");
-    if (!doAlignAndCut(time)) {
+    if (!doExtractRoi(time)) {
         return false;
     }
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Process neural network");
-    if (!doNeuralNetwork(time)) {
+    if (!doInvokeCnn(time)) {
         return false;
     }
 
     removeOldLogs();
 
-    if (!getFlowState()->isSuccessful) {
-        return false;
-    }
-
-    return true;
+    return getFlowState()->isSuccessful;
 }
 
 
@@ -176,24 +139,26 @@ void ClassFlowCNNGeneral::doPostProcessEventHandling()
 }
 
 
-bool ClassFlowCNNGeneral::doAlignAndCut(std::string time)
+bool ClassFlowCNNGeneral::doExtractRoi(const std::string time)
 {
-    CAlignAndCutImage *caic = flowalignment->getAlignAndCutImage();
+    CAlignAndCutImage *caic = flowAlignment->getAlignAndCutImage();
 
     if (caic == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "doAlignAndCut: Aligned image not available");
         return false;
     }
 
-    for (auto &sequence : sequenceDataInternal) {
-        for (auto &roi : sequence->roiData) {
+    for (const auto &sequence : sequenceData) {
+        const auto &roiList = sectionDigitPtr ? sequence->digitRoi : sequence->analogRoi;
+
+        for (const auto &roi : roiList) {
             caic->cutAndSaveImage(roi->param->x, roi->param->y, roi->param->dx, roi->param->dy, roi->imageRoi);
 
             if (saveAllFiles) {
                 roi->imageRoi->saveToFile(formatFileName("/sdcard/img_tmp/" + roi->param->roiName + "_org.jpg"));
             }
 
-            roi->imageRoi->resizeImage(modelxsize, modelysize, roi->imageRoiResized);
+            roi->imageRoi->resizeImage(modelWidth, modelHeight, roi->imageRoiResized);
 
             if (saveAllFiles) {
                 roi->imageRoiResized->saveToFile(formatFileName("/sdcard/img_tmp/" + roi->param->roiName + ".jpg"));
@@ -207,282 +172,220 @@ bool ClassFlowCNNGeneral::doAlignAndCut(std::string time)
 
 bool ClassFlowCNNGeneral::resolveNetworkParameter()
 {
-    if (!tflite->LoadModel(formatFileName(cnnmodelfile))) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load model: " + cnnmodelfile);
-        LogFile.writeHeapInfo("getNetworkParameter-LoadModel");
+    if (!tflite->loadModel(formatFileName(cnnModelFile))) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Failed to load model: " + cnnModelFile);
+        LogFile.writeHeapInfo("resolveNetworkParameter-LoadModel");
         return false;
     }
 
-    if (!tflite->MakeAllocate()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLITE: Allocation of tensors failed");
-        LogFile.writeHeapInfo("getNetworkParameter-MakeAllocate");
+    if (!tflite->makeAllocate()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Allocation of tensors failed");
+        LogFile.writeHeapInfo("resolveNetworkParameter-MakeAllocate");
         return false;
     }
 
     if (cnnType == CNNTYPE_AUTODETECT) {
-        if (tflite->GetInputDimension(false)) {
-            modelxsize = tflite->ReadInputDimenstion(0);
-            modelysize = tflite->ReadInputDimenstion(1);
-            modelchannel = tflite->ReadInputDimenstion(2);
-        }
-        else {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load input dimensions");
+        if (!tflite->parseInputDimension()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Failed to parse input dimensions from model");
             return false;
         }
-        int _anzoutputdimensions = tflite->GetAnzOutPut();
-        switch (_anzoutputdimensions) {
-            case -1:
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLITE: Failed to load output dimensions");
-                return false;
+
+        modelWidth = tflite->getInputDimension(0);
+        modelHeight = tflite->getInputDimension(1);
+        modelChannel = tflite->getInputDimension(2);
+
+        int outputDims = tflite->getOutputDimension();
+        if (outputDims == -1) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Failed to load output dimensions");
+            return false;
+        }
+
+        switch (outputDims) {
             case 2:
                 cnnType = CNNTYPE_ANALOG_CONT;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CNN-Type: Analog - Cont");
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Analog (ana-cont)");
                 break;
+
             case 10:
                 cnnType = CNNTYPE_DIGIT_DOUBLE_HYBRID10;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CNN-Type: Digit - DoubleHyprid10");
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Digit (dig-cont)");
                 break;
+
             case 11:
                 cnnType = CNNTYPE_DIGIT_CLASS11;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CNN-Type: Digit - Class11");
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Digit (dig-class11)");
                 break;
+
             case 100:
-                if (modelxsize == 32 && modelysize == 32) {
-                    cnnType = CNNTYPE_ANALOG_CLASS100;
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CNN-Type: Analog - Class100");
-                }
-                else {
-                    cnnType = CNNTYPE_DIGIT_CLASS100;
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CNN-Type: Digit - Class100");
-                }
+                cnnType = (modelWidth == 32 && modelHeight == 32) ? CNNTYPE_ANALOG_CLASS100 : CNNTYPE_DIGIT_CLASS100;
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                    "Type: " + std::string((cnnType == CNNTYPE_ANALOG_CLASS100) ? "Analog (ana-class100)"
+                                                                                                : "Digit (dig-class100)"));
                 break;
+
             default:
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "CNN-Type does not fit the firmware (output_dimension=" + std::to_string(_anzoutputdimensions) + ")");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Type does not fit the firmware (outputDims=" + std::to_string(outputDims) + ")");
                 return false;
         }
     }
 
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Network parameter loaded: " + cnnmodelfile);
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Network parameter loaded: " + cnnModelFile);
 
-    tflite->CTfLiteClassDeleteInterpreter();
+    tflite->deleteInterpreter();
 
     return true;
 }
 
 
-bool ClassFlowCNNGeneral::doNeuralNetwork(std::string time)
+bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
 {
-    std::string logPath = createLogFolder(time);
+    const std::string logPath = createLogFolder(time);
 
-    if (!tflite->MakeAllocate()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Allocation of TFLITE tensors failed");
-        LogFile.writeHeapInfo("doNeuralNetwork-MakeAllocate");
+    if (!tflite->makeAllocate()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Allocation of TFLite tensors failed");
+        LogFile.writeHeapInfo("invokeCnn-MakeAllocate");
         return false;
     }
 
-    for (auto &sequence : sequenceDataInternal) {
+    for (const auto &sequence : sequenceData) {
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Processing number sequence: " + sequence->sequenceName);
-        for (auto &roi : sequence->roiData) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + roi->param->roiName);
+
+        const auto &roiList = sectionDigitPtr ? sequence->digitRoi : sequence->analogRoi;
+
+        for (const auto &roi : roiList) {
+            const std::string &roiName = roi->param->roiName;
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + roiName);
+
+            bool success = false;
+            std::string modelTypeMsg;
+            int logImageResult = 0;
 
             switch (cnnType) {
-                case CNNTYPE_DIGIT_CLASS11: { // for models dig-class11*
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Digit (dig-class11)");
+                case CNNTYPE_DIGIT_CLASS100:    // Models dig-class100*
+                case CNNTYPE_ANALOG_CLASS100: { // Models ana-class100*
+                    modelTypeMsg = "Type: " +
+                                   std::string(cnnType == CNNTYPE_DIGIT_CLASS100 ? "Digit (dig-class100)" : "Analog (ana-class100)");
+                    success = tflite->loadInputImage(roi->imageRoiResized) && tflite->invoke();
 
-                    roi->CNNResult = tflite->GetClassFromImageBasis(roi->imageRoiResized); // 0-9 + 10 => NaN
+                    if (!success) {
+                        break;
+                    }
 
-                    if (roi->CNNResult == 10) {
-                        roi->sCNNResult = "N";
+                    int num = tflite->getOutClassification();
+                    roi->CNNResult = roi->param->ccw ? (100 - num) % 100 : num;
+                    roi->CNNResult = std::clamp(roi->CNNResult, 0, 99);
+                    roi->sCNNResult = to_stringWithPrecision(roi->CNNResult / 10.0, 1);
+                    logImageResult = roi->CNNResult;
+                    break;
+                }
+
+                case CNNTYPE_DIGIT_DOUBLE_HYBRID10: { // Models dig-cont*
+                    modelTypeMsg = "Type: Digit (dig-cont)";
+                    success = tflite->loadInputImage(roi->imageRoiResized) && tflite->invoke();
+
+                    if (!success) {
+                        break;
+                    }
+
+                    int num = tflite->getOutClassification(0, 9);
+                    int numplus = (num + 1) % 10;
+                    int numminus = (num + 9) % 10;
+
+                    float val = tflite->getOutputValue(num);
+                    float valplus = tflite->getOutputValue(numplus);
+                    float valminus = tflite->getOutputValue(numminus);
+
+                    float result = num;
+                    float fit;
+
+                    if (valplus > valminus) {
+                        result += valplus / (val + valplus);
+                        fit = val + valplus;
                     }
                     else {
-                        roi->sCNNResult = std::to_string(roi->CNNResult);
+                        result -= valminus / (val + valminus);
+                        fit = val + valminus;
                     }
 
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Result: " + roi->sCNNResult);
-
-                    if (saveImagesEnabled) {
-                        logImage(logPath, roi->param->roiName, CNNTYPE_DIGIT_CLASS11, roi->CNNResult, time, roi->imageRoi);
-                    }
-                } break;
-
-                case CNNTYPE_DIGIT_DOUBLE_HYBRID10: { // for models dig-cont*
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Digit (dig-cont)");
-
-                    int LogImageResult;
-                    int _num, _numplus, _numminus;
-                    float _val, _valplus, _valminus, _fit;
-
-                    if (tflite->LoadInputImageBasis(roi->imageRoiResized)) {
-                        tflite->Invoke();
-                        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Invoke done");
-                    }
-                    else {
-                        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invoke aborted");
-                        return false;
-                    }
-
-                    _num = tflite->GetOutClassification(0, 9);
-                    _numplus = (_num + 1) % 10;
-                    _numminus = (_num - 1 + 10) % 10;
-
-                    _val = tflite->GetOutputValue(_num);
-                    _valplus = tflite->GetOutputValue(_numplus);
-                    _valminus = tflite->GetOutputValue(_numminus);
-
-                    float result = _num;
-
-                    if (_valplus > _valminus) {
-                        result = result + _valplus / (_valplus + _val);
-                        _fit = _val + _valplus;
-                    }
-                    else {
-                        result = result - _valminus / (_val + _valminus);
-                        _fit = _val + _valminus;
-                    }
-
-                    if (result >= 10) {
-                        result = result - 10;
-                    }
-                    if (result < 0) {
-                        result = result + 10;
-                    }
-
-                    roi->CNNResult = result * 10.0; //  result normalized to 0-99
-
-                    if (roi->CNNResult < 0) {
-                        roi->CNNResult = 0;
-                    }
-                    else if (roi->CNNResult >= 100) {
-                        roi->CNNResult = 99;
-                    }
-
+                    result = fmod(result + 10, 10); // Normalize
+                    roi->CNNResult = (int)std::clamp(result * 10.0f, 0.0f, 99.0f);
                     roi->sCNNResult = to_stringWithPrecision(roi->CNNResult / 10.0, 1);
 
-                    /*std::string zw = "num (p, m): " + std::to_string(_num) + " (" + std::to_string(_numplus) + " , " +
-                    std::to_string(_numminus) + "), val (p, m): " + std::to_string(_val) + " (" + std::to_string(_valplus) + " , " +
-                    std::to_string(_valminus) + "), result: " + roi->sCNNResult + ", fit: " + std::to_string(_fit);
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, zw);
-                    */
+                    roi->isRejected = (fit < cnnGoodThreshold);
+                    logImageResult = roi->isRejected ? -roi->CNNResult : roi->CNNResult;
 
-                    if (_fit < CNNGoodThreshold) {
-                        roi->isRejected = true;
-                        LogImageResult = -1 *
-                                         roi->CNNResult; // In case fit is not sufficient, the result should still be saved with "-x.y".
-                        std::string zw = "Result rejected - bad fit (Fit: " + std::to_string(_fit) +
-                                         ", Threshold: " + std::to_string(CNNGoodThreshold) + ")";
-                        LogFile.writeToFile(ESP_LOG_WARN, TAG, zw);
-                    }
-                    else {
-                        roi->isRejected = false;
-                        LogImageResult = roi->CNNResult;
+#ifdef DEBUG_DETAIL_ON
+                    std::string logData = "num (p, m): " + std::to_string(num) + " (" + std::to_string(numplus) + " , " +
+                                          std::to_string(numminus) + "), val (p, m): " + std::to_string(val) + " (" +
+                                          std::to_string(valplus) + " , " + std::to_string(valminus) + "), result: " + roi->sCNNResult +
+                                          ", fit: " + std::to_string(fit);
+                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, logData);
+#endif
+
+                    if (roi->isRejected) {
+                        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                                            "Result rejected - bad fit (Fit: " + std::to_string(fit) +
+                                                ", Threshold: " + std::to_string(cnnGoodThreshold) + ")");
                     }
 
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Result: " + roi->sCNNResult);
+                    break;
+                }
 
-                    if (saveImagesEnabled) {
-                        logImage(logPath, roi->param->roiName, CNNTYPE_DIGIT_DOUBLE_HYBRID10, LogImageResult, time, roi->imageRoi);
-                    }
-                } break;
+                case CNNTYPE_ANALOG_CONT: { // Models ana-cont*
+                    modelTypeMsg = "Type: Analog (ana-cont)";
+                    success = tflite->loadInputImage(roi->imageRoiResized) && tflite->invoke();
 
-                case CNNTYPE_ANALOG_CLASS100:  // for models ana-class100*
-                case CNNTYPE_DIGIT_CLASS100: { // for models dig-class100*
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Analog / Digit (ana-class100 / dig-class100)");
-
-                    if (tflite->LoadInputImageBasis(roi->imageRoiResized)) {
-                        tflite->Invoke();
-                        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Invoke done");
-                    }
-                    else {
-                        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invoke aborted");
-                        return false;
+                    if (!success) {
+                        break;
                     }
 
-                    int _num = tflite->GetOutClassification();
+                    float result = fmod(atan2(tflite->getOutputValue(0), tflite->getOutputValue(1)) / (2 * M_PI) + 2, 1.0f);
+                    float scaled = roi->param->ccw ? 100.0f - result * 100.0f : result * 100.0f;
 
-                    if (roi->param->ccw) {
-                        if (_num == 0) {
-                            roi->CNNResult = 0;
-                        }
-                        else {
-                            roi->CNNResult = 100 - _num;
-                        }
-                    }
-                    else {
-                        roi->CNNResult = _num;
-                    }
-
-                    if (roi->CNNResult < 0) {
-                        roi->CNNResult = 0;
-                    }
-                    else if (roi->CNNResult >= 100) {
-                        roi->CNNResult = 99;
-                    }
-
+                    roi->CNNResult = std::clamp(static_cast<int>(scaled), 0, 99);
                     roi->sCNNResult = to_stringWithPrecision(roi->CNNResult / 10.0, 1);
+                    logImageResult = roi->CNNResult;
+                    break;
+                }
 
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Result: " + roi->sCNNResult);
+                case CNNTYPE_DIGIT_CLASS11: { // Models dig-class11*
+                    modelTypeMsg = "Type: Digit (dig-class11)";
+                    success = tflite->loadInputImage(roi->imageRoiResized) && tflite->invoke();
 
-                    if (saveImagesEnabled) {
-                        logImage(logPath, roi->param->roiName, CNNTYPE_DIGIT_CLASS100, roi->CNNResult, time, roi->imageRoi);
-                    }
-                } break;
-
-                case CNNTYPE_ANALOG_CONT: { // for models ana-cont*
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Analog (ana-cont)");
-
-                    if (tflite->LoadInputImageBasis(roi->imageRoiResized)) {
-                        tflite->Invoke();
-                        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Invoke done");
-                    }
-                    else {
-                        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invoke aborted");
-                        return false;
+                    if (!success) {
+                        break;
                     }
 
-                    float result = fmod(atan2(tflite->GetOutputValue(0), tflite->GetOutputValue(1)) / (M_PI * 2) + 2, 1);
-
-                    if (roi->param->ccw) {
-                        if (result == 0.0) {
-                            roi->CNNResult = 0;
-                        }
-                        else {
-                            roi->CNNResult = 100 - (result * 100); // result normalized to 0-99
-                        }
-                    }
-                    else {
-                        roi->CNNResult = result * 100; // result normalized to 0-99
-                    }
-
-                    if (roi->CNNResult < 0) {
-                        roi->CNNResult = 0;
-                    }
-                    else if (roi->CNNResult >= 100) {
-                        roi->CNNResult = 99;
-                    }
-
-                    roi->sCNNResult = to_stringWithPrecision(roi->CNNResult / 10.0, 1);
-
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Result: " + roi->sCNNResult);
-
-                    if (saveImagesEnabled) {
-                        logImage(logPath, roi->param->roiName, CNNTYPE_ANALOG_CONT, roi->CNNResult, time, roi->imageRoi);
-                    }
-                } break;
+                    roi->CNNResult = tflite->getOutClassification();
+                    roi->sCNNResult = (roi->CNNResult == 10) ? "N" : std::to_string(roi->CNNResult);
+                    logImageResult = roi->CNNResult;
+                    break;
+                }
 
                 default:
                     break;
             }
+
+            if (!success) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invoke aborted");
+                return false;
+            }
+
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, modelTypeMsg);
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Result: " + roi->sCNNResult);
+
+            if (saveImagesEnabled) {
+                logImage(logPath, roiName, cnnType, logImageResult, time, roi->imageRoi);
+            }
         }
     }
 
-    tflite->CTfLiteClassDeleteInterpreter();
-
+    tflite->deleteInterpreter();
     return true;
 }
 
 
-std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePreviousNumber, int resultPreviousNumber)
+std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePreviousNumber, int resultPreviousNumber) const
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                         "getReadout: Number sequence: " + sequence->sequenceName +
@@ -616,7 +519,7 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
 
 
 /* Evaluate analog number pointer */
-int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber)
+int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber) const
 {
     int result = -1;
 
@@ -667,7 +570,7 @@ int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber)
 
 /* Evaluate digit number */
 int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool _isPreviousAnalog,
-                                         int digitalAnalogTransitionStart)
+                                         int digitalAnalogTransitionStart) const
 {
     int result = -1;
     int resultIntergerPart = _value / 10;
@@ -776,7 +679,7 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
 
 /* Evaluate analog to digit number transition */
 int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePreviousNumber, int _resultPreviousNumber,
-                                                     int analogDigitSyncValue)
+                                                     int analogDigitSyncValue) const
 {
     int result = -1;
     int resultIntergerPart = _value / 10;
@@ -830,55 +733,46 @@ int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePrevi
 }
 
 
-bool ClassFlowCNNGeneral::cnnTypeAllowExtendedResolution()
+bool ClassFlowCNNGeneral::cnnTypeAllowExtendedResolution() const
 {
-    if (cnnType == CNNTYPE_DIGIT_CLASS11) {
-        return false;
-    }
-
-    return true;
+    return cnnType != CNNTYPE_DIGIT_CLASS11;
 }
 
 
 void ClassFlowCNNGeneral::drawROI(CImageBasis *image)
 {
-    if (!image->imageOkay()) {
+    if (!image || !image->imageOkay()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawROI: Invalid image");
         return;
     }
 
-    for (int i = 0; const auto &sequence : sequenceDataInternal) {
-        std::array<int, 3> color = {0, 255, 0};
-        if (i == 0) {
-            color = {0, 255, 0}; // Green
-        }
-        else if (i == 1) {
-            color = {0, 0, 255}; // Blue
-        }
-        else if (i == 2) {
-            color = {0, 255, 255}; // Cyan
-        }
-        else if (i == 3) {
-            color = {255, 0, 255}; // Pink
-        }
-        else if (i == 4) {
-            color = {255, 255, 0}; // Yellow
-        }
+    static const std::vector<std::array<int, 3>> colors = {
+        {0, 255, 0},   // Green
+        {0, 0, 255},   // Blue
+        {0, 255, 255}, // Cyan
+        {255, 0, 255}, // Pink
+        {255, 255, 0}  // Yellow
+    };
 
-        for (const auto &roi : sequence->roiData) {
-            if (cnnType == CNNTYPE_ANALOG_CONT || cnnType == CNNTYPE_ANALOG_CLASS100) {
-                // image->drawRect(roi->param->x, roi->param->y, roi->param->dx, roi->param->dy, color[0], color[1], color[2], 1);
-                image->drawEllipse((int)(roi->param->x + roi->param->dx / 2), (int)(roi->param->y + roi->param->dy / 2),
-                                   (int)(roi->param->dx / 2), (int)(roi->param->dy / 2), color[0], color[1], color[2], 2);
-                image->drawLine((int)(roi->param->x + roi->param->dx / 2), (int)roi->param->y, (int)(roi->param->x + roi->param->dx / 2),
-                                (int)(roi->param->y + roi->param->dy), color[0], color[1], color[2], 2);
-                image->drawLine((int)roi->param->x, (int)(roi->param->y + roi->param->dy / 2), (int)roi->param->x + roi->param->dx,
-                                (int)(roi->param->y + roi->param->dy / 2), color[0], color[1], color[2], 2);
+    int colorIndex = 0;
+    for (const auto &sequence : sequenceData) {
+        const auto &roiList = sectionDigitPtr ? sequence->digitRoi : sequence->analogRoi;
+        const auto &color = colors[colorIndex % colors.size()];
+
+        for (const auto &roi : roiList) {
+            if (cnnType == CNNTYPE_ANALOG_CLASS100 || cnnType == CNNTYPE_ANALOG_CONT) {
+                image->drawEllipse(roi->param->x + roi->param->dx / 2, roi->param->y + roi->param->dy / 2, roi->param->dx / 2,
+                                   roi->param->dy / 2, color[0], color[1], color[2], 2);
+                image->drawLine(roi->param->x + roi->param->dx / 2, roi->param->y, roi->param->x + roi->param->dx / 2,
+                                roi->param->y + roi->param->dy, color[0], color[1], color[2], 2);
+                image->drawLine(roi->param->x, roi->param->y + roi->param->dy / 2, roi->param->x + roi->param->dx,
+                                roi->param->y + roi->param->dy / 2, color[0], color[1], color[2], 2);
             }
             else {
                 image->drawRect(roi->param->x, roi->param->y, roi->param->dx, roi->param->dy, color[0], color[1], color[2], 2);
             }
         }
-        i++;
+        colorIndex++;
     }
 }
 
@@ -886,19 +780,19 @@ void ClassFlowCNNGeneral::drawROI(CImageBasis *image)
 ClassFlowCNNGeneral::~ClassFlowCNNGeneral()
 {
     delete tflite;
-    tflite = NULL;
+    tflite = nullptr;
 
-    for (auto &sequence : sequenceDataInternal) {
-        for (auto &roi : sequence->roiData) {
+    for (const auto &sequence : sequenceData) {
+        auto &roiList = sectionDigitPtr ? sequence->digitRoi : sequence->analogRoi;
+
+        for (auto &roi : roiList) {
             delete roi->imageRoiResized;
-            roi->imageRoiResized = NULL;
             delete roi->imageRoi;
-            roi->imageRoi = NULL;
+            roi->imageRoiResized = nullptr;
+            roi->imageRoi = nullptr;
         }
-        sequence->roiData.clear();
-        std::vector<RoiData *>().swap(sequence->roiData); // Ensure that memory gets freed (instead using shrink_to_fit())
-    }
 
-    sequenceDataInternal.clear();
-    std::vector<SequenceDataInternal *>().swap(sequenceDataInternal); // Ensure that memory gets freed (instead using shrink_to_fit())
+        roiList.clear();
+        std::vector<RoiData *>().swap(roiList); // Force deallocation
+    }
 }

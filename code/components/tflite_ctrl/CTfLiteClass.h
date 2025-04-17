@@ -2,8 +2,8 @@
 #define CTFLITECLASS_H
 
 #include <tensorflow/lite/micro/micro_mutable_op_resolver.h>
-#include "tensorflow/lite/micro/micro_interpreter.h"
-#include "tensorflow/lite/schema/schema_generated.h"
+#include <tensorflow/lite/micro/micro_interpreter.h>
+#include <tensorflow/lite/schema/schema_generated.h>
 
 #include "CImageBasis.h"
 
@@ -11,37 +11,36 @@ class CTfLiteClass
 {
   protected:
     tflite::MicroMutableOpResolver<10> microOpResolver;
+    uint8_t *modelFile = nullptr;
     const tflite::Model *model;
-    tflite::MicroInterpreter *interpreter;
+    int kTensorArenaSize = 0;
+    uint8_t *tensorArena = nullptr;
+    tflite::MicroInterpreter *interpreter = nullptr;
     TfLiteTensor *output = nullptr;
-    int kTensorArenaSize;
-    uint8_t *tensor_arena;
-    unsigned char *modelfile = NULL;
 
-    float *input;
-    int input_i;
-    int im_height, im_width, im_channel;
+    int imHeight = 0;
+    int imWidth = 0;
+    int imChannel = 0;
 
-    bool ReadFileToModel(std::string _fn);
-    void LoadOpResolver(void);
+    bool readFileToModel(const std::string &fileName);
+    void loadOpResolver(void);
 
   public:
     CTfLiteClass();
     ~CTfLiteClass();
-    void CTfLiteClassDeleteInterpreter();
-    bool LoadModel(std::string _fn);
-    bool MakeAllocate();
-    void GetInputTensorSize();
-    bool LoadInputImageBasis(CImageBasis *rs);
-    void Invoke();
-    int GetAnzOutPut(bool silent = true);
-    int GetOutClassification(int _von = -1, int _bis = -1);
+    void deleteInterpreter();
 
-    int GetClassFromImageBasis(CImageBasis *rs);
+    bool makeAllocate();
+    bool loadModel(const std::string &fileName);
+    bool loadInputImage(CImageBasis *image);
+    bool invoke();
 
-    float GetOutputValue(int nr);
-    bool GetInputDimension(bool silent);
-    int ReadInputDimenstion(int _dim);
+    bool parseInputDimension();
+    int getInputDimension(int dim) const;
+
+    int getOutputDimension() const;
+    int getOutClassification(int from = -1, int to = -1) const;
+    float getOutputValue(int index) const;
 };
 
 #endif // CTFLITECLASS_H

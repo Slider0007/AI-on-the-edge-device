@@ -2,7 +2,7 @@
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Operation Mode | [sequence].maxratechecktype
+| Parameter Name    | Operation Mode      | opmode
 | Default Value     | `Automatic`         | `1`
 | Input Options     | `Setup`<br>`Manual`<br>`Automatic` | `-1`<br>`0`<br>`1`
 
