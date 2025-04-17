@@ -2,6 +2,8 @@
 #include "../../include/defines.h"
 
 #include <stdio.h>
+#include <algorithm>
+#include <cctype>
 #include <sys/param.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>
@@ -25,18 +27,18 @@ extern "C" {
 
 static const char *TAG = "SERVER_HELP";
 
-
+// Check file type (file extention, case-insensitive)
 bool endsWith(std::string const &str, std::string const &suffix)
 {
     if (str.length() < suffix.length()) {
         return false;
     }
-    return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
+
+    return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin(), [](char a, char b) { return std::tolower(a) == std::tolower(b); });
 }
 
 
-/* Copies the full path into destination buffer and returns
- * pointer to path (skipping the preceding base path) */
+// Copies the full path into destination buffer and returns pointer to path (skipping the preceding base path)
 const char *getPathFromUri(char *dest, const char *basePath, const char *uri, size_t destsize)
 {
     const size_t basePathLength = strlen(basePath);
@@ -65,7 +67,7 @@ const char *getPathFromUri(char *dest, const char *basePath, const char *uri, si
 }
 
 
-/* Set HTTP response content type according to file extension */
+// Set HTTP response content type according to file extension
 esp_err_t setContentTypeFromFile(httpd_req_t *req, const char *filename)
 {
     if (IS_FILE_EXT(filename, ".pdf")) {

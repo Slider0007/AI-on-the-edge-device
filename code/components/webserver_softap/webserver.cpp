@@ -567,88 +567,56 @@ esp_err_t handler_get_info(httpd_req_t *req)
 
 esp_err_t handler_img_tmp(httpd_req_t *req)
 {
-    char filepath[50];
-    ESP_LOGD(TAG, "uri: %s", req->uri);
+    // Extract the file name from the URI after the '/img_tmp/' prefix
+    std::string fileName = std::string(req->uri).substr(strlen("/img_tmp/"));
 
-    char *basePath = (char *)((struct HttpServerData *)req->user_ctx)->basePathRoot;
-    std::string filetosend(basePath);
-
-    const char *filename = getPathFromUri(filepath, basePath, req->uri + sizeof("/img_tmp/") - 1, sizeof(filepath));
-    ESP_LOGD(TAG, "1 uri: %s, filename: %s, filepath: %s", req->uri, filename, filepath);
-
-    filetosend = filetosend + "/img_tmp/" + std::string(filename);
-    ESP_LOGD(TAG, "File to upload: %s", filetosend.c_str());
-
-    esp_err_t res = sendFile(req, filetosend);
-    if (res != ESP_OK) {
-        return res;
+    int pos = fileName.find("?");
+    if (pos != std::string::npos) {
+        fileName = fileName.substr(0, pos);
     }
 
-    /* Respond with an empty chunk to signal HTTP response completion */
-    httpd_resp_send_chunk(req, NULL, 0);
-    return ESP_OK;
-}
-
-
-esp_err_t handler_img_tmp_virtual(httpd_req_t *req)
-{
-    char filepath[50];
-
-    ESP_LOGD(TAG, "uri: %s", req->uri);
-
-    char *basePath = (char *)((struct HttpServerData *)req->user_ctx)->basePathRoot;
-    std::string filetosend(basePath);
-
-    const char *filename = getPathFromUri(filepath, basePath, req->uri + sizeof("/img_tmp/") - 1, sizeof(filepath));
-    ESP_LOGD(TAG, "1 uri: %s, filename: %s, filepath: %s", req->uri, filename, filepath);
-
-    filetosend = std::string(filename);
-    ESP_LOGD(TAG, "File to upload: %s", filetosend.c_str());
-
-    // Serve raw.jpg
-    if (filetosend == "raw.jpg") {
-        return flowctrl.sendRawJPG(req);
+    // Requesting raw.jpg, respond with a newly captured image
+    if (fileName == "raw.jpg") {
+        return cameraCtrl.captureToHTTP(req);
     }
 
-    // Serve alg.jpg, alg_roi.jpg or digit and analog ROIs
-    return flowctrl.getJPGStream(filetosend, req);
-
-    // File was not served already --> serve with img_tmp_handler
-    return handler_img_tmp(req);
+    // Serve process-related images (process state images, alg.jpg, alg_roi.jpg, ROIs)
+    return flowctrl.getJPGStream(fileName, req);
 }
 
 
 esp_err_t handler_main(httpd_req_t *req)
 {
-    char filepath[50];
-    char *basePath = (char *)((struct HttpServerData *)req->user_ctx)->basePathRoot;
-    std::string filetosend(basePath);
+    if (req->uri[0] == '\0') {
+        return httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid URI");
+    }
 
-    const char *filename = getPathFromUri(filepath, basePath, req->uri - 1, sizeof(filepath));
-    ESP_LOGD(TAG, "uri: %s, filename: %s, filepath: %s", req->uri, filename, filepath);
+    const std::string basePath = ((struct HttpServerData *)req->user_ctx)->basePathRoot;
+    std::string filepath = basePath;
 
-    if ((strcmp(req->uri, "/") == 0)) {
-        filetosend = filetosend + "/html/index.html";
+    if (strcmp(req->uri, "/") == 0) {
+        filepath.append("/html/index.html");
     }
     else {
-        filetosend += "/html" + std::string(req->uri);
-        int pos = filetosend.find("?");
-        if (pos != std::string::npos) {
-            filetosend = filetosend.substr(0, pos);
+        filepath.append("/html").append(req->uri);
+
+        // Remove query part from URI if present
+        size_t queryPos = filepath.find('?');
+        if (queryPos != std::string::npos) {
+            filepath = filepath.substr(0, queryPos);
         }
     }
 
-    if (filetosend == "/sdcard/html/index.html") {
-        // Check basic device initialization status:
-        // If critical error(s) occured which do not allow to start regular process and web interface, redirect to a reduced web interface
+    if (filepath == "/sdcard/html/index.html") {
+        // Check if critical errors prevent normal operation
         if (isSetSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD) || isSetSystemStatusFlag(SYSTEM_STATUS_HEAP_TOO_SMALL) ||
             isSetSystemStatusFlag(SYSTEM_STATUS_SDCARD_CHECK_BAD) || isSetSystemStatusFlag(SYSTEM_STATUS_FOLDER_CHECK_BAD)) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Critical error(s) occured, redirect to reduced web interface");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Critical error(s) occurred, redirect to reduced web interface");
 
-            char buf[20];
-            std::string message = "<h1>AI on the Edge</h1><b>Critical error(s) occured, which do not allow to start regular process and "
+            std::string message = "<h1>AI on the Edge</h1><b>Critical error(s) occurred, which do not allow to start regular process and "
                                   "web interface:</b><br>";
 
+            char buf[20];
             for (int i = 0; i < 32; i++) {
                 if (isSetSystemStatusFlag((SystemStatusFlag_t)(1 << i))) {
                     snprintf(buf, sizeof(buf), "0x%08X", 1 << i);
@@ -666,23 +634,13 @@ esp_err_t handler_main(httpd_req_t *req)
             httpd_resp_send(req, message.c_str(), message.length());
             return ESP_OK;
         }
-        else if (flowctrl.getStatusSetupModus()) {
+        else if (flowctrl.getStatusSetupModus()) { // If in setup mode, redirect to setup page
             ESP_LOGD(TAG, "System is in setup mode. Redirect from index.html --> setup.html");
-            filetosend = "/sdcard/html/setup.html";
+            filepath = "/sdcard/html/setup.html";
         }
     }
 
-    ESP_LOGD(TAG, "Filename: %s", filename);
-    ESP_LOGD(TAG, "File requested: %s", filetosend.c_str());
-
-    if (!filename) {
-        ESP_LOGE(TAG, "Filename is too long");
-        /* Respond with 414 Error */
-        httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "Filename too long");
-        return ESP_FAIL;
-    }
-
-    return sendFile(req, filetosend);
+    return sendFile(req, filepath);
 }
 
 
@@ -738,7 +696,7 @@ void registerWebserverUri(httpd_handle_t server, const char *basePath)
     httpd_register_uri_handler(server, &camuri);
 
     camuri.uri = "/img_tmp/*";
-    camuri.handler = HTTP_AUTH_BASIC(handler_img_tmp_virtual);
+    camuri.handler = HTTP_AUTH_BASIC(handler_img_tmp);
     camuri.user_ctx = httpServerData; // Pass server data as context
     httpd_register_uri_handler(server, &camuri);
 
