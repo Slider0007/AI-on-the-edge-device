@@ -175,17 +175,43 @@
 #define MQTT_QOS                    1
 
 
-// CImageBasis
+// CImage
 //******************************
-#define HTTP_BUFFER_SENT 1024
-#define MAX_JPG_SIZE 128000
+#define IMAGE_COLOR_DEFAULT 255
+#define IMAGE_COLOR_OUT_OF_BOUND 250
+#define IMAGE_JPG_DEFAULT_QUALITY 90
+#define IMAGE_JPG_MAX_SIZE 192000
 
-//make_stb + stb_image_resize + stb_image_write + stb_image //do not work if not in make_stb.cpp
-//#define STB_IMAGE_IMPLEMENTATION
-//#define STB_IMAGE_WRITE_IMPLEMENTATION
-//#define STB_IMAGE_RESIZE_IMPLEMENTATION
-#define STBI_ONLY_JPEG // (save 2% of Flash, but breaks the alignment mark generation, see
-                       // https://github.com/jomjol/AI-on-the-edge-device/issues/1721)
+
+// CImageMod
+//******************************
+#define MODE_BILINEAR 1 // Bilinear interpolation (https://en.wikipedia.org/wiki/Bilinear_interpolation)
+#define MODE_NEAREST  2 // Nearest-neighbor interpolation (https://en.wikipedia.org/wiki/Nearest-neighbor_interpolation)
+
+// Image rotation
+#define ROTATE_MODE MODE_BILINEAR
+
+#ifndef ROTATE_MODE
+    #error "You must define ROTATE_MODE to either MODE_BILINEAR or MODE_NEAREST"
+#endif
+#if ROTATE_MODE != MODE_BILINEAR && ROTATE_MODE != MODE_NEAREST
+    #error "Invalid ROTATE_MODE: Must be MODE_BILINEAR or MODE_NEAREST"
+#endif
+
+// Image translation
+#define TRANSLATE_MODE MODE_NEAREST
+
+#ifndef TRANSLATE_MODE
+    #error "You must define TRANSLATE_MODE to either MODE_BILINEAR or MODE_NEAREST"
+#endif
+#if TRANSLATE_MODE != MODE_BILINEAR && TRANSLATE_MODE != MODE_NEAREST
+    #error "Invalid TRANSLATE_MODE: Must be MODE_BILINEAR or MODE_NEAREST"
+#endif
+
+
+// CImageTplMatch
+//******************************
+#define ANGLE_DEVIATION_THRESHOLD (45.0f) // Alignment correction angle limit
 
 
 // interface_influxdbv1 + interface_influxdbv2 + webhook

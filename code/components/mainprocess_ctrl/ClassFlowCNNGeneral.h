@@ -15,7 +15,6 @@ class ClassFlowCNNGeneral : public ClassLogImage
     const CfgData::SectionDigit *sectionDigitPtr = nullptr;
     const CfgData::SectionAnalog *sectionAnalogPtr = nullptr;
 
-    ClassFlowAlignment *flowAlignment = nullptr;
     std::string cnnName;
     CNNType cnnType;
 
@@ -38,7 +37,7 @@ class ClassFlowCNNGeneral : public ClassLogImage
     bool doInvokeCnn(const std::string time);
 
   public:
-    ClassFlowCNNGeneral(ClassFlowAlignment *_flowAlignment, std::string _cnnName, CNNType _cnnType = CNNTYPE_AUTODETECT);
+    ClassFlowCNNGeneral(std::string _cnnName, CNNType _cnnType = CNNTYPE_AUTODETECT);
     virtual ~ClassFlowCNNGeneral();
 
     bool loadParameter();
@@ -47,7 +46,7 @@ class ClassFlowCNNGeneral : public ClassLogImage
 
     std::string getReadout(SequenceData *sequence, int _valuePreviousNumber = -1, int _resultPreviousNumber = -1) const;
 
-    void drawROI(CImageBasis *image);
+    void drawROI(CImage &image);
 
     CNNType getCNNType() const { return cnnType; };
     bool cnnTypeAllowExtendedResolution() const;

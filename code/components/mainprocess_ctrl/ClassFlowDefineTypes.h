@@ -4,7 +4,8 @@
 #include <vector>
 
 #include "cfgDataStruct.h"
-#include "CImageBasis.h"
+#include "CImage.h"
+#include "CImageJpg.h"
 
 
 enum CNNType {
@@ -18,12 +19,21 @@ enum CNNType {
 };
 
 
+struct FlowImageData {
+    CImage *imgProcess = nullptr;
+    CImageJpg *imgVisu = nullptr;
+};
+
+
 struct AlignmentMarker {
-    CImageBasis *markerImage = NULL;
+    CImage *markerImage = nullptr;
     std::string markerImageFilename;
     std::string errorMsg = "";
-    int alignmentAlgo = ALIGNALGO_DEFAULT; // 0 = "Default" (nur R-Kanal), 1 = "HighAccuracy" (RGB-Kanal),
-                                           // 2 = "Fast" (1.x RGB, dann isSimilar), 3= "only initial rotation", 4 = "off"
+    int alignmentAlgo = ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH; // 0 = Rotate + Align SAD, 1CH (only R)
+                                                            // 1 = Rotate + Align SAD, 3CH (RGB)
+                                                            // 2 = Rotate + Align Similarity (Check for similarity, fallback SAD 1CH)
+                                                            // 3 = Only initial rotation angle, no template match
+                                                            // 4 = Alignment Off
     int targetX = 0;
     int targetY = 0;
     int width = 0;
@@ -32,16 +42,16 @@ struct AlignmentMarker {
     int foundY = 0;
     int searchX = 0;
     int searchY = 0;
-    int algoFastX = 0;
-    int algoFastY = 0;
-    int algoFastSADThreshold = 0;
+    int similarityCheckX = 0;
+    int similarityCheckY = 0;
+    int similarityCheckSADThreshold = 0;
 };
 
 
 struct RoiData { // ROI
-    const struct RoiElement *param = NULL;
-    CImageBasis *imageRoi = NULL;
-    CImageBasis *imageRoiResized = NULL;
+    const struct RoiElement *param = nullptr;
+    CImage *imageRoi = nullptr;
+    CImage *imageRoiResized = nullptr;
     bool isRejected = false;       // Only used for dig-cont models
     int CNNResult = -10;           // Normalized to 0-99 (exception for class11: 0-10: 0-9+NaN), default: negative number equal to "-1.0"
     std::string sCNNResult = "-1"; // Result clamped and converted to string for visualization purpose
@@ -78,9 +88,9 @@ struct SequenceData {
     std::string sFallbackValue = "";      // Fallback value, equal to last valid reading (legacy name: prevalue)
     std::string sValueStatus = "";        // Value status
 
-    const struct PostProcessingPerSequence *paramPostProc = NULL;
-    const struct InfluxDBPerSequence *paramInfluxDBv1 = NULL;
-    const struct InfluxDBPerSequence *paramInfluxDBv2 = NULL;
+    const struct PostProcessingPerSequence *paramPostProc = nullptr;
+    const struct InfluxDBPerSequence *paramInfluxDBv1 = nullptr;
+    const struct InfluxDBPerSequence *paramInfluxDBv2 = nullptr;
 };
 
 #endif // CLASSFLOWDEFINETYPES_H

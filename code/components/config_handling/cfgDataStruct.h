@@ -32,9 +32,9 @@ enum TlsServerCertVerification {
 
 
 enum AlignmentAlgo {
-    ALIGNALGO_DEFAULT = 0,
-    ALIGNALGO_HIGH_ACCURACY = 1,
-    ALIGNALGO_FAST = 2,
+    ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH = 0,
+    ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH = 1,
+    ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR = 2,
     ALIGNALGO_ROTATION_ONLY = 3,
     ALIGNALGO_OFF = 4,
 };
@@ -243,7 +243,7 @@ struct CfgData {
 
     // Image Alignment
     struct SectionImageAlignment {
-        int alignmentAlgo = ALIGNALGO_DEFAULT;
+        int alignmentAlgo = ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH;
         struct SearchField {
             int x = 20;
             int y = 20;

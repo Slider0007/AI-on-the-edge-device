@@ -2,6 +2,6 @@ FILE(GLOB_RECURSE app_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.*)
 
 idf_component_register(SRCS ${app_sources}
                     INCLUDE_DIRS "."
-                    REQUIRES esp-tflite-micro image_handling logfile_handling mainprocess_ctrl misc_helper)
+                    REQUIRES esp_http_server misc_helper logfile_handling fileserver_ota)
 
 

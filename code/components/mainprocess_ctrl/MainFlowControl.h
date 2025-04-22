@@ -6,7 +6,8 @@
 #include <esp_log.h>
 #include <esp_http_server.h>
 
-#include "CImageBasis.h"
+#include "CImage.h"
+#include "CImageMod.h"
 #include "ClassFlowControl.h"
 
 

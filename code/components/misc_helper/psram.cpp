@@ -13,7 +13,9 @@ void *malloc_psram_heap(std::string name, size_t size, uint32_t caps)
 
     ptr = heap_caps_malloc(size, caps);
     if (ptr != NULL) {
+#ifdef DEBUG_DETAIL_ON
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, name + ": Allocated: " + std::to_string(size));
+#endif // DEBUG_DETAIL_ON
     }
     else {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, name + ": Failed to allocate " + std::to_string(size));
@@ -29,7 +31,9 @@ void *remalloc_psram_heap(std::string name, void *p, size_t size, uint32_t caps)
 
     ptr = heap_caps_realloc(p, size, caps);
     if (ptr != NULL) {
+#ifdef DEBUG_DETAIL_ON
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, name + ": Allocated: " + std::to_string(size));
+#endif // DEBUG_DETAIL_ON
     }
     else {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, name + ": Failed to allocate " + std::to_string(size));
@@ -45,7 +49,9 @@ void *malloc_psram_heap_STBI(std::string name, size_t size, uint32_t caps)
 
     if (STBIObjectPSRAM.usePreallocated && STBIObjectPSRAM.PreallocatedMemorySize == size && STBIObjectPSRAM.PreallocatedMemory != NULL) {
         ptr = STBIObjectPSRAM.PreallocatedMemory;
+#ifdef DEBUG_DETAIL_ON
         name += ": Use preallocated memory (" + STBIObjectPSRAM.name + ")";
+#endif // DEBUG_DETAIL_ON
         STBIObjectPSRAM.usePreallocated = false;
     }
     else {
@@ -54,7 +60,9 @@ void *malloc_psram_heap_STBI(std::string name, size_t size, uint32_t caps)
 
 
     if (ptr != NULL) {
+#ifdef DEBUG_DETAIL_ON
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, name + ": Allocated: " + std::to_string(size));
+#endif // DEBUG_DETAIL_ON
     }
     else {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, name + ": Failed to allocate " + std::to_string(size));
@@ -70,7 +78,9 @@ void *calloc_psram_heap(std::string name, size_t n, size_t size, uint32_t caps)
 
     ptr = heap_caps_calloc(n, size, caps);
     if (ptr != NULL) {
+#ifdef DEBUG_DETAIL_ON
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, name + ": Allocated: " + std::to_string(size));
+#endif // DEBUG_DETAIL_ON
     }
     else {
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, name + ": Free memory");
@@ -82,7 +92,9 @@ void *calloc_psram_heap(std::string name, size_t n, size_t size, uint32_t caps)
 
 void free_psram_heap(std::string name, void *ptr)
 {
+#ifdef DEBUG_DETAIL_ON
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, name + ": Free memory");
+#endif // DEBUG_DETAIL_ON
     heap_caps_free(ptr);
 }
 
@@ -94,7 +106,9 @@ void *malloc_psram_heap_cjson(size_t size)
         return (uint8_t *)cJSONObjectPSRAM.preallocatedMemory + cJSONObjectPSRAM.usedMemory - size;
     }
     else {
+#ifdef DEBUG_DETAIL_ON
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "cJSON: Use default region");
+#endif // DEBUG_DETAIL_ON
         cJSONObjectPSRAM.useDefaultAllocation = true;
         return heap_caps_malloc(size, MALLOC_CAP_DEFAULT);
     }

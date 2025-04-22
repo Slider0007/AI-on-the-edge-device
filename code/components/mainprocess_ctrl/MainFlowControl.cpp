@@ -388,20 +388,25 @@ esp_err_t handler_editflow(httpd_req_t *req)
         out = "/sdcard" + out; // --> img_tmp/markerX.jpg
 
         // 4MB RAM external SPIRAM are not sufficient to perform alignment marker update while processing cycle
-        // Reuse allocated memory of CImageBasis element "rawImage" (ClassTakeImage.cpp) and interlock operation at UI level
+        // Reuse allocated memory of CImage element "imgProcess" (ClassTakeImage.cpp) and interlock operation at UI level
         if (taskAutoFlowState >= FLOW_TASK_STATE_IDLE_NO_AUTOSTART && getSPIRAMCategory() == SPIRAMCategory_4MB) {
-            STBIObjectPSRAM.name = "rawImage";
             STBIObjectPSRAM.usePreallocated = true;
-            STBIObjectPSRAM.PreallocatedMemory = flowctrl.getRawImage()->getRgbImage();
-            STBIObjectPSRAM.PreallocatedMemorySize = flowctrl.getRawImage()->getMemsize();
+            STBIObjectPSRAM.name = flowctrl.getFlowImageData()->imgProcess->getName();
+            STBIObjectPSRAM.PreallocatedMemory = flowctrl.getFlowImageData()->imgProcess->getImgData();
+            STBIObjectPSRAM.PreallocatedMemorySize = flowctrl.getFlowImageData()->imgProcess->getAllocSize();
         }
         else {
             STBIObjectPSRAM.usePreallocated = false;
         }
-        // Create element, be aware: CImageBasis of reference.jpg will be created first (921kB RAM needed)
-        CAlignAndCutImage *caic = new CAlignAndCutImage("cutref1", in, STBIObjectPSRAM.usePreallocated);
-        caic->cutAndSaveImage(out, x, y, dx, dy);
-        delete caic;
+        // Create element, be aware: CImage of process image will be created first (921kB RAM required)
+        CImage *img = new CImage("markerSource", in, STBIObjectPSRAM.usePreallocated);
+        CImage *imgCropped = new CImage("markerCropped", dx, dy, STBI_rgb);
+
+        CImageMod::crop(*img, x, y, dx, dy, *imgCropped);
+        imgCropped->saveJpgToFile(out, 100);
+
+        delete imgCropped;
+        delete img;
 
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, "CutImage Done");

@@ -23,6 +23,8 @@ static const char *UNITY_TAG = "UNITYTEST_MAIN";
 // Include files with functions to test
 //*****************************************************************************
 #include "components/config_handling/test_configClass.cpp"
+#include "components/image_handling/test_CImage.cpp"
+#include "components/image_handling/test_CImageJpg.cpp"
 
 #include "components/mainprocess_ctrl/test_cnnflowcontrol.cpp"
 #include "components/mainprocess_ctrl/test_flow_pp_negative.cpp"
@@ -48,6 +50,11 @@ void task_UnityTesting(void *pvParameter)
     ESP_LOGI(UNITY_TAG, "BEGIN TESTING -------------------------------------------------------------");
 
     RUN_TEST(test_configHandling);
+    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
+
+    RUN_TEST(test_CImageHandling);
+    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
+    RUN_TEST(test_CImageJpgHandling);
     ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
 
     RUN_TEST(testNegative);

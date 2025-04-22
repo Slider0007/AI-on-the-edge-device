@@ -9,7 +9,8 @@
 #include "configClass.h"
 #include "helper.h"
 #include "ClassLogFile.h"
-#include "CImageBasis.h"
+#include "CImage.h"
+#include "CImageJpg.h"
 #include "MainFlowControl.h"
 
 
@@ -20,9 +21,7 @@ ClassFlowTakeImage::ClassFlowTakeImage() : ClassLogImage(TAG)
 {
     presetFlowStateHandler(true);
     timeImageTaken = 0;
-    rawImageFilename = "/sdcard/img_tmp/raw.jpg";
-    rawImage = NULL;
-    // Init of ClassLogImage variables --> ClassLogImage.cpp
+    //  Init of ClassLogImage variables --> ClassLogImage.cpp
 }
 
 
@@ -46,15 +45,15 @@ bool ClassFlowTakeImage::loadParameter()
     int imgHeight = 480;
     cameraCtrl.getOutputFrameSize(imgWidth, imgHeight);
 
-    rawImage = new CImageBasis("rawImage");
-    if (rawImage) {
-        if (!rawImage->createEmptyImage(imgWidth, imgHeight, STBI_rgb, 1)) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create rawimage");
-            return false;
-        }
+    flowImageData->imgProcess = new CImage("imgProcess", imgWidth, imgHeight, STBI_rgb, true);
+    if (!flowImageData->imgProcess) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to initialize CImage imgProcess");
+        return false;
     }
-    else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ReadParameter: Can't create CImageBasis for rawImage");
+
+    flowImageData->imgVisu = new CImageJpg("imgVisu", IMAGE_JPG_MAX_SIZE);
+    if (!flowImageData->imgVisu) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to initialize CImageJpg imgVisu");
         return false;
     }
 
@@ -81,11 +80,17 @@ bool ClassFlowTakeImage::doFlow(std::string zwtime)
         return false;
     }
 
+    flowImageData->imgProcess->saveJpgToContainer(flowImageData->imgVisu);
+
+    if (cfgDataPtr->debug.saveAllFiles) {
+        flowImageData->imgVisu->saveJpgToFile("/sdcard/img_tmp/raw.jpg");
+    }
+
 #ifdef DEBUG_DETAIL_ON
     LogFile.writeHeapInfo("ClassFlowTakeImage::doFlow - After takeImage");
 #endif // DEBUG_DETAIL_ON
 
-    logImage(logPath, "raw", CNNTYPE_NONE, -1, zwtime, rawImage);
+    logImage(logPath, "raw", CNNTYPE_NONE, -1, zwtime, flowImageData->imgProcess);
 
     removeOldLogs();
 
@@ -112,61 +117,25 @@ void ClassFlowTakeImage::doPostProcessEventHandling()
 
 bool ClassFlowTakeImage::takeImage()
 {
-    if (rawImage == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "takeImage: rawImage not initialized");
+    if (!flowImageData->imgProcess) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "takeImage: imgProcess not initialized");
         return false;
     }
 
-    if (cameraCtrl.captureToBasisImage(rawImage) != ESP_OK) {
+    if (cameraCtrl.captureToBasisImage(flowImageData->imgProcess) != ESP_OK) {
         return false;
     }
 
     time(&timeImageTaken);
-
-    if (cfgDataPtr->debug.saveAllFiles) {
-        rawImage->saveToFile(rawImageFilename);
-    }
 
     return true;
 }
 
 
-esp_err_t ClassFlowTakeImage::sendRawJPG(httpd_req_t *req)
-{
-    time(&timeImageTaken);
-
-    return cameraCtrl.captureToHTTP(req); // Capture with configured flash time
-}
-
-
-ImageData *ClassFlowTakeImage::sendRawImage()
-{
-    CImageBasis *imgTmp = new CImageBasis("sendRawImage", rawImage);
-    ImageData *id = NULL;
-
-    if (cameraCtrl.captureToBasisImage(rawImage) != ESP_OK) {
-        return NULL;
-    }
-
-    time(&timeImageTaken);
-
-    if (imgTmp != NULL) {
-        id = imgTmp->writeToMemoryAsJPG();
-        delete imgTmp;
-    }
-
-    return id;
-}
-
-
-time_t ClassFlowTakeImage::getTimeImageTaken()
-{
-    return timeImageTaken;
-}
-
-
 ClassFlowTakeImage::~ClassFlowTakeImage()
 {
-    delete rawImage;
     cameraCtrl.freeDemoMemoryOnly();
+
+    delete flowImageData->imgProcess;
+    delete flowImageData->imgVisu;
 }

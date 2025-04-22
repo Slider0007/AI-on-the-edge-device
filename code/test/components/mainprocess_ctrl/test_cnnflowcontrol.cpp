@@ -18,7 +18,7 @@ class UnderTestCNN : public ClassFlowCNNGeneral
  */
 void test_EvalAnalogNumber()
 {
-    UnderTestCNN undertest = UnderTestCNN(nullptr, "analog", CNNTYPE_DIGIT_CLASS100);
+    UnderTestCNN undertest = UnderTestCNN("analog", CNNTYPE_DIGIT_CLASS100);
 
     // the 5.2 is already above 5.0 and the previous digit too (3)
     int result = undertest.evalAnalogNumber(FLOAT_AS_INT(5.2), 3);
@@ -55,7 +55,7 @@ void test_EvalAnalogNumber()
  */
 void test_EvalDigitNumber()
 {
-    UnderTestCNN undertest = UnderTestCNN(nullptr, "digit", CNNTYPE_DIGIT_CLASS100);
+    UnderTestCNN undertest = UnderTestCNN("digit", CNNTYPE_DIGIT_CLASS100);
 
     // the 5.2 and no previous should trunc to 5
     TEST_ASSERT_EQUAL(5, undertest.evalDigitNumber(FLOAT_AS_INT(5.2), 0, -1));

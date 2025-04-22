@@ -23,6 +23,7 @@ extern "C" {
 #include "server_help.h"
 #include "MainFlowControl.h"
 #include "gpioControl.h"
+#include "server_file.h"
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
@@ -35,6 +36,7 @@ static const char *TAG = "FLOWCTRL";
 // #define DEBUG_DETAIL_ON
 
 std::vector<SequenceData *> ClassFlow::sequenceData = {};
+FlowImageData *ClassFlow::flowImageData = new FlowImageData();
 
 
 ClassFlowControl::ClassFlowControl()
@@ -147,7 +149,7 @@ bool ClassFlowControl::initFlow()
     }
 
     if (cfgClassPtr->get()->sectionDigit.enabled) {
-        flowdigit = new ClassFlowCNNGeneral(flowalignment, "Digit");
+        flowdigit = new ClassFlowCNNGeneral("Digit");
         FlowControlImage.push_back(flowdigit);
         if (!flowdigit->loadParameter()) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CNN Digit: Init failed");
@@ -156,7 +158,7 @@ bool ClassFlowControl::initFlow()
     }
 
     if (cfgClassPtr->get()->sectionAnalog.enabled) {
-        flowanalog = new ClassFlowCNNGeneral(flowalignment, "Analog");
+        flowanalog = new ClassFlowCNNGeneral("Analog");
         FlowControlImage.push_back(flowanalog);
         if (!flowanalog->loadParameter()) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CNN Analog: Init failed");
@@ -206,7 +208,7 @@ bool ClassFlowControl::initFlow()
 
 #ifdef ENABLE_WEBHOOK
     if (cfgClassPtr->get()->sectionWebhook.enabled) {
-        flowWebhook = new ClassFlowWebhook(flowalignment);
+        flowWebhook = new ClassFlowWebhook();
         FlowControlPublish.push_back(flowWebhook);
         if (!flowWebhook->loadParameter()) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Webhook: Init failed");
@@ -560,7 +562,7 @@ std::string ClassFlowControl::translateActualProcessState(std::string classname)
 }
 
 
-void ClassFlowControl::drawDigitRoi(CImageBasis *image)
+void ClassFlowControl::drawDigitRoi(CImage &image)
 {
     if (flowdigit) {
         flowdigit->drawROI(image);
@@ -568,7 +570,7 @@ void ClassFlowControl::drawDigitRoi(CImageBasis *image)
 }
 
 
-void ClassFlowControl::drawAnalogRoi(CImageBasis *image)
+void ClassFlowControl::drawAnalogRoi(CImage &image)
 {
     if (flowanalog) {
         flowanalog->drawROI(image);
@@ -682,324 +684,68 @@ bool ClassFlowControl::setFallbackValue(std::string _sequenceName, std::string _
 }
 
 
-CImageBasis *ClassFlowControl::getRawImage()
+esp_err_t ClassFlowControl::sendProcessImages(httpd_req_t *req, const char *filename)
 {
-    if (flowtakeimage) {
-        return flowtakeimage->rawImage;
-    }
-
-    return NULL;
-}
-
-
-esp_err_t ClassFlowControl::sendRawJPG(httpd_req_t *req)
-{
-    if (flowtakeimage) {
-        return flowtakeimage->sendRawJPG(req);
-    }
-    else {
-        return cameraCtrl.captureToHTTP(req);
-    }
-}
-
-
-esp_err_t ClassFlowControl::getJPGStream(std::string _fn, httpd_req_t *req)
-{
-#ifdef DEBUG_DETAIL_ON
-    LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - Start");
-#endif // DEBUG_DETAIL_ON
-
-    CImageBasis *_send = NULL;
-    esp_err_t result = ESP_FAIL;
-    bool _sendDelete = false;
-
-    if (_fn == "alg_roi.jpg") {
+    if (strcmp("alg_roi.jpg", filename) == 0) { // Process state images or aligned image with overlays (ROI)
         if (getTaskAutoFlowState() == FLOW_TASK_STATE_INIT_DELAYED) {
-            FILE *file = fopen("/sdcard/html/flowstate_initialization_delayed.jpg", "rb");
-
-            if (!file) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_initialization_delayed.jpg not found");
-                return ESP_FAIL;
-            }
-
-            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-            setvbuf(file, NULL, _IOFBF, 512);
-
-            fseek(file, 0, SEEK_END);
-            long fileSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
-
-            if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
-                fclose(file);
-                return ESP_FAIL;
-            }
-
-            fread(fileBuffer, fileSize, 1, file);
-            fclose(file);
-
-            httpd_resp_set_type(req, "image/jpeg");
-            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize);
-            free(fileBuffer);
+            return sendFile(req, "/sdcard/html/flowstate_initialization_delayed.jpg", true);
         }
         else if (getTaskAutoFlowState() == FLOW_TASK_STATE_INIT) {
-            FILE *file = fopen("/sdcard/html/flowstate_initialization.jpg", "rb");
-
-            if (!file) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_initialization.jpg not found");
-                return ESP_FAIL;
-            }
-
-            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-            setvbuf(file, NULL, _IOFBF, 512);
-
-            fseek(file, 0, SEEK_END);
-            long fileSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
-
-            if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
-                fclose(file);
-                return ESP_FAIL;
-            }
-
-            fread(fileBuffer, fileSize, 1, file);
-            fclose(file);
-
-            httpd_resp_set_type(req, "image/jpeg");
-            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize);
-            free(fileBuffer);
+            return sendFile(req, "/sdcard/html/flowstate_initialization.jpg", true);
         }
         else if (getTaskAutoFlowState() == FLOW_TASK_STATE_SETUPMODE) {
-            FILE *file = fopen("/sdcard/html/flowstate_setup_mode.jpg", "rb");
-
-            if (!file) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_setup_mode.jpg not found");
-                return ESP_FAIL;
-            }
-
-            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-            setvbuf(file, NULL, _IOFBF, 512);
-
-            fseek(file, 0, SEEK_END);
-            long fileSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
-
-            if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
-                fclose(file);
-                return ESP_FAIL;
-            }
-
-            fread(fileBuffer, fileSize, 1, file);
-            fclose(file);
-
-            httpd_resp_set_type(req, "image/jpeg");
-            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize);
-            free(fileBuffer);
+            return sendFile(req, "/sdcard/html/flowstate_setup_mode.jpg", true);
         }
         // Show only before first cycle started or error occured, otherwise result will be shown till next start
         else if ((getActualProcessState() == std::string(FLOW_IDLE_NO_AUTOSTART) && (flowtakeimage != NULL) &&
                   !flowtakeimage->getFlowState()->getExecuted) ||
                  (getActualProcessState() == std::string(FLOW_TAKE_IMAGE) && !isAutoStart() && flowStateEventOccured())) {
-            FILE *file = fopen("/sdcard/html/flowstate_idle_no_autostart.jpg", "rb");
-
-            if (!file) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_idle_no_autostart.jpg not found");
-                return ESP_FAIL;
-            }
-
-            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-            setvbuf(file, NULL, _IOFBF, 512);
-
-            fseek(file, 0, SEEK_END);
-            long fileSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
-
-            if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
-                fclose(file);
-                return ESP_FAIL;
-            }
-
-            fread(fileBuffer, fileSize, 1, file);
-            fclose(file);
-
-            httpd_resp_set_type(req, "image/jpeg");
-            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize);
-            free(fileBuffer);
-        }
-        else if (getActualProcessState() == std::string(FLOW_TAKE_IMAGE)) {
-            if (flowalignment && flowalignment->AlgROI) {
-                FILE *file = fopen("/sdcard/html/flowstate_take_image.jpg", "rb");
-
-                if (!file) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_take_image.jpg not found");
-                    return ESP_FAIL;
-                }
-
-                /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-                // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-                setvbuf(file, NULL, _IOFBF, 512);
-
-                fseek(file, 0, SEEK_END);
-                flowalignment->AlgROI->size = ftell(file);
-                fseek(file, 0, SEEK_SET);
-
-                if (flowalignment->AlgROI->size > MAX_JPG_SIZE) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                        "File /sdcard/html/flowstate_take_image.jpg (" + std::to_string(flowalignment->AlgROI->size) +
-                                            ") > allocated buffer (" + std::to_string(MAX_JPG_SIZE) + ")");
-                    fclose(file);
-                    return ESP_FAIL;
-                }
-
-                fread(flowalignment->AlgROI->data, flowalignment->AlgROI->size, 1, file);
-                fclose(file);
-
-                httpd_resp_set_type(req, "image/jpeg");
-                result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
-            }
-            else {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "ClassFlowControl::getJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
-                if (flowalignment && flowalignment->ImageBasis->imageOkay()) {
-                    _send = flowalignment->ImageBasis;
-                }
-                else {
-                    httpd_resp_send(req, NULL, 0);
-                    return ESP_OK;
-                }
-            }
+            return sendFile(req, "/sdcard/html/flowstate_idle_no_autostart.jpg", true);
         }
         else if (getActualProcessState() == std::string(FLOW_TAKE_IMAGE) && isAutoStart() && flowStateEventOccured()) {
-            FILE *file = fopen("/sdcard/html/flowstate_idle_autostart.jpg", "rb");
-
-            if (!file) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "File /sdcard/html/flowstate_idle_autostart.jpg not found");
-                return ESP_FAIL;
-            }
-
-            /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-            // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-            setvbuf(file, NULL, _IOFBF, 512);
-
-            fseek(file, 0, SEEK_END);
-            long fileSize = ftell(file); /* how long is the file ? */
-            fseek(file, 0, SEEK_SET);    /* reset */
-
-            unsigned char *fileBuffer = (unsigned char *)malloc(fileSize);
-
-            if (!fileBuffer) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "ClassFlowControl::getJPGStream: Not enough memory to create fileBuffer: " + std::to_string(fileSize));
-                fclose(file);
-                return ESP_FAIL;
-            }
-
-            fread(fileBuffer, fileSize, 1, file);
-            fclose(file);
-
-            httpd_resp_set_type(req, "image/jpeg");
-            result = httpd_resp_send(req, (const char *)fileBuffer, fileSize);
-            free(fileBuffer);
+            return sendFile(req, "/sdcard/html/flowstate_idle_autostart.jpg", true);
+        }
+        else if (getActualProcessState() == std::string(FLOW_TAKE_IMAGE)) {
+            return sendFile(req, "/sdcard/html/flowstate_take_image.jpg", true);
         }
         else { // Show actual image taken for all other states
-            if (flowalignment && flowalignment->AlgROI) {
-                httpd_resp_set_type(req, "image/jpeg");
-                result = httpd_resp_send(req, (const char *)flowalignment->AlgROI->data, flowalignment->AlgROI->size);
+            if (flowImageData && flowImageData->imgVisu->isValid()) {
+                return flowImageData->imgVisu->sendJpgToHttp(req);
             }
             else {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "ClassFlowControl::getJPGStream: alg_roi.jpg cannot be served -> alg.jpg is going to be served");
-                if (flowalignment && flowalignment->ImageBasis->imageOkay()) {
-                    _send = flowalignment->ImageBasis;
-                }
-                else {
-                    httpd_resp_send(req, NULL, 0);
-                    return ESP_OK;
-                }
+                return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send process image (alg_roi.jpg)");
             }
         }
     }
-    else if (_fn == "alg.jpg") {
-        if (flowalignment && flowalignment->ImageBasis->imageOkay()) {
-            _send = flowalignment->ImageBasis;
+    else if (strcmp("alg.jpg", filename) == 0) { // Aligned image without overlays (ROI)
+        if (flowImageData && flowImageData->imgProcess->isValid()) {
+            return flowImageData->imgProcess->sendJpgToHttp(req);
         }
         else {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ClassFlowControl::getJPGStream: alg.jpg cannot be served");
-            return ESP_FAIL;
+            return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send process image (alg.jpg)");
         }
     }
-    else {
+    else { // ROI images
         for (const auto &sequence : sequenceData) {
             for (const auto &roi : sequence->digitRoi) {
-                if (roi->param->roiName + ".jpg" == _fn) {
-                    _send = roi->imageRoiResized;
-                    break;
+                if (strcmp(std::string(roi->param->roiName + "_org.jpg").c_str(), filename) == 0) {
+                    return roi->imageRoi->sendJpgToHttp(req);
                 }
-
-                if (roi->param->roiName + "_org.jpg" == _fn) {
-                    _send = roi->imageRoi;
-                    break;
+                else if (strcmp(std::string(roi->param->roiName + ".jpg").c_str(), filename) == 0) {
+                    return roi->imageRoiResized->sendJpgToHttp(req);
                 }
-            }
-            if (_send) {
-                break;
             }
 
             for (const auto &roi : sequence->analogRoi) {
-                if (roi->param->roiName + ".jpg" == _fn) {
-                    _send = roi->imageRoiResized;
-                    break;
+                if (strcmp(std::string(roi->param->roiName + "_org.jpg").c_str(), filename) == 0) {
+                    return roi->imageRoi->sendJpgToHttp(req);
                 }
-
-                if (roi->param->roiName + "_org.jpg" == _fn) {
-                    _send = roi->imageRoi;
-                    break;
+                else if (strcmp(std::string(roi->param->roiName + ".jpg").c_str(), filename) == 0) {
+                    return roi->imageRoiResized->sendJpgToHttp(req);
                 }
-            }
-            if (_send) {
-                break;
             }
         }
     }
 
-#ifdef DEBUG_DETAIL_ON
-    LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - before send");
-#endif // DEBUG_DETAIL_ON
-
-    if (_send) {
-        setContentTypeFromFile(req, _fn.c_str());
-        result = _send->sendJPGtoHTTP(req);
-        httpd_resp_send_chunk(req, NULL, 0); // Respond with an empty chunk to signal HTTP response completion
-
-        if (_sendDelete) {
-            delete _send;
-        }
-
-        _send = NULL;
-    }
-
-#ifdef DEBUG_DETAIL_ON
-    LogFile.writeHeapInfo("ClassFlowControl::getJPGStream - done");
-#endif // DEBUG_DETAIL_ON
-
-    return result;
+    return httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Requested ressource not found");
 }

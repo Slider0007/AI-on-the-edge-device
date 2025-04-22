@@ -17,10 +17,8 @@ class ClassFlowWebhook : public ClassFlow
     const CfgData::SectionWebhook *cfgDataPtr = NULL;
     bool webhookEnable;
 
-    ClassFlowAlignment *flowAlignment;
-
   public:
-    ClassFlowWebhook(ClassFlowAlignment *_flowAlignment);
+    ClassFlowWebhook();
     virtual ~ClassFlowWebhook();
 
     bool loadParameter();

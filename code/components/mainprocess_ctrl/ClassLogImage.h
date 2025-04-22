@@ -4,7 +4,7 @@
 #include <string>
 
 #include "ClassFlow.h"
-#include "CImageBasis.h"
+#include "CImage.h"
 
 
 class ClassLogImage : public ClassFlow
@@ -16,7 +16,7 @@ class ClassLogImage : public ClassFlow
     int imagesRetention;
 
     std::string createLogFolder(std::string time);
-    void logImage(std::string _logPath, std::string _sequenceName, CNNType _type, int _value, std::string _time, CImageBasis *_img);
+    void logImage(std::string _logPath, std::string _sequenceName, CNNType _type, int _value, std::string _time, CImage *_img);
     void removeOldLogs();
 
   public:

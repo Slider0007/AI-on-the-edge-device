@@ -12,7 +12,7 @@
 #include <esp_camera.h>
 
 #include "configClass.h"
-#include "CImageBasis.h"
+#include "CImage.h"
 
 
 typedef struct {
@@ -71,7 +71,7 @@ class ClassControlCamera
     int getCamFrequencyMhz(void);
     void getOutputFrameSize(int &width, int &height);
 
-    esp_err_t captureToBasisImage(CImageBasis *_image);
+    esp_err_t captureToBasisImage(CImage *_image);
     esp_err_t captureToFile(std::string _file, CfgData::SectionTakeImage::Camera *_paramCameraTemp = NULL,
                             CfgData::SectionTakeImage::Flashlight *_paramFlashlightTemp = NULL);
     esp_err_t captureToHTTP(httpd_req_t *_req, CfgData::SectionTakeImage::Camera *_paramCameraTemp = NULL,
