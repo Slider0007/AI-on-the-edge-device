@@ -102,7 +102,7 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::invokeTplMatch(CImage &img, CImage &img
 }
 
 
-TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMarker &marker, bool noFast)
+TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMarker &marker, bool noSimilarityCheck)
 {
     if (!img.isValid()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "tplMatchBySad: Invalid source image");
@@ -129,7 +129,7 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMar
     // Similiarity matching logic
     // NOTE: @DEPRECATED -> Will be removed with next major release 18.x
     if (marker.alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR && marker.similarityCheckX > 0 && marker.similarityCheckY > 0 &&
-        !noFast) {
+        !noSimilarityCheck) {
         if (calcSimilarities(img, marker)) {
             marker.foundX = marker.similarityCheckX;
             marker.foundY = marker.similarityCheckY;

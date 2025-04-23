@@ -34,10 +34,10 @@ class CImageMod
     static esp_err_t rotate(CImage &img, float angle, int centerX, int centerY, CImage &imgHelper, bool overwriteSource = false);
 
     /**
-     * @brief Translates an image by a given offset
+     * @brief Translates an image by a given x, y offset
      * @param img Source image
-     * @param dx Horizontal shift
-     * @param dy Vertical shift
+     * @param dx Horizontal shift in x
+     * @param dy Vertical shift in y
      * @param imgHelper Temporary helper image buffer
      * @param overwriteSource Overwrite the source image (default: false)
      * @return ESP_OK on success, error code otherwise

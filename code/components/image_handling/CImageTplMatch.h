@@ -39,12 +39,12 @@ class CImageTplMatch
      * @param img Source image
      * @param marker Alignment marker to match
      * @param noSimilarityCheck Disable similarity check (default: false)
-     * @return Matching status
+     * @return Status code
      */
     static TplMatchStatus tplMatchBySad(CImage &img, AlignmentMarker &marker, bool noSimilarityCheck = false);
 
     /**
-     * @brief Calculates similarity scores of a given template image
+     * @brief Calculates similarity of a given template image
      * @param img Source image
      * @param marker Alignment marker reference
      * @return true if similarity check is succeeded, false otherwise
@@ -59,7 +59,7 @@ class CImageTplMatch
      * @param marker1 First alignment marker
      * @param marker2 Second alignment marker
      * @param tplMatchAlgorithm Algorithm to use for matching (default: SAD)
-     * @return Status
+     * @return Status code
      */
     static TplMatchStatus invokeTplMatch(CImage &img, CImage &imgTarget, AlignmentMarker &marker1, AlignmentMarker &marker2,
                                          TplMatchAlgorithm tplMatchAlgorithm = TplMatchAlgorithm::SAD);
