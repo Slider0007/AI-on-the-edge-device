@@ -18,8 +18,12 @@ Image alignment is done in two steps:
 
 | Input Option               | Description
 |:---                        |:---
-| `Rotate + Align (SAD:1CH)` | Rotate image + Process SAD algorithm (only red color channel)
-| `Rotate + Align (SAD:3CH)` | Rotate image + Process SAD algorithm (3 color channels -> higher accuracy, but slower)
-| `Rotate + Align (SAD:1CH + Similarity)` | Rotate image + Use last known position if template is similar (Fallback: `Rotate + Align (SAD:1CH)`)
+| `Rotate + Align (SAD:1CH)` | Rotate image + Process SAD (Sum of Absolute Difference) algorithm (only red color channel)
+| `Rotate + Align (SAD:3CH)` | Rotate image + Process SAD (Sum of Absolute Difference) algorithm (3 color channels: higher accuracy, but slower)
+| `Rotate + Align (SAD:1CH + Similarity)*` | Rotate image + Use last known position if template is similar (Fallback: `Rotate + Align (SAD:1CH)`)
 | `Rotation Only`            | Rotate image by defined rotation angle
 | `Off`                      | Disable image rotation and alignment
+
+
+!!! Note
+    * The option `Rotate + Align (SAD:1CH + Similarity)` is marked as deprecated and will be removed in the next major release, as it no longer provides any benefit. `Rotate + Align (SAD:1CH)` offers the same performance.
