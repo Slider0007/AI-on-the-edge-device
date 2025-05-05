@@ -46,17 +46,17 @@ As a result, you get the digitized value of your meter. There are several option
 ### Board
 | Board Type                                                                     | SOC      | Firmware Release | Remarks                       
 |:---                                                                            |:---      |:---           |:--- 
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           |⚠️ Only boards with >4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones
+| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           |⚠️ Only boards with $\ge$ 4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones
 | [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |⚠️ Running quite hot, a small heat sink is recommended<br>ℹ️ No onboard illumination: External illumination (PWM / SmartLED) required
-| [ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8 | $\ge$ v17.0.0 |ℹ️ SOC and pin compatible borads of Freenove ESP32S3-WROOM with 16MB flash and 8MB RAM supported
+| [Freenove ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8<br><br>ESP32S3-WROOM-1-N8R8 | $\ge$ v17.0.0<br><br>$\ge$ v17.1.0 |ℹ️ SOC and pin compatible boards with 8MB / 16MB flash and 8MB RAM are supported
 
 ### Camera
 | Camera Type                                                                             | Sensor Resolution  | Digital Zoom | Firmware Release | Remarks                       
 |:---                                                                                     |:---                |:---          |:---              |:--- 
 | [OV2640](https://www.arducam.com/ov2640/)                                               | 2MP                | 1.0x - 2.5x  | All              | ℹ️ Officially EOL since 2009, but still very popular<br>ℹ️ Pin and function compatible Chinese clones are supported
-| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP                | 1.0x - 4.0x  | $\ge$ v17.0.0    |ℹ️ Officially EOL since 2019, but still very popular<br>ℹ️ Autofocus is not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Running quite hot, a small heat sink or a reduced camera frequency is recommended<br>⚠️ ESP32-CAM: Camera functional. Deviation of core + I/O voltage supply (board: 1.2V / 3.3V, camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Camera functional. Small deviation of core voltage supply (board: 1.3V, camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Camera functional. Deviation of core voltage supply + I/O voltage supply (board: 1.2V / 3.3V, camera: 1.5V / 2.8V).
+| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP                | 1.0x - 4.0x  | $\ge$ v17.0.0    |ℹ️ Officially EOL since 2019, but still very popular<br>ℹ️ Autofocus is not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Running quite hot, a small heat sink or a reduced camera frequency (10Mhz) is recommended<br>⚠️ ESP32-CAM: Camera functional. Deviation of core + I/O voltage supply (board: 1.2V / 3.3V, camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Camera functional. Small deviation of core voltage supply (board: 1.3V, camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Camera functional. Deviation of core voltage supply + I/O voltage supply (board: 1.2V / 3.3V, camera: 1.5V / 2.8V).
 
-#### Important Note
+#### ⚠️ Important Note
 The camera clock frequency (configurable via WebUI or config file) might have negative impact (interfere with WLAN signal) on wireless network responsiveness (slow loading WebUI, higher latency), especially using low quality boards or boards with onboard antenna. Depending on used hardware combination and WIFI channel, try to find the best camera clock frequency under the evaluation of network responsiveness and resulting image quality.
 
 

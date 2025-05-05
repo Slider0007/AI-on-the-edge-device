@@ -41,6 +41,7 @@ jobs:
         plat:
          - esp32cam
          - xiao-esp32s3-sense
+         - freenove-esp32s3-n8r8
          - freenove-esp32s3-n16r8
     steps:
     - name: Checkout branch
@@ -173,6 +174,7 @@ jobs:
         plat:
          - esp32cam
          - xiao-esp32s3-sense
+         - freenove-esp32s3-n8r8
          - freenove-esp32s3-n16r8
 
     # Sets permissions of the GITHUB_TOKEN to allow downloading artifacts
@@ -229,6 +231,7 @@ jobs:
         plat:
          - esp32cam
          - xiao-esp32s3-sense
+         - freenove-esp32s3-n8r8
          - freenove-esp32s3-n16r8
 
     # Sets permissions of the GITHUB_TOKEN to allow downloading artifacts
@@ -254,6 +257,7 @@ jobs:
         cd ./artifacts
         ls
         cd ..
+        mkdir -p ./firmware/${{ matrix.plat }}
         cp -f ./artifacts/bootloader.bin ./firmware/${{ matrix.plat }}/bootloader.bin
         cp -f ./artifacts/partitions.bin ./firmware/${{ matrix.plat }}/partitions.bin
         cp -f ./artifacts/firmware.bin ./firmware/${{ matrix.plat }}/firmware.bin
