@@ -7,10 +7,10 @@
 #include <string>
 
 #include "configClass.h"
-#include "CImageBasis.h"
+#include "CImageJpg.h"
 
 bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr);
-esp_err_t webhookPublish(const char *_data, ImageData *_imgData = NULL, time_t _imageTimeProcessed = 0L);
+esp_err_t webhookPublish(const char *_data, CImageJpg *_imgData = NULL, time_t _imageTimeProcessed = 0L);
 bool getWebhookIsEncrypted();
 
 #endif // INTERFACE_WEBHOOK_H

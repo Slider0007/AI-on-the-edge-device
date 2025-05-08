@@ -147,9 +147,9 @@ bool CTfLiteClass::loadModel(const std::string &fileName)
 }
 
 
-bool CTfLiteClass::loadInputImage(CImageBasis *image)
+bool CTfLiteClass::loadInputImage(CImage &image)
 {
-    if (!image || !image->getRgbImage()) {
+    if (!image.isValid()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadInputImage: No image data");
         return false;
     }
@@ -161,9 +161,9 @@ bool CTfLiteClass::loadInputImage(CImageBasis *image)
         return false;
     }
 
-    uint8_t *rgbImage = image->getRgbImage();
-    for (int i = 0; i < image->getMemsize(); ++i) {
-        inputDataPtr[i] = (float)rgbImage[i];
+    uint8_t *imgData = image.getImgData();
+    for (int i = 0; i < image.getImgDataSize(); ++i) {
+        inputDataPtr[i] = (float)imgData[i];
     }
 
     return true;

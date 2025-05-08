@@ -7,7 +7,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
   },
   "operationmode": {
     "opmode": -1,
-    "automaticprocessinterval": "1.0",
+    "automaticprocessinterval": "1.00",
     "usedemoimages": false
   },
   "takeimage": {

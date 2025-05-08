@@ -3,8 +3,8 @@
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
 | Parameter Name    | Automatic Process Interval | automaticprocessinterval
-| Default Value     | `2.0`               | `2.0`
-| Input Options     | `0.1` .. &infin;    | `0.1` .. &infin;
+| Default Value     | `1.00`              | `1.00`
+| Input Options     | `0.01` .. &infin;   | `0.01` .. &infin;
 | Unit              | Minutes             | Minutes
 
 

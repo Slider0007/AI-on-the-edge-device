@@ -126,7 +126,7 @@ bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr)
 }
 
 
-esp_err_t webhookPublish(const char *_jsonData, ImageData *_imgData, time_t _imageTimeProcessed)
+esp_err_t webhookPublish(const char *_jsonData, CImageJpg *_imgData, time_t _imageTimeProcessed)
 {
     esp_http_client_config_t httpConfig = {};
     httpConfig.url = cfgDataPtr->uri.c_str();
@@ -211,7 +211,7 @@ esp_err_t webhookPublish(const char *_jsonData, ImageData *_imgData, time_t _ima
         esp_http_client_set_url(httpClient, (cfgDataPtr->uri + std::string("?timestamp=") + std::to_string(_imageTimeProcessed)).c_str());
         esp_http_client_set_method(httpClient, HTTP_METHOD_PUT);
         esp_http_client_set_header(httpClient, "Content-Type", "image/jpeg");
-        esp_http_client_set_post_field(httpClient, (const char *)_imgData->data, _imgData->size);
+        esp_http_client_set_post_field(httpClient, (const char *)_imgData->getImgData(), _imgData->getImgDataSize());
 
         retVal = ESP_ERROR_CHECK_WITHOUT_ABORT(esp_http_client_perform(httpClient));
         if (retVal == ESP_OK) {

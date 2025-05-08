@@ -104,12 +104,11 @@ ConfigClass::~ConfigClass()
     clearCfgDataTemp();
     clearCfgData();
 
-    delete cJsonObjectBuffer;
-    cJsonObjectBuffer = NULL;
-    delete jsonBuffer;
-    jsonBuffer = NULL;
-    delete httpBuffer;
-    httpBuffer = NULL;
+    heap_caps_free(cJsonObjectBuffer);
+    cJsonObjectBuffer = nullptr;
+
+    heap_caps_free(jsonBuffer);
+    jsonBuffer = nullptr;
 }
 
 
@@ -306,7 +305,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "operationmode"), "automaticprocessinterval");
     if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionOperationMode.automaticProcessInterval = std::max(std::stof(objEl->valuestring), (float)0.1);
+        cfgDataTemp.sectionOperationMode.automaticProcessInterval = std::max(std::stof(objEl->valuestring), (float)0.01);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "operationmode"), "usedemoimages");
@@ -1760,7 +1759,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     }
     if (cJSON_AddStringToObject(operationmode, "automaticprocessinterval",
-                                to_stringWithPrecision(cfgDataTemp.sectionOperationMode.automaticProcessInterval, 1).c_str()) == NULL) {
+                                to_stringWithPrecision(cfgDataTemp.sectionOperationMode.automaticProcessInterval, 2).c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
     if (cJSON_AddBoolToObject(operationmode, "usedemoimages", cfgDataTemp.sectionOperationMode.useDemoImages) == NULL) {

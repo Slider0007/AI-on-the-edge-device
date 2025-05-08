@@ -453,16 +453,16 @@ void ClassFlowPostProcessing::doPostProcessEventHandling()
                 // Save digit ROIs
                 if (!sequence->digitRoi.empty()) {
                     for (const auto &roi : sequence->digitRoi) {
-                        roi->imageRoi->saveToFile(destination + "/" + to_stringWithPrecision(roi->CNNResult / 10.0, 1) + "_" +
-                                                  roi->param->roiName + ".jpg");
+                        roi->imageRoi->saveJpgToFile(destination + "/" + to_stringWithPrecision(roi->CNNResult / 10.0, 1) + "_" +
+                                                     roi->param->roiName + ".jpg");
                     }
                 }
 
                 // Save analog ROIs
                 if (!sequence->analogRoi.empty()) {
                     for (const auto &roi : sequence->analogRoi) {
-                        roi->imageRoi->saveToFile(destination + "/" + to_stringWithPrecision(roi->CNNResult / 10.0, 1) + "_" +
-                                                  roi->param->roiName + ".jpg");
+                        roi->imageRoi->saveJpgToFile(destination + "/" + to_stringWithPrecision(roi->CNNResult / 10.0, 1) + "_" +
+                                                     roi->param->roiName + ".jpg");
                     }
                 }
             }

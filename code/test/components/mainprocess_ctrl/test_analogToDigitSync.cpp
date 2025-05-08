@@ -4,7 +4,7 @@
 class UnderTestCNNGeneral : public ClassFlowCNNGeneral
 {
   public:
-    UnderTestCNNGeneral(ClassFlowAlignment *_flowalign, CNNType _cnntype) : ClassFlowCNNGeneral(_flowalign, "name", _cnntype) {};
+    UnderTestCNNGeneral(CNNType _cnntype) : ClassFlowCNNGeneral("name", _cnntype) {};
 
     using ClassFlowCNNGeneral::evalAnalogToDigitTransition;
 };
@@ -18,7 +18,7 @@ class UnderTestCNNGeneral : public ClassFlowCNNGeneral
  */
 void test_analogToDigit_Standard()
 {
-    UnderTestCNNGeneral *undertest = new UnderTestCNNGeneral(nullptr, CNNTYPE_DIGIT_CLASS100);
+    UnderTestCNNGeneral *undertest = new UnderTestCNNGeneral(CNNTYPE_DIGIT_CLASS100);
 
     // 4.8 is a "hanging" 5, i.e. it has not jumped over to 5.0.
     // A "hanging digit" should still be rounded from Transition.
@@ -57,7 +57,7 @@ void test_analogToDigit_Standard()
 
 void test_analogToDigit_Transition()
 {
-    UnderTestCNNGeneral *undertest = new UnderTestCNNGeneral(nullptr, CNNTYPE_DIGIT_CLASS100);
+    UnderTestCNNGeneral *undertest = new UnderTestCNNGeneral(CNNTYPE_DIGIT_CLASS100);
 
     // https://github.com/jomjol/AI-on-the-edge-device/issues/921#issuecomment-1222672175
     // Default: dig=3.9, ana=9.7 => erg=3

@@ -11,14 +11,14 @@
 #include "configClass.h"
 #include "ClassLogFile.h"
 #include "ClassControlCamera.h"
+#include "CImageMod.h"
 
 
 static const char *TAG = "CNN";
 
 
-ClassFlowCNNGeneral::ClassFlowCNNGeneral(ClassFlowAlignment *_flowAlignment, std::string _cnnName, CNNType _cnnType) : ClassLogImage(TAG)
+ClassFlowCNNGeneral::ClassFlowCNNGeneral(std::string _cnnName, CNNType _cnnType) : ClassLogImage(TAG)
 {
-    flowAlignment = _flowAlignment;
     cnnName = _cnnName;
     cnnType = _cnnType;
     tflite = new CTfLiteClass;
@@ -104,8 +104,8 @@ bool ClassFlowCNNGeneral::loadParameter()
         const auto &roiList = sectionDigitPtr ? sequence->digitRoi : sequence->analogRoi;
 
         for (const auto &roi : roiList) {
-            roi->imageRoiResized = new CImageBasis(roi->param->roiName, modelWidth, modelHeight, modelChannel);
-            roi->imageRoi = new CImageBasis(roi->param->roiName + "_org", roi->param->dx, roi->param->dy, STBI_rgb);
+            roi->imageRoiResized = new CImage(roi->param->roiName, modelWidth, modelHeight, modelChannel);
+            roi->imageRoi = new CImage(roi->param->roiName + "_org", roi->param->dx, roi->param->dy, STBI_rgb);
         }
     }
 
@@ -141,27 +141,20 @@ void ClassFlowCNNGeneral::doPostProcessEventHandling()
 
 bool ClassFlowCNNGeneral::doExtractRoi(const std::string time)
 {
-    CAlignAndCutImage *caic = flowAlignment->getAlignAndCutImage();
-
-    if (caic == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "doAlignAndCut: Aligned image not available");
-        return false;
-    }
-
     for (const auto &sequence : sequenceData) {
         const auto &roiList = sectionDigitPtr ? sequence->digitRoi : sequence->analogRoi;
 
         for (const auto &roi : roiList) {
-            caic->cutAndSaveImage(roi->param->x, roi->param->y, roi->param->dx, roi->param->dy, roi->imageRoi);
+            CImageMod::crop(*flowImageData->imgProcess, roi->param->x, roi->param->y, roi->param->dx, roi->param->dy, *roi->imageRoi);
 
             if (saveAllFiles) {
-                roi->imageRoi->saveToFile(formatFileName("/sdcard/img_tmp/" + roi->param->roiName + "_org.jpg"));
+                roi->imageRoi->saveJpgToFile(formatFileName("/sdcard/img_tmp/" + roi->param->roiName + "_org.jpg"));
             }
 
-            roi->imageRoi->resizeImage(modelWidth, modelHeight, roi->imageRoiResized);
+            CImageMod::resize(*roi->imageRoi, modelWidth, modelHeight, *roi->imageRoiResized);
 
             if (saveAllFiles) {
-                roi->imageRoiResized->saveToFile(formatFileName("/sdcard/img_tmp/" + roi->param->roiName + ".jpg"));
+                roi->imageRoiResized->saveJpgToFile(formatFileName("/sdcard/img_tmp/" + roi->param->roiName + ".jpg"));
             }
         }
     }
@@ -265,7 +258,7 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
                 case CNNTYPE_ANALOG_CLASS100: { // Models ana-class100*
                     modelTypeMsg = "Type: " +
                                    std::string(cnnType == CNNTYPE_DIGIT_CLASS100 ? "Digit (dig-class100)" : "Analog (ana-class100)");
-                    success = tflite->loadInputImage(roi->imageRoiResized) && tflite->invoke();
+                    success = tflite->loadInputImage(*(roi->imageRoiResized)) && tflite->invoke();
 
                     if (!success) {
                         break;
@@ -281,7 +274,7 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
 
                 case CNNTYPE_DIGIT_DOUBLE_HYBRID10: { // Models dig-cont*
                     modelTypeMsg = "Type: Digit (dig-cont)";
-                    success = tflite->loadInputImage(roi->imageRoiResized) && tflite->invoke();
+                    success = tflite->loadInputImage(*(roi->imageRoiResized)) && tflite->invoke();
 
                     if (!success) {
                         break;
@@ -333,7 +326,7 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
 
                 case CNNTYPE_ANALOG_CONT: { // Models ana-cont*
                     modelTypeMsg = "Type: Analog (ana-cont)";
-                    success = tflite->loadInputImage(roi->imageRoiResized) && tflite->invoke();
+                    success = tflite->loadInputImage(*(roi->imageRoiResized)) && tflite->invoke();
 
                     if (!success) {
                         break;
@@ -350,7 +343,7 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
 
                 case CNNTYPE_DIGIT_CLASS11: { // Models dig-class11*
                     modelTypeMsg = "Type: Digit (dig-class11)";
-                    success = tflite->loadInputImage(roi->imageRoiResized) && tflite->invoke();
+                    success = tflite->loadInputImage(*(roi->imageRoiResized)) && tflite->invoke();
 
                     if (!success) {
                         break;
@@ -739,9 +732,9 @@ bool ClassFlowCNNGeneral::cnnTypeAllowExtendedResolution() const
 }
 
 
-void ClassFlowCNNGeneral::drawROI(CImageBasis *image)
+void ClassFlowCNNGeneral::drawROI(CImage &image)
 {
-    if (!image || !image->imageOkay()) {
+    if (!image.isValid()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawROI: Invalid image");
         return;
     }
@@ -761,15 +754,17 @@ void ClassFlowCNNGeneral::drawROI(CImageBasis *image)
 
         for (const auto &roi : roiList) {
             if (cnnType == CNNTYPE_ANALOG_CLASS100 || cnnType == CNNTYPE_ANALOG_CONT) {
-                image->drawEllipse(roi->param->x + roi->param->dx / 2, roi->param->y + roi->param->dy / 2, roi->param->dx / 2,
-                                   roi->param->dy / 2, color[0], color[1], color[2], 2);
-                image->drawLine(roi->param->x + roi->param->dx / 2, roi->param->y, roi->param->x + roi->param->dx / 2,
-                                roi->param->y + roi->param->dy, color[0], color[1], color[2], 2);
-                image->drawLine(roi->param->x, roi->param->y + roi->param->dy / 2, roi->param->x + roi->param->dx,
-                                roi->param->y + roi->param->dy / 2, color[0], color[1], color[2], 2);
+                const int centerX = roi->param->x + roi->param->dx / 2;
+                const int centerY = roi->param->y + roi->param->dy / 2;
+
+                CImageMod::drawEllipse(image, centerX, centerY, roi->param->dx / 2, roi->param->dy / 2, color[0], color[1], color[2], 2);
+                CImageMod::drawLine(image, centerX, roi->param->y, centerX, roi->param->y + roi->param->dy, color[0], color[1], color[2],
+                                    1);
+                CImageMod::drawLine(image, roi->param->x, centerY, roi->param->x + roi->param->dx, centerY, color[0], color[1], color[2],
+                                    1);
             }
             else {
-                image->drawRect(roi->param->x, roi->param->y, roi->param->dx, roi->param->dy, color[0], color[1], color[2], 2);
+                CImageMod::drawRect(image, roi->param->x, roi->param->y, roi->param->dx, roi->param->dy, color[0], color[1], color[2], 2);
             }
         }
         colorIndex++;

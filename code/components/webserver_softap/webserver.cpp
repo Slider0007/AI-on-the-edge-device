@@ -65,7 +65,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "process_status", getProcessStatus().c_str()) == NULL) {
             retVal = ESP_FAIL;
         }
-        if (cJSON_AddNumberToObject(cJSONObject, "process_interval", (int)(flowctrl.getProcessInterval() * 10) / 10.0) == NULL) {
+        if (cJSON_AddNumberToObject(cJSONObject, "process_interval", (int)(flowctrl.getProcessInterval() * 100) / 100.0) == NULL) {
             retVal = ESP_FAIL;
         }
         if (cJSON_AddNumberToObject(cJSONObject, "process_time", getFlowProcessingTime()) == NULL) {
@@ -300,7 +300,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;
     }
     else if (type.compare("process_interval") == 0) {
-        httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessInterval(), 1).c_str());
+        httpd_resp_sendstr(req, to_stringWithPrecision(flowctrl.getProcessInterval(), 2).c_str());
         return ESP_OK;
     }
     else if (type.compare("process_time") == 0) {
@@ -581,7 +581,7 @@ esp_err_t handler_img_tmp(httpd_req_t *req)
     }
 
     // Serve process-related images (process state images, alg.jpg, alg_roi.jpg, ROIs)
-    return flowctrl.getJPGStream(fileName, req);
+    return flowctrl.sendProcessImages(req, fileName.c_str());
 }
 
 

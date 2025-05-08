@@ -11,8 +11,8 @@ static const char *UNITY_TAG_PPHELPER = "UNITYTEST_POSTPROCHELPER";
 UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType)
 {
     ClassFlowTakeImage *takeimage = new ClassFlowTakeImage();
-    ClassFlowCNNGeneral *digit = new ClassFlowCNNGeneral(NULL, "Digit", digType);
-    ClassFlowCNNGeneral *analog = new ClassFlowCNNGeneral(NULL, "Analog", anaType);
+    ClassFlowCNNGeneral *digit = new ClassFlowCNNGeneral("Digit", digType);
+    ClassFlowCNNGeneral *analog = new ClassFlowCNNGeneral("Analog", anaType);
 
     // Init default config (including sequence related config)
     ConfigClass::getInstance()->clearCfgData();

@@ -20,6 +20,7 @@ class ClassFlow
 {
   protected:
     static std::vector<SequenceData *> sequenceData;
+    static FlowImageData *flowImageData;
 
     strFlowState FlowState;
 

@@ -17,12 +17,10 @@
 static const char *TAG = "WEBHOOK";
 
 
-ClassFlowWebhook::ClassFlowWebhook(ClassFlowAlignment *_flowAlignment)
+ClassFlowWebhook::ClassFlowWebhook()
 {
     presetFlowStateHandler(true);
     webhookEnable = false;
-
-    flowAlignment = _flowAlignment;
 }
 
 
@@ -106,13 +104,13 @@ bool ClassFlowWebhook::doFlow(std::string zwtime)
     if (jsonChar != NULL) {
         if ((cfgDataPtr->publishImage == WEBHOOK_PUBLISH_IMAGE_ENABLED ||
              ((cfgDataPtr->publishImage == WEBHOOK_PUBLISH_IMAGE_ON_ERROR_ONLY) && sequencesWithError))) {
-            if (flowAlignment && flowAlignment->AlgROI) {
-                if (webhookPublish(jsonChar, flowAlignment->AlgROI, timeProcessedUtc) != ESP_OK) {
+            if (flowImageData && flowImageData->imgVisu->isValid()) {
+                if (webhookPublish(jsonChar, flowImageData->imgVisu, timeProcessedUtc) != ESP_OK) {
                     setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
                 }
             }
             else {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish image. No image data available (flowAlignment->AlgROI)");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish image. No image data available");
                 setFlowStateHandlerEvent(1); // Set warning event code, continue process flow
                 webhookPublish(jsonChar);    // Fallback, only publish data
             }

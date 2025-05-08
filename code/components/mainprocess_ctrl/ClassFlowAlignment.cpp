@@ -6,12 +6,13 @@
 
 #include <esp_log.h>
 
+#include "CImage.h"
+#include "CImageMod.h"
+#include "CImageTplMatch.h"
 #include "ClassFlowTakeImage.h"
-#include "ClassFlow.h"
+#include "ClassLogFile.h"
 #include "MainFlowControl.h"
 #include "time_sntp.h"
-#include "CRotateImage.h"
-#include "ClassLogFile.h"
 #include "psram.h"
 
 
@@ -21,13 +22,8 @@ static const char *TAG = "ALIGN";
 ClassFlowAlignment::ClassFlowAlignment()
 {
     presetFlowStateHandler(true);
-    alignFastSADThreshold = 10; // FAST ALIGN ALGO: SADNorm -> if smaller than threshold use same alignment values as last cycle
-    alignAndCutImage = NULL;
-    useAntialiasing = false; // @TODO: Check or remove option
-
-    ImageBasis = flowctrl.getRawImage();
-    imageTemp = NULL;
-    AlgROI = (ImageData *)heap_caps_malloc(sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    alignSimilarityCheckSADThreshold = 10; // Alignment image template similarity check threshold
+                                           // If result smaller than threshold use alignment values of last cycle
 }
 
 
@@ -41,62 +37,62 @@ bool ClassFlowAlignment::loadParameter()
     }
 
     // Configure two alignemnt marker
-    for (int i = 0; i < 2; i++) {
-        int x = 0, y = 0, channel = 0;
-        std::string sIndex = std::to_string(i + 1);
+    if (cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH ||
+        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH ||
+        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR) {
+        for (int i = 0; i < 2; i++) {
+            int x = 0, y = 0, channels = 0;
+            std::string sIndex = std::to_string(i + 1);
 
-        // Check availability of marker image before usage
-        if (!fileExists("/sdcard/config/marker" + sIndex + ".jpg")) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                "Alignmant marker image missing: '/sdcard/config/marker" + sIndex +
-                                    ".jpg' > Please update alignment marker");
-            return false;
-        }
+            // Check availability of marker image before usage
+            if (!fileExists("/sdcard/config/marker" + sIndex + ".jpg")) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Alignmant marker image missing: '/sdcard/config/marker" + sIndex +
+                                        ".jpg' > Please update alignment marker");
+                return false;
+            }
 
-        alignmentMarker[i].alignmentAlgo = cfgDataPtr->alignmentAlgo;
-        alignmentMarker[i].searchX = cfgDataPtr->searchField.x;
-        alignmentMarker[i].searchY = cfgDataPtr->searchField.y;
-        alignmentMarker[i].algoFastSADThreshold = alignFastSADThreshold;
+            alignmentMarker[i].alignmentAlgo = cfgDataPtr->alignmentAlgo;
+            alignmentMarker[i].searchX = cfgDataPtr->searchField.x;
+            alignmentMarker[i].searchY = cfgDataPtr->searchField.y;
+            alignmentMarker[i].similarityCheckSADThreshold = alignSimilarityCheckSADThreshold;
 
-        alignmentMarker[i].markerImageFilename = "/sdcard/config/marker" + sIndex + ".jpg";
-        stbi_info(alignmentMarker[i].markerImageFilename.c_str(), &x, &y, &channel);
+            alignmentMarker[i].markerImageFilename = "/sdcard/config/marker" + sIndex + ".jpg";
+            stbi_info(alignmentMarker[i].markerImageFilename.c_str(), &x, &y, &channels);
 
-        alignmentMarker[i].markerImage = new CImageBasis("marker" + sIndex);
-        if (alignmentMarker[i].markerImage) {
-            if (!alignmentMarker[i].markerImage->createEmptyImage(x, y, channel, 1)) {
+            alignmentMarker[i].markerImage = new CImage("marker" + sIndex, x, y, channels, true);
+            if (!alignmentMarker[i].markerImage) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create alignment marker image");
                 return false;
             }
-        }
-        STBIObjectPSRAM.name = "marker" + sIndex;
-        STBIObjectPSRAM.usePreallocated = true;
-        STBIObjectPSRAM.PreallocatedMemory = alignmentMarker[i].markerImage->getRgbImage();
-        STBIObjectPSRAM.PreallocatedMemorySize = alignmentMarker[i].markerImage->getMemsize();
 
-        if (!alignmentMarker[i].markerImage->loadFromFilePreallocated("marker" + sIndex, alignmentMarker[i].markerImageFilename.c_str())) {
-            return false;
-        }
+            if (alignmentMarker[i].markerImage->loadJpgFromFile(alignmentMarker[i].markerImageFilename.c_str(), true) != ESP_OK) {
+                return false;
+            }
 
-        alignmentMarker[i].targetX = cfgDataPtr->marker[i].x;
-        alignmentMarker[i].targetY = cfgDataPtr->marker[i].y;
+            alignmentMarker[i].targetX = cfgDataPtr->marker[i].x;
+            alignmentMarker[i].targetY = cfgDataPtr->marker[i].y;
+            alignmentMarker[i].width = alignmentMarker[i].markerImage->getWidth();
+            alignmentMarker[i].height = alignmentMarker[i].markerImage->getHeight();
 
-        // ROI position plausibilty check
-        int imgWidth = 640;
-        int imgHeight = 480;
-        cameraCtrl.getOutputFrameSize(imgWidth, imgHeight);
+            // ROI position plausibilty check
+            int imgWidth = 640;
+            int imgHeight = 480;
+            cameraCtrl.getOutputFrameSize(imgWidth, imgHeight);
 
-        if (alignmentMarker[i].targetX < 1 || (alignmentMarker[i].targetX > (imgWidth - 1 - alignmentMarker[i].markerImage->width))) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (x). Check alignment marker");
-            return false;
-        }
+            if (alignmentMarker[i].targetX < 1 || (alignmentMarker[i].targetX > (imgWidth - 1 - alignmentMarker[i].width))) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (x). Check alignment marker");
+                return false;
+            }
 
-        if (alignmentMarker[i].targetY < 1 || (alignmentMarker[i].targetY > (imgHeight - 1 - alignmentMarker[i].markerImage->height))) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (y). Check alignment marker");
-            return false;
+            if (alignmentMarker[i].targetY < 1 || (alignmentMarker[i].targetY > (imgHeight - 1 - alignmentMarker[i].height))) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "One or more alignment marker out of image area (y). Check alignment marker");
+                return false;
+            }
         }
     }
 
-    if (cfgDataPtr->alignmentAlgo == ALIGNALGO_FAST) { // Load AlignmentMarker if "fast" algo is used
+    if (cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR) { // Load alignment marker if "similarity check" is enabled
         loadAlignmentMarkerData();
     }
 
@@ -107,90 +103,62 @@ bool ClassFlowAlignment::loadParameter()
 bool ClassFlowAlignment::doFlow(std::string time)
 {
     presetFlowStateHandler(false, time);
-    if (AlgROI == NULL) { // AlgROI needs to be allocated before imageTemp to avoid heap fragmentation
-        AlgROI = (ImageData *)heap_caps_realloc(AlgROI, sizeof(ImageData), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-        if (AlgROI == NULL) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate AlgROI");
-            LogFile.writeHeapInfo("ClassFlowAlignment-doFlow");
-        }
-    }
-
-    if (AlgROI) {
-        ImageBasis->writeToMemoryAsJPG((ImageData *)AlgROI, 90);
-    }
-
-    if (imageTemp == NULL) {
-        imageTemp = new CImageBasis("imageTemp", ImageBasis, 1);
-        if (imageTemp == NULL || imageTemp->rgb_image == NULL) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate imageTemp");
-            LogFile.writeHeapInfo("ClassFlowAlignment-doFlow");
-            return false;
-        }
-    }
-
-    delete alignAndCutImage;
-    alignAndCutImage = new CAlignAndCutImage("AlignAndCutImage", ImageBasis, imageTemp);
-    if (alignAndCutImage == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate AlignAndCutImage");
-        LogFile.writeHeapInfo("ClassFlowAlignment-doFlow");
+    if (!flowImageData->imgProcess) {
         return false;
     }
 
-    CRotateImage rt("rawImageRT", alignAndCutImage, imageTemp);
+    CImage imgAlgRoi(*flowImageData->imgProcess);
+    if (!imgAlgRoi.isValid()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create imgAlgRoi");
+        return false;
+    }
 
+    imgAlgRoi.setName("imgAlgRoi");
+
+    // 1. Perform basic rotation
+    // *******************************************
     float rotation = cfgDataPtr->imageRotation;
-    if (rotation != 0) {
-        if (alignmentMarker[0].alignmentAlgo == ALIGNALGO_OFF) { // alignment off: no initial rotation and no additional alignment algo
-            rotation = 0.0;
-        }
-
-        if (useAntialiasing) {
-            rt.rotateImageAntiAliasing(rotation);
-        }
-        else {
-            rt.rotateImage(rotation);
-        }
+    if (rotation != 0.0f && cfgDataPtr->alignmentAlgo != ALIGNALGO_OFF) {
+        CImageMod::rotate(*flowImageData->imgProcess, rotation, imgAlgRoi, true);
 
         if (cfgDataPtr->debug.saveAllFiles) {
-            alignAndCutImage->saveToFile(formatFileName("/sdcard/img_tmp/rot.jpg"));
+            flowImageData->imgProcess->saveJpgToFile(formatFileName("/sdcard/img_tmp/rot.jpg"));
         }
     }
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Initial rotation: " + to_stringWithPrecision(rotation, 1));
 
-    if (alignmentMarker[0].alignmentAlgo <= ALIGNALGO_FAST) { // Only if any additional alignment algo is used: "default", "highaccuracy" or
-                                                              // "fast"
-        int AlignRetval = alignAndCutImage->alignImage(&alignmentMarker[0], &alignmentMarker[1]);
-
-        if (AlignRetval >= 0) {
+    // 2. Perform alignment algorythm (template match)
+    // Note: Only if any additional alignment algo is configured
+    // *******************************************
+    if (cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH ||
+        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH ||
+        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR) {
+        TplMatchStatus AlignRetval = CImageTplMatch::invokeTplMatch(*flowImageData->imgProcess, imgAlgRoi, alignmentMarker[0],
+                                                                    alignmentMarker[1]);
+        if (AlignRetval == TPL_MATCH_OK_SIMILAR) { // Alignment with similarity check successful
             saveAlignmentMarkerData();
         }
-        else if (AlignRetval == -1) { // Alignment failed
+        else if (AlignRetval == TPL_MATCH_FAILED) { // Alignment failed
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Alignment by algorithm failed. Verify image rotation and alignment marker");
             setFlowStateHandlerEvent(-1); // Set error event code for post cycle error handler 'doPostProcessEventHandling'
         }
+
+        drawAlignmentMarker(imgAlgRoi);
     }
 
-    if (AlgROI) {
-        if (alignmentMarker[0].alignmentAlgo <= ALIGNALGO_FAST) { // Only if any additional alignment algo is used: "default",
-                                                                  // "highaccuracy" or "fast"
-            drawAlignmentMarker(imageTemp);
-        }
-        if (getFlowState()->isSuccessful) {
-            flowctrl.drawDigitRoi(imageTemp);
-            flowctrl.drawAnalogRoi(imageTemp);
-        }
-        imageTemp->writeToMemoryAsJPG((ImageData *)AlgROI, 90);
+    if (getFlowState()->isSuccessful) {
+        flowctrl.drawDigitRoi(imgAlgRoi);
+        flowctrl.drawAnalogRoi(imgAlgRoi);
     }
+
+    // 3. Save aligned image with overlays
+    // *******************************************
+    imgAlgRoi.saveJpgToContainer(flowImageData->imgVisu);
 
     if (cfgDataPtr->debug.saveAllFiles) {
-        alignAndCutImage->saveToFile(formatFileName("/sdcard/img_tmp/alg.jpg"));
-        imageTemp->saveToFile(formatFileName("/sdcard/img_tmp/alg_roi.jpg"));
+        flowImageData->imgVisu->saveJpgToFile(formatFileName("/sdcard/img_tmp/alg_roi.jpg"));
     }
-
-    // must be deleted to have memory space for loading tflite
-    delete imageTemp;
-    imageTemp = NULL;
 
     if (!getFlowState()->isSuccessful) {
         return false;
@@ -225,8 +193,8 @@ void ClassFlowAlignment::doPostProcessEventHandling()
             fclose(fpResult);
 
             // Draw alignment marker and save image
-            drawAlignmentMarker(alignAndCutImage);
-            alignAndCutImage->saveToFile(formatFileName(destination + "/alg_misalign.jpg"));
+            drawAlignmentMarker(*flowImageData->imgProcess);
+            flowImageData->imgProcess->saveJpgToFile(formatFileName(destination + "/alg_misalign.jpg"));
 
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Alignment failed, debug infos saved: " + destination);
         }
@@ -245,23 +213,23 @@ bool ClassFlowAlignment::saveAlignmentMarkerData()
         return false;
     }
 
-    err = nvs_set_i32(align_nvshandle, "Ref0fastalg_x", alignmentMarker[0].algoFastX);
+    err = nvs_set_i32(align_nvshandle, "Ref0fastalg_x", alignmentMarker[0].similarityCheckX);
     if (err != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: Ref0fastalg_x - error code: " + std::to_string(err));
         return false;
     }
-    err = nvs_set_i32(align_nvshandle, "Ref0fastalg_y", alignmentMarker[0].algoFastY);
+    err = nvs_set_i32(align_nvshandle, "Ref0fastalg_y", alignmentMarker[0].similarityCheckY);
     if (err != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: Ref0fastalg_y - error code: " + std::to_string(err));
         return false;
     }
 
-    err = nvs_set_i32(align_nvshandle, "Ref1fastalg_x", alignmentMarker[1].algoFastX);
+    err = nvs_set_i32(align_nvshandle, "Ref1fastalg_x", alignmentMarker[1].similarityCheckX);
     if (err != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: Ref1fastalg_x - error code: " + std::to_string(err));
         return false;
     }
-    err = nvs_set_i32(align_nvshandle, "Ref1fastalg_y", alignmentMarker[1].algoFastY);
+    err = nvs_set_i32(align_nvshandle, "Ref1fastalg_y", alignmentMarker[1].similarityCheckY);
     if (err != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: Ref1fastalg_y - error code: " + std::to_string(err));
         return false;
@@ -290,23 +258,23 @@ bool ClassFlowAlignment::loadAlignmentMarkerData(void)
         return false;
     }
 
-    err = nvs_get_i32(align_nvshandle, "Ref0fastalg_x", (int32_t *)&alignmentMarker[0].algoFastX);
+    err = nvs_get_i32(align_nvshandle, "Ref0fastalg_x", (int32_t *)&alignmentMarker[0].similarityCheckX);
     if (err != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: Ref0fastalg_x - error code: " + std::to_string(err));
         return false;
     }
-    err = nvs_get_i32(align_nvshandle, "Ref0fastalg_y", (int32_t *)&alignmentMarker[0].algoFastY);
+    err = nvs_get_i32(align_nvshandle, "Ref0fastalg_y", (int32_t *)&alignmentMarker[0].similarityCheckY);
     if (err != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: Ref0fastalg_y - error code: " + std::to_string(err));
         return false;
     }
 
-    err = nvs_get_i32(align_nvshandle, "Ref1fastalg_x", (int32_t *)&alignmentMarker[1].algoFastX);
+    err = nvs_get_i32(align_nvshandle, "Ref1fastalg_x", (int32_t *)&alignmentMarker[1].similarityCheckX);
     if (err != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: Ref1fastalg_x - error code: " + std::to_string(err));
         return false;
     }
-    err = nvs_get_i32(align_nvshandle, "Ref1fastalg_y", (int32_t *)&alignmentMarker[1].algoFastY);
+    err = nvs_get_i32(align_nvshandle, "Ref1fastalg_y", (int32_t *)&alignmentMarker[1].similarityCheckY);
     if (err != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: Ref1fastalg_y - error code: " + std::to_string(err));
         return false;
@@ -318,24 +286,23 @@ bool ClassFlowAlignment::loadAlignmentMarkerData(void)
 }
 
 
-void ClassFlowAlignment::drawAlignmentMarker(CImageBasis *image)
+void ClassFlowAlignment::drawAlignmentMarker(CImage &image)
 {
-    if (!image->imageOkay()) {
+    if (!image.isValid()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawAlignmentMarker: Invalid image");
         return;
     }
 
-    image->drawRect(alignmentMarker[0].targetX, alignmentMarker[0].targetY, alignmentMarker[0].width, alignmentMarker[0].height, 255, 51,
-                    51, 2);
-    image->drawRect(alignmentMarker[1].targetX, alignmentMarker[1].targetY, alignmentMarker[1].width, alignmentMarker[1].height, 255, 51,
-                    51, 2);
+    CImageMod::drawRect(image, alignmentMarker[0].targetX, alignmentMarker[0].targetY, alignmentMarker[0].width, alignmentMarker[0].height,
+                        255, 51, 51, 2);
+    CImageMod::drawRect(image, alignmentMarker[1].targetX, alignmentMarker[1].targetY, alignmentMarker[1].width, alignmentMarker[1].height,
+                        255, 51, 51, 2);
 }
 
 
 ClassFlowAlignment::~ClassFlowAlignment()
 {
-    free_psram_heap("AlgROI", AlgROI);
-    delete alignmentMarker[0].markerImage;
-    delete alignmentMarker[1].markerImage;
-    delete imageTemp;
-    delete alignAndCutImage;
+    for (int i = 0; i < 2; ++i) {
+        delete alignmentMarker[i].markerImage;
+    }
 }

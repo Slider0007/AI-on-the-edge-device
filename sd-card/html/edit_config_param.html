@@ -316,9 +316,9 @@
 				</td>
 				<td>
 					<form id="operationmode_automaticprocessinterval_form">
-						<input required type="number" min="0.1" step="0.1" value="1.0"
+						<input required type="number" min="0.01" step="0.01" value="1.00"
 							name="operationmode.automaticprocessinterval" id="operationmode_automaticprocessinterval_value"
-							onchange="(!validity.rangeUnderflow||(value=0.1)) && (!validity.stepMismatch||(value=this.value));
+							onchange="(!validity.rangeUnderflow||(value=0.01)) && (!validity.stepMismatch||(value=this.value));
 								gatherChangedParameter(this.form)">Minutes
 					</form>
 				</td>
@@ -755,10 +755,10 @@
 							onchange="setClassVisibility('classvisibility_imagealignment_algo_3', this.value < 3);
 									  setClassVisibility('classvisibility_imagealignment_algo_4', this.value < 4);
 								gatherChangedParameter(this.form, true)">
-						<option value="0" selected>Rotation + Default Algo</option>
-						<option value="1" >Rotation + High Accuracy Algo</option>
-						<option value="2" >Rotation + Fast Algo</option>
-						<option value="3" >Only Rotation</option>
+						<option value="0" selected>Rotate + Align (SAD:1CH)</option>
+						<option value="1" >Rotate + Align (SAD:3CH)</option>
+						<option value="2" >Rotate + Align (SAD:1CH + Similarity)*</option>
+						<option value="3" >Rotate only</option>
 						<option value="4" >Off</option>
 					</select>
 				</form>
@@ -3385,7 +3385,7 @@
 		let digitModelSelection = $("#digit_model_value").find("option").remove().end();
 		let analogModelSelection = $("#analog_model_value").find("option").remove().end();
 
-		let modelFileArray = modelFileListObj.files.sort(); // Convert to array and sort
+		let modelFileArray = modelFileListObj.files.sort().map(v => v.toLowerCase()); // Convert to sorted lower case array
 
 		for (let i = 0; i < modelFileArray.length; ++i) {
 			if (modelFileArray[i].startsWith("dig")) { // Digit model, only show in the digit selection

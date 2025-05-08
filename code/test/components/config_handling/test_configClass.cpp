@@ -30,7 +30,7 @@ void test_configJsonParseAndSerialization()
     // Check default values (ESP32CAM device)
     ESP_LOGI(TAG_CFGTEST, "TEST 1: Check default values");
     std::string cfgDataExpexcted =
-        "{\"config\":{\"version\":4,\"lastmodified\":\"\"},\"operationmode\":{\"opmode\":-1,\"automaticprocessinterval\":\"1.0\","
+        "{\"config\":{\"version\":4,\"lastmodified\":\"\"},\"operationmode\":{\"opmode\":-1,\"automaticprocessinterval\":\"1.00\","
         "\"usedemoimages\":false},\"takeimage\":{\"flashlight\":{\"flashtime\":2000,\"flashintensity\":50},\"camera\":{\"cameramodel\":1,"
         "\"camerafrequency\":10,\"imagequality\":12,\"brightness\":0,\"contrast\":0,\"saturation\":0,\"sharpness\":0,"
         "\"exposurecontrolmode\":1,\"autoexposurelevel\":0,\"manualexposurevalue\":300,\"gaincontrolmode\":1,\"manualgainvalue\":0,"

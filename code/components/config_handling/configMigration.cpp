@@ -273,10 +273,11 @@ void migrateConfigIni(void)
                     static int idx = 0;
                     if ((toUpper(splitted[0]) == "ALIGNMENTALGO") && (splitted.size() > 1)) {
                         if (toUpper(splitted[1]) == "HIGHACCURACY") {
-                            ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo = ALIGNALGO_HIGH_ACCURACY;
+                            ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo = ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH;
                         }
                         else if (toUpper(splitted[1]) == "FAST") {
-                            ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo = ALIGNALGO_FAST;
+                            ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo =
+                                ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR;
                         }
                         else if (toUpper(splitted[1]) == "ROTATION") {
                             ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo = ALIGNALGO_ROTATION_ONLY;
@@ -285,7 +286,7 @@ void migrateConfigIni(void)
                             ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo = ALIGNALGO_OFF;
                         }
                         else {
-                            ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo = ALIGNALGO_DEFAULT;
+                            ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment.alignmentAlgo = ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH;
                         }
                     }
                     else if ((toUpper(splitted[0]) == "SEARCHFIELDX") && (splitted.size() > 1)) {

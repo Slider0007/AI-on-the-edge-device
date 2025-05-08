@@ -45,8 +45,7 @@ std::string ClassLogImage::createLogFolder(std::string time)
 }
 
 
-void ClassLogImage::logImage(std::string _logPath, std::string _sequenceName, CNNType _type, int _value, std::string _time,
-                             CImageBasis *_img)
+void ClassLogImage::logImage(std::string _logPath, std::string _sequenceName, CNNType _type, int _value, std::string _time, CImage *_img)
 {
     if (!saveImagesEnabled) {
         return;
@@ -74,11 +73,11 @@ void ClassLogImage::logImage(std::string _logPath, std::string _sequenceName, CN
     std::string output = "/sdcard/img_tmp/" + _sequenceName + ".jpg";
     output = formatFileName(output);
     ESP_LOGD(logTag, "save to file: %s", nm.c_str());
-    if (_img == NULL) {
+    if (!_img) {
         LogFile.writeToFile(ESP_LOG_ERROR, logTag, "logImage: rawImage not initialized");
         return;
     }
-    _img->saveToFile(nm);
+    _img->saveJpgToFile(nm);
 }
 
 

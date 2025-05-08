@@ -5,7 +5,7 @@
 #include <tensorflow/lite/micro/micro_interpreter.h>
 #include <tensorflow/lite/schema/schema_generated.h>
 
-#include "CImageBasis.h"
+#include "CImage.h"
 
 class CTfLiteClass
 {
@@ -32,7 +32,7 @@ class CTfLiteClass
 
     bool makeAllocate();
     bool loadModel(const std::string &fileName);
-    bool loadInputImage(CImageBasis *image);
+    bool loadInputImage(CImage &image);
     bool invoke();
 
     bool parseInputDimension();

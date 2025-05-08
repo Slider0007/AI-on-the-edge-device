@@ -610,7 +610,7 @@ void ClassControlCamera::getOutputFrameSize(int &width, int &height)
 }
 
 
-esp_err_t ClassControlCamera::captureToBasisImage(CImageBasis *_image)
+esp_err_t ClassControlCamera::captureToBasisImage(CImage *_image)
 {
     if (!cameraInitSuccessful) {
         return ESP_FAIL;
@@ -643,13 +643,8 @@ esp_err_t ClassControlCamera::captureToBasisImage(CImageBasis *_image)
             loadNextDemoImage(fb); // Replace framebuffer with image from SD card
         }
 
-        if (_image != NULL) {
-            STBIObjectPSRAM.name = "rawImage";
-            STBIObjectPSRAM.usePreallocated = true;
-            STBIObjectPSRAM.PreallocatedMemory = _image->getRgbImage();
-            STBIObjectPSRAM.PreallocatedMemorySize = _image->getMemsize();
-
-            if (!_image->loadFromMemoryPreallocated(fb->buf, fb->len)) {
+        if (_image) {
+            if (_image->loadJpgFromMemory(fb->buf, fb->len, true) != ESP_OK) {
                 esp_camera_fb_return(fb);
                 xSemaphoreGive(camMutex);
                 return ESP_FAIL;
@@ -659,7 +654,7 @@ esp_err_t ClassControlCamera::captureToBasisImage(CImageBasis *_image)
             // Workaround: Do grayscale on camera + negative on MCU
             // Disadvantage: Effect in combination not visible in other camera consumers like live stream / REST API
             if (paramCameraInternal.specialEffect == 7) {
-                _image->createNegativeImage();
+                CImageMod::negative(*_image);
             }
         }
         else {

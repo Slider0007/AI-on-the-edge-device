@@ -91,12 +91,14 @@ class ClassFlowControl : public ClassFlow
     bool flowStateEventOccured();
     void postProcessEventHandler();
 
-    void drawDigitRoi(CImageBasis *image);
-    void drawAnalogRoi(CImageBasis *image);
+    void drawDigitRoi(CImage &image);
+    void drawAnalogRoi(CImage &image);
 
 #ifdef ENABLE_MQTT
     bool initMqttService();
 #endif // ENABLE_MQTT
+
+    const FlowImageData *getFlowImageData() const { return flowImageData; };
 
     const std::vector<SequenceData *> &getSequenceData() const { return sequenceData; };
     std::string getSequenceResultInline(int type, std::string sequenceName = "");
@@ -104,9 +106,7 @@ class ClassFlowControl : public ClassFlow
     bool setFallbackValue(std::string _sequenceName, std::string _newvalue);
     std::string getFallbackValue(std::string _sequenceName);
 
-    CImageBasis *getRawImage();
-    esp_err_t getJPGStream(std::string _fn, httpd_req_t *req);
-    esp_err_t sendRawJPG(httpd_req_t *req);
+    esp_err_t sendProcessImages(httpd_req_t *req, const char *filename);
 
     std::string name() { return "ClassFlowControl"; };
 
