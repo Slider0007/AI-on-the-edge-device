@@ -331,29 +331,32 @@ float CTfLiteClass::getOutputValue(int index) const
 
 void CTfLiteClass::deleteInterpreter()
 {
-    if (tensorArena != nullptr) {
+    if (tensorArena) {
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TFLite arena - Used bytes: " + std::to_string(interpreter->arena_used_bytes()));
         free_psram_heap(std::string(TAG) + "->tensorArena", tensorArena);
         tensorArena = nullptr;
     }
 
-    if (interpreter != nullptr) {
-        delete interpreter;
+    if (interpreter) {
         interpreter = nullptr;
+        delete interpreter;
     }
 }
 
 
 CTfLiteClass::~CTfLiteClass()
 {
-    if (tensorArena != nullptr) {
+    if (tensorArena) {
+        tensorArena = nullptr;
         free_psram_heap(std::string(TAG) + "->tensorArena", tensorArena);
     }
 
-    if (interpreter != nullptr) {
-        delete interpreter;
+    if (interpreter) {
         interpreter = nullptr;
+        delete interpreter;
     }
-
-    free_psram_heap(std::string(TAG) + "->modelFile", modelFile);
+    if (modelFile) {
+        modelFile = nullptr;
+        free_psram_heap(std::string(TAG) + "->modelFile", modelFile);
+    }
 }
