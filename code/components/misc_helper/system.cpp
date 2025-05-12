@@ -391,221 +391,253 @@ void saveSDCardInfo(sdmmc_card_t *card)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-/* Source: https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/tree/lsmmc.c */
-/* SD Card Manufacturer Database */
-struct SDCard_Manufacturer_database {
+// SD Card Manufacturer Database
+// Source: https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/tree/lsmmc.c
+struct SDCardManufacturerDatabase {
     std::string type;
     int id;
     std::string manufacturer;
 };
 
 
-/* Source: https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/tree/lsmmc.c */
-/* SD Card Manufacturer Database */
-struct SDCard_Manufacturer_database database[] = {{
-                                                      .type = "sd",
-                                                      .id = 0x01,
-                                                      .manufacturer = "Panasonic",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x02,
-                                                      .manufacturer = "Toshiba/Kingston/Viking",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x03,
-                                                      .manufacturer = "SanDisk",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x08,
-                                                      .manufacturer = "Silicon Power",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x18,
-                                                      .manufacturer = "Infineon",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x1b,
-                                                      .manufacturer = "Transcend/Samsung",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x1c,
-                                                      .manufacturer = "Transcend",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x1d,
-                                                      .manufacturer = "Corsair/AData",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x1e,
-                                                      .manufacturer = "Transcend",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x1f,
-                                                      .manufacturer = "Kingston",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x27,
-                                                      .manufacturer = "Delkin/Phison",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x28,
-                                                      .manufacturer = "Lexar",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x30,
-                                                      .manufacturer = "SanDisk",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x31,
-                                                      .manufacturer = "Silicon Power",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x33,
-                                                      .manufacturer = "STMicroelectronics",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x41,
-                                                      .manufacturer = "Kingston",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x6f,
-                                                      .manufacturer = "STMicroelectronics",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x74,
-                                                      .manufacturer = "Transcend",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x76,
-                                                      .manufacturer = "Patriot",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x82,
-                                                      .manufacturer = "Gobe/Sony",
-                                                  },
-                                                  {
-                                                      .type = "sd",
-                                                      .id = 0x89,
-                                                      .manufacturer = "Unknown",
-                                                  }};
+static const SDCardManufacturerDatabase database[] = {
+    {
+        .type = "sd",
+        .id = 0x01,
+        .manufacturer = "Panasonic",
+    },
+    {
+        .type = "sd",
+        .id = 0x02,
+        .manufacturer = "Toshiba/Kingston/Viking",
+    },
+    {
+        .type = "sd",
+        .id = 0x03,
+        .manufacturer = "SanDisk",
+    },
+    {
+        .type = "sd",
+        .id = 0x05,
+        .manufacturer = "Lenovo",
+    },
+    {
+        .type = "sd",
+        .id = 0x08,
+        .manufacturer = "Silicon Power",
+    },
+    {
+        .type = "sd",
+        .id = 0x09,
+        .manufacturer = "ATP",
+    },
+    {
+        .type = "sd",
+        .id = 0x18,
+        .manufacturer = "Infineon",
+    },
+    {
+        .type = "sd",
+        .id = 0x1b,
+        .manufacturer = "Transcend/Samsung",
+    },
+    {
+        .type = "sd",
+        .id = 0x1c,
+        .manufacturer = "Transcend",
+    },
+    {
+        .type = "sd",
+        .id = 0x1d,
+        .manufacturer = "Corsair/AData",
+    },
+    {
+        .type = "sd",
+        .id = 0x1e,
+        .manufacturer = "Transcend",
+    },
+    {
+        .type = "sd",
+        .id = 0x1f,
+        .manufacturer = "Kingston",
+    },
+    {
+        .type = "sd",
+        .id = 0x27,
+        .manufacturer = "Delkin/Phison",
+    },
+    {
+        .type = "sd",
+        .id = 0x28,
+        .manufacturer = "Lexar",
+    },
+    {
+        .type = "sd",
+        .id = 0x30,
+        .manufacturer = "SanDisk",
+    },
+    {
+        .type = "sd",
+        .id = 0x31,
+        .manufacturer = "Silicon Power",
+    },
+    {
+        .type = "sd",
+        .id = 0x33,
+        .manufacturer = "STMicroelectronics",
+    },
+    {
+        .type = "sd",
+        .id = 0x41,
+        .manufacturer = "Kingston",
+    },
+    {
+        .type = "sd",
+        .id = 0x6f,
+        .manufacturer = "STMicroelectronics",
+    },
+    {
+        .type = "sd",
+        .id = 0x74,
+        .manufacturer = "Transcend",
+    },
+    {
+        .type = "sd",
+        .id = 0x76,
+        .manufacturer = "Patriot",
+    },
+    {
+        .type = "sd",
+        .id = 0x82,
+        .manufacturer = "Gobe/Sony",
+    },
+    {
+        .type = "sd",
+        .id = 0x89,
+        .manufacturer = "Netac",
+    },
+    {
+        .type = "sd",
+        .id = 0x9f,
+        .manufacturer = "Kingston/Kodak/Silicon Power",
+    },
+    {
+        .type = "sd",
+        .id = 0xad,
+        .manufacturer = "Amazon Basics/Lexar/OV",
+    },
+    {
+        .type = "sd",
+        .id = 0xdf,
+        .manufacturer = "Lenovo",
+    },
+    {
+        .type = "sd",
+        .id = 0xfe,
+        .manufacturer = "Bekit/Cloudisk/HP/Reletech",
+    } //
+};
 
 
-/* Parse SD Card Manufacturer Database */
 std::string parseSDCardManufacturerID(int id)
 {
-    unsigned int id_cnt = sizeof(database) / sizeof(struct SDCard_Manufacturer_database);
-    std::string ret_val = "";
+    const size_t idCnt = sizeof(database) / sizeof(struct SDCardManufacturerDatabase);
 
-    for (int i = 0; i < id_cnt; i++) {
+    for (size_t i = 0; i < idCnt; i++) {
         if (database[i].id == id) {
             return database[i].manufacturer;
         }
-        else {
-            ret_val = "ID unknown (not in DB)";
-        }
     }
-    return ret_val;
+
+    return "Unknown";
 }
 
 
 std::string getSDCardManufacturer()
 {
-    std::string SDCardManufacturer = parseSDCardManufacturerID(SDCardCid.mfg_id);
-    // ESP_LOGD(TAG, "SD Card Manufacturer: %s", SDCardManufacturer.c_str());
+    std::string manufacturer = parseSDCardManufacturerID(SDCardCid.mfg_id);
 
-    return (SDCardManufacturer + " (ID: " + std::to_string(SDCardCid.mfg_id) + ")");
+    return manufacturer + " (ID: " + std::to_string(SDCardCid.mfg_id) + ")";
 }
 
 
 std::string getSDCardName()
 {
-    char *SDCardName = SDCardCid.name;
-    // ESP_LOGD(TAG, "SD Card Name: %s", SDCardName);
-
-    return std::string(SDCardName);
+    return std::string(SDCardCid.name, 8);
 }
 
 
 int getSDCardPartitionSize()
 {
     FATFS *fs;
-    uint32_t fre_clust, tot_sect;
+    uint32_t freeClusters;
+    unsigned long long totalBytes;
+    int totalMB;
 
-    /* Get volume information and free clusters of drive 0 */
-    f_getfree("0:", (DWORD *)&fre_clust, &fs);
-    tot_sect = ((fs->n_fatent - 2) * fs->csize) / 1024 /
-               (1024 / SDCardCsd.sector_size); // corrected by SD Card sector size (usually 512 bytes) and convert to MB
+    // Get volume information and free clusters of drive 0
+    if (f_getfree("0:", (DWORD *)&freeClusters, &fs) != FR_OK || fs == nullptr) {
+        return -1; // Error case
+    }
 
-    // ESP_LOGD(TAG, "%d MB total drive space (Sector size [bytes]: %d)", (int)tot_sect, (int)fs->ssize);
+    // Total sectors = number of clusters * sectors per cluster
+    unsigned long totalSectors = (fs->n_fatent - 2) * fs->csize;
 
-    return tot_sect;
+    // Total bytes = total sectors * bytes per sector
+    totalBytes = (unsigned long long)totalSectors * SDCardCsd.sector_size;
+
+    // Convert bytes to MB
+    totalMB = (int)(totalBytes / (1024 * 1024));
+
+    return totalMB;
 }
 
 
 int getSDCardFreePartitionSpace()
 {
     FATFS *fs;
-    uint32_t fre_clust, fre_sect;
+    uint32_t freeClusters;
+    unsigned long long freeBytes;
+    int freeMB;
 
-    /* Get volume information and free clusters of drive 0 */
-    f_getfree("0:", (DWORD *)&fre_clust, &fs);
-    fre_sect = (fre_clust * fs->csize) / 1024 /
-               (1024 / SDCardCsd.sector_size); // corrected by SD Card sector size (usually 512 bytes) and convert to MB
+    // Get volume info and free cluster of drive 0
+    if (f_getfree("0:", (DWORD *)&freeClusters, &fs) != FR_OK || fs == nullptr) {
+        return -1; // Error case
+    }
 
-    // ESP_LOGD(TAG, "%d MB free drive space (Sector size [bytes]: %d)", (int)fre_sect, (int)fs->ssize);
+    // Free space in bytes = free clusters * sectors per cluster * bytes per sector
+    freeBytes = (unsigned long long)freeClusters * fs->csize * SDCardCsd.sector_size;
 
-    return fre_sect;
+    // Convert bytes to MB
+    freeMB = (int)(freeBytes / (1024 * 1024));
+
+    return freeMB;
 }
 
 
 int getSDCardPartitionAllocationSize()
 {
     FATFS *fs;
-    uint32_t fre_clust, allocation_size;
+    uint32_t freeClusters;
 
-    /* Get volume information and free clusters of drive 0 */
-    f_getfree("0:", (DWORD *)&fre_clust, &fs);
-    allocation_size = fs->ssize;
+    // Get volume information and free clusters of drive 0
+    if (f_getfree("0:", (DWORD *)&freeClusters, &fs) != FR_OK || fs == nullptr) {
+        return -1; // Error case
+    }
 
-    // ESP_LOGD(TAG, "SD Card Partition Allocation Size: %d bytes", allocation_size);
-
-    return allocation_size;
+    return (int)fs->ssize;
 }
 
 
 int getSDCardCapacity()
 {
-    int SDCardCapacity = SDCardCsd.capacity / (1024 / SDCardCsd.sector_size) /
-                         1024; // total sectors * sector size  --> Byte to MB (1024*1024)
-    // ESP_LOGD(TAG, "SD Card Capacity: %s", std::to_string(SDCardCapacity).c_str());
+    // Total sectors * sector size  --> Byte to MB (1024 * 1024)
+    const int sdCardCapacity = SDCardCsd.capacity / (1024 / SDCardCsd.sector_size) / 1024;
 
-    return SDCardCapacity;
+    return sdCardCapacity;
 }
 
 
 int getSDCardSectorSize()
 {
-    int SDCardSectorSize = SDCardCsd.sector_size;
-    // ESP_LOGD(TAG, "SD Card Sector Size: %s bytes", std::to_string(SDCardSectorSize).c_str());
-
-    return SDCardSectorSize;
+    return SDCardCsd.sector_size;
 }
