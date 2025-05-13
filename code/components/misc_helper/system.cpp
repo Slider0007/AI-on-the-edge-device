@@ -555,14 +555,17 @@ std::string parseSDCardManufacturerID(int id)
 
 std::string getSDCardManufacturer()
 {
-    std::string manufacturer = parseSDCardManufacturerID(SDCardCid.mfg_id);
+    std::string SDCardManufacturer = parseSDCardManufacturerID(SDCardCid.mfg_id);
+    // ESP_LOGD(TAG, "SD Card Manufacturer: %s", SDCardManufacturer.c_str());
 
-    return manufacturer + " (ID: " + std::to_string(SDCardCid.mfg_id) + ")";
+    return SDCardManufacturer + " (ID: " + std::to_string(SDCardCid.mfg_id) + ")";
 }
 
 
 std::string getSDCardName()
 {
+    // ESP_LOGD(TAG, "SD Card Name: %s", SDCardCid.name);
+
     return std::string(SDCardCid.name, 8);
 }
 
@@ -571,24 +574,18 @@ int getSDCardPartitionSize()
 {
     FATFS *fs;
     uint32_t freeClusters;
-    unsigned long long totalBytes;
-    int totalMB;
 
     // Get volume information and free clusters of drive 0
     if (f_getfree("0:", (DWORD *)&freeClusters, &fs) != FR_OK || fs == nullptr) {
         return -1; // Error case
     }
 
-    // Total sectors = number of clusters * sectors per cluster
-    unsigned long totalSectors = (fs->n_fatent - 2) * fs->csize;
+    // Corrected by SD Card sector size (usually 512 bytes) and convert to MB
+    const uint32_t totalSectors = ((fs->n_fatent - 2) * fs->csize) / 1024 / (1024 / SDCardCsd.sector_size);
 
-    // Total bytes = total sectors * bytes per sector
-    totalBytes = (unsigned long long)totalSectors * SDCardCsd.sector_size;
+    // ESP_LOGD(TAG, "%d MB total drive space (Sector size [bytes]: %d)", (int)totalSectors, (int)fs->ssize);
 
-    // Convert bytes to MB
-    totalMB = (int)(totalBytes / (1024 * 1024));
-
-    return totalMB;
+    return totalSectors;
 }
 
 
@@ -596,21 +593,18 @@ int getSDCardFreePartitionSpace()
 {
     FATFS *fs;
     uint32_t freeClusters;
-    unsigned long long freeBytes;
-    int freeMB;
 
-    // Get volume info and free cluster of drive 0
+    // Get volume information and free clusters of drive 0
     if (f_getfree("0:", (DWORD *)&freeClusters, &fs) != FR_OK || fs == nullptr) {
         return -1; // Error case
     }
 
-    // Free space in bytes = free clusters * sectors per cluster * bytes per sector
-    freeBytes = (unsigned long long)freeClusters * fs->csize * SDCardCsd.sector_size;
+    // Corrected by SD Card sector size (usually 512 bytes) and convert to MB
+    const uint32_t freeSectors = (freeClusters * fs->csize) / 1024 / (1024 / SDCardCsd.sector_size);
 
-    // Convert bytes to MB
-    freeMB = (int)(freeBytes / (1024 * 1024));
+    // ESP_LOGD(TAG, "%d MB free drive space (Sector size [bytes]: %d)", (int)freeSectors, (int)fs->ssize);
 
-    return freeMB;
+    return freeSectors;
 }
 
 
@@ -624,14 +618,18 @@ int getSDCardPartitionAllocationSize()
         return -1; // Error case
     }
 
-    return (int)fs->ssize;
+    // ESP_LOGD(TAG, "SD Card Partition Allocation Size: %d bytes", fs->ssize);
+
+    return fs->ssize;
 }
 
 
 int getSDCardCapacity()
 {
-    // Total sectors * sector size  --> Byte to MB (1024 * 1024)
+    // Total sectors * sector size  --> Byte to MB (1024*1024)
     const int sdCardCapacity = SDCardCsd.capacity / (1024 / SDCardCsd.sector_size) / 1024;
+
+    // ESP_LOGD(TAG, "SD Card Capacity: %d", sdCardCapacity);
 
     return sdCardCapacity;
 }
@@ -639,5 +637,7 @@ int getSDCardCapacity()
 
 int getSDCardSectorSize()
 {
+    // ESP_LOGD(TAG, "SD Card Sector Size: %d bytes", SDCardCsd.sector_size);
+
     return SDCardCsd.sector_size;
 }
