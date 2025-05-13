@@ -17,12 +17,12 @@
 
 static const char *TAG = "SYSTEM";
 
-unsigned int systemStatus = 0;
+static unsigned int systemStatus = 0;
 static bool isPlannedReboot = false;
 static SPIRAMCategory_t SPIRAMCategory = SPIRAMCategory_4MB;
 
-sdmmc_cid_t SDCardCid;
-sdmmc_csd_t SDCardCsd;
+static sdmmc_cid_t SDCardCid;
+static sdmmc_csd_t SDCardCsd;
 
 
 std::string getBoardType(void)
@@ -390,7 +390,6 @@ void saveSDCardInfo(sdmmc_card_t *card)
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////
 // SD Card Manufacturer Database
 // Source: https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/tree/lsmmc.c
 struct SDCardManufacturerDatabase {
