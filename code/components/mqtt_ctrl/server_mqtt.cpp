@@ -495,8 +495,10 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topic = "/device/status/device_uptime",
         .topicName = "device_uptime",
         .friendlyName = "Uptime",
-        .icon = "clock-time-eight-outline",
+        .icon = "progress-clock",
         .unit = "s",
+        .deviceClass = "duration",
+        .stateClass = "measurement",
         .entityCategory = "diagnostic" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
