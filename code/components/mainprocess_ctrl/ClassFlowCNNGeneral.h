@@ -28,9 +28,9 @@ class ClassFlowCNNGeneral : public ClassLogImage
     bool saveAllFiles;
 
     int evalAnalogNumber(int _value, int _resultPreviousNumber) const;
-    int evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool isPreviousAnalog = false,
-                        int analogDigitSyncValue = 92) const;
-    int evalAnalogToDigitTransition(int _value, int _valuePreviousNumber, int _resultPreviousNumber, int analogDigitSyncValue) const;
+    int evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool _isPreviousAnalog = false,
+                        int _analogDigitSyncValue = 92) const;
+    int evalAnalogToDigitTransition(int _value, int _valuePreviousNumber, int _resultPreviousNumber, int _analogDigitSyncValue) const;
 
     bool resolveNetworkParameter();
     bool doExtractRoi(const std::string time);

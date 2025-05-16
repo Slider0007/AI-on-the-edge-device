@@ -594,7 +594,7 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decimals
     bool no_nulldurchgang = false;
 
     pot = _decimalshift;
-    if (!_isanalog) { // if there are no analogue values, the last one cannot be evaluated
+    if (!_isanalog) { // if there are no analog values, the last one cannot be evaluated
         pot++;
     }
 

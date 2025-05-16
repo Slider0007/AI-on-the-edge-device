@@ -1,4 +1,4 @@
-# Parameter: Analog/Digital Transition Start
+# Parameter: Analog/Digit Sync Value
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
@@ -9,16 +9,17 @@
 
 ## Description
 
-Adapt the sync strategy between least-significant digit number and most-significant analog counter in a sqeuence. 
-Check [documentation](../Watermeter-specific-analog---digital-transition) for more details.
+Adjusts the synchronization between the least significant digit and the most significant analog counter in a number sequence.
+Check [jomjol documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/Watermeter-specific-analog---digit-transition/) 
+for more details.
+
 
 !!! Info
-    The lower the value, the earlier the least significant digit reaches the critical zweo crossing area. 
-    Set this parameter a little lower than the most-significant analog counter value right after 
-    least-significant digit number enters `x.8` region.
+    Set this slightly below the most significant analog value when the least significant digit reaches the x.8 region 
+    (e.g., 0.8, 1.8). This ensures accurate rollover detection, especially on poorly synchronized mechanical dials. 
+    Lower values trigger earlier digit transitions.
+
 
 !!! Note
-    This parameter can to be set for each number sequence separately. 
-    Use the drop down to choose the respective number sequence. 
-    A number sequence is a group of single digits and / or analog counter defined in digit 
-    and / or anlog ROI configuration screen.
+    This parameter is set individually for each number sequence. Use the dropdown to select the desired sequence.
+    A number sequence includes one or more digits and/or analog counters defined in the digit or analog ROI configuration.

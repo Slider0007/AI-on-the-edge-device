@@ -745,7 +745,7 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
     txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;margin-right:10px;\">\n";
     txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
     txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
-           "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitalization "
+           "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitization "
            "cycle.</strong></p>";
     txt += "<p>\"Raw Value\" represents the value which gets extracted and combined from all the single image results but without "
            "correction of any of the post-processing checks / alogrithms. The result after post-processing validation is represented with "
