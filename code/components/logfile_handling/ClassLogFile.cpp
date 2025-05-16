@@ -56,7 +56,7 @@ void ClassLogFile::writeHeapInfo(std::string _id)
 
 void ClassLogFile::writeToData(std::string _timestamp, std::string _name, std::string _sRawValue, std::string _sValue,
                                std::string _sFallbackValue, std::string _sRatePerMin, std::string _sRatePerInterval,
-                               std::string _sValueStatus, std::string _digital, std::string _analog)
+                               std::string _sValueStatus, std::string _digit, std::string _analog)
 {
     time_t rawtime;
     time(&rawtime);
@@ -87,7 +87,7 @@ void ClassLogFile::writeToData(std::string _timestamp, std::string _name, std::s
     fputs(_sRatePerInterval.c_str(), pFile);
     fputs(",", pFile);
     fputs(_sValueStatus.c_str(), pFile);
-    fputs(_digital.c_str(), pFile);
+    fputs(_digit.c_str(), pFile);
     fputs(_analog.c_str(), pFile);
     fputs("\n", pFile);
 

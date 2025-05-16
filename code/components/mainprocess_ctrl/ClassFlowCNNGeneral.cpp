@@ -524,18 +524,18 @@ int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber)
         return result;
     }
 
-    int valueMax = _value + Analog_error;
+    int valueMax = _value + ANALOG_ZERO_CROSSING_UNCERTAINTY;
     if (valueMax >= 100) { // e.g. 10.2 -> 0.2 (value = 02)
         valueMax = valueMax - 100;
     }
 
-    int valueMin = _value - Analog_error;
+    int valueMin = _value - ANALOG_ZERO_CROSSING_UNCERTAINTY;
     if (valueMin < 0) { // e.g. -0.3 -> 9.7 (value = 97)
         valueMin = 100 + valueMin;
     }
 
     if (((valueMin / 10 - valueMax / 10)) != 0) {
-        if (_resultPreviousNumber <= Analog_error) {
+        if (_resultPreviousNumber <= ANALOG_ZERO_CROSSING_UNCERTAINTY) {
             result = valueMax / 10;
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                 "evalAnalogNumber (Ambiguous, use value + corretion): Result: " + std::to_string(result) +
@@ -543,7 +543,7 @@ int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber)
                                     ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
             return result;
         }
-        else if (_resultPreviousNumber >= 10 - Analog_error) {
+        else if (_resultPreviousNumber >= 10 - ANALOG_ZERO_CROSSING_UNCERTAINTY) {
             result = valueMin / 10;
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                 "evalAnalogNumber (Ambiguous, use value - corretion): Result: " + std::to_string(result) +
@@ -563,7 +563,7 @@ int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber)
 
 /* Evaluate digit number */
 int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool _isPreviousAnalog,
-                                         int digitalAnalogTransitionStart) const
+                                         int _analogDigitSyncValue) const
 {
     int result = -1;
     int resultIntergerPart = _value / 10;
@@ -579,7 +579,7 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
 
     // previous number is analog (_valuePreviousNumber: 0-99), special transistion check needed
     if (_isPreviousAnalog) {
-        result = evalAnalogToDigitTransition(_value, _valuePreviousNumber, _resultPreviousNumber, digitalAnalogTransitionStart);
+        result = evalAnalogToDigitTransition(_value, _valuePreviousNumber, _resultPreviousNumber, _analogDigitSyncValue);
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                             "evalDigitNumber (Analog previous number): Result: " + std::to_string(result) +
                                 ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
@@ -589,11 +589,10 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
     }
 
     // Previous number is digit (_valuePreviousNumber: 0-99) No digit change, because predecessor is far enough away (+/-
-    // Digital_Transition_Area_Predecessor)
-    if ((_valuePreviousNumber >= Digital_Transition_Area_Predecessor) &&
-        (_valuePreviousNumber <= (100 - Digital_Transition_Area_Predecessor))) {
+    // DIGIT_ZERO_CROSSING_OFFSET)
+    if ((_valuePreviousNumber >= DIGIT_ZERO_CROSSING_OFFSET) && (_valuePreviousNumber <= (100 - DIGIT_ZERO_CROSSING_OFFSET))) {
         // Band around the digit --> Round, as digit reaches inaccuracy in the frame
-        if ((resultDecimalPlace <= DigitalBand) || (resultDecimalPlace >= (10 - DigitalBand))) {
+        if ((resultDecimalPlace <= DIGIT_ZERO_CROSSING_UNCERTAINTY) || (resultDecimalPlace >= (10 - DIGIT_ZERO_CROSSING_UNCERTAINTY))) {
             if (resultDecimalPlace >= 5) {
                 result = resultIntergerPart + 1; // "Round"
 
@@ -642,11 +641,11 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
     }
 
     // remains only >= 9.x --> no zero crossing yet --> 2.8 --> 2,
-    // and from 9.7(Digital_Transition_Area_Forward) 3.1 --> 2
+    // and from 9.7(DIGIT_EARLY_ZERO_CROSSING_THRESHOLD) 3.1 --> 2
     // everything >=x.4 can be considered as current number in transition. With 9.x predecessor the current
     // number can still be x.6 - x.7.
     // Preceding (else - branch) does not already happen from 9.
-    if (((_valuePreviousNumber <= Digital_Transition_Area_Forward) && (_resultPreviousNumber == (int)(_valuePreviousNumber / 10.0))) ||
+    if (((_valuePreviousNumber <= DIGIT_EARLY_ZERO_CROSSING_THRESHOLD) && (_resultPreviousNumber == (int)(_valuePreviousNumber / 10.0))) ||
         resultDecimalPlace >= 4) {
         result = resultIntergerPart; // The current digit, like the previous digit, does not yet have a zero crossing.
     }
@@ -672,14 +671,15 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
 
 /* Evaluate analog to digit number transition */
 int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePreviousNumber, int _resultPreviousNumber,
-                                                     int analogDigitSyncValue) const
+                                                     int _analogDigitSyncValue) const
 {
     int result = -1;
     int resultIntergerPart = _value / 10;
     int resultDecimalPlace = _value % 10;
 
     // Value within the digit inequalities
-    if (resultDecimalPlace >= (10 - Digital_Uncertainty) // Band around the zero crossing -> Round, as number reaches inaccuracy zone
+    if (resultDecimalPlace >= (10 - ANALOG_DIGIT_ZERO_CROSSING_UNCERTAINTY) // Band around the zero crossing -> Round, as number reaches
+                                                                            // inaccuracy zone
         ||
         (_resultPreviousNumber <= 4 && resultDecimalPlace >= 6)) // or number runs after (previous result <= 4, actucal decimal place >= 6)
     {
@@ -692,7 +692,7 @@ int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePrevi
 
             // Correct back if no zero crossing detected
             // analogDigitSyncValue < _valuePreviousNumber < 0.2
-            if (_resultPreviousNumber >= 6 && (_valuePreviousNumber > analogDigitSyncValue || _valuePreviousNumber <= 2)) {
+            if (_resultPreviousNumber >= 6 && (_valuePreviousNumber > _analogDigitSyncValue || _valuePreviousNumber <= 2)) {
                 result = result - 1;
                 if (result < 0) {
                     result = 9;

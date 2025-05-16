@@ -243,12 +243,13 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
 // ClassFlowCNNGeneral
-//******************************
-#define Analog_error                        3  // 0.3
-#define Digital_Uncertainty                 2  // 0.2
-#define DigitalBand                         3  // 0.3
-#define Digital_Transition_Area_Predecessor 7  // 9.3 - 0.7
-#define Digital_Transition_Area_Forward     97 // 9.7 - Pre-run zero crossing only happens from approx. 9.7 onwards
+// Define ROI post-processing tolerances
+//**************************************
+#define ANALOG_ZERO_CROSSING_UNCERTAINTY        3   // 0.3 - Meter analog zero crossing tolerances and/or CNN uncertainty
+#define ANALOG_DIGIT_ZERO_CROSSING_UNCERTAINTY  2   // 0.2 - Meter analog/digit zero crossing sync tolerances and/or CNN uncertainty
+#define DIGIT_ZERO_CROSSING_UNCERTAINTY         3   // 0.3 - Meter digit zero crossing tolerances and/or CNN uncertainty
+#define DIGIT_ZERO_CROSSING_OFFSET              7    // 0.7 - Digit zero crossing offset to define a 'safe area'
+#define DIGIT_EARLY_ZERO_CROSSING_THRESHOLD     (100 - DIGIT_ZERO_CROSSING_UNCERTAINTY) // 9.7 - Early digit zero crossing usually occurs when previous digit >= 9.7
 
 
 // ClassFlowPostProcessing.cpp: Post-Processing result value status

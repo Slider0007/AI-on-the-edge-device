@@ -71,7 +71,7 @@ void test_analogToDigit_Transition()
     // Transition = yes
     // Zero crossing = no
     // Offset = no
-    // Special feature: Digit has not yet started at analogue 9.1
+    // Special feature: Digit has not yet started at analog 9.1
     TEST_ASSERT_EQUAL_INT(4, undertest->evalAnalogToDigitTransition(40, 91, 9, 92));
 
     // without reference
@@ -79,7 +79,7 @@ void test_analogToDigit_Transition()
     // transition = yes
     // Zero crossing = no
     // Offset = no
-    // Special feature: analogue is set back to 9 by previous analogue
+    // Special feature: analog is set back to 9 by previous analog
     TEST_ASSERT_EQUAL_INT(9, undertest->evalAnalogToDigitTransition(98, 01, 9, 92));
 
 
@@ -96,6 +96,6 @@ void test_analogToDigit_Transition()
     // Transition = yes
     // Zero crossing = no
     // Offset = no
-    // Special feature: Digit runs with analogue. Therefore 1.8 (vs. 7.8)
+    // Special feature: Digit runs with analog. Therefore 1.8 (vs. 7.8)
     TEST_ASSERT_EQUAL_INT(1, undertest->evalAnalogToDigitTransition(18, 78, 7, 7.7));
 }

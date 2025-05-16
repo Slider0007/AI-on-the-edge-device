@@ -52,7 +52,7 @@ class ClassLogFile
     void removeOldDebugFiles();
 
     void writeToData(std::string _timestamp, std::string _name, std::string _sRawValue, std::string _sValue, std::string _sFallbackValue,
-                     std::string _sRatePerMin, std::string _sRatePerInterval, std::string _sValueStatus, std::string _digital,
+                     std::string _sRatePerMin, std::string _sRatePerInterval, std::string _sValueStatus, std::string _digit,
                      std::string _analog);
 
 

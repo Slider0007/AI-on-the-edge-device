@@ -28,10 +28,10 @@ void test_EvalAnalogNumber()
     // so the current digit shoult be reduced (4.9)
     TEST_ASSERT_EQUAL(4, undertest.evalAnalogNumber(FLOAT_AS_INT(5.2), 9));
 
-    // the 4.4 (digital100) is not above 5  and the previous digit (analog) too (9.3)
+    // the 4.4 (digit100) is not above 5  and the previous digit (analog) too (9.3)
     TEST_ASSERT_EQUAL(4, undertest.evalAnalogNumber(FLOAT_AS_INT(4.4), 9));
 
-    // the 4.5 (digital100) is not above 5  and the previous digit (analog) too (9.6)
+    // the 4.5 (digit100) is not above 5  and the previous digit (analog) too (9.6)
     TEST_ASSERT_EQUAL(4, undertest.evalAnalogNumber(FLOAT_AS_INT(4.5), 9));
 }
 
@@ -41,7 +41,7 @@ void test_EvalAnalogNumber()
  * evaluation are running correctly
  *
  * -> Desciption for call undertest.evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber,
- * bool isPreviousAnalog, float digitalAnalogTransitionStart)
+ * bool _isPreviousAnalog, float _analogDigitSyncValue)
  * @param _value: is the current ROI as int value with one decimal digit (e.g. 10 -> 1.0)
  * @param _valuePreviousNumber: is the last (lower) ROI as int with one decimal digit (e.g. 10 -> 1.0)
  * @param _resultPreviousNumber: is the evaluated number. Sometimes a much lower value can change higer values
@@ -49,9 +49,9 @@ void test_EvalAnalogNumber()
  *                          0.1 => 0 (resultPreviousNumber)
  *                          The 0 makes a 9.9 to 0 (resultPreviousNumber)
  *                          The 0 makes a 9.8 to 0
- * @param isPreviousAnalog: false/true if the last ROI is an analog or digit ROI (default=false == digit)
+ * @param _isPreviousAnalog: false/true if the last ROI is an analog or digit ROI (default=false == digit)
  *                              runs in special handling because analog is much less precise
- * @param analogDigitSyncValue  start of the transitionlogic begins on valuePreviousNumber (default=9.2)
+ * @param _analogDigitSyncValue  start of the transitionlogic begins on valuePreviousNumber (default=9.2)
  */
 void test_EvalDigitNumber()
 {
@@ -78,24 +78,25 @@ void test_EvalDigitNumber()
     // the 5.3 with previous and the previous <=0.7 should trunc to 5
     TEST_ASSERT_EQUAL(5, undertest.evalDigitNumber(FLOAT_AS_INT(5.3), FLOAT_AS_INT(0.1), 0));
 
-    // the 5.2 with previous and the previous >9.7 (#define Digital_Transition_Area_Forward) should reduce to 4
+    // the 5.2 with previous and the previous >9.7 (#define DIGIT_EARLY_ZERO_CROSSING_THRESHOLD) should reduce to 4
     TEST_ASSERT_EQUAL(4, undertest.evalDigitNumber(FLOAT_AS_INT(5.2), FLOAT_AS_INT(9.8), 9, false, FLOAT_AS_INT(9.0)));
 
-    // the 5.7 with previous and the previous >9.7 (#define Digital_Transition_Area_Forward) should trunc to 5 (reason: decimal place >=4)
+    // the 5.7 with previous and the previous >9.7 (#define DIGIT_EARLY_ZERO_CROSSING_THRESHOLD) should trunc to 5 (reason: decimal place
+    // >=4)
     TEST_ASSERT_EQUAL(5, undertest.evalDigitNumber(FLOAT_AS_INT(5.7), FLOAT_AS_INT(9.8), 9));
 
-    // the 4.5 (digital100) is not above 5 and the previous digit (analog) not over zero (9.7) -> #define Digital_Transition_Area_Forward
+    // the 4.5 (digit100) is not above 5 and the previous digit (analog) not over zero (9.7) -> #define DIGIT_EARLY_ZERO_CROSSING_THRESHOLD
     TEST_ASSERT_EQUAL(4, undertest.evalDigitNumber(FLOAT_AS_INT(4.5), FLOAT_AS_INT(9.8), 9));
 
-    // the 4.5 (digital100) is not above 5 and the previous digit (analog) over zero (0.7) -> #define Digital_Transition_Area_Predecessor
+    // the 4.5 (digit100) is not above 5 and the previous digit (analog) over zero (0.7) -> #define DIGIT_ZERO_CROSSING_OFFSET
     TEST_ASSERT_EQUAL(4, undertest.evalDigitNumber(FLOAT_AS_INT(4.5), FLOAT_AS_INT(0.7), 0));
 
-    // the 4.5 (digital100) is not above 5 and the previous digit (analog) not over zero (9.5)
+    // the 4.5 (digit100) is not above 5 and the previous digit (analog) not over zero (9.5)
     TEST_ASSERT_EQUAL(4, undertest.evalDigitNumber(FLOAT_AS_INT(4.5), FLOAT_AS_INT(9.5), 9));
 
     // 59.96889 - Pre: 58.94888
     // 8.6 : 9.8 : 6.7
-    // the 8.6 (digital100) is not above 8 and the previous digit (analog) not over zero (9.8)
+    // the 8.6 (digit100) is not above 8 and the previous digit (analog) not over zero (9.8)
     TEST_ASSERT_EQUAL(8, undertest.evalDigitNumber(FLOAT_AS_INT(8.6), FLOAT_AS_INT(9.8), 9));
 
     // pre = 9.9 (0.0 raw)

@@ -21,3 +21,8 @@ value reload timestamp after device boot.
 !!! Note
     This helps to prevent using a not up-to-date last valid result after e.g. a longer period being offline. 
     A too old last valid result (Fallback Value) will be updated with first new evaluated result.
+
+
+!!! Note
+    This parameter is set individually for each number sequence. Use the dropdown to select the desired sequence.
+    A number sequence includes one or more digits and/or analog counters defined in the digit or analog ROI configuration.
