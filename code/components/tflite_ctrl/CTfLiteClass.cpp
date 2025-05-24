@@ -355,8 +355,6 @@ CTfLiteClass::~CTfLiteClass()
         interpreter = nullptr;
         delete interpreter;
     }
-    if (modelFile) {
-        modelFile = nullptr;
-        free_psram_heap(std::string(TAG) + "->modelFile", modelFile);
-    }
+    
+    free_psram_heap(std::string(TAG) + "->modelFile", modelFile);
 }
