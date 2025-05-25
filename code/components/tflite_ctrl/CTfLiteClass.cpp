@@ -357,4 +357,5 @@ CTfLiteClass::~CTfLiteClass()
     }
     
     free_psram_heap(std::string(TAG) + "->modelFile", modelFile);
+    modelFile = nullptr;
 }
