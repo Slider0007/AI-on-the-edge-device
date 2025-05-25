@@ -338,8 +338,8 @@ void CTfLiteClass::deleteInterpreter()
     }
 
     if (interpreter) {
-        interpreter = nullptr;
         delete interpreter;
+        interpreter = nullptr;
     }
 }
 
@@ -347,14 +347,15 @@ void CTfLiteClass::deleteInterpreter()
 CTfLiteClass::~CTfLiteClass()
 {
     if (tensorArena) {
-        tensorArena = nullptr;
         free_psram_heap(std::string(TAG) + "->tensorArena", tensorArena);
+        tensorArena = nullptr;
     }
 
     if (interpreter) {
-        interpreter = nullptr;
         delete interpreter;
+        interpreter = nullptr;
     }
     
     free_psram_heap(std::string(TAG) + "->modelFile", modelFile);
+    modelFile = nullptr;
 }
