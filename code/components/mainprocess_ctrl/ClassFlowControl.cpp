@@ -729,19 +729,19 @@ esp_err_t ClassFlowControl::sendProcessImages(httpd_req_t *req, const char *file
         for (const auto &sequence : sequenceData) {
             for (const auto &roi : sequence->digitRoi) {
                 if (strcmp(std::string(roi->param->roiName + "_org.jpg").c_str(), filename) == 0) {
-                    return roi->imageRoi->sendJpgToHttp(req);
+                    return roi->imageRoi->sendJpgToHttp(req, 100);
                 }
                 else if (strcmp(std::string(roi->param->roiName + ".jpg").c_str(), filename) == 0) {
-                    return roi->imageRoiResized->sendJpgToHttp(req);
+                    return roi->imageRoiResized->sendJpgToHttp(req, 100);
                 }
             }
 
             for (const auto &roi : sequence->analogRoi) {
                 if (strcmp(std::string(roi->param->roiName + "_org.jpg").c_str(), filename) == 0) {
-                    return roi->imageRoi->sendJpgToHttp(req);
+                    return roi->imageRoi->sendJpgToHttp(req, 100);
                 }
                 else if (strcmp(std::string(roi->param->roiName + ".jpg").c_str(), filename) == 0) {
-                    return roi->imageRoiResized->sendJpgToHttp(req);
+                    return roi->imageRoiResized->sendJpgToHttp(req, 100);
                 }
             }
         }

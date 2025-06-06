@@ -368,7 +368,7 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Result: " + roi->sCNNResult);
 
             if (saveImagesEnabled) {
-                logImage(logPath, roiName, cnnType, logImageResult, time, roi->imageRoi);
+                logImage(logPath, roiName, cnnType, logImageResult, time, roi->imageRoi, 100);
             }
         }
     }
