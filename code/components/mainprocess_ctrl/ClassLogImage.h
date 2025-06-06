@@ -16,7 +16,8 @@ class ClassLogImage : public ClassFlow
     int imagesRetention;
 
     std::string createLogFolder(std::string time);
-    void logImage(std::string _logPath, std::string _sequenceName, CNNType _type, int _value, std::string _time, CImage *_img);
+    void logImage(std::string _logPath, std::string _sequenceName, CNNType _type, int _value, std::string _time, CImage *_img,
+                  uint8_t _quality = 90);
     void removeOldLogs();
 
   public:
