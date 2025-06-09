@@ -267,7 +267,7 @@ struct CfgData {
     // Digit Numbers
     struct SectionDigit {
         bool enabled = true;
-        std::string model = "dig-class100_0173_s2_q.tflite"; // with extention, but without path
+        std::string model = "dig-class100_0180_s2_q.tflite"; // with extention, but without path
         float cnnGoodThreshold = 0.50;
         std::vector<RoiPerSequence> sequence;
         struct Debug {
@@ -282,7 +282,7 @@ struct CfgData {
     // Analog Counter
     struct SectionAnalog {
         bool enabled = true;
-        std::string model = "ana-class100_0171_s1_q.tflite"; // with extention, but without path
+        std::string model = "ana-class100_0180_s1_q.tflite"; // with extention, but without path
         std::vector<RoiPerSequence> sequence;
         struct Debug {
             bool saveRoiImages = false;
