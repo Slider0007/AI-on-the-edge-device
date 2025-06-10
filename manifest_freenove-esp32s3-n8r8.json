@@ -1,0 +1,15 @@
+{
+    "name": "AI-on-the-Edge Device",
+    "version": "v17.1.0-SLFork",
+    "new_install_prompt_erase": false,
+    "builds": [
+        {
+            "chipFamily": "ESP32-S3",
+            "parts": [
+                { "path": "firmware/freenove-esp32s3-n8r8/bootloader.bin", "offset": 0 },
+                { "path": "firmware/freenove-esp32s3-n8r8/partitions.bin", "offset": 32768 },
+                { "path": "firmware/freenove-esp32s3-n8r8/firmware.bin", "offset": 65536 }
+            ]
+        }
+    ]
+}
