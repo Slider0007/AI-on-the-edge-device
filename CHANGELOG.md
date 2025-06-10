@@ -2,6 +2,35 @@
 
 ## [17.1.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.0.0-SLFork...v17.1.0-SLFork) (2025-06-09)
 
+### 💡 Installation / Migration Notes
+
+#### A. Initial Installation
+--> Recommeded: **Web Installer**
+ - Follow instructions listed on [Web Installer page](https://slider0007.github.io/AI-on-the-edge-device/)
+ - Other installation options: Check [Device Provisioning Documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs/Installation/DeviceProvisioning)
+
+#### B. Update from previous release (17.0.0)
+--> Recommeded: **OTA Update**
+- Download board specific firmware package
+- Perfom OTA update
+- Verify alignment marker and ROI positions (due to changes of image handling)
+
+#### C. Migration from previous major release (16.x)
+--> Recommeded: **OTA Update**
+- Download board specific firmware package
+- Perfom OTA update (ignore file name mismatch warning)
+- Verify migrated device configuration
+  - Check migrated configuration briefly (majority of the paramter are migrated)
+  - Reconfigure GPIO section (if it was configured before, no automatic migration)
+- Update reference image and alignment marker (Mandatory due to multiple new camera features and adaptions)
+- Lots of (breaking) changes are made to existing APIs. A manual reconfiguration is most likely required. Check API documentation
+  - [REST API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/_OVERVIEW.md), [REST API Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/xxx_migration_notes.md)
+  - [MQTT API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/_OVERVIEW.md), [MQTT Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/xxx_migration_notes.md)
+- Check `BREAKING CHANGES` section with PR descriptions and/or [documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs) for further information
+
+### 💡 New Supported Hardware
+
+- Board: Freenove (Original) ESP32S3-WROOM-1-N8R8 (8MB Flash / 8MB RAM)
 
 ### Features
 
