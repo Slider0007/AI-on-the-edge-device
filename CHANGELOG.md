@@ -40,14 +40,14 @@
 
 ### Bug Fixes
 
-* **home assistant discovery:** Add device_class `duration` for `uptime` topic ([#249](https://github.com/Slider0007/AI-on-the-edge-device/issues/249)) ([e10e931](https://github.com/Slider0007/AI-on-the-edge-device/commit/e10e931e77c022de94a8459d60496ee9e496383b))
+* **home assistant discovery:** Add device_class 'duration' to 'uptime' topic ([#249](https://github.com/Slider0007/AI-on-the-edge-device/issues/249)) ([e10e931](https://github.com/Slider0007/AI-on-the-edge-device/commit/e10e931e77c022de94a8459d60496ee9e496383b))
 * **post-processing:** Fix parameter plausiblity check logs ([#241](https://github.com/Slider0007/AI-on-the-edge-device/issues/241)) ([a50b7b1](https://github.com/Slider0007/AI-on-the-edge-device/commit/a50b7b137bcb702ef62fb6e3dd0b57f6893b59cf))
 * **tflite class:** Resolve race condition during resource deallocation ([#247](https://github.com/Slider0007/AI-on-the-edge-device/issues/247)) ([ce49155](https://github.com/Slider0007/AI-on-the-edge-device/commit/ce4915599ee38b8cb80c656a01f2d8ee09c8a23b))
 
 
 ### Refactoring / Style Changes
 
-* **cnn handling:** Refactor classes `ClassFlowCNNGeneral` and `CTfLite` ([#243](https://github.com/Slider0007/AI-on-the-edge-device/issues/243)) ([cf5d767](https://github.com/Slider0007/AI-on-the-edge-device/commit/cf5d7674d41162358e3c7fd2ca626c604423dbc4))
+* **cnn handling:** Refactor classes 'ClassFlowCNNGeneral' and 'CTfLite' ([#243](https://github.com/Slider0007/AI-on-the-edge-device/issues/243)) ([cf5d767](https://github.com/Slider0007/AI-on-the-edge-device/commit/cf5d7674d41162358e3c7fd2ca626c604423dbc4))
 * **image alignment:** Refactor image alignment ([28065cf](https://github.com/Slider0007/AI-on-the-edge-device/commit/28065cf5acea7ae6a300af3207acd88b999ebf74))
 * **image handling:** Fully renewed image handling and image processing pipeline ([#245](https://github.com/Slider0007/AI-on-the-edge-device/issues/245)) ([28065cf](https://github.com/Slider0007/AI-on-the-edge-device/commit/28065cf5acea7ae6a300af3207acd88b999ebf74))
 * **rest api:** Refactor `main` + `img_tmp` handler (server-side) ([#244](https://github.com/Slider0007/AI-on-the-edge-device/issues/244)) ([abe7c63](https://github.com/Slider0007/AI-on-the-edge-device/commit/abe7c63399e2b9a96fe83840e5ad3d190b1c079d))
@@ -57,7 +57,7 @@
 ### Other Changes
 
 * **build:** release-please-action: Disable always-update feature ([#251](https://github.com/Slider0007/AI-on-the-edge-device/issues/251)) ([2482a04](https://github.com/Slider0007/AI-on-the-edge-device/commit/2482a044602d8d47369364451895252ba5220af0))
-* **model:** Update `dig-class100` tflite model to v1.80 ([#246](https://github.com/Slider0007/AI-on-the-edge-device/issues/246)) ([e953b37](https://github.com/Slider0007/AI-on-the-edge-device/commit/e953b375d79c9dc19abb81d42b79e9b0cbe74833))
+* **model:** Update dig-class100 tflite model to v1.80 ([#246](https://github.com/Slider0007/AI-on-the-edge-device/issues/246)) ([e953b37](https://github.com/Slider0007/AI-on-the-edge-device/commit/e953b375d79c9dc19abb81d42b79e9b0cbe74833))
 * **model:** Update ana-class100 tflite model to v1.80 ([#256](https://github.com/Slider0007/AI-on-the-edge-device/issues/256)) ([2f2f15c](https://github.com/Slider0007/AI-on-the-edge-device/commit/2f2f15ca2e07081ee9c74d15a624685b25d84f07))
 * **model:** Update ana-cont tflite model to v17.00 ([2f2f15c](https://github.com/Slider0007/AI-on-the-edge-device/commit/2f2f15ca2e07081ee9c74d15a624685b25d84f07))
 * **model:** Update dig-class11 tflite model to v20.00 ([2f2f15c](https://github.com/Slider0007/AI-on-the-edge-device/commit/2f2f15ca2e07081ee9c74d15a624685b25d84f07))
