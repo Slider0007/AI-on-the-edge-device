@@ -1,5 +1,70 @@
 # Changelog
 
+## [17.1.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.0.0-SLFork...v17.1.0-SLFork) (2025-06-09)
+
+### 💡 Installation / Migration Notes
+
+#### A. Initial Installation
+--> Recommeded: **Web Installer**
+ - Follow instructions listed on [Web Installer page](https://slider0007.github.io/AI-on-the-edge-device/)
+ - Other installation options: Check [Device Provisioning Documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs/Installation/DeviceProvisioning)
+
+#### B. Update from previous release (17.0.0)
+--> Recommeded: **OTA Update**
+- Download board specific firmware package
+- Perfom OTA update
+- Verify alignment marker and ROI positions (due to changes of image handling)
+
+#### C. Migration from previous major release (16.x)
+--> Recommeded: **OTA Update**
+- Download board specific firmware package
+- Perfom OTA update (ignore file name mismatch warning)
+- Verify migrated device configuration
+  - Check migrated configuration briefly (majority of the paramter are migrated)
+  - Reconfigure GPIO section (if it was configured before, no automatic migration)
+- Update reference image and alignment marker (Mandatory due to multiple new camera features and adaptions)
+- Lots of (breaking) changes are made to existing APIs. A manual reconfiguration is most likely required. Check API documentation
+  - [REST API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/_OVERVIEW.md), [REST API Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/xxx_migration_notes.md)
+  - [MQTT API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/_OVERVIEW.md), [MQTT Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/xxx_migration_notes.md)
+- Check `BREAKING CHANGES` section with PR descriptions and/or [documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs) for further information
+
+### 💡 New Supported Hardware
+
+- Board: Freenove (Original) ESP32S3-WROOM-1-N8R8 (8MB Flash / 8MB RAM)
+
+### Features
+
+* **hardware:** Support Freenove ESP32S3-WROOM board (N8R8) ([#240](https://github.com/Slider0007/AI-on-the-edge-device/issues/240)) ([5c53353](https://github.com/Slider0007/AI-on-the-edge-device/commit/5c533535aa42117da79b2647d7a85d6764f29e15))
+* **image alignment:** Enhanced image quality and performance improvements ([28065cf](https://github.com/Slider0007/AI-on-the-edge-device/commit/28065cf5acea7ae6a300af3207acd88b999ebf74))
+
+
+### Bug Fixes
+
+* **home assistant discovery:** Add device_class 'duration' to 'uptime' topic ([#249](https://github.com/Slider0007/AI-on-the-edge-device/issues/249)) ([e10e931](https://github.com/Slider0007/AI-on-the-edge-device/commit/e10e931e77c022de94a8459d60496ee9e496383b))
+* **post-processing:** Fix parameter plausiblity check logs ([#241](https://github.com/Slider0007/AI-on-the-edge-device/issues/241)) ([a50b7b1](https://github.com/Slider0007/AI-on-the-edge-device/commit/a50b7b137bcb702ef62fb6e3dd0b57f6893b59cf))
+* **tflite class:** Resolve race condition during resource deallocation ([#247](https://github.com/Slider0007/AI-on-the-edge-device/issues/247)) ([ce49155](https://github.com/Slider0007/AI-on-the-edge-device/commit/ce4915599ee38b8cb80c656a01f2d8ee09c8a23b))
+
+
+### Refactoring / Style Changes
+
+* **cnn handling:** Refactor classes 'ClassFlowCNNGeneral' and 'CTfLite' ([#243](https://github.com/Slider0007/AI-on-the-edge-device/issues/243)) ([cf5d767](https://github.com/Slider0007/AI-on-the-edge-device/commit/cf5d7674d41162358e3c7fd2ca626c604423dbc4))
+* **image alignment:** Refactor image alignment ([28065cf](https://github.com/Slider0007/AI-on-the-edge-device/commit/28065cf5acea7ae6a300af3207acd88b999ebf74))
+* **image handling:** Fully renewed image handling and image processing pipeline ([#245](https://github.com/Slider0007/AI-on-the-edge-device/issues/245)) ([28065cf](https://github.com/Slider0007/AI-on-the-edge-device/commit/28065cf5acea7ae6a300af3207acd88b999ebf74))
+* **rest api:** Refactor `main` + `img_tmp` handler (server-side) ([#244](https://github.com/Slider0007/AI-on-the-edge-device/issues/244)) ([abe7c63](https://github.com/Slider0007/AI-on-the-edge-device/commit/abe7c63399e2b9a96fe83840e5ad3d190b1c079d))
+* **source code:** Improve code consistency (naming, code style) ([#250](https://github.com/Slider0007/AI-on-the-edge-device/issues/250)) ([96d0310](https://github.com/Slider0007/AI-on-the-edge-device/commit/96d03101c18e9b8288fe14cd0ba60105eb00a240))
+
+
+### Other Changes
+
+* **build:** release-please-action: Disable always-update feature ([#251](https://github.com/Slider0007/AI-on-the-edge-device/issues/251)) ([2482a04](https://github.com/Slider0007/AI-on-the-edge-device/commit/2482a044602d8d47369364451895252ba5220af0))
+* **model:** Update dig-class100 tflite model to v1.80 ([#246](https://github.com/Slider0007/AI-on-the-edge-device/issues/246)) ([e953b37](https://github.com/Slider0007/AI-on-the-edge-device/commit/e953b375d79c9dc19abb81d42b79e9b0cbe74833))
+* **model:** Update ana-class100 tflite model to v1.80 ([#256](https://github.com/Slider0007/AI-on-the-edge-device/issues/256)) ([2f2f15c](https://github.com/Slider0007/AI-on-the-edge-device/commit/2f2f15ca2e07081ee9c74d15a624685b25d84f07))
+* **model:** Update ana-cont tflite model to v17.00 ([2f2f15c](https://github.com/Slider0007/AI-on-the-edge-device/commit/2f2f15ca2e07081ee9c74d15a624685b25d84f07))
+* **model:** Update dig-class11 tflite model to v20.00 ([2f2f15c](https://github.com/Slider0007/AI-on-the-edge-device/commit/2f2f15ca2e07081ee9c74d15a624685b25d84f07))
+* **model:** Update dig-cont tflite model to v9.00 ([2f2f15c](https://github.com/Slider0007/AI-on-the-edge-device/commit/2f2f15ca2e07081ee9c74d15a624685b25d84f07))
+* **roi image logging:** Save roi images with max. jpeg quality ([#255](https://github.com/Slider0007/AI-on-the-edge-device/issues/255)) ([694affd](https://github.com/Slider0007/AI-on-the-edge-device/commit/694affd7d7e9963058a67f7597e5c65fe3f019b8))
+* **system info:** Update sd-card manufacturer list ([#248](https://github.com/Slider0007/AI-on-the-edge-device/issues/248)) ([033e912](https://github.com/Slider0007/AI-on-the-edge-device/commit/033e912aa0a786dae9fb85f19eef1cc44311595f))
+
 ## [17.0.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.2.0-SLFork...v17.0.0-SLFork) (2025-02-27)
 
 ### 💡 Installation / Migration Notes
