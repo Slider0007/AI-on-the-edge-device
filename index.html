@@ -1,37 +1,38 @@
 <html>
-<title>AI-on-the-Edge Device [SLFork] | Web Installer</title>
-<link rel="icon" href="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/icon/favicon.ico" type="image/x-icon">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-<script type="module" src="https://unpkg.com/esp-web-tools@9.0.3/dist/web/install-button.js?module"></script>
-<style>
-    table {
-        border-spacing: 0;
-    }
+<head>
+    <title>AI-on-the-Edge Device [SLFork] | Web Installer</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/jomjol/AI-on-the-edge-device/master/images/icon/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script type="module" src="https://unpkg.com/esp-web-tools@9.0.3/dist/web/install-button.js?module"></script>
+    <style>
+        table {
+            border-spacing: 0;
+        }
 
-    td {
-        padding: 8px;
-    }
+        td {
+            padding: 8px;
+        }
 
-    .radios li {
-        list-style: none;
-        line-height: 2em;
-    }
+        .button-row {
+            margin-top: 20px;
+        }
 
-    .invisible {
-        visibility: hidden;
-    }
+        .invisible {
+            visibility: hidden;
+        }
 
-    input {
-        margin: 10px;
-    }
-</style>
+        input {
+            margin: 10px;
+        }
+    </style>
+</head>
 
 <body style="width:1024px; padding-top: 10px; padding-left: 40px; padding-right: 40px;">
     <table>
         <tr>
             <td>
                 <img src=https://raw.githubusercontent.com/slider0007/AI-on-the-edge-device/develop/images/icon/watermeter.svg
-                    style="width: 100px; padding-right: 10px;">
+                    alt="AI-on-the-Edge Device" style="width: 100px; padding-right: 10px;">
             </td>
             <td>
                 <h1>AI-on-the-Edge Device [SLFork]</h1>
@@ -46,37 +47,42 @@
         Firmware: <b>v17.1.0-SLFork</b>
     </p>
 
-    <p><b>HowTo</b></p>
-    <ul>
-        <li>Precondition: Supported device + FAT formated (empty) SD card inserted in SD card slot</li>
-        <li>1. Switch the device into bootloader mode (Keeping the "FLASH" button pressed while the "RESET" button gets relesed
-            or device gets powered. If there is no "FLASH" button, you need to pull pin labeld "GPIO0" or "IO0" to "GND" signal.)</li>
-        <li>2. Select device, connect to the device and install firmware ("Install Device").</li>
-        <li>3. Perform a power cycle after installtion is completed.</li>
-        <li>4. Reconnect to the device again and configure the Wi-Fi connection ("Connect to Wi-Fi").</li>
-        <li>5. After Wi-Fi connection is established, goto to the device ("Visit device").</li>
-        <li>6. To prepare the SD card content, download firmware zip file from github release page and upload the package to the device
-            using device provisioning web interface.</li>
-        <li>7. Reboot the device, wait until installation is completed and refresh your browser window.<br>
-                Note: To view console logs switch back to web installer browser window and open console ("Logs & Console").</li>
-        <li>8. Process inital setup wizard (Creation of reference image, alignment marker and number sequences).</li>
-    </ul>
+    <p style="margin-bottom:6px;"><b>HowTo</b></p>
+    <ol>
+        <li><b>Preconditions:</b>
+            <ul>
+                <li>A supported device with an empty, FAT-formatted SD card inserted into the SD card slot.</li>
+                <li>Download the matching firmware ZIP file for your device and the version listed above from the
+                    <a href="https://github.com/Slider0007/AI-on-the-edge-device/releases" target="_blank" rel="noopener noreferrer">GitHub release page</a>.
+                </li>
+            </ul>
+        </li>
+        <li><b>Enter bootloader mode:</b> Press and hold the "BOOT" button, then reset the device by either pressing the "RESET" button or power-up.
+            If your device does not have any "BOOT" button, pull the pin labeled "GPIO0" or "IO0" to GND during reset or power-up.
+        </li>
+        <li><b>Install firmware:</b> Select your device, connect to it, and click <b>"Install Device"</b> to flash the firmware.</li>
+        <li><b>Power cycle:</b> After installation is complete, perform a full power cycle of the device.</li>
+        <li><b>Configure Wi-Fi:</b> Reconnect to the device and configure its Wi-Fi connection (<b>"Connect to Wi-Fi"</b>).</li>
+        <li><b>Access the device:</b> Once connected to Wi-Fi, visit the device via the provided link (<b>"Visit device"</b>).</li>
+        <li><b>Prepare SD card content:</b> Upload the downloaded firmware ZIP file to the device using its provisioning web interface.</li>
+        <li><b>Finalize installation:</b> Reboot the device. Wait for installation to complete, then refresh your browser.<br>
+            <b>Note:</b> To view console logs or monitor installation progress, switch back to the web installer page and open <b>"Logs & Console"</b>.
+        </li>
+        <li><b>Run initial setup wizard:</b> Follow the on-screen wizard to create a reference image, alignment marker and number sequences.</li>
+    </ol>
 
-    <p><b>Select your device</b></p>
-    <ul class="radios">
-        <li>
-            <label><input type="radio" name="type" value="esp32cam">ESP32CAM</label>
-        </li>
-        <li>
-            <label><input type="radio" name="type" value="xiao-esp32s3-sense">XIAO ESP32S3 Sense</label>
-        </li>
-        <li>
-            <label><input type="radio" name="type" value="freenove-esp32s3-n8r8">Freenove (Original) ESP32S3 WROOM N8R8</label>
-        </li>
-        <li>
-            <label><input type="radio" name="type" value="freenove-esp32s3-n16r8">Freenove (Clone) ESP32S3 WROOM N16R8</label>
-        </li>
-    </ul>
+    <p style="margin-bottom:6px;"><b>Device Selection</b></p>
+    <select class="form-control" style="max-width: 400px;" name="type">
+        <option value="" disabled selected>Select your device</option>
+        <optgroup label="ESP32">
+        <option value="esp32cam">ESP32CAM</option>
+        </optgroup>
+        <optgroup label="ESP32-S3">
+        <option value="xiao-esp32s3-sense">XIAO ESP32S3 Sense</option>
+        <option value="freenove-esp32s3-n8r8">Freenove (Original) ESP32S3 WROOM N8R8</option>
+        <option value="freenove-esp32s3-n16r8">Freenove (Clone) ESP32S3 WROOM N16R8</option>
+        </optgroup>
+    </select>
     <p class="button-row">
         <esp-web-install-button class="invisible"></esp-web-install-button>
     </p>
@@ -86,13 +92,12 @@
 </body>
 
 <script>
-    document.querySelectorAll('input[name="type"]').forEach(radio =>
-    radio.addEventListener("change", () => {
+    const select = document.querySelector('select[name="type"]');
+    select.addEventListener("change", () => {
         const button = document.querySelector('esp-web-install-button');
-        button.manifest = `./manifest_${radio.value}.json`;
+        button.manifest = `./manifest_${select.value}.json`;
         button.classList.remove('invisible');
-    }
-    ));
+    });
 </script>
 
 </html>
