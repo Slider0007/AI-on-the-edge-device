@@ -565,7 +565,12 @@ std::string getSDCardName()
 {
     // ESP_LOGD(TAG, "SD Card Name: %s", SDCardCid.name);
 
-    return std::string(SDCardCid.name, 8);
+    size_t len = 0;
+    while (len < 8 && SDCardCid.name[len] != '\0') {
+        ++len;
+    }
+
+    return std::string(SDCardCid.name, len);
 }
 
 
