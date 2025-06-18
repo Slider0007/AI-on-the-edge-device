@@ -9,4 +9,4 @@
 ## Description
 
 Define Home Assistant discovery prefix. 
-The discovery prefix defines the 'root topic' where the dicovery topics get published.
+The discovery prefix defines the 'root topic' where the discovery topics get published.

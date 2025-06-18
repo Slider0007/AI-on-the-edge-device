@@ -36,7 +36,7 @@ Payload:
         - `zoomx` Zoom Offset X [0 .. max. 960] (Max. Offset is limited in firmware depending on actual zoom factor | Lower zoom --> lower limits)
         - `zommy` Zoom Offset Y [0 .. max. 720] (Max. Offset is limited in firmware depending on actual zoom factor | Lower zoom --> lower limits)
         - `filename` Filename incl. path on SD card (e.g. `/foldername/filename.jpg`)
-      - Example 1 (Reponse image via REST API): `/camera?task=capture&flashtime=2000&flashintensity=50&brightness=0&contrast=0&saturation=0&sharpness=1&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1&manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&zoomx=0&zoomy=0`
+      - Example 1 (Response image via REST API): `/camera?task=capture&flashtime=2000&flashintensity=50&brightness=0&contrast=0&saturation=0&sharpness=1&exposurecontrolmode=1&autoexposurelevel=0&manualexposurevalue=300&gaincontrolmode=1&manualgainvalue=0&specialeffect=0&mirror=false&flip=false&zoomfactor=1000&zoomx=0&zoomy=0`
       - Response:
         - Content type: `JPEG`
         - Content: Image (JPG file)

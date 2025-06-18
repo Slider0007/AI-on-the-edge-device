@@ -41,7 +41,7 @@ The following device status topics gets published during the `Publish To MQTT` s
 
 | JSON Property               | Description                 | Output
 |:----------------------------|:----------------------------|:--------------     
-| `hostname`                  | Device Hostname             | `watermetter`
+| `hostname`                  | Device Hostname             | `watermeter`
 | `ipv4_address`              | Device IPv4 Address         | `192.168.1.x`
 | `mac_address`               | Device MAC Address          | `44:21:D8:04:DF:A8`
 

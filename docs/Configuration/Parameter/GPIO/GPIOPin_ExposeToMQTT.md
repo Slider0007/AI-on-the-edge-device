@@ -11,7 +11,7 @@
 
 Enable publishing GPIO state to MQTT broker<br>
 - GPIO pin state (and PWM duty)gets published to GPIO specific topic.<br>
-- GPIO output / GPIO Output PWM are controlable via GPIO specific topic.
+- GPIO output / GPIO Output PWM are controllable via GPIO specific topic.
 
 
 !!! Tip

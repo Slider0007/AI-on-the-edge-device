@@ -62,7 +62,7 @@ WLAN connection is interrupted due to an authentication failure. If error repeat
 WLAN connection is interrupted due to an timeout because no beacon from AP is received in a timely manner. Most probably access point  is not available anymore or connection is not reliable.
 
 ### `WLAN Disconnected (Further reasons)`
-WLAN connection is interrupted due to further reasons. Disconnect reason is printed in warining message. Please check serial console output or logfile from sd card (using another device to retrieve logfile /log/message/). Please refer to this page to have additional infos in terms of WLAN disconnect reasons --> [WLAN disconnect reason code description](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/wifi.html#wi-fi-reason-code)
+WLAN connection is interrupted due to further reasons. Disconnect reason is printed in warning message. Please check serial console output or logfile from sd card (using another device to retrieve logfile /log/message/). Please refer to this page to have additional infos in terms of WLAN disconnect reasons --> [WLAN disconnect reason code description](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/wifi.html#wi-fi-reason-code)
 
 
 
@@ -75,7 +75,7 @@ WLAN connection is interrupted due to further reasons. Disconnect reason is prin
 The mandatory parameter SSID (name of WLAN network) is empty. Please verify and reconfigure in `/config/config.json` and try again.
 
 ### `WIFI init error (details console)`
-A general WIFI initialization error occured. Please check serial console output or logfile from sd card (using another device to retrieve logfile /log/message/) 
+A general WIFI initialization error occurred. Please check serial console output or logfile from sd card (using another device to retrieve logfile /log/message/) 
 
 
 
@@ -91,16 +91,16 @@ Failed to mount FAT filesystem on SD card. Check SD card filesystem (only FAT su
 SD card init failed. Check if SD card is properly inserted into SD card slot or try another card. Possible further infos: Please check serial console output.
 
 ### `SD card init failed (details console)`
-A general SD card initialization error occured. Please check serial console output.
+A general SD card initialization error occurred. Please check serial console output.
 
 ### `NVS init failed: No partition found`
-A general NVS initialization error occured. No parition for NVS found in partition table. Check parition table configuration `partitions.csv`
+A general NVS initialization error occurred. No partition for NVS found in partition table. Check partition table configuration `partitions.csv`
 
 ### `NVS init failed: No free pages found`
-A general NVS initialization error occured. No free NVS pages found. Check NVS parition size.
+A general NVS initialization error occurred. No free NVS pages found. Check NVS partition size.
 
 ### `NVS init failed (details console)`
-A general NVS initialization error occured. Please check serial console output.
+A general NVS initialization error occurred. Please check serial console output.
 
 
 
@@ -114,18 +114,18 @@ A basic check of SD card is performed at boot. Failed to create the test file or
 
 Recommendation: Format or try another card
 
-### `File read / CRC verfication error`
+### `File read / CRC verification error`
 A basic check of SD card is performed at boot. Failed to read the test file or CRC of read back content failed. Most likely SD card is defective. Please check logs with log viewer in reduced web interface or serial console output for further error indication or try another card.
 
 Recommendation: Format or try another card
 
 ### `File delete error`
-A basic check of SD card is performed at boot. Failed to delelte the test file. Most likely SD card is defective. Please check logs with log viewer in reduced web interface or serial console output for further error indication or try another card.
+A basic check of SD card is performed at boot. Failed to delete the test file. Most likely SD card is defective. Please check logs with log viewer in reduced web interface or serial console output for further error indication or try another card.
 
 Recommendation: Format or try another card
 
 ### `Folder / File presence failed`
-A basic check of SD card is performed at boot. One or more menadatory folder / file are not found on SD card. Please check logs with log viewer in reduced web interface or serial console output for further error indication.
+A basic check of SD card is performed at boot. One or more mandatory folder / file are not found on SD card. Please check logs with log viewer in reduced web interface or serial console output for further error indication.
 
 Recommendation: Repeat installation using AI-on-the-edge-device__update__*.zip
 
@@ -137,7 +137,7 @@ Recommendation: Repeat installation using AI-on-the-edge-device__update__*.zip
 !!! __NOTE__:
     Only warning indication during boot sequence, blink code repetition: 2x
 
-Failed to initialze camera during boot sequence. The firmware will to continue regular boot and try to reinit camera automatically. Further errors can occur. Please check logs with logfile viewer if processing is behaving irregular.
+Failed to initialize camera during boot sequence. The firmware will to continue regular boot and try to reinit camera automatically. Further errors can occur. Please check logs with logfile viewer if processing is behaving irregular.
 
 Recommendation: Check for proper electrical connection, whether camera model is supported and whether power supply is sufficient.
 
@@ -149,7 +149,7 @@ Recommendation: Check for proper electrical connection, whether camera model is 
     A critical errors, normal boot not possible. Reduced WebUI is going to be loaded for further diagnostic possibilities or redo firmware update.
     
 ### `SPI RAM init failed: Not found/defective`   
-External RAM (SPI RAM) initialization failed. Most likely external RAM not accessable or defective. Normal operation is not possible without having external RAM.
+External RAM (SPI RAM) initialization failed. Most likely external RAM not accessible or defective. Normal operation is not possible without having external RAM.
 
 ### `External SPI RAM < 4MB`
 External RAM (SPI RAM) initialization successful, but external RAM size is too small. A size of >= 4MB is necessary to run this firmware. 
@@ -180,13 +180,13 @@ If system is configured to be synced with a NTP server the sync status is checke
 An OTA is performed right now. Please wait until OTA is completed. System is rebooting automatically. If system is not coming up, please check serial console output.
 
 ### `Soft AP started (for remote config)`
-The built-in access point functionality is started to perform initial remote remote setup. Further description: [Installtion --> `Section Remote Setup using the built-in Access Point`](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/)
+The built-in access point functionality is started to perform initial remote remote setup. Further description: [Installation --> `Section Remote Setup using the built-in Access Point`](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/)
 
 
 
 ## Source FLASHLIGHT: Flashlight
 
 ### `LED on when flashlight is on`
-The LED is solid on as long the flashlight is on. This feature has lower priority than the other LED codes. Whenever another code occurs this feature will be overrided.
+The LED is solid on as long the flashlight is on. This feature has lower priority than the other LED codes. Whenever another code occurs this feature will be overridden.
 
 

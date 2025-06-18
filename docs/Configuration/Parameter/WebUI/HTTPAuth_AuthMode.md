@@ -22,7 +22,7 @@ Select authentication mode for WebUI / REST API authentication.
     Only basic access authentication scheme using unencrypted HTTP protocol is implemented. 
     The basic authentication scheme is not a secure method of user authentication, nor does 
     it in any way protect the entity, which is transmitted in cleartext (only Base64 encoded, 
-    not encyrpted or hashed) across the physical network used as the carrier. All data 
+    not encrypted or hashed) across the physical network used as the carrier. All data 
     (also security related data, e.g. password) are transmitted unencrypted (HTTP only, no HTTPS).
 
 

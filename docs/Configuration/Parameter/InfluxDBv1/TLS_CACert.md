@@ -16,8 +16,8 @@ is the one it claims to be (TLS handshake).
 !!! Note
     The certificate file needs to be copied to SD card folder `/config/certs`.<br>
     Supported formats:<br>
-    - `PEM` (Base64-ASCII-coding, File extentions: `.pem, .crt, .cer`)<br>
-    - `DER` (Binary coding, File extention: `.der, .cer`)<br>
+    - `PEM` (Base64-ASCII-coding, File extensions: `.pem, .crt, .cer`)<br>
+    - `DER` (Binary coding, File extension: `.der, .cer`)<br>
     - Only unencrypted and not password protected files are supported.<br>
     - Only TLS v1.2 is supported<br>
     - Max. key length: 4096 Bit
