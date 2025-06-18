@@ -7,7 +7,8 @@
 
 Get prcoess relevant images directly from memory.
 
-Be aware: Defining the trigger time keep in mind that the images are prcoessed by the device on the fly all during processing. Loading them the 'wrong' time they can be fragmented or distroted for a short time.
+Be aware: Defining the trigger time keep in mind that the images are prcoessed by the device on 
+the fly all during processing.
 
 
 Payload:
