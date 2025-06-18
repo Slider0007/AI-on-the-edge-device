@@ -14,12 +14,38 @@
             font-size: 100%;
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        input[type=file] {
+            padding: 4px 0px;
+            display: inline-block;
+            font-size: 16px;
+        }
+
+        input[type=text] {
+            padding: 4px 10px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        .button {
+            padding: 4px 10px;
+            width: 100px;
+            font-size: 16px;
         }
 
         #files_table {
-            font-family: Arial, Helvetica, sans-serif;
             border-collapse: collapse;
             width: 100%;
+        }
+
+        #files_table th {
+            text-align: left;
+            background-color:lightgrey;
+            color: black;
+            cursor: pointer;
         }
 
         #files_table td, #files_table th {
@@ -34,161 +60,243 @@
         #files_table tr:hover {
             background-color: #ddd;
         }
-
-        #files_table th {
-            padding-top: 12px;
-            padding-bottom: 12px;
-            text-align: left;
-            background-color:lightgrey;
-            color: black;
-        }
-
-        input[type=file] {
-            padding: 5px 0px;
-            display: inline-block;
-            font-size: 16px;
-        }
-
-        input[type=text] {
-            padding: 5px 10px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-
-        .button {
-            padding: 4px 10px;
-            width: 100px;
-            font-size: 16px;
-        }
     </style>
 
     <script src="/jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
+    <script src="/js.cookie.min.js?v=$COMMIT_HASH"></script>
     <link href="/firework.css?v=$COMMIT_HASH" rel="stylesheet">
     <script src="/firework.js?v=$COMMIT_HASH"></script>
+    <script src="/sorttable.min.js?v=$COMMIT_HASH"></script>
+    <script src="/jszip.min.js?v=$COMMIT_HASH"></script>
+    <script src="/FileSaver.min.js?v=$COMMIT_HASH"></script>
 </head>
-
 <body>
-    <table style="width:100%; border: 0pt; font-family: arial;">
-        <tr>
-            <td style="vertical-align: top;width: 300px;font-size: 1.5em; margin-block-start: 0.0em;
-                margin-block-end: 0.2em;font-weight: bold;padding-left: 10px;">File Server
-            </td>
-            <td>
-                <table style="width:100%; border: 0pt;">
-                    <tr>
-                        <td style="width:80px">
-                            <label for="newfile">Source</label>
-                        </td>
-                        <td colspan="2">
-                            <input id="newfile" type="file" onchange="setpath()" style="width:100%;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label for="filepath">Destination</label>
-                        </td>
-                        <td>
-                            <input id="filepath" type="text" style="width:94%;">
-                        </td>
-                        <td>
-                            <button id="upload" type="button" class="button" onclick="upload()">Upload</button>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <button style="font-size:16px; padding: 5px 10px" id="dirup" type="button" onclick="dirup()" disabled>&#129145; Directory up</button>
-                <span style="padding-left:15px" id="currentpath"></span>
-            </td>
-        </tr>
-    </table>
+<table style="width:100%; border: 0pt; font-family: arial;">
+    <tr>
+        <td style="vertical-align: top;width: 250px;font-size: 1.5em; margin-block-start: 0.0em;
+            margin-block-end: 0.2em;font-weight: bold;padding-left: 10px;">File Server
+        </td>
+        <td>
+            <table style="width:100%; border: 0;">
+                <tr>
+                    <td style="width:80px;">Source</td>
+                    <td style="vertical-align: middle;"><input id="newfile" type="file" onchange="setPath()" style="width:95%;"></td>
+                    <td style="width:1%; white-space:nowrap;">
+                        <button id="upload" type="button" class="button" title="Upload file to current path / destination"
+                            onclick="uploadFile()">Upload</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Destination</td>
+                    <td colspan="2" style="width:100%;">
+                        <input id="filepath" type="text"
+                            style="width:95%;border:none;background:transparent;overflow:hidden;text-overflow:ellipsis" readonly>
+                    </td>
 
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="padding: 10px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div>
+                    <button class="button" style="width:130px" id="dirup" type="button" onclick="dirup()"
+                        disabled>Directory up</button>
+                    <span style="padding-left:15px" id="currentpath"></span>
+                </div>
+                <div>
+                    <button class="button" style="width:180px" id="saveZipButton" type="button"
+                        title="Save all files in actual path as ZIP file">Save All Files (ZIP)</button>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
 
 <script src="/global_common.js?v=$COMMIT_HASH"></script>
 <script>
-    function setpath()
+    // Sort by filename
+    window.onload = function()
     {
-        let fileserverpraefix = "/fileserver";
-        let anz_zeichen_fileserver = fileserverpraefix.length;
-        let default_path = window.location.pathname.substring(anz_zeichen_fileserver) + document.getElementById("newfile").files[0].name;
-        document.getElementById("filepath").value = default_path;
+        document.querySelectorAll('#files_table th')[0].click();
+    };
+
+    // Zip all files listed in files_table
+    document.getElementById('saveZipButton').addEventListener('click', async function() {
+        const fireworkSaveFiles = firework.launch('Saving all listed files. Please wait...', 'warning', 500000, true);
+        const zip = new JSZip();
+        const fileLinks = document.querySelectorAll('#files_table tbody a');
+
+        const baseUrl = window.location.origin;
+
+        for (const link of fileLinks) {
+            const url = link.getAttribute('href').split('?')[0];
+            const filename = link.textContent;
+
+            // Skip directories
+            if (url.endsWith('/')) {
+                continue;
+            }
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    console.error(`Failed to fetch ${filename}`);
+                    continue;
+                }
+                const blob = await response.blob();
+                zip.file(filename, blob);
+            } catch (err) {
+                console.error(`Error fetching ${filename}:`, err);
+            }
+        }
+
+        if (Object.keys(zip.files).length === 0) {
+            firework.remove(fireworkSaveFiles);
+            firework.launch('No files to save', 'danger', 30000);
+            return;
+        }
+
+        // Generate ZIP and trigger download
+        zip.generateAsync({ type: 'blob' }).then(function(content) {
+            firework.remove(fireworkSaveFiles);
+            firework.launch('Saving completed', 'success', 2000);
+            saveAs(content, getPath().replace(/^\/+|\/+$/g, "").replace(/\//g, "_"));
+        });
+    });
+
+    function deleteEntry(name, url)
+    {
+        if (url.includes('?task=deldir')) {
+            if (!confirm(`Are you sure you want to delete the folder '${name}' recursively?\n\nNote: This takes quite a while. Please be patient!`)) {
+                return;
+            }
+            firework.launch('Deleting folder. Please wait...', 'warning', 500000);
+        }
+        else {
+            if (!confirm(`Are you sure you want to delete the file '${name}'?`)) {
+                return;
+            }
+        }
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (xhttp.readyState === 4) {
+                if ((xhttp.status >= 200 && xhttp.status < 300) || xhttp.status == 303) {
+                    firework.sticky(`Deletion completed`, 'success', 2000);
+                    window.location.reload();
+                }
+                else if (xhttp.status >= 400) {
+                    const message = xhttp.responseText || 'Unknown error';
+                    firework.launch(`Deletion failed. Error: ${message}`, 'danger', 30000);
+                }
+                else {
+                    firework.launch('Deletion failed. No server response', 'danger', 30000);
+                }
+            }
+        };
+
+        xhttp.open("POST", '/delete' + url, true);
+        xhttp.withCredentials = true;
+        xhttp.send();
+    }
+
+    function uploadFile()
+    {
+        const fileInput = document.getElementById("newfile").files;
+        const filePath = document.getElementById("filepath").value;
+
+        // Max size of a file (comapre to file_server.c)
+        const MAX_FILE_SIZE = 8000*1024;
+        const MAX_FILE_SIZE_STR = "8MB";
+
+        if (fileInput.length == 0) {
+            firework.launch('No file selected', 'danger', 30000);
+            return;
+        }
+        else if (filePath.length == 0) {
+            firework.launch('File path on server is not set', 'danger', 30000);
+            return;
+        }
+        else if (filePath.length > 100) {
+            firework.launch('File name is too long: max. 100 characters', 'danger', 30000);
+            return;
+        }
+        else if (filePath.indexOf(' ') >= 0) {
+            firework.launch('File path on server cannot have spaces', 'danger', 30000);
+            return;
+        }
+        else if (filePath[filePath.length-1] == '/') {
+            firework.launch('File name not specified after path', 'danger', 30000);
+            return;
+        }
+        else if (fileInput[0].size > MAX_FILE_SIZE) {
+            firework.launch(`File size must be less than ${MAX_FILE_SIZE_STR}`, 'danger', 30000);
+            return;
+        }
+
+        const fireworkUploadFile = firework.launch('Uploading file. Please wait...', 'warning', 500000, true);
+
+        document.getElementById("newfile").disabled = true;
+        document.getElementById("upload").disabled = true;
+
+        const file = fileInput[0];
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (xhttp.readyState == 4) {
+                firework.remove(fireworkUploadFile);
+
+                if ((xhttp.status >= 200 && xhttp.status < 300) || xhttp.status == 303) {
+                    firework.sticky('Uploading completed', 'success', 2000);
+                    window.location.reload();
+                }
+                else if (xhttp.status >= 400) {
+                    const message = xhttp.responseText || 'Unknown error';
+                    firework.launch(`Uploading failed. Error: ${message}`, 'danger', 30000);
+                }
+                else {
+                    firework.launch('Uploading failed. No server response', 'danger', 30000);
+                }
+                document.getElementById("newfile").disabled = false;
+                document.getElementById("upload").disabled = false;
+            }
+        };
+
+        xhttp.open("POST", '/upload' + filePath, true);
+        xhttp.withCredentials = true;
+        xhttp.send(file);
+    }
+
+    function getPath()
+    {
+        return window.location.pathname.replace(/\/+$/, '') + "/"
+    }
+
+    function setPath()
+    {
+        document.getElementById("filepath").value = getPath().replace("/fileserver", "") + document.getElementById("newfile").files[0].name;
     }
 
     function dirup()
     {
-        let str = window.location.href;
-        str = str.substring(0, str.length-1);
-        let zw = str.indexOf("/");
-        let found = zw;
-        while (zw >= 0)
-        {
-            zw = str.indexOf("/", found+1);
-            if (zw >= 0)
-                found = zw;
+        let url = window.location.href;
+
+        // Remove any query or hash part first
+        url = url.split('#')[0].split('?')[0];
+
+        // Remove trailing slash if present
+        if (url.endsWith("/")) {
+            url = url.slice(0, -1);
         }
-        let res = str.substring(0, found+1);
 
-        window.location.href = res;
-    }
-
-
-    function upload()
-    {
-        let filePath = document.getElementById("filepath").value;
-        let upload_path = "/upload/" + filePath;
-        let fileInput = document.getElementById("newfile").files;
-
-        /* Max size of an individual file. Make sure this
-        * value is same as that set in file_server.c */
-        let MAX_FILE_SIZE = 8000*1024;
-        let MAX_FILE_SIZE_STR = "8000KB";
-
-        if (fileInput.length == 0) {
-            firework.launch('No file selected!', 'danger', 30000);
-        } else if (filePath.length == 0) {
-            firework.launch('File path on server is not set!', 'danger', 30000);
-        } else if (filePath.length > 100) {
-            firework.launch('Filename is to long! Max 100 characters.', 'danger', 30000);
-        } else if (filePath.indexOf(' ') >= 0) {
-            firework.launch('File path on server cannot have spaces!', 'danger', 30000);
-        } else if (filePath[filePath.length-1] == '/') {
-            firework.launch('File name not specified after path!', 'danger', 30000);
-        } else if (fileInput[0].size > MAX_FILE_SIZE) {
-            firework.launch("File size must be less than " + MAX_FILE_SIZE_STR + "!", 'danger', 30000);
-        } else {
-            document.getElementById("newfile").disabled = true;
-            document.getElementById("filepath").disabled = true;
-            document.getElementById("upload").disabled = true;
-
-            let file = fileInput[0];
-            let xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (xhttp.readyState == 4) {
-                    if (xhttp.status == 200) {
-                        document.open();
-                        document.write(xhttp.responseText);
-                        document.close();
-                        firework.launch('File upload completed', 'success', 2000);
-                    } else if (xhttp.status == 0) {
-                        firework.launch('Server closed the connection abruptly!', 'danger', 30000);
-                        UpdatePage(false);
-                    } else {
-                        firework.launch('An error occured: ' + xhttp.responseText, 'danger', 30000);
-                        UpdatePage(false);
-                    }
-                }
-            };
-
-            xhttp.timeout = 10000;  // 10 seconds
-            xhttp.open("POST", upload_path, true);
-            xhttp.withCredentials = true;
-            xhttp.send(file);
+        // Remove the last path segment
+        const lastSlashIndex = url.lastIndexOf("/");
+        if (lastSlashIndex > -1) {
+            const parentUrl = url.substring(0, lastSlashIndex + 1) + "?full=false";
+            window.location.href = parentUrl;
         }
     }
-
 
     function checkAtRootLevel(res)
     {
@@ -202,19 +310,12 @@
     }
 
 
-    function getPath()
-    {
-        return window.location.pathname.replace(/\/+$/, '') + "/"
-    }
-
-    checkAtRootLevel();
-    document.getElementById("currentpath").innerHTML = "Current path: <b>" + getPath().replace("/fileserver", "") + "</b>";
-    document.cookie = "page=" + getPath() + ";path=/;SameSite=Lax";
+    window.addEventListener('DOMContentLoaded', function() {
+        checkAtRootLevel();
+        document.getElementById("currentpath").innerHTML = "Current path: <b>" + getPath().replace("/fileserver", "") + "</b>";
+        document.cookie = "page=" + getPath() + "?full=false;path=/;SameSite=Lax";
+    });
 
 </script>
 
-<!-- This part is injected by firmware (server_file.cpp)
-</body>
-</html>
--->
-
+<!-- The files_table is injected by firmware (server_file.cpp) -->

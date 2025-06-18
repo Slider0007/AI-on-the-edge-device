@@ -330,27 +330,51 @@ int removeFolder(const char *folderPath, const char *logTag)
 }
 
 
-void deleteAllFilesInDirectory(std::string directory)
+esp_err_t deleteAllFilesInDirectory(std::string directory, bool recursive, bool deleteRootFolder)
 {
-    struct dirent *entry;
     DIR *dir = opendir(directory.c_str());
-    std::string filename;
-
     if (!dir) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "deleteAllFilesInDirectory: Failed to open directory: " + directory);
-        return;
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to open directory: " + directory);
+        return ESP_ERR_NOT_FOUND;
     }
 
-    /* Iterate over all files / folders and fetch their names and sizes */
+    esp_err_t retVal = ESP_OK;
+    struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (!(entry->d_type == DT_DIR)) {
-            filename = directory + "/" + std::string(entry->d_name);
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Delete file: " + filename);
-            unlink(filename.c_str()); // Delete file
+        std::string name = entry->d_name;
+
+        // Skip "." and ".."
+        if (name == "." || name == "..") {
+            continue;
+        }
+
+        std::string path = directory + "/" + name;
+
+        if (entry->d_type == DT_DIR) {
+            if (recursive) {
+                esp_err_t subRetVal = deleteAllFilesInDirectory(path, true, true);
+                if (subRetVal != ESP_OK) {
+                    retVal = subRetVal;
+                }
+            }
+        }
+        else {
+            if (unlink(path.c_str()) != 0) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to delete file: " + path + " | Error:" + std::to_string(errno) + ")");
+                retVal = ESP_FAIL;
+            }
         }
     }
 
     closedir(dir);
+
+    // Delete root folder
+    if (deleteRootFolder && retVal == ESP_OK && rmdir(directory.c_str()) != 0) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to remove directory: " + directory + " | Error: " + std::to_string(errno) + ")");
+        retVal = ESP_FAIL;
+    }
+
+    return retVal;
 }
 
 

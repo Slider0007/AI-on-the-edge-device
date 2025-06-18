@@ -32,7 +32,7 @@
           p += parseInt($(this).height()) + 20
       });
 
-      $('<div id="'+ fid +'" class="'+ c +'">'+ m +'<a onclick="firework.remove(\'#'+ fid +'\')"><img style="height:28px;" src=close.png></a></div>')
+      $('<div id="'+ fid +'" class="'+ c +'">'+ m +'<a onclick="firework.remove(\'#'+ fid +'\')"><img style="height:28px;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAABv1BMVEUAAAAAAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADLAADPEhHgaGfjdXPjdHLjdHPhamnQFRXLAQHaSEfjdXTicnDSIyPNBgbplJT////+/v7lgoHMAQHVMTD439/wu7rPFRXRHBzzx8f66unYQD/NCwvtqan44eHWNjbZR0f67Ozxu7rPExLgZWT9+PjgaWnMAgLkgID+/f3+/PzjdnXUKin32djroaHNCgrPExPwuLj55OPywcD10NDSJCTWNzf44uL//v777+/bUFDgamrmh4fMAwPNDQ3xu7vRIB/YQUD55OT99vbSICD0ysn65+bZQkHNCQnrnp377u70yMjRHx799/f9+vricXHfZWXqmZjNBwfVLi343NzusLDODQ3NCAjroqL99fXeXl7NCgntp6b65+fWOTnUKyv33Nz319bTJyfeXVzmhobic3PqmpnMBQXRGxv1zs3109PRHx/QFxfzysr88fDaSUjRHR3fZGPfZmbfZ2fXPj7WODimAAA/y/GyAAAAAXRSTlMAQObYZgAAATJJREFUOMu1k1dXwlAQhHnJ7xgVEOti7xVUVOy9K/Yae8feu9E/7IQ8eEwu8iDuS/bsfOfsvXMnLlcSSvulEukxIlkArLK13wBSUtPcHm86x/BlZLo9Wdn4CeTkiog/Lx8aCgrZFhXDtqKklOOycqCikk1VNeyHRE0thbp6BIIiwQY4gcamkEhzS2uYXFs7nNdERyelrm6/SE8vVD6gr19kgPrgEJRGAcNcLxIaGVUDGsbGTSA8gThWY3LKBCJexFkxPSOxmp1TAphfoLhourG0rLgFEFgRWV3TIyTWN5w+YHOLyvbO7h4/+wcOJ3F4ROE4Cpycsjk7dwAXXCCXPgbhipbL9Y3tuW/vOL1/MPPw+MT2+cUGvL6968aHlaiooevGp3UKVeQ0VeT+N/YJf72/1hfNT1Koq1kYJgAAAABJRU5ErkJggg=="></a></div>')
         .appendTo('body')
         .animate({
           opacity: 1,
@@ -40,6 +40,8 @@
         });
 
       setTimeout(function(){ firework.remove("#"+ fid) }, typeof l == "number" ? l : 1500);
+
+      return "#"+ fid;
     },
 
     remove : function(t) {
@@ -54,17 +56,21 @@
     },
 
     sticky : function(m, t, l) {
-      $.cookie("firework", '{ "message" : "'+ m +'", "type" : "'+ t +'", "display" : "'+ l +'" }', { path: '/' })
+      Cookies.set("firework", JSON.stringify({ message: m, type: t, display: l }), { path: '/' });
     }
   };
 
-  // checks for firework cookie on dom ready
+  // Checks for firework cookie on dom ready
   $(function() {
-    if (typeof $.cookie == "function") {
-      if ($.cookie("firework")) {
-        var ex = $.parseJSON($.cookie("firework"))
-        setTimeout(function(){ firework.launch(ex.message, ex.type, parseInt(ex.display) > 0 ? parseInt(ex.display) : null) }, 1000)
-        $.cookie("firework", null, { path: '/'})
+    if (Cookies.get("firework")) {
+      try {
+        const ex = JSON.parse(Cookies.get("firework"));
+        setTimeout(function() {
+          firework.launch(ex.message, ex.type, parseInt(ex.display) > 0 ? parseInt(ex.display) : null);
+        }, 200);
+        Cookies.remove("firework", { path: '/' });
+      } catch (e) {
+        console.error("Invalid firework cookie JSON", e);
       }
     }
   });

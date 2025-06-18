@@ -5,6 +5,8 @@
 #include <vector>
 #include <ctime>
 
+#include <esp_err.h>
+
 bool fileExists(std::string filename);
 bool copyFile(std::string input, std::string output);
 bool renameFile(std::string from, std::string to);
@@ -19,7 +21,7 @@ std::string getDirectory(std::string filename);
 bool makeDir(std::string _what);
 int makeDirRecursive(const char *dir, const mode_t mode);
 int removeFolder(const char *folderPath, const char *logTag);
-void deleteAllFilesInDirectory(std::string directory);
+esp_err_t deleteAllFilesInDirectory(std::string directory, bool recursive = false, bool deleteRootFolder = false);
 void moveAllFilesWithFiletype(std::string sourceDir, std::string destinationDir, std::string filetype);
 
 std::string formatFileName(std::string input);

@@ -96,13 +96,20 @@
 
 // Server_file + Helper
 //******************************
-#define FILE_PATH_MAX (255) //Max length a file path can have on storage
+#define FILE_PATH_MAX (255)
+#define HTML_FILE_FILESERVER_STATIC "/sdcard/html/sys_fileserver.html"
+
+#define ROOT_FOLDER_DATA_LOG "/sdcard/log/data"
+#define ROOT_FOLDER_CNN_MODELS "/sdcard/config/models"
+#define ROOT_FOLDER_CERTS "/sdcard/config/certs"
+
+#define HTTPD_303_SEE_OTHER "303 See Other"
 
 
 // Server_file + (ota_page.html + upload_script.html)
 //******************************
-#define MAX_FILE_SIZE   (8000*1024) // 8 MB Max size of an individual file. Make sure this value
-                                    // is same as that set in upload_script.html and ota_page.html!
+#define MAX_FILE_SIZE (8000*1024) // 8 MB Max size of an individual file. Make sure this value
+                                  // is same as that set in upload_script.html and ota_page.html!
 #define MAX_FILE_SIZE_STR "8MB"
 
 #define LOGFILE_LAST_PART_BYTES 80 * 1024 // 80 kBytes  // Size of partial log file to return
