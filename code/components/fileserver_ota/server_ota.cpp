@@ -468,9 +468,8 @@ std::string unzipOTA(std::string _in_zip_file, std::string _root_folder)
                 zw = _root_folder + "firmware/" + zw;
                 retVal = zw; // Return file for further processing
             }
-            else if (toUpper(zw) == "BOOTLOADER.BIN" || toUpper(zw) == "PARTITIONS.BIN" || toUpper(zw) == "README.MD" ||
-                     toUpper(zw) == "META.JSON") {
-                // Skip not required binary files, readme.md from OTA package and meta.json from backup file
+            else if (toUpper(zw) == "BOOTLOADER.BIN" || toUpper(zw) == "PARTITIONS.BIN" || toUpper(zw) == "README.MD") {
+                // Skip not needed binary files for OTA and readme.md
                 continue;
             }
             else {
