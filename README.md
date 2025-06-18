@@ -95,19 +95,19 @@ Further details can be found in [Manual Provisioning Documentation](docs/Install
 ## API Description
 ### REST API
 See [REST API Documentation](docs/API/REST/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > REST API`).<br>
-ℹ️ Read API documenation carefully. REST API is not fully compatible with jomjol's original firmware.
+ℹ️ Read API documentation carefully. REST API is not fully compatible with jomjol's original firmware.
 
 ### MQTT API
 See [MQTT API Documentation](docs/API/MQTT/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > MQTT API`).<br>
-ℹ️ Read API documenation carefully. MQTT API is not fully compatible with jomjol's original firmware.
+ℹ️ Read API documentation carefully. MQTT API is not fully compatible with jomjol's original firmware.
 
 ### Prometheus Exporter
 See [Prometheus API Documentation](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Prometheus API`).<br>
-ℹ️ Read API documenation carefully. Prometheus API is not fully compatible with jomjol's original firmware.
+ℹ️ Read API documentation carefully. Prometheus API is not fully compatible with jomjol's original firmware.
 
 ### Webhook API
 See [Webhook API Documentation](docs/API/Webhook/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Webhook API`).<br>
-ℹ️ Read API documenation carefully. Webhook API is not fully compatible with jomjol's original firmware.
+ℹ️ Read API documentation carefully. Webhook API is not fully compatible with jomjol's original firmware.
 
 
 ## Build Yourself
@@ -115,4 +115,4 @@ See [Build / Debug Instructions](code/README.md)
 
 
 ## Support
-ℹ️ This is a forked version of [jomjol´s great software](https://github.com/jomjol/AI-on-the-edge-device) which is intented to be used for my personal purposes only.
+ℹ️ This is a forked version of [jomjol´s great software](https://github.com/jomjol/AI-on-the-edge-device) which is intended to be used for my personal purposes only.

@@ -5,22 +5,22 @@
 ### 💡 Installation / Migration Notes
 
 #### A. Initial Installation
---> Recommeded: **Web Installer**
+--> Recommended: **Web Installer**
  - Follow instructions listed on [Web Installer page](https://slider0007.github.io/AI-on-the-edge-device/)
  - Other installation options: Check [Device Provisioning Documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs/Installation/DeviceProvisioning)
 
 #### B. Update from previous release (17.0.0)
---> Recommeded: **OTA Update**
+--> Recommended: **OTA Update**
 - Download board specific firmware package
-- Perfom OTA update
+- Perform OTA update
 - Verify alignment marker and ROI positions (due to changes of image handling)
 
 #### C. Migration from previous major release (16.x)
---> Recommeded: **OTA Update**
+--> Recommended: **OTA Update**
 - Download board specific firmware package
-- Perfom OTA update (ignore file name mismatch warning)
+- Perform OTA update (ignore file name mismatch warning)
 - Verify migrated device configuration
-  - Check migrated configuration briefly (majority of the paramter are migrated)
+  - Check migrated configuration briefly (majority of the parameter are migrated)
   - Reconfigure GPIO section (if it was configured before, no automatic migration)
 - Update reference image and alignment marker (Mandatory due to multiple new camera features and adaptions)
 - Lots of (breaking) changes are made to existing APIs. A manual reconfiguration is most likely required. Check API documentation
@@ -41,7 +41,7 @@
 ### Bug Fixes
 
 * **home assistant discovery:** Add device_class 'duration' to 'uptime' topic ([#249](https://github.com/Slider0007/AI-on-the-edge-device/issues/249)) ([e10e931](https://github.com/Slider0007/AI-on-the-edge-device/commit/e10e931e77c022de94a8459d60496ee9e496383b))
-* **post-processing:** Fix parameter plausiblity check logs ([#241](https://github.com/Slider0007/AI-on-the-edge-device/issues/241)) ([a50b7b1](https://github.com/Slider0007/AI-on-the-edge-device/commit/a50b7b137bcb702ef62fb6e3dd0b57f6893b59cf))
+* **post-processing:** Fix parameter plausibility check logs ([#241](https://github.com/Slider0007/AI-on-the-edge-device/issues/241)) ([a50b7b1](https://github.com/Slider0007/AI-on-the-edge-device/commit/a50b7b137bcb702ef62fb6e3dd0b57f6893b59cf))
 * **tflite class:** Resolve race condition during resource deallocation ([#247](https://github.com/Slider0007/AI-on-the-edge-device/issues/247)) ([ce49155](https://github.com/Slider0007/AI-on-the-edge-device/commit/ce4915599ee38b8cb80c656a01f2d8ee09c8a23b))
 
 
@@ -70,16 +70,16 @@
 ### 💡 Installation / Migration Notes
 
 #### A. Initial Installation
---> Recommeded: Web Installer
+--> Recommended: Web Installer
  - Follow instructions listed on [Web Installer page](https://slider0007.github.io/AI-on-the-edge-device/)
  - Other installation options: Check [Device Provisioning Documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs/Installation/DeviceProvisioning)
 
 #### B. Migration from previous releases (16.x)
---> Recommeded: OTA Update
+--> Recommended: OTA Update
 - Download board specific firmware package
-- Perfom OTA update (ignore file name mismatch warning)
+- Perform OTA update (ignore file name mismatch warning)
 - Verify migrated device configuration
-  - Check migrated configuration briefly (majority of the paramter are migrated)
+  - Check migrated configuration briefly (majority of the parameter are migrated)
   - Reconfigure GPIO section (if it was configured before, no automatic migration)
 - Update reference image and alignment marker (Mandatory due to multiple new camera features and adaptions)
 - Lots of (breaking) changes are made to existing APIs. A manual reconfiguration is most likely required. Check API documentation
@@ -107,7 +107,7 @@
 * **camera control:** Enhance two step digital zoom to a free and more finely adjustable zoom ([#189](https://github.com/Slider0007/AI-on-the-edge-device/issues/189)) ([7038293](https://github.com/Slider0007/AI-on-the-edge-device/commit/7038293050da068d783257b48b49c9b98f60102e))
 * **device provisioning:** Implement Improv Wi-Fi protocol using serial interface (Wi-Fi config via web installer) ([#183](https://github.com/Slider0007/AI-on-the-edge-device/issues/183)) ([c1fa372](https://github.com/Slider0007/AI-on-the-edge-device/commit/c1fa37231037c7eea53d52ac739e54eb2aaa3b87))
 * **gpio:** Complete rework of GPIO handler & Add additional features for GPIOs ([#154](https://github.com/Slider0007/AI-on-the-edge-device/issues/154)) ([026c650](https://github.com/Slider0007/AI-on-the-edge-device/commit/026c650e819b6dc5ec83b77cfe1cdb51361ca45f))
-* **gpio:** Support pin logic invertion (active high / low) for selected pin modes ([#193](https://github.com/Slider0007/AI-on-the-edge-device/issues/193)) ([932ae19](https://github.com/Slider0007/AI-on-the-edge-device/commit/932ae19be188a9f5ffa68b909dd3b25361ca77d9))
+* **gpio:** Support pin logic inversion (active high / low) for selected pin modes ([#193](https://github.com/Slider0007/AI-on-the-edge-device/issues/193)) ([932ae19](https://github.com/Slider0007/AI-on-the-edge-device/commit/932ae19be188a9f5ffa68b909dd3b25361ca77d9))
 * **hardware:** Add support for board Seeed Studio XIAO ESP32S3 Sense ([#155](https://github.com/Slider0007/AI-on-the-edge-device/issues/155)) ([922ba2f](https://github.com/Slider0007/AI-on-the-edge-device/commit/922ba2fbfe75d2bdbdc8604051435566c587517e))
 * **hardware:** Add support for boards based on Freenove ESP32S3-WROOM design (N16R8) ([#164](https://github.com/Slider0007/AI-on-the-edge-device/issues/164)) ([3e88b51](https://github.com/Slider0007/AI-on-the-edge-device/commit/3e88b519ffdc660a49db7dcb60fea2638b2b6862))
 * **hardware:** Support camera model OV5640 ([#189](https://github.com/Slider0007/AI-on-the-edge-device/issues/189)) ([7038293](https://github.com/Slider0007/AI-on-the-edge-device/commit/7038293050da068d783257b48b49c9b98f60102e))
@@ -127,7 +127,7 @@
 * **wlan:** Implement additional wlan operation modes (access point, disabled) ([#186](https://github.com/Slider0007/AI-on-the-edge-device/issues/186)) ([498d10a](https://github.com/Slider0007/AI-on-the-edge-device/commit/498d10aa26a4434bf43208c3c5d42f544aedbf4a))
 ### Bug Fixes
 * **camera / rest api:** Adapt config restore after temporary changes by REST API + align camera endpoint ([#202](https://github.com/Slider0007/AI-on-the-edge-device/issues/202)) ([b5da741](https://github.com/Slider0007/AI-on-the-edge-device/commit/b5da741508be5a9acb787739aa646cb0e06b531a))
-* **camera:** Prevent against concurrent access to camera ressource ([#202](https://github.com/Slider0007/AI-on-the-edge-device/issues/202)) ([b5da741](https://github.com/Slider0007/AI-on-the-edge-device/commit/b5da741508be5a9acb787739aa646cb0e06b531a))
+* **camera:** Prevent against concurrent access to camera resource ([#202](https://github.com/Slider0007/AI-on-the-edge-device/issues/202)) ([b5da741](https://github.com/Slider0007/AI-on-the-edge-device/commit/b5da741508be5a9acb787739aa646cb0e06b531a))
 * **camera:** Skip first 10 images after camera init ([#201](https://github.com/Slider0007/AI-on-the-edge-device/issues/201)) ([e099b48](https://github.com/Slider0007/AI-on-the-edge-device/commit/e099b480365f7ccc9aef6f0af6f8d33d207b615e))
 * **demo mode:** Deinit demo mode when main init is aborted ([#198](https://github.com/Slider0007/AI-on-the-edge-device/issues/198)) ([bbc15a0](https://github.com/Slider0007/AI-on-the-edge-device/commit/bbc15a07a17e9619d314e5cca1fbe3307ac36cd6))
 * **home assistant discovery:** Fix inconsistencies (device / state class) ([#229](https://github.com/Slider0007/AI-on-the-edge-device/issues/229)) ([00aacf2](https://github.com/Slider0007/AI-on-the-edge-device/commit/00aacf27fc345d60aeb6d7ade208524f7904e5fd))
@@ -146,7 +146,7 @@
 
 ### Other Changes
 * **build:** Implement ESP web tools for initial device setup ([#178](https://github.com/Slider0007/AI-on-the-edge-device/issues/178)) ([dfb0b7c](https://github.com/Slider0007/AI-on-the-edge-device/commit/dfb0b7c8cf1ac2f0b018c7ed6badbf198c34d78d))
-* **build:** Only one firmware package is generated which can be used to handle inital, remote and OTA update ([cfc53b0](https://github.com/Slider0007/AI-on-the-edge-device/commit/cfc53b0b0daf33a19217cf9de5457bbfa84d90e8))
+* **build:** Only one firmware package is generated which can be used to handle initial, remote and OTA update ([cfc53b0](https://github.com/Slider0007/AI-on-the-edge-device/commit/cfc53b0b0daf33a19217cf9de5457bbfa84d90e8))
 * **build:** Update release-please-action ([#161](https://github.com/Slider0007/AI-on-the-edge-device/issues/161)) ([3dd78b8](https://github.com/Slider0007/AI-on-the-edge-device/commit/3dd78b801ea11421f7ef54c5ef02e462871a667e))
 * **camera:** Set default camera clock frequency to 10Mhz ([#231](https://github.com/Slider0007/AI-on-the-edge-device/issues/231)) ([3d5afda](https://github.com/Slider0007/AI-on-the-edge-device/commit/3d5afda06ed842fba7f36a727dee1fa9618724e7))
 * **config file:** Add config file version tag ([#153](https://github.com/Slider0007/AI-on-the-edge-device/issues/153)) ([33258c5](https://github.com/Slider0007/AI-on-the-edge-device/commit/33258c5f9a0d2185931ea38afd2480a04d8e6a49))
@@ -210,7 +210,7 @@
 
 ### Bug Fixes
 
-* **flowctrl:** Fix exception accessing getJPG ressource ([#121](https://github.com/Slider0007/AI-on-the-edge-device/issues/121)) ([5d114d3](https://github.com/Slider0007/AI-on-the-edge-device/commit/5d114d310279087cbeba7cb03d7549c4de6607e0))
+* **flowctrl:** Fix exception accessing getJPG resource ([#121](https://github.com/Slider0007/AI-on-the-edge-device/issues/121)) ([5d114d3](https://github.com/Slider0007/AI-on-the-edge-device/commit/5d114d310279087cbeba7cb03d7549c4de6607e0))
 * **gpio:** Fix GPIO handler enable flag ([#134](https://github.com/Slider0007/AI-on-the-edge-device/issues/134)) ([6f4a8f4](https://github.com/Slider0007/AI-on-the-edge-device/commit/6f4a8f4ddc625603c8efc1ddbb4e88d16f199e75))
 * **mqtt:** Fix Home Assistant topic 'problem'  ([#130](https://github.com/Slider0007/AI-on-the-edge-device/issues/130)) ([cab4597](https://github.com/Slider0007/AI-on-the-edge-device/commit/cab4597ad7dc299cb76c6dbe38637d2742681c1c))
 * **mqtt:** Reset username+password when parameter is disabled ([#122](https://github.com/Slider0007/AI-on-the-edge-device/issues/122)) ([abb0afe](https://github.com/Slider0007/AI-on-the-edge-device/commit/abb0afe699a549ec2d360e2c3875e9f7e28d22fd))
@@ -234,7 +234,7 @@
 * **build:** Update release-please-action (node 16 EOL) ([#135](https://github.com/Slider0007/AI-on-the-edge-device/issues/135)) ([9269194](https://github.com/Slider0007/AI-on-the-edge-device/commit/926919407adce5cf7419c82fbb65cddd235d3421))
 * **docs:** Add some troubleshooting docs ([#132](https://github.com/Slider0007/AI-on-the-edge-device/issues/132)) ([cfd046e](https://github.com/Slider0007/AI-on-the-edge-device/commit/cfd046ed72c916b0f5f859f1ce949fd175e07940))
 * **docs:** Include REST API + MQTT API description into this repo  ([#129](https://github.com/Slider0007/AI-on-the-edge-device/issues/129)) ([d3dc0a3](https://github.com/Slider0007/AI-on-the-edge-device/commit/d3dc0a3c32fa2de7735be339979b0b604b98b4cf))
-* **nvs:** Add staus LED blink codes for NVS init errors ([#131](https://github.com/Slider0007/AI-on-the-edge-device/issues/131)) ([f455c76](https://github.com/Slider0007/AI-on-the-edge-device/commit/f455c76dda7e7362aa3c83cd2b62d3f63c14d940))
+* **nvs:** Add status LED blink codes for NVS init errors ([#131](https://github.com/Slider0007/AI-on-the-edge-device/issues/131)) ([f455c76](https://github.com/Slider0007/AI-on-the-edge-device/commit/f455c76dda7e7362aa3c83cd2b62d3f63c14d940))
 
 ## [16.1.1-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v16.1.0-SLFork...v16.1.1-SLFork) (2024-01-08)
 
@@ -264,7 +264,7 @@
 
 * **alignment marker:** Fix usage of preallocated RAM ([#95](https://github.com/Slider0007/AI-on-the-edge-device/issues/95)) ([5676d59](https://github.com/Slider0007/AI-on-the-edge-device/commit/5676d591dee9c2c53a918f829d2cbc059a25c9e7))
 * Fix 'MaxRateType' parameter migration ([#91](https://github.com/Slider0007/AI-on-the-edge-device/issues/91)) ([5926bf8](https://github.com/Slider0007/AI-on-the-edge-device/commit/5926bf890668136f465ad594735942dd77ffc336))
-* **influxdb:** Consider DST for UTC time converison ([#89](https://github.com/Slider0007/AI-on-the-edge-device/issues/89)) ([d1f77ac](https://github.com/Slider0007/AI-on-the-edge-device/commit/d1f77acb540c679132e176bd020f429855ca723c))
+* **influxdb:** Consider DST for UTC time conversion ([#89](https://github.com/Slider0007/AI-on-the-edge-device/issues/89)) ([d1f77ac](https://github.com/Slider0007/AI-on-the-edge-device/commit/d1f77acb540c679132e176bd020f429855ca723c))
 * **influxdbv2:** Rename parameter 'database' to 'bucket' ([#100](https://github.com/Slider0007/AI-on-the-edge-device/issues/100)) ([b2f9e11](https://github.com/Slider0007/AI-on-the-edge-device/commit/b2f9e1134f1fe1b8331a055bbeaa1679cf94b64e))
 * **parameter migration:** Fix 'MaxRateType' parameter (Handling 'RateOff') ([#97](https://github.com/Slider0007/AI-on-the-edge-device/issues/97)) ([6901c01](https://github.com/Slider0007/AI-on-the-edge-device/commit/6901c0164f5aa793ac7aea78087b1cd011596198))
 * **REST API:** Fix misleading REST API send_file error ([#107](https://github.com/Slider0007/AI-on-the-edge-device/issues/107)) ([5112ce4](https://github.com/Slider0007/AI-on-the-edge-device/commit/5112ce487c97c5fc8298aecc5c363f2f350cc848))
@@ -282,7 +282,7 @@
 * Rename 'round' to 'cycle' ([#84](https://github.com/Slider0007/AI-on-the-edge-device/issues/84)) ([ce61169](https://github.com/Slider0007/AI-on-the-edge-device/commit/ce611697e8f6260ecd1ff68f78f72a14776011a5))
 * **REST API:** Relocate REST API functions ([#83](https://github.com/Slider0007/AI-on-the-edge-device/issues/83)) ([285d8d7](https://github.com/Slider0007/AI-on-the-edge-device/commit/285d8d73e9396438ee2a082d387b02b5c53e2a41))
 * **webserver:** Adapt/Align some debug log level ([#98](https://github.com/Slider0007/AI-on-the-edge-device/issues/98)) ([7e1ee91](https://github.com/Slider0007/AI-on-the-edge-device/commit/7e1ee91b6e900b00178c9570fb0b3435716a52ce))
-* **webui:** Optimized mobile presenation ([#96](https://github.com/Slider0007/AI-on-the-edge-device/issues/96)) ([8cd041b](https://github.com/Slider0007/AI-on-the-edge-device/commit/8cd041b2461997652ce031537abc97a41456db97))
+* **webui:** Optimized mobile presentation ([#96](https://github.com/Slider0007/AI-on-the-edge-device/issues/96)) ([8cd041b](https://github.com/Slider0007/AI-on-the-edge-device/commit/8cd041b2461997652ce031537abc97a41456db97))
 * **webui:** Overlay notification box e.g. after user interaction ([#108](https://github.com/Slider0007/AI-on-the-edge-device/issues/108)) ([0902669](https://github.com/Slider0007/AI-on-the-edge-device/commit/09026696210c1c089303daeacc8bece9c9a3e558))
 
 
@@ -359,7 +359,7 @@ The following changes are implemented on the the base of jomjol's v15.1.1 releas
 * **webui:** Allow firmware.bin as valid file name ([932d538](https://github.com/Slider0007/AI-on-the-edge-device/commit/932d538d7f0aca67268832d379f7cf987b482868))
 * **webui:** Config page: Remove unnecessary checkboxes ([d93eeb5](https://github.com/Slider0007/AI-on-the-edge-device/commit/d93eeb5ad590fabdd398d9e94ac6314a4c963f52))
 * **webui:** Data Graph: Add Raw value + refactor ([d07b86f](https://github.com/Slider0007/AI-on-the-edge-device/commit/d07b86fa76a07b6ee278a3ea0a7bebc2cdaa3c48))
-* **webui:** Enahnce WebUI using new REST API /process_data and some further chnages ([85ceeba](https://github.com/Slider0007/AI-on-the-edge-device/commit/85ceeba408e000f404900fe454e14931e442024b))
+* **webui:** Enhance WebUI using new REST API /process_data and some further changes ([85ceeba](https://github.com/Slider0007/AI-on-the-edge-device/commit/85ceeba408e000f404900fe454e14931e442024b))
 * **webui:** Implement auto page refresh function for 'Overview' and 'Data Graph' ([3ab1eda](https://github.com/Slider0007/AI-on-the-edge-device/commit/3ab1eda2ad9ad8a24145a8568357c00fde1e4aea))
 * **webui:** Improve handling of missing parameter ([935f930](https://github.com/Slider0007/AI-on-the-edge-device/commit/935f930ee45fb1818dd4ba85419462505f368860))
 * **webui:** Overview.html: Rename value status result to valid / invalid ([12aae5f](https://github.com/Slider0007/AI-on-the-edge-device/commit/12aae5f7c845b02f022d7e78b26948d1a04f746d))

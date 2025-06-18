@@ -34,7 +34,7 @@
 
 
 //**************************************************************************************
-// GLOABL DEBUG FLAGS
+// GLOBAL DEBUG FLAGS
 //**************************************************************************************
 
 // Can also be set in platformio.ini with -D OPTION_TO_ACTIVATE
@@ -152,7 +152,7 @@
 #define LOG_DEBUG_ROOT_FOLDER           "/sdcard/log/debug"
 
 // Uncomment this to keep the logfile open for appending.
-// If commented out, the logfile gets opened/closed for each log measage
+// If commented out, the logfile gets opened/closed for each log message
 //#define KEEP_LOGFILE_OPEN_FOR_APPENDING
 
 
@@ -240,7 +240,7 @@ CONFIG_WPA_MBO_SUPPORT=n
 CONFIG_WPA_11R_SUPPORT=n
 */
 //#define WLAN_USE_MESH_ROAMING   // 802.11v (BSS Transition Management) + 802.11k (Radio Resource Management)
-                                  // (ca. 6kB - 8kB internal RAM neccessary)
+                                  // (ca. 6kB - 8kB internal RAM necessary)
 //#define WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES  // Client can send query to AP requesting
                                                                    // to roam (if RSSI lower than RSSI threshold)
 
@@ -423,7 +423,7 @@ CONFIG_WPA_11R_SUPPORT=n
 
     // Spare GPIO
     //-------------------------------------------------
-    // Options for usage defintion:
+    // Options for usage definition:
     // - 'spare': Free to use
     // - 'restricted: usage': Restricted usable (WebUI expert view)
     // - 'flashlight-pwm' or 'flashlight-smartled' or 'flashlight-digital' (ON/OFF) -> Map to 'flashlight-default'

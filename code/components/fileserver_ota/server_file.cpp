@@ -49,7 +49,7 @@ static const char *TAG = "SERVER_FILE";
 static const std::unordered_set<std::string> noRedirectFiles = {"/config/marker1.jpg",  "/config/marker2.jpg",  "/config/reference.jpg",
                                                                 "/img_tmp/marker1.jpg", "/img_tmp/marker2.jpg", "/img_tmp/reference.jpg"};
 
-// Files with sensitive content (e.g. passwords) or some content to hide completly
+// Files with sensitive content (e.g. passwords) or some content to hide completely
 static const std::unordered_set<std::string> sensitiveContent = {"wlan.ini", "wlan_ini.bak", "config.ini", "config_ini.bak",
                                                                  "System Volume Information"};
 
