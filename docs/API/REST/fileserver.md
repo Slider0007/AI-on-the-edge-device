@@ -2,7 +2,7 @@
 
 ## REST API endpoint: fileserver
 
-`http://IP-ADDRESS/fileserver/`
+`http://IP-ADDRESS/fileserver`
 
 This endpoint provides access to the file system of the SD card. Depending on the request path, 
 it either returns the contents of a file or renders the contents of a folder as an HTML table.

@@ -29,10 +29,10 @@ Further details can be found in the respective REST API endpoint description.
 | [/reboot](reboot.md)                 | Trigger Reboot                                     | HTML        | 
 | [/wlan](wlan.md)                     | WLAN Scan                                          | JSON        |
 | [/coredump](coredump.md)             | Handle Core Dumps (Software Exception)             | HTML        | 
-| [/fileserver/](fileserver.md)        | Fileserver                                         | HTML        | 
-| [/upload/](upload.md)                | File Upload (POST)                                 | HTML        | 
-| [/delete/](delete.md)                | File Deletion (POST)                               | HTML        | 
-| [/img_tmp/](img_tmp.md)              | Load Images From RAM                               | HTML        | 
+| [/fileserver](fileserver.md)         | Fileserver (File Download / Show Folder Content)   | HTML        | 
+| [/upload](upload.md)                 | File Upload (POST)                                 | HTML        | 
+| [/delete](delete.md)                 | File / Folder Deletion (POST)                      | HTML        | 
+| [/img_tmp](img_tmp.md)               | Load Process Images From RAM                       | HTML        | 
 | /                                    | WebUI (Redirected to `index.html` or `setup.html`) | HTML        | 
 
 
