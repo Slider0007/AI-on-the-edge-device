@@ -334,7 +334,7 @@ esp_err_t deleteAllFilesInDirectory(std::string directory, bool recursive, bool 
 {
     DIR *dir = opendir(directory.c_str());
     if (!dir) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to open directory: " + directory);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "deleteAllFilesInDirectory: Failed to open directory: " + directory);
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -368,7 +368,7 @@ esp_err_t deleteAllFilesInDirectory(std::string directory, bool recursive, bool 
 
     closedir(dir);
 
-    // Delete root folder
+    // Delete directory root folder
     if (deleteRootFolder && retVal == ESP_OK && rmdir(directory.c_str()) != 0) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to remove directory: " + directory + " | Error: " + std::to_string(errno) + ")");
         retVal = ESP_FAIL;

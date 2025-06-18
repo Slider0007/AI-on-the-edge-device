@@ -333,7 +333,8 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool sendFullFile)
         if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
             fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send log file");
+            std::string msg = "Failed to send log file: " + LogFile.getCurrentFileName();
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
             return ESP_FAIL;
         }
     }
@@ -432,7 +433,8 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool sendFullFile)
         if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
             fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send data file");
+            std::string msg = "Failed to send data file: " + LogFile.getCurrentFileNameData();
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
             return ESP_FAIL;
         }
     }
@@ -662,7 +664,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     const char *filename = getPathFromUri(filePath, ((HttpServerData *)req->user_ctx)->basePathFileserver,
                                           req->uri + sizeof("/fileserver") - 1, sizeof(filePath));
     if (!filename) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: URI malformed or too long");
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Path malformed or too long");
         return ESP_FAIL;
     }
 
@@ -741,7 +743,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
                                           sizeof(filePath));
 
     if (!filename) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: URI malformed or too long");
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Path malformed or too long");
         return ESP_FAIL;
     }
 
