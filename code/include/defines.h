@@ -34,7 +34,7 @@
 
 
 //**************************************************************************************
-// GLOABL DEBUG FLAGS
+// GLOBAL DEBUG FLAGS
 //**************************************************************************************
 
 // Can also be set in platformio.ini with -D OPTION_TO_ACTIVATE
@@ -96,13 +96,20 @@
 
 // Server_file + Helper
 //******************************
-#define FILE_PATH_MAX (255) //Max length a file path can have on storage
+#define FILE_PATH_MAX (255)
+#define HTML_FILE_FILESERVER_STATIC "/sdcard/html/sys_fileserver.html"
+
+#define ROOT_FOLDER_DATA_LOG "/sdcard/log/data"
+#define ROOT_FOLDER_CNN_MODELS "/sdcard/config/models"
+#define ROOT_FOLDER_CERTS "/sdcard/config/certs"
+
+#define HTTPD_303_SEE_OTHER "303 See Other"
 
 
 // Server_file + (ota_page.html + upload_script.html)
 //******************************
-#define MAX_FILE_SIZE   (8000*1024) // 8 MB Max size of an individual file. Make sure this value
-                                    // is same as that set in upload_script.html and ota_page.html!
+#define MAX_FILE_SIZE (8000*1024) // 8 MB Max size of an individual file. Make sure this value
+                                  // is same as that set in upload_script.html and ota_page.html!
 #define MAX_FILE_SIZE_STR "8MB"
 
 #define LOGFILE_LAST_PART_BYTES 80 * 1024 // 80 kBytes  // Size of partial log file to return
@@ -145,7 +152,7 @@
 #define LOG_DEBUG_ROOT_FOLDER           "/sdcard/log/debug"
 
 // Uncomment this to keep the logfile open for appending.
-// If commented out, the logfile gets opened/closed for each log measage
+// If commented out, the logfile gets opened/closed for each log message
 //#define KEEP_LOGFILE_OPEN_FOR_APPENDING
 
 
@@ -233,7 +240,7 @@ CONFIG_WPA_MBO_SUPPORT=n
 CONFIG_WPA_11R_SUPPORT=n
 */
 //#define WLAN_USE_MESH_ROAMING   // 802.11v (BSS Transition Management) + 802.11k (Radio Resource Management)
-                                  // (ca. 6kB - 8kB internal RAM neccessary)
+                                  // (ca. 6kB - 8kB internal RAM necessary)
 //#define WLAN_USE_MESH_ROAMING_ACTIVATE_CLIENT_TRIGGERED_QUERIES  // Client can send query to AP requesting
                                                                    // to roam (if RSSI lower than RSSI threshold)
 
@@ -416,7 +423,7 @@ CONFIG_WPA_11R_SUPPORT=n
 
     // Spare GPIO
     //-------------------------------------------------
-    // Options for usage defintion:
+    // Options for usage definition:
     // - 'spare': Free to use
     // - 'restricted: usage': Restricted usable (WebUI expert view)
     // - 'flashlight-pwm' or 'flashlight-smartled' or 'flashlight-digital' (ON/OFF) -> Map to 'flashlight-default'

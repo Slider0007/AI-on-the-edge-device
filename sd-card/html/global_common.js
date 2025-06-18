@@ -3,8 +3,8 @@
 * NOTE: And you also might have to disable CORS in your webbrowser.
 * IMPORTANT: For regular WebUI operation this IP parameter is not needed at all!
 */
-let DUTDeviceIP = "192.168.2.20";      // Set the IP of physical device under test
-let TestEnvironmentActive = false;
+var DUTDeviceIP = "192.168.2.20";      // Set the IP of physical device under test
+var TestEnvironmentActive = false;
 
 
 /* Returns the domainname with prepended protocol.

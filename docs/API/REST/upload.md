@@ -5,9 +5,9 @@
 `http://IP-ADDRESS/upload`
 
 
-Upload content to SD card by HTTP POST.
+This endpoint uploades files to the SD card via an HTTP POST request.
 
 
 Response:
 - Content type: `HTML`
-- Content: Content of destination folder
+- Content: Redirects to parent folder and responds with HTML table of parent folder (only first 100 items)

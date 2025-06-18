@@ -278,7 +278,7 @@ static bool diagnostic(void)
 
 
 // OTA Partition State Check is only needed if sdkconfig flag CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE is set
-// Roolback functionality is not yet implemented in this firmware
+// Rollback functionality is not yet implemented in this firmware
 void checkOTAPartitionState(void)
 {
     ESP_LOGI(TAG, "Check OTA partition state");
@@ -400,7 +400,7 @@ esp_err_t handler_ota_update(httpd_req_t *req)
 
     if (deleteFileRequest) {
         if (!deleteFile(fn)) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Deletetion failed. File does not exist: " + fn);
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Deletion failed. File does not exist: " + fn);
             httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File deletion failed");
             return ESP_FAIL;
         }
@@ -479,13 +479,13 @@ std::string unzipOTA(std::string _in_zip_file, std::string _root_folder)
 
             ESP_LOGI(TAG, "Unzip file: %s", zw.c_str());
 
-            // Add suffix to ensure not directly overwritting original file
+            // Add suffix to ensure not directly overwriting original file
             std::string filename_zw = zw + "_0xge";
 
             // Create directory if not yet existing
             makeDir(getDirectory(zw));
 
-            // Ensure that temp file is surly deleted before writting data
+            // Ensure that temp file is surly deleted before writing data
             deleteFile(filename_zw);
 
             FILE *fpTargetFile = fopen(filename_zw.c_str(), "wb");
@@ -502,7 +502,7 @@ std::string unzipOTA(std::string _in_zip_file, std::string _root_folder)
                 isokay = false;
             }
             else {
-                deleteFile(zw); // Make sure, file is not exisitng. Note: It is possible that no file exists
+                deleteFile(zw); // Make sure, file is not existing. Note: It is possible that no file exists
                 if (!renameFile(filename_zw, zw)) {
                     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: Failed to rename file: " + filename_zw + " -> " + zw);
                     isokay = false;
@@ -609,7 +609,7 @@ void forceReboot()
 
 void task_reboot(void *DeleteMainFlow)
 {
-    // Write a reboot, to identify a reboot by purpouse
+    // Write a reboot, to identify a reboot by purpose
     FILE *pfile = fopen("/sdcard/reboot.txt", "w");
     if (pfile) {
         std::string zw = "reboot";

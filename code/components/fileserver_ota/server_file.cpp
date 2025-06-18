@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <iostream>
+#include <unordered_set>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/unistd.h>
@@ -44,23 +45,45 @@ extern "C" {
 static const char *TAG = "SERVER_FILE";
 
 
+// Files that should not trigger a webserver redirect
+static const std::unordered_set<std::string> noRedirectFiles = {"/config/marker1.jpg",  "/config/marker2.jpg",  "/config/reference.jpg",
+                                                                "/img_tmp/marker1.jpg", "/img_tmp/marker2.jpg", "/img_tmp/reference.jpg"};
+
+// Files with sensitive content (e.g. passwords) or some content to hide completely
+static const std::unordered_set<std::string> sensitiveContent = {"wlan.ini", "wlan_ini.bak", "config.ini", "config_ini.bak",
+                                                                 "System Volume Information"};
+
+
+// Extract parent of a given path
+std::string getParentPath(const std::string &path)
+{
+    size_t slashPos = path.find_last_of('/');
+    std::string pathPart = (slashPos != std::string::npos) ? path.substr(0, slashPos) : "";
+
+    if (pathPart.empty()) {
+        return "/fileserver/"; // Ensure trailing slash
+    }
+    else {
+        return "/fileserver" + pathPart + "/";
+    }
+}
+
+
 esp_err_t getDataFileList(httpd_req_t *req)
 {
-    esp_err_t retVal = ESP_FAIL;
-    const char verz_name[] = "/sdcard/log/data";
-
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
-    DIR *dir = opendir(verz_name);
+    DIR *dir = opendir(ROOT_FOLDER_DATA_LOG);
     if (!dir) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getDataFileList: Failed to open directory: " + std::string(verz_name));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
+        std::string msg = "Failed to open directory: " + std::string(ROOT_FOLDER_DATA_LOG);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getDataFileList: " + msg);
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, msg.c_str());
         return ESP_FAIL;
     }
 
     cJSON *cJSONObject = cJSON_CreateObject();
-    if (cJSONObject == NULL) {
+    if (!cJSONObject) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
         return ESP_FAIL;
     }
@@ -70,6 +93,7 @@ esp_err_t getDataFileList(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    esp_err_t retVal = ESP_OK;
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_name[0] == '.') { // ignore all files with starting dot (hidden files)
@@ -99,21 +123,19 @@ esp_err_t getDataFileList(httpd_req_t *req)
 
 esp_err_t getTfliteFileList(httpd_req_t *req)
 {
-    esp_err_t retVal = ESP_FAIL;
-    const char verz_name[] = "/sdcard/config/models";
-
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
-    DIR *dir = opendir(verz_name);
+    DIR *dir = opendir(ROOT_FOLDER_CNN_MODELS);
     if (!dir) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getTfliteFileList: Failed to open directory: " + std::string(verz_name));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
+        std::string msg = "Failed to open directory: " + std::string(ROOT_FOLDER_CNN_MODELS);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getTfliteFileList: " + msg);
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, msg.c_str());
         return ESP_FAIL;
     }
 
     cJSON *cJSONObject = cJSON_CreateObject();
-    if (cJSONObject == NULL) {
+    if (!cJSONObject) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
         return ESP_FAIL;
     }
@@ -123,6 +145,7 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    esp_err_t retVal = ESP_OK;
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_name[0] == '.') { // ignore all files with starting dot (hidden files)
@@ -152,21 +175,19 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
 
 esp_err_t getCertFileList(httpd_req_t *req)
 {
-    esp_err_t retVal = ESP_FAIL;
-    const char verz_name[] = "/sdcard/config/certs";
-
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
-    DIR *dir = opendir(verz_name);
+    DIR *dir = opendir(ROOT_FOLDER_CERTS);
     if (!dir) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getCertFileList: Failed to open directory: " + std::string(verz_name));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
+        std::string msg = "Failed to open directory: " + std::string(ROOT_FOLDER_CERTS);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getCertFileList: " + msg);
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, msg.c_str());
         return ESP_FAIL;
     }
 
     cJSON *cJSONObject = cJSON_CreateObject();
-    if (cJSONObject == NULL) {
+    if (!cJSONObject) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
         return ESP_FAIL;
     }
@@ -176,6 +197,7 @@ esp_err_t getCertFileList(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    esp_err_t retVal = ESP_OK;
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_name[0] == '.') { // ignore all files with starting dot (hidden files)
@@ -203,7 +225,7 @@ esp_err_t getCertFileList(httpd_req_t *req)
 esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disableCache)
 {
     FILE *file = fopen(filename.c_str(), "rb");
-    if (file == NULL) {
+    if (!file) {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, get404());
         return ESP_FAIL;
     }
@@ -213,7 +235,7 @@ esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disabl
     setvbuf(file, NULL, _IOFBF, 512);
 
     // Files listed are never be cached (declared static to avoid reallocation)
-    static const std::set<std::string> specialNoCacheFiles = {"/sdcard/html/index.html", "/sdcard/html/setup.html"};
+    static const std::unordered_set<std::string> specialNoCacheFiles = {"/sdcard/html/index.html", "/sdcard/html/setup.html"};
     bool doNotCacheFile = specialNoCacheFiles.count(filename) > 0;
 
     // Default cache behaviour -> disable caching
@@ -221,8 +243,8 @@ esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disabl
 
     if (!disableCache && !doNotCacheFile) {
         // Files types listed shall be cached (Declared static to avoid reallocation)
-        static const std::set<std::string> fileTypes = {".html", ".htm", ".css", ".js",  ".map", ".jpg",         ".jpeg",
-                                                        ".ico",  ".gif", ".svg", ".png", ".md",  ".webmanifest", ".txt"};
+        static const std::unordered_set<std::string> fileTypes = {".html", ".htm", ".css", ".js",  ".map", ".jpg",         ".jpeg",
+                                                                  ".ico",  ".gif", ".svg", ".png", ".md",  ".webmanifest", ".txt"};
 
         // Check if file type is matching
         for (const auto &type : fileTypes) {
@@ -236,71 +258,58 @@ esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disabl
     httpd_resp_set_hdr(req, "Cache-Control", cacheControl); // Set cache control header
     setContentTypeFromFile(req, filename.c_str());          // Set content-type header based on file type (extention)
 
-    char *chunk = (char *)((struct HttpServerData *)req->user_ctx)->scratch;
-    size_t chunksize;
+    char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
+    size_t bytesRead = 0;
 
-    do {
-        chunksize = fread(chunk, 1, WEBSERVER_SCRATCH_BUFSIZE, file);
-
-        if (chunksize > 0) {
-            if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
-                fclose(file);
-                std::string msgTxt = "sendFile: Failed to send file: " + filename;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msgTxt);
-                httpd_resp_sendstr_chunk(req, NULL); // Send empty chunk for closure
-                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msgTxt.c_str());
-                return ESP_FAIL;
-            }
+    while ((bytesRead = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
+            fclose(file);
+            httpd_resp_sendstr_chunk(req, NULL);
+            std::string msg = "Failed to send file: " + filename;
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+            return ESP_FAIL;
         }
-    } while (chunksize > 0);
+    }
 
+    httpd_resp_sendstr_chunk(req, NULL);
     fclose(file);
 
-    httpd_resp_sendstr_chunk(req, NULL); // Respond with an empty chunk to signal HTTP response completion
     return ESP_OK;
 }
 
 
-static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
+static esp_err_t sendLogfile(httpd_req_t *req, bool sendFullFile)
 {
-    FILE *fd = NULL;
-    std::string currentfilename = LogFile.getCurrentFileName();
-
-    // ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
-
-    fd = fopen(currentfilename.c_str(), "r");
-    if (fd == NULL) {
-        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to read file: " + currentfilename); // It's not a fault if no file
-        // is available
-        httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs available from
-                                                                              // today
+    FILE *file = fopen(LogFile.getCurrentFileName().c_str(), "r");
+    if (!file) {
+        httpd_resp_send(req, "No recent log entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no logs from today
         return ESP_OK;
     }
 
-    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(fd, NULL, _IOFBF, 512);
+    setvbuf(file, NULL, _IOFBF, 512);
 
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
-    if (!send_full_file) { // Send only last part of file
+    if (!sendFullFile) { // Send only last part of file
         ESP_LOGD(TAG, "Sending last %d bytes of the actual logfile", LOGFILE_LAST_PART_BYTES);
         long pos = 0;
 
-        /* Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/ */
-        if (fseek(fd, 0, SEEK_END)) {
+        // Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/
+        if (fseek(file, 0, SEEK_END)) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to get to end of file");
             return ESP_FAIL;
         }
         else {
-            pos = ftell(fd); // Number of bytes in the file
+            pos = ftell(file); // Number of bytes in the file
             ESP_LOGD(TAG, "File contains %ld bytes", pos);
 
             // Calc start position -> either beginning of LAST PART (EOF - LAST_PART_BYTES) or beginning of file (pos = 0)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos);
 
-            if (fseek(fd, pos, SEEK_SET)) { // Go to start position
+            if (fseek(file, pos, SEEK_SET)) { // Go to start position
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                     "sendLogfile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) +
                                         " bytes within the file");
@@ -308,41 +317,31 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool send_full_file)
             }
         }
 
-        /* Find end of line */
+        // Find end of line
         while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART"
                           // (skip if start is from beginning of file to ensure first line is included)
-            if (fgetc(fd) == '\n') {
+            if (fgetc(file) == '\n') {
                 break;
             }
         }
     }
 
-    /* Retrieve the pointer to scratch buffer for temporary storage */
-    char *chunk = ((struct HttpServerData *)req->user_ctx)->scratch;
-    size_t chunksize;
-    do {
-        /* Read file in chunks into the scratch buffer */
-        chunksize = fread(chunk, 1, WEBSERVER_SCRATCH_BUFSIZE, fd);
+    char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
+    size_t bytesRead = 0;
 
-        /* Send the buffer contents as HTTP response chunk */
-        if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
-            fclose(fd);
-            std::string msg_txt = "sendLogfile: File sending failed: " + currentfilename;
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
+    while ((bytesRead = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
+            fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
+            std::string msg = "Failed to send log file: " + LogFile.getCurrentFileName();
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
             return ESP_FAIL;
         }
+    }
 
-        /* Keep looping till the whole file is sent */
-    } while (chunksize != 0);
-
-    /* Close file after sending complete */
-    fclose(fd);
-    ESP_LOGD(TAG, "File sending complete");
-
-    /* Respond with an empty chunk to signal HTTP response completion */
     httpd_resp_send_chunk(req, NULL, 0);
+    fclose(file);
+
     return ESP_OK;
 }
 
@@ -379,46 +378,38 @@ static esp_err_t handler_logfiles(httpd_req_t *req)
 }
 
 
-static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
+static esp_err_t sendDatafile(httpd_req_t *req, bool sendFullFile)
 {
-    FILE *fd = NULL;
-    std::string currentfilename = LogFile.getCurrentFileNameData();
-
-    // ESP_LOGD(TAG, "uri: %s, filepath: %s", req->uri, currentfilename.c_str());
-
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
     httpd_resp_set_type(req, "text/plain");
 
-    fd = fopen(currentfilename.c_str(), "r");
-    if (fd == NULL) {
-        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendDatafile: Failed to read file: " + currentfilename); // It's not a fault if no file
-        // is available
-        httpd_resp_send(req, "No recent data entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no data available from
-                                                                               // today
+    FILE *file = fopen(LogFile.getCurrentFileNameData().c_str(), "r");
+    if (!file) {
+        httpd_resp_send(req, "No recent data entries", HTTPD_RESP_USE_STRLEN); // Respond with a positive feedback, no data from today
         return ESP_OK;
     }
 
-    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(fd, NULL, _IOFBF, 512);
+    setvbuf(file, NULL, _IOFBF, 512);
 
-    if (!send_full_file) { // Send only last part of file
+    if (!sendFullFile) { // Send only last part of file
         ESP_LOGD(TAG, "Sending last %d bytes of the actual datafile", LOGFILE_LAST_PART_BYTES);
         long pos = 0;
 
-        /* Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/ */
-        if (fseek(fd, 0, SEEK_END)) {
+        // Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/
+        if (fseek(file, 0, SEEK_END)) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendDatafile: Failed to get to end of file");
             return ESP_FAIL;
         }
         else {
-            pos = ftell(fd); // Number of bytes in the file
+            pos = ftell(file); // Number of bytes in the file
             ESP_LOGD(TAG, "File contains %ld bytes", pos);
 
             // Calc start position -> either beginning of LAST PART (EOF - LAST_PART_BYTES) or beginning of file (pos = 0)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos);
 
-            if (fseek(fd, pos, SEEK_SET)) { // Go to start position
+            if (fseek(file, pos, SEEK_SET)) { // Go to start position
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                     "sendDatafile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) +
                                         " bytes within the file");
@@ -426,41 +417,31 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool send_full_file)
             }
         }
 
-        /* Find end of line */
+        // Find end of line
         while (pos > 0) { // Only search end of line if pos is pointing to "beginning of LAST PART"
                           // (skip if start is from beginning of file to ensure first line is included)
-            if (fgetc(fd) == '\n') {
+            if (fgetc(file) == '\n') {
                 break;
             }
         }
     }
 
-    /* Retrieve the pointer to scratch buffer for temporary storage */
-    char *chunk = ((struct HttpServerData *)req->user_ctx)->scratch;
-    size_t chunksize;
-    do {
-        /* Read file in chunks into the scratch buffer */
-        chunksize = fread(chunk, 1, WEBSERVER_SCRATCH_BUFSIZE, fd);
+    char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
+    size_t bytesRead = 0;
 
-        /* Send the buffer contents as HTTP response chunk */
-        if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
-            fclose(fd);
-            std::string msg_txt = "sendDatafile: File sending failed: " + currentfilename;
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
+    while ((bytesRead = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
+            fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
+            std::string msg = "Failed to send data file: " + LogFile.getCurrentFileNameData();
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
             return ESP_FAIL;
         }
+    }
 
-        /* Keep looping till the whole file is sent */
-    } while (chunksize != 0);
-
-    /* Close file after sending complete */
-    fclose(fd);
-    ESP_LOGD(TAG, "File sending complete");
-
-    /* Respond with an empty chunk to signal HTTP response completion */
     httpd_resp_send_chunk(req, NULL, 0);
+    fclose(file);
+
     return ESP_OK;
 }
 
@@ -497,158 +478,179 @@ static esp_err_t handler_datafiles(httpd_req_t *req)
 }
 
 
-// Response with a run-time generated html consisting all files and folders of requested path
-static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const char *uripath, bool readonly)
+static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char *uripath, bool readonly, bool showAllFiles)
 {
-    char entrypath[FILE_PATH_MAX];
-    char entrysize[16];
-    const char *entrytype;
+    char entryPath[FILE_PATH_MAX];
+    char entrySize[16];
+    const char *entryType;
 
     struct dirent *entry;
-    struct stat entry_stat;
+    struct stat entryStat;
 
-    char dirpath_corrected[FILE_PATH_MAX];
-    strcpy(dirpath_corrected, dirpath);
+    char dirpathCorrected[FILE_PATH_MAX];
+    strlcpy(dirpathCorrected, dirpath, sizeof(dirpathCorrected));
 
-    HttpServerData *server_data = (HttpServerData *)req->user_ctx;
-    if ((strlen(dirpath_corrected) - 1) > strlen(server_data->basePathFileserver)) { // if dirpath is not mountpoint, the last "\" needs to
-                                                                                     // be removed
-        dirpath_corrected[strlen(dirpath_corrected) - 1] = '\0';
+    // Strip trailing slash if necessary
+    if ((strlen(dirpathCorrected) - 1) > strlen(((HttpServerData *)req->user_ctx)->basePathFileserver)) {
+        dirpathCorrected[strlen(dirpathCorrected) - 1] = '\0';
     }
 
-    DIR *dir = opendir(dirpath_corrected);
-
-    const size_t dirpath_len = strlen(dirpath);
-    ESP_LOGD(TAG, "Dirpath: <%s>, Pathlength: %d", dirpath, dirpath_len);
-
-    /* Retrieve the base path of file storage to construct the full path */
-    strlcpy(entrypath, dirpath, sizeof(entrypath));
-    ESP_LOGD(TAG, "entrypath: <%s>", entrypath);
-
+    DIR *dir = opendir(dirpathCorrected);
     if (!dir) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "http_resp_dir_html: Failed to open directory: " + std::string(dirpath));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to open directory");
+        std::string msg = "Failed to open directory: " + std::string(dirpath);
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, msg.c_str());
         return ESP_FAIL;
     }
 
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
 
-    /* Send HTML file header */
-    // httpd_resp_sendstr_chunk(req, "<!DOCTYPE html><html><body>"); --> This is already part of 'sys_fileserver.html' file
-
-    /////////////////////////////////////////////////
-    if (!readonly) {
-        FILE *fd = fopen("/sdcard/html/sys_fileserver.html", "r");
-
-        /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
-        // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-        setvbuf(fd, NULL, _IOFBF, 512);
-
-        char *chunk = ((struct HttpServerData *)req->user_ctx)->scratch;
-        size_t chunksize;
-        do {
-            chunksize = fread(chunk, 1, WEBSERVER_SCRATCH_BUFSIZE, fd);
-            // ESP_LOGD(TAG, "Chunksize %d", chunksize);
-            if (chunksize > 0) {
-                if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
-                    fclose(fd);
-                    std::string msg_txt = "http_resp_dir_html: File sending failed: /sdcard/html/sys_fileserver.html";
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
-                    httpd_resp_sendstr_chunk(req, NULL);
-                    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
-                    return ESP_FAIL;
-                }
-            }
-        } while (chunksize != 0);
-        fclose(fd);
-        // ESP_LOGD(TAG, "File sending complete");
+    // Send static HTML file
+    FILE *file = fopen(HTML_FILE_FILESERVER_STATIC, "rb");
+    if (!file) {
+        std::string msg = "Failed to read file: " + std::string(HTML_FILE_FILESERVER_STATIC);
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, msg.c_str());
+        return ESP_FAIL;
     }
-    ///////////////////////////////
 
-    std::string _zw = std::string(dirpath);
-    _zw = _zw.substr(8, _zw.length() - 8);
-    _zw = "/delete/" + _zw + "?task=deldircontent";
+    // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
+    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
+    setvbuf(file, NULL, _IOFBF, 512);
 
+    char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
+    size_t bufSize = WEBSERVER_SCRATCH_BUFSIZE;
+    size_t bufSizeUsed = 0;
 
-    /* Send file-list table definition and column labels */
-    httpd_resp_sendstr_chunk(req,
-                             "<table id=\"files_table\">"
-                             "<col style=\"width:800px\"><col style=\"width:300px\"><col style=\"width:300px\"><col style=\"width:100px\">"
-                             "<thead><tr><th>Name</th><th>Type</th><th>Size</th>");
-    if (!readonly) {
-        httpd_resp_sendstr_chunk(req, "<th>"
-                                      "<form method=\"post\" action=\"");
-        httpd_resp_sendstr_chunk(req, _zw.c_str());
-        httpd_resp_sendstr_chunk(req, "\"><button type=\"submit\">DELETE ALL!</button></form>"
-                                      "</th></tr>");
+    while ((bufSizeUsed = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        if (httpd_resp_send_chunk(req, buffer, bufSizeUsed) != ESP_OK) {
+            fclose(file);
+            httpd_resp_sendstr_chunk(req, NULL);
+            std::string msg = "Failed to send file: " + std::string(HTML_FILE_FILESERVER_STATIC);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+            return ESP_FAIL;
+        }
     }
-    httpd_resp_sendstr_chunk(req, "</thead><tbody>\n");
 
-    /* Iterate over all files / folders and fetch their names and sizes */
+    fclose(file);
+    bufSizeUsed = 0;
+
+    // Build table content
+    auto sendChunk = [&]() {
+        if (bufSizeUsed > 0) {
+            httpd_resp_send_chunk(req, buffer, bufSizeUsed);
+            bufSizeUsed = 0;
+            buffer[0] = '\0';
+        }
+    };
+
+    // Table header
+    bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed,
+                            "<table id=\"files_table\" class=\"sortable\">"
+                            "<col style=\"width:800px\"><col style=\"width:300px\"><col style=\"width:300px\"><col style=\"width:100px\">"
+                            "<thead><tr><th>Name</th><th>Type</th><th>Size</th>");
+
+    if (!readonly) {
+        bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed, "<th>Action</th>");
+    }
+
+    bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed, "</tr></thead><tbody>\n");
+
+    sendChunk();
+
+    const size_t dirPathLen = strlen(dirpath);
+    strlcpy(entryPath, dirpath, sizeof(entryPath));
+
+    int fileCount = 0;
+    const int maxFiles = 100;
+    bool truncated = false;
+
     while ((entry = readdir(dir)) != NULL) {
-        // Don't show these files, because passwords included
-        if (strcmp("wlan.ini", entry->d_name) == 0 || strcmp("wlan_ini.bak", entry->d_name) == 0 ||
-            strcmp("config.ini", entry->d_name) == 0 || strcmp("config_ini.bak", entry->d_name) == 0) {
+        // Stopp after max files
+        if (!showAllFiles && fileCount >= maxFiles) {
+            truncated = true;
+            sendChunk();
+            break;
+        }
+
+        // Skip sensitive files
+        if (sensitiveContent.count(entry->d_name) > 0) {
             continue;
         }
 
-        entrytype = (entry->d_type == DT_DIR ? "directory" : "file");
+        // Parse entry type
+        entryType = (entry->d_type == DT_DIR ? "directory" : "file");
 
-        strlcpy(entrypath + dirpath_len, entry->d_name, sizeof(entrypath) - dirpath_len);
-        ESP_LOGD(TAG, "Entrypath: %s", entrypath);
-        if (stat(entrypath, &entry_stat) == -1) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                "http_resp_dir_html: Failed to read " + std::string(entrytype) + ": " + std::string(entry->d_name));
+        // Check availability
+        strlcpy(entryPath + dirPathLen, entry->d_name, sizeof(entryPath) - dirPathLen);
+
+        if (stat(entryPath, &entryStat) == -1) {
             continue;
         }
 
+        // Format size output
         if (entry->d_type == DT_DIR) {
-            strcpy(entrysize, "-\0");
+            strcpy(entrySize, "-");
         }
         else {
-            if (entry_stat.st_size >= 1024) {
-                sprintf(entrysize, "%ld KB", entry_stat.st_size / 1024); // kBytes
+            if (entryStat.st_size >= 1024) {
+                sprintf(entrySize, "%ld KB", entryStat.st_size / 1024);
             }
             else {
-                sprintf(entrysize, "%ld B", entry_stat.st_size); // Bytes
+                sprintf(entrySize, "%ld B", entryStat.st_size);
             }
         }
 
-        ESP_LOGD(TAG, "Found %s: %s (%s bytes)", entrytype, entry->d_name, entrysize);
+        // Write table row
+        bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed,
+                                "<tr><td><a href=\"/fileserver%s%s%s\">%s</a></td>"
+                                "<td>%s</td>"
+                                "<td>%s</td>",
+                                uripath, entry->d_name, (entry->d_type == DT_DIR ? "/?full=false" : ""), entry->d_name, entryType,
+                                entrySize);
 
-        /* Send chunk of HTML file containing table entries with file name and size */
-        httpd_resp_sendstr_chunk(req, "<tr><td><a href=\"");
-        httpd_resp_sendstr_chunk(req, "/fileserver");
-        httpd_resp_sendstr_chunk(req, uripath);
-        httpd_resp_sendstr_chunk(req, entry->d_name);
-        if (entry->d_type == DT_DIR) {
-            httpd_resp_sendstr_chunk(req, "/");
-        }
-        httpd_resp_sendstr_chunk(req, "\">");
-        httpd_resp_sendstr_chunk(req, entry->d_name);
-        httpd_resp_sendstr_chunk(req, "</a></td><td>");
-        httpd_resp_sendstr_chunk(req, entrytype);
-        httpd_resp_sendstr_chunk(req, "</td><td>");
-        httpd_resp_sendstr_chunk(req, entrysize);
+        // Handle action column
         if (!readonly) {
-            httpd_resp_sendstr_chunk(req, "</td><td>");
-            httpd_resp_sendstr_chunk(req, "<form method=\"post\" action=\"/delete");
-            httpd_resp_sendstr_chunk(req, uripath);
-            httpd_resp_sendstr_chunk(req, entry->d_name);
-            httpd_resp_sendstr_chunk(req, "\"><button type=\"submit\">Delete</button></form>");
+            static const std::unordered_set<std::string> protectedRootFolder = {"/sdcard/", "/sdcard/config", "/sdcard/log"};
+
+            // Handle protected directories
+            if (protectedRootFolder.count(dirpathCorrected) > 0 && entry->d_type == DT_DIR) {
+                bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed, "<td>-</td>");
+            }
+            else {
+                bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed,
+                                        "<td><button onclick=\"deleteEntry('%s','%s%s%s')\">Delete</button></td>", entry->d_name, uripath,
+                                        entry->d_name, (entry->d_type == DT_DIR) ? "?task=deldir" : "");
+            }
         }
-        httpd_resp_sendstr_chunk(req, "</td></tr>\n");
+
+        bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed, "</tr>\n");
+
+        if (bufSize - bufSizeUsed < 768) {
+            sendChunk();
+        }
+
+        fileCount++;
     }
+
     closedir(dir);
 
-    /* Finish the file list table */
-    httpd_resp_sendstr_chunk(req, "</tbody></table>");
+    // Finalize table
+    bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed, "</tbody></table>");
 
-    /* Send remaining chunk of HTML file to complete it */
-    httpd_resp_sendstr_chunk(req, "</body></html>");
+    // If truncated, show message and button to load all item of directory
+    if (truncated) {
+        bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed,
+                                "<div style=\"margin-top: 20px; color: red;\">Directory listing is truncated to %d items.<br><form "
+                                "method=\"get\" action=\"/fileserver%s\"><input type=\"hidden\" name=\"full\" value=\"true\"><button "
+                                "class=\"button\" style=\"padding:4px 10px;width:250px\" type=\"submit\">Load all items (SLOW!)</button>"
+                                "</form></div>",
+                                (int)maxFiles, uripath);
+    }
 
-    /* Send empty chunk to signal HTTP response completion */
+    sendChunk();
+
+    // Final empty chunk signals response complete
     httpd_resp_sendstr_chunk(req, NULL);
+
     return ESP_OK;
 }
 
@@ -656,101 +658,76 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath, const
 // Handler to download a file from server (sd card)
 static esp_err_t download_get_handler(httpd_req_t *req)
 {
-    char filepath[FILE_PATH_MAX];
-    FILE *fd = NULL;
-    struct stat file_stat;
+    char filePath[FILE_PATH_MAX];
+    struct stat fileStat;
 
-    const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
-                                          req->uri + sizeof("/fileserver") - 1, sizeof(filepath));
-
+    const char *filename = getPathFromUri(filePath, ((HttpServerData *)req->user_ctx)->basePathFileserver,
+                                          req->uri + sizeof("/fileserver") - 1, sizeof(filePath));
     if (!filename) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "download_get_handler: Filename is too long");
-        httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "download_get_handler: Filename too long");
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Path malformed or too long");
         return ESP_FAIL;
     }
 
-    /* If name has trailing '/', respond with directory contents */
+    // List directory HTML formatted (If URI has trailing slash '/')
     if (filename[strlen(filename) - 1] == '/') {
         bool readonly = false;
-        size_t buf_len = httpd_req_get_url_query_len(req) + 1;
-        if (buf_len > 1) {
-            char buf[buf_len];
-            if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
-                ESP_LOGD(TAG, "Found URL query => %s", buf);
-                char param[32];
-                /* Get value of expected key from query string */
-                if (httpd_query_key_value(buf, "readonly", param, sizeof(param)) == ESP_OK) {
-                    ESP_LOGD(TAG, "Found URL query parameter => readonly=%s", param);
-                    readonly = (strcmp(param, "true") == 0);
-                }
+        bool showAllFiles = true;
+        char query[64];
+
+        if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+            char param[16];
+            if (httpd_query_key_value(query, "readonly", param, sizeof(param)) == ESP_OK) {
+                readonly = (strcmp(param, "true") == 0);
+            }
+            if (httpd_query_key_value(query, "full", param, sizeof(param)) == ESP_OK) {
+                showAllFiles = (strcmp(param, "true") == 0);
             }
         }
 
-        ESP_LOGD(TAG, "uri: %s, filename: %s, filepath: %s", req->uri, filename, filepath);
-        return http_resp_dir_html(req, filepath, filename, readonly);
+        return getDirectory(req, filePath, filename, readonly, showAllFiles);
     }
 
-    ESP_LOGD(TAG, "download_get_handler: Filename: %s | Filepath: %s", filename, filepath);
-
-    // Reject unavailable files
-    if (stat(filepath, &file_stat) == -1) {
-        // Special case: Do not log special config files in log to avoid confusion because they are missing before finalizing initial setup
-        if (strcmp("/sdcard/config/reference.jpg", filepath) != 0 && strcmp("/sdcard/config/marker1.jpg", filepath) != 0 &&
-            strcmp("/sdcard/config/marker2.jpg", filepath) != 0) {
-            LogFile.writeToFile(ESP_LOG_WARN, TAG, "download_get_handler: File not found: " + std::string(filepath));
-        }
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File not found");
+    // Check: File not available
+    if (stat(filePath, &fileStat) == -1) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Invalid path: File not found");
         return ESP_FAIL;
     }
 
-    //  Reject special files with sensitive data
-    if (strcmp("/sdcard/wlan.ini", filepath) == 0 || strcmp("/sdcard/config/backup/wlan_ini.bak", filepath) == 0 ||
-        strcmp("/sdcard/config/config.ini", filepath) == 0 || strcmp("/sdcard/config/backup/config_ini.bak", filepath) == 0) {
-        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "File request forbidden (sensitive data)");
+    //  Deny access for special files with sensitive data
+    if (sensitiveContent.count(filePath) > 0) {
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Access denied (Sensitive data)");
         return ESP_FAIL;
     }
 
-    fd = fopen(filepath, "r");
-    if (!fd) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "download_get_handler: Failed to read file: " + std::string(filepath));
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Failed to read file");
+    FILE *file = fopen(filePath, "rb");
+    if (!file) {
+        std::string msg = "Failed to read file :" + std::string(filePath);
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, msg.c_str());
         return ESP_FAIL;
     }
 
-    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(fd, NULL, _IOFBF, 512);
+    setvbuf(file, NULL, _IOFBF, 512);
 
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
-
-    ESP_LOGD(TAG, "Sending file: %s (%ld bytes)", filename, file_stat.st_size);
     setContentTypeFromFile(req, filename);
 
-    /* Retrieve the pointer to scratch buffer for temporary storage */
-    char *chunk = ((struct HttpServerData *)req->user_ctx)->scratch;
-    size_t chunksize;
-    do {
-        /* Read file in chunks into the scratch buffer */
-        chunksize = fread(chunk, 1, WEBSERVER_SCRATCH_BUFSIZE, fd);
+    char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
+    size_t bytesRead = 0;
 
-        /* Send buffer contents as HTTP chunk. If empty this functions as a
-         * last-chunk message, signaling end-of-response, to the HTTP client.
-         * See RFC 2616, section 3.6.1 for details on Chunked Transfer Encoding. */
-        if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
-            fclose(fd);
-            std::string msg_txt = "download_get_handler: File sending failed: " + std::string(filepath);
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, msg_txt);
+    while ((bytesRead = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
+            fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg_txt.c_str());
+            std::string msg = "Failed to send file :" + std::string(filePath);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
             return ESP_FAIL;
         }
+    }
 
-        /* Keep looping till the whole file is sent */
-    } while (chunksize != 0);
-
-    /* Close file after sending complete */
-    fclose(fd);
-    ESP_LOGD(TAG, "File successfully sent");
+    httpd_resp_sendstr_chunk(req, NULL);
+    fclose(file);
 
     return ESP_OK;
 }
@@ -759,230 +736,189 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 // Handler to upload a file to server (sd card)
 static esp_err_t upload_post_handler(httpd_req_t *req)
 {
-    char filepath[FILE_PATH_MAX];
-    FILE *fd = NULL;
-    struct stat file_stat;
+    char filePath[FILE_PATH_MAX];
+    struct stat fileStat;
 
-    /* Skip leading "/upload" from URI to get filename */
-    /* Note sizeof() counts NULL termination hence the -1 */
-    const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
-                                          req->uri + sizeof("/upload") - 1, sizeof(filepath));
+    const char *filename = getPathFromUri(filePath, ((HttpServerData *)req->user_ctx)->basePathFileserver, req->uri + sizeof("/upload") - 1,
+                                          sizeof(filePath));
+
     if (!filename) {
-        httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "upload_post_handler: Filename too long");
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Path malformed or too long");
         return ESP_FAIL;
     }
 
-    /* Filename cannot have a trailing '/' */
+    // Filename cannot have a trailing '/'
     if (filename[strlen(filename) - 1] == '/') {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: Invalid filename: " + std::string(filename));
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: Invalid filename");
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Trailing slash");
         return ESP_FAIL;
     }
 
-    /* File cannot be larger than a limit */
+    // File cannot be larger than a limit
     if (req->content_len > MAX_FILE_SIZE) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File too large: " + std::to_string(req->content_len) + " bytes");
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File size must be less than " MAX_FILE_SIZE_STR);
-        /* Return failure to close underlying connection else the
-         * incoming file content will keep the socket busy */
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "File size must be less than " MAX_FILE_SIZE_STR);
         return ESP_FAIL;
     }
 
-    if (stat(filepath, &file_stat) == 0) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File already exists: " + std::string(filepath));
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "upload_post_handler: File already exists");
+    if (stat(filePath, &fileStat) == 0) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "File already exists");
         return ESP_FAIL;
     }
 
-    fd = fopen(filepath, "w");
-    if (!fd) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: Failed to create file: " + std::string(filepath));
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "upload_post_handler: Failed to create file");
+    FILE *file = fopen(filePath, "wb");
+    if (!file) {
+        std::string msg = "Failed to create file: " + std::string(filePath);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
         return ESP_FAIL;
     }
 
-    /* Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html */
+    // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(fd, NULL, _IOFBF, 512);
+    setvbuf(file, NULL, _IOFBF, 512);
 
     ESP_LOGI(TAG, "Receiving file: %s", filename);
 
-    /* Retrieve the pointer to scratch buffer for temporary storage */
-    char *buf = ((struct HttpServerData *)req->user_ctx)->scratch;
-    int received;
-
-    /* Content length of the request gives
-     * the size of the file being uploaded */
-    int remaining = req->content_len;
+    char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
+    int remaining = req->content_len;                          // Content length of the request gives the size of the file being uploaded
+    int received = 0;
 
     while (remaining > 0) {
-
         ESP_LOGI(TAG, "Remaining size: %d", remaining);
-        /* Receive the file part by part into a buffer */
-        if ((received = httpd_req_recv(req, buf, MIN(remaining, WEBSERVER_SCRATCH_BUFSIZE))) <= 0) {
+        // Receive the file part by part into a buffer
+        if ((received = httpd_req_recv(req, buffer, MIN(remaining, WEBSERVER_SCRATCH_BUFSIZE))) <= 0) {
             if (received == HTTPD_SOCK_ERR_TIMEOUT) {
                 continue; // Retry if timeout occurred
             }
 
-            /* In case of unrecoverable error,
-             * close and delete the unfinished file*/
-            fclose(fd);
-            unlink(filepath);
+            // In case of unrecoverable error, close and delete the unfinished file
+            fclose(file);
+            unlink(filePath);
 
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File reception failed");
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "upload_post_handler: Failed to receive file");
+            std::string msg = "Failed to receive file: " + std::string(filePath);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
             return ESP_FAIL;
         }
 
-        /* Write buffer content to file on storage */
-        if (received && (received != fwrite(buf, 1, received, fd))) {
-            /* Couldn't write everything to file!
-             * Storage may be full? */
-            fclose(fd);
-            unlink(filepath);
-
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "upload_post_handler: File write failed");
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "upload_post_handler: Failed to write file to storage");
+        // Write buffer content to file on storage
+        if (received && (received != fwrite(buffer, 1, received, file))) {
+            fclose(file);
+            unlink(filePath);
+            std::string msg = "Failed to write file: " + std::string(filePath);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
             return ESP_FAIL;
         }
 
-        /* Keep track of remaining size of
-         * the file left to be uploaded */
+        // Keep track of remaining size of the file left to be uploaded
         remaining -= received;
     }
 
-    /* Close file upon upload completion */
-    fclose(fd);
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "upload_post_handler: File saved: " + std::string(filename));
+    // Close file upon upload completion
+    fclose(file);
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File saved: " + std::string(filename));
     ESP_LOGI(TAG, "File reception completed");
 
-
-    std::string directory = std::string(filepath);
-    size_t zw = directory.find("/");
-    size_t found = zw;
-    while (zw != std::string::npos) {
-        zw = directory.find("/", found + 1);
-        if (zw != std::string::npos) {
-            found = zw;
-        }
-    }
-
-    int start_fn = strlen(((struct HttpServerData *)req->user_ctx)->basePathFileserver);
-    ESP_LOGD(TAG, "Directory: %s, start_fn: %d, found: %d", directory.c_str(), start_fn, found);
-    directory = directory.substr(start_fn, found - start_fn + 1);
-    directory = "/fileserver" + directory;
-    //    ESP_LOGD(TAG, "Directory danach 2: %s", directory.c_str());
-
-    /* Redirect onto root to see the updated file list */
-    if (strcmp(filename, "/config/marker1.jpg") == 0 || strcmp(filename, "/config/marker2.jpg") == 0 ||
-        strcmp(filename, "/config/reference.jpg") == 0 || strcmp(filename, "/img_tmp/marker1.jpg") == 0 ||
-        strcmp(filename, "/img_tmp/marker2.jpg") == 0 || strcmp(filename, "/img_tmp/reference.jpg") == 0) {
+    // Redirect to parent folder (exception: special files)
+    if (noRedirectFiles.count(filename) > 0) {
         httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
+        std::string msg = "File saved successfully: " + std::string(filename);
+        httpd_resp_sendstr(req, msg.c_str());
+        return ESP_OK;
     }
     else {
-        httpd_resp_set_status(req, "303 See Other"); // Respond with redirection request
+        std::string redirectPath = getParentPath(filename) + "?full=false";
+        httpd_resp_set_hdr(req, "Location", redirectPath.c_str()); // Redirect to parent directory
+        httpd_resp_set_status(req, HTTPD_303_SEE_OTHER);
+        httpd_resp_sendstr(req, "");
+        return ESP_OK;
     }
-
-    httpd_resp_set_hdr(req, "Location", directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for
-                                                            // fileserver action)
-    httpd_resp_sendstr(req, "File uploaded successfully");
-
-    return ESP_OK;
 }
 
 
 // Handler to delete a file or folder content from server (sd card)
 static esp_err_t delete_post_handler(httpd_req_t *req)
 {
-    char filepath[FILE_PATH_MAX];
-    struct stat file_stat;
-
+    char filePath[FILE_PATH_MAX];
+    struct stat fileStat;
     char query[200];
     char valuechar[30];
     std::string task;
-    std::string directory;
-    std::string zw;
 
+    // Get filename from URI
+    const char *filename = getPathFromUri(filePath, ((HttpServerData *)req->user_ctx)->basePathFileserver, req->uri + sizeof("/delete") - 1,
+                                          sizeof(filePath));
+
+    if (!filename) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Malformed or too long");
+        return ESP_FAIL;
+    }
+
+    std::string filenameStr(filename);
+
+    // Parse query string
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
         if (httpd_query_key_value(query, "task", valuechar, sizeof(valuechar)) == ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Task: " + std::string(valuechar));
             task = std::string(valuechar);
         }
     }
 
-    if (task.compare("deldircontent") == 0) {
-        /* Skip leading "/delete" from URI to get filename */
-        /* Note sizeof() counts NULL termination hence the -1 */
-        const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
-                                              req->uri + sizeof("/delete") - 1, sizeof(filepath));
-        if (!filename) {
-            httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "delete_post_handler: Filename too long");
+    // Handle directory deletion
+    if (task.compare("deldir") == 0) {
+        // Remove trailing slash
+        if (filenameStr.back() == '/') {
+            filenameStr.pop_back();
+        }
+
+        if (deleteAllFilesInDirectory(filePath, true, true) != ESP_OK) {
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to delete files in directory");
             return ESP_FAIL;
         }
-        zw = std::string(filename);
-        zw = zw.substr(0, zw.length() - 1);
-        directory = "/fileserver" + zw + "/";
-        zw = "/sdcard" + zw;
-        ESP_LOGD(TAG, "Directory to delete: %s", zw.c_str());
 
-        deleteAllFilesInDirectory(zw);
-        ESP_LOGD(TAG, "Location after delete directory content: %s", directory.c_str());
+        std::string redirectPath = getParentPath(filenameStr) + "?full=false";
+        httpd_resp_set_hdr(req, "Location", redirectPath.c_str()); // Redirect to parent directory
+        httpd_resp_set_status(req, HTTPD_303_SEE_OTHER);
+        httpd_resp_sendstr(req, "");
+        return ESP_OK;
+    }
+
+    // Handle single file deletion
+    if (filenameStr.back() == '/') {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Trailing slash");
+        return ESP_FAIL;
+    }
+
+    // Check for file presence
+    if (stat(filePath, &fileStat) == -1) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: File not found");
+        return ESP_FAIL;
+    }
+
+    // Delete file
+    if (unlink(filePath) != 0) {
+        std::string msg = "Failed to delete file: " + std::string(filePath);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+        return ESP_FAIL;
+    }
+
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File deleted: " + filenameStr);
+
+    if (noRedirectFiles.count(filenameStr) > 0) {
+        httpd_resp_set_status(req, HTTPD_200);
+        std::string msg = "File deleted successfully: " + filenameStr;
+        httpd_resp_sendstr(req, msg.c_str());
+        return ESP_OK;
     }
     else {
-        /* Skip leading "/delete" from URI to get filename */
-        /* Note sizeof() counts NULL termination hence the -1 */
-        const char *filename = getPathFromUri(filepath, ((struct HttpServerData *)req->user_ctx)->basePathFileserver,
-                                              req->uri + sizeof("/delete") - 1, sizeof(filepath));
-        if (!filename) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "delete_post_handler: Filename too long");
-            return ESP_FAIL;
-        }
-
-        /* Filename cannot have a trailing '/' */
-        if (filename[strlen(filename) - 1] == '/') {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "delete_post_handler: Invalid filename: " + std::string(filename));
-            httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "delete_post_handler: Invalid filename");
-            return ESP_FAIL;
-        }
-
-        if (stat(filepath, &file_stat) == -1) { // File does not exist
-            /* This is ok, we would delete it anyway */
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                "delete_post_handler: Deletion triggered, but file not existing: " + std::string(filename));
-        }
-        else {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "delete_post_handler: Deleting file: " + std::string(filename));
-            /* Delete file */
-            unlink(filepath);
-        }
-
-        /* Avoid redirect to root folder after deletion for system processed files */
-        if (strcmp(filename, "/config/marker1.jpg") == 0 || strcmp(filename, "/config/marker2.jpg") == 0 ||
-            strcmp(filename, "/config/reference.jpg") == 0 || strcmp(filename, "/img_tmp/marker1.jpg") == 0 ||
-            strcmp(filename, "/img_tmp/marker2.jpg") == 0 || strcmp(filename, "/img_tmp/reference.jpg") == 0) {
-            httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
-        }
-        else {
-            httpd_resp_set_status(req, "303 See Other"); // Respond with redirection request
-        }
-
-        char *pos = strrchr(filename, '/');
-        *pos = '\0'; // Cut off filename -> From here filename is not valid anymore
-        directory = std::string(filename);
-        directory = "/fileserver" + directory + "/";
-        // ESP_LOGI(TAG, "DELETE HANDLER2: Directory: %s", directory.c_str());
+        std::string redirectPath = getParentPath(filenameStr) + "?full=false";
+        httpd_resp_set_hdr(req, "Location", redirectPath.c_str()); // Redirect to parent directory
+        httpd_resp_set_status(req, HTTPD_303_SEE_OTHER);
+        httpd_resp_sendstr(req, "");
+        return ESP_OK;
     }
-
-    httpd_resp_set_hdr(req, "Location", directory.c_str()); // If 303 -> Redirect onto root to see the updated file list (only for
-                                                            // fileserver action)
-    httpd_resp_sendstr(req, "File successfully deleted");
-    return ESP_OK;
 }
 
 
 static std::string printCoreDumpBacktraceInfo(const esp_core_dump_summary_t *summary)
 {
-    if (summary == NULL) {
+    if (!summary) {
         return "No core dump available";
     }
 
@@ -1023,7 +959,7 @@ static esp_err_t coredump_handler(httpd_req_t *req)
 
     // Check if coredump partition is available
     const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_COREDUMP, "coredump");
-    if (partition == NULL) {
+    if (!partition) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Partition 'coredump' not found");
         return ESP_FAIL;
     }
@@ -1055,23 +991,18 @@ static esp_err_t coredump_handler(httpd_req_t *req)
         httpd_resp_set_type(req, "application/octet-stream");
         httpd_resp_set_hdr(req, "Content-Disposition", attachmentFile.c_str());
 
-        /* Retrieve the pointer to scratch buffer for temporary storage */
-        char *buf = ((struct HttpServerData *)req->user_ctx)->scratch;
-        if (buf == NULL) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "No scratch buffer available");
-            return ESP_FAIL;
-        }
-
+        char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
         int i = 0;
+
         for (i = 0; i < (partition->size / WEBSERVER_SCRATCH_BUFSIZE); i++) {
-            esp_partition_read(partition, i * WEBSERVER_SCRATCH_BUFSIZE, buf, WEBSERVER_SCRATCH_BUFSIZE);
-            httpd_resp_send_chunk(req, buf, WEBSERVER_SCRATCH_BUFSIZE);
+            esp_partition_read(partition, i * WEBSERVER_SCRATCH_BUFSIZE, buffer, WEBSERVER_SCRATCH_BUFSIZE);
+            httpd_resp_send_chunk(req, buffer, WEBSERVER_SCRATCH_BUFSIZE);
         }
 
         int pendingSize = partition->size - (i * WEBSERVER_SCRATCH_BUFSIZE);
         if (pendingSize > 0) {
-            ESP_ERROR_CHECK(esp_partition_read(partition, i * WEBSERVER_SCRATCH_BUFSIZE, buf, pendingSize));
-            httpd_resp_send_chunk(req, buf, pendingSize);
+            ESP_ERROR_CHECK(esp_partition_read(partition, i * WEBSERVER_SCRATCH_BUFSIZE, buffer, pendingSize));
+            httpd_resp_send_chunk(req, buffer, pendingSize);
         }
         httpd_resp_send_chunk(req, NULL, 0);
         return ESP_OK;
@@ -1083,8 +1014,8 @@ static esp_err_t coredump_handler(httpd_req_t *req)
             return ESP_OK;
         }
         else {
-            std::string errMsg = "Failed to format partition 'coredump'. Error: " + intToHexString(err);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, errMsg.c_str());
+            std::string msg = "Failed to format partition 'coredump'. Error: " + intToHexString(err);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
             return ESP_FAIL;
         }
     }
@@ -1115,7 +1046,7 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
 {
     ESP_LOGI(TAG, "Registering URI handlers");
 
-    /* Validate file storage base path */
+    // Validate file storage base path
     if (!basePath) {
         // if (!basePath || strcmp(basePath, "/spiffs") != 0) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "basePath for fileserver root folder not set");
@@ -1132,7 +1063,6 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
     };
     httpd_register_uri_handler(server, &file_download);
 
-    /* URI handler for uploading files to server */
     httpd_uri_t file_upload = {
         .uri = "/upload/*", // Match all URIs of type /upload/path/to/file
         .method = HTTP_POST,
@@ -1141,7 +1071,6 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
     };
     httpd_register_uri_handler(server, &file_upload);
 
-    /* URI handler for deleting files from server */
     httpd_uri_t file_delete = {
         .uri = "/delete/*", // Match all URIs of type /delete/path/to/file
         .method = HTTP_POST,
@@ -1150,7 +1079,6 @@ void registerFileserverUri(httpd_handle_t server, const char *basePath)
     };
     httpd_register_uri_handler(server, &file_delete);
 
-    /* URI handler for deleting files from server */
     httpd_uri_t coredump = {
         .uri = "/coredump",
         .method = HTTP_GET,
