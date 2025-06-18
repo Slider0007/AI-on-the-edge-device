@@ -21,8 +21,8 @@ Payload:
       - Update WebUI of firmware only
       - Extracts the content of `/firmware/html.zip` to `/html`
       - No additional parameter necessary
-- `file` Filename with extention but without path
-  - Supported file extentions:
+- `file` Filename with extension but without path
+  - Supported file extensions:
     - `TFLITE`: TFLite model
     - `TFL`: TFLite model (legacy)
     - `ZIP`: ZIP file (e.g. OTA release package)

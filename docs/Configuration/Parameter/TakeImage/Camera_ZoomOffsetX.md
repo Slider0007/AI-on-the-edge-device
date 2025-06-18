@@ -17,10 +17,10 @@ the top-left coordinate of the centered image.
 !!! Note
     The parameter input limits are updated depending on actual zoom factor.<br>
     The more of the whole camera sensor is visible (equals to low zoom factor) 
-    the lower are the possiblities (and limits) to adjust.
+    the lower are the possibilities (and limits) to adjust.
 
 
 !!! Tip
     This parameter should be set on the 'Reference Image' configuration page. 
-    There you have a visual feedback. This paramter only applies when `Zoom Factor`
+    There you have a visual feedback. This parameter only applies when `Zoom Factor`
     is higher than `1.0x`.

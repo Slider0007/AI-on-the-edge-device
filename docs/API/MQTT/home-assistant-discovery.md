@@ -72,7 +72,7 @@ Example: `ipv4_address/config`
 #### Binary Sensor Class
 
 The MQTT binary sensor integration is used to indicate device errors / deviation in a row. This sensor gets 
-only be triggerd when a device error or process deviation occured three times in a row.
+only be triggered when a device error or process deviation occurred three times in a row.
 
 - Format: `homeassistant/binary_sensor/[MainTopicWithoutStructure]/[DiscoveryTopic]/config`
 - Example: `homeassistant/binary_sensor/watermeter/process_error/config`

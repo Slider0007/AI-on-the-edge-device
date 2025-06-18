@@ -18,7 +18,7 @@
 
 
   ### 2. Prepare SD Card
-  - Format SD card with FAT32 (Windows recommenend. In MacOS formated cards could not working properly)
+  - Format SD card with FAT32 (Windows recommended. In MacOS formatted cards could not working properly)
   - Copy folders `/config` and `/html` from zip file to SD card root folder
 
 
@@ -36,12 +36,12 @@
 
 ### Device Provisioning via Web Installer
 
- Usage is decribed [here](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Installation/DeviceProvisioning/WebInstaller.md).
+ Usage is described [here](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Installation/DeviceProvisioning/WebInstaller.md).
 
 
 ### Device Provisioning via Access Point
 
- Usage is decribed [here](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Installation/DeviceProvisioning/AccessPoint.md).
+ Usage is described [here](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Installation/DeviceProvisioning/AccessPoint.md).
 
 
 ### Firmware Update via OTA (Over-The-Air)

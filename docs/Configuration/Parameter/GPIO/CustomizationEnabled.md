@@ -10,4 +10,4 @@
 
 ## Description
 
-Enable or disable GPIO customization to configure GPIO pins induvidually.
+Enable or disable GPIO customization to configure GPIO pins individually.

@@ -15,7 +15,7 @@ Select the network configuration principle
 | Input Option               | Description
 |:---                        |:---
 | `DHCP`                     | Automatically assign IP related parameter provided by a server (router, AP)
-| `Static`                   | Manual confiuuration of network related parameter like, IP, subnet, gateway, DNS server
+| `Static`                   | Manual configuration of network related parameter like, IP, subnet, gateway, DNS server
 
 
 !!! Note

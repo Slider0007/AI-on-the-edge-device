@@ -26,5 +26,5 @@ Defines the pin logic level configuration.
 
 !!! Note
     External wiring of the respective gpio pin requires to match internal signal level 
-    configuration. Especially verifiy the external pullup or pulldown setup.
+    configuration. Especially verify the external pullup or pulldown setup.
 

@@ -5,7 +5,7 @@
 The following device status topics gets published during the `Publish To MQTT` state **every cycle**.
 
 !!! __Note__: 
-    These topics are not retained because they get updated on a regulary basis.
+    These topics are not retained because they get updated on a regularly basis.
 
 - Format: `[MainTopic]/device/status/[Topic]`
 - Example: `watermeter/device/status/connection`

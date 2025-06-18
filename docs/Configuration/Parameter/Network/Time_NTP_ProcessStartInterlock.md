@@ -2,7 +2,7 @@
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Process Start Interlock | Processstartinterlock
+| Parameter Name    | Process Start Interlock | processstartinterlock
 | Default Value     | `Enabled`           | `true`
 | Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
 
@@ -17,7 +17,7 @@ Process starts only with valid time to ensure proper and plausible result docume
 
 
 !!! Note
-    The device looses the intenal system time after power loss. 
+    The device looses the internal system time after power loss. 
     After reboot the time is kept in memory, though.
 
 !!! Tip

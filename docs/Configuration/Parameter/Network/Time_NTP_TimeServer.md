@@ -13,7 +13,7 @@ If this parameter is empty, `pool.ntp.org` will be used.
 
 
 !!! Note
-    The device looses the intenal system time after power loss. 
+    The device looses the internal system time after power loss. 
     After reboot the time is kept in memory, though.
 
 

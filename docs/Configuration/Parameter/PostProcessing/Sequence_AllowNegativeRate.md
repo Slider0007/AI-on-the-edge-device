@@ -15,7 +15,7 @@ Allow decreasing values (backwards counting).
 
 !!! Note
     For most use cases this option should be set to `Disabled` e.g. for water or gas meters 
-    (-> plausiblity check can be performed to avoid negative rates). But for some use cases 
+    (-> plausibility check can be performed to avoid negative rates). But for some use cases 
     like for e.g. pressure sensors negative rates a accepted.
 
 

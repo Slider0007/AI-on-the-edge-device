@@ -6,5 +6,5 @@
 With this drop down the respective GPIO can be selected.
 
 !!! Note
-    The GPIO selection is pre-filled automatically based on hardware defintion
+    The GPIO selection is pre-filled automatically based on hardware definition
     in source code (include/defines.h)

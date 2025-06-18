@@ -21,7 +21,7 @@ Payload:
             - If enabled, discovery topics get automatically published once after a device restart.<br>
             - If enabled, discovery topics get automatically published after Home Assistant status topic changed to 'online'.<br>
               (Ensure Home Assistant status topic parameter is set correctly.)
-            - This request can also be triggerd by `WebUI > Manual Control > Resend HA Discovery`.
+            - This request can also be triggered by `WebUI > Manual Control > Resend HA Discovery`.
       - Example: `/camera?task=publish_ha_discovery`
       - Response:
         - Content type: `HTML`
