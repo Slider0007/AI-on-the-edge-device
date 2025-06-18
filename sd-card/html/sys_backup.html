@@ -473,7 +473,7 @@
         xhttp.upload.addEventListener("progress", progressHandler, false);
         xhttp.addEventListener("load", function () {
             if (xhttp.status >= 200 && xhttp.status < 300) {
-                completeHandler();
+                completeHandler({ target: xhttp });
             } else {
                 // Handle error codes like 404, 500, etc.
                 errorHandler({
