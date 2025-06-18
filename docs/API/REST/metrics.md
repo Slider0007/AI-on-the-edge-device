@@ -5,7 +5,7 @@
 `http://IP-ADDRESS/metrics`
 
 
-Provides a set of metrics that can be scraped by prometheus or any OpenMetrics compatilble software. 
+Provides a set of metrics that can be scraped by prometheus or any OpenMetrics compatible software. 
 The metrics are provided in text wire format based on [OpenMetrics specification](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md) 
 which is backward-compatible with [Prometheus text-based exposition format](https://github.com/prometheus/docs/blob/main/content/docs/instrumenting/exposition_formats.md).
 

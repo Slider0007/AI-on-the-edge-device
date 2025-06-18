@@ -17,5 +17,5 @@ Define the process operation mode
 | Input Option     | Description
 |:---              |:---
 | `Setup`          | Redirect to initial setup procedure (/setup.html)
-| `Manual`         | Cycle start is only be triggerd by manual request on WebUI or external trigger (REST, MQTT, GPIO)
+| `Manual`         | Cycle start is only be triggered by manual request on WebUI or external trigger (REST, MQTT, GPIO)
 | `Automatic`      | Automatic cycle start by a periodic scheduled trigger with interval defined with parameter `Automatic Process Interval`

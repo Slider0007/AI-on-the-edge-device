@@ -15,7 +15,7 @@ time `01.01.1970 00:00:00` after boot.
 
 
 !!! Note
-    The device looses the intenal system time after power loss. 
+    The device looses the internal system time after power loss. 
     After reboot the time is kept in memory, though.
 
 !!! Tip

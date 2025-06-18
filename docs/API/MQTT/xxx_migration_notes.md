@@ -14,4 +14,4 @@ Mapping to which cluster renamed or moved topics are related to:
 | [Process Data](process-data.md)      | Process Data (Number sequence data / results)    | JSON + Topics | Topic cluster of each sequence, e.g `main/actual_value`
 | [Process Status](process-status.md)  | Process Status (Variable topic content)          | Topics        | `status`, `interval`, `process_error`
 | [Home Assistant](home-assistant-discovery.md) | Home Assistant Discovery Topics         | JSON          | 
-| [GPIO Control / Status](gpio.md)     | General Purpose Input / Output Control / Status  | Topcis        | Topic cluster of `GPIO`
+| [GPIO Control / Status](gpio.md)     | General Purpose Input / Output Control / Status  | Topics        | Topic cluster of `GPIO`

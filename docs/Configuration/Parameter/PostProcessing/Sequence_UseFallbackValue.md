@@ -14,7 +14,7 @@
 ## Description
 
 Use the fallback value (last valid result) for post-processing plausibility actions and 
-checks (Negative rate, Rate too high, resubstitution of N positions in number sequence, ...).
+checks (Negative rate, Rate too high, substitution of N positions in number sequence, ...).
 
 
 !!! Tip
@@ -23,7 +23,7 @@ checks (Negative rate, Rate too high, resubstitution of N positions in number se
 
 
 !!! Note
-    The fallback value gets backuped to NVS to prevent against power loss.
+    The fallback value gets stored to NVS to prevent against power loss.
 
 
 !!! Note

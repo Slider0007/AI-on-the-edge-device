@@ -2,7 +2,7 @@
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Time Zone           | TimeZone
+| Parameter Name    | Time Zone           | timezone
 | Default Value     | `CET-1CEST,M3.5.0,M10.5.0/3` | `CET-1CEST,M3.5.0,M10.5.0/3`
 
 

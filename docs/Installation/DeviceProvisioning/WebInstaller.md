@@ -23,5 +23,5 @@ Please follow the instructions mentioned here:<br>
 <img src="../../../images/webinstaller_install_sdcard_content.jpg">
 
 #### Workflow Step 8:
-Please follow the instruction of 'Inital Setup Wizard':<br>
+Please follow the instruction of 'Initial Setup Wizard':<br>
 <img src="../../../images/initial_setup_wizard.jpg">

@@ -13,7 +13,7 @@ The following topics get published during the `Publish To MQTT` state **every cy
 
 ### Topics
 
-#### 1. Number of seqeunces
+#### 1. Number of sequences
 
   - Format: `[MainTopic]/process/data/[Topic]`
   - Example: `watermeter/process/data/number_sequences`
@@ -36,7 +36,7 @@ Parameter `Process Data Notation`: `JSON` or `JSON + Topics`
 | `json`.`actual_value`     | Actual value                | `146.540`
 | `json`.`fallback_value`   | Fallback value              | `146.540`
 | `json`.`raw_value`        | Raw value                   | `146.539`
-| `json`.`value_status`     | Value Status<br><br>Possible States:<br>`000 Valid`: Valid, no deviation <br>`E90 No data to substitute N`: No valid data to substitude N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `E91 Rate negative`
+| `json`.`value_status`     | Value Status<br><br>Possible States:<br>`000 Valid`: Valid, no deviation <br>`E90 No data to substitute N`: No valid data to substitute N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `E91 Rate negative`
 | `json`.`rate_per_minute`  | Rate per minute<br>(Delta of actual and last valid processed cycle + normalized to minute) | `0.000`
 | `json`.`rate_per_interval` | Rate per interval<br>(Delta of actual and last valid processed cycle) | `0.000`
 | `json`.`rate_per_time_unit` | Rate per HA time unit<br>(Delta of the last two valid processed cycles and normalized to time unit, e.g. minute. The time unit gets derived from Home Assistant [meter type](../../Configuration/Parameter/MQTT/MeterType.md)) | `0.000`
@@ -56,7 +56,7 @@ Parameter `Process Data Notation`: `JSON` or `JSON + Topics`
 | `actual_value`            | Actual value                | `146.540`
 | `fallback_value`          | Fallback value              | `146.540`
 | `raw_value`               | Raw value                   | `146.539`
-| `value_status`            | Value Status<br><br>Possible States:<br>`000 Valid`: Valid, no deviation <br>`E90 No data to substitute N`: No valid data to substitude N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `E91 Rate negative`
+| `value_status`            | Value Status<br><br>Possible States:<br>`000 Valid`: Valid, no deviation <br>`E90 No data to substitute N`: No valid data to substitute N's (only class-11 models) <br>`E91 Rate negative`: Small negative rate, use fallback value as actual value (info) <br>`E92 Rate too high (<)`: Negative rate larger than specified max rate (error) <br>`E93 Rate too high (>)`: Positive rate larger than specified max rate (error) | `E91 Rate negative`
 | `rate_per_minute`         | Rate per minute<br>(Delta of actual and last valid processed cycle + normalized to minute) | `0.000`
 | `rate_per_interval`       | Rate per interval<br>(Delta of actual and last valid processed cycle) | `0.000`
 | `rate_per_time_unit`      | Rate per HA time unit<br>(Delta of the last two valid processed cycles and normalized to time unit, e.g. minute. The time unit gets derived from Home Assistant [meter type](../../Configuration/Parameter/MQTT/HAMeterType.md)) | `0.000`

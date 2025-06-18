@@ -13,7 +13,7 @@
 
 ## Description
 
-Save the following debug information in case of the follwoing deviation during post-processing: <br>
+Save the following debug information in case of the following deviation during post-processing: <br>
 1. Deviation 'Rate too high (<)' in terms of negative rate: Save single ROI images + result file <br>
 2. Deviation 'Rate too high (>)' in terms of positive rate: Save single ROI images + result file <br>
 <br>

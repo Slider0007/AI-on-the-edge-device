@@ -18,7 +18,7 @@ value jumps in positive and also in negative direction.
 | Input Option              | Description
 |:---                       |:---
 | `No Rate Check`           | No rate / value delta check is performed
-| `Rate Per Minute`         | Delta between actual and last valid processed value (Fallback Value) and additionally normalized to a minute. -> Self-healing: Delta time as calculation base is increasing over time -> rate/min is getting lower and lower. At some point the rate is in accepatable range again.
+| `Rate Per Minute`         | Delta between actual and last valid processed value (Fallback Value) and additionally normalized to a minute. -> Self-healing: Delta time as calculation base is increasing over time -> rate/min is getting lower and lower. At some point the rate is in acceptable range again.
 | `Rate Per Interval`       | Delta between actual and last valid processed value (Fallback Value) -> Not self-healing: Value delta is increasing over time. Rate limit is fixed. Limit should cover realistic consumption + possible false readings.
 
 

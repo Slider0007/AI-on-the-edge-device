@@ -18,7 +18,7 @@ Check readme file in firmware zip package for further details.
 #### Step 2: Installation Of SD Card Content
 A SD card is mandatory to operate the device because of internal device memory is insufficient to handle all necessary files. Therefore the SD card needs to be preloaded with some file content to be able to operate the device.<br>
 
-⚠️ Make sure, SD card is formated properly (FAT or FAT32 file system).<br>
+⚠️ Make sure, SD card is formatted properly (FAT or FAT32 file system).<br>
 
 Use firmware package `AI-on-the-edge-device__{Board Type}__*.zip` for installation process.<br>
 ⚠️ **Please do not use the source files directly from the repository, not even for the preparation of the SD card!** Use only files related to official precompiled release packages or test versions. Otherwise, full functionality cannot be guaranteed.<br>

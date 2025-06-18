@@ -2,7 +2,7 @@
 ### Prometheus / OpenMetrics telemetry data
 
 A set of metrics is exported via the `/metrics` REST API endpoint (see also REST API description). 
-The metrics can be scraped by Prometheus or any OpenMetrics specification compatilble software.<br>
+The metrics can be scraped by Prometheus or any OpenMetrics specification compatible software.<br>
 
 The metrics are provided in text wire format based on [OpenMetrics specification](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md) 
 which is backward-compatible with [Prometheus text-based exposition format](https://github.com/prometheus/docs/blob/main/content/docs/instrumenting/exposition_formats.md).
@@ -39,7 +39,7 @@ All information are static and provided by labels. The metric value is set to `1
 
 | Metric label        | Description                 | Output
 |:--------------------|:----------------------------|:--------------     
-| `hostname`          | Device Hostname             | `watermetter`
+| `hostname`          | Device Hostname             | `watermeter`
 | `ipv4_address`      | Device IPv4 Address         | `192.168.1.x`
 | `mac_address`       | Device MAC Address          | `44:21:D8:04:DF:A8`
 
@@ -86,13 +86,13 @@ Example: `ai_on_the_edge_device_heap_data_bytes{heap_data="heap_total_free"}`
 |:-------------------------------------------------|:----------------------------|:--------------     
 | `ai_on_the_edge_device_process_interval_minutes` | Automatic Process Interval [min] | `2.0`
 | `ai_on_the_edge_device_process_time_seconds`     | Process Time [sec]          | `25`
-| `ai_on_the_edge_device_process_error`            | Process Error State<br>- Error definition: Process error with cycle abortion, e.g. alignment failed<br>- Deviation definition: Process deviation with cycle continuation, e.g. rate limit exceeded<br><br>Possible States:<br>- `0`: No error/deviation<br>- `-1`: One error occured<br>- `-2`: Multiple process errors in a row<br>- `1`: One process deviation occured<br>- `2`: Multiple process deviations in a row | `0`
+| `ai_on_the_edge_device_process_error`            | Process Error State<br>- Error definition: Process error with cycle abortion, e.g. alignment failed<br>- Deviation definition: Process deviation with cycle continuation, e.g. rate limit exceeded<br><br>Possible States:<br>- `0`: No error/deviation<br>- `-1`: One error occurred<br>- `-2`: Multiple process errors in a row<br>- `1`: One process deviation occurred<br>- `2`: Multiple process deviations in a row | `0`
 | `ai_on_the_edge_device_cycle_counter_total`      | Process Cycle Counter       | `64`
 
 
 #### 7. Process Data Metrics
 
-Muliple sequence data is provided separately by label `sequence`.
+Multiple sequence data is provided separately by label `sequence`.
 
 | Topic                     | Description                 | Output
 |:--------------------------|:----------------------------|:--------------   

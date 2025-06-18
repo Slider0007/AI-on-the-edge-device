@@ -146,7 +146,7 @@
                             "Press 'Upload and Install' to continue on own risk", "warning", 10000);
         }
         else {
-            firework.launch("The selected file does not match the expected name pattern. Please select vaild file", "danger", 10000);
+            firework.launch("The selected file does not match the expected name pattern. Please select valid file", "danger", 10000);
             return;
         }
 
@@ -218,7 +218,7 @@
                 } else if (xhttp.status == 0) {
                     firework.launch('Server closed the connection abruptly!', 'danger', 30000);
                 } else {
-                    firework.launch('An error occured: ' + xhttp.responseText, 'danger', 30000);
+                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
                 }
             }
         };
@@ -276,7 +276,7 @@
                 } else if (xhttp.status == 0) {
                     firework.launch('Server closed the connection abruptly!', 'danger', 30000);
                 } else {
-                    firework.launch('An error occured: ' + xhttp.responseText, 'danger', 30000);
+                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
                 }
             }
         };

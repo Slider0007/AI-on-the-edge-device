@@ -19,8 +19,8 @@ GPIO operation mode
 | `Input`                   | input     | Use as input, internal pullup and pulldown resistor is disabled
 | `Input Pullup`            | input     | Use as input, internal pullup resistor is enabled
 | `Input Pulldown`          | input     | Use as input, internal pulldown resistor is enabled
-| `Output`                  | output    | Use as output (digital states: 0, 1)<br>-> controlable by REST API and/or MQTT
-| `Output PWM`              | output    | Use as output which controlable by PWM duty (duty cycle: 0 .. Max duty resolution depending on PWM frequency)<br>-> controlable by REST API and/or MQTT
+| `Output`                  | output    | Use as output (digital states: 0, 1)<br>-> controllable by REST API and/or MQTT
+| `Output PWM`              | output    | Use as output which controllable by PWM duty (duty cycle: 0 .. Max duty resolution depending on PWM frequency)<br>-> controllable by REST API and/or MQTT
 | `Flashlight Default`      | output    | This mode represents the board's default flashlight configuration, e.g. Default for board `ESP32CAM` -> GPIO4 as PWM controlled output. This mode is only visible on respective GPIO which is defined as default in firmware
 | `Flashlight PWM`          | output    | Use for flashlight operation with regular LEDs (PWM controlled intensity)
 | `Flashlight Smartled`     | output    | Use for flashlight operation with smartLEDs

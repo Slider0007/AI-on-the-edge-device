@@ -100,7 +100,6 @@
         datefile = document.getElementById("datafiles").value;
         numbername = document.getElementById("sequence_selection").value;
         showRelativeValues = document.getElementById("showRelativeValues").checked;
-        //alert("Auslesen: " + datefile + " " + numbername);
 
         fetch(getDomainname() + '/fileserver/log/data/' + datefile, {credentials: 'include'})
         .then(response => {

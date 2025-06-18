@@ -315,7 +315,7 @@
     let typeSelection = document.getElementById("roiTypeSelection");
 
 
-    function setInputVisibilty()
+    function setInputVisibility()
     {
         setElVisibility("#div_input_el", jsonConfigModifiedDelta.digit.enabled || jsonConfigModifiedDelta.analog.enabled);
         setClassVisibility("visibilityRoiOnly", jsonConfigModifiedDelta.digit.enabled || jsonConfigModifiedDelta.analog.enabled);
@@ -326,11 +326,11 @@
     {
         if (init) {
             document.getElementById("digitProcessing").checked = jsonConfig.digit.enabled;
-            setInputVisibilty();
+            setInputVisibility();
         }
         else {
             jsonConfigModifiedDelta.digit.enabled = document.getElementById("digitProcessing").checked;
-            setInputVisibilty();
+            setInputVisibility();
             document.getElementById("saveconfig").disabled = false;
         }
 
@@ -355,11 +355,11 @@
     {
         if (init) {
             document.getElementById("analogProcessing").checked = jsonConfig.analog.enabled;
-            setInputVisibilty();
+            setInputVisibility();
         }
         else {
             jsonConfigModifiedDelta.analog.enabled = document.getElementById("analogProcessing").checked;
-            setInputVisibilty();
+            setInputVisibility();
             document.getElementById("saveconfig").disabled = false;
         }
 

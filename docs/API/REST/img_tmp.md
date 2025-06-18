@@ -5,9 +5,9 @@
 `http://IP-ADDRESS/img_tmp`
 
 
-Get prcoess relevant images directly from memory.
+Get process relevant images directly from memory.
 
-Be aware: Defining the trigger time keep in mind that the images are prcoessed by the device on 
+Be aware: Defining the trigger time keep in mind that the images are processed by the device on 
 the fly all during processing.
 
 

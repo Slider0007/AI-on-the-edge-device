@@ -11,7 +11,7 @@
 
 Maximum accepted rate / value delta (positive or negative) between actual value and fallback value (last valid reading). 
 If exceeded the value of the actual cycle going to be rejected and fallback value is used instead. 
-Behaviour depending on the parameter of `Rate Check Type`.
+Behavior depending on the parameter of `Rate Check Type`.
 
 
 !!! Example

@@ -11,7 +11,7 @@
 
 Enable GPIO state request by REST API calls<br>
 - GPIO pin state (and PWM duty) can be requested by REST API<br>
-- GPIO output / GPIO Output PWM are controlable by REST API.
+- GPIO output / GPIO Output PWM are controllable by REST API.
 
 
 !!! Tip
