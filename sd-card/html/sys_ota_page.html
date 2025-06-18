@@ -198,14 +198,13 @@
         const xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4) {
-                if (xhttp.status == 200) {
+                if (xhttp.status >= 200 && xhttp.status < 300) {
                     document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax"; // Make sure after the reboot we go to the overview page
 
                     if (xhttp.responseText.startsWith("reboot")) { // Reboot required
                         document.getElementById("status").innerText = "Status: Installing...";
                         firework.launch('Upload completed, the device will now restart and install the update', 'success', 5000);
 
-                        /* Tell it to reboot */
                         doRebootAfterUpdate();
 
                         actionRuntime = 0;
@@ -233,10 +232,10 @@
                         firework.launch('Update completed', 'success', 5000);
                         document.getElementById("fileSelector").disabled = false;
                     }
-                } else if (xhttp.status == 0) {
-                    firework.launch('Server closed the connection abruptly', 'danger', 30000);
+                } else if (xhttp.status >= 400) {
+                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
                 } else {
-                    firework.launch('An error occured: ' + xhttp.responseText, 'danger', 30000);
+                    firework.launch('Server closed the connection abruptly', 'danger', 30000);
                 }
             }
         };
@@ -263,13 +262,22 @@
         document.getElementById("status").innerText = "Status: Uploading...";
 
         const upload_path = "/upload/firmware/" + filePath;
-
         const file = _("fileSelector").files[0];
-        let formdata = new FormData();
-        formdata.append("fileSelector", file);
+
         const xhttp = new XMLHttpRequest();
         xhttp.upload.addEventListener("progress", progressHandler, false);
-        xhttp.addEventListener("load", completeHandler, false);
+        xhttp.addEventListener("load", function () {
+            if (xhttp.status >= 200 && xhttp.status < 300) {
+                completeHandler();
+            } else {
+                // Handle error codes like 404, 500, etc.
+                errorHandler({
+                    status: xhttp.status,
+                    statusText: xhttp.statusText,
+                    response: xhttp.responseText
+                });
+            }
+        });
         xhttp.addEventListener("error", errorHandler, false);
         xhttp.addEventListener("abort", abortHandler, false);
 
@@ -281,11 +289,11 @@
 
     function progressHandler(event)
     {
-        _("loadedBytes").innerHTML = "Uploaded " + (event.loaded / 1024 / 1024).toFixed(2) +
-                " MB of " + (event.total / 1024/ 1024).toFixed(2) + " MB";
         const percent = (event.loaded / event.total) * 100;
         _("progressBar").value = Math.round(percent);
         _("status").innerHTML = "Status: " + Math.round(percent) + "% uploaded. Please wait...";
+        _("loadedBytes").innerHTML = "Uploaded " + (event.loaded / 1024 / 1024).toFixed(2) +
+                " MB of " + (event.total / 1024/ 1024).toFixed(2) + " MB";
     }
 
 
@@ -301,17 +309,19 @@
 
     function errorHandler(event)
     {
-        _("status").innerHTML = "Status: Upload Failed";
+        _("status").innerHTML = `Status: Upload failed (${event.status || 'Unknown'} - ${event.statusText || 'No message'})`;
         firework.launch('Upload failed', 'danger', 30000);
         document.getElementById("fileSelector").disabled = false;
+        _("loadedBytes").innerHTML = "";
     }
 
 
     function abortHandler(event)
     {
-        _("status").innerHTML = "Status: Upload Aborted";
+        _("status").innerHTML = `Status: Upload aborted (${event.status || 'Unknown'} - ${event.statusText || 'No message'})`;
         firework.launch('Upload aborted', 'danger', 30000);
         document.getElementById("fileSelector").disabled = false;
+        _("loadedBytes").innerHTML = "";
     }
 
 
