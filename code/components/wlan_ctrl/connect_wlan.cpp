@@ -642,18 +642,18 @@ esp_err_t wifiScan(httpd_req_t *req, bool checkRoaming)
         wifi_ap_record_t currentAP;
         esp_wifi_sta_get_ap_info(&currentAP);
 
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: Current AP BSSID=" + bssidToString((char *)currentAP.bssid));
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Roaming: Current AP BSSID=" + bssidToString(currentAP.bssid));
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                             "Roaming: Scan completed, APs found with configured SSID: " + std::to_string(maxNumberOfApFound));
         for (int i = 0; i < maxNumberOfApFound; i++) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                 "Roaming: " + std::to_string(i + 1) + ": SSID=" + std::string((char *)wifiApRecords[i].ssid) +
-                                    ", BSSID=" + bssidToString((char *)wifiApRecords[i].bssid) +
-                                    ", RSSI=" + std::to_string(wifiApRecords[i].rssi) + ", CH=" + std::to_string(wifiApRecords[i].primary) +
+                                    ", BSSID=" + bssidToString(wifiApRecords[i].bssid) + ", RSSI=" + std::to_string(wifiApRecords[i].rssi) +
+                                    ", CH=" + std::to_string(wifiApRecords[i].primary) +
                                     ", AUTH=" + getAuthModeName(wifiApRecords[i].authmode));
             if (wifiApRecords[i].rssi > (currentAP.rssi + 5) && // RSSI is better than actual RSSI + 5 --> Avoid switching to AP with
                                                                 // roughly same RSSI
-                (strcmp(bssidToString((char *)wifiApRecords[i].bssid).c_str(), bssidToString((char *)currentAP.bssid).c_str()) != 0)) {
+                (strcmp(bssidToString(wifiApRecords[i].bssid).c_str(), bssidToString(currentAP.bssid).c_str()) != 0)) {
                 wifiState.accessPointWithBetterRSSI = true;
             }
         }
@@ -838,8 +838,7 @@ static char *get_btm_neighbor_list(uint8_t *report, size_t report_len)
 
 
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "Roaming: RMM neighbor report BSSID: " + bssidToString((char *)nr) +
-                                ", Channel: " + std::to_string(nr[ETH_ALEN + 5]));
+                            "Roaming: RMM neighbor report BSSID: " + bssidToString(nr) + ", Channel: " + std::to_string(nr[ETH_ALEN + 5]));
 
         /* neighbor start */
         len += snprintf(buf + len, MAX_NEIGHBOR_LEN - len, " neighbor=");
