@@ -1118,7 +1118,6 @@ void task_autodoFlow(void *pvParameter)
         // PUBLISH DATA / RESULTS
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA) {
-
             if (getWifiIsConnected()) { // Skip pusblishing services if WLAN connection is not connected or suspended
                 if (!flowctrl.doFlowPublishData(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Publish data: Process error occured");
@@ -1137,7 +1136,6 @@ void task_autodoFlow(void *pvParameter)
             // Post process handling (if neccessary)
             // ********************************************
             if (flowctrl.flowStateEventOccured()) {
-
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_POST_EVENT_HANDLING));
                 flowctrl.setActualProcessState(std::string(FLOW_POST_EVENT_HANDLING));
 #ifdef ENABLE_MQTT
