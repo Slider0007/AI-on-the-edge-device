@@ -66,7 +66,6 @@ esp_err_t IRAM_ATTR CImageMod::rotate(CImage &img, float angle, int centerX, int
         uint8_t *pTarget = imgDataTarget + y * widthInBytes;
 
         for (int x = 0; x < width; ++x) {
-
 #if ROTATE_MODE == MODE_BILINEAR
             const float srcX = cosA * x + sinA * y + tx;
             const float srcY = -sinA * x + cosA * y + ty;
