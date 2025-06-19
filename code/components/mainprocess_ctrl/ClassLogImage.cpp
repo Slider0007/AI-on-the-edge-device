@@ -28,7 +28,8 @@ ClassLogImage::ClassLogImage(const char *logTag)
     this->imagesRetention = 5;
 }
 
-std::string ClassLogImage::createLogFolder(std::string time)
+
+std::string ClassLogImage::createLogFolder(std::string time, bool createResizedFolder)
 {
     if (!saveImagesEnabled) {
         return "";
@@ -36,7 +37,7 @@ std::string ClassLogImage::createLogFolder(std::string time)
 
     std::string logPath = imagesLocation + "/" + time.DEFAULT_TIME_FORMAT_DATE_EXTR + "/" + time.DEFAULT_TIME_FORMAT_HOUR_EXTR;
 
-    if (makeDirRecursive(logPath.c_str(), S_IRWXU) != 0) {
+    if (makeDirRecursive(createResizedFolder ? std::string(logPath + "/resized").c_str() : logPath.c_str(), S_IRWXU) != 0) {
         LogFile.writeToFile(ESP_LOG_ERROR, logTag, "createLogFolder: failed to create folder. Path: " + logPath);
         return "";
     }
@@ -45,40 +46,38 @@ std::string ClassLogImage::createLogFolder(std::string time)
 }
 
 
-void ClassLogImage::logImage(std::string _logPath, std::string _sequenceName, CNNType _type, int _value, std::string _time, CImage *_img,
-                             uint8_t _quality)
+void ClassLogImage::logImage(std::string logPath, std::string name, CNNType cnnType, int value, std::string timestamp, CImage *image,
+                             uint8_t quality)
 {
     if (!saveImagesEnabled) {
         return;
     }
 
-    if (_logPath.empty()) {
+    if (logPath.empty()) {
         LogFile.writeToFile(ESP_LOG_ERROR, logTag, "logImage: logPath empty");
         return;
     }
 
     char valueBuf[10];
-
-    if (_type == CNNTYPE_NONE) { // log with no label -> raw image
+    if (cnnType == CNNTYPE_NONE) { // log with no label -> raw image
         valueBuf[0] = '\0';
     }
-    else if (_type == CNNTYPE_DIGIT_CLASS11) { // dig-class10 (0-9 + NaN)
-        sprintf(valueBuf, "%d_", _value);
+    else if (cnnType == CNNTYPE_DIGIT_CLASS11) { // dig-class10 (0-9 + NaN)
+        sprintf(valueBuf, "%d_", value);
     }
     else { // ana-class100, dig-class100, dig-cont
-        sprintf(valueBuf, "%.1f_", _value / 10.0);
+        sprintf(valueBuf, "%.1f_", value / 10.0);
     }
 
-    std::string nm = _logPath + "/" + valueBuf + _sequenceName + "_" + _time + ".jpg";
-    nm = formatFileName(nm);
-    std::string output = "/sdcard/img_tmp/" + _sequenceName + ".jpg";
-    output = formatFileName(output);
-    ESP_LOGD(logTag, "save to file: %s", nm.c_str());
-    if (!_img) {
-        LogFile.writeToFile(ESP_LOG_ERROR, logTag, "logImage: rawImage not initialized");
+    std::string imagePath = logPath + "/" + valueBuf + name + "_" + timestamp + ".jpg";
+    imagePath = formatFileName(imagePath);
+
+    if (!image) {
+        LogFile.writeToFile(ESP_LOG_ERROR, logTag, "logImage: image not initialized");
         return;
     }
-    _img->saveJpgToFile(nm, _quality);
+
+    image->saveJpgToFile(imagePath, quality);
 }
 
 

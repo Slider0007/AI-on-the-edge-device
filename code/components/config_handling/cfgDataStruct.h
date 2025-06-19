@@ -40,6 +40,13 @@ enum AlignmentAlgo {
 };
 
 
+enum RoiImageSavingSize {
+    ROI_SAVE_FULL_SIZE = 0,
+    ROI_SAVE_RESIZED = 1,
+    ROI_SAVE_FULL_SIZE_AND_RESIZED = 2,
+};
+
+
 enum MaxRateCheckType {
     RATE_CHECK_OFF = 0,
     RATE_PER_MIN = 1,
@@ -274,6 +281,7 @@ struct CfgData {
             bool saveRoiImages = false;
             std::string roiImagesLocation = "/log/digit";
             int roiImagesRetention = 3;
+            int roiSavingSize = ROI_SAVE_FULL_SIZE;
             bool saveDebugInfo = false;
             bool saveAllFiles = false;
         } debug;
@@ -288,6 +296,7 @@ struct CfgData {
             bool saveRoiImages = false;
             std::string roiImagesLocation = "/log/analog";
             int roiImagesRetention = 3;
+            int roiSavingSize = ROI_SAVE_FULL_SIZE;
             bool saveDebugInfo = false;
             bool saveAllFiles = false;
         } debug;

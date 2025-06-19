@@ -759,6 +759,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         cfgDataTemp.sectionDigit.debug.roiImagesRetention = std::max(objEl->valueint, 0);
     }
 
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "debug"), "roisavingsize");
+    if (cJSON_IsNumber(objEl)) {
+        cfgDataTemp.sectionDigit.debug.roiSavingSize = objEl->valueint;
+    }
+
 
     // Analog
     // ***************************
@@ -859,6 +864,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "analog"), "debug"), "roiimagesretention");
     if (cJSON_IsNumber(objEl)) {
         cfgDataTemp.sectionAnalog.debug.roiImagesRetention = std::max(objEl->valueint, 0);
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "analog"), "debug"), "roisavingsize");
+    if (cJSON_IsNumber(objEl)) {
+        cfgDataTemp.sectionAnalog.debug.roiSavingSize = objEl->valueint;
     }
 
 
@@ -1975,6 +1985,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (cJSON_AddNumberToObject(digitDebug, "roiimagesretention", cfgDataTemp.sectionDigit.debug.roiImagesRetention) == NULL) {
         retVal = ESP_FAIL;
     }
+    if (cJSON_AddNumberToObject(digitDebug, "roisavingsize", cfgDataTemp.sectionDigit.debug.roiSavingSize) == NULL) {
+        retVal = ESP_FAIL;
+    }
 
 
     // Analog
@@ -2032,6 +2045,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     }
     if (cJSON_AddNumberToObject(analogDebug, "roiimagesretention", cfgDataTemp.sectionAnalog.debug.roiImagesRetention) == NULL) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddNumberToObject(analogDebug, "roisavingsize", cfgDataTemp.sectionAnalog.debug.roiSavingSize) == NULL) {
         retVal = ESP_FAIL;
     }
 

@@ -232,7 +232,8 @@ bool ClassFlowCNNGeneral::resolveNetworkParameter()
 
 bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
 {
-    const std::string logPath = createLogFolder(time);
+    const auto roiSavingSize = sectionDigitPtr ? sectionDigitPtr->debug.roiSavingSize : sectionAnalogPtr->debug.roiSavingSize;
+    const std::string logPath = createLogFolder(time, roiSavingSize == ROI_SAVE_FULL_SIZE_AND_RESIZED);
 
     if (!tflite->makeAllocate()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Allocation of TFLite tensors failed");
@@ -368,7 +369,18 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Result: " + roi->sCNNResult);
 
             if (saveImagesEnabled) {
-                logImage(logPath, roiName, cnnType, logImageResult, time, roi->imageRoi, 100);
+                const std::string roiNameResized = roiName + "_resized";
+
+                if (roiSavingSize == ROI_SAVE_FULL_SIZE_AND_RESIZED) {
+                    logImage(logPath, roiName, cnnType, logImageResult, time, roi->imageRoi, 100);
+                    logImage(logPath + "/resized", roiNameResized, cnnType, logImageResult, time, roi->imageRoiResized, 100);
+                }
+                else if (roiSavingSize == ROI_SAVE_RESIZED) { // Special case: Save to default log path for backward compatibility
+                    logImage(logPath, roiNameResized, cnnType, logImageResult, time, roi->imageRoiResized, 100);
+                }
+                else {
+                    logImage(logPath, roiName, cnnType, logImageResult, time, roi->imageRoi, 100);
+                }
             }
         }
     }
@@ -569,7 +581,7 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
     int resultIntergerPart = _value / 10;
     int resultDecimalPlace = _value % 10;
 
-    if (_resultPreviousNumber <= -1) { // no previous number -> no correction logic for transition needed, use value as is (integer part)
+    if (_resultPreviousNumber <= -1) { // no previous number -> no correction logic for transition, use value as is (integer part)
         result = resultIntergerPart;
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                             "evalDigitNumber (No previous number): Result: " + std::to_string(result) +
@@ -680,8 +692,7 @@ int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePrevi
     // Value within the digit inequalities
     if (resultDecimalPlace >= (10 - ANALOG_DIGIT_ZERO_CROSSING_UNCERTAINTY) // Band around the zero crossing -> Round, as number reaches
                                                                             // inaccuracy zone
-        ||
-        (_resultPreviousNumber <= 4 && resultDecimalPlace >= 6)) // or number runs after (previous result <= 4, actucal decimal place >= 6)
+        || (_resultPreviousNumber <= 4 && resultDecimalPlace >= 6)) // or number runs after (previous result <= 4, act. decimal place >= 6)
     {
         if (resultDecimalPlace >= 5) { // "Round up"
             result = resultIntergerPart + 1;
