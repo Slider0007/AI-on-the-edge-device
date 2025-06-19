@@ -55,7 +55,7 @@ static struct IpCfg {
 } ipCfg;
 
 
-std::string macToString(const std::array<uint8_t, 6> &mac)
+std::string macToString(const uint8_t (&mac)[6])
 {
     char macFormatted[18]; // "AA:BB:CC:DD:EE:FF" + null terminator
     snprintf(macFormatted, sizeof(macFormatted), MACSTR, MAC2STR(mac));
@@ -63,7 +63,7 @@ std::string macToString(const std::array<uint8_t, 6> &mac)
 }
 
 
-std::string bssidToString(const std::array<uint8_t, 6> &bssid)
+std::string bssidToString(const uint8_t (&bssid)[6])
 {
     return macToString(bssid);
 }
