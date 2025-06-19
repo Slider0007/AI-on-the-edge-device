@@ -55,19 +55,17 @@ static struct IpCfg {
 } ipCfg;
 
 
-std::string bssidToString(const char *c)
+std::string macToString(const std::array<uint8_t, 6> &mac)
 {
-    char cBssid[6 * 2 + 5 + 1]; // AA:BB:CC:DD:EE:FF
-    sprintf(cBssid, "%02x:%02x:%02x:%02x:%02x:%02x", c[0], c[1], c[2], c[3], c[4], c[5]);
-    return std::string(cBssid);
+    char macFormatted[18]; // "AA:BB:CC:DD:EE:FF" + null terminator
+    snprintf(macFormatted, sizeof(macFormatted), MACSTR, MAC2STR(mac));
+    return std::string(macFormatted);
 }
 
 
-std::string macToString(uint8_t mac[6])
+std::string bssidToString(const std::array<uint8_t, 6> &bssid)
 {
-    char macFormated[6 * 2 + 5 + 1]; // AA:BB:CC:DD:EE:FF
-    sprintf(macFormated, MACSTR, MAC2STR(mac));
-    return std::string(macFormated);
+    return macToString(bssid);
 }
 
 
