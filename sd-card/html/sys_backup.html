@@ -8,6 +8,7 @@
         h1 {font-size: 1.8em;}
         h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
         h3 {font-size: 1.2em;}
+        h4 {font-size: 1.1em;}
         p {font-size: 1em;}
 
         body, html {
@@ -21,6 +22,13 @@
             padding: 10px 5px;
             display: inline-block;
             border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        input[type=file] {
+            width: 660px;
+            padding: 5px 0px;
+            display: inline-block;
             font-size: 16px;
         }
 
@@ -46,63 +54,78 @@
 </head>
 
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
-    <h2>Backup Configuration</h2>
-    <p>With the following action the <a href="/fileserver/config/" target="_self">config</a> folder on the SD card gets zipped and provided as a download.</p>
-
-    <button class="button" id="startBackup" type="button" onclick="startBackup()">Create Backup</button>
-    <p id=progress></p>
+    <h2>Backup / Restore</h2>
+    <h3>Backup Configuration</h3>
+    <p>Create a backup of the device configuration (Content of <a href="/fileserver/config/" target="_self">config</a> folder incl. subfolders).</p>
+    <button class="button" id="startBackupButton" type="button" onclick="startBackup()">Create Backup</button>
+    <p id="progress"></p>
+    <br>
     <hr>
-    <h2>Restore Configuration</h2>
-    <p>Use the <a href="/fileserver/config/" target="_self">File Server</a> to upload individual files.</p>
+    <h3>Restore Configuration</h3>
 
-<script src="jszip.min.js?v=$COMMIT_HASH"></script>
-<script src="FileSaver.min.js?v=$COMMIT_HASH"></script>
-<script src="global_common.js?v=$COMMIT_HASH"></script>
+    <h4>Partial Restore</h4>
+    <p>To restore specific configuration files, use the <a href="/fileserver/config/" target="_self">File Server</a> to upload them individually.</p>
+    <h4>Full Restore</h4>
+    <p><strong>Warning:</strong> This will overwrite your current device configuration.</p>
+
+    <form id="uploadForm" enctype="multipart/form-data" method="post">
+        <input type="file" accept=".zip" name="fileSelector" id="fileSelector" onchange="validateFileInput()">
+        <br><br>
+        <button class="button" id="startRestoreButton" type="button" onclick="startRestore()" disabled>Upload & Restore</button>
+        <br><br>
+        <progress id="progressBar" value="0" max="100" style="width: 100%; max-width: 600px;"></progress>
+        <h3><span id="status">Status: Idle</span></h3>
+        <p id="loadedBytes"></p>
+    </form>
+
 <script>
-    let configBasePath = "/fileserver/config/";
+    const configBasePath = "/fileserver/config/";
+
+    // Max size of an individual file. Make sure this value is same as that set in server_file.c
+    const MAX_FILE_SIZE = 8000*1024;
+    const MAX_FILE_SIZE_STR = "8MB";
+
 
     function startBackup()
     {
-        document.getElementById("progress").innerHTML = "Creating backup...<br>\n";
+        document.getElementById("startBackupButton").disabled = true;
+        document.getElementById("progress").innerHTML = "";
 
         // Get hostname
         try {
-            let xhttp = new XMLHttpRequest();
+            const xhttp = new XMLHttpRequest();
             xhttp.open("GET", getDomainname() + "/info?type=hostname", false);
             xhttp.withCredentials = true;
             xhttp.send();
             hostname = xhttp.responseText;
         }
         catch(err) {
-            setStatus("<span style=\"color: red\">Failed to fetch hostname: " + err.message + "!</span>");
+            setStatus("<span style=\"color: red\">Failed to get hostname: " + err.message + "</span>");
+            document.getElementById("startBackupButton").disabled = false;
             return;
         }
 
-        // get date/time
-        let dateTime = new Date().toJSON().slice(0,10) + "_" + new Date().toJSON().slice(11,19).replaceAll(":", "-");
-
-        zipFilename = hostname + "_" + dateTime + ".zip";
-        //console.log(zipFilename);
-
         // Get files list from config base folder
-        setStatus("Fetching File List...");
+        setStatus("Get file list...");
         try {
-            let xhttp = new XMLHttpRequest();
+            const xhttp = new XMLHttpRequest();
             xhttp.open("GET", getDomainname() + configBasePath, false);
             xhttp.withCredentials = true;
             xhttp.send();
 
-            let parser = new DOMParser();
-            content = parser.parseFromString(xhttp.responseText, 'text/html');    }
+            const parser = new DOMParser();
+            content = parser.parseFromString(xhttp.responseText, 'text/html');
+        }
         catch(err) {
-            setStatus("Failed to fetch files list: " + err.message);
+            setStatus("Failed to get file list: " + err.message);
+            document.getElementById("startBackupButton").disabled = false;
             return;
         }
 
         let urls = [];
         let cfgSubfolderUrl = [];
-        for (el of content.querySelectorAll("a")) {
-            if (el.getAttribute("href").endsWith("/")) { // indication for subfolder
+        for (const el of content.querySelectorAll("a")) {
+            if (el.getAttribute("href").split("?")[0].endsWith("/")) { // indication for subfolder
                 cfgSubfolderUrl.push(el.getAttribute("href"));
             }
             else {
@@ -111,50 +134,53 @@
         }
 
         // Get files list from config subfolders
-        for (cfgSubfolderUrlEl of cfgSubfolderUrl) {
+        for (const cfgSubfolderUrlEl of cfgSubfolderUrl) {
             try {
-                let xhttp = new XMLHttpRequest();
+                const xhttp = new XMLHttpRequest();
                 xhttp.open("GET", getDomainname() + cfgSubfolderUrlEl, false);
                 xhttp.withCredentials = true;
                 xhttp.send();
 
                 let parser = new DOMParser();
-                content = parser.parseFromString(xhttp.responseText, 'text/html');    }
+                content = parser.parseFromString(xhttp.responseText, 'text/html');
+            }
             catch(err) {
-                setStatus("Failed to fetch files list: " + err.message);
+                setStatus("Failed to get file list: " + err.message);
+                document.getElementById("startBackupButton").disabled = false;
                 return;
             }
 
-            for (el of content.querySelectorAll("a")) {
+            for (const el of content.querySelectorAll("a")) {
                 urls.push(getDomainname() + el.getAttribute("href"));
             }
         }
 
         // Pack as zip and download
         try {
-            backupFiles(urls, zipFilename);
+            backupFiles(urls);
         }
         catch(err) {
-            setStatus("<span style=\"color: red\">Failed to zip files: " + err.message + "!</span>");
+            setStatus("<span style=\"color: red\">Failed to zip files: " + err.message + "</span>");
+            document.getElementById("startBackupButton").disabled = false;
             return;
         }
     }
 
 
-    const backupFiles = (urls, zipFilename) =>
+    const backupFiles = (urls) =>
     {
         if(!urls)
             return;
 
-        setStatus("Fetching files...");
-        fetchFiles(urls, [], 0, 0, zipFilename);
+        setStatus("Processing files...");
+        fetchFiles(urls, [], 0, 0);
     };
 
 
 
-    function fetchFiles(urls, filesData, index, retry, zipFilename)
+    function fetchFiles(urls, filesData, index, retry)
     {
-        let url = urls[index];
+        const url = urls[index];
 
         if (retry == 0) {
             setStatus("&nbsp;- " + getFilenameFromUrl(urls[index]) + " (" + (index+1) + "/" + urls.length + ")...");
@@ -163,85 +189,100 @@
             setStatus("<span style=\"color: gray\">&nbsp;&nbsp;&nbsp;Retrying (" + retry + ")...</span>");
         }
 
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.withCredentials = true;
-        xhr.responseType = "blob";
+        const xhttp = new XMLHttpRequest();
+        xhttp.open('GET', url, true);
+        xhttp.withCredentials = true;
+        xhttp.responseType = "blob";
 
         if (retry == 0) { // Short timeout on first retry
-            xhr.timeout = 2000; // time in milliseconds
+            xhttp.timeout = 2000; // time in milliseconds
         }
         else if (retry == 1) { // longer timeout
-            xhr.timeout = 5000; // time in milliseconds
+            xhttp.timeout = 5000; // time in milliseconds
         }
         else if (retry == 2) { // longer timeout
-            xhr.timeout = 10000; // time in milliseconds
+            xhttp.timeout = 10000; // time in milliseconds
         }
         else if (retry == 3) { // longer timeout
-            xhr.timeout = 20000; // time in milliseconds
+            xhttp.timeout = 20000; // time in milliseconds
         }
         else { // very long timeout
-            xhr.timeout = 30000; // time in milliseconds
+            xhttp.timeout = 30000; // time in milliseconds
         }
 
-        xhr.onload = () => { // Request finished
+        xhttp.onload = () => { // Request finished
             //console.log(url + " done");
 
-            filesData[index] = xhr.response;
+            filesData[index] = xhttp.response;
 
             if (index == urls.length - 1) {
-                setStatus("Fetched all files");
-                generateZipFile(urls, filesData, zipFilename);
+                setStatus("All files processed");
+                generateZipFile(urls, filesData);
+                setStatus("Backup completed");
+                document.getElementById("startBackupButton").disabled = false;
                 return;
             }
             else { // Next file
-                fetchFiles(urls, filesData, index+1, 0, zipFilename);
+                fetchFiles(urls, filesData, index+1, 0);
             }
         };
 
-        xhr.onprogress = (e) => { // XMLHttpRequest progress ... extend timeout
-            xhr.timeout = xhr.timeout + 500;
+        xhttp.onprogress = (e) => { // XMLHttpRequest progress ... extend timeout
+            xhttp.timeout = xhttp.timeout + 500;
         };
 
-        xhr.onerror = (e) => { // XMLHttpRequest error loading
+        xhttp.onerror = (e) => { // XMLHttpRequest error loading
             console.error("Error on fetching " + url);
             if (retry > 5) {
-                setStatus("<span style=\"color: red\">Backup failed, please restart the device and try again!</span>");
+                setStatus("<span style=\"color: red\">Backup failed, please restart the device and try again</span>");
             }
             else {
-                fetchFiles(urls, filesData, index, retry+1, zipFilename);
+                fetchFiles(urls, filesData, index, retry+1);
             }
         };
 
-        xhr.ontimeout = (e) => { // XMLHttpRequest timed out
+        xhttp.ontimeout = (e) => { // XMLHttpRequest timed out
             console.error("Timeout on fetching " + url);
             if (retry > 5) {
-                setStatus("<span style=\"color: red\">Backup failed, please restart the device and try again!</span>");
+                setStatus("<span style=\"color: red\">Backup failed, please restart the device and try again</span>");
             }
             else {
-                fetchFiles(urls, filesData, index, retry+1, zipFilename);
+                fetchFiles(urls, filesData, index, retry+1);
             }
         };
 
-        xhr.send(null);
+        xhttp.send(null);
     }
 
 
-    function generateZipFile(urls, filesData, zipFilename)
+    function generateZipFile(urls, filesData)
     {
-        setStatus("Creating Zip File...");
+        setStatus("Creating zip file...");
 
-        let zip = new JSZip();
+        const zip = new JSZip();
         for (let i = 0; i < urls.length; i++) {
-            zip.file(getFilenameFromUrl(urls[i]), filesData[i]);
+            let filepath = "config/" + getFilenameFromUrl(urls[i]);
+            zip.file(filepath, filesData[i]);
         }
 
-        zip.generateAsync({type:"blob"})
-        .then(function(content) {
-            saveAs(content, zipFilename);
-        });
+        const now = new Date();
+        const timestamp = now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, "0") + "-" +
+            String(now.getDate()).padStart(2, "0") + "_" +
+            String(now.getHours()).padStart(2, "0") + "-" +
+            String(now.getMinutes()).padStart(2, "0") + "-" +
+            String(now.getSeconds()).padStart(2, "0");
 
-        setStatus("Backup completed");
+        // Add backup meta data
+        const meta = {
+            app: "AI-on-the-Edge Device [SLFork]",
+            timestamp: timestamp
+        };
+        zip.file("meta.json", JSON.stringify(meta, null, 2));
+
+        zip.generateAsync({ type: "blob" }).then(function(content) {
+            saveAs(content, `${hostname}_${timestamp}.zip`);
+        });
     }
 
 
@@ -253,7 +294,254 @@
 
     function getFilenameFromUrl(url)
     {
-        return url.substring(url.indexOf(configBasePath) + configBasePath.length);
+        const path = url.substring(url.indexOf(configBasePath) + configBasePath.length);
+        return path.split("?")[0];  // Remove any query parameters
+    }
+
+
+    async function validateFileInput()
+    {
+        document.getElementById("startRestoreButton").disabled = true;
+
+        const fileInput = document.getElementById("fileSelector").files;
+        const filepath = document.getElementById("fileSelector").value;
+        const filename = filepath.split(/[\\\/]/).pop();
+
+        if (fileInput.length === 0) {
+            firework.launch('No file selected', 'danger', 30000);
+            return;
+        }
+        else if (fileInput[0].size > MAX_FILE_SIZE) {
+            firework.launch(`File size must be less than ${MAX_FILE_SIZE_STR}`, 'danger', 30000);
+            return;
+        }
+        else if (filename.length === 0) {
+            firework.launch('File path on server is not set', 'danger', 30000);
+            return;
+        }
+        else if (filename.length > 255) {
+            firework.launch('File name is too long (max. 255 characters)', 'danger', 30000);
+            return;
+        }
+        else if (filename.includes(' ')) {
+            firework.launch('File name cannot contain spaces', 'danger', 30000);
+            return;
+        }
+        else if (filename.endsWith('/')) {
+            firework.launch('Path selected, but file name cannot be parsed', 'danger', 30000);
+            return;
+        }
+        else if (!filename.toLowerCase().endsWith('.zip')) {
+            firework.launch('Only ZIP files are allowed', 'danger', 30000);
+            return;
+        }
+
+        // Validate meta data
+        try {
+            const file = fileInput[0];
+            const zip = await JSZip.loadAsync(file);
+
+            if (!zip.files['meta.json']) {
+                firework.launch("Backup file cannot be validated ('meta.json' file missing)", 'danger', 30000);
+                return;
+            }
+
+            const metaContent = await zip.files['meta.json'].async("string");
+            const meta = JSON.parse(metaContent);
+
+            if (!meta.app || meta.app.toLowerCase() !== "ai-on-the-edge device [slfork]") {
+                firework.launch("Backup file invalid (app name: wrong or missing)", 'danger', 30000);
+                return;
+            }
+
+            // All validations passed
+            firework.launch("Press 'Upload & Restore' to perform the config restore", "success", 5000);
+            document.getElementById("startRestoreButton").disabled = false;
+        }
+        catch (err) {
+            firework.launch("Failed to validate ZIP file contents. Check structure and try again.", 'danger', 30000);
+            console.error("ZIP validation error:", err);
+        }
+    }
+
+
+    function startRestore()
+    {
+        firework.launch('Do not reload this page or switch to another page while the restore is in progress', 'warning', 90000);
+
+        document.getElementById("startRestoreButton").disabled = true;
+        document.getElementById("fileSelector").disabled = true;
+
+        let file_name = document.getElementById("fileSelector").value;
+        file_name = file_name.split(/[\\\/]/).pop();
+        filePath = file_name.split(/[\\\/]/).pop();
+
+        prepareOnServer();
+    }
+
+
+    function prepareOnServer()
+    {
+        document.getElementById("status").innerText = "Status: Preparing device...";
+
+        // Empty /firmware directory and start file upload
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (xhttp.readyState == 4) {
+                if (xhttp.status == 200) {
+                    uploadFile();
+                } else if (xhttp.status == 0) {
+                    firework.launch('Server closed the connection abruptly', 'danger', 30000);
+                } else {
+                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
+                }
+            }
+        };
+
+        const url = getDomainname() + "/ota?task=emptyfirmwaredir";
+        xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
+        xhttp.send();
+    }
+
+
+    function processOnServer()
+    {
+        document.getElementById("status").innerText = "Status: Processing on device...";
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (xhttp.readyState == 4) {
+                if (xhttp.status >= 200 && xhttp.status < 300) {
+                    document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax"; // Make sure after the reboot we go to the overview page
+
+                    if (xhttp.responseText.startsWith("reboot")) { // Reboot required
+                        document.getElementById("status").innerText = "Status: Restoring...";
+                        firework.launch('Upload completed, the device will now restart and restore the config', 'success', 5000);
+
+                        doRebootAfterUpdate();
+
+                        action_runtime = 0;
+                        updateTimer = setInterval(function() {
+                            action_runtime += 1;
+                            _("progressBar").value = Math.round(action_runtime);
+
+                            if (action_runtime > 10) { // After 30 seconds, start to check if we are up again
+                                /* Check if the device is up again and forward to index page if so */
+                                fetch(getDomainname(), {mode: 'no-cors', credentials: 'include'})
+                                    .then(r=>{
+                                        parent.location.href=('index.html');
+                                    });
+                            }
+
+                            if (action_runtime > 100) { // We reached 300 seconds but device is not ready yet
+                                firework.launch("Reboot takes unusually long. Reload this page or power cycle the device", 'danger', 30000);
+                                clearInterval(updateTimer);
+                            }
+                        }, 3000);
+                    }
+                    else // No reboot required
+                    {
+                        document.getElementById("status").innerText = "Status: Restore completed";
+                        firework.launch('Restore completed', 'success', 5000);
+                        document.getElementById("fileSelector").disabled = false;
+                    }
+                } else if (xhttp.status >= 400) {
+                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
+                } else {
+                    firework.launch('Server closed the connection abruptly', 'danger', 30000);
+                }
+            }
+        };
+
+        const file_name = document.getElementById("fileSelector").value;
+        const url = getDomainname() + "/ota?task=update&file=" + filePath;
+        xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
+        xhttp.send();
+    }
+
+
+    function uploadFile()
+    {
+        document.getElementById("status").innerText = "Status: Uploading...";
+
+        const upload_path = "/upload/firmware/" + filePath;
+        const file = _("fileSelector").files[0];
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.upload.addEventListener("progress", progressHandler, false);
+        xhttp.addEventListener("load", function () {
+            if (xhttp.status >= 200 && xhttp.status < 300) {
+                completeHandler({ target: xhttp });
+            } else {
+                // Handle error codes like 404, 500, etc.
+                errorHandler({
+                    status: xhttp.status,
+                    statusText: xhttp.statusText,
+                    response: xhttp.responseText
+                });
+            }
+        });
+        xhttp.addEventListener("error", errorHandler, false);
+        xhttp.addEventListener("abort", abortHandler, false);
+
+        xhttp.open("POST", upload_path);
+        xhttp.withCredentials = true;
+        xhttp.send(file);
+    }
+
+
+    function doRebootAfterUpdate()
+    {
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("GET", getDomainname() + "/reboot", true);
+        xhttp.withCredentials = true;
+        xhttp.send();
+    }
+
+
+    function progressHandler(event)
+    {
+        const percent = (event.loaded / event.total) * 100;
+        _("progressBar").value = Math.round(percent);
+        _("status").innerHTML = "Status: " + Math.round(percent) + "% uploaded. Please wait...";
+        _("loadedBytes").innerHTML = "Uploaded " + (event.loaded / 1024 / 1024).toFixed(2) +
+                " MB of " + (event.total / 1024/ 1024).toFixed(2) + " MB";
+    }
+
+
+    function completeHandler(event)
+    {
+        _("status").innerHTML = "Status: " + event.target.responseText;
+        _("progressBar").value = 0; // will clear progress bar after successful upload
+        _("loadedBytes").innerHTML = "";
+
+        processOnServer();
+    }
+
+
+    function errorHandler(event)
+    {
+        _("status").innerHTML = `Status: Upload Failed (${event.status || 'Unknown'} - ${event.statusText || 'No message'})`;
+        firework.launch('Upload failed', 'danger', 30000);
+        document.getElementById("fileSelector").disabled = false;
+        _("loadedBytes").innerHTML = "";
+    }
+
+
+    function abortHandler(event)
+    {
+        _("status").innerHTML = `Status: Upload Aborted (${event.status || 'Unknown'} - ${event.statusText || 'No message'})`;
+        firework.launch('Upload aborted', 'danger', 30000);
+        document.getElementById("fileSelector").disabled = false;
+        _("loadedBytes").innerHTML = "";
+    }
+
+
+    function _(el)
+    {
+        return document.getElementById(el);
     }
 
 </script>
