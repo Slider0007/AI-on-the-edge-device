@@ -38,14 +38,13 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/rel
 
 static const char *TAG = "SERVER_OTA";
 
-std::string file_name_update;
 
-// An ota data write buffer ready to write to the flash
-static char ota_write_data[SERVER_OTA_SCRATCH_BUFSIZE + 1] = {0};
+static std::string fileNameUpdate;                               // Filename of update
+static char otaDataBuffer[SERVER_OTA_SCRATCH_BUFSIZE + 1] = {0}; // OTA buffer
 
 
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-static void infinite_loop(void)
+static void infiniteLoop(void)
 {
     int i = 0;
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "When a new firmware is available on the server, press the reset button to download it");
@@ -58,12 +57,12 @@ static void infinite_loop(void)
 
 
 // OTA update: 3rd step
-static bool ota_update_firmware(std::string fn)
+static bool otaUpdateFirmware(std::string fn)
 {
-    esp_err_t err;
+    esp_err_t retVal;
     /* update handle : set by esp_ota_begin(), must be freed via esp_ota_end() */
-    esp_ota_handle_t update_handle = 0;
-    const esp_partition_t *update_partition = NULL;
+    esp_ota_handle_t otaHandle = 0;
+    const esp_partition_t *updatePartition = NULL;
 
     ESP_LOGI(TAG, "Starting firmware update");
 
@@ -80,104 +79,104 @@ static bool ota_update_firmware(std::string fn)
 
     ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)", running->type, running->subtype, (unsigned int)running->address);
 
-    update_partition = esp_ota_get_next_update_partition(NULL);
-    ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%x", update_partition->subtype, (unsigned int)update_partition->address);
-    // assert(update_partition != NULL);
+    updatePartition = esp_ota_get_next_update_partition(NULL);
+    ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%x", updatePartition->subtype, (unsigned int)updatePartition->address);
+    // assert(updatePartition != NULL);
 
-    FILE *f = fopen(fn.c_str(), "rb"); // previously only "r
-    if (f == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ota_update_firmware: File open failed: " + fn);
+    FILE *file = fopen(fn.c_str(), "rb"); // previously only "r
+    if (!file) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: File open failed: " + fn);
         return false;
     }
 
-    int binary_file_length = 0;
+    int binaryFileLength = 0;
     // deal with all receive packet
-    bool image_header_was_checked = false;
+    bool imageHeaderValid = false;
 
-    int data_read = fread(ota_write_data, 1, SERVER_OTA_SCRATCH_BUFSIZE, f);
+    int bytesRead = fread(otaDataBuffer, 1, SERVER_OTA_SCRATCH_BUFSIZE, file);
 
-    while (data_read > 0) {
-        if (image_header_was_checked == false) {
-            esp_app_desc_t new_app_info;
-            if (data_read > sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t)) {
+    while (bytesRead > 0) {
+        if (imageHeaderValid == false) {
+            esp_app_desc_t newAppInfo;
+            if (bytesRead > sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t)) {
                 // check current version with downloading
-                memcpy(&new_app_info, &ota_write_data[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)],
+                memcpy(&newAppInfo, &otaDataBuffer[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)],
                        sizeof(esp_app_desc_t));
-                ESP_LOGI(TAG, "New firmware version: %s", new_app_info.version);
+                ESP_LOGI(TAG, "New firmware version: %s", newAppInfo.version);
 
-                esp_app_desc_t running_app_info;
-                if (esp_ota_get_partition_description(running, &running_app_info) == ESP_OK) {
-                    ESP_LOGI(TAG, "Running firmware version: %s", running_app_info.version);
+                esp_app_desc_t runningAppInfo;
+                if (esp_ota_get_partition_description(running, &runningAppInfo) == ESP_OK) {
+                    ESP_LOGI(TAG, "Running firmware version: %s", runningAppInfo.version);
                 }
 
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-                const esp_partition_t *last_invalid_app = esp_ota_get_last_invalid_partition();
-                esp_app_desc_t invalid_app_info;
-                if (esp_ota_get_partition_description(last_invalid_app, &invalid_app_info) == ESP_OK) {
-                    ESP_LOGI(TAG, "Last invalid firmware version: %s", invalid_app_info.version);
+                const esp_partition_t *lastInvalidApp = esp_ota_get_last_invalid_partition();
+                esp_app_desc_t invalidAppInfo;
+                if (esp_ota_get_partition_description(lastInvalidApp, &invalidAppInfo) == ESP_OK) {
+                    ESP_LOGI(TAG, "Last invalid firmware version: %s", invalidAppInfo.version);
                 }
 
                 // check current version with last invalid partition
-                if (last_invalid_app != NULL) {
-                    if (memcmp(invalid_app_info.version, new_app_info.version, sizeof(new_app_info.version)) == 0) {
+                if (lastInvalidApp != NULL) {
+                    if (memcmp(invalidAppInfo.version, newAppInfo.version, sizeof(newAppInfo.version)) == 0) {
                         LogFile.writeToFile(ESP_LOG_WARN, TAG, "New version is the same as invalid version");
                         LogFile.writeToFile(ESP_LOG_WARN, TAG,
                                             "Previously, there was an attempt to launch the firmware with " +
-                                                std::string(invalid_app_info.version) + " version, but it failed");
+                                                std::string(invalidAppInfo.version) + " version, but it failed");
                         LogFile.writeToFile(ESP_LOG_WARN, TAG, "The firmware has been rolled back to the previous version");
-                        infinite_loop();
+                        infiniteLoop();
                     }
                 }
 
                 /*
-                if (memcmp(new_app_info.version, running_app_info.version, sizeof(new_app_info.version)) == 0) {
+                if (memcmp(newAppInfo.version, runningAppInfo.version, sizeof(newAppInfo.version)) == 0) {
                     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Current running version is the same as a new. We will not continue the update");
-                    infinite_loop();
+                    infiniteLoop();
                 }
                 */
 #endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
 
-                image_header_was_checked = true;
+                imageHeaderValid = true;
 
-                err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
-                if (err != ESP_OK) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ota_update_firmware: esp_ota_begin failed. Error: " + intToHexString(err));
+                retVal = esp_ota_begin(updatePartition, OTA_SIZE_UNKNOWN, &otaHandle);
+                if (retVal != ESP_OK) {
+                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_begin failed. Error: " + intToHexString(retVal));
                     return false;
                 }
                 ESP_LOGI(TAG, "esp_ota_begin succeeded");
             }
             else {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "ota_update_firmware: Update file size too small. File size: " + std::to_string(data_read));
+                                    "otaUpdateFirmware: Update file size too small. File size: " + std::to_string(bytesRead));
                 return false;
             }
         }
 
-        err = esp_ota_write(update_handle, (const void *)ota_write_data, data_read);
-        if (err != ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ota_update_firmware: esp_ota_write failed. Error: " + intToHexString(err));
+        retVal = esp_ota_write(otaHandle, (const void *)otaDataBuffer, bytesRead);
+        if (retVal != ESP_OK) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_write failed. Error: " + intToHexString(retVal));
             return false;
         }
 
-        binary_file_length += data_read;
-        data_read = fread(ota_write_data, 1, SERVER_OTA_SCRATCH_BUFSIZE, f);
+        binaryFileLength += bytesRead;
+        bytesRead = fread(otaDataBuffer, 1, SERVER_OTA_SCRATCH_BUFSIZE, file);
     }
-    fclose(f);
+    fclose(file);
 
-    ESP_LOGI(TAG, "Total written image length: %d", binary_file_length);
+    ESP_LOGI(TAG, "Total written image length: %d", binaryFileLength);
 
-    err = esp_ota_end(update_handle);
-    if (err != ESP_OK) {
-        if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ota_update_firmware: Image validation failed, image is corrupted");
+    retVal = esp_ota_end(otaHandle);
+    if (retVal != ESP_OK) {
+        if (retVal == ESP_ERR_OTA_VALIDATE_FAILED) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: Image validation failed, image is corrupted");
         }
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ota_update_firmware: esp_ota_end failed. Error: " + intToHexString(err));
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_end failed. Error: " + intToHexString(retVal));
         return false;
     }
 
-    err = esp_ota_set_boot_partition(update_partition);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ota_update_firmware: esp_ota_set_boot_partition failed. Error: " + intToHexString(err));
+    retVal = esp_ota_set_boot_partition(updatePartition);
+    if (retVal != ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_set_boot_partition failed. Error: " + intToHexString(retVal));
         return false;
     }
 
@@ -192,23 +191,23 @@ static bool ota_update_firmware(std::string fn)
 
 
 // OTA update: 2nd step
-void task_ota_update(void *pvParameter)
+void taskOtaUpdate(void *pvParameter)
 {
     setStatusLed(AP_OR_OTA, 1, true); // Signaling an OTA update
 
-    std::string filetype = toUpper(getFileType(file_name_update));
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File name: " + file_name_update + " | File type: " + filetype);
+    std::string filetype = toUpper(getFileType(fileNameUpdate));
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File name: " + fileNameUpdate + " | File type: " + filetype);
 
     if (filetype == "ZIP") {
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Processing ZIP file: " + file_name_update);
-        std::string retval = unzipOTA(file_name_update, "/sdcard/");
-        if (retval.length() > 0) {
-            if (retval == "ERROR") {
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Processing ZIP file: " + fileNameUpdate);
+        std::string retVal = unzipOTA(fileNameUpdate, "/sdcard/");
+        if (retVal.length() > 0) {
+            if (retVal == "ERROR") {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to unzip files. Update process failed");
             }
             else {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Found firmware.bin");
-                if (!ota_update_firmware(retval)) {
+                if (!otaUpdateFirmware(retVal)) {
                     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to update firmware. Update process failed");
                 }
             }
@@ -220,8 +219,8 @@ void task_ota_update(void *pvParameter)
         doRebootOTA();
     }
     else if (filetype == "BIN") {
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Processing BIN file: " + file_name_update);
-        if (!ota_update_firmware(file_name_update)) {
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Processing BIN file: " + fileNameUpdate);
+        if (!otaUpdateFirmware(fileNameUpdate)) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware update failed");
         }
 
@@ -229,7 +228,7 @@ void task_ota_update(void *pvParameter)
         doRebootOTA();
     }
     else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "task_ota_update: Only ZIP or BIN files are supported");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "taskOtaUpdate: Only ZIP or BIN files are supported");
     }
 }
 
@@ -237,22 +236,22 @@ void task_ota_update(void *pvParameter)
 // OTA update: 1st step
 void checkOTAUpdate()
 {
-    FILE *pfile;
-    if ((pfile = fopen("/sdcard/update.txt", "r")) == NULL) {
+    FILE *pfile = fopen("/sdcard/update.txt", "r");
+    if (!pfile) {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "No pending update");
         return;
     }
 
     char zw[256];
     fgets(zw, sizeof(zw), pfile);
-    file_name_update = std::string(zw);
+    fileNameUpdate = std::string(zw);
     fclose(pfile);
-    deleteFile("/sdcard/update.txt"); // Prevent Boot Loop!!!
+    deleteFile("/sdcard/update.txt"); // Delete after processing
 
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Prepare update process | File: " + file_name_update);
-    xTaskCreate(&task_ota_update, "task_ota_update", configMINIMAL_STACK_SIZE * 35, NULL, tskIDLE_PRIORITY + 1, NULL);
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Prepare update process | File: " + fileNameUpdate);
+    xTaskCreate(&taskOtaUpdate, "taskOTAUpdate", configMINIMAL_STACK_SIZE * 35, NULL, tskIDLE_PRIORITY + 1, NULL);
 
-    while (1) { // wait until reboot within task_do_update
+    while (1) { // wait until reboot is performed
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
@@ -260,14 +259,14 @@ void checkOTAUpdate()
 
 //****************************************************************************
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-static void print_sha256(const uint8_t *image_hash, const char *label)
+static void printSha256(const uint8_t *imageHash, const char *label)
 {
-    char hash_print[HASH_LEN * 2 + 1];
-    hash_print[HASH_LEN * 2] = 0;
+    char hashPrint[HASH_LEN * 2 + 1];
+    hashPrint[HASH_LEN * 2] = 0;
     for (int i = 0; i < HASH_LEN; ++i) {
-        sprintf(&hash_print[i * 2], "%02x", image_hash[i]);
+        sprintf(&hashPrint[i * 2], "%02x", imageHash[i]);
     }
-    ESP_LOGI(TAG, "%s: %s", label, hash_print);
+    ESP_LOGI(TAG, "%s: %s", label, hashPrint);
 }
 
 
@@ -283,31 +282,31 @@ void checkOTAPartitionState(void)
 {
     ESP_LOGI(TAG, "Check OTA partition state");
 
-    uint8_t sha_256[HASH_LEN] = {0};
+    uint8_t sha256[HASH_LEN] = {0};
     esp_partition_t partition;
 
     // get sha256 digest for the partition table
     partition.address = ESP_PARTITION_TABLE_OFFSET;
     partition.size = ESP_PARTITION_TABLE_MAX_LEN;
     partition.type = ESP_PARTITION_TYPE_DATA;
-    esp_partition_get_sha256(&partition, sha_256);
-    print_sha256(sha_256, "SHA-256 for the partition table");
+    esp_partition_get_sha256(&partition, sha256);
+    printSha256(sha256, "SHA-256 for the partition table");
 
     // get sha256 digest for bootloader
     partition.address = ESP_BOOTLOADER_OFFSET;
     partition.size = ESP_PARTITION_TABLE_OFFSET;
     partition.type = ESP_PARTITION_TYPE_APP;
-    esp_partition_get_sha256(&partition, sha_256);
-    print_sha256(sha_256, "SHA-256 for bootloader");
+    esp_partition_get_sha256(&partition, sha256);
+    printSha256(sha256, "SHA-256 for bootloader");
 
     // get sha256 digest for running partition
-    esp_partition_get_sha256(esp_ota_get_running_partition(), sha_256);
-    print_sha256(sha_256, "SHA-256 for current firmware");
+    esp_partition_get_sha256(esp_ota_get_running_partition(), sha256);
+    printSha256(sha256, "SHA-256 for current firmware");
 
     const esp_partition_t *running = esp_ota_get_running_partition();
-    esp_ota_img_states_t ota_state;
-    if (esp_ota_get_state_partition(running, &ota_state) == ESP_OK) {
-        if (ota_state == ESP_OTA_IMG_PENDING_VERIFY) {
+    esp_ota_img_states_t otaState;
+    if (esp_ota_get_state_partition(running, &otaState) == ESP_OK) {
+        if (otaState == ESP_OTA_IMG_PENDING_VERIFY) {
             // run diagnostic function
             if (diagnostic()) {
                 ESP_LOGI(TAG, "Diagnostics completed successfully! Continuing execution");
@@ -352,7 +351,6 @@ esp_err_t handler_ota_update(httpd_req_t *req)
         httpd_resp_sendstr(req, "Directory /sdcard/firmware deleted");
         return ESP_OK;
     }
-
     else if (task.compare("update") == 0) {
         std::string filetype = toUpper(getFileType(fn));
         if ((filetype == "TFLITE") || (filetype == "TFL")) {
@@ -380,22 +378,6 @@ esp_err_t handler_ota_update(httpd_req_t *req)
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, zw);
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, zw.c_str());
         return ESP_FAIL;
-    }
-
-    else if (task.compare("unziphtml") == 0) {
-        // ESP_LOGD(TAG, "Task unziphtml");
-        std::string in, out, zw;
-
-        in = "/sdcard/firmware/html.zip";
-        out = "/sdcard/html";
-
-        deleteAllFilesInDirectory(out);
-
-        unzip(in, out + "/");
-
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Web interface: Update completed");
-        httpd_resp_sendstr(req, "Web interface: Update completed. No reboot required");
-        return ESP_OK;
     }
 
     if (deleteFileRequest) {
@@ -458,13 +440,14 @@ std::string unzipOTA(std::string inputZipFile, std::string rootFolder)
             std::string archiveFilenameTemp = archiveFilename;
             ESP_LOGD(TAG, "archive filename: %s", archiveFilenameTemp.c_str());
 
-            if (toUpper(archiveFilenameTemp) == "FIRMWARE.BIN") {
+            const std::string archiveFilenameUpper = toUpper(archiveFilenameTemp);
+            if (archiveFilenameUpper == "FIRMWARE.BIN") {
                 // Redirect firmware.bin to /sdcard/firmware/
                 archiveFilenameTemp = rootFolder + "firmware/" + archiveFilenameTemp;
                 retVal = archiveFilenameTemp; // Return file for further processing
             }
-            else if (toUpper(archiveFilenameTemp) == "BOOTLOADER.BIN" || toUpper(archiveFilenameTemp) == "PARTITIONS.BIN" ||
-                     toUpper(archiveFilenameTemp) == "README.MD" || toUpper(archiveFilenameTemp) == "META.JSON") {
+            else if (archiveFilenameUpper == "BOOTLOADER.BIN" || archiveFilenameUpper == "PARTITIONS.BIN" ||
+                     archiveFilenameUpper == "README.MD" || archiveFilenameUpper == "META.JSON") {
                 // Skip not required binary files, readme.md from OTA package and meta.json from backup file
                 continue;
             }
@@ -531,60 +514,6 @@ std::string unzipOTA(std::string inputZipFile, std::string rootFolder)
 }
 
 
-void unzip(std::string inputZipFile, std::string targetDirectory)
-{
-    mz_zip_archive zipArchive;
-
-    // Open archive
-    memset(&zipArchive, 0, sizeof(zipArchive));
-    if (!mz_zip_reader_init_file(&zipArchive, inputZipFile.c_str(), 0)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: mz_zip_reader_init_file() failed");
-        return;
-    }
-
-    // Get and print information about each file in the archive.
-    int numberoffiles = (int)mz_zip_reader_get_num_files(&zipArchive);
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Files to be extracted: " + std::to_string(numberoffiles));
-
-    for (int i = 0; i < numberoffiles; i++) {
-        mz_zip_archive_file_stat fileStat;
-        if (!mz_zip_reader_file_stat(&zipArchive, i, &fileStat)) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to get file stat for file index: " + std::to_string(i));
-            continue;
-        }
-
-        std::string archiveFilename(fileStat.m_filename);
-
-        // Extract file to heap
-        size_t uncompSize = 0;
-        void *p = mz_zip_reader_extract_file_to_heap(&zipArchive, archiveFilename.c_str(), &uncompSize, 0);
-        if (!p) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_extract_file_to_heap() failed");
-            mz_zip_reader_end(&zipArchive);
-            return;
-        }
-
-        // Save to file
-        std::string archiveFilenameTemp = targetDirectory + archiveFilename;
-        ESP_LOGI(TAG, "Unzip file: %s", archiveFilenameTemp.c_str());
-        FILE *fpTargetFile = fopen(archiveFilenameTemp.c_str(), "wb");
-        if (!fpTargetFile) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to open file for writing: " + archiveFilenameTemp);
-            mz_free(p);
-            continue;
-        }
-        fwrite(p, 1, uncompSize, fpTargetFile);
-        fclose(fpTargetFile);
-
-        ESP_LOGI(TAG, "Successfully extracted file \"%s\", size %u", archiveFilename.c_str(), (uint)uncompSize);
-        mz_free(p);
-    }
-
-    // Close the archive, freeing any resources it was using
-    mz_zip_reader_end(&zipArchive);
-}
-
-
 void forceReboot()
 {
     esp_task_wdt_config_t twdt_config = {
@@ -600,7 +529,7 @@ void forceReboot()
 }
 
 
-void task_reboot(void *DeleteMainFlow)
+void taskReboot(void *DeleteMainFlow)
 {
     // Write a reboot, to identify a reboot by purpose
     FILE *pfile = fopen("/sdcard/reboot.txt", "w");
@@ -647,10 +576,10 @@ void doReboot()
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Reboot triggered by software");
     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot in 5 seconds");
 
-    BaseType_t xReturned = xTaskCreate(&task_reboot, "task_reboot", configMINIMAL_STACK_SIZE * 4, (void *)true, 10, NULL);
+    BaseType_t xReturned = xTaskCreate(&taskReboot, "taskReboot", configMINIMAL_STACK_SIZE * 4, (void *)true, 10, NULL);
     if (xReturned != pdPASS) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "task_reboot not created -> force reboot without killing flow");
-        task_reboot((void *)false);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "taskReboot not created -> force reboot without killing flow");
+        taskReboot((void *)false);
     }
 }
 
