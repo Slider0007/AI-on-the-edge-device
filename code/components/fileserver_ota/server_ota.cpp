@@ -418,103 +418,107 @@ esp_err_t handler_ota_update(httpd_req_t *req)
 }
 
 
-std::string unzipOTA(std::string _in_zip_file, std::string _root_folder)
+std::string unzipOTA(std::string inputZipFile, std::string rootFolder)
 {
-    mz_bool status;
-    size_t uncomp_size;
-    mz_zip_archive zip_archive;
-    void *p;
-    char archive_filename[256];
-    std::string zw = "";
-    std::string retVal = ""; // return string "ERROR" -> FAILURE | return string != "ERROR" -> firmware filename
+    mz_zip_archive zipArchive;
+    std::string retVal; // return string "ERROR" -> FAILURE | return string != "ERROR" -> firmware filename
 
-    ESP_LOGD(TAG, "miniz.c version: %s", MZ_VERSION);
-    ESP_LOGD(TAG, "Zipfile: %s", _in_zip_file.c_str());
-
-    // Now try to open the archive.
-    memset(&zip_archive, 0, sizeof(zip_archive));
-    status = mz_zip_reader_init_file(&zip_archive, _in_zip_file.c_str(), 0);
+    // Open archive
+    memset(&zipArchive, 0, sizeof(zipArchive));
+    mz_bool status = mz_zip_reader_init_file(&zipArchive, inputZipFile.c_str(), 0);
     if (!status) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: mz_zip_reader_init_file() failed");
         return "ERROR";
     }
 
     // Get and print information about each file in the archive.
-    int numberoffiles = (int)mz_zip_reader_get_num_files(&zip_archive);
+    int numberoffiles = (int)mz_zip_reader_get_num_files(&zipArchive);
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Files to be extracted: " + std::to_string(numberoffiles));
 
     for (int i = 0; i < numberoffiles; i++) {
-        mz_zip_archive_file_stat file_stat;
-        mz_zip_reader_file_stat(&zip_archive, i, &file_stat);
-        snprintf(archive_filename, sizeof(archive_filename), "%s", file_stat.m_filename);
+        mz_zip_archive_file_stat fileStat;
+        if (!mz_zip_reader_file_stat(&zipArchive, i, &fileStat)) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to get file stat for file index: " + std::to_string(i));
+            continue;
+        }
 
-        if (!file_stat.m_is_directory) {
+        std::string archiveFilename(fileStat.m_filename);
+
+        if (!fileStat.m_is_directory) {
             // Extract file to heap
             // IMPORTANT NOTE -> miniz v3.x crashes here with ESP32S3, more details --> miniz changelog
-            p = mz_zip_reader_extract_file_to_heap(&zip_archive, archive_filename, &uncomp_size, 0);
+            size_t uncompSize = 0;
+            void *p = mz_zip_reader_extract_file_to_heap(&zipArchive, archiveFilename.c_str(), &uncompSize, 0);
             if (!p) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "unzipOTA: mz_zip_reader_extract_file_to_heap() failed | file: " + std::string(archive_filename));
-                mz_zip_reader_end(&zip_archive);
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: mz_zip_reader_extract_file_to_heap() failed | file: " + archiveFilename);
+                mz_zip_reader_end(&zipArchive);
                 return "ERROR";
             }
 
             // Save content to file
-            zw = std::string(archive_filename);
-            ESP_LOGD(TAG, "archive filename: %s", zw.c_str());
+            std::string archiveFilenameTemp = archiveFilename;
+            ESP_LOGD(TAG, "archive filename: %s", archiveFilenameTemp.c_str());
 
-            if (toUpper(zw) == "FIRMWARE.BIN") {
+            if (toUpper(archiveFilenameTemp) == "FIRMWARE.BIN") {
                 // Redirect firmware.bin to /sdcard/firmware/
-                zw = _root_folder + "firmware/" + zw;
-                retVal = zw; // Return file for further processing
+                archiveFilenameTemp = rootFolder + "firmware/" + archiveFilenameTemp;
+                retVal = archiveFilenameTemp; // Return file for further processing
             }
-            else if (toUpper(zw) == "BOOTLOADER.BIN" || toUpper(zw) == "PARTITIONS.BIN" || toUpper(zw) == "README.MD" ||
-                     toUpper(zw) == "META.JSON") {
+            else if (toUpper(archiveFilenameTemp) == "BOOTLOADER.BIN" || toUpper(archiveFilenameTemp) == "PARTITIONS.BIN" ||
+                     toUpper(archiveFilenameTemp) == "README.MD" || toUpper(archiveFilenameTemp) == "META.JSON") {
                 // Skip not required binary files, readme.md from OTA package and meta.json from backup file
                 continue;
             }
             else {
                 // Other files use path structure of zip file
-                zw = _root_folder + zw;
+                archiveFilenameTemp = rootFolder + archiveFilenameTemp;
             }
 
-            ESP_LOGI(TAG, "Unzip file: %s", zw.c_str());
+            ESP_LOGI(TAG, "Unzip file: %s", archiveFilenameTemp.c_str());
 
             // Add suffix to ensure not directly overwriting original file
-            std::string filename_zw = zw + "_0xge";
+            constexpr const char *TEMP_SUFFIX = "_0xge";
+            std::string archiveFilenameTempSuffix = archiveFilenameTemp + TEMP_SUFFIX;
 
             // Create directory if not yet existing
-            makeDir(getDirectory(zw));
+            makeDir(getDirectory(archiveFilenameTemp));
 
             // Ensure that temp file is surly deleted before writing data
-            deleteFile(filename_zw);
+            deleteFile(archiveFilenameTempSuffix);
 
-            FILE *fpTargetFile = fopen(filename_zw.c_str(), "wb");
-            uint writtenbytes = fwrite(p, 1, (uint)uncomp_size, fpTargetFile);
+            FILE *fpTargetFile = fopen(archiveFilenameTempSuffix.c_str(), "wb");
+            if (!fpTargetFile) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to open file for writing: " + archiveFilenameTempSuffix);
+                mz_free(p);
+                retVal = "ERROR";
+                break;
+            }
+            size_t writtenbytes = fwrite(p, 1, uncompSize, fpTargetFile);
             fclose(fpTargetFile);
             mz_free(p);
 
             bool isokay = true;
 
-            if (writtenbytes != (uint)uncomp_size) {
+            if (writtenbytes != uncompSize) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "unzipOTA: Failed to write file (written size differ from extracted size). File: " +
-                                        std::string(archive_filename) + " | Extracted size: " + std::to_string(uncomp_size));
+                                    "unzipOTA: Failed to write file (written size differ from extracted size). File: " + archiveFilename +
+                                        " | Extracted size: " + std::to_string(uncompSize));
                 isokay = false;
             }
             else {
-                deleteFile(zw); // Make sure, file is not existing. Note: It is possible that no file exists
-                if (!renameFile(filename_zw, zw)) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: Failed to rename file: " + filename_zw + " -> " + zw);
+                deleteFile(archiveFilenameTemp); // Make sure, file is not existing. Note: It is possible that no file exists
+                if (!renameFile(archiveFilenameTempSuffix, archiveFilenameTemp)) {
+                    LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                        "unzipOTA: Failed to rename file: " + archiveFilenameTempSuffix + " -> " + archiveFilenameTemp);
                     isokay = false;
                 }
             }
 
             if (isokay) {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "unzipOTA: File successful: " + std::string(archive_filename));
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "unzipOTA: File successful: " + archiveFilename);
             }
             else {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: File failed: " + std::string(archive_filename));
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: File failed: " + archiveFilename);
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: Please repeat update to ensure proper functionality");
                 retVal = "ERROR";
                 break;
@@ -522,74 +526,64 @@ std::string unzipOTA(std::string _in_zip_file, std::string _root_folder)
         }
     }
     // Close the archive, freeing any resources it was using
-    mz_zip_reader_end(&zip_archive);
+    mz_zip_reader_end(&zipArchive);
 
     return retVal;
 }
 
 
-void unzip(std::string _in_zip_file, std::string _target_directory)
+void unzip(std::string inputZipFile, std::string targetDirectory)
 {
-    int sort_iter;
-    mz_bool status;
-    size_t uncomp_size;
-    mz_zip_archive zip_archive;
-    void *p;
-    char archive_filename[256];
-    std::string zw;
+    mz_zip_archive zipArchive;
 
-    ESP_LOGD(TAG, "miniz.c version: %s", MZ_VERSION);
-    ESP_LOGD(TAG, "Zipfile: %s", _in_zip_file.c_str());
-    ESP_LOGD(TAG, "Target Dir: %s", _target_directory.c_str());
-
-    // Now try to open the archive.
-    memset(&zip_archive, 0, sizeof(zip_archive));
-    status = mz_zip_reader_init_file(&zip_archive, _in_zip_file.c_str(), 0);
+    // Open archive
+    memset(&zipArchive, 0, sizeof(zipArchive));
+    status = mz_zip_reader_init_file(&zipArchive, inputZipFile.c_str(), 0);
     if (!status) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_init_file() failed");
-        return;
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: mz_zip_reader_init_file() failed");
+        return "ERROR";
     }
 
     // Get and print information about each file in the archive.
-    int numberoffiles = (int)mz_zip_reader_get_num_files(&zip_archive);
-    for (sort_iter = 0; sort_iter < 2; sort_iter++) {
-        memset(&zip_archive, 0, sizeof(zip_archive));
-        status = mz_zip_reader_init_file(&zip_archive, _in_zip_file.c_str(), sort_iter ? MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY : 0);
-        if (!status) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_init_file() failed");
+    int numberoffiles = (int)mz_zip_reader_get_num_files(&zipArchive);
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Files to be extracted: " + std::to_string(numberoffiles));
+
+    for (int i = 0; i < numberoffiles; i++) {
+        mz_zip_archive_file_stat fileStat;
+        if (!mz_zip_reader_file_stat(&zipArchive, i, &fileStat)) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to get file stat for file index: " + std::to_string(i));
+            continue;
+        }
+
+        std::string archiveFilename(fileStat.m_filename);
+
+        // Extract file to heap
+        size_t uncompSize = 0;
+        void *p = mz_zip_reader_extract_file_to_heap(&zipArchive, archiveFilename.c_str(), &uncompSize, 0);
+        if (!p) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_extract_file_to_heap() failed");
+            mz_zip_reader_end(&zipArchive);
             return;
         }
 
-        for (int i = 0; i < numberoffiles; i++) {
-            mz_zip_archive_file_stat file_stat;
-            mz_zip_reader_file_stat(&zip_archive, i, &file_stat);
-            snprintf(archive_filename, sizeof(archive_filename), "%s", file_stat.m_filename);
-
-            // Try to extract all the files to the heap.
-            p = mz_zip_reader_extract_file_to_heap(&zip_archive, archive_filename, &uncomp_size, 0);
-            if (!p) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "mz_zip_reader_extract_file_to_heap() failed");
-                mz_zip_reader_end(&zip_archive);
-                return;
-            }
-
-            // Save to File.
-            zw = std::string(archive_filename);
-            zw = _target_directory + zw;
-            ESP_LOGD(TAG, "Unzip file: %s", zw.c_str());
-            FILE *fpTargetFile = fopen(zw.c_str(), "wb");
-            fwrite(p, 1, (uint)uncomp_size, fpTargetFile);
-            fclose(fpTargetFile);
-
-            ESP_LOGD(TAG, "Successfully extracted file \"%s\", size %u", archive_filename, (uint)uncomp_size);
+        // Save to file
+        std::string archiveFilenameTemp = targetDirectory + archiveFilename;
+        ESP_LOGI(TAG, "Unzip file: %s", archiveFilenameTemp.c_str());
+        FILE *fpTargetFile = fopen(archiveFilenameTemp.c_str(), "wb");
+        if (!fpTargetFile) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to open file for writing: " + archiveFilenameTemp);
             mz_free(p);
+            continue;
         }
+        fwrite(p, 1, uncompSize, fpTargetFile);
+        fclose(fpTargetFile);
 
-        // Close the archive, freeing any resources it was using
-        mz_zip_reader_end(&zip_archive);
+        ESP_LOGI(TAG, "Successfully extracted file \"%s\", size %u", archiveFilename.c_str(), (uint)uncompSize);
+        mz_free(p);
     }
 
-    ESP_LOGD(TAG, "Success");
+    // Close the archive, freeing any resources it was using
+    mz_zip_reader_end(&zipArchive);
 }
 
 
