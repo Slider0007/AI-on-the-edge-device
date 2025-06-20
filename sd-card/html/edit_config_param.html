@@ -943,6 +943,24 @@
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_digit_debug_roiimagesretention</td>
 		</tr>
+
+		<tr class="classvisibility_digit_enabled classvisibility_digit_debug_saveroiimages expert">
+			<td class="indent2">
+				<span>ROI Images Saving Size</span>
+			</td>
+			<td>
+				<form id="digit_debug_roisavingsize_form">
+					<select name="digit.debug.roisavingsize" id="digit_debug_roisavingsize_value"
+							onchange='setClassVisibility("classvisibility_digit_debug_roisavingsize", this.value);
+								gatherChangedParameter(this.form, true)'>
+						<option value="0" selected>Full</option>
+						<option value="1">Resized</option>
+						<option value="2">Full + Resized</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_digit_debug_roisavingsize</td>
+		</tr>
 	</table>
 
 
@@ -1035,6 +1053,24 @@
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_analog_debug_roiimagesretention</td>
+		</tr>
+
+		<tr class="classvisibility_analog_enabled classvisibility_analog_debug_saveroiimages expert">
+			<td class="indent2">
+				<span>ROI Images Saving Size</span>
+			</td>
+			<td>
+				<form id="analog_debug_roisavingsize_form">
+					<select name="analog.debug.roisavingsize" id="analog_debug_roisavingsize_value"
+							onchange='setClassVisibility("classvisibility_analog_debug_roisavingsize", this.value);
+								gatherChangedParameter(this.form, true)'>
+						<option value="0" selected>Full</option>
+						<option value="1">Resized</option>
+						<option value="2">Full + Resized</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_analog_debug_roisavingsize</td>
 		</tr>
 	</table>
 
