@@ -425,8 +425,7 @@ std::string unzipOTA(std::string inputZipFile, std::string rootFolder)
 
     // Open archive
     memset(&zipArchive, 0, sizeof(zipArchive));
-    mz_bool status = mz_zip_reader_init_file(&zipArchive, inputZipFile.c_str(), 0);
-    if (!status) {
+    if (!mz_zip_reader_init_file(&zipArchive, inputZipFile.c_str(), 0)) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: mz_zip_reader_init_file() failed");
         return "ERROR";
     }
@@ -538,8 +537,7 @@ void unzip(std::string inputZipFile, std::string targetDirectory)
 
     // Open archive
     memset(&zipArchive, 0, sizeof(zipArchive));
-    status = mz_zip_reader_init_file(&zipArchive, inputZipFile.c_str(), 0);
-    if (!status) {
+    if (!mz_zip_reader_init_file(&zipArchive, inputZipFile.c_str(), 0)) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: mz_zip_reader_init_file() failed");
         return "ERROR";
     }
