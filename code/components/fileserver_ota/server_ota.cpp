@@ -539,7 +539,7 @@ void unzip(std::string inputZipFile, std::string targetDirectory)
     memset(&zipArchive, 0, sizeof(zipArchive));
     if (!mz_zip_reader_init_file(&zipArchive, inputZipFile.c_str(), 0)) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOTA: mz_zip_reader_init_file() failed");
-        return "ERROR";
+        return;
     }
 
     // Get and print information about each file in the archive.
