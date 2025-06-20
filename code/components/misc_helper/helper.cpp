@@ -595,9 +595,10 @@ std::string intToHexString(int _valueInt)
 // **********************************************************
 time_t addDays(time_t startTime, int days)
 {
-    struct tm *tm = localtime(&startTime);
-    tm->tm_mday += days;
-    return mktime(tm);
+    struct tm tm;
+    localtime_r(&startTime, &tm);
+    tm.tm_mday += days;
+    return mktime(&tm);
 }
 
 

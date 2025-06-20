@@ -513,7 +513,6 @@ void ClassFlowPostProcessing::setDecimalShift()
 
 std::string ClassFlowPostProcessing::shiftDecimal(std::string _value, int _decShift)
 {
-
     if (_decShift == 0) {
         return _value;
     }

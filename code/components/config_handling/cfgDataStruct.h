@@ -244,7 +244,6 @@ struct CfgData {
             std::string rawImagesLocation = "/log/source";
             int rawImagesRetention = 3;
             bool saveAllFiles = false;
-
         } debug;
     } sectionTakeImage;
 
