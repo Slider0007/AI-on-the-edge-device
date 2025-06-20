@@ -446,7 +446,7 @@ std::string unzipOTA(std::string _in_zip_file, std::string _root_folder)
     for (int i = 0; i < numberoffiles; i++) {
         mz_zip_archive_file_stat file_stat;
         mz_zip_reader_file_stat(&zip_archive, i, &file_stat);
-        sprintf(archive_filename, file_stat.m_filename);
+        snprintf(archive_filename, sizeof(archive_filename), "%s", file_stat.m_filename);
 
         if (!file_stat.m_is_directory) {
             // Extract file to heap
@@ -535,7 +535,7 @@ void unzip(std::string _in_zip_file, std::string _target_directory)
     size_t uncomp_size;
     mz_zip_archive zip_archive;
     void *p;
-    char archive_filename[64];
+    char archive_filename[256];
     std::string zw;
 
     ESP_LOGD(TAG, "miniz.c version: %s", MZ_VERSION);
@@ -563,7 +563,7 @@ void unzip(std::string _in_zip_file, std::string _target_directory)
         for (int i = 0; i < numberoffiles; i++) {
             mz_zip_archive_file_stat file_stat;
             mz_zip_reader_file_stat(&zip_archive, i, &file_stat);
-            sprintf(archive_filename, file_stat.m_filename);
+            snprintf(archive_filename, sizeof(archive_filename), "%s", file_stat.m_filename);
 
             // Try to extract all the files to the heap.
             p = mz_zip_reader_extract_file_to_heap(&zip_archive, archive_filename, &uncomp_size, 0);
