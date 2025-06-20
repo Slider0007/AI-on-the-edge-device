@@ -15,7 +15,7 @@ Payload:
       - Delete all content in `/firmware`
       - No additional parameter necessary
     - `update`
-      - Perform an update
+      - Perform an OTA update / Upload any content to sd card
       - Mandatory parameter: `file` 
 - `file` Filename with extension but without path
   - Supported file extensions:
