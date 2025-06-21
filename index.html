@@ -42,17 +42,24 @@
         </tr>
     </table>
 
-    <p>This page provides a web installer and a serial console.</p>
-
     <p>
+        This page provides a web installer and serial console for <strong>AI-on-the-Edge Device [SLFork]</strong> - a smart and efficient
+        edge-AI application for meter digitization, designed for <strong>ESP32</strong> and <strong>ESP32-S3</strong> hardware.
+        Additional documentation is available in the GitHub repository.
+    </p>
+    <p>
+        GitHub Repository: <a href="https://github.com/slider0007/AI-on-the-edge-device" target="_blank">github.com/slider0007/AI-on-the-edge-device</a><br>
         Firmware: <b>v17.1.0-SLFork</b>
     </p>
+
+    <hr>
 
     <p style="margin-bottom:6px;"><b>HowTo</b></p>
     <ol>
         <li><b>Preconditions:</b>
             <ul>
-                <li>A supported device with an empty, FAT-formatted SD card inserted into the SD card slot.</li>
+                <li>A <a href="https://github.com/Slider0007/AI-on-the-edge-device?tab=readme-ov-file#supported-hardware" target="_blank"
+                    rel="noopener noreferrer">supported hardware</a> with an empty, FAT-formatted SD card inserted into the SD card slot.</li>
                 <li>Download the matching firmware ZIP file for your device and the version listed above from the
                     <a href="https://github.com/Slider0007/AI-on-the-edge-device/releases" target="_blank" rel="noopener noreferrer">GitHub release page</a>.
                 </li>
@@ -75,13 +82,13 @@
     <p style="margin-bottom:6px;"><b>Device Selection</b></p>
     <select class="form-control" style="max-width: 400px;" name="type">
         <option value="" disabled selected>Select your device</option>
-        <optgroup label="ESP32">
+        <optgroup label="ESP32 Series">
         <option value="esp32cam">ESP32CAM</option>
         </optgroup>
-        <optgroup label="ESP32-S3">
+        <optgroup label="ESP32-S3 Series">
+        <option value="freenove-esp32s3-n8r8">Freenove ESP32S3 WROOM N8R8 (Original)</option>
+        <option value="freenove-esp32s3-n16r8">Freenove ESP32S3 WROOM N16R8 (Clones)</option>
         <option value="xiao-esp32s3-sense">XIAO ESP32S3 Sense</option>
-        <option value="freenove-esp32s3-n8r8">Freenove (Original) ESP32S3 WROOM N8R8</option>
-        <option value="freenove-esp32s3-n16r8">Freenove (Clone) ESP32S3 WROOM N16R8</option>
         </optgroup>
     </select>
     <p class="button-row">
