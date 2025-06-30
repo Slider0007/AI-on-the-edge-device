@@ -10,8 +10,8 @@ you can turn any standard meter into a smart, connected device.
 
 ## Key Features
 - **Compact & Cost-Effective** – Designed for small, affordable, AI-capable hardware
-- **On-Device AI** – Integrated TensorFlow Lite (TFLite) enables efficient edge intelligence without external dependencies
-- **Local Image Processing** – Fully processes and evaluates images on-device, with no need for cloud services
+- **Local Image Processing** – Fully processes and evaluates images on-device without external dependencies
+- **On-Device AI** – TensorFlow enables efficient edge intelligence without external dependencies
 - **Web-Based Interface** – Browser UI for monitoring, configuration and control
 - **OTA Update** – Seamless over-the-air firmware updates via the web interface
 
@@ -39,9 +39,8 @@ Further refinements are documented in the [changelog](CHANGELOG.md) (v16.0.0-SLF
 - **[Prometheus/OpenMetrics Exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)** – Export metrics for device monitoring purposes
 
 
-Browse the links to explore the API documentation in this GitHub repository or through the device’s 
-web interface: `System > Documentation`<br>
-ℹ️ Please review the API documentation carefully. Note that the APIs are not fully compatible with jomjol’s original firmware.
+Explore API docs via links above or device web interface: `System > Documentation`<br>
+ℹ️ Note: APIs aren’t fully compatible with jomjol’s firmware.
 
 
 ## Workflow
@@ -93,7 +92,7 @@ for any fork specific documentation.
 
 There are several convenient options to install the firmware and prepare the SD card content.
 
-### Download Firmware Builds
+### Download Firmware
 - **Releases** - Official firmware releases are available on the **[GitHub Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases)**<br>
 - **Development Builds** - You can also test the latest development build / upcoming release via pull request labeled
 [autorelease: pending](https://github.com/Slider0007/AI-on-the-edge-device/pulls?q=is%3Aopen+is%3Apr+label%3A%22autorelease%3A+pending%22). 
@@ -109,7 +108,7 @@ Once the initial installation is complete, it is **strongly recommended** to per
 web interface**: `System > OTA Update`. This method ensures seamless upgrades with minimal risk.
 
 ---
-### Option 1: Web Installer (Only For Released Versions)
+### Option 1: Web Installer (Only For Releases)
 
 For the easiest and most user-friendly setup, use the **[Web Installer](https://slider0007.github.io/AI-on-the-edge-device/)**.<br>
 Follow the step-by-step instructions on the Web Installer page. For more details, see the 
@@ -129,8 +128,14 @@ and compilation. If you don’t need to customize the firmware, it’s easier to
 [Releases page](https://github.com/slider0007/AI-on-the-edge-device/releases).
 
 
-## Support
-ℹ️ This is a forked version of [jomjol´s project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use. While community 
-discussions, feedback and bug reports are welcome, please note that this fork is maintained independently and is **no longer compatible** with 
-the upstream project. I keep my fork openly accessible to give something back to the community, even though I’m no longer actively working on the 
-upstream project.
+## Support / Community
+ℹ️ This is a fork of [jomjol’s original project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use.
+
+- This fork is **actively developed** and maintained independently
+- It is **no longer compatible** with the upstream project
+- It remains public to give something back to the community and help others with similar use cases
+- Feel free to use and adapt the code — just be fair and **credit the original source** where appropriate
+- Community discussions, feedback, and bug reports are always welcome and appreciated
+
+Although no longer working on the upstream project, this version aims to provide a flexible and robust alternative.  
+Thanks for your interest and support!
