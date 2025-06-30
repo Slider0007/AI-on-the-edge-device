@@ -135,7 +135,7 @@ and compilation. If you don’t need to customize the firmware, it’s easier to
 - It is **no longer compatible** with the upstream project
 - It remains public to give something back to the community and help others with similar use cases
 - This project builds on [jomjol’s original repository](https://github.com/jomjol/AI-on-the-edge-device) —  make sure to **respect the upstream license**
-- Customized parts of this code can be used for **non-commercial purposes only** - be fair and **credit the original source**
+- Customized code can be used for **non-commercial purposes only** - be fair and **credit the original source**
 - Community discussions, feedback, and bug reports are always welcome and appreciated
 
 Although no longer working on the upstream project, this version aims to provide a flexible and robust alternative.  
