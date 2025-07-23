@@ -47,7 +47,7 @@ jobs:
         unzip ./artifacts/AI-on-the-edge-device__${{ matrix.plat }}__SLFork_*.zip -d ./artifacts/
 
         mkdir -p ./firmware/${{ matrix.plat }}
-        cp -f ./artifacts/firmware.bin ./firmware/${{ matrix.plat }}/bootloader.bin
+        cp -f ./artifacts/bootloader.bin ./firmware/${{ matrix.plat }}/bootloader.bin
         cp -f ./artifacts/partitions.bin ./firmware/${{ matrix.plat }}/partitions.bin
         cp -f ./artifacts/firmware.bin ./firmware/${{ matrix.plat }}/firmware.bin
 
