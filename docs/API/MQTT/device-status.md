@@ -28,4 +28,4 @@ Topic / [Topic].[JSON Property] | Description               | Output
 | `sd_partition_free`         | SD Card: Free Partition Space | `29016`
 | `ntp_sync_status`           | NTP Sync Status<br><br>Possible States:<br>- `Synchronized`<br>- `Not Synchronized`<br>- `Disabled` | `Synchronized`
 
-*For wireless connected devices only
+*Only available if the device is connected via the Wi-Fi interface

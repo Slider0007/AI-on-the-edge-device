@@ -4,7 +4,7 @@
 
 Provisioning your AI-on-the-Edge device can be done easily through the Web Installer. This method allows you to flash the firmware, configure the device, and upload the necessary SD card content — all from your browser.
 
-👉 Open the [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/) to begin.  
+Open the [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/) to begin
 ![Web Installer Home](../../../images/webinstaller_home.jpg)
 
 ---
@@ -13,10 +13,10 @@ Provisioning your AI-on-the-Edge device can be done easily through the Web Insta
 
 Before starting the provisioning process, make sure the following are ready:
 
-- ✅ A [supported hardware device](../../../README.md#supported-hardware)
-- ✅ A **formatted** (FAT or FAT32) and **empty** SD card inserted into the device
-- ✅ Downloaded the correct firmware ZIP file for your board from the [GitHub Release Page](https://github.com/slider0007/AI-on-the-edge-device/releases)
-- ✅ Chrome or Edge browser (required for USB access via Web Serial API)
+- A [supported hardware device](../../../README.md#supported-hardware)
+- A **formatted** (FAT or FAT32) and **empty** SD card inserted into the device
+- Downloaded the correct firmware ZIP file for your board from the [GitHub Release Page](https://github.com/slider0007/AI-on-the-edge-device/releases)
+- Chrome or Edge browser (required for USB access via Web Serial API)
 
 ---
 

@@ -21,8 +21,8 @@ Follow the instructions in the [Web Installer guide](WebInstaller.md), starting 
 
 2. Open your browser and go to [http://192.168.4.1](http://192.168.4.1), then follow the steps below:
 
-   **2.1.** Provide WLAN credentials:  
-   ![Set WLAN Credentials](../../../images/webinstaller_set_wifi_credentials.jpg)
+   **2.1.** Provide WiFi credentials:  
+   ![Set WiFi Credentials](../../../images/webinstaller_set_wifi_credentials.jpg)
 
    **2.2.** Upload the firmware package  
    *(Download from the GitHub release page, e.g., `AI-on-the-edge-device__{Board Type}__*.zip`)*  

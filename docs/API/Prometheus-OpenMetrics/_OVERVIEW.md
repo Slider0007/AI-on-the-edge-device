@@ -99,7 +99,7 @@ Multiple sequence data is provided separately by label `sequence`.
 | `ai_on_the_edge_device_actual_value{sequence="[sequenceName]"}` | Actual value of [sequenceName] | `146.540`
 | `ai_on_the_edge_device_rate_per_minute{sequence="[sequenceName]"}`| Rate per minute<br>(Delta of actual and last valid processed cycle + normalized to minute) | `0.000`
 
-*For wireless connected devices only
+*Only available if the device is connected via the Wi-Fi interface
 
 
 ### Prometheus Scrape Config
