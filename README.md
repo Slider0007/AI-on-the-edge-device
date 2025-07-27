@@ -17,7 +17,8 @@ you can turn any standard meter into a smart, connected device.
 
 ### ✨ Fork-Specific Enhancements
 - **[Hardware](#supported-hardware)** – Compatible with ESP32 and ESP32-S3 devices
-- **Connectivity** – Operates in WiFi Client or Access Point (Standalone) mode
+- **Device Provisioning** - Streamlined Web Installer for firmware + SD card provisioning and Wi-Fi config
+- **Connectivity** – Operates in WiFi Client, WiFi Access Point (Standalone) or Ethernet mode
 - **Flashlight** – Customizable setup using multiple PWM-driven or smart LEDs or trigger an actuator
 - **Durability** – Minimizes SD card wear by keeping process data (ROIs, models, markers) in RAM
 - **Performance** - Reduced I/O cycles (data kept in RAM) and hardware-optimized routines
@@ -82,13 +83,6 @@ To optimize performance, experiment with different camera clock frequencies whil
 image quality. The ideal setting may vary depending on your specific hardware setup and the Wi-Fi channel in use.
 
 
-## Inform Yourself
-There is growing [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/) which provides you with 
-a lot of information. Head there to get a start, how to set it up and configure it.<br>
-ℹ️ Not every description is 100% suitable for this fork. Therefore please check [docs](/docs/) folder of this repository 
-for any fork specific documentation.
-
-
 ## Firmware Installation
 
 There are several convenient options to install the firmware and prepare the SD card content.
@@ -141,3 +135,8 @@ and compilation. If you don’t need to customize the firmware, it’s easier to
 
 Although no longer working on the upstream project, this version aims to provide a flexible and robust alternative.  
 Thanks for your interest and support!
+
+
+## Further Documentation
+Some generic documentation can be found in [documentation repository](https://jomjol.github.io/AI-on-the-edge-device-docs/) of upstream project.<br>
+⚠️ Not every description is 100% suitable for this fork. Fork-specific documentation is located in [docs](/docs/) folder of this repository.
