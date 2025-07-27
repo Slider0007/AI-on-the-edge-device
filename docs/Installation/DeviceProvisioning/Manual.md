@@ -24,9 +24,9 @@ The SD card must be preloaded with the correct content for the device to functio
 
 ⚠️ **Ensure the SD card is properly formatted** using the FAT or FAT32 file system. macOS-formatted cards may cause issues.
 
-Use the same firmware package `AI-on-the-edge-device__{Board Type}__*.zip` for this step.  
+ℹ️ Use the same firmware package `AI-on-the-edge-device__{Board Type}__*.zip` for this step.  
 
-> ⚠️ **Do not use source files directly from the repository** — not even for preparing the SD card. Only use files 
+⚠️ **Do not use source files directly from the repository** — not even for preparing the SD card. Only use files 
 from official precompiled release packages or GitHub CI compiled test versions. Using unsupported files may result 
 in limited or broken functionality.
 
@@ -49,4 +49,4 @@ in limited or broken functionality.
 
 ##### Option 2: Semi-Automatic SD Card Setup
 
-For semi-automated setup instructions, refer to the [SD Card Provisioning Documentation](SDCardProvisioning.md).
+For semi-automated setup instructions, refer to the [SD Card Provisioning Documentation](SDCardProvisioning.md)

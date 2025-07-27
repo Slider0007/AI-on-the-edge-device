@@ -12,7 +12,6 @@ Follow the instructions in the [Web Installer guide](WebInstaller.md), starting 
 ---
 
 ### Option 2: Via Access Point  
-*(Usable only if no ethernet connection is already established)*
 
 1. Connect to the device’s WLAN access point:  
    **SSID:** `AI-on-the-Edge Device`

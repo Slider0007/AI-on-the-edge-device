@@ -17,7 +17,7 @@ you can turn any standard meter into a smart, connected device.
 
 ### ✨ Fork-Specific Enhancements
 - **[Hardware](#supported-hardware)** – Compatible with ESP32 and ESP32-S3 devices
-- **Device Provisioning** - Streamlined Web Installer for firmware + SD card provisioning and Wi-Fi config
+- **Device Provisioning** - Streamlined web-based installer for firmware + SD card provisioning and Wi-Fi config
 - **Connectivity** – Operates in WiFi Client, WiFi Access Point (Standalone) or Ethernet mode
 - **Flashlight** – Customizable setup using multiple PWM-driven or smart LEDs or trigger an actuator
 - **Durability** – Minimizes SD card wear by keeping process data (ROIs, models, markers) in RAM
@@ -118,19 +118,18 @@ prepare the SD card manually.
 
 
 ## Build Yourself
-Developers and advanced users can build the firmware from source. Follow the [Build / Debug Instructions](code/README.md) for environment setup
-and compilation. If you don’t need to customize the firmware, it’s easier to use the precompiled releases provided on the 
+Developers and advanced users can build the firmware from source. Follow the [build / debug Instructions](code/README.md) for environment setup, firmware compilation and debugging. If you don’t need to customize the firmware, it’s easier to use the precompiled releases provided on the 
 [Releases page](https://github.com/slider0007/AI-on-the-edge-device/releases).
 
 
 ## Support / Community
-ℹ️ This is a fork of [jomjol’s original project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use.
+ℹ️ This is a fork of [jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use.
 
 - This fork is **actively developed** and maintained independently
 - It is **no longer compatible** with the upstream project
 - It remains public to give something back to the community and help others with similar use cases
-- This project builds on [jomjol’s original repository](https://github.com/jomjol/AI-on-the-edge-device) —  make sure to **respect the upstream license**
-- Customized code can be used for **non-commercial purposes only** - be fair and **credit the original source**
+- This fork builds on [jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device) — make sure to **respect the upstream license**
+- Customized code can be used for **non-commercial purposes** - be fair and **credit the original source**
 - Community discussions, feedback, and bug reports are always welcome and appreciated
 
 Although no longer working on the upstream project, this version aims to provide a flexible and robust alternative.  

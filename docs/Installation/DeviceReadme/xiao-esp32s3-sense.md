@@ -15,7 +15,7 @@ There are multiple ways to flash the microcontroller:
 #### Procedure
   1. **Enter bootloader mode**: Keep 'B' button pushed (IO0 pulled to GND) while reseting board
   2. **Flash firmware with flash tool**: The three firmware bin files needs to be flashed with correct flash offset
-
+  
       | Filename          | Offset      | Description      |
       |:------------------|:------------|:-----------------|
       | bootloader.bin    | 0x0         | Bootloader       |
@@ -59,7 +59,7 @@ You can provision your device using a browser-based interface (no manual flashin
 
 ### Firmware Update via OTA (Over-the-Air)
 
-- ⚠️ This feature is available **only after initial setup** and when the WebUI is accessible.
+- ⚠️ This feature is available **only after initial setup** and when the WebUI is accessible
 - ✅ The device (MCU + SD card content) will be updated automatically
 - ✅ Existing configuration will remain untouched
 

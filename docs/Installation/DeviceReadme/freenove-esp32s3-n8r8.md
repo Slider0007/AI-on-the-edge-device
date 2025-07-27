@@ -59,7 +59,7 @@ You can provision your device using a browser-based interface (no manual flashin
 
 ### Firmware Update via OTA (Over-the-Air)
 
-- ⚠️ This feature is available **only after initial setup** and when the WebUI is accessible.
+- ⚠️ This feature is available **only after initial setup** and when the WebUI is accessible
 - ✅ The device (MCU + SD card content) will be updated automatically
 - ✅ Existing configuration will remain untouched
 

@@ -28,9 +28,9 @@ The following infos are available:
 | `current_time`                       | Current Date / Time                                | `2024-02-24T10:56:11+0100`
 | `device_starttime`                   | Device Start / Boot Time                           | `2024-02-24T10:56:11+0100`
 | `device_uptime`                      | Device Uptime [sec]                                | `496`
-| `wlan_status`                        | WLAN Status<br><br>Possible states:<br>- `Connected`<br>- `Disconnected` | `Connected`
+| `connection_status`                  | Connection Status<br><br>Possible states:<br>- `Connected`<br>- `Disconnected` | `Connected`
 | `wlan_ssid`                          | WLAN SSID                                          | `IOTNETWORK`
-| `wlan_rssi`                          | WLAN Signal Strength [dBm]                         | `-58`
+| `wlan_rssi`                          | WLAN Signal Strength [dBm]<br><br>Possible special values:<br>- -127: Not connected<br>- -255: No data | `-58`
 | `mac_address`                        | Device MAC Address                                 | `41:23:D9:01:5E:AA`
 | `network_config`                     | Network Configuration<br><br>Possible states:<br>- `DHCP`<br>- `Static`| `DHCP`
 | `ipv4_address`                       | Device IPv4 Address                                | `192.168.1.4`

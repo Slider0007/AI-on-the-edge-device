@@ -9,7 +9,7 @@ Provisioning your AI-on-the-Edge device can be done easily through the Web Insta
 
 ---
 
-### 🔧 Preconditions
+### Preconditions
 
 Before starting the provisioning process, make sure the following are ready:
 
@@ -20,7 +20,7 @@ Before starting the provisioning process, make sure the following are ready:
 
 ---
 
-### 🧭 Step-by-Step Provisioning Guide
+### Step-by-Step Provisioning Guide
 
 #### **Step 1: Enter Bootloader Mode**
 - Press and **hold the `BOOT` button**
