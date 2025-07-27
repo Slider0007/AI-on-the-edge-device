@@ -55,6 +55,7 @@ class GpioHandler
     bool gpioHandlerIsEnabled() { return gpioHandlerEnabled; };
 
     void gpioFlashlightControl(bool _state, int _intensity);
+    void gpioStatusLedControl(bool _state);
 
     void gpioPinInterrupt(GpioResult *gpioResult);
     void gpioInputStatePolling();
@@ -67,10 +68,9 @@ class GpioHandler
 
 esp_err_t callHandleHttpRequest(httpd_req_t *req);
 
-void createGpioHandler();
-bool gpio_handler_init();
-void gpio_handler_deinit();
-void gpio_handler_destroy();
-GpioHandler *gpio_handler_get();
+bool initGpioHandler();
+void deinitGpioHandler();
+void destroyGpioHandler();
+GpioHandler *getGpioHandle();
 
 #endif // GPIO_CONTROL_H

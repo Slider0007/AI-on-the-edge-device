@@ -6,14 +6,6 @@
 #include <esp_err.h>
 #include <esp_http_server.h>
 
-typedef enum WIFI_CONNECTION_STATUS {
-    WIFI_CONNECTION_NOT_INITIALIZED = 0,
-    WIFI_CONNECTION_INITIALIZED = 1,
-    WIFI_CONNECTION_CONNECTED = 2,
-    WIFI_CONNECTION_DISCONNECTED = 3,
-    WIFI_CONNECTION_SUSPENDED = 4
-} wifi_connection_status_t;
-
 
 esp_err_t initWifi(void);
 esp_err_t initWifiClient(void);
@@ -32,19 +24,19 @@ void wifiRoamByScanning(void);
 
 esp_err_t wifiScan(httpd_req_t *req = NULL, bool checkRoaming = false);
 
-std::string getNetworkOpmode(void);
-std::string getMac(void);
-bool getDhcpStatus(void);
-std::string getIpAddress(void);
-std::string getNetmaskAddress(void);
-std::string getGatewayAddress(void);
-std::string getDnsAddress(void);
+bool getWlanConnectionState(bool improvProvisioning = false);
+bool getWlanDhcpStatus(void);
+std::string getWlanIpAddress(void);
+std::string getWlanNetmaskAddress(void);
+std::string getWlanGatewayAddress(void);
+std::string getWlanDnsAddress(void);
+std::string getWlanMac(void);
+
 std::string getWifiSsid(void);
-std::string getHostname(void);
 int getWifiChannel(void);
 int getWifiRssi(void);
-bool getWifiIsConnected(bool improvProvisioning = false);
-wifi_connection_status_t getWifiConnectionStatus(void);
+
+bool getWlanFallbackActive(void);
 
 void deinitWifi(void);
 

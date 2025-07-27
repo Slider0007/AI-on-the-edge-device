@@ -7,5 +7,6 @@
 
 void startAPForDeviceProvisioning(void);
 void stopAPForDeviceProvisioning(void);
+bool getDeviceProvisioningByApStarted(void);
 
 #endif // SOFTAP_H

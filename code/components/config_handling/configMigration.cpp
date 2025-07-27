@@ -22,6 +22,29 @@ void migrateConfiguration(cJSON *cJsonObject)
     uint16_t migratedVersion = 0;
 
     //*************************************************************************************************
+    // Migrate from version 4 to version 5
+    // Date: July 2025
+    // Description: Move hostname to network root level
+    //*************************************************************************************************
+    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 4) {
+        // Update config version
+        // ---------------------
+        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
+                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
+
+        // Update parameter
+        // ---------------------
+        const cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "hostname");
+        if (cJSON_IsString(objEl)) {
+            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.hostname;
+        }
+    }
+
+    //*************************************************************************************************
     // Migrate from version 3 to version 4
     // Date: November 2024
     // Description: Add camera model OV5460 and enhance zoom functionality
@@ -801,7 +824,7 @@ void migrateConfigIni(void)
                         ConfigClass::getInstance()->cfgTmp()->sectionNetwork.time.timeZone = splitted[1];
                     }
                     else if ((toUpper(splitted[0]) == "HOSTNAME") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.hostname = splitted[1];
+                        ConfigClass::getInstance()->cfgTmp()->sectionNetwork.hostname = splitted[1];
                     }
                     else if ((toUpper(splitted[0]) == "RSSITHRESHOLD") || (toUpper(splitted[0]) == ";RSSITHRESHOLD")) {
                         if (!splitted[0].starts_with(";")) {
@@ -1262,7 +1285,7 @@ void migrateWlanIni()
                 if ((tmp[0] == '"') && (tmp[tmp.length() - 1] == '"')) {
                     tmp = tmp.substr(1, tmp.length() - 2);
                 }
-                ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.hostname = tmp;
+                ConfigClass::getInstance()->cfgTmp()->sectionNetwork.hostname = tmp;
             }
             else if ((splitted.size() > 1) && (toUpper(splitted[0]) == "IP")) {
                 tmp = splitted[1];
@@ -1307,7 +1330,7 @@ void migrateWlanIni()
     if (!ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ipv4.ipAddress.empty() &&
         !ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ipv4.subnetMask.empty() &&
         !ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ipv4.gatewayAddress.empty()) {
-        ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ipv4.networkConfig = NETWORK_WLAN_IP_CONFIG_STATIC;
+        ConfigClass::getInstance()->cfgTmp()->sectionNetwork.wlan.ipv4.networkConfig = NETWORK_IP_CONFIG_STATIC;
     }
 
     deleteFile(CONFIG_WIFI_FILE_BACKUP_LEGACY);

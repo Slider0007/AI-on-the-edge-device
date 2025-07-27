@@ -300,7 +300,8 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     // ***************************
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "operationmode"), "opmode");
     if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionOperationMode.opMode = std::clamp(objEl->valueint, -1, 1);
+        cfgDataTemp.sectionOperationMode.opMode = (objEl->valueint < OPMODE_SETUP || objEl->valueint >= OPMODE_MAX) ? OPMODE_AUTO
+                                                                                                                    : objEl->valueint;
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "operationmode"), "automaticprocessinterval");
@@ -1498,12 +1499,25 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     // Network
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "opmode");
     if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionNetwork.opmode = std::clamp(objEl->valueint, -1, 3);
+#ifdef BOARD_FEATURE_ETHERNET
+        cfgDataTemp.sectionNetwork.opmode = (objEl->valueint < NETWORK_OPMODE_DISABLED || objEl->valueint >= NETWORK_OPMODE_MAX)
+                                                ? NETWORK_OPMODE_ETHERNET_FALLBACK_WLAN
+                                                : objEl->valueint;
+#else
+        cfgDataTemp.sectionNetwork.opmode = (objEl->valueint < NETWORK_OPMODE_DISABLED || objEl->valueint >= NETWORK_OPMODE_MAX)
+                                                ? NETWORK_OPMODE_WLAN_CLIENT
+                                                : objEl->valueint;
+#endif // BOARD_FEATURE_ETHERNET
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "timedoffdelay");
     if (cJSON_IsNumber(objEl)) {
         cfgDataTemp.sectionNetwork.timedOffDelay = std::max(objEl->valueint, 1);
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "hostname");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionNetwork.hostname = objEl->valuestring;
     }
 
     bool ssidEmpty = false;
@@ -1535,11 +1549,6 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         }
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "hostname");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionNetwork.wlan.hostname = objEl->valuestring;
-    }
-
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ipv4"),
                                 "networkconfig");
     if (cJSON_IsNumber(objEl)) {
@@ -1565,11 +1574,11 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     }
 
     // Static IP config selected, but IP config invalid --> Fallback to DHCP
-    if (cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig == NETWORK_WLAN_IP_CONFIG_STATIC) {
+    if (cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig == NETWORK_IP_CONFIG_STATIC) {
         if (!isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.ipAddress.c_str()) ||
             !isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.subnetMask.c_str()) ||
             !isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress.c_str())) {
-            cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = NETWORK_WLAN_IP_CONFIG_DHCP;
+            cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = NETWORK_IP_CONFIG_DHCP;
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Static network config invalid. Use DHCP as fallback");
         }
     }
@@ -1612,6 +1621,48 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
         cfgDataTemp.sectionNetwork.wlanAp.ipv4.ipAddress = objEl->valuestring;
     }
+
+#ifdef BOARD_FEATURE_ETHERNET
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
+                                "networkconfig");
+    if (cJSON_IsNumber(objEl)) {
+        cfgDataTemp.sectionNetwork.ethernet.ipv4.networkConfig = std::clamp(objEl->valueint, 0, 1);
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
+                                "ipaddress");
+    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
+        cfgDataTemp.sectionNetwork.ethernet.ipv4.ipAddress = objEl->valuestring;
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
+                                "subnetmask");
+    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
+        cfgDataTemp.sectionNetwork.ethernet.ipv4.subnetMask = objEl->valuestring;
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
+                                "gatewayaddress");
+    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
+        cfgDataTemp.sectionNetwork.ethernet.ipv4.gatewayAddress = objEl->valuestring;
+    }
+
+    // Static IP config selected, but IP config invalid --> Fallback to DHCP
+    if (cfgDataTemp.sectionNetwork.ethernet.ipv4.networkConfig == NETWORK_IP_CONFIG_STATIC) {
+        if (!isValidIpAddress(cfgDataTemp.sectionNetwork.ethernet.ipv4.ipAddress.c_str()) ||
+            !isValidIpAddress(cfgDataTemp.sectionNetwork.ethernet.ipv4.subnetMask.c_str()) ||
+            !isValidIpAddress(cfgDataTemp.sectionNetwork.ethernet.ipv4.gatewayAddress.c_str())) {
+            cfgDataTemp.sectionNetwork.ethernet.ipv4.networkConfig = NETWORK_IP_CONFIG_DHCP;
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Static network config invalid. Use DHCP as fallback");
+        }
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
+                                "dnsserver");
+    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
+        cfgDataTemp.sectionNetwork.ethernet.ipv4.dnsServer = objEl->valuestring;
+    }
+#endif // BOARD_FEATURE_ETHERNET
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"),
                                 "timesyncenabled");
@@ -2471,7 +2522,8 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 
     // Network
     // ***************************
-    cJSON *network, *networkWlan, *networkIpv4, *networkWlanRoaming, *networkWlanAp, *networkApIpv4, *networkTime, *networkTimeNtp;
+    cJSON *network, *networkWlan, *networkEth, *networkWlanIpv4, *networkWlanRoaming, *networkWlanAp, *networkApIpv4, *networkEthIpv4,
+        *networkTime, *networkTimeNtp;
     if (!cJSON_AddItemToObject(cJsonObject, "network", network = cJSON_CreateObject())) {
         retVal = ESP_FAIL;
     }
@@ -2479,6 +2531,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     }
     if (cJSON_AddNumberToObject(network, "timedoffdelay", cfgDataTemp.sectionNetwork.timedOffDelay) == NULL) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddStringToObject(network, "hostname", cfgDataTemp.sectionNetwork.hostname.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
     if (!cJSON_AddItemToObject(network, "wlan", networkWlan = cJSON_CreateObject())) {
@@ -2490,25 +2545,22 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (cJSON_AddStringToObject(networkWlan, "password", cfgDataTemp.sectionNetwork.wlan.password.empty() ? "" : "******") == NULL) {
         retVal = ESP_FAIL;
     }
-    if (cJSON_AddStringToObject(networkWlan, "hostname", cfgDataTemp.sectionNetwork.wlan.hostname.c_str()) == NULL) {
+    if (!cJSON_AddItemToObject(networkWlan, "ipv4", networkWlanIpv4 = cJSON_CreateObject())) {
         retVal = ESP_FAIL;
     }
-    if (!cJSON_AddItemToObject(networkWlan, "ipv4", networkIpv4 = cJSON_CreateObject())) {
+    if (cJSON_AddNumberToObject(networkWlanIpv4, "networkconfig", cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig) == NULL) {
         retVal = ESP_FAIL;
     }
-    if (cJSON_AddNumberToObject(networkIpv4, "networkconfig", cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig) == NULL) {
+    if (cJSON_AddStringToObject(networkWlanIpv4, "ipaddress", cfgDataTemp.sectionNetwork.wlan.ipv4.ipAddress.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
-    if (cJSON_AddStringToObject(networkIpv4, "ipaddress", cfgDataTemp.sectionNetwork.wlan.ipv4.ipAddress.c_str()) == NULL) {
+    if (cJSON_AddStringToObject(networkWlanIpv4, "subnetmask", cfgDataTemp.sectionNetwork.wlan.ipv4.subnetMask.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
-    if (cJSON_AddStringToObject(networkIpv4, "subnetmask", cfgDataTemp.sectionNetwork.wlan.ipv4.subnetMask.c_str()) == NULL) {
+    if (cJSON_AddStringToObject(networkWlanIpv4, "gatewayaddress", cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
-    if (cJSON_AddStringToObject(networkIpv4, "gatewayaddress", cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkIpv4, "dnsserver", cfgDataTemp.sectionNetwork.wlan.ipv4.dnsServer.c_str()) == NULL) {
+    if (cJSON_AddStringToObject(networkWlanIpv4, "dnsserver", cfgDataTemp.sectionNetwork.wlan.ipv4.dnsServer.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
     if (!cJSON_AddItemToObject(networkWlan, "wlanroaming", networkWlanRoaming = cJSON_CreateObject())) {
@@ -2538,6 +2590,32 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (cJSON_AddStringToObject(networkApIpv4, "ipaddress", cfgDataTemp.sectionNetwork.wlanAp.ipv4.ipAddress.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
+
+#ifdef BOARD_FEATURE_ETHERNET
+    if (!cJSON_AddItemToObject(network, "ethernet", networkEth = cJSON_CreateObject())) {
+        retVal = ESP_FAIL;
+    }
+    if (!cJSON_AddItemToObject(networkEth, "ipv4", networkEthIpv4 = cJSON_CreateObject())) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddNumberToObject(networkEthIpv4, "networkconfig", cfgDataTemp.sectionNetwork.ethernet.ipv4.networkConfig) == NULL) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddStringToObject(networkEthIpv4, "ipaddress", cfgDataTemp.sectionNetwork.ethernet.ipv4.ipAddress.c_str()) == NULL) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddStringToObject(networkEthIpv4, "subnetmask", cfgDataTemp.sectionNetwork.ethernet.ipv4.subnetMask.c_str()) == NULL) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddStringToObject(networkEthIpv4, "gatewayaddress", cfgDataTemp.sectionNetwork.ethernet.ipv4.gatewayAddress.c_str()) ==
+        NULL) {
+        retVal = ESP_FAIL;
+    }
+    if (cJSON_AddStringToObject(networkEthIpv4, "dnsserver", cfgDataTemp.sectionNetwork.ethernet.ipv4.dnsServer.c_str()) == NULL) {
+        retVal = ESP_FAIL;
+    }
+#endif // BOARD_FEATURE_ETHERNET
+
     if (!cJSON_AddItemToObject(network, "time", networkTime = cJSON_CreateObject())) {
         retVal = ESP_FAIL;
     }

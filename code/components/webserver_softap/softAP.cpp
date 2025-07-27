@@ -9,6 +9,7 @@
 #include <esp_wifi.h>
 #include <esp_log.h>
 
+#include "network_main.h"
 #include "connect_wlan.h"
 #include "configClass.h"
 #include "server_help.h"
@@ -21,25 +22,26 @@ static const char *TAG = "WLAN_AP";
 
 static bool credentialsSet = false;
 static bool SDCardContentExisting = false;
+static bool deviceProvisioningByApStarted = false;
 
 
 esp_err_t main_handler_AP(httpd_req_t *req)
 {
-    std::string message = "<h1>AI on the Edge Device | Device Provisioning</h1>";
-    message += "<p>Setup the minimum required content on the device and the SD card.<br><br>";
-    message += "The provisioning is performed into 3 steps:<br>1. Configure WLAN network and set credentials<br>";
-    message += "2. Upload firmware package<br>3. Install firmware package<br>";
+    std::string message = "<h1>AI-on-the-Edge Device [SLFork] | Device Provisioning</h1>";
+    message += "<p>Prepare the device and SD card with the required content and configuration.<br><br>";
+    message += "The provisioning is completed in 3 steps:<br>1. Configure WLAN network (Not required for ethernet connection)<br>";
+    message += "2. Upload the firmware package<br>3. Install the firmware package<br></p>";
     httpd_resp_send_chunk(req, message.c_str(), strlen(message.c_str()));
 
     if (!credentialsSet) {
-        message = "<h3>1. Configure WLAN network and set credentials</h3>";
+        message = "<h3>1. Configure WLAN network</h3>";
         message += "<table>";
         message += "<tr><td>Network Name (SSID)</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"ssid\" "
                    "id=\"ssid\"></td>";
-        message += "<td>Enter the name of WLAN network</td></tr>";
+        message += "<td>Enter your Wi-Fi network name</td></tr>";
         message += "<tr><td>Network Password</td><td style=\"padding:10px\"><input style=\"width:200px\" type=\"text\" name=\"password\" "
                    "id=\"password\"></td>";
-        message += "<td>Enter the WLAN network password (NOTE: The password is transmitted to the device as plain text!)</td><tr>";
+        message += "<td>Enter your Wi-Fi network password (Note: Password is transmitted as plain text)</td><tr>";
         message += "</table><br><br>";
         message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" onclick=\"wr()\">Save config</button>";
         message += "<script language=\"JavaScript\">async function wr(){";
@@ -52,12 +54,12 @@ esp_err_t main_handler_AP(httpd_req_t *req)
     }
 
     if (!SDCardContentExisting) {
-        message = "<h3>2. Upload firmware package</h3><p>";
-        message += "Upload a firmware package \"AI-on-the-edge-device__{Board Type}__*.zip\" to install the SD card content.<p>";
+        message = "<h3>2. Upload the firmware package</h3><p>";
+        message += "Upload the firmware package \"AI-on-the-edge-device__{Board Type}__*.zip\" to install the SD card content.<p>";
         message += "<input id=\"newfile\" type=\"file\"><br><br>";
         message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doUpdate\" "
                    "onclick=\"upload()\">Upload File</button><p>";
-        message += "The upload might take up to 60s. After the package has been successfully uploaded, the page is automatically reloaded.";
+        message += "The upload may take up to 60s. After the package is successfully uploaded, the page is automatically reloaded.";
         message += "<script language=\"JavaScript\">";
         message += "function upload() {";
         message += "let xhttp = new XMLHttpRequest();";
@@ -73,12 +75,12 @@ esp_err_t main_handler_AP(httpd_req_t *req)
         return ESP_OK;
     }
 
-    message = "<h3>3. Install firmware package</h3><p>";
-    message += "The firmware package has been successfully uploaded to the device.<br>";
-    message += "The device is going to reboot and install the provided package. This process can take up to 3 minutes.<br>";
-    message += "The installation process can be controlled using serial console connection (e.g. via web installer web interface).<br>";
+    message = "<h3>3. Install the firmware package</h3><p>";
+    message += "The firmware package was successfully uploaded to the device.<br>";
+    message += "The device wull now reboot and install the package. This process may take up to 3 minutes.<br>";
+    message += "The installation process can be monitored via serial console (e.g. using Web Installer interface).<br>";
     message += "If device is provisioned using web installer, just wait until installation is completed and refresh browser window.<br>";
-    message += "Reconnect to default WLAN network and access the device by name (default: http://watermeter | http://watermeter.local)<br>";
+    message += "Connect to WLAN network and access the device by hostname (default: http://watermeter | mDNS: http://watermeter.local)<br>";
     message += " or IP address automatically assigned by local DHCP server (e.g. FritzBox, check router logs).<br><br>";
     message += "<button style=\"width:150px; padding:5px\" class=\"button\" type=\"button\" id=\"doReboot\" onclick=\"rb()\")>Reboot To "
                "Proceed</button>";
@@ -245,17 +247,44 @@ void startAPForDeviceProvisioning()
 {
     SDCardContentExisting = fileExists("/sdcard/html/index.html");
     if (!SDCardContentExisting) {
-        ESP_LOGW(TAG, "HTML content not found on SD card (html/index.html)");
+        ESP_LOGW(TAG, "Unable to load HTML content: 'html/index.html' not found on SD card");
     }
 
-    if (ConfigClass::getInstance()->get()->sectionNetwork.wlan.ssid.empty() || !SDCardContentExisting) {
-        ESP_LOGI(TAG, "Starting access point for device provisioning");
+    bool wlanSsidEmpty = (getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN &&
+                          ConfigClass::getInstance()->get()->sectionNetwork.wlan.ssid.empty());
+    if (wlanSsidEmpty) {
+        ESP_LOGW(TAG, "WLAN SSID empty");
+    }
+
+    if (!SDCardContentExisting || wlanSsidEmpty) {
+        ESP_LOGI(TAG, "Init device provisioning");
         setStatusLed(AP_OR_OTA, 2, true);
+
+#ifdef BOARD_FEATURE_ETHERNET
+        if (getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_ETHERNET) {
+            // Init network and wait for network connection
+            initNetwork();
+            while (!getNetworkConnectionState()) {
+                vTaskDelay(pdMS_TO_TICKS(1000));
+            }
+
+            // Skip config of WLAN credentials
+            credentialsSet = true;
+        }
+        else {
+            initWifiAp(true);
+            deviceProvisioningByApStarted = true;
+        }
+#else
         initWifiAp(true);
+        deviceProvisioningByApStarted = true;
+#endif // BOARD_FEATURE_ETHERNET
+
         start_webserverAP();
 
-        while (1) { // wait until reboot
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+        // Idle until reboot
+        while (1) {
+            vTaskDelay(pdMS_TO_TICKS(10000));
         }
     }
 }
@@ -268,6 +297,12 @@ void startAPForDeviceProvisioning()
 void stopAPForDeviceProvisioning(void)
 {
     setStatusLedOff();
-    deinitWifi();
+    deinitNetwork();
     credentialsSet = true; // Skip step 1
+}
+
+
+bool getDeviceProvisioningByApStarted()
+{
+    return deviceProvisioningByApStarted;
 }

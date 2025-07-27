@@ -1,10 +1,21 @@
 {
 	"usage_comment": "Initial manual setup - Basic network configuration: Copy config.json file to /config folder and adapt to your needs",
 	"network":	{
+		"hostname":	"watermeter",
 		"wlan":	{
 			"ssid":	"",
 			"password":	"",
-			"hostname":	"watermeter",
+			"ipv4":	{
+				"networkconfig_comment": "0: DHCP, 1: Static",
+				"networkconfig":	0,
+				"ipaddress":	"",
+				"subnetmask":	"",
+				"gatewayaddress":	"",
+				"dnsserver":	""
+			}
+		},
+		"ethernet_comment": "Only for devices with ethernet interface",
+		"ethernet":	{
 			"ipv4":	{
 				"networkconfig_comment": "0: DHCP, 1: Static",
 				"networkconfig":	0,

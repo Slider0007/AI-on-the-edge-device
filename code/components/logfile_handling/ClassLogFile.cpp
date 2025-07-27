@@ -21,22 +21,20 @@ extern "C" {
 
 static const char *TAG = "LOGFILE";
 
-ClassLogFile LogFile(LOG_LOGS_ROOT_FOLDER, LOG_FILE_TIME_FORMAT, LOG_DATA_ROOT_FOLDER, DATA_FILE_TIME_FORMAT, LOG_DEBUG_ROOT_FOLDER,
-                     DEBUG_FOLDER_TIME_FORMAT);
+ClassLogFile LogFile;
 
 
-ClassLogFile::ClassLogFile(std::string _logFileRootFolder, std::string _logfile, std::string _dataFileRootFolder, std::string _datafile,
-                           std::string _debugFileRootFolder, std::string _debugfolder)
+ClassLogFile::ClassLogFile()
 {
     logfileMutex = xSemaphoreCreateMutex();
     logfileHandle = NULL;
 
-    logFileRootFolder = _logFileRootFolder;
-    logfile = _logfile;
-    dataFileRootFolder = _dataFileRootFolder;
-    datafile = _datafile;
-    debugFileRootFolder = _debugFileRootFolder;
-    debugfolder = _debugfolder;
+    logFileRootFolder = LOG_LOGS_ROOT_FOLDER;
+    logFileTimeFormat = LOG_FILE_TIME_FORMAT;
+    dataFileRootFolder = LOG_DATA_ROOT_FOLDER;
+    dataFileTimeFormat = DATA_FILE_TIME_FORMAT;
+    debugFileRootFolder = LOG_DEBUG_ROOT_FOLDER;
+    debugFolderTimeFormat = DEBUG_FOLDER_TIME_FORMAT;
     logFileRetentionInDays = 5;
     dataLogRetentionInDays = 5;
     debugFilesRetentionInDays = 5;
@@ -60,7 +58,7 @@ void ClassLogFile::writeToData(std::string _timestamp, std::string _name, std::s
 {
     time_t rawtime;
     time(&rawtime);
-    std::string logpath = dataFileRootFolder + "/" + convertTimeToString(rawtime, datafile.c_str());
+    std::string logpath = dataFileRootFolder + "/" + convertTimeToString(rawtime, dataFileTimeFormat.c_str());
 
     FILE *pFile = fopen(logpath.c_str(), "a+");
     if (pFile == NULL) {
@@ -171,7 +169,7 @@ void ClassLogFile::writeToFile(esp_log_level_t level, std::string tag, std::stri
 
     time_t rawtime;
     time(&rawtime);
-    std::string logfileName = convertTimeToString(rawtime, logfile.c_str());
+    std::string logfileName = convertTimeToString(rawtime, logFileTimeFormat.c_str());
 
     std::replace(message.begin(), message.end(), '\n', ' '); // Replace all newline characters
 
@@ -266,7 +264,7 @@ std::string ClassLogFile::getCurrentFileNameData()
 {
     time_t rawtime;
     time(&rawtime);
-    std::string logpath = dataFileRootFolder + "/" + convertTimeToString(rawtime, datafile.c_str());
+    std::string logpath = dataFileRootFolder + "/" + convertTimeToString(rawtime, dataFileTimeFormat.c_str());
 
     return logpath;
 }
@@ -276,7 +274,7 @@ std::string ClassLogFile::getCurrentFileName()
 {
     time_t rawtime;
     time(&rawtime);
-    std::string logpath = logFileRootFolder + "/" + convertTimeToString(rawtime, logfile.c_str());
+    std::string logpath = logFileRootFolder + "/" + convertTimeToString(rawtime, logFileTimeFormat.c_str());
 
     return logpath;
 }
@@ -300,7 +298,7 @@ void ClassLogFile::removeOldLogFile()
     time(&rawtime);
     rawtime = addDays(rawtime, -logFileRetentionInDays + 1);
     // ESP_LOGI(TAG, "logFileRetentionInDays: %d", logFileRetentionInDays);
-    std::string cmpfilename = convertTimeToString(rawtime, logfile.c_str());
+    std::string cmpfilename = convertTimeToString(rawtime, logFileTimeFormat.c_str());
     // ESP_LOGI(TAG, "log file name to compare: %s", cmpfilename.c_str());
 
     struct dirent *entry;
@@ -358,7 +356,7 @@ void ClassLogFile::removeOldDataLog()
     time(&rawtime);
     rawtime = addDays(rawtime, -dataLogRetentionInDays + 1);
     // ESP_LOGI(TAG, "dataLogRetentionInDays: %d", dataLogRetentionInDays);
-    std::string cmpfilename = convertTimeToString(rawtime, datafile.c_str());
+    std::string cmpfilename = convertTimeToString(rawtime, dataFileTimeFormat.c_str());
     // ESP_LOGI(TAG, "data file name to compare: %s", cmpfilename.c_str());
 
     struct dirent *entry;
@@ -409,7 +407,7 @@ void ClassLogFile::removeOldDebugFiles()
     time(&rawtime);
     rawtime = addDays(rawtime, -debugFilesRetentionInDays + 1);
     // ESP_LOGI(TAG, "debugFilesRetentionInDays: %d", debugFilesRetentionInDays);
-    std::string cmpfolderame = convertTimeToString(rawtime, debugfolder.c_str());
+    std::string cmpfolderame = convertTimeToString(rawtime, debugFolderTimeFormat.c_str());
     // ESP_LOGI(TAG, "Delete all folder older than %s", cmpfolderame.c_str());
 
     struct dirent *entry;

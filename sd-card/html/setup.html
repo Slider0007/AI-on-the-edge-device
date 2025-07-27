@@ -92,9 +92,9 @@
     </table>
 
     <table>
-        <tr>
+        <tr id="wlan_rssi_info">
             <td style="padding:10px">
-                <output id="rssi">WLAN Signal: </output>
+                <output id="wlan_rssi">WLAN Signal: </output>
             </td>
         </tr>
         <tr>
@@ -295,22 +295,28 @@
         let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                let _rsp = xhttp.responseText;
+                const rssi = xhttp.responseText;
 
-                if (_rsp >= -55) {
-                    document.getElementById('rssi').value = ("WLAN Signal: Excellent (" + _rsp + "dBm)");
+                // Hide info if not relevant (connected via ethernet)
+                if (rssi == -255) {
+                    document.getElementById("wlan_rssi_info").style.display = "None";
+                    return;
                 }
-                else if (_rsp < -55 && _rsp >= -67) {
-                    document.getElementById('rssi').value = ("WLAN Signal: Good (" + _rsp + "dBm)");
+
+                if (rssi >= -55) {
+                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Excellent (" + rssi + "dBm)");
                 }
-                else if (_rsp < -67 && _rsp >= -78) {
-                    document.getElementById('rssi').value = ("WLAN Signal: Fair (" + _rsp + "dBm)");
+                else if (rssi < -55 && rssi >= -67) {
+                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Good (" + rssi + "dBm)");
                 }
-                else if (_rsp < -78 && _rsp >= -85) {
-                    document.getElementById('rssi').value = ("WLAN Signal: Weak (" + _rsp + "dBm)");
+                else if (rssi < -67 && rssi >= -78) {
+                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Fair (" + rssi + "dBm)");
+                }
+                else if (rssi < -78 && rssi >= -85) {
+                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Weak (" + rssi + "dBm)");
                 }
                 else {
-                    document.getElementById('rssi').value = ("WLAN Signal: Unreliable (" + _rsp + "dBm)");
+                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Unreliable (" + rssi + "dBm)");
                 }
             }
         };

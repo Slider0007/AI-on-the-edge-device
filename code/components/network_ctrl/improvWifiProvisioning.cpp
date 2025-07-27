@@ -3,12 +3,12 @@
 
 #include <string.h>
 
-#ifndef USB_SERIAL
+#ifndef BOARD_FEATURE_USB
 #include <driver/uart.h>
 #include <hal/gpio_types.h>
 #else
 #include <driver/usb_serial_jtag.h>
-#endif // USB_SERIAL
+#endif // BOARD_FEATURE_USB
 
 #include <esp_err.h>
 #include <esp_log.h>
@@ -18,6 +18,7 @@
 #include <freertos/task.h>
 
 #include "improvWifi.h"
+#include "network_main.h"
 #include "connect_wlan.h"
 #include "configClass.h"
 #include "ClassLogFile.h"
@@ -33,13 +34,13 @@ static const char *TAG = "IMPROV";
 static TaskHandle_t improvTaskHandle = NULL;
 static ImprovWiFi *improvWifi = NULL;
 
-#ifndef USB_SERIAL
+#ifndef BOARD_FEATURE_USB
 static QueueHandle_t uartQueueHandle;
 static const int evtBufferSize = (UART_HW_FIFO_LEN(DEFAULT_UART_NUM));
 static const int uartBufferSize = 2 * evtBufferSize;
 #else
 static const int evtBufferSize = 256;
-#endif // USB_SERIAL
+#endif // BOARD_FEATURE_USB
 uint8_t evtData[evtBufferSize];
 
 extern std::string getFwVersion(void);
@@ -47,7 +48,7 @@ extern std::string getFwVersion(void);
 
 static void improvEventHandler(void)
 {
-#ifndef USB_SERIAL
+#ifndef BOARD_FEATURE_USB
     // Waiting for UART event
     uart_event_t event;
 
@@ -84,7 +85,7 @@ static void improvEventHandler(void)
         bzero(evtData, evtBufferSize);
         readBytes = 0;
     }
-#endif // USB_SERIAL
+#endif // BOARD_FEATURE_USB
 }
 
 
@@ -92,12 +93,11 @@ static void improvTask(void *pvParameters)
 {
     while (true) {
         improvEventHandler();
-        taskYIELD();
     }
 }
 
 
-#ifndef USB_SERIAL
+#ifndef BOARD_FEATURE_USB
 void improvUartWrite(const unsigned char *txData, int length)
 {
     uart_write_bytes(DEFAULT_UART_NUM, txData, length);
@@ -109,12 +109,10 @@ void improvUartWrite(const unsigned char *txData, int length)
 void improvUSBWrite(const unsigned char *txData, int length)
 {
     usb_serial_jtag_write_bytes(txData, length, portMAX_DELAY);
-
-    const char newline = '\n';
-    usb_serial_jtag_write_bytes(&newline, 1, portMAX_DELAY); // Force the transmission
+    usb_serial_jtag_wait_tx_done(pdMS_TO_TICKS(100));
     // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "IMPROV USB TX: " + std::string((char *)txData, length));
 }
-#endif // USB_SERIAL
+#endif // BOARD_FEATURE_USB
 
 
 void improvWifiScan(unsigned char *scanResponse, int bufLen, uint16_t *networkNum)
@@ -242,7 +240,7 @@ bool improvWifiConnect(const char *ssid, const char *password)
 
     // Check connection state
     timeoutCnt = 0;
-    while (!getWifiIsConnected(true)) {
+    while (!getNetworkConnectionState(true)) {
         vTaskDelay(pdMS_TO_TICKS(1000));
         if (timeoutCnt > 30) { // Timeout 30s
             return false;
@@ -262,11 +260,11 @@ void improvInit(void)
 
     improvWifi = new ImprovWiFi();
 
-#ifndef USB_SERIAL
+#ifndef BOARD_FEATURE_USB
     improvWifi->serialWrite(improvUartWrite);
 #else
     improvWifi->serialWrite(improvUSBWrite);
-#endif // USB_SERIAL
+#endif // BOARD_FEATURE_USB
 
     ImprovTypes::ChipFamily chipFamily;
     if (getChipModel() == "ESP32") {
@@ -278,14 +276,17 @@ void improvInit(void)
     else {
         chipFamily = ImprovTypes::CF_ESP32;
     }
+
     improvWifi->setDeviceInfo(chipFamily, "Firmware:", getFwVersion().c_str(), "AI-on-the-Edge Device");
-
-    improvWifi->setCustomConnectWiFi(improvWifiConnect);
-    improvWifi->setCustomScanWiFi(improvWifiScan);
-    improvWifi->setCustomisConnected(getWifiIsConnected);
     improvWifi->setCustomGetLocalIpCallback(getIpAddress);
+    improvWifi->setCustomisConnected(getNetworkConnectionState);
 
-#ifndef USB_SERIAL
+    if (getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN || getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN_AP) {
+        improvWifi->setCustomScanWiFi(improvWifiScan);
+        improvWifi->setCustomConnectWiFi(improvWifiConnect);
+    }
+
+#ifndef BOARD_FEATURE_USB
     // Install UART driver using an event queue
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Install UART driver");
     retVal = uart_driver_install(DEFAULT_UART_NUM, uartBufferSize, uartBufferSize, 10, &uartQueueHandle, 0);
@@ -306,7 +307,7 @@ void improvInit(void)
     if (retVal != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "improvInit: usb_serial_jtag_driver_install: Error: failed to install driver");
     }
-#endif // USB_SERIAL
+#endif // BOARD_FEATURE_USB
 
     BaseType_t xReturned = xTaskCreate(&improvTask, "improv", 4 * 1024, NULL, tskIDLE_PRIORITY + 1, &improvTaskHandle);
     if (xReturned != pdPASS) {
@@ -334,9 +335,9 @@ void improvDeinit(void)
         improvWifi = NULL;
     }
 
-#ifndef USB_SERIAL
+#ifndef BOARD_FEATURE_USB
     uart_driver_delete(DEFAULT_UART_NUM);
 #else
     usb_serial_jtag_driver_uninstall();
-#endif // USB_SERIAL
+#endif // BOARD_FEATURE_USB
 }

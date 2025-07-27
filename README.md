@@ -1,34 +1,52 @@
-# AI-on-the-Edge Device [SLFork]
-<img src="images/icon/watermeter.svg" width="80px"> 
+<h1>
+  <img src="images/icon/watermeter.svg" width="40px" style="vertical-align: middle;">
+  <span style="vertical-align: middle;">AI-on-the-Edge Device [SLFork]</span>
+</h1>
 
-Artificial intelligence is everywhere, from speech to image recognition. While most AI systems rely on powerful processors or cloud computing, **edge computing** brings AI closer to the end user by utilizing the capabilities of modern processors.  
-This project demonstrates edge computing using a low-cost, AI-capable Espressif SOC device (e.g. **ESP32**), to digitize your analog meters — whether water, gas or electricity. With affordable hardware and simple instructions, you can turn any standard meter into a smart device.
+Artificial intelligence is everywhere — from speech recognition to image analysis. While traditional AI often relies on powerful cloud 
+servers, **AI-on-edge** runs directly on compact, affordable devices. This project brings edge computing to your home by using a low-cost, 
+AI-enabled device to digitize your analog meters — whether it's water, gas or electricity. With budget-friendly hardware and an easy setup, 
+you can turn any standard meter into a smart, connected device.
 
-Let's explore how to make **AI on the Edge** a reality!
+## Key Features
+- **Compact & Cost-Effective** – Designed for small, affordable, AI-capable hardware
+- **Local Image Processing** – Fully processes and evaluates images on-device without external dependencies
+- **On-Device AI** – TensorFlow enables efficient edge intelligence without external dependencies
+- **Web-Based Interface** – Browser UI for monitoring, configuration and control
+- **OTA Update** – Seamless over-the-air firmware updates via the web interface
+
+### ✨ Fork-Specific Enhancements
+- **[Hardware](#supported-hardware)** – Compatible with ESP32 and ESP32-S3 devices
+- **Connectivity** – Operates in WiFi Client or Access Point (Standalone) mode
+- **Flashlight** – Customizable setup using multiple PWM-driven or smart LEDs or trigger an actuator
+- **Durability** – Minimizes SD card wear by keeping process data (ROIs, models, markers) in RAM
+- **Performance** - Reduced I/O cycles (data kept in RAM) and hardware-optimized routines
+- **User Experience** – Consistent UI, dynamic config reloads without reboot, improved error handling/logging
+- **Configuration** – Firmware-managed JSON-based config for better maintainability and resilience
+- **Codebase** – Streamlined, mostly consistently styled, easier to maintain
+- **API Design** – Relevant APIs use JSON notation for seamless integration
+- **TLS Support** – Secure connections supported for MQTT, InfluxDB and Webhook
+
+Further refinements are documented in the [changelog](CHANGELOG.md) (v16.0.0-SLFork and newer).
 
 
-## Key features
-- Tensorflow Lite (TFLite) integration – including easy-to-use wrapper
-- Inline image processing (Image taking, Image alignment, ROI extraction, Post processing)
-- Usage of **small** and **low-cost** AI-capable devices ([Supported Hardware](#supported-hardware))
-- Integrated camera and illumination (depending on hardware capabilities)
-- Web interface for visualization, control and administration 
-- Over the air (OTA) firmware update via web interface
+## APIs & Integrations
+- **[Home Assistant Integration](docs/API/MQTT/home-assistant-discovery.md)** – Automatic device discovery via MQTT
+- **[REST API](docs/API/REST/_OVERVIEW.md)** – Retrieve live data, check device status, and issue control commands over HTTP
+- **[MQTT v3](docs/API/MQTT/_OVERVIEW.md)** – Publish data to your MQTT broker (TLS supported)
+- **InfluxDB v1 / v2** – Log data directly into time-series databases (TLS supported)
+- **[Webhook Publishing](docs/API/Webhook/_OVERVIEW.md)** – Push content to external services via HTTP hook (TLS supported)
+- **[Prometheus/OpenMetrics Exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)** – Export metrics for device monitoring purposes
 
 
-## APIs / Publishing Services / Home Automation Integrations
-- Home Assistant Integration ([Home Assistant Discovery](docs/API/MQTT/home-assistant-discovery.md))
-- [REST API](docs/API/REST/_OVERVIEW.md)
-- [MQTT v3](docs/API/MQTT/_OVERVIEW.md)
-- InfluxDB v1
-- InfluxDB v2
-- [Webhook Publishing](docs/API/Webhook/_OVERVIEW.md)
-- [Prometheus/OpenMetrics Exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)
+Explore API docs via links above or device web interface: `System > Documentation`<br>
+ℹ️ Note: APIs aren’t fully compatible with jomjol’s firmware.
 
 
 ## Workflow
-The device takes an image of your meter at a defined interval. It extracts the Regions of Interest (ROIs) from the image and runs them through artificial intelligence. 
-As a result, you get the digitized value of your meter. There are several options for what to do with that value. Either send it to a MQTT broker, write it to InfluxDB or simply provide access to it via a REST API (JSON / HTML).
+The device captures an image of your meter at scheduled intervals and aligns it using predefined markers for accuracy. It then 
+extracts the Regions of Interest (ROIs) from the image and processes these sections using AI. The extracted data is analyzed 
+and converted into a digital reading, ready to be sent or accessed through various services and APIs (see above).
 
 <img src="images/idea.jpg" width="800"> 
 
@@ -43,76 +61,83 @@ As a result, you get the digitized value of your meter. There are several option
 
 
 ## Supported Hardware
-### Board
-| Board Type                                                                     | SOC      | Firmware Release | Remarks                       
-|:---                                                                            |:---      |:---           |:--- 
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html)                        | ESP32    | All           |⚠️ Only boards with $\ge$ 4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones
-| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3  | $\ge$ v17.0.0 |⚠️ Running quite hot, a small heat sink is recommended<br>ℹ️ No onboard illumination: External illumination (PWM / SmartLED) required
-| [Freenove ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8<br><br>ESP32S3-WROOM-1-N8R8 | $\ge$ v17.0.0<br><br>$\ge$ v17.1.0 |ℹ️ SOC and pin compatible boards with 8MB / 16MB flash and 8MB RAM are supported
+### Board Compatibility
+| Board Type | SOC / Module | Network Interfaces | Flashlight | Firmware Support | Remarks |
+|:---|:---|:---|:---|:---|:---|
+| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html) | ESP32 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED | All | ⚠️ Only boards with ≥ 4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones |
+| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP | ❌ External LED required (PWM, SmartLED) | ≥ v17.0.0 | ⚠️ Runs hot, small heatsink recommended |
+| [Freenove ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8<br><br>ESP32S3-WROOM-1-N8R8 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED<br>Low intensity: Additional external LED recommended (PWM, SmartLED) | ≥ v17.0.0<br><br>≥ v17.1.0 | ℹ️ SOC and pin-compatible boards with 8/16MB flash and 8MB RAM supported |
+| [Waveshare ESP32S3-ETH](https://www.waveshare.com/esp32-s3-eth.htm) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP<br>3. Ethernet | ❌ External LED required (PWM, SmartLED) | ≥ v17.2.0 | ℹ️ POE supported (optional hardware required) |
 
-### Camera
-| Camera Type                                                                             | Sensor Resolution  | Digital Zoom | Firmware Release | Remarks                       
-|:---                                                                                     |:---                |:---          |:---              |:--- 
-| [OV2640](https://www.arducam.com/ov2640/)                                               | 2MP                | 1.0x - 2.5x  | All              | ℹ️ Officially EOL since 2009, but still very popular<br>ℹ️ Pin and function compatible Chinese clones are supported
-| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP                | 1.0x - 4.0x  | $\ge$ v17.0.0    |ℹ️ Officially EOL since 2019, but still very popular<br>ℹ️ Autofocus is not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Running quite hot, a small heat sink or a reduced camera frequency (10Mhz) is recommended<br>⚠️ ESP32-CAM: Camera functional. Deviation of core + I/O voltage supply (board: 1.2V / 3.3V, camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Camera functional. Small deviation of core voltage supply (board: 1.3V, camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Camera functional. Deviation of core voltage supply + I/O voltage supply (board: 1.2V / 3.3V, camera: 1.5V / 2.8V).
+### Camera Compatibility
+| Camera Type | Sensor Resolution | Digital Zoom | Firmware Support | Remarks                       
+|:---         |:---               |:---          |:---              |:---
+| [OV2640](https://www.arducam.com/ov2640/) | 2MP | 1.0x - 2.5x | All | ℹ️ EOL since 2009, still widely used<br>ℹ️ Pin/function-compatible Chinese clones supported
+| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP | 1.0x - 4.0x | $\ge$ v17.0.0 |ℹ️ EOL since 2019, still widely used<br>ℹ️ Autofocus not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Tends to get hotter than OV2640 – use a heat sink or reduce camera frequency (default: 10MHz or lower)<br>⚠️ ESP32-CAM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Functional, minor core voltage deviation (board: 1.3V; camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V).
 
 #### ⚠️ Important Note
-The camera clock frequency (configurable via WebUI or config file) might have negative impact (interfere with WLAN signal) on wireless network responsiveness (slow loading WebUI, higher latency), especially using low quality boards or boards with onboard antenna. Depending on used hardware combination and WIFI channel, try to find the best camera clock frequency under the evaluation of network responsiveness and resulting image quality.
+The camera clock frequency — configurable via the WebUI or config file — may negatively impact wireless network performance. This can 
+result in slower WebUI loading times or increased latency, particularly when using low-quality boards or those with onboard antennas. 
+To optimize performance, experiment with different camera clock frequencies while evaluating both network responsiveness and resulting 
+image quality. The ideal setting may vary depending on your specific hardware setup and the Wi-Fi channel in use.
 
 
 ## Inform Yourself
-There is growing [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/) which provides you with a lot of information. Head there to get a start, how to set it up and configure it.<br>
-ℹ️ Not every description is 100% suitable for this fork. Therefore please check `docs` folder of this repository for any fork specific documentation.
+There is growing [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/) which provides you with 
+a lot of information. Head there to get a start, how to set it up and configure it.<br>
+ℹ️ Not every description is 100% suitable for this fork. Therefore please check [docs](/docs/) folder of this repository 
+for any fork specific documentation.
 
 
-## Firmware installation
+## Firmware Installation
 
-There are multiple options to install the firmware and the SD card content.
+There are several convenient options to install the firmware and prepare the SD card content.
 
-### Download Firmware Package
-Officially released firmware packages can be downloaded from [releases](https://github.com/slider0007/AI-on-the-edge-device/releases) page.<br>
-A possibly already available development version (upcoming release version) can be previewed [here](https://github.com/Slider0007/AI-on-the-edge-device/pulls?q=is%3Aopen+is%3Apr+label%3A%22autorelease%3A+pending%22).
+### Download Firmware
+- **Releases** - Official firmware releases are available on the **[GitHub Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases)**<br>
+- **Development Builds** - You can also test the latest development build / upcoming release via pull request labeled
+[autorelease: pending](https://github.com/Slider0007/AI-on-the-edge-device/pulls?q=is%3Aopen+is%3Apr+label%3A%22autorelease%3A+pending%22). 
+Follow the instructions at the bottom of the pull request to download the corresponding precompiled development build.
 
-⚠️ **Please do not use the source files directly from the repository, not even for the preparation of the SD card!** Use only files related to the download sources mentioned here (official precompiled release packages or test versions). Otherwise, full functionality cannot be guaranteed.<br>
+⚠️ **Important:** Do **not** use source files directly from the repository — this includes SD card preparation. Always use the official 
+precompiled release packages or GitHub CI precompiled development builds. Using any of the source files may result in incomplete or 
+non-functional firmware.
 
 ---
 ### Over The Air (OTA) Update
-After the device is initially installed using one of the following installation options, it is **strongly recommended** to perform any further firmware update using the **web interface built-in OTA functionality**.
+Once the initial installation is complete, it is **strongly recommended** to perform all future firmware updates via the **device’s 
+web interface**: `System > OTA Update`. This method ensures seamless upgrades with minimal risk.
 
 ---
-### Option 1: Web Installer (Only For Released Versions)
+### Option 1: Web Installer (Only For Releases)
 
-Follow the instructions listed at [Web Installer](https://slider0007.github.io/AI-on-the-edge-device/) page.<br>
-Further details can be found in [Web Installer Provisioning Documentation](docs/Installation/DeviceProvisioning/WebInstaller.md).
+For the easiest and most user-friendly setup, use the **[Web Installer](https://slider0007.github.io/AI-on-the-edge-device/)**.<br>
+Follow the step-by-step instructions on the Web Installer page. For more details, see the 
+[Web Installer Provisioning Guide](docs/Installation/DeviceProvisioning/WebInstaller.md).
 
 <img src="images/webinstaller_home.jpg" width="800">
 
 ---
 ### Option 2: Manual Installation (MCU + SD Card)
-Further details can be found in [Manual Provisioning Documentation](docs/Installation/DeviceProvisioning/Manual.md).
-
-
-## API Description
-### REST API
-See [REST API Documentation](docs/API/REST/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > REST API`).<br>
-ℹ️ Read API documentation carefully. REST API is not fully compatible with jomjol's original firmware.
-
-### MQTT API
-See [MQTT API Documentation](docs/API/MQTT/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > MQTT API`).<br>
-ℹ️ Read API documentation carefully. MQTT API is not fully compatible with jomjol's original firmware.
-
-### Prometheus Exporter
-See [Prometheus API Documentation](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Prometheus API`).<br>
-ℹ️ Read API documentation carefully. Prometheus API is not fully compatible with jomjol's original firmware.
-
-### Webhook API
-See [Webhook API Documentation](docs/API/Webhook/_OVERVIEW.md) in github repository or via device web interface (`System > Documentation > Webhook API`).<br>
-ℹ️ Read API documentation carefully. Webhook API is not fully compatible with jomjol's original firmware.
+Follow the steps in the [Manual Provisioning Guide](docs/Installation/DeviceProvisioning/Manual.md) to flash the MCU and 
+prepare the SD card manually.
 
 
 ## Build Yourself
-See [Build / Debug Instructions](code/README.md)
+Developers and advanced users can build the firmware from source. Follow the [Build / Debug Instructions](code/README.md) for environment setup
+and compilation. If you don’t need to customize the firmware, it’s easier to use the precompiled releases provided on the 
+[Releases page](https://github.com/slider0007/AI-on-the-edge-device/releases).
 
 
-## Support
-ℹ️ This is a forked version of [jomjol´s great software](https://github.com/jomjol/AI-on-the-edge-device) which is intended to be used for my personal purposes only.
+## Support / Community
+ℹ️ This is a fork of [jomjol’s original project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use.
+
+- This fork is **actively developed** and maintained independently
+- It is **no longer compatible** with the upstream project
+- It remains public to give something back to the community and help others with similar use cases
+- This project builds on [jomjol’s original repository](https://github.com/jomjol/AI-on-the-edge-device) —  make sure to **respect the upstream license**
+- Customized code can be used for **non-commercial purposes only** - be fair and **credit the original source**
+- Community discussions, feedback, and bug reports are always welcome and appreciated
+
+Although no longer working on the upstream project, this version aims to provide a flexible and robust alternative.  
+Thanks for your interest and support!

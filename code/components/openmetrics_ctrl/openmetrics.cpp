@@ -11,6 +11,7 @@
 #include "system.h"
 #include "ClassFlowDefineTypes.h"
 #include "MainFlowControl.h"
+#include "network_main.h"
 #include "connect_wlan.h"
 
 extern std::string getFwVersion(void);
@@ -195,9 +196,11 @@ esp_err_t handler_openmetrics(httpd_req_t *req)
     response += createMetricWithUnit(metricNamePrefix + "device_uptime", "gauge", "seconds", "Device uptime in seconds",
                                      std::to_string((long)getUptime()));
 
-    // WLAN signal strength
-    response += createMetricWithUnit(metricNamePrefix + "wlan_rssi", "gauge", "dBm", "WLAN signal strength in dBm",
-                                     std::to_string(getWifiRssi()));
+    // WLAN signal strength (Publish only, if network mode WLAN / WLAN AP)
+    if (getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN || getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN_AP) {
+        response += createMetricWithUnit(metricNamePrefix + "wlan_rssi", "gauge", "dBm", "WLAN signal strength in dBm",
+                                         std::to_string(getWifiRssi()));
+    }
 
     // CPU temperature
     response += createMetricWithUnit(metricNamePrefix + "chip_temp", "gauge", "celsius", "CPU temperature in celsius",
