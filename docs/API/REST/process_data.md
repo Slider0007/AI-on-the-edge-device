@@ -32,7 +32,7 @@ The following data are available:
 | `process_error`                      | Process Error State<br>- Error definition: Process error with cycle abortion, e.g. alignment failed<br>- Deviation definition: Process deviation with cycle continuation, e.g. rate limit exceeded<br><br>Possible States:<br>- `0`: No error/deviation<br>- `-1`: One error occurred<br>- `-2`: Multiple process errors in a row<br>- `1`: One process deviation occurred<br>- `2`: Multiple process deviations in a row | `0`
 | `device_uptime`                      | Device Uptime [sec]                                 | `496`
 | `cycle_counter`                      | Number of processed cycles                          | `64`
-| `wlan_rssi`                          | WLAN Signal Strength [dBm]                          | `-58`
+| `wlan_rssi`                          | WLAN Signal Strength [dBm]<br><br>Possible special values:<br>- `-127`: Not connected<br>- `-255`: WLAN disabled | `-58`
 
 
 1. JSON:
