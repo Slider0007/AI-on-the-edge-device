@@ -167,7 +167,7 @@ void ethW5500Reset(void)
 
 esp_err_t initEthernetW5500()
 {
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Initializing Ethernet (W5500)");
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Initializing ethernet module (W5500)");
 
     cfgDataPtr = &ConfigClass::getInstance()->get()->sectionNetwork;
 
