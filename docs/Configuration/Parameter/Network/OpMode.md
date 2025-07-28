@@ -4,7 +4,7 @@
 |:---               |:---                 |:----
 | Parameter Name    | Operation Mode      | opmode
 | Default Value     | `WLAN Client`<br>`Ethernet (Fallback WLAN AP)`* | `0`<br>`5`
-| Input Options     | `Disabled`<br>`WLAN CLient`<br>`WLAN Client (Timed-Off)`<br>`WLAN Access Point`<br>`WLAN Access Point (Timed-Off)`<br>`Ethernet`<br>`Ethernet (Fallback WLAN AP)` | `-1`<br>`0`<br>`1`<br>`2`<br>`3`<br>`4`<br>`5`
+| Input Options     | `Disabled`<br>`WLAN CLient`<br>`WLAN Client (Timed-Off)`<br>`WLAN Access Point`<br>`WLAN Access Point (Timed-Off)`<br>`Ethernet`* <br>`Ethernet (Fallback WLAN AP)`* | `-1`<br>`0`<br>`1`<br>`2`<br>`3`<br>`4`* <br>`5`*
 
 
 ## Description
