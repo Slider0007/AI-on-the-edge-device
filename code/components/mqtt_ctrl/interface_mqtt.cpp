@@ -27,6 +27,7 @@ static SemaphoreHandle_t mqttStartMutex = xSemaphoreCreateMutex();
 static const CfgData::SectionMqtt *cfgDataPtr;
 
 static std::string LWTTopic;
+static std::string LWTMessage = MQTT_STATUS_OFFLINE;
 static std::string TLSCACert;
 static std::string TLSClientCert;
 static std::string TLSClientKey;
@@ -379,7 +380,7 @@ esp_err_t startMqttClient(void)
         mqtt_cfg.session.message_retransmit_timeout = 3000; // Time after message resent when broker not acknowledged (QoS1, QoS2)
         mqtt_cfg.session.last_will.topic = LWTTopic.c_str();
         mqtt_cfg.session.last_will.retain = 1;
-        mqtt_cfg.session.last_will.msg = std::string(MQTT_STATUS_OFFLINE).c_str();
+        mqtt_cfg.session.last_will.msg = LWTMessage.c_str();
         mqtt_cfg.session.keepalive = keepAlive;
         mqtt_cfg.buffer.size = 1024; // size of MQTT send/receive buffer (Default: 1024)
 
