@@ -40,7 +40,7 @@ void migrateConfiguration(cJSON *cJsonObject)
         // ---------------------
         const cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "hostname");
         if (cJSON_IsString(objEl)) {
-            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.hostname;
+            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.hostname = objEl->valuestring;
         }
     }
 
