@@ -16,17 +16,17 @@ you can turn any standard meter into a smart, connected device.
 - **OTA Update** – Seamless over-the-air firmware updates via the web interface
 
 ### ✨ Fork-Specific Enhancements
-- **[Hardware](#supported-hardware)** – Compatible with ESP32 and ESP32-S3 devices
-- **Device Provisioning** - Streamlined web-based installer for firmware + SD card provisioning and Wi-Fi config
+- **[Hardware Support](#supported-hardware)** – Compatible with ESP32 and ESP32-S3 devices
+- **Device Provisioning** - Web-based service for user-friendly firmware, SD card provisioning incl. Wi-Fi config
 - **Connectivity** – Operates in WiFi Client, WiFi Access Point (Standalone) or Ethernet mode
-- **Flashlight** – Customizable setup using multiple PWM-driven or smart LEDs or trigger an actuator
+- **Flashlight** – Fully customizable setup using one or multiple digital, PWM-driven or smart LEDs
 - **Durability** – Minimizes SD card wear by keeping process data (ROIs, models, markers) in RAM
 - **Performance** - Reduced I/O cycles (data kept in RAM) and hardware-optimized routines
 - **User Experience** – Consistent UI, dynamic config reloads without reboot, improved error handling/logging
 - **Configuration** – Firmware-managed JSON-based config for better maintainability and resilience
 - **Codebase** – Streamlined, mostly consistently styled, easier to maintain
 - **API Design** – Relevant APIs use JSON notation for seamless integration
-- **TLS Support** – Secure connections supported for MQTT, InfluxDB and Webhook
+- **TLS Support** – Secure connection supported for MQTT, InfluxDB and Webhook
 
 Further refinements are documented in the [changelog](CHANGELOG.md) (v16.0.0-SLFork and newer).
 
@@ -38,7 +38,6 @@ Further refinements are documented in the [changelog](CHANGELOG.md) (v16.0.0-SLF
 - **InfluxDB v1 / v2** – Log data directly into time-series databases (TLS supported)
 - **[Webhook Publishing](docs/API/Webhook/_OVERVIEW.md)** – Push content to external services via HTTP hook (TLS supported)
 - **[Prometheus/OpenMetrics Exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)** – Export metrics for device monitoring purposes
-
 
 Explore API docs via links above or device web interface: `System > Documentation`<br>
 ℹ️ Note: APIs aren’t fully compatible with jomjol’s firmware.
@@ -130,7 +129,7 @@ Developers and advanced users can build the firmware from source. Follow the [bu
 - It remains public to give something back to the community and help others with similar use cases
 - This fork builds on [jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device) — make sure to **respect the upstream license**
 - Customized code can be used for **non-commercial purposes** - be fair and **credit the original source**
-- Community discussions, feedback, and bug reports are always welcome and appreciated
+- Community discussions, feedback and bug reports are always welcome and appreciated
 
 Although no longer working on the upstream project, this version aims to provide a flexible and robust alternative.  
 Thanks for your interest and support!

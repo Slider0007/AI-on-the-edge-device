@@ -106,12 +106,10 @@ static void ipEventHandler(void *arg, esp_event_base_t eventBase, int32_t eventI
     }
     else if (eventId == IP_EVENT_ETH_LOST_IP) {
         ethState.connectionSuccessful = false;
-
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Ethernet: IP address lost");
     }
     else {
         ethState.connectionSuccessful = false;
-
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Unhandled IP event: " + std::to_string(eventId));
     }
 }
@@ -127,7 +125,6 @@ esp_err_t ethW5500SetMac()
     }
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "ESP MAC: " + macToString(baseMac));
-
 
     uint8_t localMac[6];
     esp_derive_local_mac(localMac, baseMac);
@@ -213,7 +210,6 @@ esp_err_t initEthernetW5500()
 
     eth_phy_config_t ethPhyCfg = ETH_PHY_DEFAULT_CONFIG();
     ethPhyCfg.reset_gpio_num = GPIO_ETH_RST;
-    // ethPhyCfg.phy_addr = 1;
     esp_eth_phy_t *ethPhy = esp_eth_phy_new_w5500(&ethPhyCfg);
 
     esp_eth_config_t ethConfig = ETH_DEFAULT_CONFIG(ethMac, ethPhy);
@@ -306,7 +302,7 @@ esp_err_t initEthernetW5500()
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Waiting for ethernet connection");
 
-    // Waiting and check for ethernet link (Timeout: 30s)
+    // Waiting for ethernet link (Timeout: 30s)
     EventBits_t bits = xEventGroupWaitBits(ethEventGroup, ETH_CONNECTED_BIT, pdFALSE, pdTRUE,
                                            pdMS_TO_TICKS(ETHERNET_WAITING_TIME_FOR_CONNECTION));
 
