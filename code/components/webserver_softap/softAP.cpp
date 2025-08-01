@@ -296,7 +296,7 @@ void startAPForDeviceProvisioning()
  */
 void stopAPForDeviceProvisioning(void)
 {
-    setStatusLedOff();
+    forceStatusLedOff();
     deinitNetwork();
     credentialsSet = true; // Skip step 1
 }

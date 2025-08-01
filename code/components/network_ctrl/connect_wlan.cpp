@@ -579,7 +579,7 @@ esp_err_t initWifiAp(bool _useDefaultConfig)
     wifiState.initialized = true;
 
     if (wifiState.fallbackApActive) {
-        setStatusLedOff();
+        forceStatusLedOff();
         setStatusLed(AP_OR_OTA, 3, true);
     }
 

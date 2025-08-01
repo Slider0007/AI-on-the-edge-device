@@ -551,7 +551,7 @@ void taskReboot(void *DeleteMainFlow)
 #endif // ENABLE_MQTT
 
     cameraCtrl.setFlashlight(false);
-    setStatusLedOff();
+    forceStatusLedOff();
     esp_camera_deinit();
 
     destroyGpioHandler();
@@ -590,7 +590,7 @@ void doRebootOTA()
     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot in 5sec");
 
     cameraCtrl.setFlashlight(false);
-    setStatusLedOff();
+    forceStatusLedOff();
     cameraCtrl.deinitCam();
 
     vTaskDelay(5000 / portTICK_PERIOD_MS);

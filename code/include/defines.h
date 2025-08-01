@@ -714,7 +714,7 @@ CONFIG_WPA_11R_SUPPORT=n
     #ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
         #define GPIO_STATUS_LED_ONBOARD_SMARTLED_TYPE       LED_WS2812B   // SmartLED status LED: SmartLED type
         #define GPIO_STATUS_LED_ONBOARD_SMARTLED_QUANTITY   1             // SmartLED status LED: SmartLED Quantity
-        #define GPIO_STATUS_LED_ONBOARD_SMARTLED_COLOR      Rgb{13, 0, 0} // SmartLED status LED: Color: Red | Intensity: 13/255 (5%)
+        #define GPIO_STATUS_LED_ONBOARD_SMARTLED_COLOR      Rgb{0, 0, 18} // SmartLED status LED: Color: Blue | Intensity: 7%
     #endif
 
     #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_NC    // No onboard flashlight

@@ -472,6 +472,7 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
                                     "Flashlight SmartLED: GPIO" + std::to_string((int)it->first) + ", State: " + std::to_string(_state));
             }
 
+            it->second->getSmartLed()->wait();
             esp_err_t retVal = it->second->getSmartLed()->show();
             it->second->updatePinState(_state ? 1 : 0);
 
@@ -517,6 +518,8 @@ void GpioHandler::gpioStatusLedControl(bool _state)
                     (*it->second->getSmartLed())[i] = Rgb{0, 0, 0};
                 }
             }
+
+            it->second->getSmartLed()->wait();
             it->second->getSmartLed()->show();
         }
     }
