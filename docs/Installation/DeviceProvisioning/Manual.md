@@ -1,33 +1,52 @@
 ## Device Provisioning
 
 ### Manual Installation (MCU + SD Card)
-#### Step 1: Installation Of MCU Part Of Firmware
 
-Initially the MCU of the device has to be flashed via a USB / serial connection.<br>
-Use content of `AI-on-the-edge-device__{Board Type}__*.zip`.
+#### Step 1: Installing the MCU Firmware
 
-<b>IMPORTANT:</b> Make sure to use correct firmware package for your board type.
+The MCU of the device must first be flashed via a USB or serial connection.  
+Use the contents of `AI-on-the-edge-device__{Board Type}__*.zip`.
 
-There are different ways to flash the microcontroller:
-- [Espressif Flash Tool](https://www.espressif.com/sites/default/files/tools/flash_download_tool_3.9.5.zip)<br>
-- [ESPtool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
+**IMPORTANT:** Ensure you are using the correct firmware package for your specific board type.
 
-Check readme file in firmware zip package for further details.
+There are multiple ways to flash the microcontroller:
+- [Espressif Flash Tool](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/production_stage/tools/flash_download_tool.html)  
+- [esptool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
+Refer to the `README` file included in the firmware ZIP package for detailed instructions.
 
-#### Step 2: Installation Of SD Card Content
-A SD card is mandatory to operate the device because of internal device memory is insufficient to handle all necessary files. Therefore the SD card needs to be preloaded with some file content to be able to operate the device.<br>
+---
 
-⚠️ Make sure, SD card is formatted properly (FAT or FAT32 file system).<br>
+#### Step 2: Preparing the SD Card
 
-Use firmware package `AI-on-the-edge-device__{Board Type}__*.zip` for installation process.<br>
-⚠️ **Please do not use the source files directly from the repository, not even for the preparation of the SD card!** Use only files related to official precompiled release packages or test versions. Otherwise, full functionality cannot be guaranteed.<br>
+An SD card is required for device operation, as the internal memory is insufficient to store all necessary files. 
+The SD card must be preloaded with the correct content for the device to function properly.  
 
-##### Option 1: Manual SD Card Installation
-- Copy complete `config` and `html` folder of `AI-on-the-edge-device__{Board Type}__*.zip` to SD card root folder
-- Copy file `config/template/config.json` to `config` folder
-- Configure WLAN and credentials
-- Insert SD-card to device and boot device
+⚠️ **Ensure the SD card is properly formatted** using the FAT or FAT32 file system. macOS-formatted cards may cause issues.
 
-##### Option 2: Provisioning via Access Point
-Further details can be found in [Access Point Provisioning Documentation](AccessPoint.md).
+ℹ️ Use the same firmware package `AI-on-the-edge-device__{Board Type}__*.zip` for this step.  
+
+⚠️ **Do not use source files directly from the repository** — not even for preparing the SD card. Only use files 
+from official precompiled release packages or GitHub CI compiled test versions. Using unsupported files may result 
+in limited or broken functionality.
+
+---
+
+##### Option 1: Manual SD Card Setup
+
+1. Copy the complete `config` and `html` folders from the firmware ZIP to the root directory of the SD card
+2. Copy the file `/config/template/config.json` to the `/config` folder
+3. Configure the network connection:
+   - **Wi-Fi**: Enter your Wi-Fi credentials and optionally configure network settings (default: DHCP)
+   - **Ethernet** (for devices with an ethernet port, default connection): Optionally configure network settings (default: DHCP)
+4. Insert the SD card into the device and power it on
+5. Access the device using:
+   - Hostname: `http://watermeter`  
+   - mDNS: `http://watermeter.local`  
+   - Or the configured static IP address
+
+---
+
+##### Option 2: Semi-Automatic SD Card Setup
+
+For semi-automated setup instructions, refer to the [SD Card Provisioning Documentation](SDCardProvisioning.md)

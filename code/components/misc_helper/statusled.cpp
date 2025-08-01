@@ -3,16 +3,38 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "driver/gpio.h"
-#include "esp_rom_gpio.h"
+#include <driver/gpio.h>
+#include <esp_rom_gpio.h>
+#include <driver/ledc.h>
 
+#include "gpioControl.h"
 #include "ClassLogFile.h"
+#include "helper.h"
 
 
 static const char *TAG = "STATUSLED";
 
 TaskHandle_t xHandle_task_StatusLED = NULL;
 struct StatusLEDData StatusLEDData = {};
+
+
+void setStatusLedState(bool status)
+{
+#ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
+    GpioHandler *gpioHandle = getGpioHandle();
+    if (gpioHandle) {
+        gpioHandle->gpioStatusLedControl(status);
+    }
+#else
+
+#ifdef GPIO_STATUS_LED_ONBOARD_LOWACTIVE
+    gpio_set_level(GPIO_STATUS_LED_ONBOARD, status ? 0 : 1);
+#else
+    gpio_set_level(GPIO_STATUS_LED_ONBOARD, status ? 1 : 0);
+#endif // GPIO_STATUS_LED_ONBOARD_LOWACTIVE
+
+#endif // GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
+}
 
 
 void task_StatusLED(void *pvParameter)
@@ -22,55 +44,24 @@ void task_StatusLED(void *pvParameter)
         // ESP_LOGD(TAG, "task_StatusLED - start");
         struct StatusLEDData StatusLEDDataInt = StatusLEDData;
 
-        esp_rom_gpio_pad_select_gpio(GPIO_STATUS_LED_ONBOARD);         // Init the GPIO
-        gpio_set_direction(GPIO_STATUS_LED_ONBOARD, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
-
-#ifdef GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-        gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1); // LED off
-#else
-        gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0); // LED off
-#endif // GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-
         for (int i = 0; i < 2;) { // Default: repeat 2 times
             if (!StatusLEDDataInt.bInfinite) {
                 ++i;
             }
 
             for (int j = 0; j < StatusLEDDataInt.iSourceBlinkCnt; ++j) {
-#ifdef GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-                gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
-#else
-                gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
-#endif // GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-
+                setStatusLedState(true);
                 vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
-
-#ifdef GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-                gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
-#else
-                gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
-#endif // GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-
+                setStatusLedState(false);
                 vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
             }
 
             vTaskDelay(500 / portTICK_PERIOD_MS); // Delay between module code and error code
 
             for (int j = 0; j < StatusLEDDataInt.iCodeBlinkCnt; ++j) {
-#ifdef GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-                gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
-#else
-                gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
-#endif // GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-
+                setStatusLedState(true);
                 vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
-
-#ifdef GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-                gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
-#else
-                gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
-#endif // GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-
+                setStatusLedState(false);
                 vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
             }
             vTaskDelay(1500 / portTICK_PERIOD_MS); // Delay to signal new round
@@ -96,8 +87,8 @@ void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite)
         StatusLEDData.iBlinkTime = 250;
         StatusLEDData.bInfinite = _bInfinite;
     }
-    else if (_eSource == WLAN_INIT) {
-        StatusLEDData.iSourceBlinkCnt = WLAN_INIT;
+    else if (_eSource == NETWORK_INIT) {
+        StatusLEDData.iSourceBlinkCnt = NETWORK_INIT;
         StatusLEDData.iCodeBlinkCnt = _iCode;
         StatusLEDData.iBlinkTime = 250;
         StatusLEDData.bInfinite = _bInfinite;
@@ -163,18 +154,25 @@ void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite)
 }
 
 
-void setStatusLedOff(void)
+void forceStatusLedOff(void)
 {
     if (xHandle_task_StatusLED) {
         vTaskDelete(xHandle_task_StatusLED); // Delete task for setStatusLed to force stop of blinking
         xHandle_task_StatusLED = NULL;
     }
 
-    esp_rom_gpio_pad_select_gpio(GPIO_STATUS_LED_ONBOARD);         // Init the GPIO
-    gpio_set_direction(GPIO_STATUS_LED_ONBOARD, GPIO_MODE_OUTPUT); // Set the GPIO as a push/pull output
-#ifdef GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-    gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1); // LED off
+    setStatusLedState(false); // Force status LED off
+}
+
+
+void initStatusLed()
+{
+#ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
+    initGpioHandler();
 #else
-    gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0); // LED off
-#endif // GPIO_STATUS_LED_ONBOARD_LOWACTIVE
+    esp_rom_gpio_pad_select_gpio(GPIO_STATUS_LED_ONBOARD);         // Init GPIO pin
+    gpio_set_direction(GPIO_STATUS_LED_ONBOARD, GPIO_MODE_OUTPUT); // Set the GPIO as push/pull output
+#endif // GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
+
+    setStatusLedState(false); // Force status LED off
 }

@@ -22,7 +22,7 @@
 #include "statusled.h"
 #include "sdcard_check.h"
 #include "MainFlowControl.h"
-#include "connect_wlan.h"
+#include "network_main.h"
 #include "webserver.h"
 #include "time_sntp.h"
 #include "gpioControl.h"
@@ -76,19 +76,23 @@ extern "C" void app_main(void)
     // ********************************************
     if (ESP_OK != initNVSFlash()) {
         ESP_LOGE(TAG, "Device init aborted");
-        return; // Stop here, NVS is needed for proper operation
+        return; // Stop here, NVS is required for proper operation
     }
 
     // Init SD card
     // ********************************************
     if (ESP_OK != initSDCard()) {
         ESP_LOGE(TAG, "Device init aborted");
-        return; // Stop here, SD card is needed for proper operation
+        return; // Stop here, SD card is required for proper operation
     }
 
+    // Init status LED
+    // ********************************************
+    initStatusLed();
+
+#ifdef SOC_TEMP_SENSOR_SUPPORTED
     // Init SOC temperature sensor (if supported by hardware)
     // ********************************************
-#ifdef SOC_TEMP_SENSOR_SUPPORTED
     initSOCTemperatureSensor();
 #endif // SOC_TEMP_SENSOR_SUPPORTED
 
@@ -214,13 +218,10 @@ extern "C" void app_main(void)
     // ********************************************
     setCPUFrequency();
 
-    // Init WLAN connection (init client, access point or none depending on configuration)
+    // Init network connection
     // ********************************************
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init WLAN network");
-    esp_err_t retVal = initWifi();
-    if (retVal != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init WLAN network failed. Device init aborted");
-        setStatusLed(WLAN_INIT, 1, true);
+    if (initNetwork() != ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init network failed. Device init aborted");
         return;
     }
 
@@ -278,11 +279,6 @@ extern "C" void app_main(void)
         }
     }
 
-    // Create GPIO handler
-    // Note: GPIO handler interface has to be created before flashlight init
-    // ********************************************
-    createGpioHandler();
-
     // Init camera + flashlight
     // Note: Basic flashlight init has to be performed before camera init
     // ********************************************
@@ -316,7 +312,12 @@ extern "C" void app_main(void)
     registerMqttUri(server);
 #endif // ENABLE_MQTT
     registerOpenmetricsUri(server);
-    gpio_handler_get()->registerGpioUri(server);
+
+    GpioHandler *gpioHandle = getGpioHandle();
+    if (gpioHandle) {
+        gpioHandle->registerGpioUri(server);
+    }
+
     registerWebserverUri(server, "/sdcard");
 
     // Check basic device init status
@@ -345,6 +346,8 @@ esp_err_t initNVSFlash()
     }
 
     if (ret != ESP_OK) {
+        initStatusLed(); // Init status LED if required. Ensure it is not init twice
+
         if (ret == ESP_ERR_NOT_FOUND) {
             ESP_LOGE(TAG, "NVS flash init failed. No NVS partition found");
             setStatusLed(SDCARD_NVS_INIT, 4, true);
@@ -416,6 +419,8 @@ esp_err_t initSDCard()
     ret = esp_vfs_fat_sdmmc_mount("/sdcard", &host, &slot_config, &mount_config, &card);
 
     if (ret != ESP_OK) {
+        initStatusLed(); // Init status LED if required. Ensure it is not init twice
+
         if (ret == ESP_FAIL) {
             ESP_LOGE(TAG, "Failed to mount FAT filesystem on SD card. Check SD card filesystem (only FAT supported) or try another card");
             setStatusLed(SDCARD_NVS_INIT, 1, true);

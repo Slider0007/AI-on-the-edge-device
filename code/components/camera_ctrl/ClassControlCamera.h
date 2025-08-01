@@ -52,7 +52,6 @@ class ClassControlCamera
     void ledcInitFlashlightDefault(void);
 #endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
 
-    void setStatusLed(bool status);
     bool loadNextDemoImage(camera_fb_t *_fb);
 
   public:

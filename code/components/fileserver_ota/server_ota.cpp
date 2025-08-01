@@ -30,7 +30,7 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/rel
 #include "MainFlowControl.h"
 #include "gpioControl.h"
 #include "ClassControlCamera.h"
-#include "connect_wlan.h"
+#include "network_main.h"
 #include "ClassLogFile.h"
 #include "helper.h"
 #include "statusled.h"
@@ -228,7 +228,8 @@ void taskOtaUpdate(void *pvParameter)
         doRebootOTA();
     }
     else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "taskOtaUpdate: Only ZIP or BIN files are supported");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Only ZIP or BIN files are supported. Skip update and reboot device");
+        doRebootOTA();
     }
 }
 
@@ -549,16 +550,16 @@ void taskReboot(void *DeleteMainFlow)
     deinitMqttClient(true);
 #endif // ENABLE_MQTT
 
-    gpio_handler_destroy();
-
     cameraCtrl.setFlashlight(false);
-    setStatusLedOff();
+    forceStatusLedOff();
     esp_camera_deinit();
+
+    destroyGpioHandler();
 
     httpd_stop(server);
 
     vTaskDelay(3000 / portTICK_PERIOD_MS);
-    deinitWifi();
+    deinitNetwork();
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     esp_restart(); // Reset type: CPU reset (Reset both CPUs)
@@ -589,7 +590,7 @@ void doRebootOTA()
     LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot in 5sec");
 
     cameraCtrl.setFlashlight(false);
-    setStatusLedOff();
+    forceStatusLedOff();
     cameraCtrl.deinitCam();
 
     vTaskDelay(5000 / portTICK_PERIOD_MS);

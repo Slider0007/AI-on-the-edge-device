@@ -75,7 +75,7 @@ Example: `ai_on_the_edge_device_heap_data_bytes{heap_data="heap_total_free"}`
 | Metric Name                                      | Description                 | Output
 |:-------------------------------------------------|:----------------------------|:--------------     
 | `ai_on_the_edge_device_device_uptime_seconds `   | Device Uptime [s]           | `147`
-| `ai_on_the_edge_device_wlan_rssi_dBm`            | WLAN Signal Strength [dBm]  | `-54`
+| `ai_on_the_edge_device_wlan_rssi_dBm`*           | WLAN Signal Strength [dBm]  | `-54`
 | `ai_on_the_edge_device_chip_temp_celsius`        | Device CPU Temperature (°C) | `45`
 | `ai_on_the_edge_device_sd_partition_free_megabytes`| SD Card: Free Partition Space | `29016`
 
@@ -98,6 +98,8 @@ Multiple sequence data is provided separately by label `sequence`.
 |:--------------------------|:----------------------------|:--------------   
 | `ai_on_the_edge_device_actual_value{sequence="[sequenceName]"}` | Actual value of [sequenceName] | `146.540`
 | `ai_on_the_edge_device_rate_per_minute{sequence="[sequenceName]"}`| Rate per minute<br>(Delta of actual and last valid processed cycle + normalized to minute) | `0.000`
+
+*Only available if the device is connected via the Wi-Fi interface
 
 
 ### Prometheus Scrape Config

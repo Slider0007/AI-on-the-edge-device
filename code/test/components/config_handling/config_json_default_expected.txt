@@ -1,8 +1,8 @@
-Modify JSON elements accordingly to test lower limits and stringfy as compact version: https://jsonformatter.org/json-stringify-online
+Modify JSON elements accordingly to test default values and stringfy as compact version: https://jsonformatter.org/json-stringify-online
 
 {
   "config": {
-    "version": 4,
+    "version": 5,
     "lastmodified": ""
   },
   "operationmode": {
@@ -72,7 +72,7 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
   },
   "digit": {
     "enabled": true,
-    "model": "dig-class100_0173_s2_q.tflite",
+    "model": "dig-class100_0180_s2_q.tflite",
     "cnngoodthreshold": "0.50",
     "sequence": [
       {
@@ -84,12 +84,13 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "debug": {
       "saveroiimages": false,
       "roiimageslocation": "/log/digit",
-      "roiimagesretention": 3
+      "roiimagesretention": 3,
+      "roisavingsize":	0
     }
   },
   "analog": {
     "enabled": true,
-    "model": "ana-class100_0171_s1_q.tflite",
+    "model": "ana-class100_0180_s1_q.tflite",
     "sequence": [
       {
         "sequenceid": 0,
@@ -100,7 +101,8 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
     "debug": {
       "saveroiimages": false,
       "roiimageslocation": "/log/analog",
-      "roiimagesretention": 3
+      "roiimagesretention": 3,
+      "roisavingsize":	0
     }
   },
   "postprocessing": {
@@ -331,10 +333,10 @@ Modify JSON elements accordingly to test lower limits and stringfy as compact ve
   "network": {
     "opmode": 0,
     "timedoffdelay": 60,
+    "hostname": "watermeter",
     "wlan": {
       "ssid": "",
       "password": "",
-      "hostname": "watermeter",
       "ipv4": {
         "networkconfig": 0,
         "ipaddress": "",

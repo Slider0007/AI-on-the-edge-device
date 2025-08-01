@@ -276,7 +276,7 @@ void ClassFlowControl::deinitFlow(void)
 
     cameraCtrl.freeDemoMemoryOnly(); // Free user allocated memory, but no cam driver deinit
     cameraCtrl.setFlashlight(false);
-    setStatusLedOff();
+    forceStatusLedOff();
     // LogFile.writeHeapInfo("After camera");
 
     FlowControlImage.clear();

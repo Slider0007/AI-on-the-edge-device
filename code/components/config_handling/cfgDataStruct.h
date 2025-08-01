@@ -7,6 +7,8 @@
 #include <esp_camera.h>
 #include <esp_log.h>
 
+#include "../../include/defines.h"
+
 //************************************************
 // Enumerations
 //************************************************
@@ -14,6 +16,7 @@ enum OperationMode {
     OPMODE_SETUP = -1,
     OPMODE_MANUAL = 0,
     OPMODE_AUTO = 1,
+    OPMODE_MAX
 };
 
 
@@ -99,9 +102,9 @@ enum GpioSmartledType {
 };
 
 
-enum NetworkWlanIpConfig {
-    NETWORK_WLAN_IP_CONFIG_DHCP = 0,
-    NETWORK_WLAN_IP_CONFIG_STATIC = 1,
+enum NetworkIpConfig {
+    NETWORK_IP_CONFIG_DHCP = 0,
+    NETWORK_IP_CONFIG_STATIC = 1,
 };
 
 
@@ -111,6 +114,11 @@ enum NetworkOperationMode {
     NETWORK_OPMODE_WLAN_CLIENT_TIMED_OFF = 1,
     NETWORK_OPMODE_WLAN_AP = 2,
     NETWORK_OPMODE_WLAN_AP_TIMED_OFF = 3,
+#ifdef BOARD_FEATURE_ETHERNET
+    NETWORK_OPMODE_ETHERNET_ONLY = 4,
+    NETWORK_OPMODE_ETHERNET_FALLBACK_WLAN = 5,
+#endif // BOARD_FEATURE_ETHERNET
+    NETWORK_OPMODE_MAX,
 };
 
 
@@ -202,7 +210,7 @@ struct GpioElement {
 struct CfgData {
     // Config File
     struct SectionConfig {
-        int version = 4; // NOTE: Increment when existing parameter name changed and add migration routine
+        int version = 5; // NOTE: Increment when existing parameter name changed and add migration routine
         std::string lastModified = "";
     } sectionConfig;
 
@@ -408,14 +416,19 @@ struct CfgData {
 
     // Network
     struct SectionNetwork {
+#ifdef BOARD_FEATURE_ETHERNET
+        int opmode = NETWORK_OPMODE_ETHERNET_FALLBACK_WLAN;
+#else
         int opmode = NETWORK_OPMODE_WLAN_CLIENT;
+#endif // BOARD_FEATURE_ETHERNET
+
         int timedOffDelay = 60; // Minutes
+        std::string hostname = "watermeter";
         struct Wlan {
             std::string ssid = "";
             std::string password = "";
-            std::string hostname = "watermeter";
             struct Ipv4 {
-                int networkConfig = NETWORK_WLAN_IP_CONFIG_DHCP;
+                int networkConfig = NETWORK_IP_CONFIG_DHCP;
                 std::string ipAddress = "";
                 std::string subnetMask = "";
                 std::string gatewayAddress = "";
@@ -434,6 +447,17 @@ struct CfgData {
                 std::string ipAddress = "192.168.4.1";
             } ipv4;
         } wlanAp;
+#ifdef BOARD_FEATURE_ETHERNET
+        struct Ethernet {
+            struct Ipv4 {
+                int networkConfig = NETWORK_IP_CONFIG_DHCP;
+                std::string ipAddress = "";
+                std::string subnetMask = "";
+                std::string gatewayAddress = "";
+                std::string dnsServer = "";
+            } ipv4;
+        } ethernet;
+#endif // BOARD_FEATURE_ETHERNET
         struct Time {
             std::string timeSetManual = ""; // Only temporary parameter | Syntax: YYYY-MM-DDTHH:MM:SS
             std::string timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";

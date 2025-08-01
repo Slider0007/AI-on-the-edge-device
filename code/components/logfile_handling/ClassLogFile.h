@@ -20,11 +20,11 @@ class ClassLogFile
 #endif // KEEP_LOGFILE_OPEN_FOR_APPENDING
 
     std::string logFileRootFolder;
-    std::string logfile;
+    std::string logFileTimeFormat;
     std::string dataFileRootFolder;
-    std::string datafile;
+    std::string dataFileTimeFormat;
     std::string debugFileRootFolder;
-    std::string debugfolder;
+    std::string debugFolderTimeFormat;
     int logFileRetentionInDays;
     int dataLogRetentionInDays;
     int debugFilesRetentionInDays;
@@ -32,8 +32,7 @@ class ClassLogFile
     esp_log_level_t loglevel;
 
   public:
-    ClassLogFile(std::string _logFileRootFolder, std::string _logfile, std::string _dataFileRootFolder, std::string _datafile,
-                 std::string _debugFileRootFolder, std::string debugfolder);
+    ClassLogFile();
 
     void writeHeapInfo(std::string _id);
 

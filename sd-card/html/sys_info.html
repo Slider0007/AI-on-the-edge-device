@@ -216,19 +216,19 @@
 				<output class="badge" id="connection_status"></output>
 			</td>
 		</tr>
-		<tr>
+		<tr id="wlan_ssid_info">
 			<td>Network Name (SSID)</td>
 			<td>
 				<output id="wlan_ssid"></output>
 			</td>
 		</tr>
-		<tr>
+		<tr id="wlan_rssi_info">
 			<td>Signal Strength (RSSI)</td>
 			<td>
 				<output id="wlan_rssi"></output>
 			</td>
 		</tr>
-		<tr>
+		<tr id="wlan_channel_info">
 			<td>WLAN Channel</td>
 			<td>
 				<output id="wlan_channel"></output>
@@ -623,9 +623,24 @@
 				else
 					addClassToElement("connection_status", "badge-error");
 
-				document.getElementById("wlan_ssid").value = _jsonData.wlan_ssid;
-				document.getElementById("wlan_rssi").value = _jsonData.wlan_rssi + " dBm";
-				document.getElementById("wlan_channel").value = _jsonData.wlan_channel;
+				// Show only if info relevant (Connected via WLAN)
+				if (_jsonData.wlan_ssid != "undefined")
+					document.getElementById("wlan_ssid").value = _jsonData.wlan_ssid;
+				else
+					document.getElementById("wlan_ssid_info").style.display = "None";
+
+				// Show only if info relevant (Connected via WLAN)
+				if (_jsonData.wlan_rssi != -255)
+					document.getElementById("wlan_rssi").value = _jsonData.wlan_rssi + " dBm";
+				else
+					document.getElementById("wlan_rssi_info").style.display = "None";
+
+				// Show only if info relevant (Connected via WLAN)
+				if (_jsonData.wlan_channel != -1)
+					document.getElementById("wlan_channel").value = _jsonData.wlan_channel;
+				else
+					document.getElementById("wlan_channel_info").style.display = "None";
+
 				document.getElementById("mac_address").value = _jsonData.mac_address;
 				document.getElementById("network_config").value = _jsonData.network_config;
 				document.getElementById("ipv4_address").value = _jsonData.ipv4_address;

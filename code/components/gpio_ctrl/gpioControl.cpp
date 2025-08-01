@@ -25,7 +25,7 @@
 
 static const char *TAG = "GPIOCTRL";
 
-static GpioHandler *gpioHandler = NULL;
+static GpioHandler *gpioHandle = NULL;
 QueueHandle_t gpio_queue_handle = NULL;
 
 
@@ -140,25 +140,28 @@ bool GpioHandler::init()
 
     esp_err_t retVal = loadParameter();
 
-    if (retVal == ESP_FAIL) { // Error state
+    if (retVal == ESP_FAIL) {
+        // Error state
         clearData();
         delete gpioMap;
         gpioMap = NULL;
         return false;
     }
-    else if (retVal == ESP_ERR_NOT_FOUND) { // GPIO disabled
+    else if (retVal == ESP_ERR_NOT_FOUND) {
+        // GPIO disabled
         return true;
     }
 
-    int smartLedChannel = 0; // max. 8 channels
-    int ledcChannel = 1;     // max 8 channels (CH0: camera, CH1 - CH7: spare)
+    uint8_t smartLedChannel = 0; // max. 8 channels
+    uint8_t ledcChannel = 1;     // max 8 channels (CH0: camera, CH1 - CH7: spare)
     bool initHandlerTask = false;
 
     for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
         it->second->init();
 
-        if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED) {
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init SmartLED (Flashlight): GPIO" + std::to_string((int)it->second->getGPIO()));
+        if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED || it->second->getMode() == GPIO_PIN_MODE_STATUSLED_SMARTLED) {
+            std::string sourceType = (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED) ? "Flashlight" : "StatusLED";
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init SmartLED (" + sourceType + "): GPIO" + std::to_string((int)it->second->getGPIO()));
             it->second->setSmartLed(new SmartLed(it->second->getLEDType(), it->second->getLEDQuantity(), it->second->getGPIO(),
                                                  smartLedChannel, DoubleBuffer));
             smartLedChannel++;
@@ -241,8 +244,17 @@ esp_err_t GpioHandler::loadParameter()
 
     gpioHandlerEnabled = false;
 
+#ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
+    // Special case: Status LED uses SmartLED functionality -> init smartLED functionality only
+    GpioPin *gpioPin = new GpioPin((gpio_num_t)GPIO_STATUS_LED_ONBOARD, ("gpio" + std::to_string((int)GPIO_STATUS_LED_ONBOARD)).c_str(),
+                                   GPIO_PIN_MODE_STATUSLED_SMARTLED, GPIO_INTR_DISABLE, 200, 5000, false, false, false, "",
+                                   GPIO_STATUS_LED_ONBOARD_SMARTLED_TYPE, GPIO_STATUS_LED_ONBOARD_SMARTLED_QUANTITY,
+                                   GPIO_STATUS_LED_ONBOARD_SMARTLED_COLOR, 100);
+    (*gpioMap)[(gpio_num_t)GPIO_STATUS_LED_ONBOARD] = gpioPin;
+#endif
+
     if (!cfgDataPtr->customizationEnabled) {
-#if defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
+#ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
         // Special case: Flashlight default uses SmartLED functionality -> init smartLED functionality only
         for (int i = 0; i < GPIO_SPARE_PIN_COUNT; ++i) {
             if (strcmp(gpio_spare_usage[i], FLASHLIGHT_SMARTLED) == 0) {
@@ -259,7 +271,11 @@ esp_err_t GpioHandler::loadParameter()
         return ESP_FAIL;
 #endif // GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
 
-        return ESP_ERR_NOT_FOUND;
+        if (gpioMap->empty()) {
+            return ESP_ERR_NOT_FOUND; // GPIO disabled
+        }
+
+        return ESP_OK;
     }
 
     bool gpioInstallISR = false;
@@ -357,7 +373,8 @@ void GpioHandler::clearData()
     if (gpioMap != NULL) {
         for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); it++) {
             // Free smartLED instances
-            if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED && it->second->getSmartLed() != NULL) {
+            if ((it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED || it->second->getMode() == GPIO_PIN_MODE_STATUSLED_SMARTLED) &&
+                it->second->getSmartLed() != NULL) {
                 delete it->second->getSmartLed();
                 it->second->setSmartLed(NULL);
             }
@@ -396,7 +413,7 @@ void GpioHandler::deinit()
 
 void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
 {
-    if (gpioMap == NULL) {
+    if (!gpioHandle || !gpioMap) {
         return;
     }
 
@@ -455,6 +472,7 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
                                     "Flashlight SmartLED: GPIO" + std::to_string((int)it->first) + ", State: " + std::to_string(_state));
             }
 
+            it->second->getSmartLed()->wait();
             esp_err_t retVal = it->second->getSmartLed()->show();
             it->second->updatePinState(_state ? 1 : 0);
 
@@ -477,6 +495,32 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                 "Flashlight Digital: GPIO" + std::to_string((int)it->first) +
                                     ", State: " + std::to_string(it->second->getLogicLevelActiveLow() ? !_state : _state));
+        }
+    }
+}
+
+
+void GpioHandler::gpioStatusLedControl(bool _state)
+{
+    if (!gpioHandle || !gpioMap) {
+        return;
+    }
+
+    for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
+        if (it->second->getMode() == GPIO_PIN_MODE_STATUSLED_SMARTLED) {
+            if (_state) {
+                for (int i = 0; i < it->second->getLEDQuantity(); ++i) {
+                    (*it->second->getSmartLed())[i] = it->second->getLEDColor();
+                }
+            }
+            else {
+                for (int i = 0; i < it->second->getLEDQuantity(); ++i) {
+                    (*it->second->getSmartLed())[i] = Rgb{0, 0, 0};
+                }
+            }
+
+            it->second->getSmartLed()->wait();
+            it->second->getSmartLed()->show();
         }
     }
 }
@@ -681,8 +725,8 @@ void GpioHandler::handleMQTTconnect()
 // ***********************************
 esp_err_t callHandleHttpRequest(httpd_req_t *req)
 {
-    GpioHandler *gpioHandler = (GpioHandler *)req->user_ctx;
-    return gpioHandler->handleHttpRequest(req);
+    GpioHandler *gpioHandle = (GpioHandler *)req->user_ctx;
+    return gpioHandle->handleHttpRequest(req);
 }
 
 
@@ -820,42 +864,39 @@ void GpioHandler::registerGpioUri(httpd_handle_t server)
 
 // GPIO handler interface
 // ***********************************
-void createGpioHandler(void)
+bool initGpioHandler()
 {
-    if (gpioHandler == NULL) {
-        gpioHandler = new GpioHandler();
+    if (!gpioHandle) {
+        gpioHandle = new GpioHandler();
     }
-}
 
-
-bool gpio_handler_init()
-{
-    if (gpioHandler != NULL) {
-        return (gpioHandler->init());
+    if (gpioHandle) {
+        return gpioHandle->init();
     }
+
     return false;
 }
 
 
-void gpio_handler_deinit()
+void deinitGpioHandler()
 {
-    if (gpioHandler != NULL) {
-        gpioHandler->deinit();
+    if (gpioHandle) {
+        gpioHandle->deinit();
     }
 }
 
 
-void gpio_handler_destroy()
+void destroyGpioHandler()
 {
-    if (gpioHandler != NULL) {
-        gpio_handler_deinit();
-        delete gpioHandler;
-        gpioHandler = NULL;
+    if (gpioHandle) {
+        deinitGpioHandler();
+        delete gpioHandle;
+        gpioHandle = NULL;
     }
 }
 
 
-GpioHandler *gpio_handler_get()
+GpioHandler *getGpioHandle()
 {
-    return gpioHandler;
+    return gpioHandle;
 }

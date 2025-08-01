@@ -215,7 +215,9 @@
 				<table>
 					<tr><td style="padding: 0px;">Device Uptime</td><td style="padding: 0px 20px"><output id="device_uptime"></output></td></tr>
 					<tr><td style="padding: 0px;">Cycle Counter</td><td style="padding: 0px 20px"><output id="cycle_counter"></output></td></tr>
-					<tr><td style="padding: 0px;">WLAN Signal</td><td style="padding: 0px 20px"><output id="wlan_rssi"></output></td></tr>
+					<tr id="wlan_rssi_info"><td style="padding: 0px;">WLAN Signal</td><td style="padding: 0px 20px">
+						<output id="wlan_rssi"></output></td>
+					</tr>
 				</table>
 			</td>
 		</tr>
@@ -248,7 +250,14 @@
 				loadProcessError(_jsonData.process_error, _jsonData.process_state);
 				$('#device_uptime').html(formatUptime(_jsonData.device_uptime));
 				$('#cycle_counter').html(_jsonData.cycle_counter);
-				loadWLANRSSI(_jsonData.wlan_rssi);
+
+				// Show only if info relevant (Connected via WLAN)
+				if (_jsonData.wlan_rssi == -255) {
+					document.getElementById("wlan_rssi_info").style.display = "None";
+				}
+				else {
+					loadWLANRSSI(_jsonData.wlan_rssi);
+				}
 			}
 		};
 

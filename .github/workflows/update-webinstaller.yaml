@@ -16,6 +16,7 @@ jobs:
          - xiao-esp32s3-sense
          - freenove-esp32s3-n8r8
          - freenove-esp32s3-n16r8
+         - waveshare-esp32s3-eth
 
     # Sets permissions of the GITHUB_TOKEN to allow downloading artifacts
     permissions:

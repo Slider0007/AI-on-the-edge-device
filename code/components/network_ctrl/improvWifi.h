@@ -89,7 +89,7 @@ class ImprovWiFi
     void setCustomGetLocalIpCallback(CustomGetLocalIpCallback *getLocalIpCallback);
 
     // Check if connection is established
-    bool isConnected(bool improvProvisioning = true);
+    bool isConnected();
 };
 
 #endif // IMPROV_WIFI_H

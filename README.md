@@ -16,16 +16,17 @@ you can turn any standard meter into a smart, connected device.
 - **OTA Update** – Seamless over-the-air firmware updates via the web interface
 
 ### ✨ Fork-Specific Enhancements
-- **[Hardware](#supported-hardware)** – Compatible with ESP32 and ESP32-S3 devices
-- **Connectivity** – Operates in WiFi Client or Access Point (Standalone) mode
-- **Flashlight** – Customizable setup using multiple PWM-driven or smart LEDs or trigger an actuator
+- **[Hardware Support](#supported-hardware)** – Compatible with ESP32 and ESP32-S3 devices
+- **Device Provisioning** - Web-based service for user-friendly firmware, SD card provisioning incl. Wi-Fi config
+- **Connectivity** – Operates in WiFi Client, WiFi Access Point (Standalone) or Ethernet mode
+- **Flashlight** – Fully customizable setup using one or multiple digital, PWM-driven or smart LEDs
 - **Durability** – Minimizes SD card wear by keeping process data (ROIs, models, markers) in RAM
 - **Performance** - Reduced I/O cycles (data kept in RAM) and hardware-optimized routines
 - **User Experience** – Consistent UI, dynamic config reloads without reboot, improved error handling/logging
 - **Configuration** – Firmware-managed JSON-based config for better maintainability and resilience
 - **Codebase** – Streamlined, mostly consistently styled, easier to maintain
 - **API Design** – Relevant APIs use JSON notation for seamless integration
-- **TLS Support** – Secure connections supported for MQTT, InfluxDB and Webhook
+- **TLS Support** – Secure connection supported for MQTT, InfluxDB and Webhook
 
 Further refinements are documented in the [changelog](CHANGELOG.md) (v16.0.0-SLFork and newer).
 
@@ -37,7 +38,6 @@ Further refinements are documented in the [changelog](CHANGELOG.md) (v16.0.0-SLF
 - **InfluxDB v1 / v2** – Log data directly into time-series databases (TLS supported)
 - **[Webhook Publishing](docs/API/Webhook/_OVERVIEW.md)** – Push content to external services via HTTP hook (TLS supported)
 - **[Prometheus/OpenMetrics Exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)** – Export metrics for device monitoring purposes
-
 
 Explore API docs via links above or device web interface: `System > Documentation`<br>
 ℹ️ Note: APIs aren’t fully compatible with jomjol’s firmware.
@@ -67,6 +67,7 @@ and converted into a digital reading, ready to be sent or accessed through vario
 | [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html) | ESP32 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED | All | ⚠️ Only boards with ≥ 4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones |
 | [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP | ❌ External LED required (PWM, SmartLED) | ≥ v17.0.0 | ⚠️ Runs hot, small heatsink recommended |
 | [Freenove ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8<br><br>ESP32S3-WROOM-1-N8R8 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED<br>Low intensity: Additional external LED recommended (PWM, SmartLED) | ≥ v17.0.0<br><br>≥ v17.1.0 | ℹ️ SOC and pin-compatible boards with 8/16MB flash and 8MB RAM supported |
+| [Waveshare ESP32S3-ETH](https://www.waveshare.com/esp32-s3-eth.htm) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP<br>3. Ethernet | ❌ External LED required (PWM, SmartLED) | ≥ v17.2.0 | ℹ️ POE supported (optional hardware required) |
 
 ### Camera Compatibility
 | Camera Type | Sensor Resolution | Digital Zoom | Firmware Support | Remarks                       
@@ -79,13 +80,6 @@ The camera clock frequency — configurable via the WebUI or config file — may
 result in slower WebUI loading times or increased latency, particularly when using low-quality boards or those with onboard antennas. 
 To optimize performance, experiment with different camera clock frequencies while evaluating both network responsiveness and resulting 
 image quality. The ideal setting may vary depending on your specific hardware setup and the Wi-Fi channel in use.
-
-
-## Inform Yourself
-There is growing [documentation](https://jomjol.github.io/AI-on-the-edge-device-docs/) which provides you with 
-a lot of information. Head there to get a start, how to set it up and configure it.<br>
-ℹ️ Not every description is 100% suitable for this fork. Therefore please check [docs](/docs/) folder of this repository 
-for any fork specific documentation.
 
 
 ## Firmware Installation
@@ -123,20 +117,24 @@ prepare the SD card manually.
 
 
 ## Build Yourself
-Developers and advanced users can build the firmware from source. Follow the [Build / Debug Instructions](code/README.md) for environment setup
-and compilation. If you don’t need to customize the firmware, it’s easier to use the precompiled releases provided on the 
+Developers and advanced users can build the firmware from source. Follow the [build / debug Instructions](code/README.md) for environment setup, firmware compilation and debugging. If you don’t need to customize the firmware, it’s easier to use the precompiled releases provided on the 
 [Releases page](https://github.com/slider0007/AI-on-the-edge-device/releases).
 
 
 ## Support / Community
-ℹ️ This is a fork of [jomjol’s original project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use.
+ℹ️ This is a fork of [jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use.
 
 - This fork is **actively developed** and maintained independently
 - It is **no longer compatible** with the upstream project
 - It remains public to give something back to the community and help others with similar use cases
-- This project builds on [jomjol’s original repository](https://github.com/jomjol/AI-on-the-edge-device) —  make sure to **respect the upstream license**
-- Customized code can be used for **non-commercial purposes only** - be fair and **credit the original source**
-- Community discussions, feedback, and bug reports are always welcome and appreciated
+- This fork builds on [jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device) — make sure to **respect the upstream license**
+- Customized code can be used for **non-commercial purposes** - be fair and **credit the original source**
+- Community discussions, feedback and bug reports are always welcome and appreciated
 
 Although no longer working on the upstream project, this version aims to provide a flexible and robust alternative.  
 Thanks for your interest and support!
+
+
+## Further Documentation
+Some generic documentation can be found in [documentation repository](https://jomjol.github.io/AI-on-the-edge-device-docs/) of upstream project.<br>
+⚠️ Not every description is 100% suitable for this fork. Fork-specific documentation is located in [docs](/docs/) folder of this repository.

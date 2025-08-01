@@ -27,22 +27,22 @@ static const char *_STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %
 
 
 static camera_config_t cameraConfig = {
-    .pin_pwdn = PWDN_GPIO_NUM,
-    .pin_reset = RESET_GPIO_NUM,
-    .pin_xclk = XCLK_GPIO_NUM,
-    .pin_sccb_sda = SIOD_GPIO_NUM,
-    .pin_sccb_scl = SIOC_GPIO_NUM,
-    .pin_d7 = Y9_GPIO_NUM,
-    .pin_d6 = Y8_GPIO_NUM,
-    .pin_d5 = Y7_GPIO_NUM,
-    .pin_d4 = Y6_GPIO_NUM,
-    .pin_d3 = Y5_GPIO_NUM,
-    .pin_d2 = Y4_GPIO_NUM,
-    .pin_d1 = Y3_GPIO_NUM,
-    .pin_d0 = Y2_GPIO_NUM,
-    .pin_vsync = VSYNC_GPIO_NUM,
-    .pin_href = HREF_GPIO_NUM,
-    .pin_pclk = PCLK_GPIO_NUM,
+    .pin_pwdn = GPIO_CAMERA_PWDN,
+    .pin_reset = GPIO_CAMERA_RESET,
+    .pin_xclk = GPIO_CAMERA_XCLK,
+    .pin_sccb_sda = GPIO_CAMERA_SIO_DATA,
+    .pin_sccb_scl = GPIO_CAMERA_SIO_CLK,
+    .pin_d7 = GPIO_CAMERA_Y9,
+    .pin_d6 = GPIO_CAMERA_Y8,
+    .pin_d5 = GPIO_CAMERA_Y7,
+    .pin_d4 = GPIO_CAMERA_Y6,
+    .pin_d3 = GPIO_CAMERA_Y5,
+    .pin_d2 = GPIO_CAMERA_Y4,
+    .pin_d1 = GPIO_CAMERA_Y3,
+    .pin_d0 = GPIO_CAMERA_Y2,
+    .pin_vsync = GPIO_CAMERA_VSYNC,
+    .pin_href = GPIO_CAMERA_HREF,
+    .pin_pclk = GPIO_CAMERA_PCLK,
 
     .xclk_freq_hz = 10000000, // Frequency (10Mhz)
 
@@ -196,7 +196,7 @@ void ClassControlCamera::skipFrames(uint8_t n)
 
 void ClassControlCamera::powerCycle()
 {
-#if PWDN_GPIO_NUM == -1 // Power down pin not wired
+#if GPIO_CAMERA_PWDN == -1 // Power down pin not wired
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Power down pin not wired. Resetting by software");
 
     sensor_t *s = esp_camera_sensor_get();
@@ -208,16 +208,16 @@ void ClassControlCamera::powerCycle()
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Resetting by power cycle");
 
     gpio_config_t gpioConfig = {};
-    gpioConfig.pin_bit_mask = 1LL << PWDN_GPIO_NUM;
+    gpioConfig.pin_bit_mask = 1LL << GPIO_CAMERA_PWDN;
     gpioConfig.mode = GPIO_MODE_OUTPUT;
     gpio_config(&gpioConfig);
 
-    gpio_set_level(PWDN_GPIO_NUM, 1); // Power down (low active)
+    gpio_set_level(GPIO_CAMERA_PWDN, 1); // Power down (low active)
     vTaskDelay(pdMS_TO_TICKS(100));
 
-    gpio_set_level(PWDN_GPIO_NUM, 0); // Wake up (low active)
+    gpio_set_level(GPIO_CAMERA_PWDN, 0); // Wake up (low active)
     vTaskDelay(pdMS_TO_TICKS(100));
-#endif // PWDN_GPIO_NUM == -1
+#endif // GPIO_CAMERA_PWDN == -1
 }
 
 
@@ -957,8 +957,9 @@ void ClassControlCamera::initFlashlight()
         ledc_stop(LEDC_LOW_SPEED_MODE, FLASHLIGHT_DEFAULT_LEDC_CHANNEL, 0);
 
         // Init GPIO handler to handle flashlight
-        if (!(gpio_handler_get() != NULL && gpio_handler_get()->gpioHandlerIsEnabled())) {
-            gpio_handler_init();
+        GpioHandler *handle = getGpioHandle();
+        if (handle == NULL || !handle->gpioHandlerIsEnabled()) {
+            initGpioHandler();
         }
     }
     else {
@@ -967,8 +968,9 @@ void ClassControlCamera::initFlashlight()
     }
 #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
     // Init GPIO handler to handle flashlight
-    if (!(gpio_handler_get() != NULL && gpio_handler_get()->gpioHandlerIsEnabled())) {
-        gpio_handler_init();
+    GpioHandler *handle = getGpioHandle();
+    if (handle == NULL || !handle->gpioHandlerIsEnabled()) {
+        initGpioHandler();
     }
 #endif
 
@@ -1039,18 +1041,20 @@ esp_err_t ClassControlCamera::setFlashlightParameter(const CfgData::SectionTakeI
 
 void ClassControlCamera::setFlashlight(bool _status)
 {
-    // Use onboard status LED as flashlight status indicator
-    setStatusLed(_status);
+    // Use onboard status LED as flashlight status indicator (Only if LED is not used for other indications)
+    if (xHandle_task_StatusLED == NULL) {
+        setStatusLedState(_status);
+    }
 
     // Set flashlight
-    GpioHandler *gpioHandler = gpio_handler_get();
+    GpioHandler *gpioHandle = getGpioHandle();
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
-    if (gpioHandler != NULL) {
-        gpioHandler->gpioFlashlightControl(_status, paramFlashlightInternal.flashIntensity);
+    if (gpioHandle != NULL) {
+        gpioHandle->gpioFlashlightControl(_status, paramFlashlightInternal.flashIntensity);
     }
 #else
-    if (gpioHandler != NULL && gpioHandler->gpioHandlerIsEnabled()) {
-        gpioHandler->gpioFlashlightControl(_status, paramFlashlightInternal.flashIntensity);
+    if (gpioHandle != NULL && gpioHandle->gpioHandlerIsEnabled()) {
+        gpioHandle->gpioFlashlightControl(_status, paramFlashlightInternal.flashIntensity);
     }
     else {
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
@@ -1083,33 +1087,6 @@ void ClassControlCamera::setFlashlight(bool _status)
 #endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     }
 #endif // GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
-}
-
-
-void ClassControlCamera::setStatusLed(bool _status)
-{
-    if (xHandle_task_StatusLED == NULL) { // Only if status LED is not used by higher prior status
-        // Init the GPIO
-        esp_rom_gpio_pad_select_gpio(GPIO_STATUS_LED_ONBOARD);
-        /* Set the GPIO as a push/pull output */
-        gpio_set_direction(GPIO_STATUS_LED_ONBOARD, GPIO_MODE_OUTPUT);
-
-#ifdef GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-        if (!_status) {
-            gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
-        }
-        else {
-            gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
-        }
-#else
-        if (_status) {
-            gpio_set_level(GPIO_STATUS_LED_ONBOARD, 1);
-        }
-        else {
-            gpio_set_level(GPIO_STATUS_LED_ONBOARD, 0);
-        }
-#endif // GPIO_STATUS_LED_ONBOARD_LOWACTIVE
-    }
 }
 
 

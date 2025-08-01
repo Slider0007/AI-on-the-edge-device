@@ -21,6 +21,7 @@
 #include "gpioControl.h"
 #include "webserver.h"
 #include "server_file.h"
+#include "network_main.h"
 #include "connect_wlan.h"
 #include "psram.h"
 
@@ -63,14 +64,25 @@ bool doInit(void)
 
     // Init GPIO handler (for generic usage)
     // Note 1: GPIO has to be initialized before MQTT (topic subscription)
-    // Note 2: GPIO handler gets either init here or in cameraCtrl.initFlashlight() to control flashlight
+    // Note 2: GPIO handler gets either init here,
+    // - in cameraCtrl.initFlashlight() to control flashlight
+    // - in initStatusLed() to control smartled statusLED
     // ********************************************
-    gpio_handler_deinit();
+    deinitGpioHandler();
+
+#ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
+    // Enable if status LED is a smartLED
+    if (!initGpioHandler()) {
+        bRetVal = false;
+    }
+#else
+    // Enable only if GPIO customization is enabled
     if (ConfigClass::getInstance()->get()->sectionGpio.customizationEnabled) {
-        if (!gpio_handler_init()) {
+        if (!initGpioHandler()) {
             bRetVal = false;
         }
     }
+#endif
 
     // Init camera
     // Note: Make sure this is called between deinit and init
@@ -1117,13 +1129,13 @@ void task_autodoFlow(void *pvParameter)
         // PUBLISH DATA / RESULTS
         // ********************************************
         else if (taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA) {
-            if (getWifiIsConnected()) { // Skip pusblishing services if WLAN connection is not connected or suspended
+            if (getNetworkConnectionState()) { // Skip pusblishing services if network connection is not connected or suspended
                 if (!flowctrl.doFlowPublishData(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Publish data: Process error occured");
                 }
             }
             else {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "No WLAN connection, skip publishing services");
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "No network connection, skip publishing services");
             }
             taskAutoFlowState = FLOW_TASK_STATE_ADDITIONAL_TASKS; // Continue with TASKS after FLOW FINISHED
         }

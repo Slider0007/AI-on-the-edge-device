@@ -13,6 +13,7 @@
 #include "http_auth.h"
 #include "MainFlowControl.h"
 #include "ClassLogFile.h"
+#include "network_main.h"
 #include "connect_wlan.h"
 #include "interface_mqtt.h"
 #include "time_sntp.h"
@@ -179,7 +180,12 @@ bool mqttServer_publishDeviceStatus(int _qos)
 
     retVal &= publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, _qos, false);
     retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "device_uptime", std::to_string(getUptime()), _qos, false);
-    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "wlan_rssi", std::to_string(getWifiRssi()), _qos, false);
+
+    // Publish only, if network mode WLAN / WLAN AP
+    if (getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN || getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN_AP) {
+        retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "wlan_rssi", std::to_string(getWifiRssi()), _qos, false);
+    }
+
     retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "chip_temp", to_stringWithPrecision(getSOCTemperature(), 0), _qos,
                               false);
 
@@ -529,19 +535,21 @@ bool mqttServer_publishHADiscovery(int _qos)
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
-
-    HADiscoveryData = {};
-    HADiscoveryData = {
-        .topic = "/device/status/wlan_rssi",
-        .topicName = "wlan_rssi",
-        .friendlyName = "WLAN Signal Strength",
-        .icon = "wifi",
-        .unit = "dBm",
-        .deviceClass = "signal_strength",
-        .stateClass = "measurement",
-        .entityCategory = "diagnostic" //
-    };
-    publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
+    // Publish only, if network mode WLAN / WLAN AP
+    if (getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN || getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN_AP) {
+        HADiscoveryData = {};
+        HADiscoveryData = {
+            .topic = "/device/status/wlan_rssi",
+            .topicName = "wlan_rssi",
+            .friendlyName = "WLAN Signal Strength",
+            .icon = "wifi",
+            .unit = "dBm",
+            .deviceClass = "signal_strength",
+            .stateClass = "measurement",
+            .entityCategory = "diagnostic" //
+        };
+        publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
+    }
 
     HADiscoveryData = {};
     HADiscoveryData = {
@@ -776,7 +784,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         }
 
         std::string gpioName = gpioPin.pinName.empty() ? "gpio" + std::to_string(gpioPin.gpioNumber) : gpioPin.pinName;
-        gpio_pin_mode_t pinMode = gpio_handler_get()->resolvePinMode(toLower(gpioPin.pinMode));
+        gpio_pin_mode_t pinMode = getGpioHandle()->resolvePinMode(toLower(gpioPin.pinMode));
 
         HADiscoveryData = {};
         HADiscoveryData = {
