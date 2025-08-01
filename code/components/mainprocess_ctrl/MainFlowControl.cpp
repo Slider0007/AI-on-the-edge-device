@@ -194,7 +194,7 @@ esp_err_t handler_cycle_start(httpd_req_t *req)
     httpd_resp_set_type(req, "text/plain");
 
     if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART || taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART ||
-        flowctrl.getActualProcessState() == FLOW_INIT_WAITING_TIME_SYNC ||
+        flowctrl.getActualProcessState() == FLOW_INIT_WAITING_VALID_TIME ||
         flowctrl.getActualProcessState() == FLOW_INIT_FAILED) // Possibility to manual retrigger a cycle when init is already failed
     {
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Cycle start triggered by REST API");
@@ -1015,11 +1015,10 @@ void task_autodoFlow(void *pvParameter)
                 }
             }
             else {
-                // Waiting for NTP time sync to ensure process start with valid time
-                if (ConfigClass::getInstance()->get()->sectionNetwork.time.ntp.timeSyncEnabled &&
-                    ConfigClass::getInstance()->get()->sectionNetwork.time.ntp.processStartInterlock) {
-                    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process start interlock: Waiting for time sync");
-                    flowctrl.setActualProcessState(std::string(FLOW_INIT_WAITING_TIME_SYNC));
+                // Waiting for time set to ensure process start with valid time
+                if (ConfigClass::getInstance()->get()->sectionNetwork.time.processStartInterlock) {
+                    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process start interlock: Waiting for valid time");
+                    flowctrl.setActualProcessState(std::string(FLOW_INIT_WAITING_VALID_TIME));
 #ifdef ENABLE_MQTT
                     if (getMqttIsConnected()) {
                         publishMqttData(mqttServer_getMainTopic() + "/process/status/process_state", flowctrl.getActualProcessState(), 1,
@@ -1042,7 +1041,7 @@ void task_autodoFlow(void *pvParameter)
                             taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART; // Continue to test if AUTOSTART is TRUE
                             break;
                         }
-                        else if (getTimeIsSynced()) {
+                        else if ((getTimeSyncEnabled() && getTimeIsSynced()) || (!getTimeSyncEnabled() && getTimeIsSet())) {
                             taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART; // Continue to test if AUTOSTART is TRUE
                             break;
                         }

@@ -132,6 +132,11 @@ extern "C" void app_main(void)
     // Load persistent config from file (json notation)
     ConfigClass::getInstance()->readConfigFile();
 
+    // Init time
+    // Note: NTP sync will be activated when any network connection is established
+    // ********************************************
+    initTime();
+
     // Init network interface
     // Call only once in application (deinit is not possible)
     // ********************************************
@@ -208,11 +213,6 @@ extern "C" void app_main(void)
     // Start before WLAN init to avoid frequency changes after WLAN init
     // ********************************************
     setCPUFrequency();
-
-    // Init time (as early as possible, but wifi needs to be connected to sync time. no hardware clock available)
-    // Status of time sync will be checked after every cycle (MainFlowControl.cpp)
-    // ********************************************
-    initTime();
 
     // Init WLAN connection (init client, access point or none depending on configuration)
     // ********************************************

@@ -435,12 +435,13 @@ struct CfgData {
             } ipv4;
         } wlanAp;
         struct Time {
+            std::string timeSetManual = ""; // Only temporary parameter | Syntax: YYYY-MM-DDTHH:MM:SS
             std::string timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
             struct Ntp {
                 bool timeSyncEnabled = true;
                 std::string timeServer = ""; // IP-Address or DNS name, e.g. 192.168.x.x OR fritz.box
-                bool processStartInterlock = true;
             } ntp;
+            bool processStartInterlock = true;
         } time;
     } sectionNetwork;
 
