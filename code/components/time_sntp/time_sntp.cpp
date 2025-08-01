@@ -132,7 +132,7 @@ bool setTime(const std::string &timeString)
 
     struct timeval now = {.tv_sec = time, .tv_usec = 0};
     if (settimeofday(&now, NULL) != 0) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to set system time");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to set device time");
         return false;
     }
 
