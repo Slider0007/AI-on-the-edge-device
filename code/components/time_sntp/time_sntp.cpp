@@ -52,7 +52,7 @@ bool getTimeIsSet(void)
     localtime_r(&now, &timeinfo);
 
     // Is time set? If not, tm_year will be (1970 - 1900).
-    if ((timeinfo.tm_year < (2024 - 1900))) {
+    if ((timeinfo.tm_year < (2025 - 1900))) {
         return false;
     }
 
