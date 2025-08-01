@@ -20,6 +20,7 @@
 #include "server_file.h"
 #include "server_help.h"
 #include "time_sntp.h"
+#include "network_main.h"
 #include "connect_wlan.h"
 #include "helper.h"
 #include "system.h"
@@ -144,7 +145,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddStringToObject(cJSONObject, "network_opmode", getNetworkOpmode().c_str()) == NULL) {
             retVal = ESP_FAIL;
         }
-        if (cJSON_AddStringToObject(cJSONObject, "connection_status", getWifiIsConnected() ? "Connected" : "Disconnected") == NULL) {
+        if (cJSON_AddStringToObject(cJSONObject, "connection_status", getNetworkConnectionState() ? "Connected" : "Disconnected") == NULL) {
             retVal = ESP_FAIL;
         }
         if (cJSON_AddStringToObject(cJSONObject, "wlan_ssid", getWifiSsid().c_str()) == NULL) {
@@ -371,7 +372,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;
     }
     else if (type.compare("connection_status") == 0) {
-        httpd_resp_sendstr(req, getWifiIsConnected() ? "Connected" : "Disconnected");
+        httpd_resp_sendstr(req, getNetworkConnectionState() ? "Connected" : "Disconnected");
         return ESP_OK;
     }
     else if (type.compare("wlan_ssid") == 0) {

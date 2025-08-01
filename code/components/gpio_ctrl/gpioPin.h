@@ -11,6 +11,7 @@
 
 
 typedef enum {
+    GPIO_PIN_MODE_STATUSLED_SMARTLED = -1, // Only for internal use
     GPIO_PIN_MODE_DISABLED = 0,
     GPIO_PIN_MODE_INPUT = 1,
     GPIO_PIN_MODE_INPUT_PULLUP = 2,

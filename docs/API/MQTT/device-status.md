@@ -16,7 +16,7 @@ Topic / [Topic].[JSON Property] | Description               | Output
 |:----------------------------|:----------------------------|:--------------     
 | `connection`                | MQTT Connection Status<br><br>Possible States:<br>- online<br>- offline | `online`
 | `device_uptime`             | Device Uptime [s]           | `147`
-| `wlan_rssi`                 | WLAN Signal Strength [dBm]  | `-54`
+| `wlan_rssi`*                | WLAN Signal Strength [dBm]  | `-54`
 | `chip_temp`                 | Device CPU Temperature (°C) | `45`
 | `heap`.`heap_total_free`    | Memory: Total Free (Int. + Ext.) [kB] | `3058639`
 | `heap`.`heap_internal_free` | Memory: Internal Free [kB]  | `75079`
@@ -28,4 +28,4 @@ Topic / [Topic].[JSON Property] | Description               | Output
 | `sd_partition_free`         | SD Card: Free Partition Space | `29016`
 | `ntp_sync_status`           | NTP Sync Status<br><br>Possible States:<br>- `Synchronized`<br>- `Not Synchronized`<br>- `Disabled` | `Synchronized`
 
-
+*Only available if the device is connected via the Wi-Fi interface

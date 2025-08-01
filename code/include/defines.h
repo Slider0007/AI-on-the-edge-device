@@ -226,6 +226,18 @@
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 
 
+// WLAN AP (softAP) for provisioning
+//******************************
+#define WLAN_AP_DEFAULT_SSID "AI-on-the-Edge Device"
+#define WLAN_AP_DEFAULT_IP "192.168.4.1"
+#define WLAN_AP_DEFAULT_CHANNEL 11
+
+
+// connect_ethernet.cpp
+//******************************
+#define ETHERNET_WAITING_TIME_FOR_CONNECTION 30000 // Waiting time (ms) to successful establish ethernet connection
+
+
 // connect_wlan.cpp
 //******************************
 #define WLAN_CONNECT_FALLBACK_AP_DELAY 120 // Delay in seconds after which the device fall back to AP mode if no connection can be established initially
@@ -334,17 +346,17 @@ CONFIG_WPA_11R_SUPPORT=n
 #if defined(BOARD_AITHINKER_ESP32CAM)
 #define BOARD_TYPE_NAME     "ESP32CAM"              // Keep Board type equal to main board environment name
                                                     // This is used for OTA update package verification (converted to lower case)
-
 #elif defined(BOARD_XIAO_ESP32S3)
-#define BOARD_TYPE_NAME    "XIAO-ESP32S3-Sense"     // Keep Board type equal to main board environment name.
+#define BOARD_TYPE_NAME     "XIAO-ESP32S3-Sense"    // Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
-
 #elif defined(BOARD_FREENOVE_ESP32S3_N8R8)
 #define BOARD_TYPE_NAME     "Freenove-ESP32S3-N8R8" // Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
-
 #elif defined(BOARD_FREENOVE_ESP32S3_N16R8)
 #define BOARD_TYPE_NAME     "Freenove-ESP32S3-N16R8"// Keep Board type equal to main board environment name.
+                                                    // This is used for OTA update package verification (converted to lower case)
+#elif defined(BOARD_WAVESHARE_ESP32S3_ETH)
+#define BOARD_TYPE_NAME     "Waveshare-ESP32S3-ETH" // Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
 #else
 #error "Board type not defined"
@@ -370,26 +382,25 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SDCARD_D3                  GPIO_NUM_13     // Needs to be high to init SD in MMC mode. After init GPIO can be used as spare GPIO
 
 
-    // Camera pin config
-    // Further models: https://github.com/Mjrovai/XIAO-ESP32S3-Sense/blob/main/camera_round_display_save_jpeg/camera_pins.h
+    // Camera pin config (OV2640, OV3660, OV5460)
     //-------------------------------------------------
-    #define PWDN_GPIO_NUM       GPIO_NUM_32
-    #define RESET_GPIO_NUM      -1
-    #define XCLK_GPIO_NUM       GPIO_NUM_0
-    #define SIOD_GPIO_NUM       GPIO_NUM_26
-    #define SIOC_GPIO_NUM       GPIO_NUM_27
+    #define GPIO_CAMERA_PWDN       GPIO_NUM_32
+    #define GPIO_CAMERA_RESET      -1
+    #define GPIO_CAMERA_XCLK       GPIO_NUM_0
+    #define GPIO_CAMERA_SIO_DATA   GPIO_NUM_26
+    #define GPIO_CAMERA_SIO_CLK    GPIO_NUM_27
 
-    #define Y9_GPIO_NUM         GPIO_NUM_35
-    #define Y8_GPIO_NUM         GPIO_NUM_34
-    #define Y7_GPIO_NUM         GPIO_NUM_39
-    #define Y6_GPIO_NUM         GPIO_NUM_36
-    #define Y5_GPIO_NUM         GPIO_NUM_21
-    #define Y4_GPIO_NUM         GPIO_NUM_19
-    #define Y3_GPIO_NUM         GPIO_NUM_18
-    #define Y2_GPIO_NUM         GPIO_NUM_5
-    #define VSYNC_GPIO_NUM      GPIO_NUM_25
-    #define HREF_GPIO_NUM       GPIO_NUM_23
-    #define PCLK_GPIO_NUM       GPIO_NUM_22
+    #define GPIO_CAMERA_Y9         GPIO_NUM_35
+    #define GPIO_CAMERA_Y8         GPIO_NUM_34
+    #define GPIO_CAMERA_Y7         GPIO_NUM_39
+    #define GPIO_CAMERA_Y6         GPIO_NUM_36
+    #define GPIO_CAMERA_Y5         GPIO_NUM_21
+    #define GPIO_CAMERA_Y4         GPIO_NUM_19
+    #define GPIO_CAMERA_Y3         GPIO_NUM_18
+    #define GPIO_CAMERA_Y2         GPIO_NUM_5
+    #define GPIO_CAMERA_VSYNC      GPIO_NUM_25
+    #define GPIO_CAMERA_HREF       GPIO_NUM_23
+    #define GPIO_CAMERA_PCLK       GPIO_NUM_22
 
 
     // LEDs
@@ -414,9 +425,9 @@ CONFIG_WPA_11R_SUPPORT=n
     #endif
 
 
-    // Serial Port: Improv Serial / Improv WiFi
+    // Improv Serial / Improv WiFi
     //-------------------------------------------------
-    #define DEFAULT_UART_NUM        UART_NUM_0              // Use UART
+    #define DEFAULT_UART_NUM        UART_NUM_0
     #define DEFAULT_UART_TX_PIN     GPIO_NUM_1
     #define DEFAULT_UART_RX_PIN     GPIO_NUM_3
 
@@ -478,26 +489,25 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SDCARD_D3                  GPIO_NUM_21     // Needs to be high to init with MMC mode. After init GPIO can be used as status LED
 
 
-    // Camera pin config
-    // Further models: https://github.com/Mjrovai/XIAO-ESP32S3-Sense/blob/main/camera_round_display_save_jpeg/camera_pins.h
+    // Camera pin config (OV2640, OV3660, OV5460)
     //-------------------------------------------------
-    #define PWDN_GPIO_NUM       -1
-    #define RESET_GPIO_NUM      -1
-    #define XCLK_GPIO_NUM       GPIO_NUM_10
-    #define SIOD_GPIO_NUM       GPIO_NUM_40
-    #define SIOC_GPIO_NUM       GPIO_NUM_39
+    #define GPIO_CAMERA_PWDN       -1
+    #define GPIO_CAMERA_RESET      -1
+    #define GPIO_CAMERA_XCLK       GPIO_NUM_10
+    #define GPIO_CAMERA_SIO_DATA   GPIO_NUM_40
+    #define GPIO_CAMERA_SIO_CLK    GPIO_NUM_39
 
-    #define Y9_GPIO_NUM         GPIO_NUM_48
-    #define Y8_GPIO_NUM         GPIO_NUM_11
-    #define Y7_GPIO_NUM         GPIO_NUM_12
-    #define Y6_GPIO_NUM         GPIO_NUM_14
-    #define Y5_GPIO_NUM         GPIO_NUM_16
-    #define Y4_GPIO_NUM         GPIO_NUM_18
-    #define Y3_GPIO_NUM         GPIO_NUM_17
-    #define Y2_GPIO_NUM         GPIO_NUM_15
-    #define VSYNC_GPIO_NUM      GPIO_NUM_38
-    #define HREF_GPIO_NUM       GPIO_NUM_47
-    #define PCLK_GPIO_NUM       GPIO_NUM_13
+    #define GPIO_CAMERA_Y9         GPIO_NUM_48
+    #define GPIO_CAMERA_Y8         GPIO_NUM_11
+    #define GPIO_CAMERA_Y7         GPIO_NUM_12
+    #define GPIO_CAMERA_Y6         GPIO_NUM_14
+    #define GPIO_CAMERA_Y5         GPIO_NUM_16
+    #define GPIO_CAMERA_Y4         GPIO_NUM_18
+    #define GPIO_CAMERA_Y3         GPIO_NUM_17
+    #define GPIO_CAMERA_Y2         GPIO_NUM_15
+    #define GPIO_CAMERA_VSYNC      GPIO_NUM_38
+    #define GPIO_CAMERA_HREF       GPIO_NUM_47
+    #define GPIO_CAMERA_PCLK       GPIO_NUM_13
 
 
     // LEDs
@@ -517,9 +527,9 @@ CONFIG_WPA_11R_SUPPORT=n
     #endif
 
 
-    // Serial Port: Improv Serial / Improv WiFi
+    // Improv Serial / Improv WiFi
     //-------------------------------------------------
-    #define USB_SERIAL                                      // Use USB Serial/JTAG controller console
+    #define BOARD_FEATURE_USB                               // Use USB Serial/JTAG controller console
 
 
     // Spare GPIO
@@ -571,26 +581,25 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SDCARD_D3                  GPIO_NUM_NC
 
 
-    // Camera pin config
-    // Further models: https://github.com/Mjrovai/XIAO-ESP32S3-Sense/blob/main/camera_round_display_save_jpeg/camera_pins.h
+    // Camera pin config (OV2640, OV3660, OV5460)
     //-------------------------------------------------
-    #define PWDN_GPIO_NUM       -1
-    #define RESET_GPIO_NUM      -1
-    #define XCLK_GPIO_NUM       GPIO_NUM_15
-    #define SIOD_GPIO_NUM       GPIO_NUM_4
-    #define SIOC_GPIO_NUM       GPIO_NUM_5
+    #define GPIO_CAMERA_PWDN       -1
+    #define GPIO_CAMERA_RESET      -1
+    #define GPIO_CAMERA_XCLK       GPIO_NUM_15
+    #define GPIO_CAMERA_SIO_DATA   GPIO_NUM_4
+    #define GPIO_CAMERA_SIO_CLK    GPIO_NUM_5
 
-    #define Y9_GPIO_NUM         GPIO_NUM_16
-    #define Y8_GPIO_NUM         GPIO_NUM_17
-    #define Y7_GPIO_NUM         GPIO_NUM_18
-    #define Y6_GPIO_NUM         GPIO_NUM_12
-    #define Y5_GPIO_NUM         GPIO_NUM_10
-    #define Y4_GPIO_NUM         GPIO_NUM_8
-    #define Y3_GPIO_NUM         GPIO_NUM_9
-    #define Y2_GPIO_NUM         GPIO_NUM_11
-    #define VSYNC_GPIO_NUM      GPIO_NUM_6
-    #define HREF_GPIO_NUM       GPIO_NUM_7
-    #define PCLK_GPIO_NUM       GPIO_NUM_13
+    #define GPIO_CAMERA_Y9         GPIO_NUM_16
+    #define GPIO_CAMERA_Y8         GPIO_NUM_17
+    #define GPIO_CAMERA_Y7         GPIO_NUM_18
+    #define GPIO_CAMERA_Y6         GPIO_NUM_12
+    #define GPIO_CAMERA_Y5         GPIO_NUM_10
+    #define GPIO_CAMERA_Y4         GPIO_NUM_8
+    #define GPIO_CAMERA_Y3         GPIO_NUM_9
+    #define GPIO_CAMERA_Y2         GPIO_NUM_11
+    #define GPIO_CAMERA_VSYNC      GPIO_NUM_6
+    #define GPIO_CAMERA_HREF       GPIO_NUM_7
+    #define GPIO_CAMERA_PCLK       GPIO_NUM_13
 
 
     // LEDs
@@ -610,9 +619,9 @@ CONFIG_WPA_11R_SUPPORT=n
     #endif
 
 
-    // Serial Port: Improv Serial / Improv WiFi
+    // Improv Serial / Improv WiFi
     //-------------------------------------------------
-    #define USB_SERIAL                                      // Use USB Serial/JTAG controller console (USB-OTG port)
+    #define BOARD_FEATURE_USB                             // Use USB Serial/JTAG controller console (USB-OTG port)
 
 
     // Spare GPIO
@@ -649,6 +658,115 @@ CONFIG_WPA_11R_SUPPORT=n
         #define GPIO_SPARE_6_USAGE          FLASHLIGHT_DIGITAL      // Define flashlight-default as ...
     #endif
 
+#elif defined(BOARD_WAVESHARE_ESP32S3_ETH)
+    #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
+        #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1              // Only 1 line SD card operation is supported (hardware related)
+    #endif
+
+    // SD card (operated with SDMMC peripheral)
+    //-------------------------------------------------
+    #define GPIO_SDCARD_CLK                 GPIO_NUM_7
+    #define GPIO_SDCARD_CMD                 GPIO_NUM_6
+    #define GPIO_SDCARD_D0                  GPIO_NUM_5
+    #define GPIO_SDCARD_D1                  GPIO_NUM_NC
+    #define GPIO_SDCARD_D2                  GPIO_NUM_NC
+    #define GPIO_SDCARD_D3                  GPIO_NUM_4
+
+
+    // Ethernet pin config (WS5500)
+    //-------------------------------------------------
+    #define BOARD_FEATURE_ETHERNET
+    #define GPIO_ETH_RST        GPIO_NUM_9
+    #define GPIO_ETH_INT        GPIO_NUM_10
+    #define GPIO_ETH_MOSI       GPIO_NUM_11
+    #define GPIO_ETH_MISO       GPIO_NUM_12
+    #define GPIO_ETH_CLK        GPIO_NUM_13
+    #define GPIO_ETH_CS         GPIO_NUM_14
+
+
+    // Camera pin config (OV2640, OV3660, OV5460)
+    //-------------------------------------------------
+    #define GPIO_CAMERA_PWDN       GPIO_NUM_8
+    #define GPIO_CAMERA_RESET      -1
+    #define GPIO_CAMERA_XCLK       GPIO_NUM_3
+    #define GPIO_CAMERA_SIO_DATA   GPIO_NUM_48
+    #define GPIO_CAMERA_SIO_CLK    GPIO_NUM_47
+
+    #define GPIO_CAMERA_Y9         GPIO_NUM_18
+    #define GPIO_CAMERA_Y8         GPIO_NUM_15
+    #define GPIO_CAMERA_Y7         GPIO_NUM_38
+    #define GPIO_CAMERA_Y6         GPIO_NUM_40
+    #define GPIO_CAMERA_Y5         GPIO_NUM_42
+    #define GPIO_CAMERA_Y4         GPIO_NUM_46
+    #define GPIO_CAMERA_Y3         GPIO_NUM_45
+    #define GPIO_CAMERA_Y2         GPIO_NUM_41
+    #define GPIO_CAMERA_VSYNC      GPIO_NUM_1
+    #define GPIO_CAMERA_HREF       GPIO_NUM_2
+    #define GPIO_CAMERA_PCLK       GPIO_NUM_39
+
+
+    // LEDs
+    //-------------------------------------------------
+    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_21    // Onboard status LED (smartLED WS2812B)
+    //#define GPIO_STATUS_LED_ONBOARD_LOWACTIVE            // Enable if status LED is low active
+    #define GPIO_STATUS_LED_ONBOARD_USE_SMARTLED           // Enable if status LED is a smartLED (WS2812x)
+
+    #ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
+        #define GPIO_STATUS_LED_ONBOARD_SMARTLED_TYPE       LED_WS2812B   // SmartLED status LED: SmartLED type
+        #define GPIO_STATUS_LED_ONBOARD_SMARTLED_QUANTITY   1             // SmartLED status LED: SmartLED Quantity
+        #define GPIO_STATUS_LED_ONBOARD_SMARTLED_COLOR      Rgb{0, 0, 18} // SmartLED status LED: Color: Blue | Intensity: 7%
+    #endif
+
+    #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_NC    // No onboard flashlight
+    #define GPIO_FLASHLIGHT_DEFAULT         GPIO_NUM_17    // Default flashlight GPIO pin
+
+    #define GPIO_FLASHLIGHT_DEFAULT_USE_PWM                // Enable if default flashlight is PWM controlled
+    //#define GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED         // Enable if default flashlight is a smartLED (e.g. WS2812x)
+
+    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
+        #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_TYPE       LED_WS2812B // SmartLED flashlight default: SmartLED type
+        #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_QUANTITY   1           // SmartLED flashlight default: SmartLED quantity
+    #endif
+
+
+    // Improv Serial / Improv WiFi
+    //-------------------------------------------------
+    #define BOARD_FEATURE_USB                              // Use USB Serial controller console (USB port)
+
+
+    // Spare GPIO
+    //-------------------------------------------------
+    // Options for usage defintion:
+    // - 'spare': Free to use
+    // - 'restricted: usage': Restricted usable (WebUI expert view)
+    // - 'flashlight-pwm' or 'flashlight-smartled' or 'flashlight-digital' (ON/OFF) -> Map to 'flashlight-default'
+    // --> flashlight-default -> flashlight-smartled (Onboard LED, smartled controlled)
+    //-------------------------------------------------
+    #define GPIO_SPARE_PIN_COUNT            6
+
+    #define GPIO_SPARE_1                    GPIO_FLASHLIGHT_DEFAULT // Flashlight default
+    #if defined(GPIO_FLASHLIGHT_DEFAULT_USE_PWM)
+        #define GPIO_SPARE_1_USAGE          FLASHLIGHT_PWM          // Define flashlight-default as ...
+    #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
+        #define GPIO_SPARE_1_USAGE          FLASHLIGHT_SMARTLED     // Define flashlight-default as ...
+    #else
+        #define GPIO_SPARE_1_USAGE          FLASHLIGHT_DIGITAL      // Define flashlight-default as ...
+    #endif
+
+    #define GPIO_SPARE_2                    GPIO_NUM_33
+    #define GPIO_SPARE_2_USAGE              "spare"
+
+    #define GPIO_SPARE_3                    GPIO_NUM_34
+    #define GPIO_SPARE_3_USAGE              "spare"
+
+    #define GPIO_SPARE_4                    GPIO_NUM_35
+    #define GPIO_SPARE_4_USAGE              "spare"
+
+    #define GPIO_SPARE_5                    GPIO_NUM_36
+    #define GPIO_SPARE_5_USAGE              "spare"
+
+    #define GPIO_SPARE_6                    GPIO_NUM_37
+    #define GPIO_SPARE_6_USAGE              "spare"
 #else
     #error "define.h: No board type defined or type unknown"
 #endif //Board types

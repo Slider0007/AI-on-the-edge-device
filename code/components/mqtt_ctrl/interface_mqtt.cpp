@@ -16,6 +16,7 @@
 #include "configClass.h"
 #include "MainFlowControl.h"
 #include "ClassLogFile.h"
+#include "network_main.h"
 #include "connect_wlan.h"
 #include "server_mqtt.h"
 #include "time_sntp.h"
@@ -312,7 +313,7 @@ esp_err_t startMqttClient(void)
     }
 
     // Start only with established network connection
-    if (!getWifiIsConnected()) {
+    if (!getNetworkConnectionState()) {
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Init postponed: Network connection not yet established");
         return ESP_ERR_NOT_ALLOWED;
     }

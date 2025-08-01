@@ -1,4 +1,4 @@
-# Firmware Installation (Freenove ESP32S3 N16R8)
+# Firmware Installation (Waveshare ESP32S3-ETH)
 
 ## Manual Firmware Installation / Update
 
@@ -13,7 +13,7 @@ There are multiple ways to flash the microcontroller:
 - [esptool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
 #### Procedure
-  1. **Enter bootloader mode**: Keep 'IO0' button pushed (IO0 pulled to GND) while reseting the board
+  1. **Enter bootloader mode**: Keep 'BOOT' button pushed (IO0 pulled to GND) while reseting board
   2. **Flash firmware with flash tool**: The three firmware bin files needs to be flashed with correct flash offset
 
       | Filename          | Offset      | Description      |
@@ -40,7 +40,7 @@ in limited or broken functionality.
      - If the device has already been booted, a full default config file will exist in `/config`. You can modify that instead.
      - Ensure proper JSON syntax. Invalid formatting will cause the user configuration to be rejected and default will be used.
   4. Configure the network connection:
-     - Enter your Wi-Fi credentials and optionally configure network settings in wlan section (default: DHCP)
+     - Optionally configure network settings in ethernet section (default: DHCP)
   5. Insert the SD card into the device and power it on
   6. Access the device using:
      - **Hostname**: `http://watermeter`  
