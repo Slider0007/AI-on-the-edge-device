@@ -8,9 +8,9 @@
 
 ## Description
 
-Set device time manually
+Set device time
 
 
 !!! Note
     Manual setting is only possible if NTP time sync service is disabled.<br>
-    Syntax: YYYY-MM-DDTHH:SS:MM
+    Syntax: YYYY-MM-DDTHH:MM:SS
