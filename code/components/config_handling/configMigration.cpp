@@ -22,9 +22,33 @@ void migrateConfiguration(cJSON *cJsonObject)
     uint16_t migratedVersion = 0;
 
     //*************************************************************************************************
+    // Migrate from version 5 to version 6
+    // Date: August 2025
+    // Description: Implement function to set time manually (#275)
+    //*************************************************************************************************
+    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 5) {
+        // Update config version
+        // ---------------------
+        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
+                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
+
+        // Update parameter
+        // ---------------------
+        const cJSON *objEl = cJSON_GetObjectItem(
+            cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"), "processstartinterlock");
+        if (cJSON_IsBool(objEl)) {
+            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.time.processStartInterlock = objEl->valueint;
+        }
+    }
+
+    //*************************************************************************************************
     // Migrate from version 4 to version 5
     // Date: July 2025
-    // Description: Move hostname to network root level
+    // Description: Support Waveshare ESP32S3-ETH board with ethernet interface (#274)
     //*************************************************************************************************
     if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 4) {
         // Update config version
@@ -47,7 +71,7 @@ void migrateConfiguration(cJSON *cJsonObject)
     //*************************************************************************************************
     // Migrate from version 3 to version 4
     // Date: November 2024
-    // Description: Add camera model OV5460 and enhance zoom functionality
+    // Description: Support camera model OV5640 + Enhanced digital zoom (#189)
     //*************************************************************************************************
     if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 3) {
         // Update config version

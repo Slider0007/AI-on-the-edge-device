@@ -1,6 +1,8 @@
 #include "time_sntp.h"
 #include "../../include/defines.h"
 
+#include <sys/time.h>
+
 #include <esp_log.h>
 #include "esp_sntp.h"
 #include "esp_netif_sntp.h"
@@ -24,11 +26,11 @@ static bool isTimeSynchonized = false;
 std::string convertTimeToString(time_t _time, const char *frm)
 {
     struct tm timeinfo;
-    char strftime_buf[64];
+    char strftimeBuf[64];
 
     localtime_r(&_time, &timeinfo);
-    strftime(strftime_buf, sizeof(strftime_buf), frm, &timeinfo);
-    return std::string(strftime_buf);
+    strftime(strftimeBuf, sizeof(strftimeBuf), frm, &timeinfo);
+    return std::string(strftimeBuf);
 }
 
 
@@ -50,7 +52,7 @@ bool getTimeIsSet(void)
     localtime_r(&now, &timeinfo);
 
     // Is time set? If not, tm_year will be (1970 - 1900).
-    if ((timeinfo.tm_year < (2024 - 1900))) {
+    if ((timeinfo.tm_year < (2025 - 1900))) {
         return false;
     }
 
@@ -110,6 +112,32 @@ std::string getServerName(void)
         }
     }
     return "Unknown SNTP server";
+}
+
+
+bool setTime(const std::string &timeString)
+{
+    struct tm timeObj = {};
+    if (strptime(timeString.c_str(), "%Y-%m-%dT%H:%M:%S", &timeObj) == NULL) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to parse time string: " + timeString);
+        return false;
+    }
+    timeObj.tm_isdst = -1; // Auto detect DST setting
+
+    time_t time = mktime(&timeObj);
+    if (time == -1) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to convert parsed time to epoch");
+        return false;
+    }
+
+    struct timeval now = {.tv_sec = time, .tv_usec = 0};
+    if (settimeofday(&now, NULL) != 0) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to set device time");
+        return false;
+    }
+
+    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Time manually set to " + timeString);
+    return true;
 }
 
 
@@ -189,6 +217,9 @@ bool initTime()
     time(&now);
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Current time: " + convertTimeToString(now, "%Y-%m-%d %H:%M:%S"));
 
+    // Reset manual time parameter
+    ConfigClass::getInstance()->cfgTmp()->sectionNetwork.time.timeSetManual = "";
+
     return true;
 }
 
@@ -220,15 +251,22 @@ void reconfigureTimeZone(std::string _timeZone)
  */
 void reconfigureTime(bool _timeSyncEnabled, std::string _timeServer, std::string _timeZone)
 {
-    if (_timeServer.empty()) {        // parameter is empty
-        _timeServer = "pool.ntp.org"; // Use Default
+    if (_timeServer.empty()) {        // Parameter is empty
+        _timeServer = "pool.ntp.org"; // Use default
     }
 
-    if (_timeZone == "") { // parameter is empty
-        _timeZone = "CET-1CEST,M3.5.0,M10.5.0/3";
+    if (_timeZone.empty()) {                      // Parameter is empty
+        _timeZone = "CET-1CEST,M3.5.0,M10.5.0/3"; // Use default
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "No time zone set, using default: " + timeZone);
     }
 
+    // Set time manually (NTP disabled and time parameter set)
+    if (!_timeSyncEnabled && !ConfigClass::getInstance()->get()->sectionNetwork.time.timeSetManual.empty()) {
+        setTime(ConfigClass::getInstance()->get()->sectionNetwork.time.timeSetManual);
+        ConfigClass::getInstance()->cfgTmp()->sectionNetwork.time.timeSetManual.clear();
+    }
+
+    // Return if no config changes detected
     if (timeSyncEnabled == _timeSyncEnabled && timeServer == _timeServer && timeZone == _timeZone) {
         return;
     }

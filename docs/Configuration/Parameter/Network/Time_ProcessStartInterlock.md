@@ -13,12 +13,13 @@
 
 ## Description
 
-Process starts only with valid time to ensure proper and plausible result documentation. 
+The process will only start when a valid system time is available, ensuring accurate and 
+reliable result documentation.
 
 
 !!! Note
-    The device looses the internal system time after power loss. 
-    After reboot the time is kept in memory, though.
+    The device loses its internal system time after a power loss. However, 
+    the time is retained in memory after a regular reboot.
 
 !!! Tip
-    It's **recommended** to use time synchronization and this interlock.
+    It's **recommended** to use NTP time synchronization and keep this enabled.

@@ -1664,6 +1664,16 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     }
 #endif // BOARD_FEATURE_ETHERNET
 
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "timesetmanual");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionNetwork.time.timeSetManual = objEl->valuestring;
+    }
+
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "timezone");
+    if (cJSON_IsString(objEl)) {
+        cfgDataTemp.sectionNetwork.time.timeZone = objEl->valuestring;
+    }
+
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"),
                                 "timesyncenabled");
     if (cJSON_IsBool(objEl)) {
@@ -1676,15 +1686,9 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         cfgDataTemp.sectionNetwork.time.ntp.timeServer = objEl->valuestring;
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"),
-                                "processstartinterlock");
+    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "processstartinterlock");
     if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionNetwork.time.ntp.processStartInterlock = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "timezone");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionNetwork.time.timeZone = objEl->valuestring;
+        cfgDataTemp.sectionNetwork.time.processStartInterlock = objEl->valueint;
     }
 
 
@@ -2631,7 +2635,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (cJSON_AddStringToObject(networkTimeNtp, "timeserver", cfgDataTemp.sectionNetwork.time.ntp.timeServer.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
-    if (cJSON_AddBoolToObject(networkTimeNtp, "processstartinterlock", cfgDataTemp.sectionNetwork.time.ntp.processStartInterlock) == NULL) {
+    if (cJSON_AddBoolToObject(networkTime, "processstartinterlock", cfgDataTemp.sectionNetwork.time.processStartInterlock) == NULL) {
         retVal = ESP_FAIL;
     }
 

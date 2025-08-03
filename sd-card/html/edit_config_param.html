@@ -110,7 +110,8 @@
 		}
 
 		.invalid-input {
-			background-color: #FFAA00;
+			background-color: rgba(255, 0, 0, 0.25);
+			border: 1px solid red;
 		}
 
 		input:out-of-range {
@@ -2900,6 +2901,19 @@
 			</td>
 		</tr>
 
+		<tr class="classvisibility_network_time_timesetmanual">
+			<td class="indent1">
+				<span>Set Time</span>
+			</td>
+			<td>
+				<form id="network_time_timesetmanual_form">
+					<input type="text" datetime-mask name="network.time.timesetmanual"
+						placeholder="YYYY-MM-DDTHH:MM:SS" onchange="gatherChangedParameter(this.form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_network_time_timesetmanual</td>
+		</tr>
+
 		<tr>
 			<td class="indent1">
 				<span>Time Zone</span>
@@ -2923,6 +2937,7 @@
 				<form id="network_time_ntp_timesyncenabled_form">
 					<select class="classvisibility_init" name="network.time.ntp.timesyncenabled" id="network_time_ntp_timesyncenabled_value"
 							onchange="setClassVisibility('classvisibility_network_time_ntp_timesyncenabled', this.value);
+							    		setClassVisibility('classvisibility_network_time_timesetmanual', this.value === 'false' ? 'true' : 'false');
 										gatherChangedParameter(this.form)">
 						<option value="false">Disabled</option>
 						<option value="true" selected>Enabled</option>
@@ -2945,20 +2960,20 @@
 			<td style="visibility:hidden">$TOOLTIP_network_time_ntp_timeserver</td>
 		</tr>
 
-		<tr class="classvisibility_network_time_ntp_timesyncenabled expert">
-			<td class="indent2">
+		<tr class="expert">
+			<td class="indent1">
 				<span>Process Start Interlock</span>
 			</td>
 			<td>
-				<form id="network_time_ntp_processstartinterlock_form">
-					<select name="network.time.ntp.processstartinterlock" id="network_time_ntp_processstartinterlock_value"
+				<form id="network_time_processstartinterlock_form">
+					<select name="network.time.processstartinterlock" id="network_time_processstartinterlock_value"
 							onchange="gatherChangedParameter(this.form)">
 						<option value="false">Disabled</option>
 						<option value="true" selected>Enabled</option>
 					</select>
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_network_time_ntp_processstartinterlock</td>
+			<td style="visibility:hidden">$TOOLTIP_network_time_processstartinterlock</td>
 		</tr>
 	</table>
 
@@ -3154,12 +3169,14 @@
 
 <script src="global_common.js?v=$COMMIT_HASH"></script>
 <script src="global_data.js?v=$COMMIT_HASH"></script>
-<script src="mask.ip-input.js?v=$COMMIT_HASH"></script>
+<script src="mask.ip-input.min.js?v=$COMMIT_HASH"></script>
+<script src="mask.datetime-input.min.js?v=$COMMIT_HASH"></script>
 <script>
 	// Enable IP input validation
 	$(document).ready(function()
 	{
 		$('[ip-mask]').ipAddress();
+		$('[datetime-mask]').datetimeInput();
 	});
 
 
