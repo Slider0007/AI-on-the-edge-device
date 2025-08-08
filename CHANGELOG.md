@@ -1,5 +1,64 @@
 # Changelog
 
+## [17.2.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.1.0-SLFork...v17.2.0-SLFork) (2025-08-08)
+
+### 💡 Installation / Migration Notes
+
+#### A. Initial Installation
+--> Recommended: **Web Installer**
+ - Follow instructions listed on [Web Installer Page](https://slider0007.github.io/AI-on-the-edge-device/)
+ - Alternative method: [Manual Installation](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Installation/DeviceProvisioning/Manual.md)
+
+#### B. Update from previous releases (17.x)
+--> Recommended: **OTA Update**
+- Download board specific firmware package
+- Perform OTA update
+
+#### C. Migration from previous major release (16.x)
+--> Recommended: **OTA Update**
+- Download board specific firmware package
+- Perform OTA update (ignore file name mismatch warning)
+- Verify migrated device configuration
+  - Check migrated configuration briefly (majority of the parameter are migrated)
+  - Reconfigure GPIO section (if it was configured before, no automatic migration)
+- Update reference image and alignment marker (Mandatory due to multiple new camera features and adaptions)
+- Lots of (breaking) changes are made to existing APIs. A manual reconfiguration is most likely required. Check API documentation
+  - [REST API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/_OVERVIEW.md), [REST API Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/xxx_migration_notes.md)
+  - [MQTT API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/_OVERVIEW.md), [MQTT Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/xxx_migration_notes.md)
+- Check `BREAKING CHANGES` section with PR descriptions and/or [documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs) for further information
+
+### 💡 New Supported Hardware
+
+- Board: Waveshare ESP32-S3-ETH (with ethernet interface)
+
+### Features
+
+* **hardware:** Support Waveshare ESP32S3-ETH board with ethernet interface ([#274](https://github.com/Slider0007/AI-on-the-edge-device/issues/274)) ([62fd866](https://github.com/Slider0007/AI-on-the-edge-device/commit/62fd8664667a0984fbe3b53ecc7260afa0113767))
+* **roi saving:** Configurable digit / analog ROI image saving size ([#267](https://github.com/Slider0007/AI-on-the-edge-device/issues/267)) ([56db3d6](https://github.com/Slider0007/AI-on-the-edge-device/commit/56db3d6bb82be08c90ca3f0a84fe95faca5ea7d1))
+* **time:** Add support for manual device time setting ([#275](https://github.com/Slider0007/AI-on-the-edge-device/issues/275)) ([13c8a82](https://github.com/Slider0007/AI-on-the-edge-device/commit/13c8a825d00c87e9f8e9dee2d004e0f27ef7a2e5))
+* **webui: backup/restore:** Enhanced config backup / restore functionality ([#262](https://github.com/Slider0007/AI-on-the-edge-device/issues/262)) ([68819e5](https://github.com/Slider0007/AI-on-the-edge-device/commit/68819e5454673d1bb2ea835d962e84f40e5a826e))
+* **webui: file server:** Enhanced file server functionality ([#260](https://github.com/Slider0007/AI-on-the-edge-device/issues/260)) ([8973f61](https://github.com/Slider0007/AI-on-the-edge-device/commit/8973f617eefe539457e4d6bb53b6e8f7833c0406))
+
+
+### Bug Fixes
+
+* **mqtt:** Fix malformed last will status message ([#273](https://github.com/Slider0007/AI-on-the-edge-device/issues/273)) ([7588453](https://github.com/Slider0007/AI-on-the-edge-device/commit/758845357b92d8353d5bfa8545aa8aa321dd4f96))
+* **ota:** Fix vulnerability of potential buffer overflow ([e4f1fca](https://github.com/Slider0007/AI-on-the-edge-device/commit/e4f1fca89d57ab2577a33c28ae3fbdc0d6eb6896))
+* **sd card info:** Fix 'getSDCardName': Return name with correct length ([#258](https://github.com/Slider0007/AI-on-the-edge-device/issues/258)) ([9db9430](https://github.com/Slider0007/AI-on-the-edge-device/commit/9db9430e1d1cd05ee79d40caf2da2f6393cdad00))
+* **time:** Use thread-safe 'localtime' variant ([#265](https://github.com/Slider0007/AI-on-the-edge-device/issues/265)) ([09621c8](https://github.com/Slider0007/AI-on-the-edge-device/commit/09621c831db84b89dfdabec27a35e12d8e8ea066))
+* **wlan:** Fix vulnerability of potential buffer overflow ([#264](https://github.com/Slider0007/AI-on-the-edge-device/issues/264)) ([dfdaa53](https://github.com/Slider0007/AI-on-the-edge-device/commit/dfdaa53bd490802df6176039d9e18bd9280551e3))
+
+
+### Refactoring / Style Changes
+
+* **ota:** Refactor OTA functions ([#266](https://github.com/Slider0007/AI-on-the-edge-device/issues/266)) ([e4f1fca](https://github.com/Slider0007/AI-on-the-edge-device/commit/e4f1fca89d57ab2577a33c28ae3fbdc0d6eb6896))
+
+
+### Other Changes
+
+* **docs:** Correct spelling errors ([#261](https://github.com/Slider0007/AI-on-the-edge-device/issues/261)) ([b0101a6](https://github.com/Slider0007/AI-on-the-edge-device/commit/b0101a67690270dccfa04e29eb5858de5b2bb524))
+* **framework:** Upgrade platformio-espressif32 to 6.11.0 (ESP-IDF 5.4.1) ([#257](https://github.com/Slider0007/AI-on-the-edge-device/issues/257)) ([1f4b12f](https://github.com/Slider0007/AI-on-the-edge-device/commit/1f4b12f251b72a478f925b9055ee7b08d79cef6a))
+
 ## [17.1.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.0.0-SLFork...v17.1.0-SLFork) (2025-06-09)
 
 ### 💡 Installation / Migration Notes
