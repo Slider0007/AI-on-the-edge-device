@@ -43,7 +43,7 @@
     </table>
 
     <p>
-        This page provides a web installer and serial console for <strong>AI-on-the-Edge Device [SLFork]</strong> - a smart and efficient
+        This page provides a web installer and serial console for <strong>AI-on-the-Edge Device [SLFork]</strong> - A smart and efficient
         edge-AI application for meter digitization, designed for <strong>ESP32</strong> and <strong>ESP32-S3</strong> hardware.
         Additional documentation is available in the GitHub repository.
     </p>
@@ -58,8 +58,8 @@
     <ol>
         <li><b>Preconditions:</b>
             <ul>
-                <li>A <a href="https://github.com/Slider0007/AI-on-the-edge-device?tab=readme-ov-file#supported-hardware" target="_blank"
-                    rel="noopener noreferrer">supported hardware</a> with an empty, FAT-formatted SD card inserted into the SD card slot.</li>
+                <li><a href="https://github.com/Slider0007/AI-on-the-edge-device?tab=readme-ov-file#supported-hardware" target="_blank"
+                    rel="noopener noreferrer">Supported hardware</a> with an empty, FAT-formatted SD card inserted into the SD card slot.</li>
                 <li>Download the matching firmware ZIP file for your device and the version listed above from the
                     <a href="https://github.com/Slider0007/AI-on-the-edge-device/releases" target="_blank" rel="noopener noreferrer">GitHub release page</a>.
                 </li>
@@ -70,7 +70,7 @@
         </li>
         <li><b>Install firmware:</b> Select your device, connect to it, and click <b>"Install Device"</b> to flash the firmware.</li>
         <li><b>Power cycle:</b> After installation is complete, perform a full power cycle of the device.</li>
-        <li><b>Configure Wi-Fi:</b> Reconnect to the device and configure its Wi-Fi connection (<b>"Connect to Wi-Fi"</b>).</li>
+        <li><b>Configure Wi-Fi:</b> Reconnect to the device and configure its Wi-Fi connection (<b>"Connect to Wi-Fi"</b>). <br>Note: Step can be skipped for boards with ethernet interface.</li>
         <li><b>Access the device:</b> Once connected to Wi-Fi, visit the device via the provided link (<b>"Visit device"</b>).</li>
         <li><b>Prepare SD card content:</b> Upload the downloaded firmware ZIP file to the device using its provisioning web interface.</li>
         <li><b>Finalize installation:</b> Reboot the device. Wait for installation to complete, then refresh your browser.<br>
@@ -89,6 +89,7 @@
         <option value="freenove-esp32s3-n8r8">Freenove ESP32S3 WROOM N8R8 (Original)</option>
         <option value="freenove-esp32s3-n16r8">Freenove ESP32S3 WROOM N16R8 (Clones)</option>
         <option value="xiao-esp32s3-sense">XIAO ESP32S3 Sense</option>
+        <option value="waveshare-esp32s3-eth">Waveshare ESP32S3-ETH</option>
         </optgroup>
     </select>
     <p class="button-row">

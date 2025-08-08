@@ -1,0 +1,15 @@
+{
+    "name": "AI-on-the-Edge Device",
+    "version": "v17.1.0-SLFork",
+    "new_install_prompt_erase": false,
+    "builds": [
+        {
+            "chipFamily": "ESP32-S3",
+            "parts": [
+                { "path": "firmware/waveshare-esp32s3-eth/bootloader.bin", "offset": 0 },
+                { "path": "firmware/waveshare-esp32s3-eth/partitions.bin", "offset": 32768 },
+                { "path": "firmware/waveshare-esp32s3-eth/firmware.bin", "offset": 65536 }
+            ]
+        }
+    ]
+}
