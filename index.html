@@ -65,13 +65,13 @@
                 </li>
             </ul>
         </li>
-        <li><b>Enter bootloader mode:</b> Press and hold the "BOOT" button, then reset the device by either pressing the "RESET" button or power-up.
-            If your device does not have any "BOOT" button, pull the pin labeled "GPIO0" or "IO0" to GND during reset or power-up.
-        </li>
+        <li><b>Enter bootloader mode:</b> Press and hold the "BOOT" or "IO0" button (or connect the "GPIO0"/"IO0" pin to GND if no button is available),
+            then reset the device by pressing the "RESET" button or power-cycling it.</li>
         <li><b>Install firmware:</b> Select your device, connect to it, and click <b>"Install Device"</b> to flash the firmware.</li>
         <li><b>Power cycle:</b> After installation is complete, perform a full power cycle of the device.</li>
-        <li><b>Configure Wi-Fi:</b> Reconnect to the device and configure its Wi-Fi connection (<b>"Connect to Wi-Fi"</b>). <br>Note: Step can be skipped for boards with ethernet interface.</li>
-        <li><b>Access the device:</b> Once connected to Wi-Fi, visit the device via the provided link (<b>"Visit device"</b>).</li>
+        <li><b>Configure Wi-Fi:</b> Reconnect to the device and configure its Wi-Fi connection (<b>"Connect to Wi-Fi"</b>).<br>
+            <b>Note:</b> This step can be skipped for boards with ethernet interface</li>
+        <li><b>Access the device:</b> Once connected to network, visit the device via the provided link (<b>"Visit device"</b>).</li>
         <li><b>Prepare SD card content:</b> Upload the downloaded firmware ZIP file to the device using its provisioning web interface.</li>
         <li><b>Finalize installation:</b> Reboot the device. Wait for installation to complete, then refresh your browser.<br>
             <b>Note:</b> To view console logs or monitor installation progress, switch back to the web installer page and open <b>"Logs & Console"</b>.
@@ -88,7 +88,7 @@
         <optgroup label="ESP32-S3 Series">
         <option value="freenove-esp32s3-n8r8">Freenove ESP32S3 WROOM N8R8 (Original)</option>
         <option value="freenove-esp32s3-n16r8">Freenove ESP32S3 WROOM N16R8 (Clones)</option>
-        <option value="xiao-esp32s3-sense">XIAO ESP32S3 Sense</option>
+        <option value="xiao-esp32s3-sense">Xiao ESP32S3 Sense</option>
         <option value="waveshare-esp32s3-eth">Waveshare ESP32S3-ETH</option>
         </optgroup>
     </select>
