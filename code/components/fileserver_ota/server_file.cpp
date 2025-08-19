@@ -299,6 +299,7 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool sendFullFile)
 
         // Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/
         if (fseek(file, 0, SEEK_END)) {
+            fclose(file);
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendLogfile: Failed to get to end of file");
             return ESP_FAIL;
         }
@@ -310,6 +311,7 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool sendFullFile)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos);
 
             if (fseek(file, pos, SEEK_SET)) { // Go to start position
+                fclose(file);
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                     "sendLogfile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) +
                                         " bytes within the file");
@@ -399,6 +401,7 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool sendFullFile)
 
         // Adapted from https://www.geeksforgeeks.org/implement-your-own-tail-read-last-n-lines-of-a-huge-file/
         if (fseek(file, 0, SEEK_END)) {
+            fclose(file);
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendDatafile: Failed to get to end of file");
             return ESP_FAIL;
         }
@@ -410,6 +413,7 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool sendFullFile)
             pos = pos - std::min((long)LOGFILE_LAST_PART_BYTES, pos);
 
             if (fseek(file, pos, SEEK_SET)) { // Go to start position
+                fclose(file);
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                     "sendDatafile: Failed to go back " + std::to_string(std::min((long)LOGFILE_LAST_PART_BYTES, pos)) +
                                         " bytes within the file");
