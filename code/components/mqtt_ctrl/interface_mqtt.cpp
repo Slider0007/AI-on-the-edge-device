@@ -222,10 +222,10 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 }
 
 
-bool configureMqttClient(const CfgData::SectionMqtt *_param, int keepAlive)
+bool configureMqttClient(const CfgData::SectionMqtt *_param, int _keepAlive)
 {
     cfgDataPtr = _param;
-    keepAlive = keepAlive;
+    keepAlive = _keepAlive;
 
     if ((cfgDataPtr->uri.empty()) || (cfgDataPtr->mainTopic.empty()) || (cfgDataPtr->clientID.empty())) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init aborted! Config error (URI, MainTopic or ClientID missing)");
