@@ -364,16 +364,20 @@ std::string getResetReason(void)
 
 void checkIsPlannedReboot()
 {
-    FILE *pfile;
-    if ((pfile = fopen("/sdcard/reboot.txt", "r")) == NULL) {
-        // LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Initial boot or not a planned reboot");
+    FILE *file = fopen("/sdcard/reboot.txt", "r");
+    if (!file) {
         isPlannedReboot = false;
+        return;
     }
-    else {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Planned reboot");
-        deleteFile("/sdcard/reboot.txt"); // Prevent Boot Loop!!!
-        isPlannedReboot = true;
+
+    fclose(file);
+
+    if (!deleteFile("/sdcard/reboot.txt")) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Failed to delete reboot file");
     }
+
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Planned reboot");
+    isPlannedReboot = true;
 }
 
 
