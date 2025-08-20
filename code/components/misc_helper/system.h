@@ -63,7 +63,9 @@ int getSystemStatus(void);
 bool isSetSystemStatusFlag(SystemStatusFlag_t flag);
 
 std::string getResetReason(void);
-bool detectPlannedReboot();
+
+void checkIsPlannedReboot();
+bool getIsPlannedReboot();
 
 void saveSDCardInfo(sdmmc_card_t *card);
 std::string parseSDCardManufacturerID(int);

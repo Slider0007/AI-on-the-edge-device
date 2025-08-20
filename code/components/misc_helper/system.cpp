@@ -18,6 +18,7 @@
 static const char *TAG = "SYSTEM";
 
 static unsigned int systemStatus = 0;
+static bool isPlannedReboot = false;
 static SPIRAMCategory_t SPIRAMCategory = SPIRAMCategory_4MB;
 
 static sdmmc_cid_t SDCardCid;
@@ -361,11 +362,12 @@ std::string getResetReason(void)
 }
 
 
-bool detectPlannedReboot()
+void checkIsPlannedReboot()
 {
     FILE *file = fopen("/sdcard/reboot.txt", "r");
     if (!file) {
-        return false;
+        isPlannedReboot = false;
+        return;
     }
 
     fclose(file);
@@ -375,7 +377,13 @@ bool detectPlannedReboot()
     }
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Planned reboot");
-    return true;
+    isPlannedReboot = true;
+}
+
+
+bool getIsPlannedReboot()
+{
+    return isPlannedReboot;
 }
 
 
