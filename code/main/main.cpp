@@ -183,7 +183,7 @@ extern "C" void app_main(void)
     // ********************************************
     LogFile.writeToFile(ESP_LOG_INFO, TAG, getFwVersion() + " | Build time: " + std::string(BUILD_TIME) + " | WebUI: " + getHTMLversion());
 
-    if (getHTMLcommit().substr(0, 7) == "?") {
+    if (getHTMLcommit().starts_with("?")) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse WebUI version"));
     }
 
@@ -195,8 +195,7 @@ extern "C" void app_main(void)
 
     // Check reboot reason
     // ********************************************
-    checkIsPlannedReboot();
-    if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {
+    if (!detectPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
         LogFile.writeToFile(ESP_LOG_WARN, TAG,
                             "The device was restarted due to a software exception. The log level is set to DEBUG "
