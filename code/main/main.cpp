@@ -183,7 +183,7 @@ extern "C" void app_main(void)
     // ********************************************
     LogFile.writeToFile(ESP_LOG_INFO, TAG, getFwVersion() + " | Build time: " + std::string(BUILD_TIME) + " | WebUI: " + getHTMLversion());
 
-    if (getHTMLcommit().substr(0, 7) == "?") {
+    if (getHTMLcommit().starts_with("?")) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse WebUI version"));
     }
 
