@@ -132,6 +132,6 @@ def postBuildAction(source, target, env):
                 fullPath = os.path.join(buildDir, binFile)
                 zipFile.write(fullPath, arcname=binFile)
 
-if "DISABLE_POST_BUILD_TASKS" not in os.environ: # Only run if it is not disabled in platformio.ini
+if not env.GetBuildVar("DISABLE_POST_BUILD_TASKS"): # Only run if it is not disabled in platformio.ini
     firmwareBinPath = os.path.join(env.subst("$BUILD_DIR"), "firmware.bin")
     env.AddPostAction(firmwareBinPath, postBuildAction)
