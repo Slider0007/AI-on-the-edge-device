@@ -16,7 +16,6 @@ Further details can be found in the respective REST API endpoint description.
 | [/config](config.md)                 | Device Configuration                               | JSON + HTML | 
 | [/metrics](metrics.md)               | Prometheus / OpenMetrics Data                      | HTML        | 
 | [/cycle_start](cycle_start.md)       | Trigger Cycle (Flow) Start                         | HTML        | 
-| [/reload_config](reload_config.md)   | Reload Configuration                               | HTML        | 
 | [/set_fallbackvalue](set_fallbackvalue.md) | Set Fallback Value                           | HTML        | 
 | [/editflow](editflow.md)             | Parametrization Helper                             | HTML        | 
 | [/recognition_details](recognition_details.md)|Image Recognition Details (WebUI Page)     | HTML        |

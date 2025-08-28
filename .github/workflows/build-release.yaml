@@ -29,8 +29,6 @@ jobs:
 
 #########################################################################################
 ## Build Firmware
-#
-# Build firmware and create artifact packages
 #########################################################################################
   build:
     runs-on: ubuntu-latest
@@ -80,35 +78,19 @@ jobs:
     - name: Install PlatformIO environment
       run: |
         python -m pip install --upgrade pip
+        pip install markdown
         pip install --upgrade platformio
 
     - name: Build firmware
       run: cd code; platformio run -e ${{ matrix.plat }}
 
-    - name: Prepare WebUI (Generate parameter tooltips, API docs and update hash)
-      run: |
-        python -m pip install markdown
-        python ./tools/parameter-tooltip-generator/generate-param-doc-tooltips.py
-
-        python ./tools/docs-generator/generate-api-docs.py
-
-        rm -rf ./html
-        mkdir ./html
-        cp -r ./sd-card/html/* ./html/
-
-        echo "Update hash..."
-        cd ./html; find . -type f -exec sed -i 's/$COMMIT_HASH/${{ steps.vars.outputs.sha_short }}/g' {} \;
-
-
     #########################################################################################
-    ## Create firmware package
-    # - Inital flashing using web installer, device's access point or serial console
-    # - OTA update using WebUI
+    ## Prepare firmware package
     #
     # Package contents:
     #  - Firmware binaries (firmware.bin, partitions.bin, bootloader.bin)
-    #  - WebUI Files (/html/* (inkl. subfolders))
-    #  - Config Files (/config/templates/*, /config/models/*.tflite)
+    #  - WebUI files (/html/* (inkl. subfolders))
+    #  - Config files (/config/templates/*, /config/models/*.tflite)
     #########################################################################################
     - name: Firmware package - Prepare artifact
       run: |
@@ -119,7 +101,11 @@ jobs:
         cp -f "./code/.pio/build/${{ matrix.plat }}/partitions.bin" "./artifact/partitions.bin"
         cp -f "./docs/Installation/DeviceReadme/${{ matrix.plat }}.md" "./artifact/README.md"
 
-        cp -r ./html ./artifact/
+        if [ -d "./sd-card/html_compiled" ]; then
+            cp -r ./sd-card/html_compiled ./artifact/html
+        else
+            cp -r ./sd-card/html ./artifact/html
+        fi
 
         rm -rf ./artifact/config/
         mkdir -p ./artifact/config
@@ -136,7 +122,7 @@ jobs:
         path: ./artifact
 
     #########################################################################################
-    ## Create package with additional files for debugging purpose
+    ## Prepare package with additional files for debugging purpose
     #
     # Package contents:
     # - firmware.elf
@@ -160,7 +146,7 @@ jobs:
 #########################################################################################
 ## Create release - PART 2: Upload release related artifacts
 #
-# Artifacts will gets uploaded to newly created release tag.
+# Artifacts will be uploaded to newly created release tag
 #########################################################################################
   upload-release-artifacts:
     runs-on: ubuntu-latest
