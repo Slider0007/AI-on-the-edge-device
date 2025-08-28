@@ -134,8 +134,9 @@ def postBuildAction(source, target, env):
                     zipFile.write(fullPath, arcname=arcName)
 
         with zipfile.ZipFile(zipPath, "w", compression=zipfile.ZIP_DEFLATED) as zipFile:
-            addDirectoryToZip(zipFile, os.path.join(projectRoot, "sd-card", "config"), projectRoot)
-            addDirectoryToZip(zipFile, os.path.join(projectRoot, "sd-card", "html_compiled"), projectRoot, renameMap={"html_compiled": "html"})
+            sdCardRoot = os.path.join(projectRoot, "sd-card")
+            addDirectoryToZip(zipFile, os.path.join(sdCardRoot, "config"), sdCardRoot)
+            addDirectoryToZip(zipFile, os.path.join(sdCardRoot, "html_compiled"), sdCardRoot, renameMap={"html_compiled": "html"})
 
             # Place binaries in zip root
             buildDir = env.subst("$BUILD_DIR")
@@ -147,3 +148,4 @@ def postBuildAction(source, target, env):
 if not hasDefine("DISABLE_POST_BUILD_TASKS"): # Only run if it is not disabled in platformio.ini
     firmwareBinPath = os.path.join(env.subst("$BUILD_DIR"), "firmware.bin")
     env.AddPostAction(firmwareBinPath, postBuildAction)
+    env.AlwaysBuild(firmwareBinPath)
