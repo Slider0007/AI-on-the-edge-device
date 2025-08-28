@@ -29,8 +29,6 @@ jobs:
 
 #########################################################################################
 ## Build Firmware
-#
-# Build firmware and create artifact packages
 #########################################################################################
   build:
     runs-on: ubuntu-latest
@@ -87,14 +85,12 @@ jobs:
       run: cd code; platformio run -e ${{ matrix.plat }}
 
     #########################################################################################
-    ## Create firmware package
-    # - Initial flashing using web installer, device's access point or serial console
-    # - OTA update using WebUI
+    ## Prepare firmware package
     #
     # Package contents:
     #  - Firmware binaries (firmware.bin, partitions.bin, bootloader.bin)
-    #  - WebUI Files (/html/* (inkl. subfolders))
-    #  - Config Files (/config/templates/*, /config/models/*.tflite)
+    #  - WebUI files (/html/* (inkl. subfolders))
+    #  - Config files (/config/templates/*, /config/models/*.tflite)
     #########################################################################################
     - name: Firmware package - Prepare artifact
       run: |
@@ -122,7 +118,7 @@ jobs:
         path: ./artifact
 
     #########################################################################################
-    ## Create package with additional files for debugging purpose
+    ## Prepare package with additional files for debugging purpose
     #
     # Package contents:
     # - firmware.elf
@@ -146,7 +142,7 @@ jobs:
 #########################################################################################
 ## Create release - PART 2: Upload release related artifacts
 #
-# Artifacts will gets uploaded to newly created release tag.
+# Artifacts will be uploaded to newly created release tag
 #########################################################################################
   upload-release-artifacts:
     runs-on: ubuntu-latest
