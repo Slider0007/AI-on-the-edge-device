@@ -14,7 +14,9 @@ import shutil
 Import("env")
 
 def hasDefine(macro):
-    """ Check if a macro is defined in build_flags (CPPDEFINES) """
+    """
+    Check if a macro is defined in build_flags (CPPDEFINES)
+    """
     for d in env.get("CPPDEFINES", []):
         if isinstance(d, (list, tuple)):
             if d[0] == macro:

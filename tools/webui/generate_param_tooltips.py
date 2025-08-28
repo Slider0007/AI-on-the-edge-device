@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Grab all parameter files (markdown) and convert them to HTML tooltips.
+Grab all parameter files (markdown) and convert them to HTML tooltips
 """
 import os
 import glob

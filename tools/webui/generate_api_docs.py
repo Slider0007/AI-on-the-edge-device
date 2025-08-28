@@ -19,7 +19,6 @@ except Exception:
         print(f"Argument missing: Provide parent folder of sd-card folder")
         sys.exit(1)
 
-
 # Define HTML directory
 htmlSourceDir = os.path.join(rootPath, "sd-card", "html")
 htmlTempDir = os.path.join(rootPath, "sd-card", "html_compiled")
