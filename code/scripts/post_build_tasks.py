@@ -13,6 +13,17 @@ import shutil
 
 Import("env")
 
+def hasDefine(macro):
+    """Check if a macro is defined in build_flags (CPPDEFINES)."""
+    for d in env.get("CPPDEFINES", []):
+        if isinstance(d, (list, tuple)):
+            if d[0] == macro:
+                return True
+        elif d == macro:
+            return True
+    return False
+
+
 def postBuildAction(source, target, env):
     # -------------------------------------------------------------------------------------------------
     # Paths / Defines
@@ -132,6 +143,6 @@ def postBuildAction(source, target, env):
                 fullPath = os.path.join(buildDir, binFile)
                 zipFile.write(fullPath, arcname=binFile)
 
-if not env.GetBuildVar("DISABLE_POST_BUILD_TASKS"): # Only run if it is not disabled in platformio.ini
+if not hasDefine("DISABLE_POST_BUILD_TASKS"): # Only run if it is not disabled in platformio.ini
     firmwareBinPath = os.path.join(env.subst("$BUILD_DIR"), "firmware.bin")
     env.AddPostAction(firmwareBinPath, postBuildAction)
