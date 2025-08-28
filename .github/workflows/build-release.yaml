@@ -120,7 +120,7 @@ jobs:
         cp -f "./code/.pio/build/${{ matrix.plat }}/partitions.bin" "./artifact/partitions.bin"
         cp -f "./docs/Installation/DeviceReadme/${{ matrix.plat }}.md" "./artifact/README.md"
 
-        cp -r ./sd-card/html_compiled/* ./artifact/html/
+        cp -r ./sd-card/html_compiled ./artifact/html
 
         rm -rf ./artifact/config/
         mkdir -p ./artifact/config
