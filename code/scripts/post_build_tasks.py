@@ -2,7 +2,7 @@
 """
 Post build tasks (only usable in context of platformio build pipeline)
 - Preparing WebUI (tooltips, hashes, api docs)
-- Create firmware package zip file (manual build only)
+- Create firmware package zip file (manual triggered build only)
 """
 import os
 import sys
@@ -14,7 +14,7 @@ import shutil
 Import("env")
 
 def hasDefine(macro):
-    """Check if a macro is defined in build_flags (CPPDEFINES)."""
+    """ Check if a macro is defined in build_flags (CPPDEFINES) """
     for d in env.get("CPPDEFINES", []):
         if isinstance(d, (list, tuple)):
             if d[0] == macro:
@@ -142,6 +142,7 @@ def postBuildAction(source, target, env):
             for binFile in ["bootloader.bin", "partitions.bin", "firmware.bin"]:
                 fullPath = os.path.join(buildDir, binFile)
                 zipFile.write(fullPath, arcname=binFile)
+
 
 if not hasDefine("DISABLE_POST_BUILD_TASKS"): # Only run if it is not disabled in platformio.ini
     firmwareBinPath = os.path.join(env.subst("$BUILD_DIR"), "firmware.bin")
