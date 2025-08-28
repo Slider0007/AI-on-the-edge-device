@@ -39,7 +39,7 @@ apiFiles = {
     "Webhook": "doc_api_webhook.md"
 }
 
-# Optional anchor prefixes for each API type (used for local links)
+# Anchor prefixes for each API type (used for local links)
 anchorPrefixes = {
     "REST": "rest-api",
     "MQTT": "mqtt-api",
@@ -50,7 +50,7 @@ anchorPrefixes = {
 
 def prepareApiMarkdown(markdownFile, apiType=None):
     """
-    Read a markdown file, convert internal .md links to local anchors, and fix image paths.
+    Read a markdown file, convert internal .md links to local anchors and fix image paths
     """
     with open(markdownFile, "r", encoding="utf-8") as f:
         content = f.read()
@@ -69,7 +69,11 @@ def prepareApiMarkdown(markdownFile, apiType=None):
                 content = content.replace("xxx_migration_notes.md", "#migration-notes")
 
             # Replace with local anchor
-            content = content.replace(replaceLink, f"#{prefix}-{replaceLinkName}")
+            if (apiType == "REST"):
+                content = content.replace(replaceLink, f"#{prefix}-endpoint-{replaceLinkName}")
+            else:
+                content = content.replace(replaceLink, f"#{prefix}-{replaceLinkName}")
+
             linkPosEnd = content.find(".md)")
 
     # Update image paths
