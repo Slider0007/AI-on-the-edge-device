@@ -210,7 +210,7 @@ struct GpioElement {
 struct CfgData {
     // Config File
     struct SectionConfig {
-        int version = 5; // NOTE: Increment when existing parameter name changed and add migration routine
+        int version = 6; // NOTE: Increment when existing parameter name changed and add migration routine
         std::string lastModified = "";
     } sectionConfig;
 
@@ -495,3 +495,4 @@ struct CfgData {
 };
 
 #endif // CFGDATASTRUCT_H
+
