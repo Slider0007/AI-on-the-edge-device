@@ -686,13 +686,18 @@
 												 _jsonData.build_time.substr(11,8) + " (UTC" +
 												 _jsonData.build_time.substr(19,5) + ")";
 
-				const HTMLVersionSplit = _jsonData.html_version.split('Commit: ');
-				const HTMLVersionCommit = HTMLVersionSplit[1].substring(0, 7);
-				const HTMLVersionString = HTMLVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" +
-									HTMLVersionCommit + "\" target=\"_blank\">" + HTMLVersionCommit + "</a>)";
-				document.getElementById("html_version").innerHTML = HTMLVersionString;
-				document.getElementById("config_version").value = _jsonData.config_version;
+				if (_jsonData.html_version === "?") {
+					document.getElementById("html_version").innerHTML = "Unknown";
+				}
+				else {
+					const HTMLVersionSplit = _jsonData.html_version.split('Commit: ');
+					const HTMLVersionCommit = HTMLVersionSplit[1].substring(0, 7);
+					const HTMLVersionString = HTMLVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" +
+										HTMLVersionCommit + "\" target=\"_blank\">" + HTMLVersionCommit + "</a>)";
+					document.getElementById("html_version").innerHTML = HTMLVersionString;
+				}
 
+				document.getElementById("config_version").value = _jsonData.config_version;
 				document.getElementById("idf_version").value = _jsonData.idf_version;
 			}
 		};
