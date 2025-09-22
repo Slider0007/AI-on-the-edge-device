@@ -118,11 +118,27 @@
     return new Date(+y, +m-1, +d).getTime();
   }
 
+  function isTodayFile(fileTime)
+  {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return fileTime === today.getTime();
+  }
+
   async function fetchFilesInTimeRange(files, startTime, endTime)
   {
     const filesInRange = files.filter(f => {
-      const fs = parseFileDate(f);
-      return fs && (fs+24*3600*1000 > startTime) && (fs < endTime) && !fetchedFiles.has(f);
+      const fileTime = parseFileDate(f);
+      if (!fileTime) {
+        return false;
+      }
+
+      if (isTodayFile(fileTime)) {
+        return fileTime + 24*3600*1000 > startTime && fileTime < endTime;
+      }
+
+      return fileTime && (fileTime + 24*3600*1000 > startTime) && (fileTime < endTime) && !fetchedFiles.has(f);
     });
 
     const datasets = await Promise.all(
