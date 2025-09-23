@@ -1,6 +1,8 @@
 #include "CTfLiteClass.h"
 #include "../../include/defines.h"
 
+#include <flatbuffers/verifier.h>
+
 #include "ClassLogFile.h"
 #include "helper.h"
 #include "psram.h"
@@ -40,6 +42,35 @@ void CTfLiteClass::loadOpResolver(void)
 }
 
 
+bool CTfLiteClass::checkModelOperators(const tflite::Model *model)
+{
+    bool allOpsOk = true;
+    auto *subgraph = model->subgraphs()->Get(0);
+
+    for (unsigned int i = 0; i < subgraph->operators()->size(); i++) {
+        auto *op = subgraph->operators()->Get(i);
+        auto *opCode = model->operator_codes()->Get(op->opcode_index());
+
+        if (opCode->builtin_code() == tflite::BuiltinOperator_CUSTOM) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Missing custom operator: " + std::string(opCode->custom_code()->c_str()));
+            allOpsOk = false;
+        }
+        else {
+            auto builtin = static_cast<tflite::BuiltinOperator>(opCode->builtin_code());
+            const TFLMRegistration *registration = microOpResolver.FindOp(builtin);
+            if (!registration) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Missing operator: " + std::string(tflite::EnumNameBuiltinOperator(builtin)) + " (v" +
+                                        std::to_string(opCode->version()) + ")");
+                allOpsOk = false;
+            }
+        }
+    }
+
+    return allOpsOk;
+}
+
+
 bool CTfLiteClass::makeAllocate()
 {
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Allocating tensors");
@@ -72,11 +103,7 @@ bool CTfLiteClass::makeAllocate()
 
 bool CTfLiteClass::readFileToModel(const std::string &fileName)
 {
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "readFileToModel: Read TFLite model file: " + fileName);
-
-#ifdef DEBUG_DETAIL_ON
-    LogFile.writeHeapInfo("readFileToModel: start");
-#endif // DEBUG_DETAIL_ON
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "readFileToModel: Read model file: " + fileName);
 
     size_t size = getFileSize(fileName);
     if (size <= 0) {
@@ -109,9 +136,11 @@ bool CTfLiteClass::readFileToModel(const std::string &fileName)
     }
     fclose(file);
 
-#ifdef DEBUG_DETAIL_ON
-    LogFile.writeHeapInfo("readFileToModel: done");
-#endif // DEBUG_DETAIL_ON
+    flatbuffers::Verifier verifier(reinterpret_cast<const uint8_t *>(modelFile), size);
+    if (!tflite::VerifyModelBuffer(verifier)) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readFileToModel: Model file is corrupt or invalid");
+        return false;
+    }
 
     return true;
 }
@@ -119,30 +148,37 @@ bool CTfLiteClass::readFileToModel(const std::string &fileName)
 
 bool CTfLiteClass::loadModel(const std::string &fileName)
 {
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Loading TFLite model");
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Loading model");
 
     if (!readFileToModel(fileName)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadModel: TFLite model file reading failed");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadModel: Failed to read model file");
         return false;
     }
 
     model = tflite::GetModel(modelFile);
 
     if (!model) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadModel: GetModel failed");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadModel: Failed to parse model file");
         return false;
     }
 
     if (model->version() != TFLITE_SCHEMA_VERSION) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                            "loadModel: Model provided is schema version " + std::to_string(model->version()) +
-                                " not equal to supported version " + std::to_string(TFLITE_SCHEMA_VERSION));
+                            "loadModel: Model is incompatible (Schema version: " + std::to_string(model->version()) +
+                                ") | Supported schema version: " + std::to_string(TFLITE_SCHEMA_VERSION));
         return false;
     }
 
-    loadOpResolver(); // Preload operation resolver for tensor interpreter execution (make sure that this only gets called once)
+    // Preload operation resolver for tensor interpreter execution (make sure that this only gets called once)
+    loadOpResolver();
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TFLite model successfully loaded");
+    // Check model operators support
+    if (!checkModelOperators(model)) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadModel: Model is incompatible. Unsupported operators");
+        return false;
+    }
+
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Model successfully loaded");
     return true;
 }
 
@@ -355,7 +391,7 @@ CTfLiteClass::~CTfLiteClass()
         delete interpreter;
         interpreter = nullptr;
     }
-    
+
     free_psram_heap(std::string(TAG) + "->modelFile", modelFile);
     modelFile = nullptr;
 }
