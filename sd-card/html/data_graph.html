@@ -1,351 +1,541 @@
 <!DOCTYPE html>
 <html lang="en" xml:lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Data Graph</title>
+  <meta charset="UTF-8">
+  <title>Data Graph</title>
+  <style>
+    h1 {font-size: 1.8em;}
+    h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
+    h3 {font-size: 1.2em;}
+    p {font-size: 1em;}
 
-    <style>
-        h1 {font-size: 1.8em;}
-        h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-        h3 {font-size: 1.2em;}
-        p {font-size: 1em;}
+    body, html {
+        font-size: 100%;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        font-family: Arial, sans-serif;
+    }
 
-        body, html {
-            font-size: 100%;
-            -webkit-text-size-adjust: 100%;
-            text-size-adjust: 100%;
-        }
+    select, input[type=number],
+    input[type=datetime-local] {
+      padding: 3px 5px;
+      display: inline-block;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
 
-        select {
-            padding: 3px 5px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            margin-right: 10px;
-            min-width: 100px;
-            vertical-align: middle;
-        }
+    .button {
+      padding: 5px 10px;
+      min-width: 170px;
+      width: 170px;
+      max-width: 170px;
+      font-size: 16px;
+    }
 
-        input[type=number] {
-            width: 45px;
-            min-width: 45px;
-            max-width: 45px;
-            margin-right: 0px;
-            padding: 3px 5px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            vertical-align: middle;
-        }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
-        .button {
-            padding: 5px 10px;
-            width: 170px;
-            font-size: 16px;
-        }
+    .controls .row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
 
-        input:out-of-range {
-            background-color: rgba(255, 0, 0, 0.25);
-            border: 1px solid red;
-        }
+    .chart {
+      width: 100%;
+      min-width: 660px;
+      max-width: 1022px;
+      height: 450px;
+      margin: 20px 5px;
+    }
+  </style>
 
-        input:invalid {
-            background-color: rgba(255, 0, 0, 0.25);
-            border: 1px solid red;
-        }
-    </style>
-
-    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
-    <script src="js.cookie.min.js?v=$COMMIT_HASH"></script>
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
-    <script src="firework.js?v=$COMMIT_HASH"></script>
-    <script src='plotly-basic-2.18.2.min.js?v=$COMMIT_HASH'></script>
-    <script src="global_common.js?v=$COMMIT_HASH"></script>
-    <script src="global_data.js?v=$COMMIT_HASH"></script>
+  <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
+  <script src="js.cookie.min.js?v=$COMMIT_HASH"></script>
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+  <script src="firework.js?v=$COMMIT_HASH"></script>
+  <script src="plotly-basic.min.js?v=$COMMIT_HASH"></script>
+  <script src="global_common.js?v=$COMMIT_HASH"></script>
+  <script src="global_data.js?v=$COMMIT_HASH"></script>
 </head>
 
-<body style="font-family: arial; padding: 0px 10px;">
-    <h2>Data Graph</h2>
-    <div style="margin-top:20px;margin-bottom:0px;">
-        Number Sequence: <select id="sequence_selection" onchange="run();"></select>
-        Day: <select style="width:120px" id="datafiles" onchange="run();"></select>
-        <input type="checkbox" id="showRelativeValues" onclick = 'run();'  ><label for="showRelativeValues">Show relative value</label><br><br>
-    </div>
-    <div>
-        <input type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
-        <label for=AutoRefreshEnabled><span id="AutoRefreshEnabled_text" style="color:black;">Auto Refresh</span></label>
-        <input required type="number" style="margin-left: 18px;" id="AutoRefreshTime" min="1" value="60"
-                onchange="(!validity.rangeUnderflow||(value=1));AutoRefreshContent();"> s
-        <output style="margin-left:48px" id="timestamp" >Last Refresh:</output>
-    </div>
-    <div style="margin-top:10px;margin-bottom:20px">
-        <button class="button" onclick="run();">Refresh</button>
-        <button class="button" onclick="window.location.href = 'data_viewer.html?v=$COMMIT_HASH'">Show Data Viewer</button>
-        <button class="button" onclick="window.location.href = getDomainname() + '/fileserver/log/data/'">Show Data Files</button>
-    </div>
-    <div id='chart'><p>Loading graph ...<br></p></div>
+<body>
+<h2>Data Graph</h2>
 
+<div class="controls">
+  <div class="row" style="margin-top:20px;">
+    Number Sequence: <select id="sequence_selection"
+        style="width:120px; max-width:120px; min-width:120px;white-space:nowrap; overflow:hidden" onchange="ManualRefreshContent()">
+    </select>
+    <button class="button" style="margin-left:10px"
+              onclick="window.location.href='data_viewer.html?v=$COMMIT_HASH'">Show Data Viewer</button>
+    <button class="button" onclick="window.location.href=getDomainname() + '/fileserver/log/data/'">Show Data Files</button>
+  </div>
+  <div class="row">
+    Start: <input type="datetime-local" id="startTime" style="margin-right:5px;">
+    End: <input type="datetime-local" id="endTime">
+    <button class="button" style="width:100px;max-width:100px;min-width:100px"
+              onclick="ManualRefreshContent()"><b>Refresh</b></button>
+    <img style="visibility:hidden; width:16px; height:16px;" id="manual_refresh_img_loading" src="">
+  </div>
+  <div class="row">
+    <input type="checkbox" id="AutoRefreshEnabled" value="1" onchange="AutoRefreshContent();">
+    <label for="AutoRefreshEnabled"><span id="AutoRefreshEnabled_text">Auto Refresh:</span></label>
+    <input type="number" id="AutoRefreshTime" min="1" value="60" style="margin-left:5px;margin-right:0px;width:60px;"
+            onchange="(!validity.rangeUnderflow||(value=1));AutoRefreshContent();">s
+    <output id="timestamp" style="margin-left:45px">Last Refresh:</output>
+  </div>
+</div>
+<div id="chartLoadingText"><p>Loading charts ...</p></div>
+<div class="chart" id="chartTrend"></div>
+<div class="chart" id="chartDailyTotal"></div>
+<div class="chart" id="chartCycleStats"></div>
 
 <script>
-    function addZero(i)
-    {
-        if (i < 10) {
-            i = "0" + i;
+  let autoRefreshTimeoutHandle = null;
+  let fetchedFiles = new Map();
+  let chartTraces = [], dailyTraces = [];
+
+  function addZero(i)
+  {
+    return i < 10 ? "0" + i : i;
+  }
+
+  function parseFileDate(file)
+  {
+    const match = file.match(/data_(\d{4}-\d{2}-\d{2})\.csv/);
+
+    if (!match) {
+      return null;
+    }
+
+    const [y,m,d] = match[1].split("-");
+    return new Date(+y, +m-1, +d).getTime();
+  }
+
+  function isTodayFile(fileTime)
+  {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return fileTime === today.getTime();
+  }
+
+  async function fetchFilesInTimeRange(files, startTime, endTime)
+  {
+    const filesInRange = files.filter(f => {
+      const fileTime = parseFileDate(f);
+      if (!fileTime) {
+        return false;
+      }
+
+      if (isTodayFile(fileTime)) {
+        return fileTime + 24*3600*1000 > startTime && fileTime < endTime;
+      }
+
+      return fileTime && (fileTime + 24*3600*1000 > startTime) && (fileTime < endTime) && !fetchedFiles.has(f);
+    });
+
+    const datasets = await Promise.all(
+      filesInRange.map(async f=>{
+        const res = await fetch(`${getDomainname()}/fileserver/log/data/${f}`, { credentials:'include' });
+        const text = await res.text();
+        fetchedFiles.set(f,text);
+        return { file: f, text };
+      })
+    );
+
+    return datasets;
+  }
+
+  async function extractData(datasets, numberSequence, startTime, endTime) {
+    const rows = [];
+    datasets.forEach(txt =>
+      txt.split("\n").forEach(line => {
+        const cols = line.split(",");
+        if (cols.length >= 7 && cols[1] === numberSequence) {
+          const ts = new Date(cols[0]).getTime();
+          if ((!isNaN(startTime) ? ts >= startTime : true) && (!isNaN(endTime) ? ts <= endTime : true)) {
+            rows.push([ts, ...cols.slice(2)]);
+          }
         }
-        return i;
+      })
+    );
+
+    rows.sort((a,b)=>a[0]-b[0]);
+
+    const x=[], actual=[], raw=[], fallback=[], ratePerMin=[], ratePerInterval=[], status=[];
+    rows.forEach(([ts,c2,c3,c4,c5,c6,c7])=>{
+      x.push(ts);
+      raw.push(isFinite(+c2) ? +c2 : null);
+      actual.push(+c3 || null);
+      fallback.push(+c4 || null);
+      ratePerMin.push(+c5 || null);
+      ratePerInterval.push(+c6 || null);
+      status.push(c7);
+    });
+
+    return { x, actual, raw, fallback, ratePerMin, ratePerInterval, status };
+  }
+
+  function plotTrendChart({x,actual,raw,fallback,ratePerMin,ratePerInterval})
+  {
+    chartTraces = [
+      { x, y: actual, name:"Actual", type:"scatter", mode:"lines", line:{color:"green"}, yaxis:"y" },
+      { x, y: raw, name:"Raw", type:"scatter", mode:"lines", line:{color:"black"}, yaxis:"y", visible:"legendonly", connectgaps: true },
+      { x, y: fallback, name:"Fallback", type:"scatter", mode:"lines", line:{color:"blue"}, yaxis:"y", visible:"legendonly" },
+      { x, y: ratePerMin, name:"Rate / Min", type:"bar", marker:{color:"magenta"}, yaxis:"y2", opacity: 0.7 },
+      { x, y: ratePerInterval, name:"Rate / Interval", type:"bar", marker:{color:"cyan"}, yaxis:"y2", visible:"legendonly", opacity: 0.7 }
+    ];
+
+    const chartLayout = {
+      title: { text: "📈 Trend", font: { size: 20 }, xref: "container", x: 0.0 },
+      autosize: true,
+      xaxis: { title: { text: "Date/Time", font: { size: 16 } }, type: "date" },
+      yaxis: { title: { text: "Value", font: { size: 16 } } },
+      yaxis2: { title: { text: "Rate", font: { size: 16 } }, overlaying: "y", side: "right" },
+      hovermode: "x unified",
+      showlegend: true,
+      legend: { orientation: "h", x:0.05, y: 1.1 },
+      margin: { t: 60 }
+    };
+
+    const chartConfig = {
+      responsive: true,
+      displayModeBar: true,
+      displaylogo: false,
+      modeBarButtonsToRemove: ['select2d', 'lasso2d']
+    };
+
+    Plotly.react('chartTrend', chartTraces, chartLayout, chartConfig);
+
+    const d = new Date();
+    $('#timestamp').html(`Last Refresh: ${addZero(d.getHours())}:${addZero(d.getMinutes())}:${addZero(d.getSeconds())}`);
+    document.getElementById("chartLoadingText").innerHTML = "";
+  }
+
+  // Plot daily total
+  function calcDailyTotal(xTimestamps, values, startTime, endTime) {
+    const dailyMap = new Map();
+
+    xTimestamps.forEach((ts, i) => {
+      if (ts < startTime || ts > endTime) {
+        return;
+      }
+
+      const val = values[i];
+
+      if (val == null || isNaN(val)) {
+        return;
+      }
+
+      const d = new Date(ts);
+      const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+
+      if (!dailyMap.has(key)) {
+        dailyMap.set(key, []);
+      }
+
+      dailyMap.get(key).push(val);
+    });
+
+    const dailyDates = [], dailyValues = [];
+    Array.from(dailyMap.entries())
+      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+      .forEach(([key, arr]) => {
+        dailyValues.push(arr[arr.length - 1] - arr[0]);
+        const [year, month, day] = key.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        dailyDates.push(date.getTime());
+      });
+
+    return { dailyDates, dailyValues };
+  }
+
+  function plotDailyTotalChart(dailyDates, dailyValues)
+  {
+    // Calculate range sum
+    const totalSum = dailyValues.length > 0 ? dailyValues.reduce((a, b) => a + b, 0) : 0;
+
+    // Average of daily differences
+    const avgValue = parseFloat((totalSum / dailyValues.length).toFixed(3));
+    const avgLine = dailyDates.map(() => avgValue);
+
+    const dailyTraces = [
+      {
+        x: dailyDates,
+        y: dailyValues,
+        type: "bar",
+        name: "Daily",
+        marker: { color: "rgba(128,0,128,0.5)" },
+        yaxis: "y1",
+        width: dailyDates.length === 1 ? 24 * 60 * 60 * 1000 * 0.80 : undefined
+      },
+      {
+        x: dailyDates,
+        y: avgLine,
+        type: "scatter",
+        mode: "lines",
+        name: "Average (Range)",
+        line: { color: "orange", width: 2, dash: "dot" },
+        yaxis: "y1"
+      },
+      {
+        x: [dailyDates[dailyDates.length - 1] + 12 * 3600 * 1000], // 12h after last date
+        y: [totalSum],
+        type: "scatter",
+        mode: "markers+text",
+        name: "Total (Range)",
+        marker: { color: "blue", size: 12, symbol: "diamond" },
+        text: [`Σ ${totalSum.toFixed(3)}`],
+        textposition: "bottom center",
+        yaxis: "y2"
+      }
+    ];
+
+    const dailyLayout = {
+      title: { text: "📊 Daily Total", font: { size: 20 }, xref: "container", x: 0.0 },
+      autosize: true,
+      xaxis: {
+        title: { text: "Day", font: { size: 16 } },
+        type: "date",
+        dtick: 86400000
+      },
+      yaxis: {
+        title: { text: "Value", font: { size: 16 } }
+      },
+      yaxis2: {
+        title: { text: "Total (Range)", font: { size: 16 } },
+        overlaying: "y",
+        side: "right",
+        showgrid: false,
+        rangemode: "tozero"
+      },
+      hovermode: "x unified",
+      showlegend: true,
+      legend: { orientation: "h", x: 0.05, y: 1.1 },
+      margin: { t: 60 }
+    };
+
+    const chartConfig = {
+      responsive: true,
+      displayModeBar: true,
+      displaylogo: false,
+      modeBarButtonsToRemove: ['select2d', 'lasso2d']
+    };
+
+    Plotly.react('chartDailyTotal', dailyTraces, dailyLayout, chartConfig);
+  }
+
+  // Plot cycle stats
+  function evalCycleStats(xTimestamps, valueStatus, startTime, endTime)
+  {
+    const dailyMap = new Map();
+
+    for (let i = 0; i < xTimestamps.length; i++) {
+      const ts = xTimestamps[i];
+      if (ts < startTime || ts > endTime) {
+        continue;
+      }
+
+      const val = valueStatus[i];
+      if (!val) {
+        continue;
+      }
+
+      const d = new Date(ts);
+      const dayKey = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+
+      if (!dailyMap.has(dayKey)) {
+        dailyMap.set(dayKey, { good: 0, failed: 0 });
+      }
+
+      if (val === '000' || val === 'E91') {
+        dailyMap.get(dayKey).good += 1;
+      }
+      else if (val === 'E92' || val === 'E93') {
+        dailyMap.get(dayKey).failed += 1;
+      }
     }
 
-    function run()
-    {
-        datefile = document.getElementById("datafiles").value;
-        numbername = document.getElementById("sequence_selection").value;
-        showRelativeValues = document.getElementById("showRelativeValues").checked;
+    const days = [], goodCounts = [], failedCounts = [];
 
-        fetch(getDomainname() + '/fileserver/log/data/' + datefile, {credentials: 'include'})
-        .then(response => {
-            // handle the response
-            if (response.status == 404) {
-                firework.launch("No data available for " + dateString, 'warning', 10000);
-            }
-            response.text()
-            .then( result => {
-                let lines = result.split("\n");
-                let traceValue =             { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Actual Value'};
-                let traceRawValue =          { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Raw Value', visible: 'legendonly'};
-                let traceFallbackValue =     { x: [], y: [], type: 'scatter', line: {width: 2}, name: 'Fallback Value', visible: 'legendonly'};
-                let traceRatePerMin =        { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Minute'};
-                let traceRatePerInterval = { x: [], y: [], type: 'bar', yaxis: 'y2', opacity: 0.2, name: 'Rate / Interval', visible: 'legendonly'};
+    Array.from(dailyMap.entries())
+      .sort((a, b) => {
+        const [yA, mA, dA] = a[0].split('-').map(Number);
+        const [yB, mB, dB] = b[0].split('-').map(Number);
+        return new Date(yA, mA - 1, dA) - new Date(yB, mB - 1, dB);
+      })
+      .forEach(([key, counts]) => {
+        const [year, month, day] = key.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        days.push(date.getTime());
+        goodCounts.push(counts.good);
+        failedCounts.push(counts.failed);
+      });
 
-                let timex = 1;
-                for (let line of lines) {
-                    {
-                        //console.log(line);
-                        if (line.split(",")[1] == numbername)
-                        {
-                            let value = line.split(",")[3];
-                            let rawValue = line.split(",")[2];
-                            let fallbackValue = line.split(",")[4];
-                            let RatePerMin = line.split(",")[5];
-                            let RatePerInterval = line.split(",")[6];
-                            let time  = line.split(",")[0];
-                            //console.log("> "+time+" "+value+"\n");
+    return { days, goodCounts, failedCounts };
+  }
 
-                            traceValue.x.push(time);
+  function plotCycleStatsChart(days, goodCounts, failedCounts)
+  {
+    const traces = [
+      {
+        x: days,
+        y: goodCounts,
+        name: "Good",
+        type: "bar",
+        marker: { color: "green" },
+        text: goodCounts.map((val, i) => {
+          const total = goodCounts[i] + failedCounts[i];
+          const pct = total > 0 ? ((val / total) * 100).toFixed(2) : 0;
+          return `Good: ${val} (${pct}%)`;
+        }),
+        hoverinfo: "text"
+      },
+      {
+        x: days,
+        y: failedCounts,
+        name: "Failed",
+        type: "bar",
+        marker: { color: "red" },
+        text: failedCounts.map((val, i) => {
+          const total = goodCounts[i] + failedCounts[i];
+          const pct = total > 0 ? ((val / total) * 100).toFixed(2) : 0;
+          return `Failed: ${val} (${pct}%)`;
+        }),
+        hoverinfo: "text"
+      }
+    ];
 
-                            /* Catch empty fields */
-                            if (value == "" || isNaN(value)) {
-                                value = NaN;
-                            }
+    const chartLayout = {
+      title: { text: "📊 Cycle Stats", font: { size: 20 }, xref: "container", x: 0 },
+      xaxis: { title: { text: "Day", font: { size: 16 } }, type: "date", dtick: 86400000 },
+      yaxis: { title: { text: "Cycle Count", font: { size: 16 } } },
+      barmode: "stack",
+      hovermode: "x unified",
+      margin: { t:60 },
+      showlegend: true,
+      legend: { orientation: "h", x: 0.08, y: 1.07 }
+    };
 
-                            if (fallbackValue == "" || isNaN(fallbackValue)) {
-                                fallbackValue = NaN;
-                            }
+    const chartConfig = {
+      responsive: true,
+      displayModeBar: true,
+      displaylogo: false,
+      modeBarButtonsToRemove: ['select2d', 'lasso2d']
+    };
 
-                            if (rawValue == "" || isNaN(rawValue)) {
-                                rawValue = NaN;
-                            }
-
-                            if (RatePerMin == "" || isNaN(RatePerMin)) {
-                                RatePerMin = NaN;
-                            }
-
-                            if (RatePerInterval == "" || isNaN(RatePerInterval)) {
-                                RatePerInterval = NaN;
-                            }
-
-                            traceValue.y.push(value);
-                            traceRawValue.y.push(rawValue);
-                            traceFallbackValue.y.push(fallbackValue);
-                            traceRatePerMin.y.push(RatePerMin);
-                            traceRatePerInterval.y.push(RatePerInterval);
-                        }
-                    }
-                }
-
-                /* If the value trace starts with NaN, replace all those Nans with the first valid value */
-                let firstNonNaNIndex = 0;
-                for(let i = 0; i < traceValue.y.length; i++) {
-                    firstNonNaNIndex = i;
-                    if (! isNaN(traceValue.y[i])) {
-                        break;
-                    }
-                }
-
-                if (firstNonNaNIndex == (traceValue.y.length - 1)) {
-                    //console.log("No data available for 'value'!");
-                }
-                else if (firstNonNaNIndex > 0) { // Replace all leading NaN with the first valid value
-                    //console.log("The first leading values have all just NaN, replacing them with the value of",
-                    //        traceValue.y[firstNonNaNIndex], "at", traceValue.x[firstNonNaNIndex], "(Index:", firstNonNaNIndex, ")");
-                    for(let i = 0; i < firstNonNaNIndex; i++) {
-                        traceValue.y[i] = traceValue.y[firstNonNaNIndex];
-                    }
-                }
+    Plotly.react('chartCycleStats', traces, chartLayout, chartConfig);
+  }
 
 
-                // Copy time to all traces
-                traceRawValue.x = traceValue.x;
-                traceFallbackValue.x = traceValue.x;
-                traceRatePerMin.x = traceValue.x;
-                traceRatePerInterval.x = traceValue.x;
+  async function run()
+  {
+    const numberSequence = document.getElementById("sequence_selection").value;
+    const startTime = new Date(document.getElementById("startTime").value).getTime();
+    const endTime = new Date(document.getElementById("endTime").value).getTime();
+    const files = dataFileListObj.files.sort();
 
-                //console.log(traceValue.y);
+    await fetchFilesInTimeRange(files, startTime, endTime);
+    const dataSet = await extractData(Array.from(fetchedFiles.values()), numberSequence, startTime, endTime);
 
-                let offsetValue = traceValue.y[0];
-                let offsetRawValue = traceRawValue.y[0];
-                let offsetFallbackValue = traceFallbackValue.y[0];
+    plotTrendChart(dataSet);
 
-                traceValue.connectgaps = true;
+    const { dailyDates, dailyValues } = calcDailyTotal(dataSet.x, dataSet.actual, startTime, endTime);
+    plotDailyTotalChart(dailyDates, dailyValues);
 
-                if (showRelativeValues) {
-                    traceValue.y.forEach(function(part, index, arr) {
-                        arr[index] = arr[index] - offsetValue;
-                    });
+    const { days, goodCounts, failedCounts } = evalCycleStats(dataSet.x, dataSet.status.map(String), startTime, endTime);
+    plotCycleStatsChart(days, goodCounts, failedCounts);
+  }
 
-                    traceRawValue.y.forEach(function(part, index, arr) {
-                        arr[index] = arr[index] - offsetRawValue;
-                    });
 
-                    traceFallbackValue.y.forEach(function(part, index, arr) {
-                        arr[index] = arr[index] - offsetFallbackValue;
-                    });
-                }
+  function initAutoRefreshContent()
+  {
+    document.getElementById("AutoRefreshEnabled").checked = jsonConfig.webui.autorefresh.datagraphpage.enabled;
+    document.getElementById("AutoRefreshTime").value = jsonConfig.webui.autorefresh.datagraphpage.refreshtime;
+    AutoRefreshContent();
+  }
 
-            //  console.log(traceValue.x)
+  function AutoRefreshContent()
+  {
+    if (document.getElementById("AutoRefreshEnabled").checked) {
+      if (autoRefreshTimeoutHandle) {
+        clearTimeout(autoRefreshTimeoutHandle); autoRefreshTimeoutHandle=null;
+      }
 
-                let data = [traceValue, traceRawValue, traceFallbackValue, traceRatePerMin, traceRatePerInterval];
+      let autoRefreshTime = document.getElementById("AutoRefreshTime").value*1000;
+      if (!autoRefreshTime) {
+        document.getElementById("AutoRefreshEnabled").checked=false; return;
+      }
+      autoRefreshTimeoutHandle = setTimeout(()=>{ run(); AutoRefreshContent(); }, autoRefreshTime);
+    }
+    else {
+      if (autoRefreshTimeoutHandle) {
+        clearTimeout(autoRefreshTimeoutHandle); autoRefreshTimeoutHandle=null;
+      }
+    }
+  }
 
-                let layout = {
-                    showlegend: true,
-                    colorway: ['green', 'black', 'blue', 'magenta', 'cyan'],
+  async function ManualRefreshContent()
+  {
+    const spinner = document.getElementById("manual_refresh_img_loading");
+    spinner.style.visibility = "visible";
 
-                    yaxis: {title: 'Value'},
-                    yaxis2: {
-                        title: 'Rate',
-                        overlaying: 'y',
-                        side: 'right'
-                    },
+    try {
+      await run();
+    }
+    finally {
+      setTimeout(function() { // Show loading spinner at least for 200ms
+        spinner.style.visibility = "hidden";
+      }, 200);
+    }
+  }
 
-                    margin: {
-                        l: 70,
-                        r: 70,
-                        b: 50,
-                        t: 40,
-                        pad: 4
-                    },
 
-                    legend: {
-                        x: 0.02,
-                        y: 0.97,
-                        xanchor: 'left'
-                    }
-                };
-
-                document.getElementById("chart").innerHTML = "";
-                Plotly.newPlot('chart', data, layout, {displayModeBar: true});
-
-                // Update refresh timestamp
-                let d = new Date();
-                let h = addZero(d.getHours());
-                let m = addZero(d.getMinutes());
-                let s = addZero(d.getSeconds());
-                $('#timestamp').html("Last Refresh: " + (h + ":" + m + ":" + s));
-            });
-        }).catch((error) => {
-            // handle the error
-            console.log(error);
-        });
+  async function init()
+  {
+    try {
+      [dataFileListObj] = await Promise.all([getDataFileList(), loadConfig()]);
+    }
+    catch (err) {
+      firework.launch('Failed loading data for graph page. Please repeat or check logs', 'danger', 30000);
+      console.error("Failed loading data for graph page. Error: " + error.message);
+      return;
     }
 
+    jsonConfig = getConfigFromStorage();
 
-    function parseDataFiles(dataFileListObj)
-    {
-        let dataSelection = document.getElementById("datafiles");
-        let dataFileArray = dataFileListObj.files.sort().reverse(); // Convert to array and sort descending
+    // Fill dropdown
+    jsonConfig.numbersequences.sequence.forEach(seq=>{
+      document.getElementById("sequence_selection").add(new Option(seq.sequencename, seq.sequencename));
+    });
 
-        for (let i = 0; i < dataFileArray.length; i++) {
-            let option = document.createElement("option");
-            option.text = dataFileArray[i].substring(5, dataFileArray[i].lastIndexOf('.'));
-            option.value = dataFileArray[i];
-            dataSelection.add(option);
-        }
+    // Set default time to today
+    const todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
+    const todaysEnd = new Date(todayMidnight.getTime()+24*3600*1000-1);
+
+    function formatLocalDatetime(dt) {
+      const pad = n => n.toString().padStart(2,'0');
+      return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
     }
 
+    document.getElementById("startTime").value = formatLocalDatetime(todayMidnight);
+    document.getElementById("endTime").value = formatLocalDatetime(todaysEnd);
 
-    function fillSequenceSelectionOptions()
-	{
-        $("#sequence_selection").find('option').remove().end();
+    // Preset with loading indicator
+	  document.getElementById("manual_refresh_img_loading").src = getDomainname() + '/img_loading.gif?v=$COMMIT_HASH';
 
-        for (let i = 0; i < jsonConfig.numbersequences.sequence.length; ++i) {
-            $("#sequence_selection").append(new Option(jsonConfig.numbersequences.sequence[i].sequencename,
-                jsonConfig.numbersequences.sequence[i].sequencename));
-        }
-	}
+    initAutoRefreshContent();
+    run();
+  }
 
-
-    function initAutoRefreshContent()
-    {
-        jsonConfig = getConfigFromStorage(); // Get config
-
-        fillSequenceSelectionOptions();
-
-        document.getElementById("AutoRefreshEnabled").checked = jsonConfig.webui.autorefresh.datagraphpage.enabled;
-		document.getElementById("AutoRefreshTime").value = jsonConfig.webui.autorefresh.datagraphpage.refreshtime;
-
-        autoRefreshTimeoutHandle = null; // Init auto refresh handle
-        AutoRefreshContent();
-    }
-
-
-	function AutoRefreshContent()
-	{
-        if (document.getElementById("AutoRefreshEnabled").checked == true) { // Activated -> Set timeout
-
-			if (autoRefreshTimeoutHandle) { // Clear actual timeout handle
-				clearTimeout(autoRefreshTimeoutHandle);
-				autoRefreshTimeoutHandle = null;
-			}
-
-			let autoRefreshTime = document.getElementById("AutoRefreshTime").value * 1000;
-
-            if (autoRefreshTime == null || autoRefreshTime == 0) { // If no value is set or value is zero, reset checkbox
-				document.getElementById("AutoRefreshEnabled").checked = false;
-			}
-			else {
-                autoRefreshTimeoutHandle = setTimeout(function() {
-                    run();
-                    AutoRefreshContent();
-                }, autoRefreshTime);
-            }
-		}
-		else { // Deactivated -> Reset running timeout
-			if (autoRefreshTimeoutHandle) {
-				clearTimeout(autoRefreshTimeoutHandle);
-				autoRefreshTimeout = null;
-			}
-		}
-	}
-
-
-    async function init()
-	{
-		// Ensure data file list and config (sequence number names) is loaded before parsing data
-		Promise.all([getDataFileList(), loadConfig()])
-			.then(([dataFileListObj]) => {
-                initAutoRefreshContent();
-                parseDataFiles(dataFileListObj);
-                run();
-            })
-			.catch((error) => {
-				firework.launch('Failed loading data for graph page. Please repeat or check logs', 'danger', 30000);
-				console.error("Failed loading data for graph page. Error: " + error.message);
-			});
-	}
-
-
-	init();
-
+  init();
 </script>
-
 </body>
 </html>
