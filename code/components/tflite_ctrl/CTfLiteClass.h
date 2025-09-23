@@ -24,6 +24,7 @@ class CTfLiteClass
 
     bool readFileToModel(const std::string &fileName);
     void loadOpResolver(void);
+    bool checkModelOperators(const tflite::Model *model);
 
   public:
     CTfLiteClass();
