@@ -64,16 +64,16 @@ and converted into a digital reading, ready to be sent or accessed through vario
 ### Board Compatibility
 | Board Type | SOC / Module | Network Interfaces | Flashlight | Firmware Support | Remarks |
 |:---|:---|:---|:---|:---|:---|
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html) | ESP32 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED | All | ⚠️ Only boards with ≥ 4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones |
-| [XIAO ESP32 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP | ❌ External LED required (PWM, SmartLED) | ≥ v17.0.0 | ⚠️ Runs hot, small heatsink recommended |
-| [Freenove ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8<br><br>ESP32S3-WROOM-1-N8R8 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED<br>Low intensity: Additional external LED recommended (PWM, SmartLED) | ≥ v17.0.0<br><br>≥ v17.1.0 | ℹ️ SOC and pin-compatible boards with 8/16MB flash and 8MB RAM supported |
-| [Waveshare ESP32S3-ETH](https://www.waveshare.com/esp32-s3-eth.htm) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP<br>3. Ethernet | ❌ External LED required (PWM, SmartLED) | ≥ v17.2.0 | ℹ️ POE supported (optional hardware required) |
+| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html) | ESP32 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED<br>-> Pin: GPIO4 | All | ⚠️ Only boards with ≥ 4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones |
+| [XIAO ESP32S3 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP | ❌ No onboard LED, external LED required (PWM, SmartLED)<br>-> Default Pin: GPIO1 | ≥ v17.0.0 | ⚠️ Runs hot, small heatsink recommended |
+| [Freenove ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8<br><br>ESP32S3-WROOM-1-N8R8 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED, low intensity<br>-> Pin: GPIO48<br><br>External LED recommended (PWM, SmartLED) | ≥ v17.0.0<br><br>≥ v17.1.0 | ℹ️ SOC and pin-compatible boards with 8/16MB flash and 8MB RAM supported |
+| [Waveshare ESP32S3-ETH](https://www.waveshare.com/esp32-s3-eth.htm) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP<br>3. Ethernet | ❌ No onboard LED, external LED required (PWM, SmartLED)<br>-> Default Pin: GPIO17 | ≥ v17.2.0 | ℹ️ POE supported (optional hardware required) |
 
 ### Camera Compatibility
 | Camera Type | Sensor Resolution | Digital Zoom | Firmware Support | Remarks                       
 |:---         |:---               |:---          |:---              |:---
 | [OV2640](https://www.arducam.com/ov2640/) | 2MP | 1.0x - 2.5x | All | ℹ️ EOL since 2009, still widely used<br>ℹ️ Pin/function-compatible Chinese clones supported
-| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP | 1.0x - 4.0x | $\ge$ v17.0.0 |ℹ️ EOL since 2019, still widely used<br>ℹ️ Autofocus not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Tends to get hotter than OV2640 – use a heat sink or reduce camera frequency (default: 10MHz or lower)<br>⚠️ ESP32-CAM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Functional, minor core voltage deviation (board: 1.3V; camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V).
+| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP | 1.0x - 4.0x | ≥ v17.0.0 |ℹ️ EOL since 2019, still widely used<br>ℹ️ Autofocus not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Tends to get hotter than OV2640 – use a heat sink or reduce camera frequency (default: 10MHz or lower)<br>⚠️ ESP32-CAM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Functional, minor core voltage deviation (board: 1.3V; camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V).
 
 #### ⚠️ Important Note
 The camera clock frequency — configurable via the WebUI or config file — may negatively impact wireless network performance. This can 
@@ -124,10 +124,10 @@ Developers and advanced users can build the firmware from source. Follow the [bu
 ## Support / Community
 ℹ️ This is a fork of [jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use.
 
-- This fork is **actively developed** and maintained independently
+- It is **actively developed and maintained** independently
 - It is **no longer compatible** with the upstream project
+- It still uses the core principle of [jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device) — make sure to **respect the upstream license**
 - It remains public to give something back to the community and help others with similar use cases
-- This fork builds on [jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device) — make sure to **respect the upstream license**
 - Customized code can be used for **non-commercial purposes** - be fair and **credit the original source**
 - Community discussions, feedback and bug reports are always welcome and appreciated
 
