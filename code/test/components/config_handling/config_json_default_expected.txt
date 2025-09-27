@@ -90,7 +90,7 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
   },
   "analog": {
     "enabled": true,
-    "model": "ana-class100_0180_s1_q.tflite",
+    "model": "ana-class100_0201_s1_q.tflite",
     "sequence": [
       {
         "sequenceid": 0,
