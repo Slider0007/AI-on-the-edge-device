@@ -10,14 +10,19 @@ git checkout develop
 ---
 ### Build and Flash with console
 
-#### Compile (firmware only)
+#### Compile firmware and HTML files
 ```
 Browse to GitHub project root directory
 cd code
-platformio run --environment <environment name>
+platformio run --environment {environment name}
 ```
 
 Check `platformio.ini` to find out which environments are available.
+
+Notes:
+  1. Compiled files are located in `/code/.pio/build/{environment name}`
+  2. Zip file (firmware + HTML files) is located in GitHub root directory (same structure than official package)
+
 
 #### Upload
 ```
@@ -34,35 +39,32 @@ pio device monitor -p /dev/ttyUSB0 -b 115200
 ---
 ### Build and Flash with Visual Code IDE
 
+#### Installation
 - Download and install VS Code
   - https://code.visualstudio.com/Download
 - Install the VS Code platformIO IDE plugin
   - <img src="https://raw.githubusercontent.com/Slider0007/ai-on-the-edge-device/develop/images/platformio_plugin.jpg" width="200" align="middle">
   - Check for error messages, maybe you need add some python libraries or other dependencies manually
-    - e.g. in my Ubuntu a python3-env was missing: `sudo apt-get install python3-venv`
-- git clone this project
-  - in Linux: 
+- Checkout Github repository
     ```
     git clone https://github.com/Slider0007/AI-on-the-edge-device.git
     cd AI-on-the-edge-device
     git checkout develop
     ```
-
-- in VS code, open the `AI-on-the-edge-device/code` 
-	- from terminal: `cd AI-on-the-edge-device/code`
-- open a pio terminal (click on the terminal sign in the bottom menu bar)
-- make sure you are in the `code` directory
-- To build, type `platformio run --environment esp32cam`
-- To build with parameter tooltips and file hashes, type `platformio run --environment esp32cam-localbuild`
-  - or use the graphical interface:
+#### Usage
+- Browse folder `AI-on-the-edge-device/code` 
+	- Using terminal: `cd AI-on-the-edge-device/code`
+- Open a PIO terminal (click on the terminal sign in the bottom menu bar)
+- Make sure you are in the `code` directory
+- To build, type `platformio run --environment {environment name}`
+  - Or use the graphical interface:
     <img src="https://raw.githubusercontent.com/Slider0007/ai-on-the-edge-device/develop/images/platformio_build.jpg" width="200" align="middle">
-  - the build artifacts are stored in  `code/.pio/build/`
+  - The build artifacts are stored in `code/.pio/build/{environment name}`
 - Connect the device and type `pio device monitor`. There you will see your device and can copy the name to the next instruction
-- Add `upload_port = you_device_port` to the `platformio.ini` file
 - Make sure a SD card with the proper contents is inserted and you have adapted the WLAN configuration in `config.json`
 - `pio run --target erase` to erase the flash
-- `pio run --target upload` this will upload the `bootloader.bin, partitions.bin,firmware.bin` from the `code/.pio/build/esp32cam/` folder. 
-- `pio device monitor` to observe the logs via uart
+- `pio run --target upload` this will upload the `bootloader.bin`, `partitions.bin` and `firmware.bin` from the `code/.pio/build/{environment name}/` folder. 
+- `pio device monitor` to observe the logs via UART
 
 ---
 ## Debugging
