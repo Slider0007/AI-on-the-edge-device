@@ -5,15 +5,6 @@
 git clone https://github.com/Slider0007/AI-on-the-edge-device.git
 cd AI-on-the-edge-device
 git checkout develop
-git submodule update --init
-```
-
-### Optional Step: Update Submodules
-```
-cd code/components/{submodule} (e.g. esp32-camera)
-git checkout VERSION (e.g. HASH of latest build)
-cd ../../ (go back to code level)
-git submodule update --init
 ```
 
 ---
@@ -21,17 +12,11 @@ git submodule update --init
 
 #### Compile (firmware only)
 ```
-Github project root directory --> cd code
-platformio run --environment esp32cam
-```
-
-Check `platformio.ini` to find out which environments are available.
-
-#### Compile (with HTML parameter tooltips, API docs and file hashes)
-```
+Browse to GitHub project root directory
 cd code
-platformio run --environment esp32cam-localbuild
+platformio run --environment <environment name>
 ```
+
 Check `platformio.ini` to find out which environments are available.
 
 #### Upload
@@ -61,7 +46,6 @@ pio device monitor -p /dev/ttyUSB0 -b 115200
     git clone https://github.com/Slider0007/AI-on-the-edge-device.git
     cd AI-on-the-edge-device
     git checkout develop
-    git submodule update --init
     ```
 
 - in VS code, open the `AI-on-the-edge-device/code` 
