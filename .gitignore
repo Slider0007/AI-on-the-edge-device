@@ -23,6 +23,7 @@ code/.pio/
 sd-card/html_compiled
 AI-on-the-edge-device*
 dependencies.lock
+managed_components
 **/managed_components/**
 
 # Version files (generated)
