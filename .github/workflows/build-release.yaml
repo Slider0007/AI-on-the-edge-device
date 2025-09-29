@@ -135,6 +135,7 @@ jobs:
 
         cp -f "./code/.pio/build/${{ matrix.plat }}/firmware.elf" "debug/firmware.elf"
         cp -f "./code/sdkconfig.${{ matrix.plat }}" "debug/sdkconfig.${{ matrix.plat }}"
+        cp -f "./code/dependencies.lock" "debug/dependencies.lock"
 
     - name: Debug files package - Upload artifact
       uses: actions/upload-artifact@v4
