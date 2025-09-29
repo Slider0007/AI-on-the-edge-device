@@ -1,0 +1,4 @@
+dependencies:
+  roboticsbrno/smartleds:
+    git: https://github.com/RoboticsBrno/SmartLeds.git
+    version: "v3.1.5"
