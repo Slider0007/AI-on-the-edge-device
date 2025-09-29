@@ -1,6 +1,0 @@
-[submodule "code/components/esp32-camera"]
-	path = code/components/esp32-camera
-	url = https://github.com/espressif/esp32-camera.git
-[submodule "code/components/smartleds"]
-	path = code/components/smartleds
-	url = https://github.com/RoboticsBrno/SmartLeds.git

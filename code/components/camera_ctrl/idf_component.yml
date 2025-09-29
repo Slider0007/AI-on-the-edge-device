@@ -1,0 +1,4 @@
+dependencies:
+  espressif/esp32-camera:
+    git: https://github.com/espressif/esp32-camera.git
+    version: "dfeaa71f0aa78e4ed0b82dd9a18aacee1d5a4ced" # v2.1.2+
