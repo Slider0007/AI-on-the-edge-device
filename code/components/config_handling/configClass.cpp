@@ -278,7 +278,7 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 //**************************************************************************************************
 esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 {
-    // Config Verison
+    // Config Version
     // ***************************
     cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "config"), "version");
     if (cJSON_IsNumber(objEl)) {

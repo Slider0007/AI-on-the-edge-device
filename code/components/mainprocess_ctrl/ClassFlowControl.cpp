@@ -97,7 +97,7 @@ bool ClassFlowControl::loadParameter()
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invalid log level set. Use default log level ERROR");
         LogFile.setLogLevel(ESP_LOG_ERROR);
     }
-    // If system reboot was not triggered by user and reboot was caused by execption -> keep log level to DEBUG
+    // If system reboot was not triggered by user and reboot was caused by exception -> keep log level to DEBUG
     if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {
         LogFile.setLogLevel(ESP_LOG_DEBUG);
     }
@@ -337,7 +337,7 @@ bool ClassFlowControl::doFlowImageEvaluation(std::string time)
                 }
             }
 
-            if (!result) { // If an error occured, stop processing of further tasks
+            if (!result) { // If an error occurred, stop processing of further tasks
                 break;
             }
         }
@@ -382,7 +382,7 @@ bool ClassFlowControl::doFlowPublishData(std::string time)
                 }
             }
 
-            if (!result) { // If an error occured, stop processing of further tasks
+            if (!result) { // If an error occurred, stop processing of further tasks
                 break;
             }
         }
@@ -425,7 +425,7 @@ int ClassFlowControl::getFlowStateErrorOrDeviation()
 }
 
 
-bool ClassFlowControl::flowStateEventOccured()
+bool ClassFlowControl::flowStateEventOccurred()
 {
     if (FlowStateEvaluationEvent.size() != 0 || FlowStatePublishEvent.size() != 0) {
         return true;
@@ -447,7 +447,7 @@ void ClassFlowControl::postProcessEventHandler()
             }
         }
     }
-    // Reset of errors will be peformed before next flow starts --> functions doFlowImageEvaluation
+    // Reset of errors will be performed before next flow starts --> functions doFlowImageEvaluation
     // FlowStateEvaluationEvent.clear();
 
     for (int i = 0; i < FlowStatePublishEvent.size(); ++i) {
@@ -459,7 +459,7 @@ void ClassFlowControl::postProcessEventHandler()
             }
         }
     }
-    // Reset of errors will be peformed before next flow starts --> function doFlowPublishData
+    // Reset of errors will be performed before next flow starts --> function doFlowPublishData
     // FlowStatePublishEvent.clear();
 }
 
@@ -696,13 +696,13 @@ esp_err_t ClassFlowControl::sendProcessImages(httpd_req_t *req, const char *file
         else if (getTaskAutoFlowState() == FLOW_TASK_STATE_SETUPMODE) {
             return sendFile(req, "/sdcard/html/flowstate_setup_mode.jpg", true);
         }
-        // Show only before first cycle started or error occured, otherwise result will be shown till next start
+        // Show only before first cycle started or error occurred, otherwise result will be shown till next start
         else if ((getActualProcessState() == std::string(FLOW_IDLE_NO_AUTOSTART) && (flowtakeimage != NULL) &&
                   !flowtakeimage->getFlowState()->getExecuted) ||
-                 (getActualProcessState() == std::string(FLOW_TAKE_IMAGE) && !isAutoStart() && flowStateEventOccured())) {
+                 (getActualProcessState() == std::string(FLOW_TAKE_IMAGE) && !isAutoStart() && flowStateEventOccurred())) {
             return sendFile(req, "/sdcard/html/flowstate_idle_no_autostart.jpg", true);
         }
-        else if (getActualProcessState() == std::string(FLOW_TAKE_IMAGE) && isAutoStart() && flowStateEventOccured()) {
+        else if (getActualProcessState() == std::string(FLOW_TAKE_IMAGE) && isAutoStart() && flowStateEventOccurred()) {
             return sendFile(req, "/sdcard/html/flowstate_idle_autostart.jpg", true);
         }
         else if (getActualProcessState() == std::string(FLOW_TAKE_IMAGE)) {

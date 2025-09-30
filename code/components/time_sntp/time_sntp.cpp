@@ -20,7 +20,7 @@ static std::string timeServer = "";
 static bool timeSyncEnabled = true;
 static bool timeWasNotSetAtBoot = false;
 static bool timeWasNotSetAtBoot_PrintStartBlock = false;
-static bool isTimeSynchonized = false;
+static bool isTimeSynchronized = false;
 
 
 std::string convertTimeToString(time_t _time, const char *frm)
@@ -69,7 +69,7 @@ bool getTimeSyncEnabled(void)
 bool getTimeIsSynced(void)
 {
     if (timeSyncEnabled) {
-        return isTimeSynchonized;
+        return isTimeSynchronized;
     }
 
     return false;
@@ -79,7 +79,7 @@ bool getTimeIsSynced(void)
 std::string getNTPSyncStatus(void)
 {
     if (timeSyncEnabled) {
-        if (isTimeSynchonized) {
+        if (isTimeSynchronized) {
             return "Synchronized";
         }
         else {
@@ -160,10 +160,10 @@ void timeSyncNotificationCallback(struct timeval *tv)
     }
     LogFile.writeToFile(ESP_LOG_INFO, TAG,
                         "Time is synced with NTP server " + getServerName() + ": " + getCurrentTimeString("%Y-%m-%d %H:%M:%S"));
-    isTimeSynchonized = true;
+    isTimeSynchronized = true;
 
 #ifdef ENABLE_MQTT
-    // Start MQTT serivce
+    // Start MQTT service
     startMqttClient();
 #endif // ENABLE_MQTT
 }
@@ -196,15 +196,15 @@ bool initTime()
 
         esp_sntp_config_t sntpConfig = ESP_NETIF_SNTP_DEFAULT_CONFIG(timeServer.c_str());
         sntpConfig.sync_cb = timeSyncNotificationCallback;
-        sntpConfig.start = false; // Start SNTP only after wifi is connected and IP is asigned --> connect_wlan.cpp
+        sntpConfig.start = false; // Start SNTP only after wifi is connected and IP is assigned --> connect_wlan.cpp
         sntpConfig.wait_for_sync = false;
         esp_netif_sntp_init(&sntpConfig);
-        isTimeSynchonized = false;
+        isTimeSynchronized = false;
     }
     else {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "NTP service disabled");
         timeSyncEnabled = false;
-        isTimeSynchonized = false;
+        isTimeSynchronized = false;
     }
 
     if (!getTimeIsSet()) {
@@ -282,7 +282,7 @@ void reconfigureTime(bool _timeSyncEnabled, std::string _timeServer, std::string
         timeSyncEnabled = false;
         timeServer = "";
         esp_netif_sntp_deinit();
-        isTimeSynchonized = false;
+        isTimeSynchronized = false;
     }
     else {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Time server: " + _timeServer);
@@ -294,6 +294,6 @@ void reconfigureTime(bool _timeSyncEnabled, std::string _timeServer, std::string
         esp_sntp_config_t sntpConfig = ESP_NETIF_SNTP_DEFAULT_CONFIG(timeServer.c_str());
         sntpConfig.sync_cb = timeSyncNotificationCallback;
         esp_netif_sntp_init(&sntpConfig);
-        isTimeSynchonized = false;
+        isTimeSynchronized = false;
     }
 }

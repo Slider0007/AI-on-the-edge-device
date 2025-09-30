@@ -20,7 +20,7 @@ enum TplMatchStatus {
     TPL_MATCH_OK_SIMILAR = 1,                 // Match successful with similarity check
     TPL_MATCH_OK = 0,                         // Match successful with algorithm
     TPL_MATCH_FAILED = -1,                    // Match failed
-    TPL_MATCH_UNKNOWN_AGLORITHM = -2,         // Error unkown algorithm
+    TPL_MATCH_UNKNOWN_ALGORITHM = -2,         // Error unkown algorithm
     TPL_MATCH_ERROR_IMAGE = -3,               // Error with image
     TPL_MATCH_ERROR_TIMEOUT = ESP_ERR_TIMEOUT // Error with image lock
 };

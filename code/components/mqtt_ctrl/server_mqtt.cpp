@@ -249,7 +249,7 @@ void mqttServer_setParameter(const CfgData::SectionMqtt *_cfgDataPtr, const std:
 void mqttServer_setHaMeterType(const int _haMeterType)
 {
     // Preconfigure meter configuration
-    // Check for avialable units:
+    // Check for available units:
     // https://developers.home-assistant.io/docs/core/entity/sensor/
     // https://github.com/home-assistant/core/blob/master/homeassistant/components/sensor/const.py
     // DONT'T FORGET, see further down: Device / state class validation (in loop for publish number sequence related topics)
@@ -867,7 +867,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
     }
 
     // Define command or status topic
-    if (_data->topicName == "cycle_start") {               // Special case: cyle_start command
+    if (_data->topicName == "cycle_start") {               // Special case: cycle_start command
         payload += "\"cmd_t\":\"~" + _data->topic + "\","; // Add command topic
         payload += "\"pl_prs\":\"1\",";
     }
@@ -887,7 +887,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
     if (_data->isTopicJSONNotation) {
         payload += "\"val_tpl\":\"{{value_json." + _data->topicName + "}}\",";
     }
-    // Signal a problem only if multiple process errors (-2) or process deviation (2) in row occured
+    // Signal a problem only if multiple process errors (-2) or process deviation (2) in row occurred
     else if (_data->topicName == "process_error") { // Special case: process error
         payload += "\"val_tpl\":\"{{ 'ON' if '-2' in value or '2' in value else 'OFF'}}\",";
     }

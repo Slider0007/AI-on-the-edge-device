@@ -25,7 +25,7 @@ void test_EvalAnalogNumber()
     TEST_ASSERT_EQUAL(5, result);
 
     // the 5.2 is already above 5.0 and the previous digit not (9)
-    // so the current digit shoult be reduced (4.9)
+    // so the current digit should be reduced (4.9)
     TEST_ASSERT_EQUAL(4, undertest.evalAnalogNumber(FLOAT_AS_INT(5.2), 9));
 
     // the 4.4 (digit100) is not above 5  and the previous digit (analog) too (9.3)
@@ -40,11 +40,11 @@ void test_EvalAnalogNumber()
  * @brief test if all combinations of digit
  * evaluation are running correctly
  *
- * -> Desciption for call undertest.evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber,
+ * -> Description for call undertest.evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber,
  * bool _isPreviousAnalog, float _analogDigitSyncValue)
  * @param _value: is the current ROI as int value with one decimal digit (e.g. 10 -> 1.0)
  * @param _valuePreviousNumber: is the last (lower) ROI as int with one decimal digit (e.g. 10 -> 1.0)
- * @param _resultPreviousNumber: is the evaluated number. Sometimes a much lower value can change higer values
+ * @param _resultPreviousNumber: is the evaluated number. Sometimes a much lower value can change higher values
  *                          example: 9.8, 9.9, 0.1
  *                          0.1 => 0 (resultPreviousNumber)
  *                          The 0 makes a 9.9 to 0 (resultPreviousNumber)

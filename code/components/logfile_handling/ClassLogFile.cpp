@@ -209,7 +209,7 @@ void ClassLogFile::writeToFile(esp_log_level_t level, std::string tag, std::stri
             break;
     }
 
-    std::string fullmessage = "[" + getFormatedUptime(true) + "] " + timestamp + "\t<" + loglevelString + ">\t" + message + "\n";
+    std::string fullmessage = "[" + getFormattedUptime(true) + "] " + timestamp + "\t<" + loglevelString + ">\t" + message + "\n";
 
     if (xSemaphoreTake(logfileMutex, pdMS_TO_TICKS(2000)) == pdTRUE) {
 #ifdef KEEP_LOGFILE_OPEN_FOR_APPENDING

@@ -419,9 +419,9 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
 
     for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); ++it) {
         if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM) {
-            int dutyResultionMaxValue = calcDutyResolutionMaxValue(it->second->getFrequency());
+            int dutyResolutionMaxValue = calcDutyResolutionMaxValue(it->second->getFrequency());
             int intensityValueCorrected = std::min(
-                std::max(0, it->second->getIntensityCorrection() * _intensity * dutyResultionMaxValue / 10000), dutyResultionMaxValue);
+                std::max(0, it->second->getIntensityCorrection() * _intensity * dutyResolutionMaxValue / 10000), dutyResolutionMaxValue);
 
             esp_err_t retVal = it->second->setPinState(_state, intensityValueCorrected);
 
@@ -436,7 +436,7 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                     "Flashlight PWM: GPIO" + std::to_string((int)it->first) + ", State: " + std::to_string(_state) +
                                         ", Intensity: " + std::to_string(intensityValueCorrected) + "/" +
-                                        std::to_string(dutyResultionMaxValue));
+                                        std::to_string(dutyResolutionMaxValue));
             }
             else {
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
@@ -586,7 +586,7 @@ gpio_pin_mode_t GpioHandler::resolvePinMode(std::string input)
 }
 
 
-std::string GpioHandler::getPinModeDecription(gpio_pin_mode_t _mode)
+std::string GpioHandler::getPinModeDescription(gpio_pin_mode_t _mode)
 {
     switch (_mode) {
         case 0:
@@ -642,7 +642,7 @@ gpio_int_type_t GpioHandler::resolveIntType(std::string input)
 }
 
 
-std::string GpioHandler::getPinInterruptDecription(gpio_int_type_t _type)
+std::string GpioHandler::getPinInterruptDescription(gpio_int_type_t _type)
 {
     switch (_type) {
         case 0:

@@ -438,7 +438,7 @@ bool ClassControlCamera::setImageManipulation()
     if (paramCameraInternal.specialEffect >= 0 && paramCameraInternal.specialEffect <= 6) {
         s->set_special_effect(s, paramCameraInternal.specialEffect); // [0 .. 6]
     }
-    // Set sepcial effect: 7: Grayscale + Negative in combination. Do grayscale on camera + negative on MCU
+    // Set special effect: 7: Grayscale + Negative in combination. Do grayscale on camera + negative on MCU
     else if (paramCameraInternal.specialEffect == 7) {
         s->set_special_effect(s, 2); // 2: Grayscale
     }
@@ -459,14 +459,14 @@ bool ClassControlCamera::setImageManipulation()
         int registerValue = 0x06;
 
         // Bitwise OR of special effect enable bits
-        if (paramCameraInternal.specialEffect == 1) { // Sepcial effect: 1: negative
+        if (paramCameraInternal.specialEffect == 1) { // Special effect: 1: negative
             registerValue |= 0x40;
         }
-        // Sepcial effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
+        // Special effect: 2: grayscale, 3: reddish, 4: greenish, 5: blueish, 6: sepia
         else if (paramCameraInternal.specialEffect >= 2 && paramCameraInternal.specialEffect <= 6) {
             registerValue |= 0x18;
         }
-        // Sepcial effect: 7: Grayscale + Negative in combination
+        // Special effect: 7: Grayscale + Negative in combination
         //   NOTE: It's not possible to process both together on camera
         else if (paramCameraInternal.specialEffect == 7) {
             registerValue |= 0x18; // Workaround: Do grayscale on camera + negative on MCU
@@ -499,7 +499,7 @@ bool ClassControlCamera::setImageManipulation()
 
     if (s->status.aec) { // Auto exposure control --> Use exposure level correction
         s->set_ae_level(s, std::min(5, std::max(-5, paramCameraInternal.autoExposureLevel))); // Adjust auto exposure level [-5 .. 5]
-        s->set_aec2(s, paramCameraInternal.exposureControlMode == 2 ? 1 : 0); // Switch to alternative alogrithm (aka night mode)
+        s->set_aec2(s, paramCameraInternal.exposureControlMode == 2 ? 1 : 0); // Switch to alternative algorithm (aka night mode)
     }
     else { // Manual exposure control -> Use exposure value [0 .. sensorFrameHeight]
         s->set_aec_value(s, std::min((int)sensorFrameSizeHeight, std::max(0, paramCameraInternal.manualExposureValue)));

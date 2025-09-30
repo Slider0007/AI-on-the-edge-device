@@ -39,7 +39,7 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::invokeTplMatch(CImage &img, CImage &img
 
         default:
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "invokeTplMatch: Unknown matching algorithm");
-            return TPL_MATCH_UNKNOWN_AGLORITHM;
+            return TPL_MATCH_UNKNOWN_ALGORITHM;
     }
 
     const int deltaX1 = marker1.targetX - marker1.foundX;
@@ -126,7 +126,7 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMar
         return TPL_MATCH_ERROR_TIMEOUT;
     }
 
-    // Similiarity matching logic
+    // Similarity matching logic
     // NOTE: @DEPRECATED -> Will be removed with next major release 18.x
     if (marker.alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR && marker.similarityCheckX > 0 && marker.similarityCheckY > 0 &&
         !noSimilarityCheck) {

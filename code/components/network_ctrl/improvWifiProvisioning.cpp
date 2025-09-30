@@ -54,7 +54,7 @@ static void improvEventHandler(void)
 
     if (xQueueReceive(uartQueueHandle, (void *)&event, (TickType_t)portMAX_DELAY) == pdPASS) {
         switch (event.type) {
-            case UART_DATA: // UART receving data
+            case UART_DATA: // UART receiving data
                 bzero(evtData, evtBufferSize);
                 uart_read_bytes(DEFAULT_UART_NUM, evtData, event.size, portMAX_DELAY);
                 improvWifi->handleSerial(evtData, event.size);

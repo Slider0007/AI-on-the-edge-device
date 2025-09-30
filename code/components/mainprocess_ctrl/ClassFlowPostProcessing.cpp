@@ -120,8 +120,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         sequence->sTimeProcessed = convertTimeToString(sequence->timeProcessed, TIME_FORMAT_OUTPUT);
         sequence->isActualValueANumber = true;
         sequence->isActualValueConfirmed = true;
-        std::string sRawValue = "";    // Helper to avoid on the fly modifactions of sequence->sRawValue
-        std::string sActualValue = ""; // Helper to avoid on the fly modifactions of sequence->sActualValue
+        std::string sRawValue = "";    // Helper to avoid on the fly modifications of sequence->sRawValue
+        std::string sActualValue = ""; // Helper to avoid on the fly modifications of sequence->sActualValue
 
         /* Process analog numbers of sequence */
         if (!sequence->analogRoi.empty()) {
@@ -195,16 +195,16 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
         /* Substitute any N position with last valid number if available */
         if (findDelimiterPos(sActualValue, "N") != std::string::npos) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Substitude N positions for number sequence: " + sequence->sequenceName);
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Substitute N positions for number sequence: " + sequence->sequenceName);
             // FallbackValue can be used to replace the N
             if (sequence->paramPostProc->useFallbackValue && sequence->isFallbackValueValid) {
-                sActualValue = substitudeN(sActualValue, sequence->fallbackValue);
+                sActualValue = substituteN(sActualValue, sequence->fallbackValue);
             }
             else { // FallbackValue not valid to replace any N
                 if (!sequence->paramPostProc->useFallbackValue) {
                     LogFile.writeToFile(ESP_LOG_WARN, TAG,
                                         sequence->sequenceName +
-                                            ": Activate parameter \'Use Fallback Value\' to be able to substitude N positions");
+                                            ": Activate parameter \'Use Fallback Value\' to be able to substitute N positions");
                 }
 
                 sequence->ratePerMin = 0;
@@ -225,7 +225,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
         }
 
 #ifdef DEBUG_DETAIL_ON
-        ESP_LOGI(TAG, "After substitudeN: ActualValue %s", sActualValue.c_str());
+        ESP_LOGI(TAG, "After substituteN: ActualValue %s", sActualValue.c_str());
 #endif // DEBUG_DETAIL_ON
 
         /* Delete leading zeros (unless there is only one 0 left) */
@@ -264,7 +264,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 /* Update fallbackValue */
                 sequence->sFallbackValue = to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount);
 
-                /* Check digit plausibitily (only support and necessary for class-11 models (0-9 + NaN)) */
+                /* Check digit plausibility (only support and necessary for class-11 models (0-9 + NaN)) */
                 if (sequence->paramPostProc->checkDigitIncreaseConsistency) {
                     if (flowDigit) {
                         if (flowDigit->getCNNType() != CNNTYPE_DIGIT_CLASS11) {
@@ -308,7 +308,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     RatePerSelection = sequence->ratePerMin;
                 }
                 else {
-                    // If Rate check is off, use 'ratePerInterval' for display only purpose (easier to interprete)
+                    // If Rate check is off, use 'ratePerInterval' for display only purpose (easier to interpret)
                     RatePerSelection = sequence->ratePerInterval;
                 }
 
@@ -387,7 +387,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                 sequence->sValueStatus = std::string(VALUE_STATUS_000_VALID);
             }
-            else { // Value of actual reading is invalid, use fallback value and froce rates to zero
+            else { // Value of actual reading is invalid, use fallback value and force rates to zero
                 sequence->ratePerMin = 0;
                 sequence->ratePerInterval = 0;
                 sequence->actualValue = sequence->fallbackValue;
@@ -553,7 +553,7 @@ std::string ClassFlowPostProcessing::shiftDecimal(std::string _value, int _decSh
 }
 
 
-std::string ClassFlowPostProcessing::substitudeN(std::string input, double _fallbackValue)
+std::string ClassFlowPostProcessing::substituteN(std::string input, double _fallbackValue)
 {
     int posN, posPunkt;
     int pot, ziffer;
@@ -656,12 +656,12 @@ void ClassFlowPostProcessing::writeDataLog(std::string sequenceName)
                 analog += "," + roi->sCNNResult;
             }
 
-            // Plausibilty check: Skip data log if timestamp of image is older than a day
+            // Plausibility check: Skip data log if timestamp of image is older than a day
             // (e.g. due to time jump while processing) to avoid data logging issue with wrong time in a row
             time_t tNow;
             time(&tNow);
             if (sequence->timeProcessed < (tNow - 86400000)) { // Image time is older than now - 1 day
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Skip data log due to ambigious timestamp (older than 1 day)");
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Skip data log due to ambiguous timestamp (older than 1 day)");
                 return;
             }
 
@@ -700,7 +700,7 @@ bool ClassFlowPostProcessing::setFallbackValue(double value, std::string sequenc
 
     for (const auto &sequence : sequenceData) {
         if (sequence->sequenceName == sequenceName) {
-            if (value >= 0) { // if new value posivive, use provided value to preset fallbackValue
+            if (value >= 0) { // if new value positive, use provided value to preset fallbackValue
                 sequence->fallbackValue = value;
             }
             else { // if new value negative, use last raw value to preset fallbackValue

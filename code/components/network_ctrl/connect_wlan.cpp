@@ -81,7 +81,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         wifi_event_sta_disconnected_t *disconn = (wifi_event_sta_disconnected_t *)event_data;
         if (disconn->reason == WIFI_REASON_ROAMING) {
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "Disconnected (" + std::to_string(disconn->reason) + ", Roaming 802.11kv)");
-            // --> no reconnect neccessary, it should automatically reconnect to new AP
+            // --> no reconnect necessary, it should automatically reconnect to new AP
         }
         else {
             wifiState.connected = false;
@@ -116,7 +116,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
             }
         }
         // Fallback to AP needs to be retested with newer ESP IDF versions again.
-        // Sporadic execeptions occur after AP init is successful (LoadProhibited).
+        // Sporadic exceptions occur after AP init is successful (LoadProhibited).
         // Workaround: Use IMPROV service or direct SD card access to reconfigure a wrong WLAN configuration
         /*else {
             // Fallback to AP mode if initial connection cannot be established after defined time since boot [seconds]
@@ -172,7 +172,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         }
 
 #ifdef ENABLE_MQTT
-        // Start MQTT serivce
+        // Start MQTT service
         vTaskDelay(pdMS_TO_TICKS(1000));
         startMqttClient();
 #endif // ENABLE_MQTT
