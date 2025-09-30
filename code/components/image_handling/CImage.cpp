@@ -630,7 +630,7 @@ void CImage::unlock() const
 
 bool CImage::isValid() const
 {
-    return (this != nullptr && imgData != nullptr && allocatedSize > 0 && imgDataSize > 0 && width > 0 && height > 0 && channels > 0);
+    return (imgData != nullptr && allocatedSize > 0 && imgDataSize > 0 && width > 0 && height > 0 && channels > 0);
 }
 
 

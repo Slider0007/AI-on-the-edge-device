@@ -4,7 +4,7 @@
 #include <esp_log.h>
 
 
-static const char *TAG = "CLASSFLOW";
+// static const char *TAG = "CLASSFLOW"; // Unused
 
 
 ClassFlow::ClassFlow(void)

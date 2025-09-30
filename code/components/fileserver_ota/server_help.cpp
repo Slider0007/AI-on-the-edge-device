@@ -25,7 +25,7 @@ extern "C" {
 #include "ClassLogFile.h"
 
 
-static const char *TAG = "SERVER_HELP";
+// static const char *TAG = "SERVER_HELP"; // Unsed
 
 // Check file type (file extention, case-insensitive)
 bool endsWith(std::string const &str, std::string const &suffix)

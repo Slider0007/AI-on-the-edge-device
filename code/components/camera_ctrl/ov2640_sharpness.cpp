@@ -74,7 +74,6 @@ static bool table_mask_write(sensor_t *_sensor, const uint8_t *_ptab)
 {
     uint8_t address;
     uint8_t value;
-    uint8_t orgval;
     uint8_t mask;
     const uint8_t *pdata = _ptab;
 

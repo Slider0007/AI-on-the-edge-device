@@ -28,6 +28,10 @@ static const char *TAG = "GPIOCTRL";
 static GpioHandler *gpioHandle = NULL;
 QueueHandle_t gpio_queue_handle = NULL;
 
+const gpio_num_t gpio_spare[]{GPIO_SPARE_1, GPIO_SPARE_2, GPIO_SPARE_3, GPIO_SPARE_4, GPIO_SPARE_5, GPIO_SPARE_6};
+const char *gpio_spare_usage[]{GPIO_SPARE_1_USAGE, GPIO_SPARE_2_USAGE, GPIO_SPARE_3_USAGE,
+                               GPIO_SPARE_4_USAGE, GPIO_SPARE_5_USAGE, GPIO_SPARE_6_USAGE};
+
 
 GpioHandler::GpioHandler()
 {

@@ -132,7 +132,7 @@ void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite)
 
     if (xHandle_task_StatusLED && !StatusLEDData.bProcessingRequest) {
         StatusLEDData.bProcessingRequest = true;
-        BaseType_t xReturned = xTaskAbortDelay(xHandle_task_StatusLED); // Reuse still running status LED task
+        xTaskAbortDelay(xHandle_task_StatusLED); // Reuse still running status LED task
 
         /*if (xReturned == pdPASS)
             ESP_LOGD(TAG, "task_StatusLED - abort waiting delay");*/
