@@ -33,7 +33,7 @@ ClassFlowCNNGeneral::ClassFlowCNNGeneral(std::string _cnnName, CNNType _cnnType)
 
 bool roiPositionPlausibilityCheck(RoiData *roiEl)
 {
-    // ROI position plausibilty check
+    // ROI position plausibility check
     int imgWidth = CAMERA_OUTPUT_WINDOW_SIZE_WIDTH;
     int imgHeight = CAMERA_OUTPUT_WINDOW_SIZE_HEIGHT;
     cameraCtrl.getOutputFrameSize(imgWidth, imgHeight);
@@ -453,7 +453,7 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                     "Digit Number (No previous number, Extended Resolution): Result: " + result +
                                         ", Value: " + to_stringWithPrecision((resultTemp / 10.0), 1));
-                resultTemp = resultTemp / 10; // resultIntergerPart to hand over a previous result to next digit evaluation
+                resultTemp = resultTemp / 10; // resultIntegerPart to hand over a previous result to next digit evaluation
             }
             else {
                 if (valuePreviousNumber >= 0) { // If previous number available (analog value should be handed over)
@@ -473,7 +473,7 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
                 result = "NN";
             }
 
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont): Rejected, substitude with N");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont): Rejected, substitute with N");
         }
 
         // Evaluate all remaining ROI of number sequence (and potentially correct)
@@ -486,7 +486,7 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
             else {
                 resultTemp = -1;
                 result = "N" + result;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont/dig-class100): Rejected, substitude with N");
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont/dig-class100): Rejected, substitute with N");
             }
         }
 
@@ -506,7 +506,7 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + sequence->digitRoi[i]->param->roiName);
 
             if (sequence->digitRoi[i]->CNNResult == 10) {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout: Digit (dig-class11): Result ambiguous, substitude with N");
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout: Digit (dig-class11): Result ambiguous, substitute with N");
                 result = result + "N";
             }
             else {
@@ -550,7 +550,7 @@ int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber)
         if (_resultPreviousNumber <= ANALOG_ZERO_CROSSING_UNCERTAINTY) {
             result = valueMax / 10;
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                "evalAnalogNumber (Ambiguous, use value + corretion): Result: " + std::to_string(result) +
+                                "evalAnalogNumber (Ambiguous, use value + correction): Result: " + std::to_string(result) +
                                     ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
                                     ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
             return result;
@@ -558,7 +558,7 @@ int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber)
         else if (_resultPreviousNumber >= 10 - ANALOG_ZERO_CROSSING_UNCERTAINTY) {
             result = valueMin / 10;
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                "evalAnalogNumber (Ambiguous, use value - corretion): Result: " + std::to_string(result) +
+                                "evalAnalogNumber (Ambiguous, use value - correction): Result: " + std::to_string(result) +
                                     ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
                                     ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
             return result;
@@ -578,11 +578,11 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
                                          int _analogDigitSyncValue) const
 {
     int result = -1;
-    int resultIntergerPart = _value / 10;
+    int resultIntegerPart = _value / 10;
     int resultDecimalPlace = _value % 10;
 
     if (_resultPreviousNumber <= -1) { // no previous number -> no correction logic for transition, use value as is (integer part)
-        result = resultIntergerPart;
+        result = resultIntegerPart;
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                             "evalDigitNumber (No previous number): Result: " + std::to_string(result) +
                                 ", Value: " + to_stringWithPrecision(_value / 10.0, 1));
@@ -606,18 +606,18 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
         // Band around the digit --> Round, as digit reaches inaccuracy in the frame
         if ((resultDecimalPlace <= DIGIT_ZERO_CROSSING_UNCERTAINTY) || (resultDecimalPlace >= (10 - DIGIT_ZERO_CROSSING_UNCERTAINTY))) {
             if (resultDecimalPlace >= 5) {
-                result = resultIntergerPart + 1; // "Round"
+                result = resultIntegerPart + 1; // "Round"
 
                 if (result >= 10) {
                     result = 0;
                 }
             }
             else {
-                result = resultIntergerPart; // "Trunc"
+                result = resultIntegerPart; // "Trunc"
             }
         }
         else {
-            result = resultIntergerPart; // "Trunc"
+            result = resultIntegerPart; // "Trunc"
         }
 
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
@@ -634,14 +634,14 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
         // We simply assume that the current digit after the zero crossing of the predecessor
         // has passed through at least half (x.5)
         if (resultDecimalPlace >= 5) {
-            result = resultIntergerPart + 1; // "Round": The current digit does not yet have a zero crossing, but the predecessor does..
+            result = resultIntegerPart + 1; // "Round": The current digit does not yet have a zero crossing, but the predecessor does..
 
             if (result >= 10) {
                 result = 0;
             }
         }
         else {
-            result = resultIntergerPart; // "Trunc": Act. digit and predecessor have zero crossing
+            result = resultIntegerPart; // "Trunc": Act. digit and predecessor have zero crossing
         }
 
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
@@ -659,12 +659,12 @@ int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, i
     // Preceding (else - branch) does not already happen from 9.
     if (((_valuePreviousNumber <= DIGIT_EARLY_ZERO_CROSSING_THRESHOLD) && (_resultPreviousNumber == (int)(_valuePreviousNumber / 10.0))) ||
         resultDecimalPlace >= 4) {
-        result = resultIntergerPart; // The current digit, like the previous digit, does not yet have a zero crossing.
+        result = resultIntegerPart; // The current digit, like the previous digit, does not yet have a zero crossing.
     }
     else {
         // current digit precedes the smaller digit (9.x). So already >=x.0 while the previous digit has not yet
         // has no zero crossing. Therefore, it is reduced by 1.
-        result = resultIntergerPart - 1;
+        result = resultIntegerPart - 1;
 
         if (result < 0) {
             result = 9;
@@ -686,7 +686,7 @@ int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePrevi
                                                      int _analogDigitSyncValue) const
 {
     int result = -1;
-    int resultIntergerPart = _value / 10;
+    int resultIntegerPart = _value / 10;
     int resultDecimalPlace = _value % 10;
 
     // Value within the digit inequalities
@@ -695,7 +695,7 @@ int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePrevi
         || (_resultPreviousNumber <= 4 && resultDecimalPlace >= 6)) // or number runs after (previous result <= 4, act. decimal place >= 6)
     {
         if (resultDecimalPlace >= 5) { // "Round up"
-            result = resultIntergerPart + 1;
+            result = resultIntegerPart + 1;
 
             if (result >= 10) {
                 result = 0;
@@ -717,7 +717,7 @@ int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePrevi
             }
         }
         else {
-            result = resultIntergerPart; // "Trunc -> Round down"
+            result = resultIntegerPart; // "Trunc -> Round down"
         }
 
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
@@ -727,7 +727,7 @@ int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePrevi
                                 ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
     }
     else {
-        result = resultIntergerPart;
+        result = resultIntegerPart;
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                             "evalAnalogToDigitTransition: Result: " + std::to_string(result) +
                                 ", Value: " + to_stringWithPrecision(_value / 10.0, 1));

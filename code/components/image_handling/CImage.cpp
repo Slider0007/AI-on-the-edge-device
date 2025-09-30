@@ -37,9 +37,9 @@ CImage::CImage(std::string objName, int width, int height, int channels, bool st
     imgDataSize = width * height * channels;
     allocatedSize = imgDataSize;
 
-    // Special case: Prepare for memory reusage for STB library which allocates one more byte than required by image size
+    // Special case: Prepare for memory reuse for STB library which allocates one more byte than required by image size
     // Note: STB allocation strategy is defined by struct strSTBI (psram.h).
-    //       The memory block which shall be used needs to confiugured in caling function right before usage of this function
+    //       The memory block which shall be used needs to configured in calling function right before usage of this function
     if (stbLibMemoryMod) {
         allocatedSize += 1;
     }
@@ -268,7 +268,7 @@ esp_err_t CImage::loadJpgFromFile(const std::string &filename, bool overwriteSou
         return ESP_ERR_TIMEOUT;
     }
 
-    // Special case: Prepare for memory reusage for STB library
+    // Special case: Prepare for memory reuse for STB library
     if (overwriteSource) {
         STBIObjectPSRAM.usePreallocated = true;
         STBIObjectPSRAM.name = name;
@@ -329,7 +329,7 @@ esp_err_t CImage::loadJpgFromMemory(void *buffer, int size, bool overwriteSource
         return ESP_ERR_TIMEOUT;
     }
 
-    // Special case: Prepare for memory reusage for STB library
+    // Special case: Prepare for memory reuse for STB library
     if (overwriteSource) {
         STBIObjectPSRAM.usePreallocated = true;
         STBIObjectPSRAM.name = name;
@@ -380,8 +380,8 @@ esp_err_t CImage::saveJpgToFile(const std::string &filename, const int quality)
         return ESP_FAIL;
     }
 
-    std::string fileTpye = toLower(getFileType(filename));
-    if (fileTpye == "jpg" || fileTpye == "jpeg") {
+    std::string fileType = toLower(getFileType(filename));
+    if (fileType == "jpg" || fileType == "jpeg") {
         CImageLockGuard lockGuard(*this);
         if (!lockGuard.isLocked()) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToFile: Could not acquire lock");
@@ -502,7 +502,7 @@ esp_err_t CImage::saveJpgToContainer(CImageJpg *jpgContainer, const int quality)
     }
 
     if (jpgWriteCtx.bufferOverflow) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Buffer overflow, target buffer insuffcient");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Buffer overflow, target buffer insufficient");
         return ESP_FAIL;
     }
 

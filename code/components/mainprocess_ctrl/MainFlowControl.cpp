@@ -290,7 +290,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
         return ESP_OK;
     }
 
-    if (strlen(value) == 0) { // If no value is povided --> return actual FallbackValue
+    if (strlen(value) == 0) { // If no value is provided --> return actual FallbackValue
         sReturnMessage = flowctrl.getFallbackValue(std::string(numberSequence));
 
         if (sReturnMessage.empty()) {
@@ -546,7 +546,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
             retVal = ESP_FAIL;
         }
 
-        // 0: No error, -1: Error occured, -2: Multiple errors in a row, 1: Deviation occured, 2: Multiple deviaton in a row
+        // 0: No error, -1: Error occurred, -2: Multiple errors in a row, 1: Deviation occurred, 2: Multiple deviations in a row
         if (cJSON_AddNumberToObject(cJSONObject, "process_error", flowctrl.getFlowStateErrorOrDeviation()) == NULL) {
             retVal = ESP_FAIL;
         }
@@ -689,7 +689,7 @@ esp_err_t handler_process_data(httpd_req_t *req)
         return ESP_OK;
     }
     else if (type.compare("process_error") == 0) {
-        // 000: No error, E01: Error occured, E02: Multiple errors in a row, 001: Deviation occured, 002: Multiple deviaton in a row
+        // 000: No error, E01: Error occurred, E02: Multiple errors in a row, 001: Deviation occurred, 002: Multiple deviations in a row
         if (flowctrl.getFlowStateErrorOrDeviation() == 0) {
             httpd_resp_sendstr(req, "000: No process error/deviation");
         }
@@ -700,10 +700,10 @@ esp_err_t handler_process_data(httpd_req_t *req)
             httpd_resp_sendstr(req, "002: Multiple process deviation in row");
         }
         else if (flowctrl.getFlowStateErrorOrDeviation() == -1) {
-            httpd_resp_sendstr(req, "E01: Process error occured");
+            httpd_resp_sendstr(req, "E01: Process error occurred");
         }
         else if (flowctrl.getFlowStateErrorOrDeviation() == 1) {
-            httpd_resp_sendstr(req, "001: Process deviation occured");
+            httpd_resp_sendstr(req, "001: Process deviation occurred");
         }
         return ESP_OK;
     }
@@ -760,7 +760,7 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
            "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitization "
            "cycle.</strong></p>";
     txt += "<p>\"Raw Value\" represents the value which gets extracted and combined from all the single image results but without "
-           "correction of any of the post-processing checks / alogrithms. The result after post-processing validation is represented with "
+           "correction of any of the post-processing checks / algorithms. The result after post-processing validation is represented with "
            "\"Value\". In the sections \"Digit ROI\" and \"Analog ROI\" all single \"raw results\" of the respective ROI images (digit "
            "styled ROI and "
            "analog styled ROI) are visualized separated per number sequence. The taken image which was used for processing (including the "
@@ -771,7 +771,7 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
     // Display message if flow is not initialized or image processing active
     if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
         txt += "<h4>"
-               "Image recognition details are only accessable if initialization is completed and no image evaluation is ongoing. "
+               "Image recognition details are only accessible if initialization is completed and no image evaluation is ongoing. "
                "Wait a few moments and refresh this page.</h4> Current state: " +
                flowctrl.getActualProcessState();
         httpd_resp_sendstr_chunk(req, txt.c_str());
@@ -941,7 +941,7 @@ int getFlowProcessingTime()
 
 void task_autodoFlow(void *pvParameter)
 {
-    int64_t cylceStartActualTime = 0;
+    int64_t cycleStartActualTime = 0;
     time_t cycleStartTime = 0;
     bTaskAutoFlowCreated = true;
 
@@ -1113,7 +1113,7 @@ void task_autodoFlow(void *pvParameter)
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "--------------------------------");
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Cycle #" + std::to_string(++cycleCounter) + " started");
             cycleStartTime = getUptime();
-            cylceStartActualTime = esp_timer_get_time();
+            cycleStartActualTime = esp_timer_get_time();
 
             if (flowctrl.doFlowImageEvaluation(getCurrentTimeString(DEFAULT_TIME_FORMAT))) {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG,
@@ -1146,7 +1146,7 @@ void task_autodoFlow(void *pvParameter)
         else if (taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) {
             // Post process handling (if neccessary)
             // ********************************************
-            if (flowctrl.flowStateEventOccured()) {
+            if (flowctrl.flowStateEventOccurred()) {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_POST_EVENT_HANDLING));
                 flowctrl.setActualProcessState(std::string(FLOW_POST_EVENT_HANDLING));
 #ifdef ENABLE_MQTT
@@ -1248,7 +1248,7 @@ void task_autodoFlow(void *pvParameter)
             // ********************************************
             suspendWifiConnection();
 
-            int64_t processIntervalDeltaTime = (esp_timer_get_time() - cylceStartActualTime) / 1000;
+            int64_t processIntervalDeltaTime = (esp_timer_get_time() - cycleStartActualTime) / 1000;
             if (automaticProcessInterval > processIntervalDeltaTime) {
                 vTaskDelay((automaticProcessInterval - processIntervalDeltaTime) / portTICK_PERIOD_MS);
             }

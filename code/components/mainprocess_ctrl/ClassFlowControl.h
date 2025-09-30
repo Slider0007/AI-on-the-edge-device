@@ -88,7 +88,7 @@ class ClassFlowControl : public ClassFlow
     void setFlowStateError();
     void clearFlowStateEventInRowCounter();
     int getFlowStateErrorOrDeviation();
-    bool flowStateEventOccured();
+    bool flowStateEventOccurred();
     void postProcessEventHandler();
 
     void drawDigitRoi(CImage &image);

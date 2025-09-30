@@ -176,7 +176,7 @@ void migrateConfigIni(void)
             //*************************************************************************************************
             // Migrate from version 2 to version 3
             // Date: October 2024
-            // Description: Migrate config.ini to internal struct which gets persistant to config.json
+            // Description: Migrate config.ini to internal struct which gets persistent to config.json
             //*************************************************************************************************
             if (configFileVersion == 2) {
                 std::vector<std::string> splitted;

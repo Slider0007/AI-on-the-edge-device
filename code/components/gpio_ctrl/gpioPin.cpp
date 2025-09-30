@@ -139,7 +139,7 @@ void GpioPin::init()
 
 #ifdef ENABLE_MQTT
     if (mqttAccess && (mode == GPIO_PIN_MODE_OUTPUT || mode == GPIO_PIN_MODE_OUTPUT_PWM)) {
-        // Subcribe to [mainTopic]/device/gpio/[GpioName]/ctrl
+        // Subscribe to [mainTopic]/device/gpio/[GpioName]/ctrl
         std::function<bool(std::string, char *, int)> func = std::bind(&GpioPin::mqttControlPinState, this, std::placeholders::_1,
                                                                        std::placeholders::_2, std::placeholders::_3);
         registerMqttSubscribeFunction(mqttTopic + "/ctrl", func);
@@ -230,7 +230,7 @@ int GpioPin::getPinState()
 bool GpioPin::mqttPublishPinState(int _pwmDuty)
 {
     if (getMqttIsConnected() && mqttAccess) {
-        // Construct json notation manually. Not using cJSON library by purpose due to possbile concurrent usage / access
+        // Construct json notation manually. Not using cJSON library by purpose due to possible concurrent usage / access
         // Note: State changes could be triggered by interrupt quickly
         std::string jsonData = "{ \"state\": " + std::to_string(pinState);
 

@@ -608,8 +608,8 @@ time_t getUptime(void)
 }
 
 
-// Returns the current uptime  formated ad xxf xxh xxm [xxs]
-std::string getFormatedUptime(bool compact)
+// Returns the current uptime  formatted ad xxf xxh xxm [xxs]
+std::string getFormattedUptime(bool compact)
 {
     char buf[20];
 #pragma GCC diagnostic ignored "-Wformat-truncation"

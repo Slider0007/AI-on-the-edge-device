@@ -36,7 +36,7 @@ bool ClassFlowAlignment::loadParameter()
         return false;
     }
 
-    // Configure two alignemnt marker
+    // Configure two alignment marker
     if (cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH ||
         cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH ||
         cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR) {
@@ -47,7 +47,7 @@ bool ClassFlowAlignment::loadParameter()
             // Check availability of marker image before usage
             if (!fileExists("/sdcard/config/marker" + sIndex + ".jpg")) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "Alignmant marker image missing: '/sdcard/config/marker" + sIndex +
+                                    "Alignment marker image missing: '/sdcard/config/marker" + sIndex +
                                         ".jpg' > Please update alignment marker");
                 return false;
             }
@@ -75,7 +75,7 @@ bool ClassFlowAlignment::loadParameter()
             alignmentMarker[i].width = alignmentMarker[i].markerImage->getWidth();
             alignmentMarker[i].height = alignmentMarker[i].markerImage->getHeight();
 
-            // ROI position plausibilty check
+            // ROI position plausibility check
             int imgWidth = 640;
             int imgHeight = 480;
             cameraCtrl.getOutputFrameSize(imgWidth, imgHeight);
@@ -128,7 +128,7 @@ bool ClassFlowAlignment::doFlow(std::string time)
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Initial rotation: " + to_stringWithPrecision(rotation, 1));
 
-    // 2. Perform alignment algorythm (template match)
+    // 2. Perform alignment algorithm (template match)
     // Note: Only if any additional alignment algo is configured
     // *******************************************
     if (cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH ||

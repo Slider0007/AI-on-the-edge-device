@@ -40,7 +40,7 @@ std::string intToHexString(int _valueInt);
 
 time_t addDays(time_t startTime, int days);
 time_t getUptime(void);
-std::string getFormatedUptime(bool compact);
+std::string getFormattedUptime(bool compact);
 
 const char *get404(void);
 std::string urlDecode(const std::string &value);

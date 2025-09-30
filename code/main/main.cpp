@@ -129,7 +129,7 @@ extern "C" void app_main(void)
 
     // Configuration migration for legacy config.ini / wlan.ini
     // Firmware version: v15.0 - v16.x, Config version: 0 - 2
-    // Note: Migration of v17.x and newer is handled while pasing JSON config (migrateConfiguration)
+    // Note: Migration of v17.x and newer is handled while parsing JSON config (migrateConfiguration)
     // ********************************************************************************
     migrateConfigIni();
 
@@ -326,8 +326,8 @@ extern "C" void app_main(void)
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Basic device initialization completed");
         createMainFlowTask(); // Create main task
     }
-    // Critical error(s) occured which do not allow to continue with regular boot sequence.
-    // Provding only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: webserver.cpp ->
+    // Critical error(s) occurred which do not allow to continue with regular boot sequence.
+    // Providing only a reduced web interface for diagnostic purpose. Reduced web interface and interlock: webserver.cpp ->
     // handler_main()
     else {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Basic device initialization failed");

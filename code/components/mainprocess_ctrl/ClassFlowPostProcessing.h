@@ -25,7 +25,7 @@ class ClassFlowPostProcessing : public ClassFlow
 
     void setDecimalShift();
     std::string shiftDecimal(std::string in, int _decShift);
-    std::string substitudeN(std::string, double _fallbackValue);
+    std::string substituteN(std::string, double _fallbackValue);
     float checkDigitConsistency(double _value, int _decimalshift, bool _isanalog, double _fallbackValue);
 
     void writeDataLog(std::string sequenceName);

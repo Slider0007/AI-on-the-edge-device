@@ -39,9 +39,9 @@ class GpioHandler
     ledc_timer_t getFreeTimer(int _frequency);
 
     gpio_num_t resolveSparePinNr(uint8_t _sparePinNr);
-    std::string getPinModeDecription(gpio_pin_mode_t _mode);
+    std::string getPinModeDescription(gpio_pin_mode_t _mode);
     gpio_int_type_t resolveIntType(std::string input);
-    std::string getPinInterruptDecription(gpio_int_type_t _type);
+    std::string getPinInterruptDescription(gpio_int_type_t _type);
 
 #ifdef ENABLE_MQTT
     void handleMQTTconnect();

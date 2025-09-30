@@ -151,7 +151,7 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             topic.assign(event->topic, event->topic_len);
             if (subscribeFunctionMap != NULL) {
                 if (subscribeFunctionMap->find(topic) != subscribeFunctionMap->end()) {
-                    // ESP_LOGD(TAG, "call subcribe function for topic %s", topic.c_str());
+                    // ESP_LOGD(TAG, "call subscribe function for topic %s", topic.c_str());
                     (*subscribeFunctionMap)[topic](topic, event->data, event->data_len);
                 }
                 else {
@@ -543,18 +543,18 @@ void isConnectedState(void)
             }
         }
 
-        // Subcribe to topics
-        // Note: Further subsriptions are handled in GPIO class
+        // Subscribe to topics
+        // Note: Further subscriptions are handled in GPIO class
         //*****************************************
-        // Subcribe to [mainTopic]/process/ctrl/flow_start
+        // Subscribe to [mainTopic]/process/ctrl/flow_start
         std::function<bool(std::string topic, char *data, int data_len)> subHandler1 = mqtt_handler_flow_start;
         registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/cycle_start", subHandler1);
 
-        // Subcribe to [mainTopic]/process/ctrl/set_fallbackvalue
+        // Subscribe to [mainTopic]/process/ctrl/set_fallbackvalue
         std::function<bool(std::string topic, char *data, int data_len)> subHandler2 = mqtt_handler_set_fallbackvalue;
         registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/set_fallbackvalue", subHandler2);
 
-        // Subcribe to /homeassistant/status
+        // Subscribe to /homeassistant/status
         if (cfgDataPtr->homeAssistant.discoveryEnabled) {
             std::function<bool(std::string topic, char *data, int data_len)> subHandler3 = mqttServer_schedulePublishHADiscoveryFromMqtt;
             registerMqttSubscribeFunction(cfgDataPtr->homeAssistant.statusTopic, subHandler3);
@@ -584,7 +584,7 @@ void registerMqttConnectFunction(std::string name, std::function<void()> func)
     }
 
     if ((*connectFunctionMap)[name] != NULL) {
-        ESP_LOGD(TAG, "Connect function %s already registred", name.c_str());
+        ESP_LOGD(TAG, "Connect function %s already registered", name.c_str());
         return;
     }
 

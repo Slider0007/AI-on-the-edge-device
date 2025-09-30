@@ -135,7 +135,7 @@ float getSOCTemperature()
 {
     return socTemperature;
 }
-#elif defined(CONFIG_IDF_TARGET_ESP32) // Inofficial support of vanilla ESP32. Value might be unreliable
+#elif defined(CONFIG_IDF_TARGET_ESP32) // Unofficial support of vanilla ESP32. Value might be unreliable
 extern "C" uint8_t temprature_sens_read();
 
 float getSOCTemperature()
