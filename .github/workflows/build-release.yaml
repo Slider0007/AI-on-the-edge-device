@@ -45,13 +45,13 @@ jobs:
     steps:
     - name: Checkout branch
       if: ${{ ! needs.prepare-release.outputs.release_created }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: recursive
 
     - name: Checkout tag # checkout tagged version when build a release for this tag
       if: ${{ needs.prepare-release.outputs.release_created }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: ${{ needs.prepare-release.outputs.tag_name }}
         submodules: recursive
@@ -173,7 +173,7 @@ jobs:
 
     steps:
     - name: Checkout tag
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: ${{ needs.prepare-release.outputs.tag_name }}
 
@@ -231,7 +231,7 @@ jobs:
 
     steps:
     - name: Checkout branch gh-pages-webinstaller
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: gh-pages-webinstaller
 
