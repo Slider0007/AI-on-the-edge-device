@@ -1,5 +1,42 @@
 # Changelog
 
+## [17.3.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.2.0-SLFork...v17.3.0-SLFork) (2025-10-01)
+
+
+### Features
+
+* **webui:** Enhanced data graph functionality ([#282](https://github.com/Slider0007/AI-on-the-edge-device/issues/282)) ([9301f3f](https://github.com/Slider0007/AI-on-the-edge-device/commit/9301f3f4cd3735d8e5f62d91a46fd0faf201b714))
+
+
+### Bug Fixes
+
+* **config:** Set correct config version ([#281](https://github.com/Slider0007/AI-on-the-edge-device/issues/281)) ([f40ff27](https://github.com/Slider0007/AI-on-the-edge-device/commit/f40ff27352a1831050c542e8f9c95fe37313f0cb))
+* **file server:** Fix resource leaks ([#278](https://github.com/Slider0007/AI-on-the-edge-device/issues/278)) ([d38be2a](https://github.com/Slider0007/AI-on-the-edge-device/commit/d38be2a385310139346095410421407dfc19b0fd))
+* **mqtt:** Fix keep alive not initialized properly ([#276](https://github.com/Slider0007/AI-on-the-edge-device/issues/276)) ([c06d587](https://github.com/Slider0007/AI-on-the-edge-device/commit/c06d5873bbdd585311b77c186bc6697ee8e088ef))
+* **tflite:** Improve model verification (model integrity, ops availability) ([#284](https://github.com/Slider0007/AI-on-the-edge-device/issues/284)) ([08dc45c](https://github.com/Slider0007/AI-on-the-edge-device/commit/08dc45cf2eaad641925b109cbfc1eca008e22dd2))
+* **version check:** Fix commit hash availability check ([#279](https://github.com/Slider0007/AI-on-the-edge-device/issues/279)) ([9bf1422](https://github.com/Slider0007/AI-on-the-edge-device/commit/9bf1422dd29c6e86476773f3cf6bab161a7a7658))
+
+
+### Refactoring / Style Changes
+
+* **source code:** Refactor build flags + correct some build warnings ([#294](https://github.com/Slider0007/AI-on-the-edge-device/issues/294)) ([66a7d3e](https://github.com/Slider0007/AI-on-the-edge-device/commit/66a7d3e855046d960cd534755a865c3332b217f6))
+
+
+### Other Changes
+
+* **build:** Activate dependabot for github actions ([#295](https://github.com/Slider0007/AI-on-the-edge-device/issues/295)) ([f5733a5](https://github.com/Slider0007/AI-on-the-edge-device/commit/f5733a57c982145b96619cc42c17a4734d9ac704))
+* **build:** Adjust build pipeline to improve local triggered builds ([#280](https://github.com/Slider0007/AI-on-the-edge-device/issues/280)) ([4a57516](https://github.com/Slider0007/AI-on-the-edge-device/commit/4a5751602ff936339ffa01eebe5ffca8336c6ad6))
+* **dependency:** Update esp-tflite-micro to v1.3.4 ([#287](https://github.com/Slider0007/AI-on-the-edge-device/issues/287)) ([3f57122](https://github.com/Slider0007/AI-on-the-edge-device/commit/3f57122cce1bfe594b43f056cb68cbf78b73b055))
+* **dependency:** Update esp32-camera to v2.12+ (dfeaa71) ([#288](https://github.com/Slider0007/AI-on-the-edge-device/issues/288)) ([79181d1](https://github.com/Slider0007/AI-on-the-edge-device/commit/79181d141a7b176e7b51222f84e60bf298678de0))
+* **dependency:** Update mDNS to 1.8.2 (e9d7350) ([#291](https://github.com/Slider0007/AI-on-the-edge-device/issues/291)) ([e992a82](https://github.com/Slider0007/AI-on-the-edge-device/commit/e992a827915adcce9a21f50dbaf1a8b62425021a))
+* **dependency:** Update smartleds to 3.1.5+ (cee7537) ([#289](https://github.com/Slider0007/AI-on-the-edge-device/issues/289)) ([d9b3d50](https://github.com/Slider0007/AI-on-the-edge-device/commit/d9b3d5092fdc845b1d2c539907b15d75cb3a83d2))
+* **deps:** Bump actions/checkout from 4 to 5 ([#297](https://github.com/Slider0007/AI-on-the-edge-device/issues/297)) ([ecb8807](https://github.com/Slider0007/AI-on-the-edge-device/commit/ecb8807b86ff2ba00550700806b700b64df72c9e))
+* **deps:** Bump actions/download-artifact from 4 to 5 ([#299](https://github.com/Slider0007/AI-on-the-edge-device/issues/299)) ([cbd9c9e](https://github.com/Slider0007/AI-on-the-edge-device/commit/cbd9c9e6da9de3f737f87849b46ca3b09e5b2f14))
+* **deps:** Bump actions/github-script from 7 to 8 ([#296](https://github.com/Slider0007/AI-on-the-edge-device/issues/296)) ([fc43fa7](https://github.com/Slider0007/AI-on-the-edge-device/commit/fc43fa74dfe1140d45c63fd3aa17b3d24f50d7a8))
+* **deps:** Bump actions/setup-python from 5 to 6 ([#298](https://github.com/Slider0007/AI-on-the-edge-device/issues/298)) ([15762bb](https://github.com/Slider0007/AI-on-the-edge-device/commit/15762bb527420bc3d9d42f91356943e02793e30e))
+* **model:** Update ana-class100 tflite model to v2.01 ([#286](https://github.com/Slider0007/AI-on-the-edge-device/issues/286)) ([8eb4e73](https://github.com/Slider0007/AI-on-the-edge-device/commit/8eb4e7317ab2df0e303779f6953a594b95ce95ca))
+* **model:** Update ana-cont tflite model to v19.01 ([#286](https://github.com/Slider0007/AI-on-the-edge-device/issues/286)) ([8eb4e73](https://github.com/Slider0007/AI-on-the-edge-device/commit/8eb4e7317ab2df0e303779f6953a594b95ce95ca))
+
 ## [17.2.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.1.0-SLFork...v17.2.0-SLFork) (2025-08-08)
 
 ### 💡 Installation / Migration Notes
