@@ -26,9 +26,6 @@ static const char *TAG = "CONFIG";
 
 ConfigClass ConfigClass::cfgClass;
 
-extern const gpio_num_t gpio_spare[];
-extern const char *gpio_spare_usage[];
-
 
 bool isValidIpAddress(const char *ipAddress)
 {
@@ -2526,8 +2523,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 
     // Network
     // ***************************
-    cJSON *network, *networkWlan, *networkEth, *networkWlanIpv4, *networkWlanRoaming, *networkWlanAp, *networkApIpv4, *networkEthIpv4,
-        *networkTime, *networkTimeNtp;
+    cJSON *network, *networkWlan, *networkWlanIpv4, *networkWlanRoaming, *networkWlanAp, *networkApIpv4, *networkTime, *networkTimeNtp;
     if (!cJSON_AddItemToObject(cJsonObject, "network", network = cJSON_CreateObject())) {
         retVal = ESP_FAIL;
     }
@@ -2596,6 +2592,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     }
 
 #ifdef BOARD_FEATURE_ETHERNET
+    cJSON *networkEth, *networkEthIpv4;
     if (!cJSON_AddItemToObject(network, "ethernet", networkEth = cJSON_CreateObject())) {
         retVal = ESP_FAIL;
     }

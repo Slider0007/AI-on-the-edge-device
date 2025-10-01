@@ -18,11 +18,10 @@ esp_err_t handler_camera(httpd_req_t *req)
 {
     const char *APIName = "camera:v3"; // API name and version
     char _query[384];
-    char _valuechar[30], _flashtime[30], _filename[100];
+    char _valuechar[30], _filename[100];
     std::string task;
     bool saveToFile = false;
     std::string fn = "/sdcard/";
-    int flashtime = 0;
 
     // Default usage message when handler gets called without any parameter
     const std::string RESTUsageInfo =
