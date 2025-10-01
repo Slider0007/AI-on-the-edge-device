@@ -1,6 +1,6 @@
 {
     "name": "AI-on-the-Edge Device",
-    "version": "v17.2.0-SLFork",
+    "version": "v17.3.0-SLFork",
     "new_install_prompt_erase": false,
     "builds": [
         {
