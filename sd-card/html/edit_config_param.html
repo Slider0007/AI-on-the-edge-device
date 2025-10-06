@@ -3281,6 +3281,12 @@
 
             autoExposureLimit = 2;
         }
+        else if (jsonConfig.takeimage.camera.cameramodel == 2) { // OV3660
+            sensorFrameSizeWidth = 2048;
+            sensorFrameSizeHeight = 1536;
+
+            autoExposureLimit = 5;
+        }
         else if (jsonConfig.takeimage.camera.cameramodel == 3) { // OV5640
             sensorFrameSizeWidth = 2560;
             sensorFrameSizeHeight = 1920;

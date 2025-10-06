@@ -328,6 +328,9 @@ void ClassControlCamera::setImageSize()
     if (paramCameraInternal.cameraModel == CAMERA_OV2640) {
         paramCameraInternal.zoomFactor = std::clamp(paramCameraInternal.zoomFactor, 1000, 2500); // [1.0x .. 2.5x]
     }
+    else if (paramCameraInternal.cameraModel == CAMERA_OV3660) {
+        paramCameraInternal.zoomFactor = std::clamp(paramCameraInternal.zoomFactor, 1000, 3200); // [1.0x .. 3.2x]
+    }
     else if (paramCameraInternal.cameraModel == CAMERA_OV5640) {
         paramCameraInternal.zoomFactor = std::clamp(paramCameraInternal.zoomFactor, 1000, 4000); // [1.0x .. 4.0x]
     }
@@ -368,6 +371,45 @@ void ClassControlCamera::setImageSize()
         s->set_res_raw(s, 0, 0, 0, 0, offsetX, offsetY, imageWidthZoomed, imageHeightZoomed, outputFrameSizeWidth, outputFrameSizeHeight,
                        false, false);
     }
+    else if (paramCameraInternal.cameraModel == CAMERA_OV3660) {
+        // NOTE: Add sensor offset (x = 16, y = 6 --> see ov3660_settings.h: ratio_table -> 4x3 -> ox, oy)
+        const uint8_t sensorOffsetX = 8; // Offset / 2
+        const uint8_t sensorOffsetY = 3; // Offset / 2
+
+        uint16_t ispWindowXStart = sensorOffsetX + imageZoomOffsetX + (sensorFrameSizeWidth - imageWidthZoomed) / 2;
+        if (ispWindowXStart < sensorOffsetX) { // If too low set to sensor offset
+            ispWindowXStart = sensorOffsetX;
+        }
+        if (ispWindowXStart % 2) { // Make it odd to avoid tinted image
+            ispWindowXStart += 1;
+        }
+
+        uint16_t ispWindowYStart = sensorOffsetY + imageZoomOffsetY + (sensorFrameSizeHeight - imageHeightZoomed) / 2;
+        if (ispWindowYStart < sensorOffsetY) { // If too low set to sensor offset
+            ispWindowYStart = sensorOffsetY;
+        }
+        if (ispWindowYStart % 2) { // Make it odd to avoid tinted image
+            ispWindowYStart += 1;
+        }
+
+        const uint16_t ispWindowXEnd = ispWindowXStart + imageWidthZoomed - 1;
+        const uint16_t ispWindowYEnd = ispWindowYStart + imageHeightZoomed - 1;
+
+        // Set total sensor pixel count (incl. dark pixel) --> see ov2640_settings.h: ratio_table -> 4x3
+        const uint16_t sensorTotalPixelX = 2048;
+        const uint16_t sensorTotalPixelY = 1536;
+
+#ifdef DEBUG_DETAIL_ON
+        ESP_LOGI(TAG, "SensorSize W:%d, H:%d | ImageZoomed W:%d, H:%d | Offset X:%d, Y:%d | ISPWindowStart X:%d, Y:%d",
+                 sensorFrameSizeWidth, sensorFrameSizeHeight, imageWidthZoomed, imageHeightZoomed, imageZoomOffsetX, imageZoomOffsetY,
+                 ispWindowXStart, ispWindowXEnd);
+#endif // DEBUG_DETAIL_ON
+
+        // Set customized resolution (and scale image to output resolution)
+        //   NOTE: Function offset parameter are not used --> Offsets are applied to start values
+        s->set_res_raw(s, ispWindowXStart, ispWindowYStart, ispWindowXEnd, ispWindowYEnd, 0, 0, sensorTotalPixelX, sensorTotalPixelY,
+                       outputFrameSizeWidth, outputFrameSizeHeight, true, false);
+    }
     else if (paramCameraInternal.cameraModel == CAMERA_OV5640) {
         // NOTE: Add sensor offset (x = 32, y = 16 --> see ov5640_settings.h: ratio_table -> 4x3)
         const uint8_t sensorOffsetX = 16; // Offset / 2
@@ -392,7 +434,7 @@ void ClassControlCamera::setImageSize()
         const uint16_t ispWindowXEnd = ispWindowXStart + imageWidthZoomed - 1;
         const uint16_t ispWindowYEnd = ispWindowYStart + imageHeightZoomed - 1;
 
-        // Set total sensor pixel count (incl. dark pixel) --> see ov2640_settings.h: ratio_table -> 4x3
+        // Set total sensor pixel count (incl. dark pixel) --> see ov5640_settings.h: ratio_table -> 4x3
         const uint16_t sensorTotalPixelX = 2844;
         const uint16_t sensorTotalPixelY = 1968;
 
@@ -482,9 +524,8 @@ bool ClassControlCamera::setImageManipulation()
         // *********************************************************************
         ov2640_set_sharpness(s, std::min(3, std::max(-3, std::min(paramCameraInternal.sharpness, 3)))); // [-3 .. 3]
     }
-    else if (paramCameraInternal.cameraModel == CAMERA_OV5640) {
+    else if (paramCameraInternal.cameraModel == CAMERA_OV3660 || paramCameraInternal.cameraModel == CAMERA_OV5640) {
         // Sharpness manipulation
-        // *********************************************************************
         s->set_sharpness(s, std::min(3, std::max(-3, paramCameraInternal.sharpness))); // [-3 .. 3]
     }
     else {

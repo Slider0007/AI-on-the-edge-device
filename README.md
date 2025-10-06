@@ -40,7 +40,7 @@ Further refinements are documented in the [changelog](CHANGELOG.md) (v16.0.0-SLF
 - **[Prometheus/OpenMetrics Exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)** – Export metrics for device monitoring purposes
 
 Explore API docs via links above or device web interface: `System > Documentation`<br>
-ℹ️ Note: APIs aren’t fully compatible with jomjol’s firmware.
+ℹ️ APIs aren’t fully compatible with jomjol’s firmware.
 
 
 ## Workflow
@@ -72,8 +72,9 @@ and converted into a digital reading, ready to be sent or accessed through vario
 ### Camera Compatibility
 | Camera Type | Sensor Resolution | Digital Zoom | Firmware Support | Remarks                       
 |:---         |:---               |:---          |:---              |:---
-| [OV2640](https://www.arducam.com/ov2640/) | 2MP | 1.0x - 2.5x | All | ℹ️ EOL since 2009, still widely used<br>ℹ️ Pin/function-compatible Chinese clones supported
-| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP | 1.0x - 4.0x | ≥ v17.0.0 |ℹ️ EOL since 2019, still widely used<br>ℹ️ Autofocus not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Tends to get hotter than OV2640 – use a heat sink or reduce camera frequency (default: 10MHz or lower)<br>⚠️ ESP32-CAM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Functional, minor core voltage deviation (board: 1.3V; camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V).
+| [OV2640](docs/Installation/ComponentDocu/Camera/OV2640/OV2640%20datasheet.pdf) | 2MP | 1.0x - 2.5x | All | ℹ️ Pin/function-compatible Chinese clones supported
+| [OV3660](docs/Installation/ComponentDocu/Camera/OV3660/OV3660_CSP3_DS_1.3_sida.pdf) | 3MP | 1.0x - 3.2x | ≥ v17.4.0 |⚠️ ESP32-CAM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Functional, minor core voltage deviation (board: 1.3V; camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V).
+| [OV5640](docs/Installation/ComponentDocu/Camera/OV5640/OV5640%20datasheet.pdf) | 5MP | 1.0x - 4.0x | ≥ v17.0.0 |ℹ️ Autofocus is not supported<br>⚠️ ESP32-CAM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Functional, minor core voltage deviation (board: 1.3V; camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V)
 
 #### ⚠️ Important Note
 The camera clock frequency — configurable via the WebUI or config file — may negatively impact wireless network performance. This can 

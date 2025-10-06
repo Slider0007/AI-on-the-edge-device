@@ -5,6 +5,7 @@
 | Parameter Name    | Auto Exposure Level | autoexposurelevel
 | Default Value     | `0`                 | `0`
 | Input Options (OV2640 2MP) | `-2` .. `2`| `-2` .. `2`
+| Input Options (OV3660 3MP) | `-5` .. `5`| `-5` .. `5`
 | Input Options (OV5640 5MP) | `-5` .. `5`| `-5` .. `5`
 
 
