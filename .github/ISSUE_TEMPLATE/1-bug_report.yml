@@ -1,0 +1,25 @@
+name: 🐞 Bug Report
+description: File a bug report
+labels: bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Please describe, what happend and what did you expect to happen
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Version
+      description: Which firmware version are you using? (WebUI `System > Info > Build > Firmware Version` or check console log during boot)
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Relevant log output
+      description: Please provide any relevant log output (WebUI `System > Log Viewer` or console log). The content will be automatically formatted into code content
+      render: shell
