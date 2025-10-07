@@ -8,18 +8,18 @@ body:
         Thanks for taking the time to fill out this bug report!
   - type: textarea
     attributes:
-      label: What happened?
-      description: Please describe, what happend and what did you expect to happen
-    validations:
-      required: true
-  - type: input
-    attributes:
-      label: Version
-      description: Which firmware version are you using? (WebUI `System > Info > Build > Firmware Version` or check console log during boot)
+      label: Description
+      description: Please describe, what happend, what did you expect to happen and how can it be reproduced
     validations:
       required: true
   - type: textarea
     attributes:
-      label: Relevant log output
-      description: Please provide any relevant log output (WebUI `System > Log Viewer` or console log). The content will be automatically formatted into code content
+      label: Logs
+      description: Please provide any relevant logs (WebUI `System > Log Viewer` or console log). The content will be automatically formatted
       render: shell
+  - type: input
+    attributes:
+      label: Firmware Version
+      description: Which firmware version are you using? (WebUI `System > Info > Build > Firmware Version` or check console log during boot)
+    validations:
+      required: true
