@@ -368,86 +368,98 @@ void ClassControlCamera::setImageSize()
         //   NOTE 1: Function offset parameter based on image top-left (0,0). imageZoomOffsetX,Y are +/- values based on image center
         //   NOTE 2: Parameter startX --> Sensor frame size (0: 1600 x 1200)
         //   NOTE 3: Unused parameters: startY, endX, endY, scale, binning
-        s->set_res_raw(s, 0, 0, 0, 0, offsetX, offsetY, imageWidthZoomed, imageHeightZoomed, outputFrameSizeWidth, outputFrameSizeHeight,
-                       false, false);
+        if (s->set_res_raw(s, 0, 0, 0, 0, offsetX, offsetY, imageWidthZoomed, imageHeightZoomed, outputFrameSizeWidth,
+                           outputFrameSizeHeight, false, false) != ESP_OK) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setImageSize: Failed to set image size");
+        }
     }
     else if (paramCameraInternal.cameraModel == CAMERA_OV3660) {
         // NOTE: Add sensor offset (x = 16, y = 6 --> see ov3660_settings.h: ratio_table -> 4x3 -> ox, oy)
-        const uint8_t sensorOffsetX = 8; // Offset / 2
-        const uint8_t sensorOffsetY = 3; // Offset / 2
+        const uint8_t sensorOffsetX = 16;
+        const uint8_t sensorOffsetY = 6;
 
         uint16_t ispWindowXStart = sensorOffsetX + imageZoomOffsetX + (sensorFrameSizeWidth - imageWidthZoomed) / 2;
         if (ispWindowXStart < sensorOffsetX) { // If too low set to sensor offset
             ispWindowXStart = sensorOffsetX;
-        }
-        if (ispWindowXStart % 2) { // Make it odd to avoid tinted image
-            ispWindowXStart += 1;
         }
 
         uint16_t ispWindowYStart = sensorOffsetY + imageZoomOffsetY + (sensorFrameSizeHeight - imageHeightZoomed) / 2;
         if (ispWindowYStart < sensorOffsetY) { // If too low set to sensor offset
             ispWindowYStart = sensorOffsetY;
         }
-        if (ispWindowYStart % 2) { // Make it odd to avoid tinted image
-            ispWindowYStart += 1;
-        }
 
         const uint16_t ispWindowXEnd = ispWindowXStart + imageWidthZoomed - 1;
         const uint16_t ispWindowYEnd = ispWindowYStart + imageHeightZoomed - 1;
+
+        if (ispWindowXStart % 2) { // Make it odd to avoid tinted image
+            ispWindowXStart += 1;
+        }
+        if (ispWindowYStart % 2) { // Make it odd to avoid tinted image
+            ispWindowYStart += 1;
+        }
 
         // Set total sensor pixel count (incl. dark pixel) --> see ov2640_settings.h: ratio_table -> 4x3
         const uint16_t sensorTotalPixelX = 2048;
         const uint16_t sensorTotalPixelY = 1536;
 
 #ifdef DEBUG_DETAIL_ON
-        ESP_LOGI(TAG, "SensorSize W:%d, H:%d | ImageZoomed W:%d, H:%d | Offset X:%d, Y:%d | ISPWindowStart X:%d, Y:%d",
+        ESP_LOGI(TAG,
+                 "SensorSize W:%d, H:%d | ImageZoomed W:%d, H:%d | Offset X:%d, Y:%d | ISPWindowX Start:%d, End:%d | ISPWindowY Start:%d, "
+                 "End:%d",
                  sensorFrameSizeWidth, sensorFrameSizeHeight, imageWidthZoomed, imageHeightZoomed, imageZoomOffsetX, imageZoomOffsetY,
-                 ispWindowXStart, ispWindowXEnd);
+                 ispWindowXStart, ispWindowXEnd, ispWindowYStart, ispWindowYEnd);
 #endif // DEBUG_DETAIL_ON
 
         // Set customized resolution (and scale image to output resolution)
         //   NOTE: Function offset parameter are not used --> Offsets are applied to start values
-        s->set_res_raw(s, ispWindowXStart, ispWindowYStart, ispWindowXEnd, ispWindowYEnd, 0, 0, sensorTotalPixelX, sensorTotalPixelY,
-                       outputFrameSizeWidth, outputFrameSizeHeight, true, false);
+        if (s->set_res_raw(s, ispWindowXStart, ispWindowYStart, ispWindowXEnd, ispWindowYEnd, 0, 0, sensorTotalPixelX, sensorTotalPixelY,
+                           outputFrameSizeWidth, outputFrameSizeHeight, true, false) != ESP_OK) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setImageSize: Failed to set image size");
+        }
     }
     else if (paramCameraInternal.cameraModel == CAMERA_OV5640) {
         // NOTE: Add sensor offset (x = 32, y = 16 --> see ov5640_settings.h: ratio_table -> 4x3)
-        const uint8_t sensorOffsetX = 16; // Offset / 2
-        const uint8_t sensorOffsetY = 8;  // Offset / 2
+        const uint8_t sensorOffsetX = 32;
+        const uint8_t sensorOffsetY = 16;
 
         uint16_t ispWindowXStart = sensorOffsetX + imageZoomOffsetX + (sensorFrameSizeWidth - imageWidthZoomed) / 2;
         if (ispWindowXStart < sensorOffsetX) { // If too low set to sensor offset
             ispWindowXStart = sensorOffsetX;
-        }
-        if (ispWindowXStart % 2) { // Make it odd to avoid tinted image
-            ispWindowXStart += 1;
         }
 
         uint16_t ispWindowYStart = sensorOffsetY + imageZoomOffsetY + (sensorFrameSizeHeight - imageHeightZoomed) / 2;
         if (ispWindowYStart < sensorOffsetY) { // If too low set to sensor offset
             ispWindowYStart = sensorOffsetY;
         }
-        if (ispWindowYStart % 2) { // Make it odd to avoid tinted image
-            ispWindowYStart += 1;
-        }
 
         const uint16_t ispWindowXEnd = ispWindowXStart + imageWidthZoomed - 1;
         const uint16_t ispWindowYEnd = ispWindowYStart + imageHeightZoomed - 1;
+
+        if (ispWindowXStart % 2) { // Make it odd to avoid tinted image
+            ispWindowXStart += 1;
+        }
+        if (ispWindowYStart % 2) { // Make it odd to avoid tinted image
+            ispWindowYStart += 1;
+        }
 
         // Set total sensor pixel count (incl. dark pixel) --> see ov5640_settings.h: ratio_table -> 4x3
         const uint16_t sensorTotalPixelX = 2844;
         const uint16_t sensorTotalPixelY = 1968;
 
 #ifdef DEBUG_DETAIL_ON
-        ESP_LOGD(TAG, "SensorSize W:%d, H:%d | ImageZoomed W:%d, H:%d | Offset X:%d, Y:%d | ISPWindowStart X:%d, Y:%d",
+        ESP_LOGI(TAG,
+                 "SensorSize W:%d, H:%d | ImageZoomed W:%d, H:%d | Offset X:%d, Y:%d | ISPWindowX Start:%d, End:%d | ISPWindowY Start:%d, "
+                 "End:%d",
                  sensorFrameSizeWidth, sensorFrameSizeHeight, imageWidthZoomed, imageHeightZoomed, imageZoomOffsetX, imageZoomOffsetY,
-                 ispWindowXStart, ispWindowXEnd);
+                 ispWindowXStart, ispWindowXEnd, ispWindowYStart, ispWindowYEnd);
 #endif // DEBUG_DETAIL_ON
 
         // Set customized resolution (and scale image to output resolution)
         //   NOTE: Function offset parameter are not used --> Offsets are applied to start values
-        s->set_res_raw(s, ispWindowXStart, ispWindowYStart, ispWindowXEnd, ispWindowYEnd, 0, 0, sensorTotalPixelX, sensorTotalPixelY,
-                       outputFrameSizeWidth, outputFrameSizeHeight, true, false);
+        if (s->set_res_raw(s, ispWindowXStart, ispWindowYStart, ispWindowXEnd, ispWindowYEnd, 0, 0, sensorTotalPixelX, sensorTotalPixelY,
+                           outputFrameSizeWidth, outputFrameSizeHeight, true, false) != ESP_OK) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setImageSize: Failed to set image size");
+        }
     }
     else {
         s->set_framesize(s, FRAMESIZE_VGA);
