@@ -36,3 +36,6 @@ sdkconfig.xiao-esp32s3-sense
 sdkconfig.freenove-esp32s3-n8r8
 sdkconfig.freenove-esp32s3-n16r8
 sdkconfig.waveshare-esp32s3-eth
+
+#Python Virtual env
+venv/

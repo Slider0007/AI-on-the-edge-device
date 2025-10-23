@@ -177,6 +177,13 @@ esp_err_t triggerFlowStartByMqtt(std::string _topic)
 
     return ESP_OK;
 }
+esp_err_t triggerRebootByMqtt(std::string _topic)
+{
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "MQTT REBOOT" + _topic);
+    esp_restart();
+
+    return ESP_OK;
+}
 #endif // ENABLE_MQTT
 
 

@@ -777,6 +777,15 @@ bool mqttServer_publishHADiscovery(int _qos)
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
+    HADiscoveryData = {};
+    HADiscoveryData = {
+        .topic = "/process/ctrl/reboot",
+        .topicName = "reboot",
+        .friendlyName = "Reboot",
+        .icon = "reload" //
+    };
+    publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
+
     // Publish GPIO state topic
     for (const auto &gpioPin : ConfigClass::getInstance()->get()->sectionGpio.gpioPin) {
         if (!gpioPin.pinEnabled || !gpioPin.exposeToMqtt) { // Skip if disabled or not exposed to MQTT
@@ -854,6 +863,9 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
             configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/sensor/" + nodeID + "/" + topicNameID + "/config";
         }
     }
+    else if (_data->topicName == "reboot") { // Special case: Cycle start
+        configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/button/" + nodeID + "/" + topicNameID + "/config";
+    }
 
     // Define payload for configuration topic
     // See https://www.home-assistant.io/docs/mqtt/discovery/
@@ -878,6 +890,9 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
             payload += "\"pl_on\":\"1\",";  // payload "ON"
             payload += "\"pl_off\":\"0\","; // payload "OFF"
         }
+    }else if (_data->topicName == "reboot") {
+        payload += "\"cmd_t\":\"~" + _data->topic + "\","; // Add command topic
+        payload += "\"pl_prs\":\"1\",";
     }
     else {
         payload += "\"stat_t\":\"~" + _data->topic + "\","; // Add status topic

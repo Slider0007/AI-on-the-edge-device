@@ -491,6 +491,20 @@ bool mqtt_handler_flow_start(std::string _topic, char *_data, int _data_len)
     return true;
 }
 
+bool mqtt_handler_reboot(std::string _topic, char *_data, int _data_len)
+{
+    // ESP_LOGD(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
+
+    if (_data_len > 0) {
+        triggerRebootByMqtt(_topic);
+    }
+    else {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "handler_flow_start: handler called, but no data");
+    }
+
+    return true;
+}
+
 
 bool mqtt_handler_set_fallbackvalue(std::string _topic, char *_data, int _data_len)
 {
@@ -549,6 +563,10 @@ void isConnectedState(void)
         // Subscribe to [mainTopic]/process/ctrl/flow_start
         std::function<bool(std::string topic, char *data, int data_len)> subHandler1 = mqtt_handler_flow_start;
         registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/cycle_start", subHandler1);
+
+        // Subscribe to [mainTopic]/process/ctrl/reboot
+        std::function<bool(std::string topic, char *data, int data_len)> subHandler3 = mqtt_handler_reboot;
+        registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/reboot", subHandler3);
 
         // Subscribe to [mainTopic]/process/ctrl/set_fallbackvalue
         std::function<bool(std::string topic, char *data, int data_len)> subHandler2 = mqtt_handler_set_fallbackvalue;
