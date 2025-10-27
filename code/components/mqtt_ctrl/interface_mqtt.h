@@ -12,7 +12,7 @@
 
 
 bool publishMqttData(std::string _key, std::string _content, int qos, bool _retainFlag = false);
-bool configureMqttClient(const CfgData::SectionMqtt *_param, int _keepAlive);
+bool configureMqttClient(const CfgData::SectionMqtt *_param);
 esp_err_t startMqttClient(void);
 
 bool getMqttIsEnabled(void);
