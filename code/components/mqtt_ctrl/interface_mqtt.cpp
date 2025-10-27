@@ -533,7 +533,7 @@ void isConnectedState(void)
 {
     if (mqttState.mqttConnected) {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Connected to broker");
-        publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, 1, false); // Send MQTT birth message "online"
+        publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, 1, true); // Send MQTT birth message "online"
 
         if (connectFunctionMap != NULL) {
             for (std::map<std::string, std::function<void()>>::iterator it = connectFunctionMap->begin(); it != connectFunctionMap->end();
