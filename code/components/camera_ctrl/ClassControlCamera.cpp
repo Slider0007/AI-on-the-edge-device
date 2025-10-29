@@ -496,7 +496,7 @@ bool ClassControlCamera::setImageManipulation()
         // *********************************************************************
         ov2640_set_sharpness(s, std::min(3, std::max(-3, std::min(paramCameraInternal.sharpness, 3)))); // [-3 .. 3]
     }
-    else if (paramCameraInternal.cameraModel == CAMERA_OV3660 || paramCameraInternal.cameraModel == CAMERA_OV5640) {
+    else if (paramCameraInternal.cameraModel == CAMERA_OV5640 || paramCameraInternal.cameraModel == CAMERA_OV3660) {
         // Sharpness manipulation
         s->set_sharpness(s, std::min(3, std::max(-3, paramCameraInternal.sharpness))); // [-3 .. 3]
     }
