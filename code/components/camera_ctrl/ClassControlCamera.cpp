@@ -121,7 +121,7 @@ esp_err_t ClassControlCamera::initCam(bool initialInit)
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "No camera detected, check camera and electrical connection");
         }
         else if (err == ESP_ERR_NOT_SUPPORTED) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Detected camera model or JPEG format is not supported");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Detected camera model is not supported");
         }
 
         return err;
@@ -402,13 +402,13 @@ void ClassControlCamera::setImageSize()
         const uint16_t sensorTotalPixelX = 2300;
         const uint16_t sensorTotalPixelY = 1564;
 
-        // #ifdef DEBUG_DETAIL_ON
+#ifdef DEBUG_DETAIL_ON
         ESP_LOGI(TAG,
                  "SensorSize W:%d, H:%d | ImageZoomed W:%d, H:%d | Offset X:%d, Y:%d | ISPWindowX Start:%d, End:%d | ISPWindowY Start:%d, "
                  "End:%d",
                  sensorFrameSizeWidth, sensorFrameSizeHeight, imageWidthZoomed, imageHeightZoomed, imageZoomOffsetX, imageZoomOffsetY,
                  ispWindowXStart, ispWindowXEnd, ispWindowYStart, ispWindowYEnd);
-        // #endif // DEBUG_DETAIL_ON
+#endif // DEBUG_DETAIL_ON
 
         // Set customized resolution (and scale image to output resolution)
         //   NOTE: Function offset parameter are not used --> Offsets are applied to start values
