@@ -40,7 +40,7 @@ Further refinements are documented in the [changelog](CHANGELOG.md) (v16.0.0-SLF
 - **[Prometheus/OpenMetrics Exporter](docs/API/Prometheus-OpenMetrics/_OVERVIEW.md)** – Export metrics for device monitoring purposes
 
 Explore API docs via links above or device web interface: `System > Documentation`<br>
-ℹ️ Note: APIs aren’t fully compatible with jomjol’s firmware.
+ℹ️ APIs aren’t fully compatible with jomjol’s firmware.
 
 
 ## Workflow
@@ -62,18 +62,21 @@ and converted into a digital reading, ready to be sent or accessed through vario
 
 ## Supported Hardware
 ### Board Compatibility
-| Board Type | SOC / Module | Network Interfaces | Flashlight | Firmware Support | Remarks |
-|:---|:---|:---|:---|:---|:---|
-| [ESP32-CAM](http://www.ai-thinker.com/pro_view-24.html) | ESP32 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED<br>-> Pin: GPIO4 | All | ⚠️ Only boards with ≥ 4MB RAM are supported<br>⚠️ Beware of inferior quality Chinese clones |
-| [XIAO ESP32S3 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP | ❌ No onboard LED, external LED required (PWM, SmartLED)<br>-> Default Pin: GPIO1 | ≥ v17.0.0 | ⚠️ Runs hot, small heatsink recommended |
-| [Freenove ESP32S3-WROOM](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N16R8<br><br>ESP32S3-WROOM-1-N8R8 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED, low intensity<br>-> Pin: GPIO48<br><br>External LED recommended (PWM, SmartLED) | ≥ v17.0.0<br><br>≥ v17.1.0 | ℹ️ SOC and pin-compatible boards with 8/16MB flash and 8MB RAM supported |
-| [Waveshare ESP32S3-ETH](https://www.waveshare.com/esp32-s3-eth.htm) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP<br>3. Ethernet | ❌ No onboard LED, external LED required (PWM, SmartLED)<br>-> Default Pin: GPIO17 | ≥ v17.2.0 | ℹ️ POE supported (optional hardware required) |
+| Board Type | SOC / Module | Network Interfaces | Flashlight | Firmware Support | Firmware Package | Remarks |
+|:---|:---|:---|:---|:---|:---|:---|
+| [ESP32-CAM](images/boards/esp32-cam.png) | ESP32 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED<br>→ Pin: GPIO4 (PWM) | All Releases | `esp32cam` | ⚠️ Only boards with ≥ 4MB RAM are supported |
+| [XIAO ESP32S3 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP | ❌ No Onboard LED: External LED required (PWM, SmartLED)<br>→ Pin (Configurable): GPIO1 (PWM) | ≥ v17.0.0  | `xiao-esp32s3-sense` | ⚠️ Small heatsink recommended |
+| [Freenove ESP32S3-WROOM-N8R8](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N8R8 | 1. WiFi Client<br>2. WiFi AP | ⚠️ Onboard LED (Low intensity: External LED recommended (PWM, SmartLED))<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.1.0 | `freenove-esp32s3-n8r8` | ℹ️ SOC and pin-compatible boards with 8MB flash and 8MB RAM supported |
+| [Freenove ESP32S3-WROOM-N16R8](images/boards/freenove-esp32s3-n16r8.png) | ESP32S3-WROOM-1-N16R8 | 1. WiFi Client<br>2. WiFi AP | ⚠️ Onboard LED (Low intensity: External LED recommended (PWM, SmartLED))<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.0.0 | `freenove-esp32s3-n16r8` | ℹ️ SOC and pin-compatible boards with 16MB flash and 8MB RAM supported |
+| [ESP32-S3-CAM](images/boards/esp32s3-cam.png) | ESP32S3-WROOM-1-N16R8 | 1. WiFi Client<br>2. WiFi AP | ✅ Onboard LED<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.4.0 | `freenove-esp32s3-n16r8` | ℹ️ Board is pin-compatible and identified as `freenove-esp32s3-n16r8` |
+| [Waveshare ESP32S3-ETH](https://www.waveshare.com/esp32-s3-eth.htm) | ESP32S3 | 1. WiFi Client<br>2. WiFi AP<br>3. Ethernet | ❌ No Onboard LED: External LED required (PWM, SmartLED)<br>→ Pin (Configurable): GPIO17 (PWM) | ≥ v17.2.0  | `waveshare-esp32s3-eth` | ℹ️ POE supported (optional hardware required) |
 
 ### Camera Compatibility
 | Camera Type | Sensor Resolution | Digital Zoom | Firmware Support | Remarks                       
 |:---         |:---               |:---          |:---              |:---
-| [OV2640](https://www.arducam.com/ov2640/) | 2MP | 1.0x - 2.5x | All | ℹ️ EOL since 2009, still widely used<br>ℹ️ Pin/function-compatible Chinese clones supported
-| [OV5640](https://cdn.sparkfun.com/datasheets/Sensors/LightImaging/OV5640_datasheet.pdf) | 5MP | 1.0x - 4.0x | ≥ v17.0.0 |ℹ️ EOL since 2019, still widely used<br>ℹ️ Autofocus not supported<br>ℹ️ Power consumption higher than OV2640<br>⚠️ Tends to get hotter than OV2640 – use a heat sink or reduce camera frequency (default: 10MHz or lower)<br>⚠️ ESP32-CAM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Functional, minor core voltage deviation (board: 1.3V; camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V).
+| [OV2640](docs/Installation/ComponentDocu/Camera/OV2640/OV2640%20datasheet.pdf) | 2MP | 1.0x - 2.5x | All Releases |
+| [OV5640](docs/Installation/ComponentDocu/Camera/OV5640/OV5640%20datasheet.pdf) | 5MP | 1.0x - 4.0x | ≥ v17.0.0 |ℹ️ Variant with autofocus is not supported
+
 
 #### ⚠️ Important Note
 The camera clock frequency — configurable via the WebUI or config file — may negatively impact wireless network performance. This can 
