@@ -72,9 +72,9 @@ and converted into a digital reading, ready to be sent or accessed through vario
 ### Camera Compatibility
 | Camera Type | Sensor Resolution | Digital Zoom | Firmware Support | Remarks                       
 |:---         |:---               |:---          |:---              |:---
-| [OV2640](docs/Installation/ComponentDocu/Camera/OV2640/OV2640%20datasheet.pdf) | 2MP | 1.0x - 2.5x | All | ℹ️ Pin/function-compatible Chinese clones supported
-| [OV3660](docs/Installation/ComponentDocu/Camera/OV3660/OV3660_CSP3_DS_1.3_sida.pdf) | 3MP | 1.0x - 3.2x | ≥ v17.4.0 |⚠️ ESP32-CAM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Functional, minor core voltage deviation (board: 1.3V; camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V).
-| [OV5640](docs/Installation/ComponentDocu/Camera/OV5640/OV5640%20datasheet.pdf) | 5MP | 1.0x - 4.0x | ≥ v17.0.0 |ℹ️ Autofocus is not supported<br>⚠️ ESP32-CAM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V (abs. max. 4.5V)).<br>⚠️ XIAO ESP32S3 Sense: Functional, minor core voltage deviation (board: 1.3V; camera: 1.5V)<br>⚠️ Freenove-ESP32S3-WROOM: Functional, but core / I/O voltage mismatch (board: 1.2V / 3.3V; camera: 1.5V / 2.8V)
+| [OV2640](docs/Installation/ComponentDocu/Camera/OV2640/OV2640%20datasheet.pdf) | 2MP | 1.0x - 2.5x | All |
+| [OV3660](docs/Installation/ComponentDocu/Camera/OV3660/OV3660_CSP3_DS_1.3_sida.pdf) | 3MP | 1.0x - 3.2x | ≥ v17.4.0 |
+| [OV5640](docs/Installation/ComponentDocu/Camera/OV5640/OV5640%20datasheet.pdf) | 5MP | 1.0x - 4.0x | ≥ v17.0.0 |ℹ️ Variant with autofocus is not supported
 
 #### ⚠️ Important Note
 The camera clock frequency — configurable via the WebUI or config file — may negatively impact wireless network performance. This can 
