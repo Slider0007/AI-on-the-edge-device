@@ -1,4 +1,4 @@
-# Firmware Installation (Freenove ESP32S3 N16R8)
+# Firmware Installation (Freenove ESP32S3 N16R8 / ESP32-S3-CAM)
 
 ## Manual Firmware Installation / Update
 
