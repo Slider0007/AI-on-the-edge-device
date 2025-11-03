@@ -281,7 +281,7 @@ struct CfgData {
     // Digit Numbers
     struct SectionDigit {
         bool enabled = true;
-        std::string model = "dig-class100_0180_s2_q.tflite"; // with extention, but without path
+        std::string model = "dig-class100_0182_s2_q.tflite"; // with extention, but without path
         float cnnGoodThreshold = 0.50;
         std::vector<RoiPerSequence> sequence;
         struct Debug {
@@ -495,4 +495,3 @@ struct CfgData {
 };
 
 #endif // CFGDATASTRUCT_H
-
