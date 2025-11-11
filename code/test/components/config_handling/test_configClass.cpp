@@ -39,7 +39,7 @@ void test_configJsonParseAndSerialization()
         "source\",\"rawimagesretention\":3}},\"imagealignment\":{\"alignmentalgo\":0,\"searchfield\":{\"x\":20,\"y\":20},"
         "\"imagerotation\":\"0.0\",\"marker\":[{\"x\":1,\"y\":1},{\"x\":1,\"y\":1}],\"debug\":{\"savedebuginfo\":false}},"
         "\"numbersequences\":{\"sequence\":[{\"sequenceid\":0,\"sequencename\":\"main\"}]},\"digit\":{\"enabled\":true,\"model\":\"dig-"
-        "class100_0180_s2_q.tflite\",\"cnngoodthreshold\":\"0.50\",\"sequence\":[{\"sequenceid\":0,\"sequencename\":\"main\",\"roi\":[]}],"
+        "class100_0182_s2_q.tflite\",\"cnngoodthreshold\":\"0.50\",\"sequence\":[{\"sequenceid\":0,\"sequencename\":\"main\",\"roi\":[]}],"
         "\"debug\":{\"saveroiimages\":false,\"roiimageslocation\":\"/log/"
         "digit\",\"roiimagesretention\":3,\"roisavingsize\":0}},\"analog\":{\"enabled\":true,\"model\":\"ana-class100_0201_s1_q.tflite\","
         "\"sequence\":[{"
