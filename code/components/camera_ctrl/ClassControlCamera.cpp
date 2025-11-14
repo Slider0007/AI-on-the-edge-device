@@ -354,7 +354,7 @@ void ClassControlCamera::setImageSize()
     const int16_t imageZoomOffsetY = std::clamp(paramCameraInternal.zoomOffsetY, -1 * imageZoomOffsetYMax, imageZoomOffsetYMax);
 
     if (paramCameraInternal.cameraModel == CAMERA_OV2640) {
-        // NOTE: No sensor offset required (x = 0, y = 0 --> see ov2640_settings.h: ratio_table -> 4x3)
+        // NOTE: No sensor offset required --> see ov2640_settings.h: ratio_table -> 4x3 -> ox, oy
         uint16_t offsetX = imageZoomOffsetXMax + imageZoomOffsetX;
         if (offsetX % 2) { // Make it odd to avoid tinted image
             offsetX += 1;
@@ -380,11 +380,11 @@ void ClassControlCamera::setImageSize()
     }
     else if (paramCameraInternal.cameraModel == CAMERA_OV5640 || paramCameraInternal.cameraModel == CAMERA_OV3660) {
         // OV5640:
-        //  - Add sensor offset (x = 32, y = 16 --> see ov5640_settings.h: ratio_table -> 4x3 -> ox, oy)
+        //  - Add sensor offset --> see ov5640_settings.h: ratio_table -> 4x3 -> ox, oy
         //  - Set total sensor pixel count (incl. dark pixel) --> see ov5640_settings.h: ratio_table -> 4x3 -> tx, ty
         //
         // OV3660:
-        //  - Add sensor offset (x = 16, y = 6 --> see ov3660_settings.h: ratio_table -> 4x3 -> ox, oy)
+        //  - Add sensor offset --> see ov3660_settings.h: ratio_table -> 4x3 -> ox, oy
         //  - Set total sensor pixel count (incl. dark pixel) --> see ov3660_settings.h: ratio_table -> 4x3 -> tx, ty
         static constexpr struct {
             uint16_t offsetX, offsetY;
