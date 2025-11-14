@@ -5,7 +5,7 @@
 | Parameter Name    | Zoom Factor         | zoomfactor
 | Default Value     | `1.0`               | `1000`
 | Input Options (OV2640 2MP) | `1.0x` .. `2.5x` | `1000` .. `2500`
-| Input Options (OV5640 5MP) | `1.0x` .. `3.2x` | `1000` .. `3200`
+| Input Options (OV3660 3MP) | `1.0x` .. `3.2x` | `1000` .. `3200`
 | Input Options (OV5640 5MP) | `1.0x` .. `4.0x` | `1000` .. `4000`
 
 
