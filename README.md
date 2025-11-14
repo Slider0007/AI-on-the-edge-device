@@ -75,8 +75,8 @@ and converted into a digital reading, ready to be sent or accessed through vario
 | Camera Type | Sensor Resolution | Digital Zoom | Firmware Support | Remarks                       
 |:---         |:---               |:---          |:---              |:---
 | [OV2640](docs/Installation/ComponentDocu/Camera/OV2640/OV2640%20datasheet.pdf) | 2MP | 1.0x - 2.5x | All Releases |
+| [OV3660](docs/Installation/ComponentDocu/Camera/OV3660/OV3660_CSP3_DS_1.3_sida.pdf) | 3MP | 1.0x - 3.2x | ≥ v17.4.0 |
 | [OV5640](docs/Installation/ComponentDocu/Camera/OV5640/OV5640%20datasheet.pdf) | 5MP | 1.0x - 4.0x | ≥ v17.0.0 |ℹ️ Variant with autofocus is not supported
-
 
 #### ⚠️ Important Note
 The camera clock frequency — configurable via the WebUI or config file — may negatively impact wireless network performance. This can 
