@@ -995,8 +995,6 @@ void task_autodoFlow(void *pvParameter)
         else if (taskAutoFlowState == FLOW_TASK_STATE_INIT) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Process state: " + std::string(FLOW_INIT));
             flowctrl.setActualProcessState(std::string(FLOW_INIT));
-            // Right now, it's not possible to provide state via MQTT because mqtt service is not yet started
-            flowctrl.clearFlowStateEventInRowCounter();
 
             if (!doInit()) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Process state: " + std::string(FLOW_INIT_FAILED));
@@ -1062,9 +1060,6 @@ void task_autodoFlow(void *pvParameter)
                 else {
                     taskAutoFlowState = FLOW_TASK_STATE_IDLE_NO_AUTOSTART; // Continue to test if AUTOSTART is TRUE
                 }
-
-                flowctrl.clearFlowStateEventInRowCounter();
-                taskYIELD();
             }
         }
 

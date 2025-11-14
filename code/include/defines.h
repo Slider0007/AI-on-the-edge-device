@@ -174,12 +174,13 @@
 #define READOUT_TYPE_RATE_PER_INTERVAL       7
 
 
-// ClassFlowMQTT
+// ClassFlowMQTT + interface_mqtt.cpp
 //******************************
 #define MQTT_STATUS_TOPIC           "/device/status/connection"
 #define MQTT_STATUS_ONLINE          "online"
 #define MQTT_STATUS_OFFLINE         "offline"
 #define MQTT_QOS                    1
+#define MQTT_KEEPALIVE_INTERVAL     120 // [s]; Message sent every half this value
 
 
 // CImage

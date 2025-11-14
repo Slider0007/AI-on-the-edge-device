@@ -72,7 +72,7 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
   },
   "digit": {
     "enabled": true,
-    "model": "dig-class100_0180_s2_q.tflite",
+    "model": "dig-class100_0182_s2_q.tflite",
     "cnngoodthreshold": "0.50",
     "sequence": [
       {

@@ -17,7 +17,6 @@ class ClassFlowMQTT : public ClassFlow
 {
   protected:
     const CfgData::SectionMqtt *cfgDataPtr = NULL;
-    int keepAlive;
 
   public:
     ClassFlowMQTT();

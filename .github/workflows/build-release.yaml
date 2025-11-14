@@ -116,7 +116,7 @@ jobs:
         cp ./sd-card/config/models/*.tflite ./artifact/config/models/ 2>/dev/null || true
 
     - name: Firmware package - Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}"
         path: ./artifact
@@ -138,7 +138,7 @@ jobs:
         cp -f "./code/dependencies.lock" "debug/dependencies.lock"
 
     - name: Debug files package - Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: "AI-on-the-edge-device__${{ matrix.plat }}__debug-files__SLFork_${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}"
         path: ./debug
@@ -184,7 +184,7 @@ jobs:
         echo "branch=$(echo ${{ github.ref_name }} | tr / __)" >> $GITHUB_OUTPUT
 
     - name: Pull artifacts
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
 
     - name: Prepare artifacts for release
       run: |
@@ -236,7 +236,7 @@ jobs:
         ref: gh-pages-webinstaller
 
     - name: Pull artifact
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         name: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ needs.upload-release-artifacts.outputs.branch }}_${{ needs.upload-release-artifacts.outputs.sha_short }}"
         path: './artifacts/'
