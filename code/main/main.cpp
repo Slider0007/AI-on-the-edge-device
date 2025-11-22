@@ -206,6 +206,10 @@ extern "C" void app_main(void)
         LogFile.setLogLevel(ESP_LOG_DEBUG);
         setTaskAutoFlowState(FLOW_TASK_STATE_INIT_DELAYED);
     }
+    else if (esp_reset_reason() == ESP_RST_BROWNOUT) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "System reset due to an insufficient or unstable power supply");
+    }
     else {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Reset reason: " + getResetReason());
     }
