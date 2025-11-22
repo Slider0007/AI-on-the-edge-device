@@ -208,7 +208,7 @@ extern "C" void app_main(void)
     }
     else if (esp_reset_reason() == ESP_RST_BROWNOUT) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "System reset due to an insufficient or unstable power supply");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "System reset caused by insufficient or unstable power supply");
     }
     else {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Reset reason: " + getResetReason());
