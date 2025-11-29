@@ -438,18 +438,19 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
         }
 
         std::string result = "";
-        int resultTemp = -1;
-        int lastROI = sequence->digitRoi.size() - 1;
+        const int lastROI = sequence->digitRoi.size() - 1;
 
         // Evaluate last ROI of number sequence (and potentially correct)
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + sequence->digitRoi[lastROI]->param->roiName);
-        resultTemp = sequence->digitRoi[lastROI]->CNNResult;
+        const int resultTemp = sequence->digitRoi[lastROI]->CNNResult;
 
         // Valid result (e.g. model 'dig-cont*' --> bad fit) or not used for other models (ensure isRejected is not set)
         if (!sequence->digitRoi[lastROI]->isRejected) {
             // NOTE: Ensure that this flag is only set if no analog previous number is available
             if (sequence->paramPostProc->extendedResolution && valuePreviousNumber == -1) {
-                result = std::to_string(resultTemp);
+                // Pad numbers 0–9 with a leading zero to ensure 2-digit output
+                result = (resultTemp >= 0 && resultTemp < 10 ? "0" : "") + std::to_string(resultTemp);
+
                 LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                     "Digit Number (No previous number, Extended Resolution): Result: " + result +
                                         ", Value: " + to_stringWithPrecision((resultTemp / 10.0), 1));
