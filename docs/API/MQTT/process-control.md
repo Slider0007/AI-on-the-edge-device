@@ -2,7 +2,7 @@
 
 ## MQTT API: Process Control
 
-The device can be controlled by publishing data to the following topics.
+The process can be controlled by publishing data to the following topics.
 
 - Format: `[MainTopic]/process/ctrl/[Subscribed Topic]`
 - Example: `watermeter/process/ctrl/cycle_start`
@@ -36,5 +36,3 @@ Usage Details
           "value": -1
         }
         ```
-
-

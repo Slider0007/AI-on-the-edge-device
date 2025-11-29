@@ -25,12 +25,13 @@ Further details can be found in the respective MQTT API topic cluster descriptio
 
 | MQTT API Topic Cluster               | Description                                      | JSON / Topics | Depre-<br>cated*       
 |:-------------------------------------|:-------------------------------------------------|:------------- |:-----------
+| [Device Control](device-control.md)  | Device Control (Topics to control device)        | Topics        | 
 | [Device Info](device-info.md)        | Device Info (Static topic content)               | JSON          | 
 | [Device Status](device-status.md)    | Device Status (Variable topic content)           | Topics        | 
 | [Process Control](process-control.md)| Process Control (Topics to control process)      | Topics        | 
 | [Process Data](process-data.md)      | Process Data (Number sequence data / results)    | JSON + Topics | 
 | [Process Status](process-status.md)  | Process Status (Variable topic content)          | Topics        | 
-| [Home Assistant](home-assistant-discovery.md) | Home Assistant Discovery Topics         | JSON          | 
+| [Home Assistant Discovery](home-assistant-discovery.md) | Home Assistant Discovery Topics         | JSON          | 
 | [GPIO Control / Status](gpio.md)     | General Purpose Input / Output Control / Status  | Topics        | 
 
 *MQTT topics which are marked as deprecated will be completely removed (functionality merged in another endpoint) or 
