@@ -442,7 +442,7 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
 
         // Evaluate last ROI of number sequence (and potentially correct)
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + sequence->digitRoi[lastROI]->param->roiName);
-        const int resultTemp = sequence->digitRoi[lastROI]->CNNResult;
+        int resultTemp = sequence->digitRoi[lastROI]->CNNResult;
 
         // Valid result (e.g. model 'dig-cont*' --> bad fit) or not used for other models (ensure isRejected is not set)
         if (!sequence->digitRoi[lastROI]->isRejected) {
