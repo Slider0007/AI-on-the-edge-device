@@ -20,6 +20,7 @@
 #include "connect_wlan.h"
 #include "server_mqtt.h"
 #include "time_sntp.h"
+#include "server_ota.h"
 
 
 static const char *TAG = "MQTT_IF";
@@ -479,7 +480,7 @@ bool getMqttTlsCertVerifyRequiresTime()
 
 bool mqtt_handler_flow_start(std::string _topic, char *_data, int _data_len)
 {
-    // ESP_LOGD(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
+    // ESP_LOGI(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
 
     if (_data_len > 0) {
         triggerFlowStartByMqtt(_topic);
@@ -491,15 +492,17 @@ bool mqtt_handler_flow_start(std::string _topic, char *_data, int _data_len)
     return true;
 }
 
+
 bool mqtt_handler_reboot(std::string _topic, char *_data, int _data_len)
 {
-    // ESP_LOGD(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
+    // ESP_LOGI(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
 
     if (_data_len > 0) {
-        triggerRebootByMqtt(_topic);
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot triggered by MQTT topic " + _topic);
+        doReboot();
     }
     else {
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "handler_flow_start: handler called, but no data");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "handler_reboot: handler called, but no data");
     }
 
     return true;
@@ -564,13 +567,13 @@ void isConnectedState(void)
         std::function<bool(std::string topic, char *data, int data_len)> subHandler1 = mqtt_handler_flow_start;
         registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/cycle_start", subHandler1);
 
-        // Subscribe to [mainTopic]/process/ctrl/reboot
-        std::function<bool(std::string topic, char *data, int data_len)> subHandler3 = mqtt_handler_reboot;
-        registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/reboot", subHandler3);
-
         // Subscribe to [mainTopic]/process/ctrl/set_fallbackvalue
         std::function<bool(std::string topic, char *data, int data_len)> subHandler2 = mqtt_handler_set_fallbackvalue;
         registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/process/ctrl/set_fallbackvalue", subHandler2);
+
+        // Subscribe to [mainTopic]/device/ctrl/reboot
+        std::function<bool(std::string topic, char *data, int data_len)> subHandlerReboot = mqtt_handler_reboot;
+        registerMqttSubscribeFunction(cfgDataPtr->mainTopic + "/device/ctrl/reboot", subHandlerReboot);
 
         // Subscribe to /homeassistant/status
         if (cfgDataPtr->homeAssistant.discoveryEnabled) {

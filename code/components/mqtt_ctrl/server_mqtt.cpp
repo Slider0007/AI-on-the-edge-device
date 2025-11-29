@@ -779,9 +779,9 @@ bool mqttServer_publishHADiscovery(int _qos)
 
     HADiscoveryData = {};
     HADiscoveryData = {
-        .topic = "/process/ctrl/reboot",
-        .topicName = "reboot",
-        .friendlyName = "Reboot",
+        .topic = "/device/ctrl/reboot",
+        .topicName = "reboot_device",
+        .friendlyName = "Reboot Device",
         .icon = "reload" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
@@ -852,7 +852,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
     if (_data->topicName == "process_error") { // Special case: Process error
         configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/binary_sensor/" + nodeID + "/" + topicNameID + "/config";
     }
-    else if (_data->topicName == "cycle_start") { // Special case: Cycle start
+    else if (_data->topicName == "cycle_start" || _data->topicName == "reboot_device") { // Buttons: Cycle start / Reboot device
         configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/button/" + nodeID + "/" + topicNameID + "/config";
     }
     else if (_data->topic.contains("/gpio/")) { // Special case: GPIO
@@ -862,9 +862,6 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
         else { // PWM duty
             configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/sensor/" + nodeID + "/" + topicNameID + "/config";
         }
-    }
-    else if (_data->topicName == "reboot") { // Special case: Cycle start
-        configurationTopic = cfgDataPtr->homeAssistant.discoveryPrefix + "/button/" + nodeID + "/" + topicNameID + "/config";
     }
 
     // Define payload for configuration topic
@@ -879,9 +876,13 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
     }
 
     // Define command or status topic
-    if (_data->topicName == "cycle_start") {               // Special case: cycle_start command
-        payload += "\"cmd_t\":\"~" + _data->topic + "\","; // Add command topic
+    if (_data->topicName == "cycle_start" || _data->topicName == "reboot_device") { // Buttons: Cycle start / Reboot device
+        payload += "\"cmd_t\":\"~" + _data->topic + "\",";                          // Add command topic
         payload += "\"pl_prs\":\"1\",";
+
+        if (_data->topicName == "reboot_device") { // Special case: Reboot device button disbaled by default
+            payload += "\"en\": \"false\","
+        }
     }
     else if (_data->topic.contains("/gpio/")) {             // Special case: GPIO
         payload += "\"stat_t\":\"~" + _data->topic + "\","; // Add status topic
@@ -890,9 +891,6 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
             payload += "\"pl_on\":\"1\",";  // payload "ON"
             payload += "\"pl_off\":\"0\","; // payload "OFF"
         }
-    }else if (_data->topicName == "reboot") {
-        payload += "\"cmd_t\":\"~" + _data->topic + "\","; // Add command topic
-        payload += "\"pl_prs\":\"1\",";
     }
     else {
         payload += "\"stat_t\":\"~" + _data->topic + "\","; // Add status topic
