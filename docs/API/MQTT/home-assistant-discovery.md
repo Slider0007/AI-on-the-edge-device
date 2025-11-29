@@ -112,6 +112,7 @@ The MQTT button integration is used to configure buttons for device control.
 | Discovery Topic                        | Description                 
 |:---------------------------------------|:----------------------------
 `cycle_start/config`                     | Trigger a process cycle start
+`reboot_device/config`                   | Trigger a device reboot
 
 Example:
 ```
@@ -134,5 +135,3 @@ Example:
 }
 
 ```
-
-
