@@ -42,7 +42,7 @@ bool ClassFlowInfluxDBv2::loadParameter()
             }
         }
 
-        if (sequence->paramInfluxDBv1 == NULL) {
+        if (sequence->paramInfluxDBv2 == NULL) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invalid sequence config");
             return false;
         }
