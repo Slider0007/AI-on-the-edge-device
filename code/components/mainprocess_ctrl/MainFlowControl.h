@@ -18,7 +18,6 @@ esp_err_t triggerReloadConfig(httpd_req_t *req);
 #ifdef ENABLE_MQTT
 esp_err_t triggerFlowStartByMqtt(std::string _topic);
 #endif // ENABLE_MQTT
-
 void triggerFlowStartByGpio();
 
 void setTaskAutoFlowState(int _value);

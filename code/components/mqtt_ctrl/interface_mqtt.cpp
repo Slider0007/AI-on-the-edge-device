@@ -482,12 +482,12 @@ bool mqtt_handler_flow_start(std::string _topic, char *_data, int _data_len)
 {
     // ESP_LOGI(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
 
-    if (_data_len > 0) {
-        triggerFlowStartByMqtt(_topic);
-    }
-    else {
+    if (_data_len <= 0) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "handler_flow_start: handler called, but no data");
+        return false;
     }
+
+    triggerFlowStartByMqtt(_topic);
 
     return true;
 }
@@ -497,14 +497,14 @@ bool mqtt_handler_reboot(std::string _topic, char *_data, int _data_len)
 {
     // ESP_LOGI(TAG, "Handler called: topic %s, data %.*s", _topic.c_str(), _data_len, _data);
 
-    if (_data_len > 0) {
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot triggered by MQTT topic " + _topic);
-        doReboot();
-    }
-    else {
+    if (_data_len <= 0) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "handler_reboot: handler called, but no data");
+        return false;
     }
 
+    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot triggered by MQTT topic " + _topic);
+    doReboot();
+    
     return true;
 }
 
