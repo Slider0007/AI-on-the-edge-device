@@ -782,7 +782,7 @@ bool mqttServer_publishHADiscovery(int _qos)
         .topic = "/device/ctrl/reboot",
         .topicName = "reboot_device",
         .friendlyName = "Reboot Device",
-        .icon = "reload" //
+        .icon = "restart" //
     };
     publishOK &= publishHADiscoveryTopic(&HADiscoveryData, _qos);
 
