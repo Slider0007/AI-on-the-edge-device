@@ -178,7 +178,7 @@ bool mqttServer_publishDeviceStatus(int _qos)
     const std::string deviceStatusTopic = "/device/status/";
     bool retVal = true;
 
-    retVal &= publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, _qos, false);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, _qos, true);
     retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceStatusTopic + "device_uptime", std::to_string(getUptime()), _qos, false);
 
     // Publish only, if network mode WLAN / WLAN AP

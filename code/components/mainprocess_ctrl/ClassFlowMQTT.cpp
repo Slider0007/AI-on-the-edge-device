@@ -22,7 +22,6 @@ static const char *TAG = "MQTT";
 ClassFlowMQTT::ClassFlowMQTT()
 {
     presetFlowStateHandler(true);
-    keepAlive = 25 * 60;
 }
 
 
@@ -55,13 +54,7 @@ bool ClassFlowMQTT::initMqttService(float _processingInterval)
         mqttServer_schedulePublishHADiscovery();
     }
 
-    keepAlive = _processingInterval * 60 * 2.5; // Seconds, make sure it is greater than 2 processing cycles!
-
-    stream << std::fixed << std::setprecision(1) << "Process interval: " << _processingInterval
-           << "min -> MQTT keepAlive: " << ((float)keepAlive / 60) << "min";
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, stream.str());
-
-    if (configureMqttClient(cfgDataPtr, keepAlive)) {
+    if (configureMqttClient(cfgDataPtr)) {
         startMqttClient();
         return true;
     }

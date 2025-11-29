@@ -320,45 +320,31 @@ bool isSetSystemStatusFlag(SystemStatusFlag_t flag)
 
 std::string getResetReason(void)
 {
-    std::string reasonText;
-
     switch (esp_reset_reason()) {
         case ESP_RST_POWERON:
-            reasonText = "Power-on event (or reset button)";
-            break; //!< Reset due to power-on event
+            return "Power-on event (or reset button)"; // Reset due to power-on event
         case ESP_RST_EXT:
-            reasonText = "External pin";
-            break; //!< Reset by external pin (not applicable for ESP32)
+            return "External pin"; // Reset by external pin (not applicable for ESP32)
         case ESP_RST_SW:
-            reasonText = "Via esp_restart";
-            break; //!< Software reset via esp_restart
+            return "Software restart (via esp_restart)"; // Software reset via esp_restart
         case ESP_RST_PANIC:
-            reasonText = "Exception/panic";
-            break; //!< Software reset due to exception/panic
+            return "Exception or panic"; // Software reset due to panic/exception
         case ESP_RST_INT_WDT:
-            reasonText = "Interrupt watchdog";
-            break; //!< Reset (software or hardware) due to interrupt watchdog
+            return "Interrupt watchdog"; // Reset due to interrupt watchdog
         case ESP_RST_TASK_WDT:
-            reasonText = "Task watchdog";
-            break; //!< Reset due to task watchdog
+            return "Task watchdog"; // Reset due to task watchdog
         case ESP_RST_WDT:
-            reasonText = "Other watchdogs";
-            break; //!< Reset due to other watchdogs
+            return "Other watchdogs"; // Reset due to other watchdogs
         case ESP_RST_DEEPSLEEP:
-            reasonText = "Exiting deep sleep mode";
-            break; //!< Reset after exiting deep sleep mode
+            return "Wakeup from deep sleep"; // Reset after exiting deep sleep mode
         case ESP_RST_BROWNOUT:
-            reasonText = "Brownout";
-            break; //!< Brownout reset (software or hardware)
+            return "Brownout (voltage drop of power supply)"; // Brownout reset
         case ESP_RST_SDIO:
-            reasonText = "SDIO";
-            break; //!< Reset over SDIO
-
-        case ESP_RST_UNKNOWN: //!< Reset reason can not be determined
+            return "Reset via SDIO"; // Reset over SDIO
+        case ESP_RST_UNKNOWN:
         default:
-            reasonText = "Unknown";
+            return "Unknown reset reason"; // Fallback
     }
-    return reasonText;
 }
 
 

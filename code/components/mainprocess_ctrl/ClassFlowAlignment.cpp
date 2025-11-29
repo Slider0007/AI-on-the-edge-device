@@ -139,8 +139,10 @@ bool ClassFlowAlignment::doFlow(std::string time)
         if (AlignRetval == TPL_MATCH_OK_SIMILAR) { // Alignment with similarity check successful
             saveAlignmentMarkerData();
         }
-        else if (AlignRetval == TPL_MATCH_FAILED) { // Alignment failed
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Alignment by algorithm failed. Verify image rotation and alignment marker");
+        else if (AlignRetval == TPL_MATCH_FAILED) { // Alignment not successful
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                "Fine alignment unsuccessful. Use alignment marker areas with sharp edges, unique shapes and high contrast "
+                                "on a sharply focused image");
             setFlowStateHandlerEvent(-1); // Set error event code for post cycle error handler 'doPostProcessEventHandling'
         }
 
@@ -196,7 +198,7 @@ void ClassFlowAlignment::doPostProcessEventHandling()
             drawAlignmentMarker(*flowImageData->imgProcess);
             flowImageData->imgProcess->saveJpgToFile(formatFileName(destination + "/alg_misalign.jpg"));
 
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Alignment failed, debug infos saved: " + destination);
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Fine alignment unsuccessful, debug infos saved: " + destination);
         }
     }
 }

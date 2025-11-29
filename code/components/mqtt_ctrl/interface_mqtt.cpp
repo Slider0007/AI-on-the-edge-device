@@ -223,10 +223,9 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 }
 
 
-bool configureMqttClient(const CfgData::SectionMqtt *_param, int _keepAlive)
+bool configureMqttClient(const CfgData::SectionMqtt *_param)
 {
     cfgDataPtr = _param;
-    keepAlive = _keepAlive;
 
     if ((cfgDataPtr->uri.empty()) || (cfgDataPtr->mainTopic.empty()) || (cfgDataPtr->clientID.empty())) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Init aborted! Config error (URI, MainTopic or ClientID missing)");
@@ -234,6 +233,7 @@ bool configureMqttClient(const CfgData::SectionMqtt *_param, int _keepAlive)
     }
 
     LWTTopic = cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC;
+    keepAlive = MQTT_KEEPALIVE_INTERVAL;
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                         "URI: " + cfgDataPtr->uri + ", clientID: " + cfgDataPtr->clientID + ", username: " + cfgDataPtr->username +
@@ -550,7 +550,7 @@ void isConnectedState(void)
 {
     if (mqttState.mqttConnected) {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Connected to broker");
-        publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, 1, false); // Send MQTT birth message "online"
+        publishMqttData(cfgDataPtr->mainTopic + MQTT_STATUS_TOPIC, MQTT_STATUS_ONLINE, 1, true); // Send MQTT birth message "online"
 
         if (connectFunctionMap != NULL) {
             for (std::map<std::string, std::function<void()>>::iterator it = connectFunctionMap->begin(); it != connectFunctionMap->end();
