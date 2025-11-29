@@ -880,8 +880,8 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
         payload += "\"cmd_t\":\"~" + _data->topic + "\",";                          // Add command topic
         payload += "\"pl_prs\":\"1\",";
 
-        if (_data->topicName == "reboot_device") { // Special case: Reboot device button disbaled by default
-            payload += "\"en\": \"false\","
+        if (_data->topicName == "reboot_device") { // Special case: Reboot device button disabled by default
+            payload += "\"en\": \"false\",";
         }
     }
     else if (_data->topic.contains("/gpio/")) {             // Special case: GPIO
