@@ -322,9 +322,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                         }
 
                         sequence->sValueStatus +=
-                            " | Discard processed value: " +
-                            to_stringWithPrecision(std::to_string(sequence->actualValue), sequence->decimalPlaceCount) + " | Fallback: " +
-                            to_stringWithPrecision(std::to_string(sequence->fallbackValue), sequence->decimalPlaceCount + 1) +
+                            " | Discard processed value: " + to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
+                            " | Fallback: " + to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1) +
                             ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount);
 
                         LogFile.writeToFile(ESP_LOG_WARN, TAG,
@@ -348,9 +347,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                         LogFile.writeToFile(
                             ESP_LOG_DEBUG, TAG,
                             "Sequence: " + sequence->sequenceName + ", Status: " + sequence->sValueStatus + " | Discard processed value: " +
-                                to_stringWithPrecision(std::to_string(sequence->actualValue), sequence->decimalPlaceCount) +
-                                " | Fallback: " +
-                                to_stringWithPrecision(std::to_string(sequence->fallbackValue), sequence->decimalPlaceCount + 1) +
+                                to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
+                                " | Fallback: " + to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1) +
                                 ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount));
                         sequence->isActualValueConfirmed = false;
 
