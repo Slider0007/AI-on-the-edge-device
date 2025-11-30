@@ -266,18 +266,13 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 /* Update fallbackValue */
                 sequence->sFallbackValue = to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount);
 
-                /* Check digit plausibility (only support and necessary for class-11 models (0-9 + NaN)) */
-                if (sequence->paramPostProc->checkDigitIncreaseConsistency) {
-                    if (flowDigit) {
-                        if (flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
-                            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                                "Check digit increase consistency for number sequence: " + sequence->sequenceName);
-                            sequence->actualValue = checkDigitConsistency(sequence->actualValue, sequence->correctedDecimalShift,
-                                                                          !sequence->analogRoi.empty(), sequence->fallbackValue);
-                        }
-                    }
-                    else {
-                        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, no digit numbers configured");
+                /* Check digit plausibility (only supported when using class-11 model (0-9 + NaN)) */
+                if (flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
+                    if (sequence->paramPostProc->checkDigitIncreaseConsistency) {
+                        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                            "Check digit increase consistency for number sequence: " + sequence->sequenceName);
+                        sequence->actualValue = checkDigitConsistency(sequence->actualValue, sequence->correctedDecimalShift,
+                                                                      !sequence->analogRoi.empty(), sequence->fallbackValue);
                     }
                 }
 
@@ -326,10 +321,11 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                             sequence->sValueStatus = std::string(VALUE_STATUS_004_RATE_TOO_HIGH_POS);
                         }
 
-                        sequence->sValueStatus += " | Discard processed value: " +
-                                                  to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
-                                                  " | Fallback: " + sequence->sFallbackValue +
-                                                  ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount);
+                        sequence->sValueStatus +=
+                            " | Discard processed value: " +
+                            to_stringWithPrecision(std::to_string(sequence->actualValue), sequence->decimalPlaceCount) + " | Fallback: " +
+                            to_stringWithPrecision(std::to_string(sequence->fallbackValue), sequence->decimalPlaceCount + 1) +
+                            ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount);
 
                         LogFile.writeToFile(ESP_LOG_WARN, TAG,
                                             "Sequence: " + sequence->sequenceName + ", Status: " + sequence->sValueStatus);
@@ -349,11 +345,13 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                     if (sequence->actualValue < sequence->fallbackValue) {
                         sequence->sValueStatus = std::string(VALUE_STATUS_002_RATE_NEGATIVE);
 
-                        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                            "Sequence: " + sequence->sequenceName + ", Status: " + sequence->sValueStatus +
-                                                " | Discard processed value: " + std::to_string(sequence->actualValue) +
-                                                " | Fallback: " + std::to_string(sequence->fallbackValue) +
-                                                ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount));
+                        LogFile.writeToFile(
+                            ESP_LOG_DEBUG, TAG,
+                            "Sequence: " + sequence->sequenceName + ", Status: " + sequence->sValueStatus + " | Discard processed value: " +
+                                to_stringWithPrecision(std::to_string(sequence->actualValue), sequence->decimalPlaceCount) +
+                                " | Fallback: " +
+                                to_stringWithPrecision(std::to_string(sequence->fallbackValue), sequence->decimalPlaceCount + 1) +
+                                ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount));
                         sequence->isActualValueConfirmed = false;
 
                         /* Update timestamp of fallback value to be prepared to identify every negative movement larger than max. rate
