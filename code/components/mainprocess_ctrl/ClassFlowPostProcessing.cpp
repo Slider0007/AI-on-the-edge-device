@@ -322,7 +322,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                         }
 
                         sequence->sValueStatus +=
-                            " | Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
+                            ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
                             ", Discarded value: " + to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
                             ", Using fallback: " + to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1);
 
@@ -348,7 +348,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                         LogFile.writeToFile(
                             ESP_LOG_DEBUG, TAG,
                             "Sequence: " + sequence->sequenceName + " | Status: " + sequence->sValueStatus +
-                                " | Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
+                                ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
                                 ", Discarded value: " + to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
                                 ", Using fallback: " + to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1));
                         sequence->isActualValueConfirmed = false;
