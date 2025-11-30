@@ -444,7 +444,7 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + sequence->digitRoi[lastROI]->param->roiName);
         int resultTemp = sequence->digitRoi[lastROI]->CNNResult;
 
-        // Valid result (e.g. model 'dig-cont*' --> bad fit) or not used for other models (ensure isRejected is not set)
+        // Valid result ('isRejected' is not set)
         if (!sequence->digitRoi[lastROI]->isRejected) {
             // NOTE: Ensure that this flag is only set if no analog previous number is available
             if (sequence->paramPostProc->extendedResolution && valuePreviousNumber == -1) {
@@ -469,12 +469,8 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
             }
         }
         else {
-            result = "N";
-            if (sequence->paramPostProc->extendedResolution) {
-                result = "NN";
-            }
-
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont): Rejected, substitute with N");
+            sequence->paramPostProc->extendedResolution ? result = "NN" : result = "N";
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont): Rejected, substitute with N (extended resolution: NN)");
         }
 
         // Evaluate all remaining ROI of number sequence (and potentially correct)
@@ -487,7 +483,7 @@ std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePre
             else {
                 resultTemp = -1;
                 result = "N" + result;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont/dig-class100): Rejected, substitute with N");
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont): Rejected, substitute with N");
             }
         }
 

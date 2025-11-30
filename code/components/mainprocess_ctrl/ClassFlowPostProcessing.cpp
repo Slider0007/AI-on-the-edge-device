@@ -179,15 +179,17 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 #endif // DEBUG_DETAIL_ON
 
         /* Remove leading N */
-        if (sequence->paramPostProc->ignoreLeadingNaN) {
-            while ((sRawValue.length() > 1) && (sRawValue[0] == 'N')) {
-                sRawValue.erase(0, 1);
+        if (flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
+            if (sequence->paramPostProc->ignoreLeadingNaN) {
+                while ((sRawValue.length() > 1) && (sRawValue[0] == 'N')) {
+                    sRawValue.erase(0, 1);
+                }
             }
-        }
 
 #ifdef DEBUG_DETAIL_ON
-        ESP_LOGI(TAG, "After IgnoreLeadingNaN: RawValue %s", sRawValue.c_str());
+            ESP_LOGI(TAG, "After IgnoreLeadingNaN: RawValue %s", sRawValue.c_str());
 #endif // DEBUG_DETAIL_ON
+        }
 
         /* Use fully processed "Raw Value" and transfer to "Value" for further processing */
 
@@ -267,11 +269,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 /* Check digit plausibility (only support and necessary for class-11 models (0-9 + NaN)) */
                 if (sequence->paramPostProc->checkDigitIncreaseConsistency) {
                     if (flowDigit) {
-                        if (flowDigit->getCNNType() != CNNTYPE_DIGIT_CLASS11) {
-                            LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                                                "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models");
-                        }
-                        else {
+                        if (flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
                             LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                                 "Check digit increase consistency for number sequence: " + sequence->sequenceName);
                             sequence->actualValue = checkDigitConsistency(sequence->actualValue, sequence->correctedDecimalShift,
@@ -328,9 +326,9 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                             sequence->sValueStatus = std::string(VALUE_STATUS_004_RATE_TOO_HIGH_POS);
                         }
 
-                        sequence->sValueStatus += " | Value: " +
+                        sequence->sValueStatus += " | Discard processed value: " +
                                                   to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
-                                                  ", Fallback: " + sequence->sFallbackValue +
+                                                  " | Fallback: " + sequence->sFallbackValue +
                                                   ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount);
 
                         LogFile.writeToFile(ESP_LOG_WARN, TAG,
@@ -353,8 +351,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                             "Sequence: " + sequence->sequenceName + ", Status: " + sequence->sValueStatus +
-                                                " | Value: " + std::to_string(sequence->actualValue) +
-                                                ", Fallback: " + std::to_string(sequence->fallbackValue) +
+                                                " | Discard processed value: " + std::to_string(sequence->actualValue) +
+                                                " | Fallback: " + std::to_string(sequence->fallbackValue) +
                                                 ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount));
                         sequence->isActualValueConfirmed = false;
 
