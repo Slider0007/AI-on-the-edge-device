@@ -869,9 +869,11 @@
 				<form id="digit_model_form">
 					<select required class="select_large" name="digit.model" id="digit_model_value"
 						onchange="setClassVisibility('classvisibility_digit_model_class11',
-														$(digit_enabled_value).val() && this.value.includes('class11'));
-							setClassVisibility('classvisibility_digit_model_cont',
-														$(digit_enabled_value).val() && this.value.includes('cont'));
+								$(digit_enabled_value).val() && this.value.includes('class11'));
+							setClassVisibility('classvisibility_model_cnn_threshold',
+								$(digit_enabled_value).val() && this.value.includes('cont'));
+							setClassVisibility('classvisibility_postprocessing_extended_resolution',
+								$(digit_enabled_value).val() && !this.value.includes('class11'));
 							gatherChangedParameter(this.form)">
 					</select>
 				</form>
@@ -879,7 +881,7 @@
 			<td style="visibility:hidden">$TOOLTIP_digit_model</td>
 		</tr>
 
-		<tr class="classvisibility_digit_enabled classvisibility_digit_model_cont expert">
+		<tr class="classvisibility_digit_enabled classvisibility_model_cnn_threshold expert">
 			<td class="indent1">
 				<span>CNN Good Threshold</span>
 			</td>
@@ -981,8 +983,10 @@
 				<form id="analog_enabled_form">
 					<select style="font-weight:bold" class="classvisibility_init" name="analog.enabled" id="analog_enabled_value"
 								onchange="setClassVisibility('classvisibility_analog_enabled', this.value);
-								this.value == 'true' ? $(analog_debug_saveroiimages_value).trigger('onchange') : null;
-								gatherChangedParameter(this.form)">
+									this.value == 'true' ? $(analog_debug_saveroiimages_value).trigger('onchange') : null;
+									setClassVisibility('classvisibility_postprocessing_extended_resolution',
+										$(digit_enabled_value).val() && !this.value.includes('class11'));
+									gatherChangedParameter(this.form)">
 						<option value="false" selected>Disabled</option>
 						<option value="true">Enabled</option>
 					</select>
@@ -1133,7 +1137,7 @@
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_analogdigitsyncvalue</td>
 		</tr>
 
-		<tr>
+		<tr class="classvisibility_postprocessing_extended_resolution hidden">
 			<td class="indent1">
 				<span>Extended Resolution</span>
 			</td>
@@ -1149,7 +1153,7 @@
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_extendedresolution</td>
 		</tr>
 
-		<tr class="classvisibility_digit_model_class11 hidden">
+		<tr class="classvisibility_digit_model_class11 hidden expert">
 			<td class="indent1">
 				<span>Ignore Leading NaNs</span>
 			</td>
@@ -1165,7 +1169,7 @@
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_ignoreleadingnan</td>
 		</tr>
 
-		<tr class="classvisibility_digit_model_class11 hidden">
+		<tr class="classvisibility_digit_model_class11 hidden expert">
 			<td class="indent1">
 				<span>Check Digit Increase Consistency</span>
 			</td>

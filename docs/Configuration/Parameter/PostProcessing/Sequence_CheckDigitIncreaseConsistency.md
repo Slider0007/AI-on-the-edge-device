@@ -7,13 +7,21 @@
 | Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
 
 
+!!! Warning
+    This is an **Expert Parameter**! Only change it if you understand what it does!<br>
+
+
 ## Description
 
-An additional post-processing consistency check to improve zero crossing of rolling digit numbers.
+A post-processing consistency check to improve zero crossing detection of **rolling digits**.
 
 
 !!! Warning
-    It's not recommended to use with LCD digit numbers!<br>
+    It's not recommended at all to use with LCD digits.<br>
+    It's recommended to use alternative models than `dig-class11` for rolling digit processing.
+
+
+!!! Note
     Only useable for `dig-class11` models (0-9 + NaN).
 
 
