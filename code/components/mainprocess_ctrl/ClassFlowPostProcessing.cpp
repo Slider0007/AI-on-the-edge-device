@@ -125,7 +125,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
         /* Process analog numbers of sequence */
         if (!sequence->analogRoi.empty()) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Get analog ROI results");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + sequence->sequenceName + " | Get analog ROI results");
             sRawValue = flowAnalog->getReadout(sequence);
 
             if (sRawValue.length() > 0) {
@@ -146,7 +146,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
         /* Process digit numbers of sequence */
         if (!sequence->digitRoi.empty()) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Get digit ROI results");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + sequence->sequenceName + " | Get digit ROI results");
             if (!sequence->analogRoi.empty()) { // If analog numbers available
                 sRawValue = flowDigit->getReadout(sequence, sequence->analogRoi[0]->CNNResult, resultPreviousNumberAnalog) + sRawValue;
             }
@@ -322,7 +322,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                         }
 
                         sequence->sValueStatus +=
-                            ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
+                            " | Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
                             ", Discarded value: " + to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
                             ", Using fallback: " + to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1);
 
@@ -348,7 +348,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                         LogFile.writeToFile(
                             ESP_LOG_DEBUG, TAG,
                             "Sequence: " + sequence->sequenceName + " | Status: " + sequence->sValueStatus +
-                                ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
+                                " | Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
                                 ", Discarded value: " + to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
                                 ", Using fallback: " + to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1));
                         sequence->isActualValueConfirmed = false;
