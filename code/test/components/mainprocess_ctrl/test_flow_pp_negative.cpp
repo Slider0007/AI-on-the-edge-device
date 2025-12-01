@@ -85,16 +85,12 @@ void testNegative_Issues()
     // Ohne decimalShift
     std::vector<float> digits = {2.0, 2.0, 0.0, 1.0, 7.2, 9.0, 8.0};
     std::vector<float> analogs = {};
-    double fallbackValue_extended = 22018.080;
-    double fallbackValue = 22018.08;
-
-    const char *expected = "22017.98";
 
     // https://github.com/jomjol/AI-on-the-edge-device/issues/2145#issuecomment-1461899094
     // extendResolution=false
     // value < fallbackValue
     // Prüfung eingeschaltet => Fehler
-    fallbackValue = 22018.08; // zu groß
+    double fallbackValue = 22018.08; // zu groß
     UnderTestPost *underTestPost = initDoFlow(digits, analogs, CNNTYPE_DIGIT_CLASS100, false, -2);
     setAllowNegative(false);
     setFallbackValue(underTestPost, fallbackValue);
