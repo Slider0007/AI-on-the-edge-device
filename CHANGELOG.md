@@ -65,7 +65,7 @@
 * **model:** Update dig-class100 tflite model to v1.82 ([#319](https://github.com/Slider0007/AI-on-the-edge-device/issues/319)) ([96a58cf](https://github.com/Slider0007/AI-on-the-edge-device/commit/96a58cf3d1dc6da9d5ed4ab2d8a912ad233d64f3))
 
 
-###👏 New Contributors
+### 👏 New Contributors
 * @Templeaxebyte made their first contribution in https://github.com/Slider0007/AI-on-the-edge-device/pull/325
 * @chrisrowley14 made their first contribution in https://github.com/Slider0007/AI-on-the-edge-device/pull/306
 
