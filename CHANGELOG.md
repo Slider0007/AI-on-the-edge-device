@@ -2,6 +2,36 @@
 
 ## [17.4.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.3.0-SLFork...v17.4.0-SLFork) (2025-12-01)
 
+### 💿 Installation / Migration Notes
+
+#### A. Initial Installation
+--> Recommended: **Web Installer**
+ - Follow instructions listed on [Web Installer Page](https://slider0007.github.io/AI-on-the-edge-device/)
+ - Alternative method: [Manual Installation](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Installation/DeviceProvisioning/Manual.md)
+
+#### B. Update from previous releases (17.x)
+--> Recommended: **OTA Update**
+- Download board specific firmware package
+- Perform OTA update
+
+#### C. Migration from previous major release (16.x)
+--> Recommended: **OTA Update**
+- Download board specific firmware package from GitHub release page
+- Perform OTA update (ignore file name mismatch warning)
+- Verify migrated device configuration
+  - Check migrated configuration briefly (majority of the parameter are migrated)
+  - Reconfigure GPIO section (if it was configured before, no automatic migration)
+- Update reference image and alignment marker (Mandatory due to multiple new camera features and adaptions)
+- Lots of (breaking) changes are made to existing APIs. A manual reconfiguration is most likely required. Check API documentation
+  - [REST API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/_OVERVIEW.md), [REST API Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/xxx_migration_notes.md)
+  - [MQTT API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/_OVERVIEW.md), [MQTT Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/xxx_migration_notes.md)
+- Check PR descriptions in `BREAKING CHANGES` section of release v17.0.0-SLFork and/or [documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs) for further information
+
+### 💡 [Extended Hardware Support](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop?tab=readme-ov-file#supported-hardware)
+
+- Board: ESP32-S3-CAM
+- Camera: OV3660
+
 
 ### Features
 
@@ -32,6 +62,12 @@
 * **deps:** Bump actions/download-artifact from 5 to 6 ([#315](https://github.com/Slider0007/AI-on-the-edge-device/issues/315)) ([5df561b](https://github.com/Slider0007/AI-on-the-edge-device/commit/5df561b29970a30943729958bc5202900be556e6))
 * **deps:** Bump actions/upload-artifact from 4 to 5 ([#314](https://github.com/Slider0007/AI-on-the-edge-device/issues/314)) ([afa7308](https://github.com/Slider0007/AI-on-the-edge-device/commit/afa73087aa2de91e166b875d28a4c05479e84a85))
 * **model:** Update dig-class100 tflite model to v1.82 ([#319](https://github.com/Slider0007/AI-on-the-edge-device/issues/319)) ([96a58cf](https://github.com/Slider0007/AI-on-the-edge-device/commit/96a58cf3d1dc6da9d5ed4ab2d8a912ad233d64f3))
+
+
+#### 👏 New Contributors
+* @Templeaxebyte made their first contribution in https://github.com/Slider0007/AI-on-the-edge-device/pull/325
+* @chrisrowley14 made their first contribution in https://github.com/Slider0007/AI-on-the-edge-device/pull/306
+
 
 ## [17.3.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.2.0-SLFork...v17.3.0-SLFork) (2025-10-01)
 
