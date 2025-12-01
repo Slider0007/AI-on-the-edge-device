@@ -27,6 +27,7 @@
   - [MQTT API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/_OVERVIEW.md), [MQTT Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/xxx_migration_notes.md)
 - Check PR descriptions in `BREAKING CHANGES` section of release v17.0.0-SLFork and/or [documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs) for further information
 
+
 ### 💡 [Extended Hardware Support](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop?tab=readme-ov-file#supported-hardware)
 
 - Board: ESP32-S3-CAM
@@ -64,7 +65,7 @@
 * **model:** Update dig-class100 tflite model to v1.82 ([#319](https://github.com/Slider0007/AI-on-the-edge-device/issues/319)) ([96a58cf](https://github.com/Slider0007/AI-on-the-edge-device/commit/96a58cf3d1dc6da9d5ed4ab2d8a912ad233d64f3))
 
 
-#### 👏 New Contributors
+###👏 New Contributors
 * @Templeaxebyte made their first contribution in https://github.com/Slider0007/AI-on-the-edge-device/pull/325
 * @chrisrowley14 made their first contribution in https://github.com/Slider0007/AI-on-the-edge-device/pull/306
 
