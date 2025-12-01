@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         **Thank you for taking the time to submit this bug report!**
-        For general discussions or any other requests, please start a conversation in the “Discussions” tab.
+        **For general discussions or any other requests, please start a conversation in the “Discussions” tab.**
   - type: textarea
     attributes:
       label: Description
@@ -22,5 +22,11 @@ body:
     attributes:
       label: Firmware Version
       description: Which firmware version are you using? (WebUI `System > Info > Build > Firmware Version` or check console log during boot)
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Hardware Platform
+      description: Which hardware platform (board, camera) are you using?
     validations:
       required: true
