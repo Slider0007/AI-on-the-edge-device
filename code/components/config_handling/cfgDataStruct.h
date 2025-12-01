@@ -282,7 +282,7 @@ struct CfgData {
     struct SectionDigit {
         bool enabled = true;
         std::string model = "dig-class100_0182_s2_q.tflite"; // with extention, but without path
-        float cnnGoodThreshold = 0.50;
+        float cnnGoodThreshold = 0.80;
         std::vector<RoiPerSequence> sequence;
         struct Debug {
             bool saveRoiImages = false;

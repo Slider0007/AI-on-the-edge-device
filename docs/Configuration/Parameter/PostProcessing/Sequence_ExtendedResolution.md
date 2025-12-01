@@ -14,9 +14,7 @@ decimal place of the result by one.
 
 
 !!! Note
-    This parameter is only supported by `*-class*` and `*-cont*` models! 
-    See [Choosing-the-Model](https://jomjol.github.io/AI-on-the-edge-device-docs/Choosing-the-Model) 
-    for more details.
+    This parameter is only supported when using `ana-/ dig-class100*` or `ana-/ dig-cont*` models! 
 
 
 !!! Note

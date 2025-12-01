@@ -7,16 +7,18 @@
 | Input Options     | `Disabled`<br>`Enabled` | `false`<br>`true` 
 
 
+!!! Warning
+    This is an **Expert Parameter**! Only change it if you understand what it does!<br>
+    For regular use cases, it is not recommended to use at all, because it can disturb post-processing. 
+
+
 ## Description
 
-Leading `N` will be deleted before further post-processing. 
+Leading `N`s in raw value will be deleted before further post-processing
 
 
 !!! Note
-    This is only relevant for `dig-class-11*` models or `dig-cont*` models 
-    (result fit < CNN Good Threshold) which use `N` presentation! 
-    See [Choosing-the-Model](https://jomjol.github.io/AI-on-the-edge-device-docs/Choosing-the-Model)
-    for details.
+    This parameter is only supported when using `dig-class-11*` models
 
 
 !!! Note

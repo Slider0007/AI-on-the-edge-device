@@ -79,7 +79,7 @@ bool ClassFlowPostProcessing::loadParameter()
         }
 
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "Number sequence: " + sequence->sequenceName + ", Digits: " + std::to_string(sequence->digitRoi.size()) +
+                            "Sequence: " + sequence->sequenceName + " | Digits: " + std::to_string(sequence->digitRoi.size()) +
                                 ", Analogs: " + std::to_string(sequence->analogRoi.size()));
     }
 
@@ -125,7 +125,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
         /* Process analog numbers of sequence */
         if (!sequence->analogRoi.empty()) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "doFlow: Get analog ROI results");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + sequence->sequenceName + " | Get analog ROI results");
             sRawValue = flowAnalog->getReadout(sequence);
 
             if (sRawValue.length() > 0) {
@@ -146,7 +146,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
         /* Process digit numbers of sequence */
         if (!sequence->digitRoi.empty()) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "doFlow: Get digit ROI results");
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + sequence->sequenceName + " | Get digit ROI results");
             if (!sequence->analogRoi.empty()) { // If analog numbers available
                 sRawValue = flowDigit->getReadout(sequence, sequence->analogRoi[0]->CNNResult, resultPreviousNumberAnalog) + sRawValue;
             }
@@ -167,7 +167,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
             sequence->isActualValueANumber = false;
             sequence->isActualValueConfirmed = false;
             sequence->sValueStatus = std::string(VALUE_STATUS_W01_EMPTY_DATA);
-            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Sequence: " + sequence->sequenceName + ": Status: " + sequence->sValueStatus);
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Sequence: " + sequence->sequenceName + " | Status: " + sequence->sValueStatus);
             continue; // Stop here, no data
         }
 
@@ -179,15 +179,17 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 #endif // DEBUG_DETAIL_ON
 
         /* Remove leading N */
-        if (sequence->paramPostProc->ignoreLeadingNaN) {
-            while ((sRawValue.length() > 1) && (sRawValue[0] == 'N')) {
-                sRawValue.erase(0, 1);
+        if (flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
+            if (sequence->paramPostProc->ignoreLeadingNaN) {
+                while ((sRawValue.length() > 1) && (sRawValue[0] == 'N')) {
+                    sRawValue.erase(0, 1);
+                }
             }
-        }
 
 #ifdef DEBUG_DETAIL_ON
-        ESP_LOGI(TAG, "After IgnoreLeadingNaN: RawValue %s", sRawValue.c_str());
+            ESP_LOGI(TAG, "After IgnoreLeadingNaN: RawValue %s", sRawValue.c_str());
 #endif // DEBUG_DETAIL_ON
+        }
 
         /* Use fully processed "Raw Value" and transfer to "Value" for further processing */
 
@@ -195,7 +197,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
         /* Substitute any N position with last valid number if available */
         if (findDelimiterPos(sActualValue, "N") != std::string::npos) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Substitute N positions for number sequence: " + sequence->sequenceName);
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + sequence->sequenceName + " | Checking for N position substitution");
             // FallbackValue can be used to replace the N
             if (sequence->paramPostProc->useFallbackValue && sequence->isFallbackValueValid) {
                 sActualValue = substituteN(sActualValue, sequence->fallbackValue);
@@ -217,7 +219,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 sequence->isActualValueANumber = false;
                 sequence->isActualValueConfirmed = false;
 
-                LogFile.writeToFile(ESP_LOG_WARN, TAG, "Sequence: " + sequence->sequenceName + ": Status: " + sequence->sValueStatus);
+                LogFile.writeToFile(ESP_LOG_WARN, TAG, "Sequence: " + sequence->sequenceName + " | Status: " + sequence->sValueStatus);
 
                 writeDataLog(sequence->sequenceName);
                 continue; // Stop here, no valid number because there are still N.
@@ -247,7 +249,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
             sequence->isActualValueANumber = false;
             sequence->isActualValueConfirmed = false;
             sequence->sValueStatus = std::string(VALUE_STATUS_W01_EMPTY_DATA);
-            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Sequence: " + sequence->sequenceName + ": Status: " + sequence->sValueStatus);
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Sequence: " + sequence->sequenceName + " | Status: " + sequence->sValueStatus);
             continue; // Stop here, invalid number
         }
 
@@ -264,22 +266,13 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 /* Update fallbackValue */
                 sequence->sFallbackValue = to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount);
 
-                /* Check digit plausibility (only support and necessary for class-11 models (0-9 + NaN)) */
-                if (sequence->paramPostProc->checkDigitIncreaseConsistency) {
-                    if (flowDigit) {
-                        if (flowDigit->getCNNType() != CNNTYPE_DIGIT_CLASS11) {
-                            LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                                                "Skip \'Digit Increase Consistency\' check, only applicable for dig-class11 models");
-                        }
-                        else {
-                            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                                "Check digit increase consistency for number sequence: " + sequence->sequenceName);
-                            sequence->actualValue = checkDigitConsistency(sequence->actualValue, sequence->correctedDecimalShift,
-                                                                          !sequence->analogRoi.empty(), sequence->fallbackValue);
-                        }
-                    }
-                    else {
-                        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Skip \'Digit Increase Consistency\' check, no digit numbers configured");
+                /* Check digit plausibility (only supported when using class-11 model (0-9 + NaN)) */
+                if (flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
+                    if (sequence->paramPostProc->checkDigitIncreaseConsistency) {
+                        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                            "Sequence: " + sequence->sequenceName + " | Checking for digit increase consistency");
+                        sequence->actualValue = checkDigitConsistency(sequence->actualValue, sequence->correctedDecimalShift,
+                                                                      !sequence->analogRoi.empty(), sequence->fallbackValue);
                     }
                 }
 
@@ -314,7 +307,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                 /* Check for rate too high */
                 if (sequence->paramPostProc->maxRateCheckType > RATE_CHECK_OFF) {
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Max. rate check for number sequence: " + sequence->sequenceName);
+                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + sequence->sequenceName + " | Checking for max. rate deviation");
                     if (abs(RatePerSelection) > abs((double)sequence->paramPostProc->maxRate)) {
                         if (RatePerSelection < 0) {
                             sequence->sValueStatus = std::string(VALUE_STATUS_003_RATE_TOO_HIGH_NEG);
@@ -328,13 +321,14 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                             sequence->sValueStatus = std::string(VALUE_STATUS_004_RATE_TOO_HIGH_POS);
                         }
 
-                        sequence->sValueStatus += " | Value: " +
-                                                  to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
-                                                  ", Fallback: " + sequence->sFallbackValue +
-                                                  ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount);
+                        sequence->sValueStatus +=
+                            " | Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
+                            ", Discarded value: " + to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
+                            ", Using fallback: " + to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1);
+
 
                         LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                                            "Sequence: " + sequence->sequenceName + ", Status: " + sequence->sValueStatus);
+                                            "Sequence: " + sequence->sequenceName + " | Status: " + sequence->sValueStatus);
                         sequence->isActualValueConfirmed = false;
                         setFlowStateHandlerEvent(1); // Set warning event code for post cycle error handler 'doPostProcessEventHandling'
                                                      // (only warning level)
@@ -347,15 +341,16 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
                 /* Check for negative rate */
                 if (!sequence->paramPostProc->allowNegativeRate && sequence->isActualValueConfirmed) {
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Negative rate check for number sequence: " + sequence->sequenceName);
+                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Sequence: " + sequence->sequenceName + " | Checking for negative rate");
                     if (sequence->actualValue < sequence->fallbackValue) {
                         sequence->sValueStatus = std::string(VALUE_STATUS_002_RATE_NEGATIVE);
 
-                        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                            "Sequence: " + sequence->sequenceName + ", Status: " + sequence->sValueStatus +
-                                                " | Value: " + std::to_string(sequence->actualValue) +
-                                                ", Fallback: " + std::to_string(sequence->fallbackValue) +
-                                                ", Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount));
+                        LogFile.writeToFile(
+                            ESP_LOG_DEBUG, TAG,
+                            "Sequence: " + sequence->sequenceName + " | Status: " + sequence->sValueStatus +
+                                " | Rate: " + to_stringWithPrecision(RatePerSelection, sequence->decimalPlaceCount) +
+                                ", Discarded value: " + to_stringWithPrecision(sequence->actualValue, sequence->decimalPlaceCount) +
+                                ", Using fallback: " + to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount + 1));
                         sequence->isActualValueConfirmed = false;
 
                         /* Update timestamp of fallback value to be prepared to identify every negative movement larger than max. rate
@@ -369,10 +364,10 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 ESP_LOGI(TAG, "After allowNegativeRates: actualValue %f", sequence->actualValue);
 #endif // DEBUG_DETAIL_ON
             }
-            else { // Fallback value is outdated or age indeterminable (could be the case after a reboot) -> force rates to zero
+            else { // Fallback value is outdated or age not determinable (could be the case after a reboot) -> force rates to zero
                 sequence->ratePerMin = 0;
                 sequence->ratePerInterval = 0;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Fallback value outdated or age indeterminable");
+                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Fallback value outdated or age not determinable");
             }
 
             /* Update fallback value + set status */
@@ -408,8 +403,8 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 
         /* Write log file entry */
         LogFile.writeToFile(ESP_LOG_INFO, TAG,
-                            sequence->sequenceName + ": Value: " + sequence->sActualValue + ", Rate per min: " + sequence->sRatePerMin +
-                                ", Status: " + sequence->sValueStatus);
+                            "Sequence: " + sequence->sequenceName + " | Value: " + sequence->sActualValue +
+                                " | Rate per min: " + sequence->sRatePerMin + " | Status: " + sequence->sValueStatus);
 
         writeDataLog(sequence->sequenceName);
     }
@@ -708,7 +703,7 @@ bool ClassFlowPostProcessing::setFallbackValue(double value, std::string sequenc
                 double ReturnRawValueAsDouble = strtod(sequence->sRawValue.c_str(), &p);
                 if (ReturnRawValueAsDouble == 0) {
                     LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                                        "setFallbackValue: RawValue not a valid value for further processing: " + sequence->sRawValue);
+                                        "setFallbackValue: Raw value not a valid value for further processing: " + sequence->sRawValue);
                     return false;
                 }
                 sequence->fallbackValue = ReturnRawValueAsDouble;
@@ -721,14 +716,14 @@ bool ClassFlowPostProcessing::setFallbackValue(double value, std::string sequenc
             updateFallbackValue = true;
             saveFallbackValue();
 
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, sequence->sequenceName + ": Set FallbackValue to: " + sequence->sFallbackValue);
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, sequence->sequenceName + ": Set fallback value to: " + sequence->sFallbackValue);
 
             return true;
         }
     }
 
-    LogFile.writeToFile(ESP_LOG_WARN, TAG, "setFallbackValue: Numbersname not found or not valid");
-    return false; // No new value was set (e.g. wrong numbersname, no numbers at all)
+    LogFile.writeToFile(ESP_LOG_WARN, TAG, "setFallbackValue: Failed to set fallback value | Error: No sequence found");
+    return false;
 }
 
 
@@ -743,7 +738,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
 
     err = nvs_open("fallbackvalue", NVS_READONLY, &fallbackvalue_nvshandle);
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_open | error: " + intToHexString(err));
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_open | Error: " + intToHexString(err));
         return false;
     }
     else if (err != ESP_OK && (err == ESP_ERR_NVS_NOT_FOUND || err == ESP_ERR_NVS_INVALID_HANDLE)) {
@@ -755,7 +750,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
     int16_t sequence_size = 0;
     err = nvs_get_i16(fallbackvalue_nvshandle, "sequence_size", &sequence_size);
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_i16 sequence_size - error: " + intToHexString(err));
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_i16 sequence_size | Error: " + intToHexString(err));
         nvs_close(fallbackvalue_nvshandle);
         return false;
     }
@@ -765,7 +760,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
         size_t required_size = 0;
         err = nvs_get_str(fallbackvalue_nvshandle, ("name" + std::to_string(i)).c_str(), NULL, &required_size);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str name size - error: " + intToHexString(err));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str name size | Error: " + intToHexString(err));
             nvs_close(fallbackvalue_nvshandle);
             return false;
         }
@@ -774,7 +769,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
         if (required_size > 0) {
             err = nvs_get_str(fallbackvalue_nvshandle, ("name" + std::to_string(i)).c_str(), cName, &required_size);
             if (err != ESP_OK) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str name - error: " + intToHexString(err));
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str name | Error: " + intToHexString(err));
                 nvs_close(fallbackvalue_nvshandle);
                 return false;
             }
@@ -784,7 +779,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
         required_size = 0;
         err = nvs_get_str(fallbackvalue_nvshandle, ("time" + std::to_string(i)).c_str(), NULL, &required_size);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str timestamp size - error: " + intToHexString(err));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str timestamp size | Error: " + intToHexString(err));
             nvs_close(fallbackvalue_nvshandle);
             return false;
         }
@@ -793,7 +788,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
         if (required_size > 0) {
             err = nvs_get_str(fallbackvalue_nvshandle, ("time" + std::to_string(i)).c_str(), cTime, &required_size);
             if (err != ESP_OK) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str timestamp - error: " + intToHexString(err));
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str timestamp | Error: " + intToHexString(err));
                 nvs_close(fallbackvalue_nvshandle);
                 return false;
             }
@@ -803,7 +798,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
         required_size = 0;
         err = nvs_get_str(fallbackvalue_nvshandle, ("value" + std::to_string(i)).c_str(), NULL, &required_size);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str fallbackvalue size - error: " + intToHexString(err));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str fallbackvalue size | Error: " + intToHexString(err));
             nvs_close(fallbackvalue_nvshandle);
             return false;
         }
@@ -812,7 +807,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
         if (required_size > 0) {
             err = nvs_get_str(fallbackvalue_nvshandle, ("value" + std::to_string(i)).c_str(), cValue, &required_size);
             if (err != ESP_OK) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str fallbackvalue - error: " + intToHexString(err));
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadFallbackValue: nvs_get_str fallbackvalue | Error: " + intToHexString(err));
                 nvs_close(fallbackvalue_nvshandle);
                 return false;
             }
@@ -854,7 +849,7 @@ bool ClassFlowPostProcessing::loadFallbackValue(void)
                     LogFile.writeToFile(ESP_LOG_INFO, TAG,
                                         sequence->sequenceName + ": Fallback value outdated | Timestamp: " + sequence->sTimeFallbackValue);
                 }
-                // Start time is older than fallback value timestamp -> age indeterminable
+                // Start time is older than fallback value timestamp -> age not determinable
                 else if (AgeInMinutes < 0) {
                     sequence->isFallbackValueValid = false;
                     sequence->fallbackValue = 0;
@@ -895,14 +890,14 @@ bool ClassFlowPostProcessing::saveFallbackValue()
 
     err = nvs_open("fallbackvalue", NVS_READWRITE, &fallbackvalue_nvshandle);
     if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: No valid NVS handle - error: " + intToHexString(err));
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: No valid NVS handle | Error: " + intToHexString(err));
         return false;
     }
 
     // Save number sequence size to ensure that only already saved data will be loaded
     err = nvs_set_i16(fallbackvalue_nvshandle, "sequence_size", (int16_t)sequenceData.size());
     if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_set_i16 sequence_size - error: " + intToHexString(err));
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_set_i16 sequence_size | Error: " + intToHexString(err));
         nvs_close(fallbackvalue_nvshandle);
         return false;
     }
@@ -920,20 +915,20 @@ bool ClassFlowPostProcessing::saveFallbackValue()
 
         err = nvs_set_str(fallbackvalue_nvshandle, ("name" + std::to_string(i)).c_str(), sequenceData[i]->sequenceName.c_str());
         if (err != ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_set_str name - error: " + intToHexString(err));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_set_str name | Error: " + intToHexString(err));
             nvs_close(fallbackvalue_nvshandle);
             return false;
         }
         err = nvs_set_str(fallbackvalue_nvshandle, ("time" + std::to_string(i)).c_str(), sequenceData[i]->sTimeFallbackValue.c_str());
         if (err != ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_set_str timestamp - error: " + intToHexString(err));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_set_str timestamp | Error: " + intToHexString(err));
             nvs_close(fallbackvalue_nvshandle);
             return false;
         }
         err = nvs_set_str(fallbackvalue_nvshandle, ("value" + std::to_string(i)).c_str(),
                           to_stringWithPrecision(sequenceData[i]->fallbackValue, sequenceData[i]->decimalPlaceCount).c_str());
         if (err != ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_set_str fallbackvalue - error: " + intToHexString(err));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_set_str fallbackvalue | Error: " + intToHexString(err));
             nvs_close(fallbackvalue_nvshandle);
             return false;
         }
@@ -943,7 +938,7 @@ bool ClassFlowPostProcessing::saveFallbackValue()
     nvs_close(fallbackvalue_nvshandle);
 
     if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_commit - error: " + intToHexString(err));
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveFallbackValue: nvs_commit | Error: " + intToHexString(err));
         return false;
     }
 
