@@ -1,5 +1,75 @@
 # Changelog
 
+## [17.4.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.3.0-SLFork...v17.4.0-SLFork) (2025-12-01)
+
+### 💿 Installation / Migration Notes
+
+#### A. Initial Installation
+--> Recommended: **Web Installer**
+ - Follow instructions listed on [Web Installer Page](https://slider0007.github.io/AI-on-the-edge-device/)
+ - Alternative method: [Manual Installation](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Installation/DeviceProvisioning/Manual.md)
+
+#### B. Update from previous releases (17.x)
+--> Recommended: **OTA Update**
+- Download board specific firmware package
+- Perform OTA update
+
+#### C. Migration from previous major release (16.x)
+--> Recommended: **OTA Update**
+- Download board specific firmware package from GitHub release page
+- Perform OTA update (ignore file name mismatch warning)
+- Verify migrated device configuration
+  - Check migrated configuration briefly (majority of the parameter are migrated)
+  - Reconfigure GPIO section (if it was configured before, no automatic migration)
+- Update reference image and alignment marker (Mandatory due to multiple new camera features and adaptions)
+- Lots of (breaking) changes are made to existing APIs. A manual reconfiguration is most likely required. Check API documentation
+  - [REST API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/_OVERVIEW.md), [REST API Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/REST/xxx_migration_notes.md)
+  - [MQTT API Overview](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/_OVERVIEW.md), [MQTT Migration Notes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/API/MQTT/xxx_migration_notes.md)
+- Check PR descriptions in `BREAKING CHANGES` section of release v17.0.0-SLFork and/or [documentation](https://github.com/Slider0007/AI-on-the-edge-device/tree/develop/docs) for further information
+
+
+### 💡 [Extended Hardware Support](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop?tab=readme-ov-file#supported-hardware)
+
+- Board: ESP32-S3-CAM
+- Camera: OV3660
+
+
+### Features
+
+* **hardware:** Support board ESP32-S3-CAM ([#316](https://github.com/Slider0007/AI-on-the-edge-device/issues/316)) ([823d2e2](https://github.com/Slider0007/AI-on-the-edge-device/commit/823d2e240ddac1e6297a6b5ca5b9f02735bc4c62))
+* **hardware:** Support camera model OV3660 ([#313](https://github.com/Slider0007/AI-on-the-edge-device/issues/313)) ([ce6ab9e](https://github.com/Slider0007/AI-on-the-edge-device/commit/ce6ab9ef1278c208ac7b485c7d0d9a24639cb413))
+* **mqtt:** Implement MQTT reboot command (incl. Home Assistant discovery) ([#306](https://github.com/Slider0007/AI-on-the-edge-device/issues/306)) ([13eabe4](https://github.com/Slider0007/AI-on-the-edge-device/commit/13eabe4e540a462c340ce0e1561104267c74ea6e))
+
+
+### Bug Fixes
+
+* **camera:** Add more boundary checks for image size parameters ([#313](https://github.com/Slider0007/AI-on-the-edge-device/issues/313)) ([ce6ab9e](https://github.com/Slider0007/AI-on-the-edge-device/commit/ce6ab9ef1278c208ac7b485c7d0d9a24639cb413))
+* **camera:** Correct offset usage for OV5640 camera ([#313](https://github.com/Slider0007/AI-on-the-edge-device/issues/313)) ([ce6ab9e](https://github.com/Slider0007/AI-on-the-edge-device/commit/ce6ab9ef1278c208ac7b485c7d0d9a24639cb413))
+* **camera:** Disable unsupported camera models to save resources ([#301](https://github.com/Slider0007/AI-on-the-edge-device/issues/301)) ([7850cea](https://github.com/Slider0007/AI-on-the-edge-device/commit/7850ceae117bced6ec4c04ad6373753e6bb0c9fb))
+* **flowctrl:** Preserve process error value during cycle reinit ([#318](https://github.com/Slider0007/AI-on-the-edge-device/issues/318)) ([474f57a](https://github.com/Slider0007/AI-on-the-edge-device/commit/474f57abd349c99c6652854ccdb5f3ff68860208))
+* **influxdbv2:** Fix typo in config validation handling ([#325](https://github.com/Slider0007/AI-on-the-edge-device/issues/325)) ([09fbe9c](https://github.com/Slider0007/AI-on-the-edge-device/commit/09fbe9ce479b53a1e77853250443e5a8d633a321))
+* **mqtt:** Use fixed keepalive interval + improve device availability detection ([#307](https://github.com/Slider0007/AI-on-the-edge-device/issues/307)) ([7945ea1](https://github.com/Slider0007/AI-on-the-edge-device/commit/7945ea1905155fcf0f8a963e7c529d66e327397a))
+* **post-processing:** Fix extended resolution (using digits only + decimal shift) ([#327](https://github.com/Slider0007/AI-on-the-edge-device/issues/327)) ([f14c548](https://github.com/Slider0007/AI-on-the-edge-device/commit/f14c548da7b0e447c25f963a8619af2bb43a35a9))
+
+
+### Refactoring / Style Changes
+
+* **alignment:** Improve logging for alignment failure with detailed guidance ([#320](https://github.com/Slider0007/AI-on-the-edge-device/issues/320)) ([51de21d](https://github.com/Slider0007/AI-on-the-edge-device/commit/51de21da29e932ec61601ffe62f6fe9d447b9872))
+* **system:** Log brownout reset as warning to highlight power-supply instability ([#322](https://github.com/Slider0007/AI-on-the-edge-device/issues/322)) ([01c9cb7](https://github.com/Slider0007/AI-on-the-edge-device/commit/01c9cb71653ebc6847f81ea6119090ae548eeeb6))
+
+
+### Other Changes
+
+* **deps:** Bump actions/download-artifact from 5 to 6 ([#315](https://github.com/Slider0007/AI-on-the-edge-device/issues/315)) ([5df561b](https://github.com/Slider0007/AI-on-the-edge-device/commit/5df561b29970a30943729958bc5202900be556e6))
+* **deps:** Bump actions/upload-artifact from 4 to 5 ([#314](https://github.com/Slider0007/AI-on-the-edge-device/issues/314)) ([afa7308](https://github.com/Slider0007/AI-on-the-edge-device/commit/afa73087aa2de91e166b875d28a4c05479e84a85))
+* **model:** Update dig-class100 tflite model to v1.82 ([#319](https://github.com/Slider0007/AI-on-the-edge-device/issues/319)) ([96a58cf](https://github.com/Slider0007/AI-on-the-edge-device/commit/96a58cf3d1dc6da9d5ed4ab2d8a912ad233d64f3))
+
+
+### 👏 New Contributors
+* @Templeaxebyte made their first contribution in https://github.com/Slider0007/AI-on-the-edge-device/pull/325
+* @chrisrowley14 made their first contribution in https://github.com/Slider0007/AI-on-the-edge-device/pull/306
+
+
 ## [17.3.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.2.0-SLFork...v17.3.0-SLFork) (2025-10-01)
 
 ### 💡 Installation / Migration Notes
