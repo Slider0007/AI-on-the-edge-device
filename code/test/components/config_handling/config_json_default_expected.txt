@@ -2,7 +2,7 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
 
 {
   "config": {
-    "version": 5,
+    "version": 6,
     "lastmodified": ""
   },
   "operationmode": {
@@ -73,7 +73,7 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
   "digit": {
     "enabled": true,
     "model": "dig-class100_0182_s2_q.tflite",
-    "cnngoodthreshold": "0.50",
+    "cnngoodthreshold": "0.80",
     "sequence": [
       {
         "sequenceid": 0,
@@ -361,9 +361,9 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
       "timezone": "CET-1CEST,M3.5.0,M10.5.0/3",
       "ntp": {
         "timesyncenabled": true,
-        "timeserver": "",
-        "processstartinterlock": true
-      }
+        "timeserver": ""
+      },
+      "processstartinterlock": true
     }
   },
   "system": {
