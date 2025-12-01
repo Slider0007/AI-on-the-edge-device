@@ -179,7 +179,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
 #endif // DEBUG_DETAIL_ON
 
         /* Remove leading N */
-        if (flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
+        if (!sequence->digitRoi.empty() && flowDigit != NULL && flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
             if (sequence->paramPostProc->ignoreLeadingNaN) {
                 while ((sRawValue.length() > 1) && (sRawValue[0] == 'N')) {
                     sRawValue.erase(0, 1);
@@ -267,7 +267,7 @@ bool ClassFlowPostProcessing::doFlow(std::string zwtime)
                 sequence->sFallbackValue = to_stringWithPrecision(sequence->fallbackValue, sequence->decimalPlaceCount);
 
                 /* Check digit plausibility (only supported when using class-11 model (0-9 + NaN)) */
-                if (flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
+                if (!sequence->digitRoi.empty() && flowDigit != NULL && flowDigit->getCNNType() == CNNTYPE_DIGIT_CLASS11) {
                     if (sequence->paramPostProc->checkDigitIncreaseConsistency) {
                         LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                                             "Sequence: " + sequence->sequenceName + " | Checking for digit increase consistency");
