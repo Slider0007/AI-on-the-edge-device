@@ -124,7 +124,7 @@ void test_CImage_copy_assignment_operator(void)
     CImage anotherImage;
     anotherImage = *testImage;
 
-    std::string newName = testImage->getName() + "-copy-assign";
+    std::string newName = testImage->getName() + "-copy";
 
     TEST_ASSERT_EQUAL_STRING(newName.c_str(), anotherImage.getName().c_str());
     TEST_ASSERT_EQUAL(testImage->getWidth(), anotherImage.getWidth());

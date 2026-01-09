@@ -5,7 +5,7 @@
 #include <esp_log.h>
 
 
-static const char *UNITY_TAG_PPHELPER = "UNITYTEST_POSTPROCHELPER";
+// static const char *UNITY_TAG_PPHELPER = "UNITYTEST_POSTPROCHELPER"; // Unused
 
 
 UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType)
