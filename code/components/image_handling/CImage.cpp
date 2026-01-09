@@ -28,7 +28,7 @@ CImage::CImage()
 CImage::CImage(std::string objName, int width, int height, int channels, bool stbLibMemoryMod, const uint8_t *data)
     : name(objName), width(width), height(height), channels(channels), imgDataSize(0), allocatedSize(0), externalMemory(false)
 {
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImage: Failed to create semaphore");
         return;
@@ -64,7 +64,7 @@ CImage::CImage(std::string objName, int width, int height, int channels, bool st
 CImage::CImage(std::string objName, const std::string &filename, bool customStbLibMemAllocation, bool grayscale)
     : name(objName), width(0), height(0), channels(0), imgDataSize(0), allocatedSize(0), externalMemory(customStbLibMemAllocation)
 {
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImage: Failed to create semaphore");
         return;
@@ -90,8 +90,8 @@ CImage::CImage(std::string objName, const std::string &filename, bool customStbL
 
 
 CImage::CImage(const CImage &other)
-    : imageMutex(xSemaphoreCreateMutex()), name(other.name + "-copy"), width(other.width), height(other.height), channels(other.channels),
-      imgDataSize(other.imgDataSize), imgData(nullptr), allocatedSize(other.imgDataSize), externalMemory(false)
+    : imageMutex(xSemaphoreCreateRecursiveMutex()), name(other.name + "-copy"), width(other.width), height(other.height),
+      channels(other.channels), imgDataSize(other.imgDataSize), imgData(nullptr), allocatedSize(other.imgDataSize), externalMemory(false)
 {
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to create semaphore");
@@ -178,7 +178,7 @@ CImage &CImage::operator=(const CImage &other)
 }
 
 
-CImage::CImage(CImage &&other) noexcept : imageMutex(xSemaphoreCreateMutex())
+CImage::CImage(CImage &&other) noexcept : imageMutex(xSemaphoreCreateRecursiveMutex())
 {
     CImageLockGuard otherLock(other);
     if (!otherLock.isLocked()) {
@@ -196,6 +196,9 @@ CImage::CImage(CImage &&other) noexcept : imageMutex(xSemaphoreCreateMutex())
     externalMemory = other.externalMemory;
 
     other.imgData = nullptr;
+    other.width = 0;
+    other.height = 0;
+    other.channels = 0;
     other.imgDataSize = 0;
     other.allocatedSize = 0;
     other.externalMemory = false;
@@ -227,6 +230,9 @@ CImage &CImage::operator=(CImage &&other) noexcept
     externalMemory = other.externalMemory;
 
     other.imgData = nullptr;
+    other.width = 0;
+    other.height = 0;
+    other.channels = 0;
     other.imgDataSize = 0;
     other.allocatedSize = 0;
     other.externalMemory = false;

@@ -22,7 +22,7 @@ CImageJpg::CImageJpg() : name("default"), imgDataSize(0), imgData(nullptr)
 
 CImageJpg::CImageJpg(std::string objName, int size, const uint8_t *data) : name(objName), imgDataSize(size)
 {
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImageJpg: Failed to create semaphore");
         return;
@@ -47,7 +47,7 @@ CImageJpg::CImageJpg(std::string objName, int size, const uint8_t *data) : name(
 
 CImageJpg::CImageJpg(std::string objName, const std::string &filename) : name(std::move(objName)), imgDataSize(0), imgData(nullptr)
 {
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImageJpg: Failed to create semaphore");
         return;
@@ -88,7 +88,7 @@ CImageJpg::CImageJpg(std::string objName, const std::string &filename) : name(st
 
 CImageJpg::CImageJpg(const CImageJpg &other) : name(other.name + "-copy"), imgDataSize(other.imgDataSize)
 {
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to create semaphore");
         return;
@@ -138,7 +138,7 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
     if (imageMutex) {
         vSemaphoreDelete(imageMutex);
     }
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to create semaphore");
         return *this;
