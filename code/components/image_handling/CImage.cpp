@@ -150,7 +150,6 @@ CImage &CImage::operator=(const CImage &other)
 
     // Allocate only if current buffer is too small
     if (allocatedSize < imgDataSize) {
-
         freeImageData();
 
         allocatedSize = imgDataSize;
