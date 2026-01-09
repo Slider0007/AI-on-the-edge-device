@@ -1,7 +1,5 @@
 #include "CImageJpg.h"
 
-#include <fstream>
-
 #include "esp_system.h"
 
 #include "helper.h"
@@ -14,7 +12,7 @@ static const char *TAG = "IMG_JPG";
 
 CImageJpg::CImageJpg() : name("default"), imgDataSize(0), imgData(nullptr)
 {
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImageJpg: Failed to create semaphore");
         return;
@@ -394,7 +392,7 @@ esp_err_t CImageJpg::sendJpgToHttp(httpd_req_t *req)
 
         // Send a chunk of the image data
         if (httpd_resp_send_chunk(req, (const char *)(imgData + bytesSent), currentChunkSize) != ESP_OK) {
-            return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send image");
+            return ESP_FAIL;
         }
 
         bytesSent += currentChunkSize;
@@ -402,7 +400,7 @@ esp_err_t CImageJpg::sendJpgToHttp(httpd_req_t *req)
 
     // End the response
     if (httpd_resp_send_chunk(req, NULL, 0) != ESP_OK) {
-        return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send image");
+        return ESP_FAIL;
     }
 
     return ESP_OK;
@@ -439,59 +437,16 @@ const uint8_t *CImageJpg::getImgData() const
 
 bool CImageJpg::lock() const
 {
-    TaskHandle_t currentTask = xTaskGetCurrentTaskHandle();
-
-    if (lockingTask == currentTask) {
-        lockCount++;
-#ifdef DEBUG_DETAIL_ON
-        ESP_LOGI(TAG, "Recursive lock acquired by task %p, count: %d", currentTask, lockCount);
-#endif // DEBUG_DETAIL_ON
+    if (imageMutex && xSemaphoreTakeRecursive(imageMutex, pdMS_TO_TICKS(30000)) == pdTRUE) {
         return true;
     }
-
-#ifdef DEBUG_DETAIL_ON
-    ESP_LOGI(TAG, "Task %p attempting to lock image...", currentTask);
-#endif // DEBUG_DETAIL_ON
-
-    if (imageMutex && xSemaphoreTake(imageMutex, pdMS_TO_TICKS(10000))) {
-        lockingTask = currentTask;
-        lockCount = 1;
-#ifdef DEBUG_DETAIL_ON
-        ESP_LOGI(TAG, "Task %p successfully locked image", currentTask);
-#endif // DEBUG_DETAIL_ON
-        return true;
-    }
-
-    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "lock: Timeout - Failed to acquire mutex");
     return false;
 }
 
 void CImageJpg::unlock() const
 {
-    TaskHandle_t currentTask = xTaskGetCurrentTaskHandle();
-
-    if (lockingTask == currentTask) {
-        lockCount--;
-
-        if (lockCount == 0) {
-            lockingTask = NULL;
-            if (imageMutex) {
-                xSemaphoreGive(imageMutex);
-            }
-#ifdef DEBUG_DETAIL_ON
-            ESP_LOGI(TAG, "Task %p unlocked image", currentTask);
-#endif // DEBUG_DETAIL_ON
-        }
-        else {
-#ifdef DEBUG_DETAIL_ON
-            ESP_LOGI(TAG, "Task %p decreased lock count to %d", currentTask, lockCount);
-#endif // DEBUG_DETAIL_ON
-        }
-    }
-    else {
-#ifdef DEBUG_DETAIL_ON
-        ESP_LOGE(TAG, "Task %p tried to unlock an image it does not own", currentTask);
-#endif // DEBUG_DETAIL_ON
+    if (imageMutex) {
+        xSemaphoreGiveRecursive(imageMutex);
     }
 }
 

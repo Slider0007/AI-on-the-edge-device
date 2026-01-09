@@ -18,7 +18,6 @@ class CImageLockGuard
     void *imgPtr;
     bool isJpg;
     bool locked;
-    bool alreadyLocked;
 
   public:
     /**
