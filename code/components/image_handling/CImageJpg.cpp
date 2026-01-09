@@ -135,16 +135,7 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
         return *this;
     }
 
-    if (imageMutex) {
-        vSemaphoreDelete(imageMutex);
-    }
-    imageMutex = xSemaphoreCreateRecursiveMutex();
-    if (!imageMutex) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to create semaphore");
-        return *this;
-    }
-
-    name = other.name + "-copy-assign";
+    name = other.name + "-copy";
     imgDataSize = other.imgDataSize;
 
     freeImageData();
