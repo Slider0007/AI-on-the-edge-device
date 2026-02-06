@@ -25,11 +25,9 @@ class UnderTestPost : public ClassFlowPostProcessing
 /**
  * @brief Set the Up Class Flow Postprocessing object
  *
- * @param digType Model type for digits
- * @param anaType Model type for analogs
  * @return UnderTestPost* Testobject (created but not configured)
  */
-UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType);
+UnderTestPost *setUpClassFlowPostprocessing();
 
 
 /**
@@ -37,14 +35,13 @@ UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType);
  *
  * @param digits Digit results
  * @param analog Analog results
- * @param digType Digit model type (default CNNTYPE_DIGIT_CLASS100)
  * @param extendedResolution Sets ExtendedResolution (default = false)
- * @param decimalShift Set decimalShift (default = 0)
- * @param checkConsistency Sets CheckConsistency check (default = false) (Only for class11 models)
+ * @param decimalScaling Set decimalScaling (default = 0)
  * @return UnderTestPost* Testobject
  */
-UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType = CNNTYPE_DIGIT_CLASS100,
-                          bool extendedResolution = false, int decimalShift = 0, bool checkConsistency = false);
+UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs, bool extendedResolution = false, int decimalScaling = 0,
+                          WheelType wheelType = WheelType::AllWheelsIntermittent, float dialToWheelDetuneValue = 0.0,
+                          float wheelTransitionWidth = 0.15);
 
 
 /**
@@ -52,14 +49,13 @@ UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs,
  *
  * @param digits Digits results
  * @param analog Analog results
- * @param digType Digit model type (default = CNNTYPE_DIGIT_CLASS100)
  * @param extendedResolution sets property extendedResolution (default = false)
- * @param decimalShift set property decimalShift ( default = 0)
- * @param checkConsistency Sets CheckConsistency check (default = false) (Only for class11 models)
+ * @param decimalScaling set property decimalScaling ( default = 0)
  * @return Actual Value
  */
-std::string processDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType = CNNTYPE_DIGIT_CLASS100,
-                          bool extendedResolution = false, int decimalShift = 0, bool checkConsistency = false);
+std::string processDoFlow(std::vector<float> digits, std::vector<float> analogs, bool extendedResolution = false, int decimalScaling = 0,
+                          WheelType wheelType = WheelType::AllWheelsIntermittent, float dialToWheelDetuneValue = 0.0,
+                          float wheelTransitionWidth = 0.15);
 
 
 /**
@@ -80,19 +76,11 @@ void setAllowNegative(bool _allowNegative);
 
 
 /**
- * @brief Set Digit Increase Consistency Check
- *
- * @param _checkDigitIncreaseConsistency true/false
- */
-void setDigitIncreaseConsistencyCheck(bool _checkDigitIncreaseConsistency);
-
-
-/**
  * @brief Set Decimal Shift
  *
- * @param _decimalShift decimal shift (default = 0)
+ * @param _decimalScaling decimal shift (default = 0)
  */
-void setDecimalShift(int _decimalShift);
+void setDecimalScaling(int _decimalScaling);
 
 
 /**
@@ -104,11 +92,35 @@ void setExtendedResolution(bool _extendedResolution);
 
 
 /**
- * @brief Set the Analog Digit Sync Value
+ * @brief Set model influence factor
  *
- * @param _analogdigitSyncValue Analog Digit Sync value (default = 9.2)
+ * @param _modelInfluenceFactor Model influence factor
  */
-void setAnalogDigitSyncValue(float _analogdigitSyncValue);
+void setModelInfluence(float _modelInfluence);
+
+
+/**
+ * @brief Set the dial to wheel detune
+ *
+ * @param _dialToWheelDetune Dial-To-Wheel-Detune (default = 0.0)
+ */
+void setDialToWheelDetune(float _dialToWheelDetune);
+
+
+/**
+ * @brief Set wheel type
+ *
+ * @param _wheelType Wheel type
+ */
+void setWheelType(WheelType _wheelType);
+
+
+/**
+ * @brief Set wheel transition width
+ *
+ * @param _factor Wheel transition width
+ */
+void setWheelTransitionWidth(float _wheelTransitionWidth);
 
 
 /**

@@ -59,14 +59,11 @@ void ClassLogImage::logImage(std::string logPath, std::string name, CNNType cnnT
     }
 
     char valueBuf[10];
-    if (cnnType == CNNTYPE_NONE) { // log with no label -> raw image
+    if (cnnType == CNNTYPE_NONE) { // No label -> raw image
         valueBuf[0] = '\0';
     }
-    else if (cnnType == CNNTYPE_DIGIT_CLASS11) { // dig-class10 (0-9 + NaN)
-        sprintf(valueBuf, "%d_", value);
-    }
-    else { // ana-class100, dig-class100, dig-cont
-        sprintf(valueBuf, "%.1f_", value / 10.0);
+    else {
+        sprintf(valueBuf, "%.1f_", value / 10.0f);
     }
 
     std::string imagePath = logPath + "/" + valueBuf + name + "_" + timestamp + ".jpg";

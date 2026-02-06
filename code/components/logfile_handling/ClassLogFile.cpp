@@ -52,9 +52,7 @@ void ClassLogFile::writeHeapInfo(std::string _id)
 }
 
 
-void ClassLogFile::writeToData(std::string _timestamp, std::string _name, std::string _sRawValue, std::string _sValue,
-                               std::string _sFallbackValue, std::string _sRatePerMin, std::string _sRatePerInterval,
-                               std::string _sValueStatus, std::string _digit, std::string _analog)
+void ClassLogFile::writeToData(const SequenceData &sequence, const MeterModel::Result &modelResult)
 {
     time_t rawtime;
     time(&rawtime);
@@ -70,24 +68,29 @@ void ClassLogFile::writeToData(std::string _timestamp, std::string _name, std::s
     // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
     setvbuf(pFile, NULL, _IOFBF, 512);
 
-    fputs(_timestamp.c_str(), pFile);
-    fputs(",", pFile);
-    fputs(_name.c_str(), pFile);
-    fputs(",", pFile);
-    fputs(_sRawValue.c_str(), pFile);
-    fputs(",", pFile);
-    fputs(_sValue.c_str(), pFile);
-    fputs(",", pFile);
-    fputs(_sFallbackValue.c_str(), pFile);
-    fputs(",", pFile);
-    fputs(_sRatePerMin.c_str(), pFile);
-    fputs(",", pFile);
-    fputs(_sRatePerInterval.c_str(), pFile);
-    fputs(",", pFile);
-    fputs(_sValueStatus.c_str(), pFile);
-    fputs(_digit.c_str(), pFile);
-    fputs(_analog.c_str(), pFile);
-    fputs("\n", pFile);
+    // Prepare strings
+    std::string cnnResult, cnnResultConfidence;
+    std::string predValue, distance, logScore;
+    for (const auto &roi : sequence.digitRoi) {
+        cnnResult += "," + roi->sCNNResult;
+        cnnResultConfidence += "," + to_stringWithPrecision(roi->CNNResultConfidence, 2);
+    }
+    for (const auto &roi : sequence.analogRoi) {
+        cnnResult += "," + roi->sCNNResult;
+        cnnResultConfidence += "," + to_stringWithPrecision(roi->CNNResultConfidence, 2);
+    }
+
+    for (int i = 0; i < modelResult.digitDistances.size(); ++i) {
+        predValue += "," + to_stringWithPrecision(modelResult.predictedValues[i], 2);
+        distance += "," + to_stringWithPrecision(modelResult.digitDistances[i], 2);
+        logScore += "," + to_stringWithPrecision(modelResult.digitLogScores[i], 2);
+    }
+
+    // Print to stream
+    fprintf(pFile, "%s,%s,%s,%s,%s,%s,%s,%.3s,%s%s%s%s%s%s\n", sequence.sTimeProcessed.c_str(), sequence.sequenceName.c_str(),
+            sequence.sRawValue.c_str(), sequence.sActualValue.c_str(), sequence.sFallbackValue.c_str(), sequence.sRatePerMin.c_str(),
+            sequence.sRatePerInterval.c_str(), sequence.sValueStatus.c_str(), std::to_string(sequence.sequenceLength).c_str(),
+            cnnResult.c_str(), cnnResultConfidence.c_str(), predValue.c_str(), distance.c_str(), logScore.c_str());
 
     fclose(pFile);
 }

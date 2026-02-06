@@ -85,10 +85,6 @@ bool ClassFlowInfluxDBv2::doFlow(std::string zwtime)
     presetFlowStateHandler(false, zwtime);
 
     for (const auto &sequence : sequenceData) {
-        if (!sequence->isActualValueANumber) {
-            continue;
-        }
-
         if (ESP_OK != influxDBv2Publish(sequence->paramInfluxDBv2->measurementName, sequence->paramInfluxDBv2->fieldKey1,
                                         sequence->sActualValue, sequence->sTimeProcessed)) {
             setFlowStateHandlerEvent(1); // Set warning event code, continue process flow

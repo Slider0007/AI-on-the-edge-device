@@ -369,9 +369,6 @@ void migrateConfigIni(void)
                     if ((toUpper(splitted[0]) == "MODEL") && (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionDigit.model = splitted[1].substr(8, std::string::npos);
                     }
-                    else if ((toUpper(splitted[0]) == "CNNGOODTHRESHOLD") && (splitted.size() > 1)) {
-                        ConfigClass::getInstance()->cfgTmp()->sectionDigit.cnnGoodThreshold = std::stof(splitted[1]);
-                    }
                     else if ((toUpper(splitted[0]) == "ROIIMAGESLOCATION" || (toUpper(splitted[0]) == ";ROIIMAGESLOCATION")) &&
                              (splitted.size() > 1)) {
                         ConfigClass::getInstance()->cfgTmp()->sectionDigit.debug.roiImagesLocation = splitted[1];
@@ -490,11 +487,6 @@ void migrateConfigIni(void)
                             seqEl.fallbackValueAgeStartup = std::stoi(splitted[1]);
                         }
                     }
-                    else if (toUpper(splitted[0]) == "CHECKDIGITINCREASECONSISTENCY" && (splitted.size() > 1)) {
-                        for (auto &seqEl : ConfigClass::getInstance()->cfgTmp()->sectionPostProcessing.sequence) {
-                            seqEl.checkDigitIncreaseConsistency = (toUpper(splitted[1]) == "TRUE");
-                        }
-                    }
                     // Parameter per sequence
                     else if (splitted[0].find_first_of(".") != std::string::npos) {
                         std::string parameter = toUpper(splitted[0].substr(splitted[0].find_first_of(".") + 1));
@@ -505,10 +497,10 @@ void migrateConfigIni(void)
                                     seqEl.allowNegativeRate = (toUpper(splitted[1]) == "TRUE");
                                 }
                                 else if (parameter == "DECIMALSHIFT" && (splitted.size() > 1)) {
-                                    seqEl.decimalShift = std::stoi(splitted[1]);
+                                    seqEl.decimalScaling = std::stoi(splitted[1]);
                                 }
                                 else if (parameter == "ANALOGDIGITALTRANSITIONSTART" && (splitted.size() > 1)) {
-                                    seqEl.analogDigitSyncValue = std::stof(splitted[1]);
+                                    seqEl.dialToWheelDetune = std::stof(splitted[1]);
                                 }
                                 else if (parameter == "MAXRATETYPE" && (splitted.size() > 1)) {
                                     if (toUpper(splitted[1]) == "RATEPERMIN") {
@@ -529,9 +521,6 @@ void migrateConfigIni(void)
                                 }
                                 else if (parameter == "EXTENDEDRESOLUTION" && (splitted.size() > 1)) {
                                     seqEl.extendedResolution = (toUpper(splitted[1]) == "TRUE");
-                                }
-                                else if (parameter == "IGNORELEADINGNAN" && (splitted.size() > 1)) {
-                                    seqEl.ignoreLeadingNaN = (toUpper(splitted[1]) == "TRUE");
                                 }
                                 break;
                             }
@@ -1007,11 +996,6 @@ void migrateConfigIni(void)
                     migrated = migrated | replaceString(configLines[i], ";PreValueAgeStartup", "PreValueAgeStartup"); // Enable it
                     migrated = migrated | replaceString(configLines[i], "PreValueAgeStartup", "FallbackValueAgeStartup");
 
-                    migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency = true",
-                                                        ";CheckDigitIncreaseConsistency = false"); // Set it to its default value
-                    migrated = migrated | replaceString(configLines[i], ";CheckDigitIncreaseConsistency",
-                                                        "CheckDigitIncreaseConsistency"); // Enable it
-
                     if (isInString(configLines[i], "DecimalShift") &&
                         isInString(configLines[i], ";")) { // It is the parameter "DecimalShift" and it is commented out
                         migrated = migrated | replaceString(configLines[i], ";", ""); // Enable it
@@ -1056,13 +1040,6 @@ void migrateConfigIni(void)
                     /* ExtendedResolution has a <NUMBER> as prefix! */
                     if (isInString(configLines[i], "ExtendedResolution") &&
                         isInString(configLines[i], ";")) { // It is the parameter "ExtendedResolution" and it is commented out
-                        migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
-                        migrated = migrated | replaceString(configLines[i], ";", "");         // Enable it
-                    }
-
-                    /* IgnoreLeadingNaN has a <NUMBER> as prefix! */
-                    if (isInString(configLines[i], "IgnoreLeadingNaN") &&
-                        isInString(configLines[i], ";")) { // It is the parameter "IgnoreLeadingNaN" and it is commented out
                         migrated = migrated | replaceString(configLines[i], "true", "false"); // Set it to its default value
                         migrated = migrated | replaceString(configLines[i], ";", "");         // Enable it
                     }

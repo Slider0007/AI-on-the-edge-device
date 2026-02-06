@@ -670,3 +670,12 @@ std::string urlDecode(const std::string &value)
 
     return result;
 }
+
+
+// Value manipulation helper
+// **********************************************************
+int circularDistance(int a, int b, int n)
+{
+    int d = abs(a - b);
+    return (d > n / 2) ? (n - d) : d;
+}

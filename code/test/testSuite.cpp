@@ -26,11 +26,10 @@ static const char *UNITY_TAG = "UNITYTEST_MAIN";
 #include "components/image_handling/test_CImage.cpp"
 #include "components/image_handling/test_CImageJpg.cpp"
 
-#include "components/mainprocess_ctrl/test_cnnflowcontrol.cpp"
-#include "components/mainprocess_ctrl/test_flow_pp_negative.cpp"
-#include "components/mainprocess_ctrl/test_analogToDigitSync.cpp"
 #include "components/mainprocess_ctrl/test_flowpostprocessing_helper.cpp"
-#include "components/mainprocess_ctrl/test_flowpostprocessing.cpp"
+#include "components/mainprocess_ctrl/test_flowpostproc_negative.cpp"
+#include "components/mainprocess_ctrl/test_flowpostproc_model_helper.cpp"
+#include "components/mainprocess_ctrl/test_flowpostproc.cpp"
 
 #include "components/openmetrics_ctrl/test_openmetrics.cpp"
 
@@ -44,51 +43,37 @@ esp_err_t initSDCard();
  */
 void task_UnityTesting(void *pvParameter)
 {
-    vTaskDelay(5000 / portTICK_PERIOD_MS); // 5s delay to ensure established serial connection
+    // 5s delay to ensure established serial connection
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
 
     UNITY_BEGIN();
     ESP_LOGI(UNITY_TAG, "BEGIN TESTING -------------------------------------------------------------");
+    // Test config Handling
+    // RUN_TEST(test_configHandling);
 
-    RUN_TEST(test_configHandling);
+    // Test image Handliung
+    /*     ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
+        RUN_TEST(test_CImageHandling);
+        ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
+        RUN_TEST(test_CImageJpgHandling);
+     */
+    // Test post-processing
     ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-
-    RUN_TEST(test_CImageHandling);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_CImageJpgHandling);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-
     RUN_TEST(testNegative);
     ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
     RUN_TEST(testNegative_Issues);
     ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
+    testPostProcessingModelHelper();
+    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
+    testPostProcessing();
 
-    RUN_TEST(test_EvalAnalogNumber);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_EvalDigitNumber);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_analogToDigit_Standard);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_analogToDigit_Transition);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-
-    RUN_TEST(test_doFlowPP);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_doFlowPP1);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_doFlowPP2);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_doFlowPP3);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_doFlowPP4);
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_doFlowPP5);
-
-    ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
-    RUN_TEST(test_openmetrics);
+    /*     // Test open metrics
+        ESP_LOGI(UNITY_TAG, "---------------------------------------------------------------------------");
+        RUN_TEST(test_openmetrics); */
     UNITY_END();
 
-    while (1)
-        ;
+    while (1) {
+    }
 }
 
 

@@ -25,7 +25,6 @@ ClassFlowCNNGeneral::ClassFlowCNNGeneral(std::string _cnnName, CNNType _cnnType)
     modelWidth = 32;
     modelHeight = 32;
     modelChannel = STBI_rgb;
-    cnnGoodThreshold = 0.50;
     saveAllFiles = false;
     presetFlowStateHandler(true);
 }
@@ -65,7 +64,6 @@ bool ClassFlowCNNGeneral::loadParameter()
     sectionAnalogPtr = !isDigit ? &ConfigClass::getInstance()->get()->sectionAnalog : nullptr;
 
     cnnModelFile = "/sdcard/config/models/" + (isDigit ? sectionDigitPtr->model : sectionAnalogPtr->model);
-    cnnGoodThreshold = isDigit ? sectionDigitPtr->cnnGoodThreshold : 0.0;
 
     saveImagesEnabled = isDigit ? sectionDigitPtr->debug.saveRoiImages : sectionAnalogPtr->debug.saveRoiImages;
     imagesLocation = "/sdcard" + (isDigit ? sectionDigitPtr->debug.roiImagesLocation : sectionAnalogPtr->debug.roiImagesLocation);
@@ -101,6 +99,10 @@ bool ClassFlowCNNGeneral::loadParameter()
     }
 
     for (const auto &sequence : sequenceData) {
+        // Save sequence length
+        sequence->sequenceLength = sequence->digitRoi.size() + sequence->analogRoi.size();
+
+        // Allocate ROI images
         const auto &roiList = sectionDigitPtr ? sequence->digitRoi : sequence->analogRoi;
 
         for (const auto &roi : roiList) {
@@ -177,49 +179,90 @@ bool ClassFlowCNNGeneral::resolveNetworkParameter()
         return false;
     }
 
+    if (!tflite->parseInputDimension()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Failed to parse input dimensions from model");
+        return false;
+    }
+
+    modelWidth = tflite->getInputDimension(0);
+    modelHeight = tflite->getInputDimension(1);
+    modelChannel = tflite->getInputDimension(2);
+
+    int outputDims = tflite->getOutputDimension();
+    if (outputDims == -1) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Failed to load output dimensions");
+        return false;
+    }
+
+    // Auto-detect model type
     if (cnnType == CNNTYPE_AUTODETECT) {
-        if (!tflite->parseInputDimension()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Failed to parse input dimensions from model");
-            return false;
-        }
-
-        modelWidth = tflite->getInputDimension(0);
-        modelHeight = tflite->getInputDimension(1);
-        modelChannel = tflite->getInputDimension(2);
-
-        int outputDims = tflite->getOutputDimension();
-        if (outputDims == -1) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TFLite: Failed to load output dimensions");
-            return false;
-        }
-
         switch (outputDims) {
-            case 2:
-                cnnType = CNNTYPE_ANALOG_CONT;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Analog (ana-cont)");
-                break;
-
-            case 10:
-                cnnType = CNNTYPE_DIGIT_DOUBLE_HYBRID10;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Digit (dig-cont)");
+            case 100:
+                if (cnnModelFile.contains("dig-class100")) {
+                    cnnType = CNNTYPE_DIGIT_CLASS100;
+                }
+                else if (cnnModelFile.contains("ana-class100")) {
+                    cnnType = CNNTYPE_ANALOG_CLASS100;
+                }
+                else {
+                    cnnType = CNNTYPE_DIGIT_CLASS100;
+                    LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                                        "Model not officially supported. Fallback to 100 class raw logits output processing");
+                }
                 break;
 
             case 11:
-                cnnType = CNNTYPE_DIGIT_CLASS11;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Type: Digit (dig-class11)");
+                cnnType = CNNTYPE_NONE;
+                LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                                    "Model type \'dig-class11\' is not supported anymore. Please select another model type");
+                return false;
+
+            case 10:
+                if (cnnModelFile.contains("dig-cont")) {
+                    cnnType = CNNTYPE_DIGIT_DOUBLE_HYBRID10;
+                }
+                else {
+                    cnnType = CNNTYPE_DIGIT_DOUBLE_HYBRID10;
+                    LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                                        "Model not officially supported. Fallback to 10 class raw logits output processing");
+                }
                 break;
 
-            case 100:
-                cnnType = (modelWidth == 32 && modelHeight == 32) ? CNNTYPE_ANALOG_CLASS100 : CNNTYPE_DIGIT_CLASS100;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                    "Type: " + std::string((cnnType == CNNTYPE_ANALOG_CLASS100) ? "Analog (ana-class100)"
-                                                                                                : "Digit (dig-class100)"));
+            case 2:
+                if (cnnModelFile.contains("ana-cont")) {
+                    cnnType = CNNTYPE_ANALOG_CONT;
+                }
+                else {
+                    cnnType = CNNTYPE_NONE;
+                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Unknown model type (Output dimension: " + std::to_string(outputDims) + ")");
+                    return false;
+                }
                 break;
 
             default:
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Type does not fit the firmware (outputDims=" + std::to_string(outputDims) + ")");
+                cnnType = CNNTYPE_NONE;
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Unknown model type (Output dimension: " + std::to_string(outputDims) + ")");
                 return false;
         }
+    }
+
+    // Print CNN type
+    switch (cnnType) {
+        case CNNTYPE_DIGIT_CLASS100:
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Type: Digit Rolling / LCD | 100 classes (dig-class100)");
+            break;
+        case CNNTYPE_ANALOG_CLASS100:
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Type: Analog Dial | 100 classes (ana-class100)");
+            break;
+        case CNNTYPE_DIGIT_DOUBLE_HYBRID10:
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Type: Digit Rolling / LCD | 10/100 classes (dig-cont)");
+            break;
+        case CNNTYPE_ANALOG_CONT:
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Type: Analog Dial | 2 classes (ana-cont)");
+            break;
+        default:
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Unknown model type (Output dimension: " + std::to_string(outputDims) + ")");
+            return false;
     }
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Network parameter loaded: " + cnnModelFile);
@@ -248,111 +291,71 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
 
         for (const auto &roi : roiList) {
             const std::string &roiName = roi->param->roiName;
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + roiName);
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Processing ROI: " + roiName);
 
             bool success = false;
-            std::string modelTypeMsg;
-            int logImageResult = 0;
 
             switch (cnnType) {
-                case CNNTYPE_DIGIT_CLASS100:    // Models dig-class100*
-                case CNNTYPE_ANALOG_CLASS100: { // Models ana-class100*
-                    modelTypeMsg = "Type: " +
-                                   std::string(cnnType == CNNTYPE_DIGIT_CLASS100 ? "Digit (dig-class100)" : "Analog (ana-class100)");
+                case CNNTYPE_DIGIT_CLASS100:
+                case CNNTYPE_ANALOG_CLASS100: {
                     success = tflite->loadInputImage(*(roi->imageRoiResized)) && tflite->invoke();
 
                     if (!success) {
                         break;
                     }
 
-                    int num = tflite->getOutClassification();
-                    roi->CNNResult = roi->param->ccw ? (100 - num) % 100 : num;
-                    roi->CNNResult = std::clamp(roi->CNNResult, 0, 99);
-                    roi->sCNNResult = to_stringWithPrecision(roi->CNNResult / 10.0, 1);
-                    logImageResult = roi->CNNResult;
-                    break;
-                }
-
-                case CNNTYPE_DIGIT_DOUBLE_HYBRID10: { // Models dig-cont*
-                    modelTypeMsg = "Type: Digit (dig-cont)";
-                    success = tflite->loadInputImage(*(roi->imageRoiResized)) && tflite->invoke();
-
-                    if (!success) {
-                        break;
-                    }
-
-                    int num = tflite->getOutClassification(0, 9);
-                    int numplus = (num + 1) % 10;
-                    int numminus = (num + 9) % 10;
-
-                    float val = tflite->getOutputValue(num);
-                    float valplus = tflite->getOutputValue(numplus);
-                    float valminus = tflite->getOutputValue(numminus);
-
-                    float result = num;
-                    float fit;
-
-                    if (valplus > valminus) {
-                        result += valplus / (val + valplus);
-                        fit = val + valplus;
-                    }
-                    else {
-                        result -= valminus / (val + valminus);
-                        fit = val + valminus;
-                    }
-
-                    result = fmod(result + 10, 10); // Normalize
-                    roi->CNNResult = (int)std::clamp(result * 10.0f, 0.0f, 99.0f);
-                    roi->sCNNResult = to_stringWithPrecision(roi->CNNResult / 10.0, 1);
-
-                    roi->isRejected = (fit < cnnGoodThreshold);
-                    logImageResult = roi->isRejected ? -roi->CNNResult : roi->CNNResult;
-
-#ifdef DEBUG_DETAIL_ON
-                    std::string logData = "num (p, m): " + std::to_string(num) + " (" + std::to_string(numplus) + " , " +
-                                          std::to_string(numminus) + "), val (p, m): " + std::to_string(val) + " (" +
-                                          std::to_string(valplus) + " , " + std::to_string(valminus) + "), result: " + roi->sCNNResult +
-                                          ", fit: " + std::to_string(fit);
-                    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, logData);
-#endif
-
-                    if (roi->isRejected) {
-                        LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                                            "Result rejected - bad fit (Fit: " + std::to_string(fit) +
-                                                ", Threshold: " + std::to_string(cnnGoodThreshold) + ")");
-                    }
+                    const int classIdx = tflite->getHighestScoringClass();
+                    roi->CNNResult = std::clamp(roi->param->ccw ? (100 - classIdx) % 100 : classIdx, 0, 99);
+                    roi->CNNResultConfidence = tflite->getOutputValue(classIdx, true);
 
                     break;
                 }
 
-                case CNNTYPE_ANALOG_CONT: { // Models ana-cont*
-                    modelTypeMsg = "Type: Analog (ana-cont)";
+                case CNNTYPE_DIGIT_DOUBLE_HYBRID10: { // jomjol model: dig-cont*
                     success = tflite->loadInputImage(*(roi->imageRoiResized)) && tflite->invoke();
 
                     if (!success) {
                         break;
                     }
 
-                    float result = fmod(atan2(tflite->getOutputValue(0), tflite->getOutputValue(1)) / (2 * M_PI) + 2, 1.0f);
-                    float scaled = roi->param->ccw ? 100.0f - result * 100.0f : result * 100.0f;
+                    // Helper for circular arithmetic (handles negative steps)
+                    auto circularIncrement = [](int num, int step, int max) -> int { return (num + step + max) % max; };
 
-                    roi->CNNResult = std::clamp(static_cast<int>(scaled), 0, 99);
-                    roi->sCNNResult = to_stringWithPrecision(roi->CNNResult / 10.0, 1);
-                    logImageResult = roi->CNNResult;
+                    constexpr int maxClass = 10;
+                    const int classIdx = tflite->getHighestScoringClass(0, maxClass - 1);
+
+                    // Neighbor indices
+                    const int nextClass = circularIncrement(classIdx, 1, maxClass);
+                    const int prevClass = circularIncrement(classIdx, -1, maxClass);
+
+                    // Fetch output values
+                    const float val = tflite->getOutputValue(classIdx);
+                    const float valNext = tflite->getOutputValue(nextClass);
+                    const float valPrev = tflite->getOutputValue(prevClass);
+
+                    // Weighted circular adjustment
+                    const float adjustment = (valNext - valPrev) / (val + std::max(valNext, valPrev));
+                    float result = static_cast<float>(classIdx) + adjustment;
+                    result = fmod(result + 10, 10);
+
+                    roi->CNNResult = std::clamp((int)(roundf(result * 10.0f)), 0, 99); // Normalize to 0-99
+                    roi->CNNResultConfidence = tflite->getOutputValue(classIdx, true);
+
                     break;
                 }
 
-                case CNNTYPE_DIGIT_CLASS11: { // Models dig-class11*
-                    modelTypeMsg = "Type: Digit (dig-class11)";
+                case CNNTYPE_ANALOG_CONT: { // jomjol model: ana-cont*
                     success = tflite->loadInputImage(*(roi->imageRoiResized)) && tflite->invoke();
 
                     if (!success) {
                         break;
                     }
 
-                    roi->CNNResult = tflite->getOutClassification();
-                    roi->sCNNResult = (roi->CNNResult == 10) ? "N" : std::to_string(roi->CNNResult);
-                    logImageResult = roi->CNNResult;
+                    const int result =
+                        (int)roundf(fmod(atan2(tflite->getOutputValue(0), tflite->getOutputValue(1)) / (2 * M_PI) + 1.0f, 1.0f) * 100.0f);
+                    roi->CNNResult = std::clamp(roi->param->ccw ? (100 - result) % 100 : result, 0, 99);
+                    roi->CNNResultConfidence = -1.0f; // No confidence available
+
                     break;
                 }
 
@@ -360,383 +363,44 @@ bool ClassFlowCNNGeneral::doInvokeCnn(const std::string time)
                     break;
             }
 
+            // Abort if any error occured
             if (!success) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invoke aborted");
+                tflite->deleteInterpreter();
                 return false;
             }
 
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, modelTypeMsg);
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Result: " + roi->sCNNResult);
+            // Store result as string in floating-point interpretation
+            char buffer[16];
+            snprintf(buffer, sizeof(buffer), "%d.%d", roi->CNNResult / 10, roi->CNNResult % 10);
+            roi->sCNNResult = std::string(buffer);
 
+            // Log results
+            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                                "Result: " + roi->sCNNResult + ", Confidence: " +
+                                    (roi->CNNResultConfidence > -1.0f ? to_stringWithPrecision(roi->CNNResultConfidence, 2) : "N/A"));
+
+            // Save images
             if (saveImagesEnabled) {
                 const std::string roiNameResized = roiName + "_resized";
 
                 if (roiSavingSize == ROI_SAVE_FULL_SIZE_AND_RESIZED) {
-                    logImage(logPath, roiName, cnnType, logImageResult, time, roi->imageRoi, 100);
-                    logImage(logPath + "/resized", roiNameResized, cnnType, logImageResult, time, roi->imageRoiResized, 100);
+                    logImage(logPath, roiName, cnnType, roi->CNNResult, time, roi->imageRoi, 100);
+                    logImage(logPath + "/resized", roiNameResized, cnnType, roi->CNNResult, time, roi->imageRoiResized, 100);
                 }
                 else if (roiSavingSize == ROI_SAVE_RESIZED) { // Special case: Save to default log path for backward compatibility
-                    logImage(logPath, roiNameResized, cnnType, logImageResult, time, roi->imageRoiResized, 100);
+                    logImage(logPath, roiNameResized, cnnType, roi->CNNResult, time, roi->imageRoiResized, 100);
                 }
                 else {
-                    logImage(logPath, roiName, cnnType, logImageResult, time, roi->imageRoi, 100);
+                    logImage(logPath, roiName, cnnType, roi->CNNResult, time, roi->imageRoi, 100);
                 }
             }
         }
     }
 
     tflite->deleteInterpreter();
+
     return true;
-}
-
-
-std::string ClassFlowCNNGeneral::getReadout(SequenceData *sequence, int valuePreviousNumber, int resultPreviousNumber) const
-{
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                        "getReadout: Number sequence: " + sequence->sequenceName +
-                            ", extendedResolution: " + std::to_string(sequence->paramPostProc->extendedResolution) +
-                            ", valuePreviousNumber: " + to_stringWithPrecision(valuePreviousNumber / 10.0, 1) +
-                            ", resultPreviousNumber: " + std::to_string(resultPreviousNumber) +
-                            ", analogDigitSyncValue: " + to_stringWithPrecision(sequence->paramPostProc->analogDigitSyncValue, 1));
-
-    if (cnnType == CNNTYPE_ANALOG_CONT || cnnType == CNNTYPE_ANALOG_CLASS100) { // Class-analog-model, ana-class100-model
-        if (sequence->analogRoi.size() == 0) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout: No analog ROI in processed number sequence");
-            return std::string("");
-        }
-
-        std::string result = "";
-        int resultTemp = -1;
-        int lastROI = sequence->analogRoi.size() - 1;
-
-        // Evaluate last ROI of number sequence (and potentially correct)
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + sequence->analogRoi[lastROI]->param->roiName);
-        resultTemp = evalAnalogNumber(sequence->analogRoi[lastROI]->CNNResult, -1);
-
-        if (sequence->paramPostProc->extendedResolution) {
-            int resultDecimalPlace = sequence->analogRoi[lastROI]->CNNResult % 10; // Decimal place of number result
-            result = std::to_string(resultTemp) + std::to_string(resultDecimalPlace);
-        }
-        else {
-            result = std::to_string(resultTemp);
-        }
-
-        // Evaluate all remaining ROI of number sequence (and potentially correct)
-        for (int i = lastROI - 1; i >= 0; i--) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + sequence->analogRoi[i]->param->roiName);
-            resultTemp = evalAnalogNumber(sequence->analogRoi[i]->CNNResult, resultTemp);
-            result = std::to_string(resultTemp) + result;
-        }
-
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout: Analog (ana-cont/ana-class100) Result: " + result);
-        return result;
-    }
-    else if ((cnnType == CNNTYPE_DIGIT_DOUBLE_HYBRID10) || (cnnType == CNNTYPE_DIGIT_CLASS100)) { // dig-cont-model, dig-class100-model
-        if (sequence->digitRoi.size() == 0) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout: No digit ROI in processed number sequence");
-            return std::string("");
-        }
-
-        std::string result = "";
-        const int lastROI = sequence->digitRoi.size() - 1;
-
-        // Evaluate last ROI of number sequence (and potentially correct)
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + sequence->digitRoi[lastROI]->param->roiName);
-        int resultTemp = sequence->digitRoi[lastROI]->CNNResult;
-
-        // Valid result ('isRejected' is not set)
-        if (!sequence->digitRoi[lastROI]->isRejected) {
-            // NOTE: Ensure that this flag is only set if no analog previous number is available
-            if (sequence->paramPostProc->extendedResolution && valuePreviousNumber == -1) {
-                // Pad numbers 0–9 with a leading zero to ensure 2-digit output
-                result = (resultTemp >= 0 && resultTemp < 10 ? "0" : "") + std::to_string(resultTemp);
-
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                    "Digit Number (No previous number, Extended Resolution): Result: " + result +
-                                        ", Value: " + to_stringWithPrecision((resultTemp / 10.0), 1));
-                resultTemp = resultTemp / 10; // resultIntegerPart to hand over a previous result to next digit evaluation
-            }
-            else {
-                if (valuePreviousNumber >= 0) { // If previous number available (analog value should be handed over)
-                    resultTemp = evalDigitNumber(sequence->digitRoi[lastROI]->CNNResult, valuePreviousNumber, resultPreviousNumber, true,
-                                                 int(sequence->paramPostProc->analogDigitSyncValue * 10.0));
-                }
-                else {
-                    resultTemp = evalDigitNumber(sequence->digitRoi[lastROI]->CNNResult, -1, -1); // No previous number
-                }
-
-                result = std::to_string(resultTemp);
-            }
-        }
-        else {
-            sequence->paramPostProc->extendedResolution ? result = "NN" : result = "N";
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont): Rejected, substitute with N (extended resolution: NN)");
-        }
-
-        // Evaluate all remaining ROI of number sequence (and potentially correct)
-        for (int i = lastROI - 1; i >= 0; i--) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + sequence->digitRoi[i]->param->roiName);
-            if (!sequence->digitRoi[i]->isRejected) { // valid result (e.g. model 'dig-cont*' --> bad fit)?
-                resultTemp = evalDigitNumber(sequence->digitRoi[i]->CNNResult, sequence->digitRoi[i + 1]->CNNResult, resultTemp);
-                result = std::to_string(resultTemp) + result;
-            }
-            else {
-                resultTemp = -1;
-                result = "N" + result;
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont): Rejected, substitute with N");
-            }
-        }
-
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout Digit (dig-cont/dig-class100): Result: " + result);
-        return result;
-    }
-    else if (cnnType == CNNTYPE_DIGIT_CLASS11) { // Class-11-model (1-0 + NaN)
-        if (sequence->digitRoi.size() == 0) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout: No digit ROI in processed number sequence");
-            return std::string("");
-        }
-
-        std::string result = "";
-
-        // Evaluate all ROI of number sequence (and potentially correct)
-        for (int i = 0; i < sequence->digitRoi.size(); i++) {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "ROI: " + sequence->digitRoi[i]->param->roiName);
-
-            if (sequence->digitRoi[i]->CNNResult == 10) {
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout: Digit (dig-class11): Result ambiguous, substitute with N");
-                result = result + "N";
-            }
-            else {
-                result = result + std::to_string(sequence->digitRoi[i]->CNNResult);
-            }
-        }
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "getReadout: Digit (dig-class11) Result: " + result);
-        return result;
-    }
-    else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getReadout: CNN Type unknown");
-        return std::string("");
-    }
-}
-
-
-/* Evaluate analog number pointer */
-int ClassFlowCNNGeneral::evalAnalogNumber(int _value, int _resultPreviousNumber) const
-{
-    int result = -1;
-
-    if (_resultPreviousNumber <= -1) {
-        result = _value / 10; // Return IntegerPart, remove decimal place (73 -> 7)
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "evalAnalogNumber (No previous number): Result: " + std::to_string(result) +
-                                ", Value: " + to_stringWithPrecision(_value / 10.0, 1));
-        return result;
-    }
-
-    int valueMax = _value + ANALOG_ZERO_CROSSING_UNCERTAINTY;
-    if (valueMax >= 100) { // e.g. 10.2 -> 0.2 (value = 02)
-        valueMax = valueMax - 100;
-    }
-
-    int valueMin = _value - ANALOG_ZERO_CROSSING_UNCERTAINTY;
-    if (valueMin < 0) { // e.g. -0.3 -> 9.7 (value = 97)
-        valueMin = 100 + valueMin;
-    }
-
-    if (((valueMin / 10 - valueMax / 10)) != 0) {
-        if (_resultPreviousNumber <= ANALOG_ZERO_CROSSING_UNCERTAINTY) {
-            result = valueMax / 10;
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                "evalAnalogNumber (Ambiguous, use value + correction): Result: " + std::to_string(result) +
-                                    ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
-                                    ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
-            return result;
-        }
-        else if (_resultPreviousNumber >= 10 - ANALOG_ZERO_CROSSING_UNCERTAINTY) {
-            result = valueMin / 10;
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                "evalAnalogNumber (Ambiguous, use value - correction): Result: " + std::to_string(result) +
-                                    ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
-                                    ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
-            return result;
-        }
-    }
-
-    result = _value / 10;
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                        "evalAnalogNumber (Unambiguous, use value): Result: " + std::to_string(result) + ", Value: " +
-                            to_stringWithPrecision(_value / 10.0, 1) + ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
-    return result;
-}
-
-
-/* Evaluate digit number */
-int ClassFlowCNNGeneral::evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool _isPreviousAnalog,
-                                         int _analogDigitSyncValue) const
-{
-    int result = -1;
-    int resultIntegerPart = _value / 10;
-    int resultDecimalPlace = _value % 10;
-
-    if (_resultPreviousNumber <= -1) { // no previous number -> no correction logic for transition, use value as is (integer part)
-        result = resultIntegerPart;
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "evalDigitNumber (No previous number): Result: " + std::to_string(result) +
-                                ", Value: " + to_stringWithPrecision(_value / 10.0, 1));
-        return result;
-    }
-
-    // previous number is analog (_valuePreviousNumber: 0-99), special transistion check needed
-    if (_isPreviousAnalog) {
-        result = evalAnalogToDigitTransition(_value, _valuePreviousNumber, _resultPreviousNumber, _analogDigitSyncValue);
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "evalDigitNumber (Analog previous number): Result: " + std::to_string(result) +
-                                ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
-                                ", valuePreviousNumber: " + to_stringWithPrecision(_valuePreviousNumber / 10.0, 1) +
-                                ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
-        return result;
-    }
-
-    // Previous number is digit (_valuePreviousNumber: 0-99) No digit change, because predecessor is far enough away (+/-
-    // DIGIT_ZERO_CROSSING_OFFSET)
-    if ((_valuePreviousNumber >= DIGIT_ZERO_CROSSING_OFFSET) && (_valuePreviousNumber <= (100 - DIGIT_ZERO_CROSSING_OFFSET))) {
-        // Band around the digit --> Round, as digit reaches inaccuracy in the frame
-        if ((resultDecimalPlace <= DIGIT_ZERO_CROSSING_UNCERTAINTY) || (resultDecimalPlace >= (10 - DIGIT_ZERO_CROSSING_UNCERTAINTY))) {
-            if (resultDecimalPlace >= 5) {
-                result = resultIntegerPart + 1; // "Round"
-
-                if (result >= 10) {
-                    result = 0;
-                }
-            }
-            else {
-                result = resultIntegerPart; // "Trunc"
-            }
-        }
-        else {
-            result = resultIntegerPart; // "Trunc"
-        }
-
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "evalDigitNumber (Digit previous number: no zero crossing, \'safe area\'): Result: " + std::to_string(result) +
-                                ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
-                                ", valuePreviousNumber: " + to_stringWithPrecision(_valuePreviousNumber / 10.0, 1) +
-                                ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
-        return result;
-    }
-
-    // Zero crossing at the predecessor has taken place (! evaluation via result of previous number and not value !)
-    // --> round up here (2.8 --> 3, but also 3.1 --> 3)
-    if (_resultPreviousNumber <= 1) {
-        // We simply assume that the current digit after the zero crossing of the predecessor
-        // has passed through at least half (x.5)
-        if (resultDecimalPlace >= 5) {
-            result = resultIntegerPart + 1; // "Round": The current digit does not yet have a zero crossing, but the predecessor does..
-
-            if (result >= 10) {
-                result = 0;
-            }
-        }
-        else {
-            result = resultIntegerPart; // "Trunc": Act. digit and predecessor have zero crossing
-        }
-
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "evalDigitNumber (Digit previous number: zero crossing): Result: " + std::to_string(result) +
-                                ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
-                                ", valuePreviousNumber: " + to_stringWithPrecision(_valuePreviousNumber / 10.0, 1) +
-                                ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
-        return result;
-    }
-
-    // remains only >= 9.x --> no zero crossing yet --> 2.8 --> 2,
-    // and from 9.7(DIGIT_EARLY_ZERO_CROSSING_THRESHOLD) 3.1 --> 2
-    // everything >=x.4 can be considered as current number in transition. With 9.x predecessor the current
-    // number can still be x.6 - x.7.
-    // Preceding (else - branch) does not already happen from 9.
-    if (((_valuePreviousNumber <= DIGIT_EARLY_ZERO_CROSSING_THRESHOLD) && (_resultPreviousNumber == (int)(_valuePreviousNumber / 10.0))) ||
-        resultDecimalPlace >= 4) {
-        result = resultIntegerPart; // The current digit, like the previous digit, does not yet have a zero crossing.
-    }
-    else {
-        // current digit precedes the smaller digit (9.x). So already >=x.0 while the previous digit has not yet
-        // has no zero crossing. Therefore, it is reduced by 1.
-        result = resultIntegerPart - 1;
-
-        if (result < 0) {
-            result = 9;
-        }
-    }
-
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                        "evalDigitNumber (Digit previous number: no zero crossing yet): Result: " + std::to_string(result) +
-                            ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
-                            ", valuePreviousNumber: " + to_stringWithPrecision(_valuePreviousNumber / 10.0, 1) +
-                            ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
-
-    return result;
-}
-
-
-/* Evaluate analog to digit number transition */
-int ClassFlowCNNGeneral::evalAnalogToDigitTransition(int _value, int _valuePreviousNumber, int _resultPreviousNumber,
-                                                     int _analogDigitSyncValue) const
-{
-    int result = -1;
-    int resultIntegerPart = _value / 10;
-    int resultDecimalPlace = _value % 10;
-
-    // Value within the digit inequalities
-    if (resultDecimalPlace >= (10 - ANALOG_DIGIT_ZERO_CROSSING_UNCERTAINTY) // Band around the zero crossing -> Round, as number reaches
-                                                                            // inaccuracy zone
-        || (_resultPreviousNumber <= 4 && resultDecimalPlace >= 6)) // or number runs after (previous result <= 4, act. decimal place >= 6)
-    {
-        if (resultDecimalPlace >= 5) { // "Round up"
-            result = resultIntegerPart + 1;
-
-            if (result >= 10) {
-                result = 0;
-            }
-
-            // Correct back if no zero crossing detected
-            // analogDigitSyncValue < _valuePreviousNumber < 0.2
-            if (_resultPreviousNumber >= 6 && (_valuePreviousNumber > _analogDigitSyncValue || _valuePreviousNumber <= 2)) {
-                result = result - 1;
-                if (result < 0) {
-                    result = 9;
-                }
-
-                LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                    "evalAnalogToDigitTransition (Digit uncertainty, no zero crossing): Result: " + std::to_string(result) +
-                                        ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
-                                        ", valuePreviousNumber: " + to_stringWithPrecision(_valuePreviousNumber / 10.0, 1) +
-                                        ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
-            }
-        }
-        else {
-            result = resultIntegerPart; // "Trunc -> Round down"
-        }
-
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "evalAnalogToDigitTransition (Digit uncertainty): Result: " + std::to_string(result) +
-                                ", Value: " + to_stringWithPrecision(_value / 10.0, 1) +
-                                ", valuePreviousNumber: " + to_stringWithPrecision(_valuePreviousNumber / 10.0, 1) +
-                                ", resultPreviousNumber: " + std::to_string(_resultPreviousNumber));
-    }
-    else {
-        result = resultIntegerPart;
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                            "evalAnalogToDigitTransition: Result: " + std::to_string(result) +
-                                ", Value: " + to_stringWithPrecision(_value / 10.0, 1));
-    }
-
-    return result;
-}
-
-
-bool ClassFlowCNNGeneral::cnnTypeAllowExtendedResolution() const
-{
-    return cnnType != CNNTYPE_DIGIT_CLASS11;
 }
 
 

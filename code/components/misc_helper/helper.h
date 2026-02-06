@@ -45,4 +45,6 @@ std::string getFormattedUptime(bool compact);
 const char *get404(void);
 std::string urlDecode(const std::string &value);
 
+int circularDistance(int a, int b, int n);
+
 #endif // HELPER_H

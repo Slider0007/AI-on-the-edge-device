@@ -6,6 +6,10 @@
 #include "cfgDataStruct.h"
 #include "CImage.h"
 #include "CImageJpg.h"
+#include "ClassMeterModel.h"
+
+// Forward declaration
+class MeterModel;
 
 
 enum CNNType {
@@ -13,7 +17,6 @@ enum CNNType {
     CNNTYPE_AUTODETECT,
     CNNTYPE_ANALOG_CONT,
     CNNTYPE_ANALOG_CLASS100,
-    CNNTYPE_DIGIT_CLASS11,
     CNNTYPE_DIGIT_DOUBLE_HYBRID10,
     CNNTYPE_DIGIT_CLASS100
 };
@@ -52,24 +55,33 @@ struct RoiData { // ROI
     const struct RoiElement *param = nullptr;
     CImage *imageRoi = nullptr;
     CImage *imageRoiResized = nullptr;
-    bool isRejected = false;       // Only used for dig-cont models
-    int CNNResult = -10;           // Normalized to 0-99 (exception for class11: 0-10: 0-9+NaN), default: negative number equal to "-1.0"
-    std::string sCNNResult = "-1"; // Result clamped and converted to string for visualization purpose
+    int CNNResult = -10;               // Normalized to 0-99, default: negative number equal to "-1.0"
+    float CNNResultConfidence = -1.0f; // Confidence / probability of result [0.0 - 1.0] ==> 0% .. 100%
+    std::string sCNNResult = "-1";     // Result clamped and converted to string for visualization purpose
 };
 
 
 struct SequenceData {
-    int sequenceId;           // Sequence ID
-    std::string sequenceName; // Sequence name
+    // Common Data
+    int sequenceId;            // Sequence ID
+    std::string sequenceName;  // Sequence name
+    int sequenceLength = 0;    // Sequence length
+    int decimalPlaceCount = 0; // Decimal places of sequence
 
+    // Parametrization (Pointer to config data)
+    const struct PostProcessingPerSequence *paramPostProc = nullptr;
+    const struct InfluxDBPerSequence *paramInfluxDBv1 = nullptr;
+    const struct InfluxDBPerSequence *paramInfluxDBv2 = nullptr;
+
+    // CNN Data
     std::vector<RoiData *> digitRoi;  // Digit ROIs
     std::vector<RoiData *> analogRoi; // Analog ROIs
 
+    // Post-Processing Data
+    std::unique_ptr<MeterModel> meterModel; // Meter model
+
     bool isFallbackValueValid = false;   // Fallback value is valid in terms of not being outdated
-    bool isActualValueANumber = false;   // Actual value is valid number (further processing possible)
     bool isActualValueConfirmed = false; // Actual value is without any deviation (fully processed by post-processing without deviation)
-    int correctedDecimalShift = 0;       // Decimal shift parameter adapted by actual configuration
-    int decimalPlaceCount = 0;           // No of decimal places
 
     time_t timeProcessed;         // Time of actual source image was taken (== actual result time)
     time_t timeFallbackValue;     // Time of FallbackValue in seconds
@@ -87,10 +99,6 @@ struct SequenceData {
     std::string sActualValue = "";        // Value of actual valid reading, incl. post-processing corrections
     std::string sFallbackValue = "";      // Fallback value, equal to last valid reading (legacy name: prevalue)
     std::string sValueStatus = "";        // Value status
-
-    const struct PostProcessingPerSequence *paramPostProc = nullptr;
-    const struct InfluxDBPerSequence *paramInfluxDBv1 = nullptr;
-    const struct InfluxDBPerSequence *paramInfluxDBv2 = nullptr;
 };
 
 #endif // CLASSFLOWDEFINETYPES_H

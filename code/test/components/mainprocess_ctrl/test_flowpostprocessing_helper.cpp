@@ -5,14 +5,14 @@
 #include <esp_log.h>
 
 
-static const char *UNITY_TAG_PPHELPER = "UNITYTEST_POSTPROCHELPER";
+// static const char *UNITY_TAG_PPHELPER = "UNITYTEST_POSTPROCHELPER"; // Unused
 
 
-UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType)
+UnderTestPost *setUpClassFlowPostprocessing()
 {
     ClassFlowTakeImage *takeimage = new ClassFlowTakeImage();
-    ClassFlowCNNGeneral *digit = new ClassFlowCNNGeneral("Digit", digType);
-    ClassFlowCNNGeneral *analog = new ClassFlowCNNGeneral("Analog", anaType);
+    ClassFlowCNNGeneral *digit = new ClassFlowCNNGeneral("Digit", CNNTYPE_DIGIT_CLASS100);
+    ClassFlowCNNGeneral *analog = new ClassFlowCNNGeneral("Analog", CNNTYPE_ANALOG_CLASS100);
 
     // Init default config (including sequence related config)
     ConfigClass::getInstance()->clearCfgData();
@@ -31,10 +31,10 @@ UnderTestPost *setUpClassFlowPostprocessing(CNNType digType, CNNType anaType)
 }
 
 
-UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType, bool extendedResolution, int decimalShift,
-                          bool checkDigitIncreaseConsistency)
+UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs, bool extendedResolution, int decimalScaling,
+                          WheelType wheelType, float dialToWheelDetune, float wheelTransitionWidth)
 {
-    UnderTestPost *_underTestPost = setUpClassFlowPostprocessing(digType, CNNTYPE_ANALOG_CLASS100);
+    UnderTestPost *_underTestPost = setUpClassFlowPostprocessing();
 
     // Get sequenceData pointer
     _underTestPost->sequenceDataPtr = flowctrl.getSequenceData()[0];
@@ -55,17 +55,12 @@ UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs,
 
         // Set pointer to ROI config and inject CNN result
         for (int i = 0; i < ConfigClass::getInstance()->get()->sectionDigit.sequence[0].roi.size(); i++) {
-            RoiData *roiEl = new RoiData{};
-            roiEl->param = &ConfigClass::getInstance()->get()->sectionDigit.sequence[0].roi[i];
+            RoiData *roiDataEl = new RoiData{};
+            roiDataEl->param = &ConfigClass::getInstance()->get()->sectionDigit.sequence[0].roi[i];
+            roiDataEl->CNNResult = (int)(digits[i] * 10.0f + 0.1f); // + 0.1 due to float to int rounding, will be truncated anyway
+            roiDataEl->CNNResultConfidence = 1.0f;                  // Ensure high confidence for deterministic tests
 
-            if (digType != CNNTYPE_DIGIT_CLASS11) {
-                roiEl->CNNResult = (int)(digits[i] * 10.0 + 0.1); // + 0.1 due to float to int rounding, will be truncated anyway
-            }
-            else {
-                roiEl->CNNResult = (int)digits[i];
-            }
-
-            _underTestPost->sequenceDataPtr->digitRoi.push_back(roiEl);
+            _underTestPost->sequenceDataPtr->digitRoi.push_back(roiDataEl);
         }
     }
     else {
@@ -90,8 +85,8 @@ UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs,
         for (int i = 0; i < ConfigClass::getInstance()->get()->sectionAnalog.sequence[0].roi.size(); i++) {
             RoiData *roiDataEl = new RoiData{};
             roiDataEl->param = &ConfigClass::getInstance()->get()->sectionAnalog.sequence[0].roi[i];
-
-            roiDataEl->CNNResult = (int)(analogs[i] * 10.0 + 0.1); // + 0.1 due to float to int rounding, will be truncated anyway
+            roiDataEl->CNNResult = (int)(analogs[i] * 10.0f + 0.1f); // + 0.1 due to float to int rounding, will be truncated anyway
+            roiDataEl->CNNResultConfidence = 1.0f;                   // Ensure high confidence for deterministic tests
 
             _underTestPost->sequenceDataPtr->analogRoi.push_back(roiDataEl);
         }
@@ -104,12 +99,19 @@ UnderTestPost *initDoFlow(std::vector<float> digits, std::vector<float> analogs,
     ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].maxRateCheckType = RATE_CHECK_OFF; // Avoid rate check errors
     _underTestPost->setFallbackValueLoaded(true); // Avoid loading fallbackvalue from NVS
 
-    setDigitIncreaseConsistencyCheck(checkDigitIncreaseConsistency);
+    // Overwrite config defaults with function parameter values
     setExtendedResolution(extendedResolution);
-    setDecimalShift(decimalShift);
+    setDecimalScaling(decimalScaling);
+    setWheelType(wheelType);
+    setWheelTransitionWidth(wheelTransitionWidth);
+    setDialToWheelDetune(dialToWheelDetune);
+    setModelInfluence(0.0f);
 
-    // Load parameter needed for postprocessing flow
+    // Load parameter from config
     _underTestPost->loadParameter();
+
+    // Clear model autotune parameter
+    _underTestPost->sequenceDataPtr->meterModel->resetDigitAutoDetuneValues(*(_underTestPost->sequenceDataPtr));
 
     return _underTestPost;
 }
@@ -124,10 +126,11 @@ std::string processDoFlow(UnderTestPost *_underTestPost)
 }
 
 
-std::string processDoFlow(std::vector<float> digits, std::vector<float> analogs, CNNType digType, bool extendedResolution, int decimalShift,
-                          bool checkDigitIncreaseConsistency)
+std::string processDoFlow(std::vector<float> digits, std::vector<float> analogs, bool extendedResolution, int decimalScaling,
+                          WheelType wheelType, float dialToWheelDetune, float wheelTransitionWidth)
 {
-    UnderTestPost *_underTestPost = initDoFlow(digits, analogs, digType, extendedResolution, decimalShift, checkDigitIncreaseConsistency);
+    UnderTestPost *_underTestPost = initDoFlow(digits, analogs, extendedResolution, decimalScaling, wheelType, dialToWheelDetune,
+                                               wheelTransitionWidth);
 
     std::string time;
     TEST_ASSERT_TRUE(_underTestPost->doFlow(time));
@@ -145,15 +148,9 @@ void setAllowNegative(bool _allowNegative)
 }
 
 
-void setDigitIncreaseConsistencyCheck(bool _checkDigitIncreaseConsistency)
+void setDecimalScaling(int _decimalScaling)
 {
-    ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].checkDigitIncreaseConsistency = _checkDigitIncreaseConsistency;
-}
-
-
-void setDecimalShift(int _decimalShift)
-{
-    ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].decimalShift = _decimalShift;
+    ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].decimalScaling = _decimalScaling;
 }
 
 
@@ -163,9 +160,27 @@ void setExtendedResolution(bool _extendedResolution)
 }
 
 
-void setAnalogDigitSyncValue(float _analogDigitSyncValue)
+void setModelInfluence(float _modelInfluence)
 {
-    ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].analogDigitSyncValue = _analogDigitSyncValue;
+    ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].modelInfluence = _modelInfluence;
+}
+
+
+void setDialToWheelDetune(float _dialToWheelDetuneValue)
+{
+    ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].dialToWheelDetune = _dialToWheelDetuneValue;
+}
+
+
+void setWheelType(WheelType _wheelType)
+{
+    ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].wheelType = _wheelType;
+}
+
+
+void setWheelTransitionWidth(float _wheelTransitionWidth)
+{
+    ConfigClass::getInstance()->get()->sectionPostProcessing.sequence[0].wheelTransitionWidth = _wheelTransitionWidth;
 }
 
 

@@ -21,10 +21,14 @@ class CTfLiteClass
     int imHeight = 0;
     int imWidth = 0;
     int imChannel = 0;
+    bool outputSoftmax = false;
 
     bool readFileToModel(const std::string &fileName);
     void loadOpResolver(void);
     bool checkModelOperators(const tflite::Model *model);
+    bool outputIsSoftmax() const;
+    float getProbabilityConfidenceScore(const float *data, int numOutputs, int index, bool outputSoftmaxed,
+                                        bool returnConfidenceScore) const;
 
   public:
     CTfLiteClass();
@@ -40,8 +44,8 @@ class CTfLiteClass
     int getInputDimension(int dim) const;
 
     int getOutputDimension() const;
-    int getOutClassification(int from = -1, int to = -1) const;
-    float getOutputValue(int index) const;
+    float getOutputValue(const int index, bool returnConfidenceScore = false) const;
+    int getHighestScoringClass(int startIndex = -1, int endIndex = -1) const;
 };
 
 #endif // CTFLITECLASS_H

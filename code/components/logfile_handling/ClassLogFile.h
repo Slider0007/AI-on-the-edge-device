@@ -8,6 +8,8 @@
 
 #include "../../include/defines.h"
 
+#include "ClassMeterModel.h"
+
 
 class ClassLogFile
 {
@@ -50,10 +52,7 @@ class ClassLogFile
     void removeOldDataLog();
     void removeOldDebugFiles();
 
-    void writeToData(std::string _timestamp, std::string _name, std::string _sRawValue, std::string _sValue, std::string _sFallbackValue,
-                     std::string _sRatePerMin, std::string _sRatePerInterval, std::string _sValueStatus, std::string _digit,
-                     std::string _analog);
-
+    void writeToData(const SequenceData &sequence, const MeterModel::Result &modelResult);
 
     std::string getCurrentFileName();
     std::string getCurrentFileNameData();

@@ -50,6 +50,19 @@ enum RoiImageSavingSize {
 };
 
 
+enum class MeterType : int8_t {
+    Mechanical = 1, // Mechanical
+    DigitalLcd = 2  // Digital LCD
+};
+
+
+enum class WheelType : int8_t {
+    LSWContinuous = 1,         // Least-significant-wheel (LSW) with continuous transition , other wheels with intermittent transition
+    AllWheelsIntermittent = 2, // All wheels with intermittent indexed snap-in transition
+    AllWheelsContinuous = 3,   // All wheels with continuous transition
+};
+
+
 enum MaxRateCheckType {
     RATE_CHECK_OFF = 0,
     RATE_PER_MIN = 1,
@@ -157,15 +170,26 @@ struct RoiPerSequence {
 struct PostProcessingPerSequence {
     int sequenceId = -1;
     std::string sequenceName = "";
-    bool enabled = true;
-    int decimalShift = 0;
-    float analogDigitSyncValue = 9.2;
+
+    // Meter Definition
+    MeterType meterType = MeterType::Mechanical;
+    float modelInfluence = 0.5; // How strict model is followed [0.0 (loose) - 1.0 (strict)]
+
+    // Mechanical Meter Only
+    WheelType wheelType = WheelType::LSWContinuous; // Least-significant wheel with continuous transtion, all other intermittent
+    float wheelTransitionWidth = 0.15;              // Intermittent wheels: Transition width of full a rotation [0.0 (0%) - 1.0 (100%)]
+    float dialToWheelDetune = 0.0;                  // Dial-to-wheel detune (Dial pointer value when LSW == 0) [0.0 - 9.9]
+
+    // Basic Configuration
+    int decimalScaling = 0;
     bool extendedResolution = true;
-    bool ignoreLeadingNaN = false;
-    bool checkDigitIncreaseConsistency = false;
+
+    // Physical Limits
+    bool allowNegativeRate = false;
     int maxRateCheckType = RATE_PER_MIN;
     float maxRate = 0.150;
-    bool allowNegativeRate = false;
+
+    // Fallback Handling
     bool useFallbackValue = true;
     int fallbackValueAgeStartup = 720;
 };
@@ -282,7 +306,6 @@ struct CfgData {
     struct SectionDigit {
         bool enabled = true;
         std::string model = "dig-class100_0182_s2_q.tflite"; // with extention, but without path
-        float cnnGoodThreshold = 0.80;
         std::vector<RoiPerSequence> sequence;
         struct Debug {
             bool saveRoiImages = false;

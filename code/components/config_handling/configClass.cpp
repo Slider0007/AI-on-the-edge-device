@@ -668,11 +668,6 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         cfgDataTemp.sectionDigit.model = objEl->valuestring;
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "cnngoodthreshold");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionDigit.cnnGoodThreshold = std::clamp(std::stof(objEl->valuestring), (float)0.00, (float)1.00);
-    }
-
     // Update sequences
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "sequence");
     if (cJSON_GetArraySize(objEl) > 0) {
@@ -897,19 +892,34 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
                 continue;
             }
 
-            // Disable post-processing per sequence not yet implemented // @TODO FEATURE
-            /*sequenceArrEl = cJSON_GetObjectItem(objArrEl, "enabled");
-            if (cJSON_IsBool(sequenceArrEl))
-                sequenceEl->enabled = sequenceArrEl->valueint;*/
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "decimalshift");
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "metertype");
             if (cJSON_IsNumber(sequenceArrEl)) {
-                sequenceEl->decimalShift = std::clamp(sequenceArrEl->valueint, -9, 9);
+                sequenceEl->meterType = (MeterType)std::clamp(sequenceArrEl->valueint, 1, 2);
             }
 
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "analogdigitsyncvalue");
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "modelinfluence");
             if (cJSON_IsString(sequenceArrEl)) {
-                sequenceEl->analogDigitSyncValue = std::clamp(std::stof(sequenceArrEl->valuestring), (float)6.0, (float)9.9);
+                sequenceEl->modelInfluence = std::clamp(std::stof(sequenceArrEl->valuestring), 0.0f, 1.0f);
+            }
+
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "wheeltype");
+            if (cJSON_IsNumber(sequenceArrEl)) {
+                sequenceEl->wheelType = (WheelType)std::clamp(sequenceArrEl->valueint, 1, 3);
+            }
+
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "wheeltransitionwidth");
+            if (cJSON_IsString(sequenceArrEl)) {
+                sequenceEl->wheelTransitionWidth = std::clamp(std::stof(sequenceArrEl->valuestring), 0.05f, 1.0f);
+            }
+
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "dialtowheeldetune");
+            if (cJSON_IsString(sequenceArrEl)) {
+                sequenceEl->dialToWheelDetune = std::clamp(std::stof(sequenceArrEl->valuestring), 0.0f, 9.9f);
+            }
+
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "decimalscaling");
+            if (cJSON_IsNumber(sequenceArrEl)) {
+                sequenceEl->decimalScaling = std::clamp(sequenceArrEl->valueint, -9, 9);
             }
 
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "extendedresolution");
@@ -917,14 +927,9 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
                 sequenceEl->extendedResolution = sequenceArrEl->valueint;
             }
 
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "ignoreleadingnan");
+            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "allownegativerate");
             if (cJSON_IsBool(sequenceArrEl)) {
-                sequenceEl->ignoreLeadingNaN = sequenceArrEl->valueint;
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "checkdigitincreaseconsistency");
-            if (cJSON_IsBool(sequenceArrEl)) {
-                sequenceEl->checkDigitIncreaseConsistency = sequenceArrEl->valueint;
+                sequenceEl->allowNegativeRate = sequenceArrEl->valueint;
             }
 
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "maxratechecktype");
@@ -935,11 +940,6 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "maxrate");
             if (cJSON_IsString(sequenceArrEl)) {
                 sequenceEl->maxRate = std::max(std::stof(sequenceArrEl->valuestring), (float)0.001);
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "allownegativerate");
-            if (cJSON_IsBool(sequenceArrEl)) {
-                sequenceEl->allowNegativeRate = sequenceArrEl->valueint;
             }
 
             sequenceArrEl = cJSON_GetObjectItem(objArrEl, "usefallbackvalue");
@@ -1991,10 +1991,6 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     if (cJSON_AddStringToObject(digit, "model", cfgDataTemp.sectionDigit.model.c_str()) == NULL) {
         retVal = ESP_FAIL;
     }
-    if (cJSON_AddStringToObject(digit, "cnngoodthreshold", to_stringWithPrecision(cfgDataTemp.sectionDigit.cnnGoodThreshold, 2).c_str()) ==
-        NULL) {
-        retVal = ESP_FAIL;
-    }
     if (!cJSON_AddItemToObject(digit, "sequence", digitSequence = cJSON_CreateArray())) {
         retVal = ESP_FAIL;
     }
@@ -2126,29 +2122,39 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
                                     cfgDataTemp.sectionPostProcessing.sequence[i].sequenceName.c_str()) == NULL) {
             retVal = ESP_FAIL;
         }
-        // Disable post-processing per sequence not yet implemented // @TODO FEATURE
-        /*if (cJSON_AddBoolToObject(postprocessingSequenceEl, "enabled",
-                                    cfgDataTemp.sectionPostProcessing.sequence[i].enabled) == NULL)
-            retVal = ESP_FAIL;*/
-        if (cJSON_AddNumberToObject(postprocessingSequenceEl, "decimalshift", cfgDataTemp.sectionPostProcessing.sequence[i].decimalShift) ==
+        if (cJSON_AddNumberToObject(postprocessingSequenceEl, "metertype", (int)cfgDataTemp.sectionPostProcessing.sequence[i].meterType) ==
+            NULL) {
+            retVal = ESP_FAIL;
+        }
+        if (cJSON_AddStringToObject(postprocessingSequenceEl, "modelinfluence",
+                                    to_stringWithPrecision(cfgDataTemp.sectionPostProcessing.sequence[i].modelInfluence, 1).c_str()) ==
+            NULL) {
+            retVal = ESP_FAIL;
+        }
+        if (cJSON_AddNumberToObject(postprocessingSequenceEl, "wheeltype", (int)cfgDataTemp.sectionPostProcessing.sequence[i].wheelType) ==
             NULL) {
             retVal = ESP_FAIL;
         }
         if (cJSON_AddStringToObject(
-                postprocessingSequenceEl, "analogdigitsyncvalue",
-                to_stringWithPrecision(cfgDataTemp.sectionPostProcessing.sequence[i].analogDigitSyncValue, 1).c_str()) == NULL) {
+                postprocessingSequenceEl, "wheeltransitionwidth",
+                to_stringWithPrecision(cfgDataTemp.sectionPostProcessing.sequence[i].wheelTransitionWidth, 2).c_str()) == NULL) {
+            retVal = ESP_FAIL;
+        }
+        if (cJSON_AddStringToObject(postprocessingSequenceEl, "dialtowheeldetune",
+                                    to_stringWithPrecision(cfgDataTemp.sectionPostProcessing.sequence[i].dialToWheelDetune, 1).c_str()) ==
+            NULL) {
+            retVal = ESP_FAIL;
+        }
+        if (cJSON_AddNumberToObject(postprocessingSequenceEl, "decimalscaling",
+                                    cfgDataTemp.sectionPostProcessing.sequence[i].decimalScaling) == NULL) {
             retVal = ESP_FAIL;
         }
         if (cJSON_AddBoolToObject(postprocessingSequenceEl, "extendedresolution",
                                   cfgDataTemp.sectionPostProcessing.sequence[i].extendedResolution) == NULL) {
             retVal = ESP_FAIL;
         }
-        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "ignoreleadingnan",
-                                  cfgDataTemp.sectionPostProcessing.sequence[i].ignoreLeadingNaN) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "checkdigitincreaseconsistency",
-                                  cfgDataTemp.sectionPostProcessing.sequence[i].checkDigitIncreaseConsistency) == NULL) {
+        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "allownegativerate",
+                                  cfgDataTemp.sectionPostProcessing.sequence[i].allowNegativeRate) == NULL) {
             retVal = ESP_FAIL;
         }
         if (cJSON_AddNumberToObject(postprocessingSequenceEl, "maxratechecktype",
@@ -2157,10 +2163,6 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         }
         if (cJSON_AddStringToObject(postprocessingSequenceEl, "maxrate",
                                     to_stringWithPrecision(cfgDataTemp.sectionPostProcessing.sequence[i].maxRate, 3).c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "allownegativerate",
-                                  cfgDataTemp.sectionPostProcessing.sequence[i].allowNegativeRate) == NULL) {
             retVal = ESP_FAIL;
         }
         if (cJSON_AddBoolToObject(postprocessingSequenceEl, "usefallbackvalue",

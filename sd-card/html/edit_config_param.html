@@ -868,32 +868,11 @@
 			<td>
 				<form id="digit_model_form">
 					<select required class="select_large" name="digit.model" id="digit_model_value"
-						onchange="setClassVisibility('classvisibility_digit_model_class11',
-								$(digit_enabled_value).val() && this.value.includes('class11'));
-							setClassVisibility('classvisibility_model_cnn_threshold',
-								$(digit_enabled_value).val() && this.value.includes('cont'));
-							setClassVisibility('classvisibility_postprocessing_extended_resolution',
-								$(digit_enabled_value).val() && !this.value.includes('class11'));
-							gatherChangedParameter(this.form)">
+						onchange="gatherChangedParameter(this.form)">
 					</select>
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_digit_model</td>
-		</tr>
-
-		<tr class="classvisibility_digit_enabled classvisibility_model_cnn_threshold expert">
-			<td class="indent1">
-				<span>CNN Good Threshold</span>
-			</td>
-			<td>
-				<form id="digit_cnngoodthreshold_form">
-					<input required type="number" min="0" max="1" step="0.01" value="0.00"
-						name="digit.cnngoodthreshold" id="digit_cnngoodthreshold_value"
-						onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1)) &&
-							(!validity.stepMismatch||(value=this.value));gatherChangedParameter(this.form)">
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_digit_cnngoodthreshold</td>
 		</tr>
 
 		<tr class="classvisibility_digit_enabled">
@@ -984,8 +963,6 @@
 					<select style="font-weight:bold" class="classvisibility_init" name="analog.enabled" id="analog_enabled_value"
 								onchange="setClassVisibility('classvisibility_analog_enabled', this.value);
 									this.value == 'true' ? $(analog_debug_saveroiimages_value).trigger('onchange') : null;
-									setClassVisibility('classvisibility_postprocessing_extended_resolution',
-										$(digit_enabled_value).val() && !this.value.includes('class11'));
 									gatherChangedParameter(this.form)">
 						<option value="false" selected>Disabled</option>
 						<option value="true">Enabled</option>
@@ -1108,36 +1085,102 @@
 
 		<tr>
 			<td class="indent1">
-				<span>Decimal Shift</span>
+				<span>Meter Type</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_decimalshift_form">
-					<input required type="number" min="-9" max="9" value="0"
-						name="postprocessing.sequence.0.decimalshift" id="postprocessing_sequence_0_decimalshift_value"
-						onchange="(!validity.rangeUnderflow||(value=-9)) && (!validity.rangeOverflow||(value=9));
-							gatherChangedParameter(this.form, true);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_metertype_form">
+					<select class="classvisibility_init"
+							name="postprocessing.sequence.0.metertype" id="postprocessing_sequence_0_metertype_value"
+							onchange="setClassVisibility('classvisibility_postprocessing_metertype_mechanical', this.value == '1');
+								gatherChangedParameter(this.form, true);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+						<option value="1" selected>Mechanical</option>
+					</select>
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_decimalshift</td>
+			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_metertype</td>
 		</tr>
 
 		<tr>
 			<td class="indent1">
-				<span>Analog/Digit Sync Value</span>
+				<span>Model Influence</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_analogdigitsyncvalue_form">
-					<input required type="number" min="6.0" max="9.9" step="0.1" value="9.2"
-						name="postprocessing.sequence.0.analogdigitsyncvalue" id="postprocessing_sequence_0_analogdigitsyncvalue_value"
-						onchange="(!validity.rangeUnderflow||(value=6.0)) && (!validity.rangeOverflow||(value=9.9)) &&
-							(!validity.stepMismatch||(value=this.value));gatherChangedParameter(this.form);
-							gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_modelinfluence_form">
+					<input required type="number" min="0.00" max="1.0" step="0.1" value="0.5"
+						name="postprocessing.sequence.0.modelinfluence" id="postprocessing_sequence_0_modelinfluence_value"
+						onchange="(!validity.rangeUnderflow||(value=0.00)) && (!validity.rangeOverflow||(value=1.00));
+						 gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_analogdigitsyncvalue</td>
+			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_modelinfluence</td>
 		</tr>
 
-		<tr class="classvisibility_postprocessing_extended_resolution">
+
+		<tr class="classvisibility_postprocessing_metertype_mechanical">
+			<td class="indent1">
+				<span>Wheel Type</span>
+			</td>
+			<td>
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_wheeltype_form">
+					<select class="classvisibility_init"
+							name="postprocessing.sequence.0.wheeltype" id="postprocessing_sequence_0_wheeltype_value"
+							onchange="gatherChangedParameter(this.form, true);
+								gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+						<option value="1" selected>Hybrid (LSW Continuous)</option>
+						<option value="2">Intermittent</option>
+						<option value="3">Continuous</option>
+					</select>
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_wheeltype</td>
+		</tr>
+
+		<tr class="classvisibility_postprocessing_metertype_mechanical">
+			<td class="indent1">
+				<span>Intermittent Wheel Transition Width</span>
+			</td>
+			<td>
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_wheeltransitionwidth_form">
+					<input required type="number" min="0.01" max="1.00" step="0.01" value="0.10"
+						name="postprocessing.sequence.0.wheeltransitionwidth" id="postprocessing_sequence_0_wheeltransitionwidth_value"
+						onchange="(!validity.rangeUnderflow||(value=0.01)) && (!validity.rangeOverflow||(value=1.00));
+							gatherChangedParameter(this.form); gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_wheeltransitionwidth</td>
+		</tr>
+
+		<tr class="classvisibility_postprocessing_metertype_mechanical">
+			<td class="indent1">
+				<span>Dial-to-Wheel Detune</span>
+			</td>
+			<td>
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_dialtowheelalignment_form">
+					<input required type="number" min="0.0" max="9.9" step="0.1" value="0.0"
+						name="postprocessing.sequence.0.dialtowheeldetune" id="postprocessing_sequence_0_dialtowheeldetune_value"
+						onchange="(!validity.rangeUnderflow||(value=0.0)) && (!validity.rangeOverflow||(value=9.9));
+							gatherChangedParameter(this.form); gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_dialtowheeldetune</td>
+		</tr>
+
+		<tr>
+			<td class="indent1">
+				<span>Decimal Scaling (10<sup>n</sup>)</span>
+			</td>
+			<td>
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_decimalscaling_form">
+					<input required type="number" min="-9" max="9" value="0"
+						name="postprocessing.sequence.0.decimalscaling" id="postprocessing_sequence_0_decimalscaling_value"
+						onchange="(!validity.rangeUnderflow||(value=-9)) && (!validity.rangeOverflow||(value=9));
+							gatherChangedParameter(this.form, true);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+				</form>
+			</td>
+			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_decimalscaling</td>
+		</tr>
+
+		<tr>
 			<td class="indent1">
 				<span>Extended Resolution</span>
 			</td>
@@ -1153,36 +1196,20 @@
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_extendedresolution</td>
 		</tr>
 
-		<tr class="classvisibility_digit_model_class11 hidden expert">
+		<tr>
 			<td class="indent1">
-				<span>Ignore Leading NaNs</span>
+				<span>Allow Negative Rate / Flow</span>
 			</td>
 			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_ignoreleadingnan_form">
-					<select name="postprocessing.sequence.0.ignoreleadingnan" id="postprocessing_sequence_0_ignoreleadingnan_value"
+				<form class="postprocessing_per_sequence" id="postprocessing_sequence_allownegativerate_form">
+					<select name="postprocessing.sequence.0.allownegativerate" id="postprocessing_sequence_0_allownegativerate_value"
 							onchange="gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
-						<option value="false">Disabled</option>
-						<option value="true" selected>Enabled</option>
+						<option value="false" selected>Disabled</option>
+						<option value="true">Enabled</option>
 					</select>
 				</form>
 			</td>
-			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_ignoreleadingnan</td>
-		</tr>
-
-		<tr class="classvisibility_digit_model_class11 hidden expert">
-			<td class="indent1">
-				<span>Check Digit Increase Consistency</span>
-			</td>
-			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_checkdigitincreaseconsistency_form">
-					<select name="postprocessing.sequence.0.checkdigitincreaseconsistency" id="postprocessing_sequence_0_checkdigitincreaseconsistency_value"
-							onchange="gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
-						<option value="false">Disabled</option>
-						<option value="true" selected>Enabled</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_checkdigitincreaseconsistency</td>
+			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_allownegativerate</td>
 		</tr>
 
 		<tr>
@@ -1217,22 +1244,6 @@
 				</form>
 			</td>
 			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_maxrate</td>
-		</tr>
-
-		<tr>
-			<td class="indent1">
-				<span>Allow Negative Rate</span>
-			</td>
-			<td>
-				<form class="postprocessing_per_sequence" id="postprocessing_sequence_allownegativerate_form">
-					<select name="postprocessing.sequence.0.allownegativerate" id="postprocessing_sequence_0_allownegativerate_value"
-							onchange="gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
-						<option value="false" selected>Disabled</option>
-						<option value="true">Enabled</option>
-					</select>
-				</form>
-			</td>
-			<td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_allownegativerate</td>
 		</tr>
 
 		<tr class="expert">

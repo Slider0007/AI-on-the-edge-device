@@ -18,17 +18,13 @@ class ClassFlowPostProcessing : public ClassFlow
     ClassFlowCNNGeneral *flowDigit;
     ClassFlowCNNGeneral *flowAnalog;
 
+    void setDecimalPlaceCount(SequenceData &sequence);
+    void writeDataLog(const SequenceData &sequence, const MeterModel::Result &modelResult);
+
     bool fallbackValueLoaded;
     bool updateFallbackValue;
     bool loadFallbackValue(void);
     bool saveFallbackValue(void);
-
-    void setDecimalShift();
-    std::string shiftDecimal(std::string in, int _decShift);
-    std::string substituteN(std::string, double _fallbackValue);
-    float checkDigitConsistency(double _value, int _decimalshift, bool _isanalog, double _fallbackValue);
-
-    void writeDataLog(std::string sequenceName);
 
   public:
     ClassFlowPostProcessing(ClassFlowTakeImage *_flowTakeImage, ClassFlowCNNGeneral *_flowDigit, ClassFlowCNNGeneral *_flowAnalog);

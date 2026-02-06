@@ -77,15 +77,11 @@ bool ClassFlowWebhook::doFlow(std::string zwtime)
         cJSON_AddStringToObject(jsonObject, "timestamp_processed", sequence->sTimeProcessed.c_str());
         cJSON_AddStringToObject(jsonObject, "sequence_name", sequence->sequenceName.c_str());
         cJSON_AddStringToObject(jsonObject, "value_status", sequence->sValueStatus.c_str());
-
-        // Skip results if result not even a number
-        if (sequence->isActualValueANumber) {
-            cJSON_AddStringToObject(jsonObject, "actual_value", sequence->sActualValue.c_str());
-            cJSON_AddStringToObject(jsonObject, "fallback_value", sequence->sFallbackValue.c_str());
-            cJSON_AddStringToObject(jsonObject, "raw_value", sequence->sRawValue.c_str());
-            cJSON_AddStringToObject(jsonObject, "rate_per_min", sequence->sRatePerMin.c_str());
-            cJSON_AddStringToObject(jsonObject, "rate_per_interval", sequence->sRatePerInterval.c_str());
-        }
+        cJSON_AddStringToObject(jsonObject, "actual_value", sequence->sActualValue.c_str());
+        cJSON_AddStringToObject(jsonObject, "fallback_value", sequence->sFallbackValue.c_str());
+        cJSON_AddStringToObject(jsonObject, "raw_value", sequence->sRawValue.c_str());
+        cJSON_AddStringToObject(jsonObject, "rate_per_min", sequence->sRatePerMin.c_str());
+        cJSON_AddStringToObject(jsonObject, "rate_per_interval", sequence->sRatePerInterval.c_str());
 
         cJSON_AddItemToArray(jsonArray, jsonObject);
 

@@ -27,11 +27,6 @@ class ClassFlowCNNGeneral : public ClassLogImage
 
     bool saveAllFiles;
 
-    int evalAnalogNumber(int _value, int _resultPreviousNumber) const;
-    int evalDigitNumber(int _value, int _valuePreviousNumber, int _resultPreviousNumber, bool _isPreviousAnalog = false,
-                        int _analogDigitSyncValue = 92) const;
-    int evalAnalogToDigitTransition(int _value, int _valuePreviousNumber, int _resultPreviousNumber, int _analogDigitSyncValue) const;
-
     bool resolveNetworkParameter();
     bool doExtractRoi(const std::string time);
     bool doInvokeCnn(const std::string time);
@@ -44,12 +39,9 @@ class ClassFlowCNNGeneral : public ClassLogImage
     bool doFlow(std::string time);
     void doPostProcessEventHandling();
 
-    std::string getReadout(SequenceData *sequence, int _valuePreviousNumber = -1, int _resultPreviousNumber = -1) const;
-
     void drawROI(CImage &image);
 
     CNNType getCNNType() const { return cnnType; };
-    bool cnnTypeAllowExtendedResolution() const;
 
     std::string name() { return "ClassFlowCNNGeneral - " + cnnName; };
 };

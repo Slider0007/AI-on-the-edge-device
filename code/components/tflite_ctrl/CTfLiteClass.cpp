@@ -22,6 +22,7 @@ CTfLiteClass::CTfLiteClass()
     imHeight = 0;
     imWidth = 0;
     imChannel = 0;
+    outputSoftmax = false;
 }
 
 
@@ -68,6 +69,44 @@ bool CTfLiteClass::checkModelOperators(const tflite::Model *model)
     }
 
     return allOpsOk;
+}
+
+
+bool CTfLiteClass::outputIsSoftmax() const
+{
+    if (!model) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "outputIsSoftmax: Model not loaded");
+        return false;
+    }
+
+    auto *subgraph = model->subgraphs()->Get(0);
+    int numOperators = subgraph->operators()->size();
+
+    // 1. Iterate backward through the operators
+    for (int i = numOperators - 1; i >= 0; --i) {
+        auto *op = subgraph->operators()->Get(i);
+        auto *opcode = model->operator_codes()->Get(op->opcode_index());
+        auto builtin_code = opcode->builtin_code();
+
+        // 2. Skip conversion/utility operations
+        if (builtin_code == tflite::BuiltinOperator_DEQUANTIZE || builtin_code == tflite::BuiltinOperator_QUANTIZE) {
+            // Found a conversion layer, skip it and check the previous one
+            continue;
+        }
+
+        // 3. Check the first *functional* layer found
+        if (builtin_code == tflite::BuiltinOperator_SOFTMAX) {
+            return true; // Found Softmax as the last functional op
+        }
+
+        // 4. If we find any *other* functional operation (e.g., FullyConnected, Add)
+        // before finding Softmax, then the output is logits.
+        // We can stop here and conclude it's not Softmax.
+        return false;
+    }
+
+    // Fallback if the subgraph is empty (highly unlikely)
+    return false;
 }
 
 
@@ -178,7 +217,11 @@ bool CTfLiteClass::loadModel(const std::string &fileName)
         return false;
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Model successfully loaded");
+    // Check output config (softmax, logits)
+    outputSoftmax = outputIsSoftmax();
+
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                        (std::string) "Model successfully loaded | Output: " + (outputSoftmax ? "Probability (Softmax)" : "Raw (Logits)"));
     return true;
 }
 
@@ -277,6 +320,11 @@ int CTfLiteClass::getInputDimension(int dim) const
 
 int CTfLiteClass::getOutputDimension() const
 {
+    if (!interpreter) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getOutputDimension: No interpreter loaded");
+        return -1;
+    }
+
     TfLiteTensor *outputTensor = interpreter->output(0);
 
     if (!outputTensor) {
@@ -306,68 +354,161 @@ int CTfLiteClass::getOutputDimension() const
 }
 
 
-int CTfLiteClass::getOutClassification(int from, int to) const
+float CTfLiteClass::getOutputValue(const int index, bool returnConfidenceScore) const
 {
+    if (!interpreter) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getOutputValue: No interpreter loaded");
+        return -1.0f;
+    }
+
     TfLiteTensor *outputTensor = interpreter->output(0);
-
-    if (!outputTensor) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getOutClassification: Invalid outputTensor");
-        return -1;
-    }
-
-    int numOutputs = outputTensor->dims->data[1];
-
-    if (from < 0) {
-        from = 0;
-    }
-
-    if (to < 0) {
-        to = numOutputs - 1;
-    }
-
-    if (to >= numOutputs || from > to) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getOutClassification: Invalid range (from > to or to >= numOutputs)");
-        return -1;
-    }
-
-    const float *outputData = outputTensor->data.f;
-    int maxIndex = from;
-    float maxValue = outputData[from];
-
-    for (int i = from + 1; i <= to; ++i) {
-        if (outputData[i] > maxValue) {
-            maxValue = outputData[i];
-            maxIndex = i;
-        }
-    }
-
-    return maxIndex - from;
-}
-
-
-float CTfLiteClass::getOutputValue(int index) const
-{
-    TfLiteTensor *outputTensor = interpreter->output(0);
-
     if (!outputTensor) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getOutputValue: Invalid outputTensor");
         return -1.0f;
     }
 
-    int numOutputs = outputTensor->dims->data[1];
-
+    const int numOutputs = outputTensor->dims->data[1];
     if (index < 0 || index >= numOutputs) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getOutputValue: Index out of range");
         return -1.0f;
     }
 
-    return outputTensor->data.f[index];
+    // If raw logits requested (no softmax, no confidence), return directly
+    if (!outputSoftmax && !returnConfidenceScore) {
+        return outputTensor->data.f[index];
+    }
+
+    // Otherwise return probability or confidence score
+    return getProbabilityConfidenceScore(outputTensor->data.f, numOutputs, index, outputSoftmax, returnConfidenceScore);
+}
+
+
+float CTfLiteClass::getProbabilityConfidenceScore(const float *data, int numOutputs, int index, bool outputSoftmaxed,
+                                                  bool returnConfidenceScore) const
+{
+    if (!data || index < 0 || index >= numOutputs || numOutputs < 1) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getConfidenceScore: Invalid data or index");
+        return -1.0f;
+    }
+
+    float maxLogit = 0.0f;
+    float sumExp = 1.0f; // default for already softmaxed
+
+    if (!outputSoftmaxed) {
+        // Find max for numerical stability
+        maxLogit = data[0];
+        for (int i = 1; i < numOutputs; ++i) {
+            maxLogit = fmaxf(maxLogit, data[i]);
+        }
+
+        // Compute sum of exponentials once
+        sumExp = 0.0f;
+        for (int i = 0; i < numOutputs; ++i) {
+            sumExp += expf(data[i] - maxLogit);
+        }
+    }
+
+    auto softmax = [&](int i) -> float { return outputSoftmaxed ? data[i] : expf(data[i] - maxLogit) / sumExp; };
+
+    // If just probability is requested
+    if (!returnConfidenceScore) {
+        float probability = std::clamp(softmax(index), 0.0f, 1.0f);
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Probability: " + to_stringWithPrecision(probability, 2));
+        return probability;
+    }
+
+    // Compute main cluster probability (Gaussian weighted)
+    constexpr float sigma = 2.0f;
+    float probabilityMainCluster = 0.0f;
+    for (int i = 0; i < numOutputs; ++i) {
+        int dist = circularDistance(i, index, numOutputs);
+        float weight = expf(-(dist * dist) / (2.0f * sigma * sigma));
+        probabilityMainCluster += softmax(i) * weight;
+    }
+    probabilityMainCluster = std::clamp(probabilityMainCluster, 0.0f, 1.0f);
+
+    // Find next-best cluster outside �2
+    float nextBestValue = -INFINITY;
+    int nextBestIndex = -1;
+    for (int i = 0; i < numOutputs; ++i) {
+        if (circularDistance(i, index, numOutputs) > 2) {
+            if (data[i] > nextBestValue) {
+                nextBestValue = data[i];
+                nextBestIndex = i;
+            }
+        }
+    }
+
+    constexpr float kMarginScale = 0.2f;
+    float probabilityMargin = 1.0f;
+    float confidenceScore = 0.0f;
+
+    if (nextBestIndex >= 0) {
+        float probabilityNextCluster = 0.0f;
+        for (int i = 0; i < numOutputs; ++i) {
+            if (circularDistance(i, nextBestIndex, numOutputs) <= 2) {
+                probabilityNextCluster += softmax(i);
+            }
+        }
+        probabilityNextCluster = std::clamp(probabilityNextCluster, 0.0f, 1.0f);
+
+        probabilityMargin = fmaxf(probabilityMainCluster - probabilityNextCluster, 0.0f);
+        confidenceScore = probabilityMainCluster * fminf(probabilityMargin / kMarginScale, 1.0f);
+    }
+    else {
+        confidenceScore = probabilityMainCluster;
+    }
+
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                        "ProbMain: " + to_stringWithPrecision(probabilityMainCluster, 2) + ", ProbMargin: " +
+                            to_stringWithPrecision(probabilityMargin, 2) + ", Confidence: " + to_stringWithPrecision(confidenceScore, 2));
+
+    return std::clamp(confidenceScore, 0.0f, 1.0f);
+}
+
+
+int CTfLiteClass::getHighestScoringClass(int startIndex, int endIndex) const
+{
+    if (!interpreter) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getMaxOutputIndex: No interpreter loaded");
+        return -1;
+    }
+
+    TfLiteTensor *outputTensor = interpreter->output(0);
+    if (!outputTensor) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getMaxOutputIndex: Invalid outputTensor");
+        return -1;
+    }
+
+    int numOutputs = outputTensor->dims->data[1];
+
+    startIndex = std::max(0, startIndex);
+    endIndex = (endIndex < 0) ? numOutputs - 1 : std::min(endIndex, numOutputs - 1);
+
+    if (startIndex > endIndex) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "getMaxOutputIndex: Invalid range (startIndex > endIndex)");
+        return -1;
+    }
+
+    const float *outputs = outputTensor->data.f;
+
+    int bestIndex = startIndex;
+    float bestScore = outputs[startIndex];
+
+    for (int i = startIndex + 1; i <= endIndex; ++i) {
+        if (outputs[i] > bestScore) {
+            bestScore = outputs[i];
+            bestIndex = i;
+        }
+    }
+
+    return bestIndex; // absolute index
 }
 
 
 void CTfLiteClass::deleteInterpreter()
 {
-    if (tensorArena) {
+    if (interpreter && tensorArena) {
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TFLite arena - Used bytes: " + std::to_string(interpreter->arena_used_bytes()));
         free_psram_heap(std::string(TAG) + "->tensorArena", tensorArena);
         tensorArena = nullptr;
