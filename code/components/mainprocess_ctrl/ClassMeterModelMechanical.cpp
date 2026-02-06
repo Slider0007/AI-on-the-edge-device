@@ -27,11 +27,11 @@ MeterModelMechanical &MeterModelMechanical::setDialToWheelDetune(float detuneVal
     size_t msdIdx = m_nDigits; // Default to first analog dial
 
     if (m_nAnalogDials == 0) {
-        if (m_wheelType == WheelType::LSWContinuous) {
-            msdIdx = m_nDigits - 1; // If LSWContinuous, the last digit is continuous rolling like an analog dial
+        if (m_wheelType == WheelType::LSWContinuous || m_wheelType == WheelType::AllWheelsContinuous) {
+            msdIdx = m_nDigits - 1; // The last digit is continuous rolling like an analog dial
         }
         else {
-            return *this; // No continuous rolling transition -> no detune
+            return *this; // No continuous rolling transition -> no dial to wheel detune
         }
     }
 
@@ -41,7 +41,6 @@ MeterModelMechanical &MeterModelMechanical::setDialToWheelDetune(float detuneVal
         detuneValue -= 10.0f;
     }
 
-    // Store value
     if (msdIdx < m_digitManualDetune.size()) {
         m_digitManualDetune[msdIdx] = std::clamp(detuneValue, -5.0f, 5.0f);
     }
