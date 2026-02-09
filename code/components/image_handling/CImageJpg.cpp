@@ -127,8 +127,8 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
         return *this;
     }
 
-    CImageJpg *first = (this < &other) ? this : const_cast<CImageJpg *>(&other);
-    CImageJpg *second = (this < &other) ? const_cast<CImageJpg *>(&other) : this;
+    CImageJpg *first = (this < &other) ? this : &other;
+    CImageJpg *second = (this < &other) ? &other : this;
 
     CImageLockGuard lock1(*first);
     CImageLockGuard lock2(*second);

@@ -142,8 +142,8 @@ CImage &CImage::operator=(const CImage &other)
         return *this;
     }
 
-    CImage *first = (this < &other) ? this : const_cast<CImage *>(&other);
-    CImage *second = (this < &other) ? const_cast<CImage *>(&other) : this;
+    CImage *first = (this < &other) ? this : &other;
+    CImage *second = (this < &other) ? &other : this;
 
     CImageLockGuard lock1(*first);
     CImageLockGuard lock2(*second);
@@ -229,8 +229,8 @@ CImage &CImage::operator=(CImage &&other) noexcept
         return *this;
     }
 
-    CImage *first = (this < &other) ? this : const_cast<CImage *>(&other);
-    CImage *second = (this < &other) ? const_cast<CImage *>(&other) : this;
+    CImage *first = (this < &other) ? this : &other;
+    CImage *second = (this < &other) ? &other : this;
 
     CImageLockGuard lock1(*first);
     CImageLockGuard lock2(*second);
