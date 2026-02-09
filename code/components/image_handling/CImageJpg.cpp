@@ -153,7 +153,7 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
         imgData = newData;
     }
 
-    name = other.name + "-copy";
+    name = other.name;
     imgDataSize = other.imgDataSize;
 
     if (other.imgData && imgData) {
