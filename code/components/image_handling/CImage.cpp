@@ -91,8 +91,8 @@ CImage::CImage(std::string objName, const std::string &filename, bool customStbL
 
 // Copy constructor
 CImage::CImage(const CImage &other)
-    : imageMutex(xSemaphoreCreateRecursiveMutex()), name(other.name + "-copy"), width(other.width), height(other.height),
-      channels(other.channels), imgDataSize(other.imgDataSize), imgData(nullptr), allocatedSize(other.imgDataSize), externalMemory(false)
+    : imageMutex(xSemaphoreCreateRecursiveMutex()), name(), width(0), height(0), channels(0), imgDataSize(0), imgData(nullptr),
+      allocatedSize(0), externalMemory(false)
 {
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to create semaphore");
@@ -102,10 +102,17 @@ CImage::CImage(const CImage &other)
 
     CImageLockGuard otherLock(other);
     if (!otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to lock source");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to lock");
         allocatedSize = 0;
         return;
     }
+
+    name = other.name + "-copy";
+    width = other.width;
+    height = other.height;
+    channels = other.channels;
+    imgDataSize = other.imgDataSize;
+    allocatedSize = other.imgDataSize;
 
     if (allocatedSize > 0) {
         imgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->Copy (" + other.name + ")", allocatedSize,
@@ -135,15 +142,19 @@ CImage &CImage::operator=(const CImage &other)
         return *this;
     }
 
-    CImageLockGuard thisLock(*this);
-    CImageLockGuard otherLock(other);
-    if (!otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to lock source");
+    CImage *first = (this < &other) ? this : const_cast<CImage *>(&other);
+    CImage *second = (this < &other) ? const_cast<CImage *>(&other) : this;
+
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
+
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "copy-Assign: Failed to lock");
         return *this;
     }
 
     // Allocate only if current buffer is too small
-    if (allocatedSize < other.imgDataSize) {
+    if (allocatedSize < other.imgDataSize || externalMemory) {
         uint8_t *newImgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->Copy-assign (" + other.name + ")", other.imgDataSize,
                                                            MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
@@ -156,14 +167,15 @@ CImage &CImage::operator=(const CImage &other)
         freeImageData();
         imgData = newImgData;
         allocatedSize = other.imgDataSize;
+        externalMemory = false;
     }
 
-    name = other.name + "-copy";
+    name = other.name;
     width = other.width;
     height = other.height;
     channels = other.channels;
     imgDataSize = other.imgDataSize;
-    externalMemory = false;
+
 
     if (other.imgData && imgData) {
         memcpy(imgData, other.imgData, other.imgDataSize);
@@ -178,15 +190,33 @@ CImage &CImage::operator=(const CImage &other)
 
 // Move constructor
 CImage::CImage(CImage &&other) noexcept
-    : imageMutex(other.imageMutex), name(std::move(other.name)), width(other.width), height(other.height), channels(other.channels),
-      imgDataSize(other.imgDataSize), imgData(other.imgData), allocatedSize(other.allocatedSize), externalMemory(other.externalMemory)
+    : imageMutex(xSemaphoreCreateRecursiveMutex()), name(), width(0), height(0), channels(0), imgDataSize(0), imgData(nullptr),
+      allocatedSize(0), externalMemory(false)
 {
-    other.imageMutex = nullptr;
-    other.imgData = nullptr;
+    if (!imageMutex) {
+        return;
+    }
+
+    CImageLockGuard otherLock(other);
+    if (!otherLock.isLocked()) {
+        return;
+    }
+
+    name = std::move(other.name);
+    width = other.width;
+    height = other.height;
+    channels = other.channels;
+    imgDataSize = other.imgDataSize;
+    imgData = other.imgData;
+    allocatedSize = other.allocatedSize;
+    externalMemory = other.externalMemory;
+
+    other.name.clear();
     other.width = 0;
     other.height = 0;
     other.channels = 0;
     other.imgDataSize = 0;
+    other.imgData = nullptr;
     other.allocatedSize = 0;
     other.externalMemory = false;
 }
@@ -199,45 +229,36 @@ CImage &CImage::operator=(CImage &&other) noexcept
         return *this;
     }
 
-    SemaphoreHandle_t mutexToDelete = nullptr;
+    CImage *first = (this < &other) ? this : const_cast<CImage *>(&other);
+    CImage *second = (this < &other) ? const_cast<CImage *>(&other) : this;
 
-    // Scope - limited locking to safely clear existing data
-    {
-        CImageLockGuard thisLock(*this);
-        CImageLockGuard otherLock(other);
-        if (!thisLock.isLocked() || !otherLock.isLocked()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-assign: Failed to lock source");
-            return *this;
-        }
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
 
-        if (!externalMemory) {
-            freeImageData();
-        }
-
-        mutexToDelete = imageMutex;
-        imageMutex = other.imageMutex;
-
-        name = std::move(other.name);
-        width = other.width;
-        height = other.height;
-        channels = other.channels;
-        imgDataSize = other.imgDataSize;
-        imgData = other.imgData;
-        allocatedSize = other.allocatedSize;
-        externalMemory = other.externalMemory;
-
-        other.imageMutex = nullptr;
-        other.imgData = nullptr;
-        other.width = 0;
-        other.height = 0;
-        other.channels = 0;
-        other.imgDataSize = 0;
-        other.allocatedSize = 0;
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-assign: Failed to lock");
+        return *this;
     }
 
-    if (mutexToDelete) {
-        vSemaphoreDelete(mutexToDelete);
-    }
+    freeImageData();
+
+    name = std::move(other.name);
+    width = other.width;
+    height = other.height;
+    channels = other.channels;
+    imgDataSize = other.imgDataSize;
+    imgData = other.imgData;
+    allocatedSize = other.allocatedSize;
+    externalMemory = other.externalMemory;
+
+    other.name.clear();
+    other.width = 0;
+    other.height = 0;
+    other.channels = 0;
+    other.imgData = nullptr;
+    other.imgDataSize = 0;
+    other.allocatedSize = 0;
+    other.externalMemory = false;
 
     return *this;
 }
@@ -621,6 +642,10 @@ bool CImage::getIsInbound(int x, int y)
 
 uint8_t CImage::getPixelColor(int x, int y, int ch)
 {
+    if (!getIsInbound(x, y)) {
+        return 0;
+    }
+
     return imgData[((y * width + x) * channels) + ch];
 }
 
@@ -643,9 +668,11 @@ void CImage::setPixelColor(int x, int y, uint8_t r, uint8_t g, uint8_t b)
 
 void CImage::freeImageData()
 {
-    if (imgData) {
+    if (imgData && !externalMemory) {
         free_psram_heap(std::string(TAG) + "->CImage (" + name + ", " + std::to_string(imgDataSize) + ")", imgData);
         imgData = nullptr;
+        imgDataSize = 0;
+        allocatedSize = 0;
     }
 }
 

@@ -88,9 +88,8 @@ CImageJpg::CImageJpg(std::string objName, const std::string &filename) : name(st
 
 // Copy constructor
 CImageJpg::CImageJpg(const CImageJpg &other)
-    : imageMutex(nullptr), name(other.name + "-copy"), imgDataSize(other.imgDataSize), imgData(nullptr)
+    : imageMutex(xSemaphoreCreateRecursiveMutex()), name(other.name + "-copy"), imgDataSize(other.imgDataSize), imgData(nullptr)
 {
-    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to create semaphore");
         return;
@@ -111,15 +110,12 @@ CImageJpg::CImageJpg(const CImageJpg &other)
             return;
         }
 
-        if (imgData && other.imgData) {
+        if (other.imgData) {
             memcpy(imgData, other.imgData, imgDataSize);
         }
         else {
-            imgData = nullptr;
+            memset(imgData, 0, imgDataSize);
         }
-    }
-    else {
-        imgData = nullptr;
     }
 }
 
@@ -131,30 +127,39 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
         return *this;
     }
 
-    CImageLockGuard thisLock(*this);
-    CImageLockGuard otherLock(other);
-    if (!otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to lock source");
+    CImageJpg *first = (this < &other) ? this : const_cast<CImageJpg *>(&other);
+    CImageJpg *second = (this < &other) ? const_cast<CImageJpg *>(&other) : this;
+
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
+
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to lock");
         return *this;
     }
 
-    uint8_t *newImgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->CImageJpg (" + name + ")", other.imgDataSize,
-                                                       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    // Allocate only if needed
+    if (!imgData || imgDataSize < other.imgDataSize) {
+        uint8_t *newData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->Copy-assign (" + other.name + ")", other.imgDataSize,
+                                                        MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
-    if (!newImgData) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate memory: " + std::to_string(imgDataSize));
-        return *this;
+        if (!newData) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Allocation failed");
+            LogFile.writeHeapInfo("CImageJpg-copy-assign");
+            return *this;
+        }
+
+        freeImageData();
+        imgData = newData;
     }
 
-    freeImageData();
-    imgData = newImgData;
-    imgDataSize = other.imgDataSize;
     name = other.name + "-copy";
+    imgDataSize = other.imgDataSize;
 
-    if (other.imgData) {
-        memcpy(imgData, other.imgData, imgDataSize);
+    if (other.imgData && imgData) {
+        memcpy(imgData, other.imgData, other.imgDataSize);
     }
-    else {
+    else if (imgData) {
         memset(imgData, 0, imgDataSize);
     }
 
@@ -163,12 +168,24 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
 
 
 // Move constructor
-CImageJpg::CImageJpg(CImageJpg &&other) noexcept
-    : imageMutex(other.imageMutex), name(std::move(other.name)), imgDataSize(other.imgDataSize), imgData(other.imgData)
+CImageJpg::CImageJpg(CImageJpg &&other) noexcept : imageMutex(xSemaphoreCreateRecursiveMutex()), name(), imgDataSize(0), imgData(nullptr)
 {
-    other.imageMutex = nullptr;
+    if (!imageMutex) {
+        return;
+    }
+
+    CImageLockGuard otherLock(other);
+    if (!otherLock.isLocked()) {
+        return;
+    }
+
+    name = std::move(other.name);
+    imgData = other.imgData;
+    imgDataSize = other.imgDataSize;
+
     other.imgData = nullptr;
     other.imgDataSize = 0;
+    other.name.clear();
 }
 
 
@@ -179,34 +196,26 @@ CImageJpg &CImageJpg::operator=(CImageJpg &&other) noexcept
         return *this;
     }
 
-    SemaphoreHandle_t mutexToDelete = nullptr;
+    CImageJpg *first = (this < &other) ? this : &other;
+    CImageJpg *second = (this < &other) ? &other : this;
 
-    // Scope - limited locking to safely clear existing data
-    {
-        CImageLockGuard thisLock(*this);
-        CImageLockGuard otherLock(other);
-        if (!thisLock.isLocked() || !otherLock.isLocked()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-Assign: Failed to lock images");
-            return *this;
-        }
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
 
-        freeImageData();
-
-        mutexToDelete = imageMutex;
-        imageMutex = other.imageMutex;
-
-        name = std::move(other.name);
-        imgData = other.imgData;
-        imgDataSize = other.imgDataSize;
-
-        other.imageMutex = nullptr;
-        other.imgData = nullptr;
-        other.imgDataSize = 0;
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-assign: Failed to lock");
+        return *this;
     }
 
-    if (mutexToDelete) {
-        vSemaphoreDelete(mutexToDelete);
-    }
+    freeImageData();
+
+    name = std::move(other.name);
+    imgData = other.imgData;
+    imgDataSize = other.imgDataSize;
+
+    other.name.clear();
+    other.imgData = nullptr;
+    other.imgDataSize = 0;
 
     return *this;
 }
@@ -452,6 +461,7 @@ void CImageJpg::freeImageData()
     if (imgData) {
         free_psram_heap(std::string(TAG) + "->CImageJpg (" + name + ", " + std::to_string(imgDataSize) + ")", imgData);
         imgData = nullptr;
+        imgDataSize = 0;
     }
 }
 
