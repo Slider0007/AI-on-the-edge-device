@@ -127,8 +127,8 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
         return *this;
     }
 
-    CImageJpg *first = (this < &other) ? this : &other;
-    CImageJpg *second = (this < &other) ? &other : this;
+    const CImageJpg *first = (this < &other) ? this : &other;
+    const CImageJpg *second = (this < &other) ? &other : this;
 
     CImageLockGuard lock1(*first);
     CImageLockGuard lock2(*second);
@@ -196,8 +196,8 @@ CImageJpg &CImageJpg::operator=(CImageJpg &&other) noexcept
         return *this;
     }
 
-    CImageJpg *first = (this < &other) ? this : &other;
-    CImageJpg *second = (this < &other) ? &other : this;
+    const CImageJpg *first = (this < &other) ? this : &other;
+    const CImageJpg *second = (this < &other) ? &other : this;
 
     CImageLockGuard lock1(*first);
     CImageLockGuard lock2(*second);
