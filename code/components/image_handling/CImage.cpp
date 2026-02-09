@@ -112,7 +112,7 @@ CImage::CImage(const CImage &other)
     height = other.height;
     channels = other.channels;
     imgDataSize = other.imgDataSize;
-    allocatedSize = other.imgDataSize;
+    allocatedSize = other.allocatedSize;
 
     if (allocatedSize > 0) {
         imgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->Copy (" + other.name + ")", allocatedSize,
