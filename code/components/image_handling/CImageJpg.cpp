@@ -86,7 +86,9 @@ CImageJpg::CImageJpg(std::string objName, const std::string &filename) : name(st
 }
 
 
-CImageJpg::CImageJpg(const CImageJpg &other) : name(other.name + "-copy"), imgDataSize(other.imgDataSize)
+// Copy constructor
+CImageJpg::CImageJpg(const CImageJpg &other)
+    : imageMutex(nullptr), name(other.name + "-copy"), imgDataSize(other.imgDataSize), imgData(nullptr)
 {
     imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
@@ -109,7 +111,7 @@ CImageJpg::CImageJpg(const CImageJpg &other) : name(other.name + "-copy"), imgDa
             return;
         }
 
-        if (other.imgData) {
+        if (imgData && other.imgData) {
             memcpy(imgData, other.imgData, imgDataSize);
         }
         else {
@@ -122,6 +124,7 @@ CImageJpg::CImageJpg(const CImageJpg &other) : name(other.name + "-copy"), imgDa
 }
 
 
+// Copy assignment
 CImageJpg &CImageJpg::operator=(const CImageJpg &other)
 {
     if (this == &other) {
@@ -135,17 +138,18 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
         return *this;
     }
 
-    name = other.name + "-copy";
-    imgDataSize = other.imgDataSize;
+    uint8_t *newImgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->CImageJpg (" + name + ")", other.imgDataSize,
+                                                       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
-    freeImageData();
-    imgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->CImageJpg (" + name + ")", imgDataSize,
-                                           MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-
-    if (!imgData) {
+    if (!newImgData) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate memory: " + std::to_string(imgDataSize));
         return *this;
     }
+
+    freeImageData();
+    imgData = newImgData;
+    imgDataSize = other.imgDataSize;
+    name = other.name + "-copy";
 
     if (other.imgData) {
         memcpy(imgData, other.imgData, imgDataSize);
@@ -158,50 +162,51 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
 }
 
 
+// Move constructor
 CImageJpg::CImageJpg(CImageJpg &&other) noexcept
     : imageMutex(other.imageMutex), name(std::move(other.name)), imgDataSize(other.imgDataSize), imgData(other.imgData)
 {
-    CImageLockGuard otherLock(other);
-    if (!otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move: Failed to lock source");
-        return;
-    }
-
     other.imageMutex = nullptr;
-    other.imgDataSize = 0;
     other.imgData = nullptr;
+    other.imgDataSize = 0;
 }
 
 
-// Move assignment operator
+// Move assignment
 CImageJpg &CImageJpg::operator=(CImageJpg &&other) noexcept
 {
     if (this == &other) {
         return *this;
     }
 
-    CImageLockGuard thisLock(*this);
-    CImageLockGuard otherLock(other);
-    if (!thisLock.isLocked() || !otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-Assign: Failed to lock images");
-        return *this;
+    SemaphoreHandle_t mutexToDelete = nullptr;
+
+    // Scope - limited locking to safely clear existing data
+    {
+        CImageLockGuard thisLock(*this);
+        CImageLockGuard otherLock(other);
+        if (!thisLock.isLocked() || !otherLock.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-Assign: Failed to lock images");
+            return *this;
+        }
+
+        freeImageData();
+
+        mutexToDelete = imageMutex;
+        imageMutex = other.imageMutex;
+
+        name = std::move(other.name);
+        imgData = other.imgData;
+        imgDataSize = other.imgDataSize;
+
+        other.imageMutex = nullptr;
+        other.imgData = nullptr;
+        other.imgDataSize = 0;
     }
 
-    freeImageData();
-
-    if (imageMutex) {
-        vSemaphoreDelete(imageMutex);
+    if (mutexToDelete) {
+        vSemaphoreDelete(mutexToDelete);
     }
-
-    imageMutex = other.imageMutex;
-    other.imageMutex = nullptr;
-
-    name = std::move(other.name);
-    imgDataSize = other.imgDataSize;
-    imgData = other.imgData;
-
-    other.imgDataSize = 0;
-    other.imgData = nullptr;
 
     return *this;
 }
