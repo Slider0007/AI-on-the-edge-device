@@ -132,7 +132,6 @@ CImageJpg &CImageJpg::operator=(const CImageJpg &other)
 
     CImageLockGuard lock1(*first);
     CImageLockGuard lock2(*second);
-
     if (!lock1.isLocked() || !lock2.isLocked()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to lock");
         return *this;
@@ -201,7 +200,6 @@ CImageJpg &CImageJpg::operator=(CImageJpg &&other) noexcept
 
     CImageLockGuard lock1(*first);
     CImageLockGuard lock2(*second);
-
     if (!lock1.isLocked() || !lock2.isLocked()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-assign: Failed to lock");
         return *this;
@@ -445,6 +443,15 @@ bool CImageJpg::lock() const
     if (imageMutex && xSemaphoreTakeRecursive(imageMutex, pdMS_TO_TICKS(30000)) == pdTRUE) {
         return true;
     }
+
+#ifdef DEBUG_DETAIL_ON
+    TaskHandle_t holder = xSemaphoreGetMutexHolder(imageMutex);
+    if (holder != NULL) {
+        char *taskName = pcTaskGetName(holder);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Lock Timeout: Held by task: " + std::string(taskName));
+    }
+#endif
+
     return false;
 }
 

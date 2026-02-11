@@ -234,7 +234,6 @@ CImage &CImage::operator=(CImage &&other) noexcept
 
     CImageLockGuard lock1(*first);
     CImageLockGuard lock2(*second);
-
     if (!lock1.isLocked() || !lock2.isLocked()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-assign: Failed to lock");
         return *this;
@@ -540,8 +539,14 @@ esp_err_t CImage::sendJpgToHttp(httpd_req_t *req, const int quality)
         size_t actBufferSize;
     } sendJpgCtx = {req, ESP_OK, (char *)((struct HttpServerData *)req->user_ctx)->scratch, 0};
 
+    // Lambda helper
     auto sendJPGToHttpHelper = [](void *context, void *data, int dataSize) {
         auto *sendJpgHttp = (SendJpgHttp *)context;
+
+        if (sendJpgHttp->retVal != ESP_OK) {
+            return;
+        }
+
         if ((sendJpgHttp->actBufferSize + dataSize) >= WEBSERVER_SCRATCH_BUFSIZE) { // Buffer full, send chunk
             if (httpd_resp_send_chunk(sendJpgHttp->req, (const char *)sendJpgHttp->buffer, sendJpgHttp->actBufferSize) != ESP_OK) {
                 sendJpgHttp->retVal = ESP_FAIL;
@@ -586,6 +591,15 @@ bool CImage::lock() const
     if (imageMutex && xSemaphoreTakeRecursive(imageMutex, pdMS_TO_TICKS(30000)) == pdTRUE) {
         return true;
     }
+
+#ifdef DEBUG_DETAIL_ON
+    TaskHandle_t holder = xSemaphoreGetMutexHolder(imageMutex);
+    if (holder != NULL) {
+        char *taskName = pcTaskGetName(holder);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Lock Timeout: Held by task: " + std::string(taskName));
+    }
+#endif
+
     return false;
 }
 
