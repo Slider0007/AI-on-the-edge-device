@@ -332,7 +332,7 @@ esp_err_t CImage::loadJpgFromMemory(void *buffer, int size, bool overwriteSource
     }
 
     if (overwriteSource && !isValid()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromFile: No allocated memory");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromMemory: No allocated memory");
         return ESP_FAIL;
     }
 
@@ -469,26 +469,9 @@ esp_err_t CImage::saveJpgToBuffer(uint8_t *jpgBuffer, const int size, const int 
 
 esp_err_t CImage::saveJpgToContainer(CImageJpg *jpgContainer, const int quality)
 {
-    if (!isValid()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: No valid image data");
+    if (!isValid() || !jpgContainer || !jpgContainer->isValid()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Invalid image or container");
         return ESP_FAIL;
-    }
-
-    if (!jpgContainer || !jpgContainer->isValid()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Invalid JPG container");
-        return ESP_FAIL;
-    }
-
-    CImageLockGuard jpgLock(*jpgContainer);
-    if (!jpgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Could not acquire lock (jpg)");
-        return ESP_ERR_TIMEOUT;
-    }
-
-    CImageLockGuard imgLock(*this);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Could not acquire lock");
-        return ESP_ERR_TIMEOUT;
     }
 
     struct JpgWriteContext {
@@ -497,31 +480,50 @@ esp_err_t CImage::saveJpgToContainer(CImageJpg *jpgContainer, const int quality)
         bool bufferOverflow;
     } jpgWriteCtx = {jpgContainer->getImgData(), 0, false};
 
-    auto writeJPGHelper = [](void *context, void *data, int dataSize) {
-        JpgWriteContext *ctx = (JpgWriteContext *)context;
+    // Lambda helper
+    auto doEncoding = [&]() -> esp_err_t {
+        auto writeJPGHelper = [](void *context, void *data, int dataSize) {
+            JpgWriteContext *ctx = (JpgWriteContext *)context;
 
-        if (!ctx || !ctx->buffer || (ctx->actBufferSize + dataSize) > IMAGE_JPG_MAX_SIZE) {
-            ctx->bufferOverflow = true;
-            return;
+            if (!ctx || !ctx->buffer || (ctx->actBufferSize + dataSize) > IMAGE_JPG_MAX_SIZE) {
+                ctx->bufferOverflow = true;
+                return;
+            }
+            memcpy(ctx->buffer + ctx->actBufferSize, data, dataSize);
+            ctx->actBufferSize += dataSize;
+        };
+
+        if (!stbi_write_jpg_to_func(writeJPGHelper, &jpgWriteCtx, width, height, channels, imgData, quality)) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: JPG encoding failed");
+            return ESP_FAIL;
         }
 
-        memcpy(ctx->buffer + ctx->actBufferSize, data, dataSize);
-        ctx->actBufferSize += dataSize;
+        if (jpgWriteCtx.bufferOverflow) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Buffer overflow");
+            return ESP_FAIL;
+        }
+
+        jpgContainer->setImgDataSize(jpgWriteCtx.actBufferSize);
+        return ESP_OK;
     };
 
-    if (!stbi_write_jpg_to_func(writeJPGHelper, &jpgWriteCtx, width, height, channels, imgData, quality)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: JPG encoding failed");
-        return ESP_FAIL;
+    // Sorted Locking to prevent deadlocks
+    if ((void *)this < (void *)jpgContainer) {
+        CImageLockGuard lock1(*this);
+        CImageLockGuard lock2(*jpgContainer);
+        if (!lock1.isLocked() || !lock2.isLocked()) {
+            return ESP_ERR_TIMEOUT;
+        }
+        return doEncoding();
     }
-
-    if (jpgWriteCtx.bufferOverflow) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Buffer overflow, target buffer insufficient");
-        return ESP_FAIL;
+    else {
+        CImageLockGuard lock1(*jpgContainer);
+        CImageLockGuard lock2(*this);
+        if (!lock1.isLocked() || !lock2.isLocked()) {
+            return ESP_ERR_TIMEOUT;
+        }
+        return doEncoding();
     }
-
-    jpgContainer->setImgDataSize(jpgWriteCtx.actBufferSize);
-
-    return ESP_OK;
 }
 
 
@@ -543,6 +545,7 @@ esp_err_t CImage::sendJpgToHttp(httpd_req_t *req, const int quality)
     auto sendJPGToHttpHelper = [](void *context, void *data, int dataSize) {
         auto *sendJpgHttp = (SendJpgHttp *)context;
 
+        // Abort if already in failed state
         if (sendJpgHttp->retVal != ESP_OK) {
             return;
         }

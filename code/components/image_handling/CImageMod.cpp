@@ -305,22 +305,16 @@ esp_err_t CImageMod::grayscale(CImage &img, bool overwriteSource, CImage *imgTar
         CImageLockGuard lock1(*first);
         CImageLockGuard lock2(*second);
         if (!lock1.isLocked() || !lock2.isLocked()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "translate: Could not acquire lock");
-            return ESP_ERR_TIMEOUT;
-        }
-
-
-        CImageLockGuard targetLock(*imgTarget);
-        if (!targetLock.isLocked()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "grayscale: Could not acquire lock (imgTarget)");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "grayscale: Could not acquire lock");
             return ESP_ERR_TIMEOUT;
         }
     }
-
-    CImageLockGuard imgLock(img);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "grayscale: Could not acquire lock");
-        return ESP_ERR_TIMEOUT;
+    else {
+        CImageLockGuard imgLock(img);
+        if (!imgLock.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "grayscale: Could not acquire lock");
+            return ESP_ERR_TIMEOUT;
+        }
     }
 
     const int width = img.getWidth();
