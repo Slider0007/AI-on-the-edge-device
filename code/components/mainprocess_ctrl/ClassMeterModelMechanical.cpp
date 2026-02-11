@@ -144,10 +144,9 @@ MeterModel::Result MeterModelMechanical::invokeModel(const SequenceData &sequenc
     // Result summary
     char logBuf[320];
     const int precision = sequenceData.paramPostProc->extendedResolution ? m_nDecimalPlaces + 1 : m_nDecimalPlaces;
-    const double detuneVal = calculateDetuneOffset() / MeterModelHelper::pow10(m_nDecimalPlaces);
 
     snprintf(logBuf, sizeof(logBuf), "Model Result: %.*f | Score: %.2f | DecScore: %.2f | TotalDetune: %.*f", precision, result.value,
-             result.score, result.decisionScore, m_nDecimalPlaces, detuneVal);
+             result.score, result.decisionScore, m_nDecimalPlaces, detuneOffset / MeterModelHelper::pow10(m_nDecimalPlaces));
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, logBuf);
 
@@ -187,11 +186,11 @@ float MeterModelMechanical::calculateSigma(const size_t idx, const float confide
     // 3. Positional bias
     const float positionalBoost = 1.0f + (0.3f * t);
 
-    // 4. Dynamic Scaling (user-adjustable part: m_modelInfluence)
+    // 4. Dynamic Scaling (user-adjustable)
     // Scale based on how much the OCR 'fight' the mechanical transition
-    const float multiplier = 1.0f + (ocrUncertainty * 5.0f * m_modelInfluence);
+    const float multiplier = 1.0f + (2.0f * m_modelInfluence) + (ocrUncertainty * 5.0f * m_modelInfluence);
 
-    return std::clamp(baseSigma * positionalBoost * multiplier, 0.1f, 1.5f);
+    return std::clamp(baseSigma * positionalBoost * multiplier, 0.1f, 2.0f);
 }
 
 
