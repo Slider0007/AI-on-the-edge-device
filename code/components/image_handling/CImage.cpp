@@ -147,9 +147,8 @@ CImage &CImage::operator=(const CImage &other)
 
     CImageLockGuard lock1(*first);
     CImageLockGuard lock2(*second);
-
     if (!lock1.isLocked() || !lock2.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "copy-Assign: Failed to lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to lock");
         return *this;
     }
 
@@ -199,6 +198,7 @@ CImage::CImage(CImage &&other) noexcept
 
     CImageLockGuard otherLock(other);
     if (!otherLock.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move: Failed to lock");
         return;
     }
 
@@ -277,7 +277,7 @@ esp_err_t CImage::loadJpgFromFile(const std::string &filename, bool overwriteSou
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromFile: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromFile: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -298,6 +298,7 @@ esp_err_t CImage::loadJpgFromFile(const std::string &filename, bool overwriteSou
 
     if (!imgData) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromFile: Failed to load image: " + filename);
+        LogFile.writeHeapInfo("loadJpgFromFile");
         return ESP_FAIL;
     }
 
@@ -338,7 +339,7 @@ esp_err_t CImage::loadJpgFromMemory(void *buffer, int size, bool overwriteSource
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromMemory: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromMemory: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -397,7 +398,7 @@ esp_err_t CImage::saveJpgToFile(const std::string &filename, const int quality)
     if (fileType == "jpg" || fileType == "jpeg") {
         CImageLockGuard lockGuard(*this);
         if (!lockGuard.isLocked()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToFile: Could not acquire lock");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToFile: Failed to lock");
             return ESP_ERR_TIMEOUT;
         }
 
@@ -445,10 +446,9 @@ esp_err_t CImage::saveJpgToBuffer(uint8_t *jpgBuffer, const int size, const int 
         ctx->actBufferSize += dataSize;
     };
 
-
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToBuffer: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToBuffer: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -512,6 +512,7 @@ esp_err_t CImage::saveJpgToContainer(CImageJpg *jpgContainer, const int quality)
         CImageLockGuard lock1(*this);
         CImageLockGuard lock2(*jpgContainer);
         if (!lock1.isLocked() || !lock2.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Failed to lock");
             return ESP_ERR_TIMEOUT;
         }
         return doEncoding();
@@ -520,6 +521,7 @@ esp_err_t CImage::saveJpgToContainer(CImageJpg *jpgContainer, const int quality)
         CImageLockGuard lock1(*jpgContainer);
         CImageLockGuard lock2(*this);
         if (!lock1.isLocked() || !lock2.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Failed to lock");
             return ESP_ERR_TIMEOUT;
         }
         return doEncoding();
@@ -563,7 +565,7 @@ esp_err_t CImage::sendJpgToHttp(httpd_req_t *req, const int quality)
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendJpgToHttp: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -571,7 +573,7 @@ esp_err_t CImage::sendJpgToHttp(httpd_req_t *req, const int quality)
     httpd_resp_set_type(req, "image/jpeg");
 
     if (!stbi_write_jpg_to_func(sendJPGToHttpHelper, &sendJpgCtx, width, height, channels, imgData, quality)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendJPGtoHTTP: Failed to encode and send JPG");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendJpgToHttp: Failed to encode and send JPG");
         return ESP_FAIL;
     }
 
@@ -659,7 +661,7 @@ bool CImage::getIsInbound(int x, int y)
 
 uint8_t CImage::getPixelColor(int x, int y, int ch)
 {
-    if (!getIsInbound(x, y)) {
+    if (!getIsInbound(x, y) || ch < 0 || ch >= channels) {
         return 0;
     }
 

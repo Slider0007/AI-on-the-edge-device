@@ -14,7 +14,7 @@ CImageLockGuard::CImageLockGuard(const CImage &image) : imgPtr((void *)&image), 
     locked = img->lock();
 
     if (!locked) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire resource lock");
     }
 }
 
@@ -25,7 +25,7 @@ CImageLockGuard::CImageLockGuard(const CImageJpg &image) : imgPtr((void *)&image
     locked = imgJpg->lock();
 
     if (!locked) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire resource lock");
     }
 }
 

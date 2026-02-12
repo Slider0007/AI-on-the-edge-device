@@ -33,6 +33,7 @@ CImageJpg::CImageJpg(std::string objName, int size, const uint8_t *data) : name(
 
     if (!imgData) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Can't allocate enough memory: " + std::to_string(imgDataSize));
+        LogFile.writeHeapInfo("CImageJpg");
         return;
     }
 
@@ -69,6 +70,7 @@ CImageJpg::CImageJpg(std::string objName, const std::string &filename) : name(st
     imgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->CImageJpg (" + name + ")", fileSize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!imgData) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate memory for image data");
+        LogFile.writeHeapInfo("CImageJpg-file");
         fclose(file);
         return;
     }
@@ -97,7 +99,7 @@ CImageJpg::CImageJpg(const CImageJpg &other)
 
     CImageLockGuard otherLock(other);
     if (!otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to lock");
         return;
     }
 
@@ -107,6 +109,7 @@ CImageJpg::CImageJpg(const CImageJpg &other)
 
         if (!imgData) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to allocate memory: " + std::to_string(imgDataSize));
+            LogFile.writeHeapInfo("CImageJpg-copy");
             return;
         }
 
@@ -175,6 +178,7 @@ CImageJpg::CImageJpg(CImageJpg &&other) noexcept : imageMutex(xSemaphoreCreateRe
 
     CImageLockGuard otherLock(other);
     if (!otherLock.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move: Failed to lock");
         return;
     }
 
@@ -228,7 +232,7 @@ esp_err_t CImageJpg::updateImageDataFromJpgBuffer(const uint8_t *newData, int ne
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "updateImageDataFromJpgBuffer: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "updateImageDataFromJpgBuffer: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -239,6 +243,7 @@ esp_err_t CImageJpg::updateImageDataFromJpgBuffer(const uint8_t *newData, int ne
                                                MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
         if (!imgData) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "updateImageDataFromJpgBuffer: Failed to allocate memory for new data");
+            LogFile.writeHeapInfo("updateImageDataFromJpgBuffer");
             return ESP_FAIL;
         }
     }
@@ -273,7 +278,7 @@ esp_err_t CImageJpg::updateImageDataFromJpgFile(const std::string &filename, boo
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
         fclose(file);
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "updateImageDataFromJpgFile: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "updateImageDataFromJpgFile: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -285,6 +290,7 @@ esp_err_t CImageJpg::updateImageDataFromJpgFile(const std::string &filename, boo
                                                MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
         if (!imgData) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "updateImageDataFromJpgFile: Failed to allocate memory for image data");
+            LogFile.writeHeapInfo("updateImageDataFromJpgFile");
             fclose(file);
             return ESP_FAIL;
         }
@@ -320,7 +326,7 @@ esp_err_t CImageJpg::loadJpgFromMemory(const void *data, int size)
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromMemory: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromMemory: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -329,6 +335,7 @@ esp_err_t CImageJpg::loadJpgFromMemory(const void *data, int size)
 
     if (!imgData) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromMemory: Failed to allocate memory: " + std::to_string(size));
+        LogFile.writeHeapInfo("loadJpgFromMemory");
         return ESP_FAIL;
     }
 
@@ -348,7 +355,7 @@ esp_err_t CImageJpg::saveJpgToFile(const std::string &filename)
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToFile: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToFile: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -379,7 +386,7 @@ esp_err_t CImageJpg::sendJpgToHttp(httpd_req_t *req)
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendJpgToHttp: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendJpgToHttp: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
