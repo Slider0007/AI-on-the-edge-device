@@ -145,7 +145,7 @@ MeterModel::Result MeterModelMechanical::invokeModel(const SequenceData &sequenc
     char logBuf[320];
     const int precision = sequenceData.paramPostProc->extendedResolution ? m_nDecimalPlaces + 1 : m_nDecimalPlaces;
 
-    snprintf(logBuf, sizeof(logBuf), "Model Result: %.*f | Score: %.2f | DecScore: %.2f | TotalDetune: %.*f", precision, result.value,
+    snprintf(logBuf, sizeof(logBuf), "Model result: %.*f | Score: %.2f | DecScore: %.2f | TotalDetune: %.*f", precision, result.value,
              result.score, result.decisionScore, m_nDecimalPlaces, detuneOffset / MeterModelHelper::pow10(m_nDecimalPlaces));
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, logBuf);
@@ -153,7 +153,6 @@ MeterModel::Result MeterModelMechanical::invokeModel(const SequenceData &sequenc
     // Digit details
     for (size_t i = 0; i < m_nSequenceLength; ++i) {
         const char *status = (result.digitStdDevSigma[i] >= 1.3f)          ? "BLIND"
-                             : (result.digitStdDevSigma[i] >= 1.0f)        ? "WEAK"
                              : (result.digitLogScores[i] < -3.0f)          ? "FIGHT"
                              : (std::abs(result.digitDistances[i]) > 0.8f) ? "JUMP"
                                                                            : "OK";
@@ -178,19 +177,16 @@ float MeterModelMechanical::calculateSigma(const size_t idx, const float confide
     const float t = (m_nSequenceLength > 1) ? float(idx) / (m_nSequenceLength - 1) : 1.0f;
 
     // 1. Base Uncertainty
-    const float baseSigma = 0.15f + (0.1f * t);
+    const float baseSigma = 0.2f + (0.15f * t);
 
     // 2. OCR Uncertainty
     const float ocrUncertainty = 1.0f - std::clamp(confidence, 0.0f, 1.0f);
 
-    // 3. Positional bias
-    const float positionalBoost = 1.0f + (0.3f * t);
-
-    // 4. Dynamic Scaling (user-adjustable)
+    // 3. Dynamic Scaling (user-adjustable)
     // Scale based on how much the OCR 'fight' the mechanical transition
     const float multiplier = 1.0f + (2.0f * m_modelInfluence) + (ocrUncertainty * 5.0f * m_modelInfluence);
 
-    return std::clamp(baseSigma * positionalBoost * multiplier, 0.1f, 2.0f);
+    return std::clamp(baseSigma * multiplier, 0.1f, 2.0f);
 }
 
 
