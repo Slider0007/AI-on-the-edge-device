@@ -222,6 +222,9 @@ class CImage
 
     /**
      * @brief Gets the color value of a specific pixel channel
+     *
+     * Note: No thread-safety, caller has to ensure thread-safefy
+     *
      * @param x X coordinate
      * @param y Y coordinate
      * @param ch Channel index
@@ -231,6 +234,9 @@ class CImage
 
     /**
      * @brief Sets the color of a specific pixel
+     *
+     * Note: No thread-safety, caller has to ensure thread-safefy
+     *
      * @param x X coordinate
      * @param y Y coordinate
      * @param r Red component

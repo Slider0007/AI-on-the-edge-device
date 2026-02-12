@@ -17,7 +17,7 @@ static const char *TAG = "IMG";
 CImage::CImage()
     : name("default"), width(0), height(0), channels(0), imgDataSize(0), imgData(nullptr), allocatedSize(0), externalMemory(false)
 {
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImage: Failed to create semaphore");
         return;
@@ -28,7 +28,7 @@ CImage::CImage()
 CImage::CImage(std::string objName, int width, int height, int channels, bool stbLibMemoryMod, const uint8_t *data)
     : name(objName), width(width), height(height), channels(channels), imgDataSize(0), allocatedSize(0), externalMemory(false)
 {
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImage: Failed to create semaphore");
         return;
@@ -64,7 +64,7 @@ CImage::CImage(std::string objName, int width, int height, int channels, bool st
 CImage::CImage(std::string objName, const std::string &filename, bool customStbLibMemAllocation, bool grayscale)
     : name(objName), width(0), height(0), channels(0), imgDataSize(0), allocatedSize(0), externalMemory(customStbLibMemAllocation)
 {
-    imageMutex = xSemaphoreCreateMutex();
+    imageMutex = xSemaphoreCreateRecursiveMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "CImage: Failed to create semaphore");
         return;
@@ -89,21 +89,30 @@ CImage::CImage(std::string objName, const std::string &filename, bool customStbL
 }
 
 
+// Copy constructor
 CImage::CImage(const CImage &other)
-    : name(other.name + "-copy"), width(other.width), height(other.height), channels(other.channels), imgDataSize(other.imgDataSize),
-      imgData(nullptr), allocatedSize(other.allocatedSize), externalMemory(other.externalMemory)
+    : imageMutex(xSemaphoreCreateRecursiveMutex()), name(), width(0), height(0), channels(0), imgDataSize(0), imgData(nullptr),
+      allocatedSize(0), externalMemory(false)
 {
-    imageMutex = xSemaphoreCreateMutex();
     if (!imageMutex) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to create semaphore");
+        allocatedSize = 0;
         return;
     }
 
     CImageLockGuard otherLock(other);
     if (!otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to lock source");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to lock");
+        allocatedSize = 0;
         return;
     }
+
+    name = other.name + "-copy";
+    width = other.width;
+    height = other.height;
+    channels = other.channels;
+    imgDataSize = other.imgDataSize;
+    allocatedSize = other.allocatedSize;
 
     if (allocatedSize > 0) {
         imgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->Copy (" + other.name + ")", allocatedSize,
@@ -112,64 +121,8 @@ CImage::CImage(const CImage &other)
         if (!imgData) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to allocate memory: " + std::to_string(allocatedSize));
             LogFile.writeHeapInfo("CImage-copy");
+            allocatedSize = 0;
             return;
-        }
-
-        if (other.imgData) {
-            memcpy(imgData, other.imgData, imgDataSize);
-        }
-        else {
-            imgData = nullptr;
-        }
-    }
-    else {
-        imgData = nullptr;
-    }
-}
-
-
-CImage &CImage::operator=(const CImage &other)
-{
-    if (this == &other) {
-        return *this;
-    }
-
-    CImageLockGuard thisLock(*this);
-    CImageLockGuard otherLock(other);
-    if (!otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to lock source");
-        return *this;
-    }
-
-    SemaphoreHandle_t newMutex = xSemaphoreCreateMutex();
-    if (!newMutex) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to create semaphore");
-        return *this;
-    }
-
-    if (imageMutex) {
-        vSemaphoreDelete(imageMutex);
-    }
-    imageMutex = newMutex;
-
-    name = other.name + "-copy-assign";
-    width = other.width;
-    height = other.height;
-    channels = other.channels;
-    imgDataSize = other.imgDataSize;
-    allocatedSize = other.allocatedSize;
-    externalMemory = other.externalMemory;
-
-    freeImageData();
-
-    if (allocatedSize > 0) {
-        imgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->Copy-assign (" + other.name + ")", allocatedSize,
-                                               MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-
-        if (!imgData) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy: Failed to allocate memory: " + std::to_string(allocatedSize));
-            LogFile.writeHeapInfo("CImage-copy-assign");
-            return *this;
         }
 
         if (other.imgData) {
@@ -179,25 +132,86 @@ CImage &CImage::operator=(const CImage &other)
             memset(imgData, IMAGE_COLOR_DEFAULT, imgDataSize);
         }
     }
-    else {
-        imgData = nullptr;
+}
+
+
+// Copy assignment
+CImage &CImage::operator=(const CImage &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    const CImage *first = (this < &other) ? this : &other;
+    const CImage *second = (this < &other) ? &other : this;
+
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Failed to lock");
+        return *this;
+    }
+
+    // Allocate only if current buffer is too small
+    if (allocatedSize < other.allocatedSize || externalMemory) {
+        uint8_t *newImgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->Copy-assign (" + other.name + ")", other.allocatedSize,
+                                                           MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+
+        if (!newImgData) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Copy-assign: Allocation failed. Keeping original.");
+            LogFile.writeHeapInfo("CImage-copy-assign");
+            return *this;
+        }
+
+        freeImageData();
+        imgData = newImgData;
+        allocatedSize = other.allocatedSize;
+        externalMemory = false;
+    }
+
+    name = other.name;
+    width = other.width;
+    height = other.height;
+    channels = other.channels;
+    imgDataSize = other.imgDataSize;
+
+
+    if (other.imgData && imgData) {
+        memcpy(imgData, other.imgData, other.imgDataSize);
+    }
+    else if (imgData) {
+        memset(imgData, IMAGE_COLOR_DEFAULT, imgDataSize);
     }
 
     return *this;
 }
 
 
+// Move constructor
 CImage::CImage(CImage &&other) noexcept
-    : imageMutex(other.imageMutex), name(std::move(other.name)), width(other.width), height(other.height), channels(other.channels),
-      imgDataSize(other.imgDataSize), imgData(other.imgData), allocatedSize(other.allocatedSize), externalMemory(other.externalMemory)
+    : imageMutex(xSemaphoreCreateRecursiveMutex()), name(), width(0), height(0), channels(0), imgDataSize(0), imgData(nullptr),
+      allocatedSize(0), externalMemory(false)
 {
-    CImageLockGuard otherLock(other);
-    if (!otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move: Failed to lock source");
+    if (!imageMutex) {
         return;
     }
 
-    other.imageMutex = nullptr;
+    CImageLockGuard otherLock(other);
+    if (!otherLock.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move: Failed to lock");
+        return;
+    }
+
+    name = std::move(other.name);
+    width = other.width;
+    height = other.height;
+    channels = other.channels;
+    imgDataSize = other.imgDataSize;
+    imgData = other.imgData;
+    allocatedSize = other.allocatedSize;
+    externalMemory = other.externalMemory;
+
+    other.name.clear();
     other.width = 0;
     other.height = 0;
     other.channels = 0;
@@ -208,25 +222,22 @@ CImage::CImage(CImage &&other) noexcept
 }
 
 
+// Move assignment
 CImage &CImage::operator=(CImage &&other) noexcept
 {
     if (this == &other) {
         return *this;
     }
 
-    CImageLockGuard thisLock(*this);
-    CImageLockGuard otherLock(other);
-    if (!thisLock.isLocked() || !otherLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-Assign: Failed to lock images");
+    const CImage *first = (this < &other) ? this : &other;
+    const CImage *second = (this < &other) ? &other : this;
+
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Move-assign: Failed to lock");
         return *this;
     }
-
-    if (imageMutex) {
-        vSemaphoreDelete(imageMutex);
-    }
-
-    imageMutex = other.imageMutex;
-    other.imageMutex = nullptr;
 
     freeImageData();
 
@@ -239,12 +250,14 @@ CImage &CImage::operator=(CImage &&other) noexcept
     allocatedSize = other.allocatedSize;
     externalMemory = other.externalMemory;
 
+    other.name.clear();
     other.width = 0;
     other.height = 0;
     other.channels = 0;
-    other.imgDataSize = 0;
     other.imgData = nullptr;
+    other.imgDataSize = 0;
     other.allocatedSize = 0;
+    other.externalMemory = false;
 
     return *this;
 }
@@ -264,7 +277,7 @@ esp_err_t CImage::loadJpgFromFile(const std::string &filename, bool overwriteSou
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromFile: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromFile: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -285,6 +298,7 @@ esp_err_t CImage::loadJpgFromFile(const std::string &filename, bool overwriteSou
 
     if (!imgData) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromFile: Failed to load image: " + filename);
+        LogFile.writeHeapInfo("loadJpgFromFile");
         return ESP_FAIL;
     }
 
@@ -319,13 +333,13 @@ esp_err_t CImage::loadJpgFromMemory(void *buffer, int size, bool overwriteSource
     }
 
     if (overwriteSource && !isValid()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromFile: No allocated memory");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromMemory: No allocated memory");
         return ESP_FAIL;
     }
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromMemory: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadJpgFromMemory: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -384,7 +398,7 @@ esp_err_t CImage::saveJpgToFile(const std::string &filename, const int quality)
     if (fileType == "jpg" || fileType == "jpeg") {
         CImageLockGuard lockGuard(*this);
         if (!lockGuard.isLocked()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToFile: Could not acquire lock");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToFile: Failed to lock");
             return ESP_ERR_TIMEOUT;
         }
 
@@ -432,10 +446,9 @@ esp_err_t CImage::saveJpgToBuffer(uint8_t *jpgBuffer, const int size, const int 
         ctx->actBufferSize += dataSize;
     };
 
-
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToBuffer: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToBuffer: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -456,26 +469,9 @@ esp_err_t CImage::saveJpgToBuffer(uint8_t *jpgBuffer, const int size, const int 
 
 esp_err_t CImage::saveJpgToContainer(CImageJpg *jpgContainer, const int quality)
 {
-    if (!isValid()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: No valid image data");
+    if (!isValid() || !jpgContainer || !jpgContainer->isValid()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Invalid image or container");
         return ESP_FAIL;
-    }
-
-    if (!jpgContainer || !jpgContainer->isValid()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Invalid JPG container");
-        return ESP_FAIL;
-    }
-
-    CImageLockGuard jpgLock(*jpgContainer);
-    if (!jpgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Could not acquire lock (jpg)");
-        return ESP_ERR_TIMEOUT;
-    }
-
-    CImageLockGuard imgLock(*this);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Could not acquire lock");
-        return ESP_ERR_TIMEOUT;
     }
 
     struct JpgWriteContext {
@@ -484,31 +480,52 @@ esp_err_t CImage::saveJpgToContainer(CImageJpg *jpgContainer, const int quality)
         bool bufferOverflow;
     } jpgWriteCtx = {jpgContainer->getImgData(), 0, false};
 
-    auto writeJPGHelper = [](void *context, void *data, int dataSize) {
-        JpgWriteContext *ctx = (JpgWriteContext *)context;
+    // Lambda helper
+    auto doEncoding = [&]() -> esp_err_t {
+        auto writeJPGHelper = [](void *context, void *data, int dataSize) {
+            JpgWriteContext *ctx = (JpgWriteContext *)context;
 
-        if (!ctx || !ctx->buffer || (ctx->actBufferSize + dataSize) > IMAGE_JPG_MAX_SIZE) {
-            ctx->bufferOverflow = true;
-            return;
+            if (!ctx || !ctx->buffer || (ctx->actBufferSize + dataSize) > IMAGE_JPG_MAX_SIZE) {
+                ctx->bufferOverflow = true;
+                return;
+            }
+            memcpy(ctx->buffer + ctx->actBufferSize, data, dataSize);
+            ctx->actBufferSize += dataSize;
+        };
+
+        if (!stbi_write_jpg_to_func(writeJPGHelper, &jpgWriteCtx, width, height, channels, imgData, quality)) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: JPG encoding failed");
+            return ESP_FAIL;
         }
 
-        memcpy(ctx->buffer + ctx->actBufferSize, data, dataSize);
-        ctx->actBufferSize += dataSize;
+        if (jpgWriteCtx.bufferOverflow) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Buffer overflow");
+            return ESP_FAIL;
+        }
+
+        jpgContainer->setImgDataSize(jpgWriteCtx.actBufferSize);
+        return ESP_OK;
     };
 
-    if (!stbi_write_jpg_to_func(writeJPGHelper, &jpgWriteCtx, width, height, channels, imgData, quality)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: JPG encoding failed");
-        return ESP_FAIL;
+    // Sorted Locking to prevent deadlocks
+    if ((void *)this < (void *)jpgContainer) {
+        CImageLockGuard lock1(*this);
+        CImageLockGuard lock2(*jpgContainer);
+        if (!lock1.isLocked() || !lock2.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Failed to lock");
+            return ESP_ERR_TIMEOUT;
+        }
+        return doEncoding();
     }
-
-    if (jpgWriteCtx.bufferOverflow) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Buffer overflow, target buffer insufficient");
-        return ESP_FAIL;
+    else {
+        CImageLockGuard lock1(*jpgContainer);
+        CImageLockGuard lock2(*this);
+        if (!lock1.isLocked() || !lock2.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Failed to lock");
+            return ESP_ERR_TIMEOUT;
+        }
+        return doEncoding();
     }
-
-    jpgContainer->setImgDataSize(jpgWriteCtx.actBufferSize);
-
-    return ESP_OK;
 }
 
 
@@ -526,11 +543,17 @@ esp_err_t CImage::sendJpgToHttp(httpd_req_t *req, const int quality)
         size_t actBufferSize;
     } sendJpgCtx = {req, ESP_OK, (char *)((struct HttpServerData *)req->user_ctx)->scratch, 0};
 
+    // Lambda helper
     auto sendJPGToHttpHelper = [](void *context, void *data, int dataSize) {
         auto *sendJpgHttp = (SendJpgHttp *)context;
+
+        // Abort if already in failed state
+        if (sendJpgHttp->retVal != ESP_OK) {
+            return;
+        }
+
         if ((sendJpgHttp->actBufferSize + dataSize) >= WEBSERVER_SCRATCH_BUFSIZE) { // Buffer full, send chunk
             if (httpd_resp_send_chunk(sendJpgHttp->req, (const char *)sendJpgHttp->buffer, sendJpgHttp->actBufferSize) != ESP_OK) {
-                httpd_resp_send_err(sendJpgHttp->req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send image");
                 sendJpgHttp->retVal = ESP_FAIL;
                 return;
             }
@@ -542,7 +565,7 @@ esp_err_t CImage::sendJpgToHttp(httpd_req_t *req, const int quality)
 
     CImageLockGuard lockGuard(*this);
     if (!lockGuard.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveJpgToContainer: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendJpgToHttp: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -550,13 +573,13 @@ esp_err_t CImage::sendJpgToHttp(httpd_req_t *req, const int quality)
     httpd_resp_set_type(req, "image/jpeg");
 
     if (!stbi_write_jpg_to_func(sendJPGToHttpHelper, &sendJpgCtx, width, height, channels, imgData, quality)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendJPGtoHTTP: Failed to encode and send JPG");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "sendJpgToHttp: Failed to encode and send JPG");
         return ESP_FAIL;
     }
 
     if (sendJpgCtx.actBufferSize > 0) {
         if (httpd_resp_send_chunk(req, (const char *)sendJpgCtx.buffer, sendJpgCtx.actBufferSize) != ESP_OK) { // still send the rest
-            return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send image");
+            return ESP_FAIL;
         }
     }
 
@@ -570,60 +593,26 @@ esp_err_t CImage::sendJpgToHttp(httpd_req_t *req, const int quality)
 
 bool CImage::lock() const
 {
-    TaskHandle_t currentTask = xTaskGetCurrentTaskHandle();
-
-    if (lockingTask == currentTask) {
-        lockCount++;
-#ifdef DEBUG_DETAIL_ON
-        ESP_LOGI(TAG, "Recursive lock acquired by task %p, count: %d", currentTask, lockCount);
-#endif // DEBUG_DETAIL_ON
+    if (imageMutex && xSemaphoreTakeRecursive(imageMutex, pdMS_TO_TICKS(30000)) == pdTRUE) {
         return true;
     }
 
 #ifdef DEBUG_DETAIL_ON
-    ESP_LOGI(TAG, "Task %p attempting to lock image...", currentTask);
-#endif // DEBUG_DETAIL_ON
-
-    if (imageMutex && xSemaphoreTake(imageMutex, pdMS_TO_TICKS(10000))) {
-        lockingTask = currentTask;
-        lockCount = 1;
-#ifdef DEBUG_DETAIL_ON
-        ESP_LOGI(TAG, "Task %p successfully locked image", currentTask);
-#endif // DEBUG_DETAIL_ON
-        return true;
+    TaskHandle_t holder = xSemaphoreGetMutexHolder(imageMutex);
+    if (holder != NULL) {
+        char *taskName = pcTaskGetName(holder);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Lock Timeout: Held by task: " + std::string(taskName));
     }
+#endif
 
-    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "lock: Timeout - Failed to acquire mutex");
     return false;
 }
 
 
 void CImage::unlock() const
 {
-    TaskHandle_t currentTask = xTaskGetCurrentTaskHandle();
-
-    if (lockingTask == currentTask) {
-        lockCount--;
-
-        if (lockCount == 0) {
-            lockingTask = NULL;
-            if (imageMutex) {
-                xSemaphoreGive(imageMutex);
-            }
-#ifdef DEBUG_DETAIL_ON
-            ESP_LOGI(TAG, "Task %p unlocked image", currentTask);
-#endif // DEBUG_DETAIL_ON
-        }
-        else {
-#ifdef DEBUG_DETAIL_ON
-            ESP_LOGI(TAG, "Task %p decreased lock count to %d", currentTask, lockCount);
-#endif // DEBUG_DETAIL_ON
-        }
-    }
-    else {
-#ifdef DEBUG_DETAIL_ON
-        ESP_LOGE(TAG, "Task %p tried to unlock an image it does not own", currentTask);
-#endif // DEBUG_DETAIL_ON
+    if (imageMutex) {
+        xSemaphoreGiveRecursive(imageMutex);
     }
 }
 
@@ -672,6 +661,10 @@ bool CImage::getIsInbound(int x, int y)
 
 uint8_t CImage::getPixelColor(int x, int y, int ch)
 {
+    if (!getIsInbound(x, y) || ch < 0 || ch >= channels) {
+        return 0;
+    }
+
     return imgData[((y * width + x) * channels) + ch];
 }
 
@@ -694,9 +687,11 @@ void CImage::setPixelColor(int x, int y, uint8_t r, uint8_t g, uint8_t b)
 
 void CImage::freeImageData()
 {
-    if (imgData) {
+    if (imgData && !externalMemory) {
         free_psram_heap(std::string(TAG) + "->CImage (" + name + ", " + std::to_string(imgDataSize) + ")", imgData);
         imgData = nullptr;
+        imgDataSize = 0;
+        allocatedSize = 0;
     }
 }
 
