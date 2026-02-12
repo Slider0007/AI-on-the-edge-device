@@ -153,7 +153,7 @@ CImage &CImage::operator=(const CImage &other)
     }
 
     // Allocate only if current buffer is too small
-    if (allocatedSize < other.imgDataSize || externalMemory) {
+    if (allocatedSize < other.allocatedSize || externalMemory) {
         uint8_t *newImgData = (uint8_t *)malloc_psram_heap(std::string(TAG) + "->Copy-assign (" + other.name + ")", other.allocatedSize,
                                                            MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
@@ -165,7 +165,7 @@ CImage &CImage::operator=(const CImage &other)
 
         freeImageData();
         imgData = newImgData;
-        allocatedSize = other.imgDataSize;
+        allocatedSize = other.allocatedSize;
         externalMemory = false;
     }
 
