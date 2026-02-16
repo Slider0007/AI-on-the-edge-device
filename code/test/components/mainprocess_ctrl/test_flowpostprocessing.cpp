@@ -23,7 +23,7 @@ void test_doFlowPP()
     std::vector<float> digits = {1.2, 6.7};
     std::vector<float> analogs = {9.5, 8.4};
     const char *expected = "16.98";
-    const char *expected_extended = "16.984";
+    // const char *expected_extended = "16.984"; // Unused
     std::string result = processDoFlow(digits, analogs);
     TEST_ASSERT_EQUAL_STRING(expected, result.c_str());
 

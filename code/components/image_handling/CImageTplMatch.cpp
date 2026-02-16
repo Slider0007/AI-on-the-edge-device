@@ -114,15 +114,13 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMar
         return TPL_MATCH_ERROR_IMAGE;
     }
 
-    CImageLockGuard markerLock(*(marker.markerImage));
-    if (!markerLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "tplMatchBySad: Could not acquire lock (marker)");
-        return TPL_MATCH_ERROR_TIMEOUT;
-    }
+    const CImage *first = (&img < marker.markerImage) ? &img : marker.markerImage;
+    const CImage *second = (&img < marker.markerImage) ? marker.markerImage : &img;
 
-    CImageLockGuard imgLock(img);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "tplMatchBySad: Could not acquire lock");
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "tplMatchBySad: Failed to lock");
         return TPL_MATCH_ERROR_TIMEOUT;
     }
 

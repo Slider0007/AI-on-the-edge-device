@@ -214,7 +214,7 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
     "gpiopin": [
       {
         "gpionumber": 1,
-        "gpiousage": "restricted: uart0-tx",
+        "gpiousage": "spare",
         "pinenabled": false,
         "pinname": "",
         "pinmode": "input",
@@ -234,8 +234,8 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
         "intensitycorrectionfactor": 100
       },
       {
-        "gpionumber": 3,
-        "gpiousage": "restricted: uart0-rx",
+        "gpionumber": 14,
+        "gpiousage": "spare",
         "pinenabled": false,
         "pinname": "",
         "pinmode": "input",
@@ -255,53 +255,74 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
         "intensitycorrectionfactor": 100
       },
       {
-        "gpionumber": 4,
-        "gpiousage": "flashlight-pwm",
+        "gpionumber": 21,
+        "gpiousage": "spare",
+        "pinenabled": false,
+        "pinname": "",
+        "pinmode": "input",
+        "capturemode": "cyclic-polling",
+        "inputdebouncetime": 200,
+        "pwmfrequency": 5000,
+        "logicactivelow":	false,
+        "exposetomqtt": false,
+        "exposetorest": false,
+        "smartled": {
+          "type": 0,
+          "quantity": 1,
+          "colorredchannel": 255,
+          "colorgreenchannel": 255,
+          "colorbluechannel": 255
+        },
+        "intensitycorrectionfactor": 100
+      },
+      {
+        "gpionumber": 46,
+        "gpiousage": "spare",
+        "pinenabled": false,
+        "pinname": "",
+        "pinmode": "input",
+        "capturemode": "cyclic-polling",
+        "inputdebouncetime": 200,
+        "pwmfrequency": 5000,
+        "logicactivelow":	false,
+        "exposetomqtt": false,
+        "exposetorest": false,
+        "smartled": {
+          "type": 0,
+          "quantity": 1,
+          "colorredchannel": 255,
+          "colorgreenchannel": 255,
+          "colorbluechannel": 255
+        },
+        "intensitycorrectionfactor": 100
+      },
+      {
+        "gpionumber": 47,
+        "gpiousage": "spare",
+        "pinenabled": false,
+        "pinname": "",
+        "pinmode": "input",
+        "capturemode": "cyclic-polling",
+        "inputdebouncetime": 200,
+        "pwmfrequency": 5000,
+        "logicactivelow":	false,
+        "exposetomqtt": false,
+        "exposetorest": false,
+        "smartled": {
+          "type": 0,
+          "quantity": 1,
+          "colorredchannel": 255,
+          "colorgreenchannel": 255,
+          "colorbluechannel": 255
+        },
+        "intensitycorrectionfactor": 100
+      },
+      {
+        "gpionumber": 48,
+        "gpiousage": "flashlight-smartled",
         "pinenabled": false,
         "pinname": "",
         "pinmode": "flashlight-default",
-        "capturemode": "cyclic-polling",
-        "inputdebouncetime": 200,
-        "pwmfrequency": 5000,
-        "logicactivelow":	false,
-        "exposetomqtt": false,
-        "exposetorest": false,
-        "smartled": {
-          "type": 0,
-          "quantity": 1,
-          "colorredchannel": 255,
-          "colorgreenchannel": 255,
-          "colorbluechannel": 255
-        },
-        "intensitycorrectionfactor": 100
-      },
-      {
-        "gpionumber": 12,
-        "gpiousage": "spare",
-        "pinenabled": false,
-        "pinname": "",
-        "pinmode": "input",
-        "capturemode": "cyclic-polling",
-        "inputdebouncetime": 200,
-        "pwmfrequency": 5000,
-        "logicactivelow":	false,
-        "exposetomqtt": false,
-        "exposetorest": false,
-        "smartled": {
-          "type": 0,
-          "quantity": 1,
-          "colorredchannel": 255,
-          "colorgreenchannel": 255,
-          "colorbluechannel": 255
-        },
-        "intensitycorrectionfactor": 100
-      },
-      {
-        "gpionumber": 13,
-        "gpiousage": "spare",
-        "pinenabled": false,
-        "pinname": "",
-        "pinmode": "input",
         "capturemode": "cyclic-polling",
         "inputdebouncetime": 200,
         "pwmfrequency": 5000,

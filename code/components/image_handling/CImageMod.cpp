@@ -29,15 +29,13 @@ esp_err_t IRAM_ATTR CImageMod::rotate(CImage &img, float angle, int centerX, int
         return ESP_FAIL;
     }
 
-    CImageLockGuard helperLock(imgHelper);
-    if (!helperLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "rotate: Could not acquire lock (imgHelper)");
-        return ESP_ERR_TIMEOUT;
-    }
+    const CImage *first = (&img < &imgHelper) ? &img : &imgHelper;
+    const CImage *second = (&img < &imgHelper) ? &imgHelper : &img;
 
-    CImageLockGuard imgLock(img);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "rotate: Could not acquire lock");
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "rotate: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -133,15 +131,13 @@ esp_err_t IRAM_ATTR CImageMod::translate(CImage &img, int dx, int dy, CImage &im
         return ESP_FAIL;
     }
 
-    CImageLockGuard helperLock(imgHelper);
-    if (!helperLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "translate: Could not acquire lock (imgHelper)");
-        return ESP_ERR_TIMEOUT;
-    }
+    const CImage *first = (&img < &imgHelper) ? &img : &imgHelper;
+    const CImage *second = (&img < &imgHelper) ? &imgHelper : &img;
 
-    CImageLockGuard imgLock(img);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "translate: Could not acquire lock");
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "translate: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -229,15 +225,13 @@ esp_err_t CImageMod::crop(CImage &img, int x, int y, int newWidth, int newHeight
         return ESP_FAIL;
     }
 
-    CImageLockGuard targetLock(imgTarget);
-    if (!targetLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "crop: Could not acquire lock (imgTarget)");
-        return ESP_ERR_TIMEOUT;
-    }
+    const CImage *first = (&img < &imgTarget) ? &img : &imgTarget;
+    const CImage *second = (&img < &imgTarget) ? &imgTarget : &img;
 
-    CImageLockGuard imgLock(img);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "crop: Could not acquire lock");
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "crop: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -269,15 +263,13 @@ esp_err_t CImageMod::resize(CImage &img, int newWidth, int newHeight, CImage &im
         return ESP_FAIL;
     }
 
-    CImageLockGuard targetLock(imgTarget);
-    if (!targetLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "resize: Could not acquire lock (imgTarget)");
-        return ESP_ERR_TIMEOUT;
-    }
+    const CImage *first = (&img < &imgTarget) ? &img : &imgTarget;
+    const CImage *second = (&img < &imgTarget) ? &imgTarget : &img;
 
-    CImageLockGuard imgLock(img);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "resize: Could not acquire lock");
+    CImageLockGuard lock1(*first);
+    CImageLockGuard lock2(*second);
+    if (!lock1.isLocked() || !lock2.isLocked()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "resize: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -307,17 +299,22 @@ esp_err_t CImageMod::grayscale(CImage &img, bool overwriteSource, CImage *imgTar
             return ESP_FAIL;
         }
 
-        CImageLockGuard targetLock(*imgTarget);
-        if (!targetLock.isLocked()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "grayscale: Could not acquire lock (imgTarget)");
+        const CImage *first = (&img < imgTarget) ? &img : imgTarget;
+        const CImage *second = (&img < imgTarget) ? imgTarget : &img;
+
+        CImageLockGuard lock1(*first);
+        CImageLockGuard lock2(*second);
+        if (!lock1.isLocked() || !lock2.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "grayscale: Failed to lock");
             return ESP_ERR_TIMEOUT;
         }
     }
-
-    CImageLockGuard imgLock(img);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "grayscale: Could not acquire lock");
-        return ESP_ERR_TIMEOUT;
+    else {
+        CImageLockGuard imgLock(img);
+        if (!imgLock.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "grayscale: Failed to lock");
+            return ESP_ERR_TIMEOUT;
+        }
     }
 
     const int width = img.getWidth();
@@ -365,17 +362,22 @@ esp_err_t CImageMod::normalize(CImage &img, bool overwriteSource, CImage *imgTar
             return ESP_FAIL;
         }
 
-        CImageLockGuard targetLock(*imgTarget);
-        if (!targetLock.isLocked()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "normalize: Could not acquire lock (imgTarget)");
+        const CImage *first = (&img < imgTarget) ? &img : imgTarget;
+        const CImage *second = (&img < imgTarget) ? imgTarget : &img;
+
+        CImageLockGuard lock1(*first);
+        CImageLockGuard lock2(*second);
+        if (!lock1.isLocked() || !lock2.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "normalize: Failed to lock");
             return ESP_ERR_TIMEOUT;
         }
     }
-
-    CImageLockGuard imgLock(img);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "normalize: Could not acquire lock");
-        return ESP_ERR_TIMEOUT;
+    else {
+        CImageLockGuard imgLock(img);
+        if (!imgLock.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "normalize: Failed to lock");
+            return ESP_ERR_TIMEOUT;
+        }
     }
 
     const int width = img.getWidth();
@@ -418,27 +420,32 @@ esp_err_t CImageMod::normalize(CImage &img, bool overwriteSource, CImage *imgTar
 esp_err_t CImageMod::negative(CImage &img, bool overwriteSource, CImage *imgTarget)
 {
     if (!img.isValid()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "createNegativeImage: Invalid source image");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "negative: Invalid source image");
         return ESP_FAIL;
     }
 
     if (!overwriteSource) {
         if (!imgTarget || !imgTarget->isValid()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "normalize: Invalid or missing target image");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "negative: Invalid or missing target image");
             return ESP_FAIL;
         }
 
-        CImageLockGuard targetLock(*imgTarget);
-        if (!targetLock.isLocked()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "normalize: Could not acquire lock (imgTarget)");
+        const CImage *first = (&img < imgTarget) ? &img : imgTarget;
+        const CImage *second = (&img < imgTarget) ? imgTarget : &img;
+
+        CImageLockGuard lock1(*first);
+        CImageLockGuard lock2(*second);
+        if (!lock1.isLocked() || !lock2.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "negative: Failed to lock");
             return ESP_ERR_TIMEOUT;
         }
     }
-
-    CImageLockGuard imgLock(img);
-    if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "normalize: Could not acquire lock");
-        return ESP_ERR_TIMEOUT;
+    else {
+        CImageLockGuard imgLock(img);
+        if (!imgLock.isLocked()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "negative: Could not acquire lock");
+            return ESP_ERR_TIMEOUT;
+        }
     }
 
     // Get image properties
@@ -465,7 +472,7 @@ esp_err_t IRAM_ATTR CImageMod::drawRect(CImage &img, int x, int y, int dx, int d
 
     CImageLockGuard imgLock(img);
     if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawRect: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawRect: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -502,7 +509,7 @@ esp_err_t IRAM_ATTR CImageMod::drawLine(CImage &img, int x1, int y1, int x2, int
 
     CImageLockGuard imgLock(img);
     if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawLine: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawLine: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -556,7 +563,7 @@ esp_err_t IRAM_ATTR CImageMod::drawCircle(CImage &img, int x, int y, int rad, ui
 
     CImageLockGuard imgLock(img);
     if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawCircle: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawCircle: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 
@@ -586,7 +593,7 @@ esp_err_t IRAM_ATTR CImageMod::drawEllipse(CImage &img, int x, int y, int radX, 
 
     CImageLockGuard imgLock(img);
     if (!imgLock.isLocked()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawEllipse: Could not acquire lock");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "drawEllipse: Failed to lock");
         return ESP_ERR_TIMEOUT;
     }
 

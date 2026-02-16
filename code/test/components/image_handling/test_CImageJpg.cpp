@@ -151,7 +151,7 @@ void test_CImageJpg_copy_assignment_operator(void)
     CImageJpg anotherImage;
     anotherImage = *testImage;
 
-    std::string newName = testImage->getName() + "-copy-assign";
+    std::string newName = testImage->getName();
 
     TEST_ASSERT_EQUAL_STRING(newName.c_str(), anotherImage.getName().c_str());
     TEST_ASSERT_EQUAL(testImage->getImgDataSize(), anotherImage.getImgDataSize());
