@@ -65,31 +65,24 @@ MeterModel::Result MeterModelMechanical::invokeModel(const SequenceData &sequenc
         return result;
     }
 
-    // Lambda helper to process ROIs and combine to one vector
+    // Extract ROI data
     size_t idx = 0;
-    auto processRoi = [&](const auto *roiPtr) {
-        if (roiPtr && idx < m_nSequenceLength) {
-            // Extract data
-            result.ocrValues[idx] = std::clamp((float)roiPtr->CNNResult * 0.1f, 0.0f, 9.9f);
-            result.ocrConfidences[idx] = (roiPtr->CNNResultConfidence > -1.0f) ? std::clamp(roiPtr->CNNResultConfidence, 0.0f, 1.0f) : 0.9f;
+    for (const auto *roiList : {&sequenceData.digitRoi, &sequenceData.analogRoi}) {
+        for (const auto *roi : *roiList) {
+            if (roi && idx < m_nSequenceLength) {
+                // Data Extraction
+                MeterModelHelper::extractRoiData(roi, result.ocrValues[idx], result.ocrConfidences[idx]);
 
-            // Precalculate std dev sigmas
-            result.digitStdDevSigma[idx] = calculateSigma(idx, result.ocrConfidences[idx]);
-            idx++;
+                // Sigma Precalculation
+                result.digitStdDevSigma[idx] = calculateSigma(idx, result.ocrConfidences[idx]);
+
+                idx++;
+            }
         }
-    };
-
-    // Data extraction: Process digit ROIs
-    for (const auto *roi : sequenceData.digitRoi) {
-        processRoi(roi);
-    }
-    // Data extraction: Process analog ROIs
-    for (const auto *roi : sequenceData.analogRoi) {
-        processRoi(roi);
     }
 
     // Constants & Pre-allocated areas
-    const int idxLsd = m_nSequenceLength - 1;
+    const int idxLsd = (int)m_nSequenceLength - 1;
     const double detuneOffset = calculateDetuneOffset();
     DigitVector predictedBuffer(m_nSequenceLength, 0.0);
 
@@ -155,14 +148,14 @@ MeterModel::Result MeterModelMechanical::invokeModel(const SequenceData &sequenc
     snprintf(logBuf, sizeof(logBuf), "Model result: %.*f | Score: %.2f | DecScore: %.2f | TotalDetune: %.*f", precision, result.value,
              result.score, result.decisionScore, m_nDecimalPlaces, detuneOffset / MeterModelHelper::pow10(m_nDecimalPlaces));
 
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, logBuf);
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, logBuf);
 
     // Digit details
     for (size_t i = 0; i < m_nSequenceLength; ++i) {
-        const char *status = (result.digitStdDevSigma[i] >= 1.3f)          ? "BLIND"
-                             : (result.digitLogScores[i] < -3.0f)          ? "FIGHT"
-                             : (std::abs(result.digitDistances[i]) > 0.8f) ? "JUMP"
-                                                                           : "OK";
+        const char *status = (std::abs(result.digitDistances[i]) > 0.8f) ? "Jump detected"
+                             : (result.digitStdDevSigma[i] >= 1.3f)      ? "OCR untrusted"
+                             : (result.digitLogScores[i] < -3.0f)        ? "Ambiguous"
+                                                                         : "Accepted";
 
         snprintf(logBuf, sizeof(logBuf),
                  "Idx: %d | %c | OCRConf: %d%% | OCR: %.2f | Model: %.2f | Distance: %.2f | Detune: %.2f | Sigma: %.2f | LogScore: %.2f | "
@@ -171,7 +164,7 @@ MeterModel::Result MeterModelMechanical::invokeModel(const SequenceData &sequenc
                  result.predictedValues[i], result.digitDistances[i], getDigitDetune(i), result.digitStdDevSigma[i],
                  result.digitLogScores[i], status);
 
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, logBuf);
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, logBuf);
     }
 
     return result;

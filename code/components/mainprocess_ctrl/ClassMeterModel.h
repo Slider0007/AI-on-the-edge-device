@@ -186,9 +186,9 @@ class MeterModel
 /**
  * @brief Mathematical model for a mechanical driven meter
  *
- * * This class simulates the behavior of a meter containing a combination of
- * rolling odometer wheels (digits) and circular analog dials (hands). It accounts for
- * mechanical properties like geared synchronization, carry-over transitions, and
+ * This class simulates the behavior of a meter containing a combination of
+ * rolling odometer wheels and circular analog dials. It accounts for
+ * mechanical properties like geared synchronization, carry-over transitions and
  * wheel misalignment (detune).
  */
 class MeterModelMechanical : public MeterModel
@@ -328,6 +328,11 @@ class MeterModelMechanical : public MeterModel
 };
 
 
+/**
+ * @brief Mathematical model for digital LCD based characters
+ *
+ * This class simulates the behavior of devices with digital LCD based characters
+ */
 class MeterModelLcd : public MeterModel
 {
   public:
@@ -344,8 +349,27 @@ class MeterModelLcd : public MeterModel
 };
 
 
+/** @brief MeterModelHelper namespace */
 namespace MeterModelHelper
 {
+/**
+ * @brief ROI data extraction helper
+ */
+template <typename T> static inline void extractRoiData(const T *roi, float &val, float &conf)
+{
+    if (!roi) {
+        return;
+    }
+
+    // Normalize value (0-99 -> 0.0-9.9)
+    val = std::clamp(static_cast<float>(roi->CNNResult) * 0.1f, 0.0f, 9.9f);
+
+    // Normalize confidence (default to 0.9 if not available)
+    conf = (roi->CNNResultConfidence > -1.0f) ? std::clamp(roi->CNNResultConfidence, 0.0f, 1.0f) : 0.9f;
+}
+
+
+/** @brief A pre-computed pow10 table */
 static constexpr const double pow10Table[] = {
     1.0,               // 10^0
     10.0,              // 10^1
@@ -367,7 +391,7 @@ static constexpr const double pow10Table[] = {
 static constexpr const size_t pow10TableSize = std::size(pow10Table);
 
 
-/** @brief A pre-computed pow10 function */
+/** @brief A pow10 function using lookup-table */
 static inline double pow10(const int n)
 {
     if (n >= 0 && n < (int)pow10TableSize) {
