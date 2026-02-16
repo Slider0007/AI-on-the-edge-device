@@ -24,26 +24,33 @@ MeterModelMechanical::MeterModelMechanical(size_t nDigits, size_t nAnalogDials, 
 
 MeterModelMechanical &MeterModelMechanical::setDialToWheelDetune(float detuneValue)
 {
-    size_t msdIdx = m_nDigits; // Default to first analog dial
+    // Defaults to most-significant analog dial
+    size_t targetIdx = m_nDigits;
 
     if (m_nAnalogDials == 0) {
         if (m_wheelType == WheelType::LSWContinuous || m_wheelType == WheelType::AllWheelsContinuous) {
-            msdIdx = m_nDigits - 1; // The last digit is continuous rolling like an analog dial
+            targetIdx = m_nDigits - 1; // The last digit is continuous rolling like an analog dial
         }
         else {
             return *this; // No continuous rolling transition -> no dial to wheel detune
         }
     }
 
-    // Map input 0..10 to -5.0..5.0 range
-    detuneValue = MeterModelHelper::modulo10(detuneValue);
-    if (detuneValue > 5.0f) {
-        detuneValue -= 10.0f;
+    // Safety check
+    if (targetIdx >= m_digitManualDetune.size()) {
+        return *this;
     }
 
-    if (msdIdx < m_digitManualDetune.size()) {
-        m_digitManualDetune[msdIdx] = std::clamp(detuneValue, -5.0f, 5.0f);
+    // Convert float to integer + wrap the integer within 0-9 range
+    int discreteValue = ((std::lround(detuneValue) % 10) + 10) % 10;
+
+    // Map to [-5, 5] range
+    if (discreteValue > 5) {
+        discreteValue -= 10;
     }
+
+    // Store into float vector
+    m_digitManualDetune[targetIdx] = static_cast<float>(discreteValue);
 
     return *this;
 }
