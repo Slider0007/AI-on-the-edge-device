@@ -184,7 +184,7 @@ jobs:
         echo "branch=$(echo ${{ github.ref_name }} | tr / __)" >> $GITHUB_OUTPUT
 
     - name: Pull artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
 
     - name: Prepare artifacts for release
       run: |
@@ -236,7 +236,7 @@ jobs:
         ref: gh-pages-webinstaller
 
     - name: Pull artifact
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ needs.upload-release-artifacts.outputs.branch }}_${{ needs.upload-release-artifacts.outputs.sha_short }}"
         path: './artifacts/'
