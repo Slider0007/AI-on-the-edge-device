@@ -53,7 +53,7 @@ GpioHandler::~GpioHandler()
 void GpioHandler::gpioPinInterrupt(GpioResult *gpioResult)
 {
     if ((gpioMap != NULL) && (gpioMap->find(gpioResult->gpio) != gpioMap->end())) {
-        (*gpioMap)[gpioResult->gpio]->updatePinState(gpioResult->state);
+        (*gpioMap)[gpioResult->gpio]->handleInterruptEvent(gpioResult->state);
     }
 }
 
@@ -84,6 +84,7 @@ void GpioHandler::gpioInputStatePolling()
             if (it->second->getMode() == GPIO_PIN_MODE_INPUT || it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLUP ||
                 it->second->getMode() == GPIO_PIN_MODE_INPUT_PULLDOWN || it->second->getMode() == GPIO_PIN_MODE_TRIGGER_CYCLE_START ||
                 it->second->getMode() == GPIO_PIN_MODE_RESUME_WLAN_CONNECTION) {
+                it->second->updateTachRate();
                 it->second->updatePinState();
             }
         }
@@ -804,6 +805,11 @@ esp_err_t GpioHandler::handleHttpRequest(httpd_req_t *req)
                                       std::to_string(ledc_get_duty(LEDC_LOW_SPEED_MODE, (*gpioMap)[gpioNum]->getLedcChannel()));
             }
 
+            (*gpioMap)[gpioNum]->updateTachRate(true);
+            if ((*gpioMap)[gpioNum]->hasTachRate()) {
+                requestedGpioState += ", \"rate_hz\": " + std::to_string((*gpioMap)[gpioNum]->getTachRateHz());
+                requestedGpioState += ", \"rpm\": " + std::to_string((*gpioMap)[gpioNum]->getTachRpm());
+            }
             requestedGpioState += " }";
 
             httpd_resp_set_type(req, "text/plain");

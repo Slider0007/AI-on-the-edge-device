@@ -1,6 +1,7 @@
 #include "gpioPin.h"
 
 #include <functional>
+#include "esp_timer.h"
 #include "freertos/queue.h"
 #include <cJSON.h>
 
@@ -35,6 +36,14 @@ GpioPin::GpioPin(gpio_num_t _gpio, const char *_name, gpio_pin_mode_t _mode, gpi
     gpioISR.debounceTime = _debounceTime;
     frequency = _frequency;
     logicLevelActiveLow = _logicLevelActiveLow;
+    tachEnabled = ((mode == GPIO_PIN_MODE_INPUT || mode == GPIO_PIN_MODE_INPUT_PULLUP || mode == GPIO_PIN_MODE_INPUT_PULLDOWN) &&
+                   (interruptType != GPIO_INTR_DISABLE));
+
+    if (tachEnabled && gpioISR.debounceTime > 0) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "GPIO" + std::to_string((int)gpio) +
+                                ": Tach input uses debounce > 0ms; set to 0ms for accurate pulse capture");
+    }
 
     httpAccess = _httpAccess;
     mqttAccess = _mqttAccess;
@@ -66,13 +75,18 @@ GpioPin::~GpioPin()
 
 static void IRAM_ATTR gpioPinISRHandler(void *arg)
 {
-    static TickType_t lastInterruptTime = 0;
-    TickType_t interruptTime = xTaskGetTickCountFromISR(); // Depending on CONFIG_FREERTOS_HZ (100Hz)
+    struct GpioISR *isr = (struct GpioISR *)arg;
+    uint64_t interruptTimeUs = (uint64_t)esp_timer_get_time();
 
-    // If interrupts come faster than debounceTime, assume it's a bounce and ignore
-    if (interruptTime - lastInterruptTime > pdMS_TO_TICKS(((struct GpioISR *)arg)->debounceTime)) {
+    bool accept = true;
+    if (isr->debounceTime > 0) {
+        uint64_t debounceUs = (uint64_t)isr->debounceTime * 1000ULL;
+        accept = (interruptTimeUs - isr->lastInterruptUs) > debounceUs;
+    }
+
+    if (accept) {
         GpioResult gpioResult;
-        gpioResult.gpio = ((struct GpioISR *)arg)->gpio;
+        gpioResult.gpio = isr->gpio;
         gpioResult.state = gpio_get_level(gpioResult.gpio);
         BaseType_t ContextSwitchRequest = pdFALSE;
 
@@ -81,9 +95,9 @@ static void IRAM_ATTR gpioPinISRHandler(void *arg)
         if (ContextSwitchRequest) {
             taskYIELD();
         }
-    }
 
-    lastInterruptTime = interruptTime;
+        isr->lastInterruptUs = interruptTimeUs;
+    }
 }
 
 
@@ -178,6 +192,53 @@ void GpioPin::updatePinState(int _state)
 }
 
 
+void GpioPin::handleInterruptEvent(int _state)
+{
+    if (tachEnabled) {
+        tachWindowPulseCount++;
+        tachLastPulseUs = (uint64_t)esp_timer_get_time();
+    }
+
+    updatePinState(_state);
+}
+
+
+void GpioPin::updateTachRate(bool forceUpdate)
+{
+    if (!tachEnabled) {
+        return;
+    }
+
+    uint64_t nowUs = (uint64_t)esp_timer_get_time();
+    if (tachWindowStartUs == 0) {
+        tachWindowStartUs = nowUs;
+        return;
+    }
+
+    uint64_t elapsedUs = nowUs - tachWindowStartUs;
+    if (!forceUpdate && elapsedUs < 1000000ULL) {
+        return;
+    }
+
+    float elapsedSec = (float)elapsedUs / 1000000.0f;
+    float hz = elapsedSec > 0.0f ? ((float)tachWindowPulseCount / elapsedSec) : 0.0f;
+
+    if ((nowUs - tachLastPulseUs) > 3000000ULL) {
+        hz = 0.0f;
+    }
+
+    tachRateHz = (uint32_t)(hz + 0.5f);
+    tachRpm = (uint32_t)(((hz * 60.0f) / (float)tachPulsesPerRevolution) + 0.5f);
+
+    tachWindowPulseCount = 0;
+    tachWindowStartUs = nowUs;
+
+#ifdef ENABLE_MQTT
+    mqttPublishPinState();
+#endif // ENABLE_MQTT
+}
+
+
 esp_err_t GpioPin::setPinState(bool _value, gpio_set_source _setSource)
 {
     if (mode != GPIO_PIN_MODE_OUTPUT && mode != GPIO_PIN_MODE_FLASHLIGHT_DIGITAL) {
@@ -236,6 +297,11 @@ bool GpioPin::mqttPublishPinState(int _pwmDuty)
 
         if (mode == GPIO_PIN_MODE_OUTPUT_PWM || mode == GPIO_PIN_MODE_FLASHLIGHT_PWM) {
             jsonData += ", \"pwm_duty\": " + std::to_string(_pwmDuty);
+        }
+
+        if (tachEnabled) {
+            jsonData += ", \"rate_hz\": " + std::to_string(tachRateHz);
+            jsonData += ", \"rpm\": " + std::to_string(tachRpm);
         }
 
         jsonData += " }";

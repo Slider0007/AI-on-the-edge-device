@@ -44,6 +44,7 @@ struct GpioResult {
 struct GpioISR {
     gpio_num_t gpio;
     int debounceTime;
+    volatile uint64_t lastInterruptUs = 0;
 };
 
 
@@ -72,6 +73,15 @@ class GpioPin
 
     int intensityCorrection;
 
+    // Tachometer support for input pins with interrupt capture
+    bool tachEnabled = false;
+    uint32_t tachPulsesPerRevolution = 2;
+    uint32_t tachWindowPulseCount = 0;
+    uint32_t tachRateHz = 0;
+    uint32_t tachRpm = 0;
+    uint64_t tachWindowStartUs = 0;
+    uint64_t tachLastPulseUs = 0;
+
   public:
     GpioPin(gpio_num_t _gpio, const char *_name, gpio_pin_mode_t _mode, gpio_int_type_t _interruptType, int _debounceTime, int _frequency,
             bool _logicLevelActiveLow, bool _httpAccess, bool _mqttAccess, std::string _mqttTopic, LedType _LEDType, int _LEDQuantity,
@@ -80,6 +90,8 @@ class GpioPin
     void init();
 
     void updatePinState(int state = -1);
+    void handleInterruptEvent(int state);
+    void updateTachRate(bool forceUpdate = false);
     esp_err_t setPinState(bool _state, gpio_set_source _setSource = GPIO_SET_SOURCE_INTERNAL);
     esp_err_t setPinState(bool _state, int _ledIntensity, gpio_set_source _setSource = GPIO_SET_SOURCE_INTERNAL);
     int getPinState();
@@ -105,6 +117,9 @@ class GpioPin
     Rgb getLEDColor() { return LEDColor; };
 
     int getIntensityCorrection() { return intensityCorrection; };
+    bool hasTachRate() { return tachEnabled; }
+    uint32_t getTachRateHz() { return tachRateHz; }
+    uint32_t getTachRpm() { return tachRpm; }
 };
 
 #endif // GPIO_PIN_H
