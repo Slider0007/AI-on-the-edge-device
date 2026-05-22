@@ -43,19 +43,19 @@ void task_StatusLED(void *pvParameter)
 {
     while (true) {
         struct StatusLEDData StatusLEDDataInt = {};
-        bool bProcess = false;
 
         if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
-            bProcess = StatusLEDData.bProcessingRequest;
-            if (bProcess) {
-                StatusLEDDataInt = StatusLEDData;
-                StatusLEDData.bRequestPending = false;
+            if (!StatusLEDData.bProcessingRequest) {
+                xHandle_task_StatusLED = nullptr;
+                StatusLEDData.bIsIdling = false;
+                xSemaphoreGive(xStatusLedMutex);
+                break;
             }
-            xSemaphoreGive(xStatusLedMutex);
-        }
 
-        if (!bProcess) {
-            break;
+            // Capture the fresh parameters atomically
+            StatusLEDDataInt = StatusLEDData;
+            StatusLEDData.bRequestPending = false;
+            xSemaphoreGive(xStatusLedMutex);
         }
 
         for (int i = 0; i < 2;) { // Default: repeat 2 times
@@ -108,11 +108,6 @@ void task_StatusLED(void *pvParameter)
         }
     }
 
-    if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
-        xHandle_task_StatusLED = nullptr;
-        StatusLEDData.bIsIdling = false;
-        xSemaphoreGive(xStatusLedMutex);
-    }
     vTaskDelete(nullptr); // Delete this task due to no request
 }
 
