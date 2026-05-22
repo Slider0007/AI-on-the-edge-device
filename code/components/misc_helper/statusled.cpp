@@ -14,8 +14,10 @@
 
 static const char *TAG = "STATUSLED";
 
-TaskHandle_t xHandle_task_StatusLED = NULL;
+TaskHandle_t xHandle_task_StatusLED = nullptr;
 struct StatusLEDData StatusLEDData = {};
+
+static SemaphoreHandle_t xStatusLedMutex = nullptr;
 
 
 void setStatusLedState(bool status)
@@ -39,10 +41,22 @@ void setStatusLedState(bool status)
 
 void task_StatusLED(void *pvParameter)
 {
-    // ESP_LOGD(TAG, "task_StatusLED - create");
-    while (StatusLEDData.bProcessingRequest) {
-        // ESP_LOGD(TAG, "task_StatusLED - start");
-        struct StatusLEDData StatusLEDDataInt = StatusLEDData;
+    while (true) {
+        struct StatusLEDData StatusLEDDataInt = {};
+        bool bProcess = false;
+
+        if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
+            bProcess = StatusLEDData.bProcessingRequest;
+            if (bProcess) {
+                StatusLEDDataInt = StatusLEDData;
+                StatusLEDData.bRequestPending = false;
+            }
+            xSemaphoreGive(xStatusLedMutex);
+        }
+
+        if (!bProcess) {
+            break;
+        }
 
         for (int i = 0; i < 2;) { // Default: repeat 2 times
             if (!StatusLEDDataInt.bInfinite) {
@@ -67,106 +81,107 @@ void task_StatusLED(void *pvParameter)
             vTaskDelay(1500 / portTICK_PERIOD_MS); // Delay to signal new round
         }
 
-        StatusLEDData.bProcessingRequest = false;
-        // ESP_LOGD(TAG, "task_StatusLED - done/wait");
-        vTaskDelay(10000 / portTICK_PERIOD_MS); // Wait for an upcoming request otherwise continue and delete task to save memory
+        // Clear processing flags or evaluate execution bypass requests
+        bool bBypassDelay = false;
+        if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
+            if (!StatusLEDData.bRequestPending) {
+                StatusLEDData.bProcessingRequest = false;
+            }
+            else {
+                bBypassDelay = true; // New request is pending
+            }
+            xSemaphoreGive(xStatusLedMutex);
+        }
+
+        if (!bBypassDelay) {
+            if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
+                StatusLEDData.bIsIdling = true;
+                xSemaphoreGive(xStatusLedMutex);
+            }
+
+            vTaskDelay(10000 / portTICK_PERIOD_MS); // Enter waiting state for new requests
+
+            if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
+                StatusLEDData.bIsIdling = false;
+                xSemaphoreGive(xStatusLedMutex);
+            }
+        }
     }
-    // ESP_LOGD(TAG, "task_StatusLED - delete");
-    xHandle_task_StatusLED = NULL;
-    vTaskDelete(NULL); // Delete this task due to no request
+
+    if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
+        xHandle_task_StatusLED = nullptr;
+        StatusLEDData.bIsIdling = false;
+        xSemaphoreGive(xStatusLedMutex);
+    }
+    vTaskDelete(nullptr); // Delete this task due to no request
 }
 
 
 void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite)
 {
-    // ESP_LOGD(TAG, "setStatusLed - start");
-
-    if (_eSource == WLAN_CONN) {
-        StatusLEDData.iSourceBlinkCnt = WLAN_CONN;
-        StatusLEDData.iCodeBlinkCnt = _iCode;
-        StatusLEDData.iBlinkTime = 250;
-        StatusLEDData.bInfinite = _bInfinite;
-    }
-    else if (_eSource == NETWORK_INIT) {
-        StatusLEDData.iSourceBlinkCnt = NETWORK_INIT;
-        StatusLEDData.iCodeBlinkCnt = _iCode;
-        StatusLEDData.iBlinkTime = 250;
-        StatusLEDData.bInfinite = _bInfinite;
-    }
-    else if (_eSource == SDCARD_NVS_INIT) {
-        StatusLEDData.iSourceBlinkCnt = SDCARD_NVS_INIT;
-        StatusLEDData.iCodeBlinkCnt = _iCode;
-        StatusLEDData.iBlinkTime = 250;
-        StatusLEDData.bInfinite = _bInfinite;
-    }
-    else if (_eSource == SDCARD_CHECK) {
-        StatusLEDData.iSourceBlinkCnt = SDCARD_CHECK;
-        StatusLEDData.iCodeBlinkCnt = _iCode;
-        StatusLEDData.iBlinkTime = 250;
-        StatusLEDData.bInfinite = _bInfinite;
-    }
-    else if (_eSource == CAM_INIT) {
-        StatusLEDData.iSourceBlinkCnt = CAM_INIT;
-        StatusLEDData.iCodeBlinkCnt = _iCode;
-        StatusLEDData.iBlinkTime = 250;
-        StatusLEDData.bInfinite = _bInfinite;
-    }
-    else if (_eSource == PSRAM_INIT) {
-        StatusLEDData.iSourceBlinkCnt = PSRAM_INIT;
-        StatusLEDData.iCodeBlinkCnt = _iCode;
-        StatusLEDData.iBlinkTime = 250;
-        StatusLEDData.bInfinite = _bInfinite;
-    }
-    else if (_eSource == TIME_CHECK) {
-        StatusLEDData.iSourceBlinkCnt = TIME_CHECK;
-        StatusLEDData.iCodeBlinkCnt = _iCode;
-        StatusLEDData.iBlinkTime = 250;
-        StatusLEDData.bInfinite = _bInfinite;
-    }
-    else if (_eSource == AP_OR_OTA) {
-        StatusLEDData.iSourceBlinkCnt = AP_OR_OTA;
-        StatusLEDData.iCodeBlinkCnt = _iCode;
-        StatusLEDData.iBlinkTime = 350;
-        StatusLEDData.bInfinite = _bInfinite;
+    if (xStatusLedMutex == nullptr || xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) != pdTRUE) {
+        return;
     }
 
-    if (xHandle_task_StatusLED && !StatusLEDData.bProcessingRequest) {
-        StatusLEDData.bProcessingRequest = true;
-        xTaskAbortDelay(xHandle_task_StatusLED); // Reuse still running status LED task
+    StatusLEDData.iSourceBlinkCnt = static_cast<int>(_eSource);
+    StatusLEDData.iCodeBlinkCnt = _iCode;
+    StatusLEDData.bInfinite = _bInfinite;
+    StatusLEDData.iBlinkTime = (_eSource == AP_OR_OTA) ? 350 : 250;
+    StatusLEDData.bProcessingRequest = true;
+    StatusLEDData.bRequestPending = true;
 
-        /*if (xReturned == pdPASS)
-            ESP_LOGD(TAG, "task_StatusLED - abort waiting delay");*/
+    if (xHandle_task_StatusLED) {
+        // Abort only if the task is asleep in the 10-second linger window
+        if (StatusLEDData.bIsIdling) {
+            xTaskAbortDelay(xHandle_task_StatusLED);
+        }
     }
-    else if (xHandle_task_StatusLED == NULL) {
-        StatusLEDData.bProcessingRequest = true;
-        BaseType_t xReturned = xTaskCreate(&task_StatusLED, "task_StatusLED", 1280, NULL, tskIDLE_PRIORITY + 1, &xHandle_task_StatusLED);
+    else {
+        BaseType_t xReturned = xTaskCreate(&task_StatusLED, "task_StatusLED", 2048, nullptr, tskIDLE_PRIORITY + 1, &xHandle_task_StatusLED);
         if (xReturned != pdPASS) {
-            xHandle_task_StatusLED = NULL;
+            xHandle_task_StatusLED = nullptr;
+            StatusLEDData.bProcessingRequest = false;
+            StatusLEDData.bRequestPending = false;
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "task_StatusLED failed to create");
             LogFile.writeHeapInfo("task_StatusLED failed");
         }
     }
-    else {
-        ESP_LOGD(TAG, "task_StatusLED still processing, request skipped"); // Requests with high frequency could be skipped, but LED is only
-                                                                           // helpful for static states
-    }
-    // ESP_LOGD(TAG, "setStatusLed - done");
+
+    xSemaphoreGive(xStatusLedMutex);
 }
 
 
 void forceStatusLedOff(void)
 {
-    if (xHandle_task_StatusLED) {
-        vTaskDelete(xHandle_task_StatusLED); // Delete task for setStatusLed to force stop of blinking
-        xHandle_task_StatusLED = NULL;
+    if (xStatusLedMutex == nullptr || xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) != pdTRUE) {
+        return;
     }
 
-    setStatusLedState(false); // Force status LED off
+    if (xHandle_task_StatusLED) {
+        vTaskDelete(xHandle_task_StatusLED); // Kill the task mid-execution immediately
+        xHandle_task_StatusLED = nullptr;
+    }
+
+    // Reset the control structure state completely
+    StatusLEDData.bProcessingRequest = false;
+    StatusLEDData.bRequestPending = false;
+    StatusLEDData.bIsIdling = false;
+    StatusLEDData.bInfinite = false;
+    StatusLEDData.iSourceBlinkCnt = 0;
+    StatusLEDData.iCodeBlinkCnt = 0;
+
+    setStatusLedState(false); // Force LED state to off
+
+    xSemaphoreGive(xStatusLedMutex);
 }
 
 
 void initStatusLed()
 {
+    if (xStatusLedMutex == nullptr) {
+        xStatusLedMutex = xSemaphoreCreateMutex();
+    }
+
 #ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
     initGpioHandler();
 #else

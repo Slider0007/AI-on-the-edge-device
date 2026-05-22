@@ -24,6 +24,8 @@ struct StatusLEDData {
     int iBlinkTime = 250;
     bool bInfinite = false;
     bool bProcessingRequest = false;
+    bool bRequestPending = false;
+    bool bIsIdling = false;
 };
 
 void initStatusLed();
