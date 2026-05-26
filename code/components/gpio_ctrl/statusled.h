@@ -30,8 +30,7 @@ struct StatusLEDData {
 
 void initStatusLed();
 void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite);
+void setStatusLed(bool state);
 void forceStatusLedOff(void);
-
-void setStatusLedState(bool state);
 
 #endif // STATUSLED_H

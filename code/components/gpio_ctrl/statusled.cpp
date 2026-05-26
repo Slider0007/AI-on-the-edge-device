@@ -20,7 +20,7 @@ struct StatusLEDData StatusLEDData = {};
 static SemaphoreHandle_t xStatusLedMutex = nullptr;
 
 
-void setStatusLedState(bool status)
+void applyPhysicalLedState(bool status)
 {
 #ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
     GpioHandler *gpioHandle = getGpioHandle();
@@ -38,79 +38,71 @@ void setStatusLedState(bool status)
 #endif // GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
 }
 
-
 void task_StatusLED(void *pvParameter)
 {
     while (true) {
         struct StatusLEDData StatusLEDDataInt = {};
 
         if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
+            // Check if a cancellation request arrived or processing dropped low
             if (!StatusLEDData.bProcessingRequest) {
-                xHandle_task_StatusLED = nullptr;
+                applyPhysicalLedState(false);
                 StatusLEDData.bIsIdling = false;
+                xHandle_task_StatusLED = nullptr;
                 xSemaphoreGive(xStatusLedMutex);
                 break;
             }
 
-            // Capture the fresh parameters atomically
+            // Snapshot the fresh operational parameters atomically
             StatusLEDDataInt = StatusLEDData;
             StatusLEDData.bRequestPending = false;
             xSemaphoreGive(xStatusLedMutex);
         }
 
-        for (int i = 0; i < 2;) { // Default: repeat 2 times
+        // Execute the full structural pattern sequence pass
+        for (int i = 0; i < 2;) {
             if (!StatusLEDDataInt.bInfinite) {
                 ++i;
             }
 
+            // Source Blinks
             for (int j = 0; j < StatusLEDDataInt.iSourceBlinkCnt; ++j) {
-                setStatusLedState(true);
-                vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
-                setStatusLedState(false);
-                vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
+                applyPhysicalLedState(true);
+                vTaskDelay(pdMS_TO_TICKS(StatusLEDDataInt.iBlinkTime));
+                applyPhysicalLedState(false);
+                vTaskDelay(pdMS_TO_TICKS(StatusLEDDataInt.iBlinkTime));
             }
 
-            vTaskDelay(500 / portTICK_PERIOD_MS); // Delay between module code and error code
+            vTaskDelay(pdMS_TO_TICKS(500)); // Delay between module code and error code
 
+            // Code Blinks
             for (int j = 0; j < StatusLEDDataInt.iCodeBlinkCnt; ++j) {
-                setStatusLedState(true);
-                vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
-                setStatusLedState(false);
-                vTaskDelay(StatusLEDDataInt.iBlinkTime / portTICK_PERIOD_MS);
+                applyPhysicalLedState(true);
+                vTaskDelay(pdMS_TO_TICKS(StatusLEDDataInt.iBlinkTime));
+                applyPhysicalLedState(false);
+                vTaskDelay(pdMS_TO_TICKS(StatusLEDDataInt.iBlinkTime));
             }
-            vTaskDelay(1500 / portTICK_PERIOD_MS); // Delay to signal new round
+
+            vTaskDelay(pdMS_TO_TICKS(1500)); // Delay to signal new round
         }
 
-        // Clear processing flags or evaluate execution bypass requests
-        bool bBypassDelay = false;
+        // Check for request
         if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
-            if (!StatusLEDData.bRequestPending) {
-                StatusLEDData.bProcessingRequest = false;
+            if (StatusLEDData.bRequestPending && StatusLEDData.bProcessingRequest) {
+                xSemaphoreGive(xStatusLedMutex);
+                continue;
             }
-            else {
-                bBypassDelay = true; // New request is pending
-            }
+
+            applyPhysicalLedState(false);
+            StatusLEDData.bProcessingRequest = false;
+            xHandle_task_StatusLED = nullptr;
             xSemaphoreGive(xStatusLedMutex);
-        }
-
-        if (!bBypassDelay) {
-            if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
-                StatusLEDData.bIsIdling = true;
-                xSemaphoreGive(xStatusLedMutex);
-            }
-
-            vTaskDelay(10000 / portTICK_PERIOD_MS); // Enter waiting state for new requests
-
-            if (xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) == pdTRUE) {
-                StatusLEDData.bIsIdling = false;
-                xSemaphoreGive(xStatusLedMutex);
-            }
+            break;
         }
     }
 
-    vTaskDelete(nullptr); // Delete this task due to no request
+    vTaskDelete(nullptr);
 }
-
 
 void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite)
 {
@@ -125,13 +117,7 @@ void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite)
     StatusLEDData.bProcessingRequest = true;
     StatusLEDData.bRequestPending = true;
 
-    if (xHandle_task_StatusLED) {
-        // Abort only if the task is asleep in the 10-second linger window
-        if (StatusLEDData.bIsIdling) {
-            xTaskAbortDelay(xHandle_task_StatusLED);
-        }
-    }
-    else {
+    if (!xHandle_task_StatusLED) {
         BaseType_t xReturned = xTaskCreate(&task_StatusLED, "task_StatusLED", 2048, nullptr, tskIDLE_PRIORITY + 1, &xHandle_task_StatusLED);
         if (xReturned != pdPASS) {
             xHandle_task_StatusLED = nullptr;
@@ -145,6 +131,19 @@ void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite)
     xSemaphoreGive(xStatusLedMutex);
 }
 
+void setStatusLed(bool status)
+{
+    if (xStatusLedMutex == nullptr || xSemaphoreTake(xStatusLedMutex, portMAX_DELAY) != pdTRUE) {
+        return;
+    }
+
+    // Set pin only if in idle
+    if (!xHandle_task_StatusLED && !StatusLEDData.bProcessingRequest) {
+        applyPhysicalLedState(status);
+    }
+
+    xSemaphoreGive(xStatusLedMutex);
+}
 
 void forceStatusLedOff(void)
 {
@@ -152,12 +151,7 @@ void forceStatusLedOff(void)
         return;
     }
 
-    if (xHandle_task_StatusLED) {
-        vTaskDelete(xHandle_task_StatusLED); // Kill the task mid-execution immediately
-        xHandle_task_StatusLED = nullptr;
-    }
-
-    // Reset the control structure state completely
+    // Set control structure state variables to safely trigger task teardown on its next turn
     StatusLEDData.bProcessingRequest = false;
     StatusLEDData.bRequestPending = false;
     StatusLEDData.bIsIdling = false;
@@ -165,11 +159,10 @@ void forceStatusLedOff(void)
     StatusLEDData.iSourceBlinkCnt = 0;
     StatusLEDData.iCodeBlinkCnt = 0;
 
-    setStatusLedState(false); // Force LED state to off
+    applyPhysicalLedState(false);
 
     xSemaphoreGive(xStatusLedMutex);
 }
-
 
 void initStatusLed()
 {
@@ -184,5 +177,5 @@ void initStatusLed()
     gpio_set_direction(GPIO_STATUS_LED_ONBOARD, GPIO_MODE_OUTPUT); // Set the GPIO as push/pull output
 #endif // GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
 
-    setStatusLedState(false); // Force status LED off
+    applyPhysicalLedState(false); // Force LED to off
 }

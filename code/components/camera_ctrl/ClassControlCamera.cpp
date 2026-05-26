@@ -1056,7 +1056,7 @@ void ClassControlCamera::setFlashlight(bool _status)
 {
     // Use onboard status LED as flashlight status indicator (Only if LED is not used for other indications)
     if (xHandle_task_StatusLED == NULL) {
-        setStatusLedState(_status);
+        setStatusLed(_status);
     }
 
     // Set flashlight
