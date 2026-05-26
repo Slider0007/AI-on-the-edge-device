@@ -19,7 +19,7 @@ static struct StatusLEDData StatusLEDData = {};
 static SemaphoreHandle_t xStatusLedMutex = nullptr;
 
 
-void applyPhysicalLedState(bool status, bool freeRes = true)
+static void applyPhysicalLedState(bool status, bool freeRes = true)
 {
 #ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
     GpioHandler *gpioHandle = getGpioHandle();
@@ -37,7 +37,7 @@ void applyPhysicalLedState(bool status, bool freeRes = true)
 #endif // GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
 }
 
-void task_StatusLED(void *pvParameter)
+static void task_StatusLED(void *pvParameter)
 {
     while (true) {
         struct StatusLEDData StatusLEDDataInt = {};
@@ -46,7 +46,6 @@ void task_StatusLED(void *pvParameter)
             // Check if a cancellation request arrived or processing dropped low
             if (!StatusLEDData.bProcessingRequest) {
                 applyPhysicalLedState(false);
-                StatusLEDData.bIsIdling = false;
                 xHandle_task_StatusLED = nullptr;
                 xSemaphoreGive(xStatusLedMutex);
                 break;
@@ -153,7 +152,6 @@ void forceStatusLedOff(void)
     // Set control structure state variables to safely trigger task teardown on its next turn
     StatusLEDData.bProcessingRequest = false;
     StatusLEDData.bRequestPending = false;
-    StatusLEDData.bIsIdling = false;
     StatusLEDData.bInfinite = false;
     StatusLEDData.iSourceBlinkCnt = 0;
     StatusLEDData.iCodeBlinkCnt = 0;

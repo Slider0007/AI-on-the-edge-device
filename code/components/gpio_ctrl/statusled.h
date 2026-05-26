@@ -23,7 +23,6 @@ struct StatusLEDData {
     bool bInfinite = false;
     bool bProcessingRequest = false;
     bool bRequestPending = false;
-    bool bIsIdling = false;
 };
 
 void initStatusLed();
