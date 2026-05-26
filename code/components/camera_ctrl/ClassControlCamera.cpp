@@ -1054,10 +1054,8 @@ esp_err_t ClassControlCamera::setFlashlightParameter(const CfgData::SectionTakeI
 
 void ClassControlCamera::setFlashlight(bool _status)
 {
-    // Use onboard status LED as flashlight status indicator (Only if LED is not used for other indications)
-    if (xHandle_task_StatusLED == NULL) {
-        setStatusLed(_status);
-    }
+    // Use onboard status LED as flashlight status indicator (if not in use)
+    setStatusLed(_status);
 
     // Set flashlight
     GpioHandler *gpioHandle = getGpioHandle();

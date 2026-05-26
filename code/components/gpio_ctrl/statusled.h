@@ -5,8 +5,6 @@
 #include "freertos/task.h"
 
 
-extern TaskHandle_t xHandle_task_StatusLED;
-
 enum StatusLedSource {
     WLAN_CONN = 1,
     NETWORK_INIT = 2,

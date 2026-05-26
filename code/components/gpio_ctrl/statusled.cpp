@@ -14,9 +14,8 @@
 
 static const char *TAG = "STATUSLED";
 
-TaskHandle_t xHandle_task_StatusLED = nullptr;
-struct StatusLEDData StatusLEDData = {};
-
+static TaskHandle_t xHandle_task_StatusLED = nullptr;
+static struct StatusLEDData StatusLEDData = {};
 static SemaphoreHandle_t xStatusLedMutex = nullptr;
 
 
