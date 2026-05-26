@@ -504,7 +504,7 @@ void GpioHandler::gpioFlashlightControl(bool _state, int _intensity)
 }
 
 
-void GpioHandler::gpioStatusLedControl(bool _state, bool freeRes)
+void GpioHandler::gpioStatusLedControl(bool _state)
 {
     if (!gpioHandle || !gpioMap) {
         return;

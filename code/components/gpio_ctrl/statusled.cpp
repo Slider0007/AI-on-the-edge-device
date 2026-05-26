@@ -19,12 +19,12 @@ static struct StatusLEDData StatusLEDData = {};
 static SemaphoreHandle_t xStatusLedMutex = nullptr;
 
 
-static void applyPhysicalLedState(bool status, bool freeRes = true)
+static void applyPhysicalLedState(bool status)
 {
 #ifdef GPIO_STATUS_LED_ONBOARD_USE_SMARTLED
     GpioHandler *gpioHandle = getGpioHandle();
     if (gpioHandle) {
-        gpioHandle->gpioStatusLedControl(status, freeRes);
+        gpioHandle->gpioStatusLedControl(status);
     }
 #else
 
@@ -65,9 +65,9 @@ static void task_StatusLED(void *pvParameter)
 
             // Source Blinks
             for (int j = 0; j < StatusLEDDataInt.iSourceBlinkCnt; ++j) {
-                applyPhysicalLedState(true, false);
+                applyPhysicalLedState(true);
                 vTaskDelay(pdMS_TO_TICKS(StatusLEDDataInt.iBlinkTime));
-                applyPhysicalLedState(false, false);
+                applyPhysicalLedState(false);
                 vTaskDelay(pdMS_TO_TICKS(StatusLEDDataInt.iBlinkTime));
             }
 
@@ -75,9 +75,9 @@ static void task_StatusLED(void *pvParameter)
 
             // Code Blinks
             for (int j = 0; j < StatusLEDDataInt.iCodeBlinkCnt; ++j) {
-                applyPhysicalLedState(true, false);
+                applyPhysicalLedState(true);
                 vTaskDelay(pdMS_TO_TICKS(StatusLEDDataInt.iBlinkTime));
-                applyPhysicalLedState(false, false);
+                applyPhysicalLedState(false);
                 vTaskDelay(pdMS_TO_TICKS(StatusLEDDataInt.iBlinkTime));
             }
 

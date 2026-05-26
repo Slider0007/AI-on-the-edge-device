@@ -55,7 +55,7 @@ class GpioHandler
     bool gpioHandlerIsEnabled() { return gpioHandlerEnabled; };
 
     void gpioFlashlightControl(bool _state, int _intensity);
-    void gpioStatusLedControl(bool _state, bool freeRes = true);
+    void gpioStatusLedControl(bool _state);
 
     void gpioPinInterrupt(GpioResult *gpioResult);
     void gpioInputStatePolling();
