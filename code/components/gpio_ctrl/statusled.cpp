@@ -14,7 +14,7 @@
 
 static const char *TAG = "STATUSLED";
 
-static TaskHandle_t xHandle_task_StatusLED = nullptr;
+static TaskHandle_t xHandleTaskStatusLED = nullptr;
 static struct StatusLEDData StatusLEDData = {};
 static SemaphoreHandle_t xStatusLedMutex = nullptr;
 
@@ -46,7 +46,7 @@ static void task_StatusLED(void *pvParameter)
             // Check if a cancellation request arrived or processing dropped low
             if (!StatusLEDData.bProcessingRequest) {
                 applyPhysicalLedState(false);
-                xHandle_task_StatusLED = nullptr;
+                xHandleTaskStatusLED = nullptr;
                 xSemaphoreGive(xStatusLedMutex);
                 break;
             }
@@ -93,7 +93,7 @@ static void task_StatusLED(void *pvParameter)
 
             applyPhysicalLedState(false);
             StatusLEDData.bProcessingRequest = false;
-            xHandle_task_StatusLED = nullptr;
+            xHandleTaskStatusLED = nullptr;
             xSemaphoreGive(xStatusLedMutex);
             break;
         }
@@ -115,10 +115,10 @@ void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite)
     StatusLEDData.bProcessingRequest = true;
     StatusLEDData.bRequestPending = true;
 
-    if (!xHandle_task_StatusLED) {
-        BaseType_t xReturned = xTaskCreate(&task_StatusLED, "task_StatusLED", 2048, nullptr, tskIDLE_PRIORITY + 1, &xHandle_task_StatusLED);
+    if (!xHandleTaskStatusLED) {
+        BaseType_t xReturned = xTaskCreate(&task_StatusLED, "task_StatusLED", 2048, nullptr, tskIDLE_PRIORITY + 2, &xHandleTaskStatusLED);
         if (xReturned != pdPASS) {
-            xHandle_task_StatusLED = nullptr;
+            xHandleTaskStatusLED = nullptr;
             StatusLEDData.bProcessingRequest = false;
             StatusLEDData.bRequestPending = false;
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "task_StatusLED failed to create");
@@ -136,7 +136,7 @@ void setStatusLed(bool status)
     }
 
     // Set pin only if in idle
-    if (!xHandle_task_StatusLED && !StatusLEDData.bProcessingRequest) {
+    if (!xHandleTaskStatusLED && !StatusLEDData.bProcessingRequest) {
         applyPhysicalLedState(status);
     }
 
