@@ -5,8 +5,6 @@
 #include "freertos/task.h"
 
 
-extern TaskHandle_t xHandle_task_StatusLED;
-
 enum StatusLedSource {
     WLAN_CONN = 1,
     NETWORK_INIT = 2,
@@ -24,12 +22,12 @@ struct StatusLEDData {
     int iBlinkTime = 250;
     bool bInfinite = false;
     bool bProcessingRequest = false;
+    bool bRequestPending = false;
 };
 
 void initStatusLed();
 void setStatusLed(StatusLedSource _eSource, int _iCode, bool _bInfinite);
+void setStatusLed(bool state);
 void forceStatusLedOff(void);
-
-void setStatusLedState(bool state);
 
 #endif // STATUSLED_H
