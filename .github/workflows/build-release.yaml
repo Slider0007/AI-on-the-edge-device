@@ -72,7 +72,7 @@ jobs:
         restore-keys: build-${{ matrix.plat }} # This matches above key as it is only used as a prefix. It restores the nearest cache
 
     - name: Setup python environment
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.11'
 
