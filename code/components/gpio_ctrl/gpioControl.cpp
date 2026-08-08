@@ -350,14 +350,14 @@ esp_err_t GpioHandler::loadParameter()
             ESP_LOG_DEBUG, TAG,
             "Pin Config: GPIO" + std::to_string((int)gpioNr) + ", Name: " + std::string(gpioName) + ", Mode: " + pin.pinMode +
                 ", Interrupt Type: " + pin.captureMode + ", Debounce Time: " + std::to_string(pin.inputDebounceTime) +
-                ", Frequency: " + std::to_string(pin.PwmFrequency) + ", Logic Active Low: " + std::to_string(pin.logicActiveLow) +
+                ", Frequency: " + std::to_string(pin.pwmFrequency) + ", Logic Active Low: " + std::to_string(pin.logicActiveLow) +
                 ", HTTP Access: " + std::to_string(pin.exposeToRest) + ", MQTT Access: " + std::to_string(mqttAccess) +
                 ", MQTT Topic: " + mqttTopic + ", LED Type: " + std::to_string(pin.smartLed.type) +
                 ", LED Quantity: " + std::to_string(pin.smartLed.quantity) + ", LED Color: R:" + std::to_string(LEDColor.r) +
                 " | G:" + std::to_string(LEDColor.g) + " | B:" + std::to_string(LEDColor.b) +
                 ", LED Intensity Correction: " + std::to_string(pin.intensityCorrectionFactor));
 
-        GpioPin *gpioPin = new GpioPin(gpioNr, gpioName, pinMode, captureMode, pin.inputDebounceTime, pin.PwmFrequency, pin.logicActiveLow,
+        GpioPin *gpioPin = new GpioPin(gpioNr, gpioName, pinMode, captureMode, pin.inputDebounceTime, pin.pwmFrequency, pin.logicActiveLow,
                                        pin.exposeToRest, mqttAccess, mqttTopic, LEDType, pin.smartLed.quantity, LEDColor,
                                        pin.intensityCorrectionFactor);
         (*gpioMap)[gpioNr] = gpioPin;
