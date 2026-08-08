@@ -326,7 +326,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "cameramodel");
     if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.imageQuality = std::clamp(objEl->valueint, 0, 14);
+        cfgDataTemp.sectionTakeImage.camera.cameraModel = std::clamp(objEl->valueint, 0, 14);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "camerafrequency");
