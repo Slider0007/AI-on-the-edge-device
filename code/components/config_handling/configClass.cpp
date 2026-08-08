@@ -326,7 +326,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "cameramodel");
     if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.cameraModel = std::clamp(objEl->valueint, 0, 14);
+        cfgDataTemp.sectionTakeImage.camera.cameraModel = (camera_model_t)std::clamp(objEl->valueint, 0, 14);
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "camerafrequency");
@@ -1415,7 +1415,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 
         arrEl = cJSON_GetObjectItem(objArrEl, "pwmfrequency");
         if (cJSON_IsNumber(arrEl)) {
-            gpioElTemp->PwmFrequency = std::clamp(arrEl->valueint, 5, 1000000); // Hertz
+            gpioElTemp->pwmFrequency = std::clamp(arrEl->valueint, 5, 1000000); // Hertz
         }
 
         arrEl = cJSON_GetObjectItem(objArrEl, "logicactivelow");
@@ -2454,7 +2454,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         if (cJSON_AddNumberToObject(gpiopinEl, "inputdebouncetime", cfgDataTemp.sectionGpio.gpioPin[i].inputDebounceTime) == NULL) {
             retVal = ESP_FAIL;
         }
-        if (cJSON_AddNumberToObject(gpiopinEl, "pwmfrequency", cfgDataTemp.sectionGpio.gpioPin[i].PwmFrequency) == NULL) {
+        if (cJSON_AddNumberToObject(gpiopinEl, "pwmfrequency", cfgDataTemp.sectionGpio.gpioPin[i].pwmFrequency) == NULL) {
             retVal = ESP_FAIL;
         }
         if (cJSON_AddBoolToObject(gpiopinEl, "logicactivelow", cfgDataTemp.sectionGpio.gpioPin[i].logicActiveLow) == NULL) {
