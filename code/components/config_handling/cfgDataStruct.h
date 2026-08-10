@@ -143,7 +143,7 @@ struct RoiElement {
     int y = 1;
     int dx = 10;
     int dy = 10;
-    bool ccw = false;
+    bool ccw = false; // counter-clock-wise
 };
 
 
@@ -187,7 +187,7 @@ struct GpioElement {
     std::string pinMode = "input";
     std::string captureMode = "cyclic-polling";
     int inputDebounceTime = 200;
-    int PwmFrequency = 5000;
+    int pwmFrequency = 5000;
     bool logicActiveLow = false;
     bool exposeToMqtt = false;
     bool exposeToRest = false;
