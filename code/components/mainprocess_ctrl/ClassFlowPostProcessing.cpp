@@ -579,12 +579,12 @@ std::string ClassFlowPostProcessing::substituteN(std::string input, double _fall
 }
 
 
-float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decimalshift, bool _isanalog, double _fallbackValue)
+double ClassFlowPostProcessing::checkDigitConsistency(double input, int _decimalshift, bool _isanalog, double _fallbackValue)
 {
     int aktdigit, olddigit;
     int aktdigit_before, olddigit_before;
     int pot, pot_max;
-    float zw;
+    double zw;
     bool no_nulldurchgang = false;
 
     pot = _decimalshift;
@@ -612,12 +612,12 @@ float ClassFlowPostProcessing::checkDigitConsistency(double input, int _decimals
 
         if (no_nulldurchgang) {
             if (aktdigit != olddigit) {
-                input = input + ((float)(olddigit - aktdigit)) * pow(10, pot); // New Digit is replaced by old Digit;
+                input = input + ((double)(olddigit - aktdigit)) * pow(10, pot); // New Digit is replaced by old Digit;
             }
         }
         else {
-            if (aktdigit == olddigit) {                      // despite zero crossing, digit was not incremented --> add 1
-                input = input + ((float)(1)) * pow(10, pot); // add 1 at the point
+            if (aktdigit == olddigit) {                       // despite zero crossing, digit was not incremented --> add 1
+                input = input + ((double)(1)) * pow(10, pot); // add 1 at the point
             }
         }
 
