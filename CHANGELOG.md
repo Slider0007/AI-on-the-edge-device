@@ -1,5 +1,33 @@
 # Changelog
 
+## [17.4.1-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.4.0-SLFork...v17.4.1-SLFork) (2026-08-24)
+
+
+### Bug Fixes
+
+* **config:** Fix camera model assignment ([#373](https://github.com/Slider0007/AI-on-the-edge-device/issues/373)) ([2891314](https://github.com/Slider0007/AI-on-the-edge-device/commit/289131424ecc6da46ff69e9a1be8dbe693b504af))
+* **image handling:** Fix thread-safety issues using image handling components ([#341](https://github.com/Slider0007/AI-on-the-edge-device/issues/341)) ([ff67a15](https://github.com/Slider0007/AI-on-the-edge-device/commit/ff67a1554aeb789844d7f651da52c870183e0041))
+* **mqtt:** home assistant discovery - add device mac address ([#363](https://github.com/Slider0007/AI-on-the-edge-device/issues/363)) ([1dfe4aa](https://github.com/Slider0007/AI-on-the-edge-device/commit/1dfe4aad04cde032df1e21b6e92f2ddebb0b52e0))
+* **post-processing:** checkDigitConsistency - Increase precision to improve accuracy for large readings ([#374](https://github.com/Slider0007/AI-on-the-edge-device/issues/374)) ([150d276](https://github.com/Slider0007/AI-on-the-edge-device/commit/150d276176a7e17492956b064bf394a183c33565))
+* **status led:** Fix thread-safety issue for status led ([#362](https://github.com/Slider0007/AI-on-the-edge-device/issues/362)) ([2236185](https://github.com/Slider0007/AI-on-the-edge-device/commit/2236185e34f45cde0e40dafe7d5183c7f74d6db6))
+
+
+### Other Changes
+
+* **build:** Combined debug artifact for releases ([#360](https://github.com/Slider0007/AI-on-the-edge-device/issues/360)) ([004ad9f](https://github.com/Slider0007/AI-on-the-edge-device/commit/004ad9f06cf77ae13d482317c9b6de00b87566c5))
+* **deps:** Bump actions/cache from 4 to 5 ([#339](https://github.com/Slider0007/AI-on-the-edge-device/issues/339)) ([e09c353](https://github.com/Slider0007/AI-on-the-edge-device/commit/e09c353d2fb848d3fecb8017bcfc3c5d3c32bd7b))
+* **deps:** Bump actions/cache from 5 to 6 ([#369](https://github.com/Slider0007/AI-on-the-edge-device/issues/369)) ([71797ab](https://github.com/Slider0007/AI-on-the-edge-device/commit/71797ab481518a953b9a7bba4ac4af86a093f964))
+* **deps:** Bump actions/checkout from 5 to 6 ([#331](https://github.com/Slider0007/AI-on-the-edge-device/issues/331)) ([60a6687](https://github.com/Slider0007/AI-on-the-edge-device/commit/60a668772c99f836d9c71667544bc8b315d2c725))
+* **deps:** Bump actions/checkout from 6 to 7 ([#370](https://github.com/Slider0007/AI-on-the-edge-device/issues/370)) ([9f66fa4](https://github.com/Slider0007/AI-on-the-edge-device/commit/9f66fa459b68105dcf1a2717a64c0759d0e2879f))
+* **deps:** Bump actions/download-artifact from 6 to 7 ([#337](https://github.com/Slider0007/AI-on-the-edge-device/issues/337)) ([4068dd1](https://github.com/Slider0007/AI-on-the-edge-device/commit/4068dd1ce2b8a9bac443b310b12c1ac7f995954a))
+* **deps:** Bump actions/download-artifact from 7 to 8 ([#348](https://github.com/Slider0007/AI-on-the-edge-device/issues/348)) ([6ce210c](https://github.com/Slider0007/AI-on-the-edge-device/commit/6ce210cd0fb1fa549814c9af687e0cac1c8770e9))
+* **deps:** Bump actions/github-script from 8 to 9 ([#356](https://github.com/Slider0007/AI-on-the-edge-device/issues/356)) ([90bccf7](https://github.com/Slider0007/AI-on-the-edge-device/commit/90bccf7c0919adc63beb2b15950f8d9fd7b412e2))
+* **deps:** Bump actions/setup-python from 6 to 7 ([#371](https://github.com/Slider0007/AI-on-the-edge-device/issues/371)) ([df5a963](https://github.com/Slider0007/AI-on-the-edge-device/commit/df5a96301cabba1ad6bc541bf673d1bea57e5071))
+* **deps:** Bump actions/upload-artifact from 5 to 6 ([#338](https://github.com/Slider0007/AI-on-the-edge-device/issues/338)) ([3e6825c](https://github.com/Slider0007/AI-on-the-edge-device/commit/3e6825cc1d96a336252b488d275f9fdcdc83571f))
+* **deps:** Bump actions/upload-artifact from 6 to 7 ([#347](https://github.com/Slider0007/AI-on-the-edge-device/issues/347)) ([6c96911](https://github.com/Slider0007/AI-on-the-edge-device/commit/6c9691121009561e46d49efe20d1bb83b43f0d10))
+* **deps:** Bump googleapis/release-please-action from 4 to 5 ([#355](https://github.com/Slider0007/AI-on-the-edge-device/issues/355)) ([90aa64c](https://github.com/Slider0007/AI-on-the-edge-device/commit/90aa64c565c3d666e7b8b9e8408071652ec95441))
+* **webui:** Update copyright year ([#352](https://github.com/Slider0007/AI-on-the-edge-device/issues/352)) ([371247c](https://github.com/Slider0007/AI-on-the-edge-device/commit/371247cb7df13a46d750e43b58d03a835ccbacf6))
+
 ## [17.4.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.3.0-SLFork...v17.4.0-SLFork) (2025-12-01)
 
 ### 💿 Installation / Migration Notes
