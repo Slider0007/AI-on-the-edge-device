@@ -2,7 +2,11 @@ name: Build and Release
 
 on:
   push:
+    branches-ignore:
+      - 'release-please--*'
   pull_request:
+    branches-ignore:
+      - 'release-please--*'
   workflow_dispatch:
 
 jobs:
