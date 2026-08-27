@@ -1,7 +1,8 @@
 #include "psram.h"
 
 
-#define STBI_ONLY_JPEG // JPG handling only (disable other file types to save flash)
+#define STBI_ONLY_JPEG       // JPG handling only (disable other file types to save flash)
+#define STBI_FAILURE_USERMSG // Compile user friendly error messages
 
 // Custom defined memory allocation strategy
 #define STBI_MALLOC(sz)        malloc_psram_heap_STBI("STBI", sz, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT)

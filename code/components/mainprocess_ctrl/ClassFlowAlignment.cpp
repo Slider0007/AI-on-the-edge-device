@@ -43,33 +43,41 @@ bool ClassFlowAlignment::loadParameter()
         for (int i = 0; i < 2; i++) {
             int x = 0, y = 0, channels = 0;
             std::string sIndex = std::to_string(i + 1);
+            alignmentMarker[i].markerImageFilename = "/sdcard/config/marker" + sIndex + ".jpg";
 
-            // Check availability of marker image before usage
-            if (!fileExists("/sdcard/config/marker" + sIndex + ".jpg")) {
+            // Check availability of marker image
+            if (!fileExists(alignmentMarker[i].markerImageFilename)) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "Alignment marker image missing: '/sdcard/config/marker" + sIndex +
-                                        ".jpg' > Please update alignment marker");
+                                    "Marker missing: > Create alignment marker | File: " + alignmentMarker[i].markerImageFilename);
                 return false;
             }
 
-            alignmentMarker[i].alignmentAlgo = cfgDataPtr->alignmentAlgo;
-            alignmentMarker[i].searchX = cfgDataPtr->searchField.x;
-            alignmentMarker[i].searchY = cfgDataPtr->searchField.y;
-            alignmentMarker[i].similarityCheckSADThreshold = alignSimilarityCheckSADThreshold;
+            // Parse marker image meta data (dimension, channels)
+            if (!stbi_info(alignmentMarker[i].markerImageFilename.c_str(), &x, &y, &channels)) {
+                std::string failureReason = stbi_failure_reason() ? stbi_failure_reason() : "Unknown";
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Marker invalid > Recreate alignment marker | File: " + alignmentMarker[i].markerImageFilename +
+                                        " | Reason: " + failureReason);
+                return false;
+            }
 
-            alignmentMarker[i].markerImageFilename = "/sdcard/config/marker" + sIndex + ".jpg";
-            stbi_info(alignmentMarker[i].markerImageFilename.c_str(), &x, &y, &channels);
-
+            // Create BMP image container (with required image dimension)
             alignmentMarker[i].markerImage = new CImage("marker" + sIndex, x, y, channels, true);
             if (!alignmentMarker[i].markerImage) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create alignment marker image");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create image container");
                 return false;
             }
 
+            // Read marker to BMP image container
             if (alignmentMarker[i].markerImage->loadJpgFromFile(alignmentMarker[i].markerImageFilename.c_str(), true) != ESP_OK) {
                 return false;
             }
 
+            // Preset marker parameter
+            alignmentMarker[i].alignmentAlgo = cfgDataPtr->alignmentAlgo;
+            alignmentMarker[i].searchX = cfgDataPtr->searchField.x;
+            alignmentMarker[i].searchY = cfgDataPtr->searchField.y;
+            alignmentMarker[i].similarityCheckSADThreshold = alignSimilarityCheckSADThreshold;
             alignmentMarker[i].targetX = cfgDataPtr->marker[i].x;
             alignmentMarker[i].targetY = cfgDataPtr->marker[i].y;
             alignmentMarker[i].width = alignmentMarker[i].markerImage->getWidth();
