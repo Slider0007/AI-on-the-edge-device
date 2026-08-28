@@ -67,7 +67,7 @@ typedef struct {
 } taskArena_t;
 
 // Thread-Local Storage pointer
-static __thread taskArena_t *tActiveArena = nullptr;
+extern __thread taskArena_t *tActiveArena;
 
 class cJsonPsramArena
 {

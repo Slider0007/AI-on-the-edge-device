@@ -325,7 +325,6 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
         // Delete JSON AST while TLS arena is still active
         cJSON_Delete(cJsonObject);
         cJsonObject = nullptr;
-
     } // CfgMutexGuard releases here
 
     return retVal;
