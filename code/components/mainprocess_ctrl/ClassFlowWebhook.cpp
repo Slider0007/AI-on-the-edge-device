@@ -1,7 +1,6 @@
 #include "ClassFlowWebhook.h"
 
 #ifdef ENABLE_WEBHOOK
-#include <sstream>
 #include <time.h>
 
 #include <esp_log.h>

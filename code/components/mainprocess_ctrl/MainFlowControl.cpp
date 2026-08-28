@@ -3,8 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <iomanip>
-#include <sstream>
 
 #include <esp_log.h>
 #include <esp_timer.h>
@@ -454,7 +452,6 @@ esp_err_t handler_process_data(httpd_req_t *req)
     }
     else { // default - no parameter set: send data as JSON
         esp_err_t retVal = ESP_OK;
-        std::string sReturnMessage;
         cJSON *cJSONObject = cJSON_CreateObject();
 
         if (cJSONObject == NULL) {
@@ -731,7 +728,7 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
     const char *APIName = "recognition_details:v1"; // API name and version
     char query[100];
     char valuechar[30];
-    std::string type, zw;
+    std::string type;
 
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
         if (httpd_query_key_value(query, "type", valuechar, sizeof(valuechar)) == ESP_OK) {
@@ -920,7 +917,7 @@ std::string getProcessStatus(void)
         process_status = "Not Processing / Not Ready";
     }
     else {
-        process_status = "Status unknown: " + taskAutoFlowState;
+        process_status = "Status unknown - State: " + std::to_string(taskAutoFlowState);
     }
 
     return process_status;

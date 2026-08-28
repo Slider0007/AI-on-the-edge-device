@@ -1,8 +1,6 @@
 #include "configClass.h"
 #include "../../include/defines.h"
 
-#include <fstream>
-#include <sstream>
 #include <algorithm>
 #include <lwip/sockets.h>
 #include <arpa/inet.h>
@@ -114,36 +112,28 @@ ConfigClass::~ConfigClass()
 //**************************************************************************************************
 void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 {
-    std::stringstream streamBuffer;
+    std::string content;
     bool fallbackCfgChecked = false;
 
-    if (unityTest) {                     // Unity test
-        clearCfgDataTemp();              // Clear internal struct
-        streamBuffer.str(unityTestData); // Inject test data
+    if (unityTest) {
+        clearCfgDataTemp();
+        content = std::move(unityTestData);
     }
-    else { // Read data from file
-        std::ifstream file(CONFIG_PERSISTENCE_FILE, std::ifstream::in);
-
-        if (file.is_open() && file.good()) {
+    else {
+        if (readFileToString(CONFIG_PERSISTENCE_FILE, content)) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config file found");
-            streamBuffer << file.rdbuf();
-            file.close();
         }
     }
 
-    // Check for empty content -> either empty file or no / bad file
-    if (streamBuffer.rdbuf()->in_avail() == 0) {
+    if (content.empty()) {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "No persistent config data | Check for fallback config file");
 
-        std::ifstream file(CONFIG_PERSISTENCE_FILE_FALLBACK, std::ifstream::in);
-        if (file.is_open() && file.good()) {
+        if (readFileToString(CONFIG_PERSISTENCE_FILE_FALLBACK, content)) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Fallback config file found");
-            streamBuffer << file.rdbuf();
-            file.close();
         }
 
-        if (streamBuffer.rdbuf()->in_avail() == 0) {
-            streamBuffer.str("{}"); // Ensure any content
+        if (content.empty()) {
+            content = "{}";
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "No persistent config data | Use default config");
             // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started to reconfigure.
         }
@@ -162,7 +152,7 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
     cJSONObjectPSRAM.usedMemory = 0;
 
     // Parse content to cJSON object structure
-    cJsonObject = cJSON_Parse(streamBuffer.str().c_str());
+    cJsonObject = cJSON_Parse(content.c_str());
 
     // Reset cJSON hooks to default
     cJSON_InitHooks(NULL);
@@ -175,12 +165,10 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 
         if (!fallbackCfgChecked) { // Try read fallback file if not yet read
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "Invalid persistent config data | Check for fallback config file");
-            std::ifstream file(CONFIG_PERSISTENCE_FILE_FALLBACK, std::ifstream::in);
-            if (file.is_open() && file.good()) {
+            content.clear();
+
+            if (readFileToString(CONFIG_PERSISTENCE_FILE_FALLBACK, content)) {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Fallback config file found");
-                streamBuffer.str(""); // Clear stream buffer
-                streamBuffer << file.rdbuf();
-                file.close();
 
                 portENTER_CRITICAL(&mutex);
                 // Modify hook to use SPIRAM for cJSON object
@@ -193,7 +181,7 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
                 cJSONObjectPSRAM.usedMemory = 0;
 
                 // Parse content to cJSON object structure
-                cJsonObject = cJSON_Parse(streamBuffer.str().c_str());
+                cJsonObject = cJSON_Parse(content.c_str());
 
                 // Reset cJSON hooks to default
                 cJSON_InitHooks(NULL);
@@ -2726,15 +2714,21 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 //**************************************************************************************************
 esp_err_t ConfigClass::writeConfigFile()
 {
-    std::ofstream file(CONFIG_PERSISTENCE_FILE, std::ofstream::out);
+    FILE *file = fopen(CONFIG_PERSISTENCE_FILE, "w");
 
-    if (!file.is_open()) {
+    if (!file) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write JSON file");
         return ESP_FAIL;
     }
 
-    file << jsonBuffer;
-    file.close();
+    const size_t bufLength = strlen(jsonBuffer);
+    size_t written = fwrite(jsonBuffer, 1, bufLength, file);
+    fclose(file);
+
+    if (written != bufLength) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write complete JSON data");
+        return ESP_FAIL;
+    }
 
     // Save config file additionally as fallback config file
     copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK);

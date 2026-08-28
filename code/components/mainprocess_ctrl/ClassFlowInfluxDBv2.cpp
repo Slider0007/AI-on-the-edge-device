@@ -1,7 +1,6 @@
 #include "ClassFlowInfluxDBv2.h"
 
 #ifdef ENABLE_INFLUXDB
-#include <sstream>
 #include <time.h>
 
 #include <esp_log.h>

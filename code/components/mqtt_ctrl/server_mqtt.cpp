@@ -2,8 +2,6 @@
 
 #ifdef ENABLE_MQTT
 #include <string>
-#include <sstream>
-#include <iomanip>
 #include <vector>
 
 #include <esp_log.h>

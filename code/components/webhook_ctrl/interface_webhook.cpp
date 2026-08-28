@@ -2,8 +2,6 @@
 #include "../../include/defines.h"
 
 #ifdef ENABLE_WEBHOOK
-#include <fstream>
-
 #include <esp_http_client.h>
 #include <esp_tls_errors.h>
 #include <esp_crt_bundle.h>
@@ -78,9 +76,9 @@ bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr)
 
         if (cfgDataPtr->tls.serverCertVerification != TLS_SERVER_CERT_VERIFICATION_NONE && !cfgDataPtr->tls.caCert.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: CA certificate file: /config/certs/" + cfgDataPtr->tls.caCert);
-            std::ifstream ifs("/sdcard/config/certs/" + cfgDataPtr->tls.caCert);
-            TLSCACert = std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
-            if (TLSCACert.empty()) {
+
+            const std::string filePath = "/sdcard/config/certs/" + cfgDataPtr->tls.caCert;
+            if (!readFileToString(filePath, TLSCACert) || TLSCACert.empty()) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load CA certificate");
                 return false;
             }
@@ -91,9 +89,9 @@ bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr)
 
         if (!cfgDataPtr->tls.clientCert.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client certificate file: /config/certs/" + cfgDataPtr->tls.clientCert);
-            std::ifstream cert_ifs("/sdcard/config/certs/" + cfgDataPtr->tls.clientCert);
-            TLSClientCert = std::string(std::istreambuf_iterator<char>(cert_ifs), std::istreambuf_iterator<char>());
-            if (TLSClientCert.empty()) {
+
+            const std::string filePath = "/sdcard/config/certs/" + cfgDataPtr->tls.clientCert;
+            if (!readFileToString(filePath, TLSClientCert) || TLSClientCert.empty()) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client certificate");
                 return false;
             }
@@ -104,9 +102,9 @@ bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr)
 
         if (!cfgDataPtr->tls.clientKey.empty()) {
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "TLS: Client key file: /config/certs/" + cfgDataPtr->tls.clientKey);
-            std::ifstream key_ifs("/sdcard/config/certs/" + cfgDataPtr->tls.clientKey);
-            TLSClientKey = std::string(std::istreambuf_iterator<char>(key_ifs), std::istreambuf_iterator<char>());
-            if (TLSClientKey.empty()) {
+
+            const std::string filePath = "/sdcard/config/certs/" + cfgDataPtr->tls.clientKey;
+            if (!readFileToString(filePath, TLSClientKey) || TLSClientKey.empty()) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "TLS: Failed to load client key");
                 return false;
             }

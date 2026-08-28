@@ -2,8 +2,7 @@
 #include "helper.h"
 #include "../../include/defines.h"
 
-#include <sstream>
-#include <fstream>
+#include <algorithm>
 #include <cstring>
 #include <cmath>
 #include <unistd.h>
@@ -155,13 +154,61 @@ bool getFileIsFiletype(const std::string &filename, const std::string &filetype)
 
 std::size_t getFileSize(const std::string &filename)
 {
-    std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
-    if (!file) {
+    struct stat st;
+
+    if (stat(filename.c_str(), &st) != 0 || !S_ISREG(st.st_mode)) {
         return 0;
     }
 
-    file.seekg(0, std::ios::end);
-    return static_cast<std::size_t>(file.tellg());
+    return static_cast<std::size_t>(st.st_size);
+}
+
+
+bool readFileToString(const std::string &path, std::string &out)
+{
+    out.clear();
+
+    if (path.empty()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readFileToString: No valid path");
+        return false;
+    }
+
+    const std::size_t fileSize = getFileSize(path);
+    if (fileSize == 0) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readFileToString: File missing or empty");
+        return false;
+    }
+
+    if (fileSize > CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readFileToString: File size exceeds buffer limit: " + path);
+        return false;
+    }
+
+    FILE *fp = fopen(path.c_str(), "rb");
+    if (!fp) {
+        const int error = errno;
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readFileToString: Failed to open file: " + path + " | Errno: " + std::to_string(error));
+        return false;
+    }
+
+    // Use a 512-byte buffer for SD card access (newlib default: 128 bytes)
+    setvbuf(fp, NULL, _IOFBF, 512);
+
+    out.reserve(fileSize);
+
+    char buf[512];
+    while (const size_t bytesRead = fread(buf, 1, sizeof(buf), fp)) {
+        out.append(buf, bytesRead);
+    }
+
+    const bool success = !ferror(fp);
+    fclose(fp);
+
+    if (!success) {
+        out.clear();
+    }
+
+    return success;
 }
 
 
@@ -557,29 +604,38 @@ bool isInString(std::string &s, std::string const &toFind)
 std::vector<std::string> splitStringAtNewline(const std::string &str)
 {
     std::vector<std::string> tokens;
+    size_t start = 0;
+    size_t end = str.find('\n');
 
-    std::stringstream ss(str);
-    std::string token;
+    while (end != std::string::npos) {
+        // Optional: strip trailing '\r' if dealing with Windows CRLF newlines
+        size_t len = end - start;
+        if (len > 0 && str[end - 1] == '\r') {
+            len--;
+        }
+        tokens.push_back(str.substr(start, len));
+        start = end + 1;
+        end = str.find('\n', start);
+    }
 
-    while (std::getline(ss, token, '\n')) {
-        tokens.push_back(token);
+    // Push the remaining piece after the last newline
+    if (start < str.size()) {
+        tokens.push_back(str.substr(start));
     }
 
     return tokens;
 }
 
 
-std::string to_stringWithPrecision(const double _value, int _decPlace = 6)
+std::string to_stringWithPrecision(const double _value, int _decPlace)
 {
-    std::ostringstream out;
+    char buffer[64];
+    _decPlace = std::clamp(_decPlace, 0, 15);
 
-    if (_decPlace < 0) {
-        _decPlace = 0;
-    }
+    // The '*' takes the next argument (_decPlace) as the precision
+    snprintf(buffer, sizeof(buffer), "%.*f", _decPlace, _value);
 
-    out.precision(_decPlace);
-    out << std::fixed << _value;
-    return out.str();
+    return std::string(buffer);
 }
 
 

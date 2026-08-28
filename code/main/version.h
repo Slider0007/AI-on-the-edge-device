@@ -2,7 +2,6 @@
 #define _VERSION_H
 
 #include <string>
-#include <fstream>
 #include <algorithm>
 
 #include "helper.h"

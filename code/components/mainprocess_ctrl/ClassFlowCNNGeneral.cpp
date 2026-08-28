@@ -2,9 +2,7 @@
 #include "../../include/defines.h"
 
 #include <math.h>
-#include <iomanip>
 #include <sys/types.h>
-#include <sstream> // std::stringstream
 
 #include <esp_log.h>
 
