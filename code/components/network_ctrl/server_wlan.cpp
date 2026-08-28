@@ -4,7 +4,6 @@
 #include <string>
 
 #include "http_auth.h"
-#include "ClassLogFile.h"
 #include "connect_wlan.h"
 
 

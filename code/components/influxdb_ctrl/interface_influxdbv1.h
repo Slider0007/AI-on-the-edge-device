@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "configClass.h"
+#include "cfgDataStruct.h"
 
 bool influxDBv1Init(const CfgData::SectionInfluxDBv1 *_cfgDataPtr);
 esp_err_t influxDBv1Publish(const std::string &_measurement, const std::string &_fieldkey1, const std::string &_fieldvalue1,

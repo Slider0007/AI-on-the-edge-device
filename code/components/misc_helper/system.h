@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "sdmmc_cmd.h"
+#include <sd_protocol_types.h>
 
 typedef enum {
     SPIRAMCategory_4MB = 0,

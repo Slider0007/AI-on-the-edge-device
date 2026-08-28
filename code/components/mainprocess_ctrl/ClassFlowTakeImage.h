@@ -3,10 +3,8 @@
 
 #include <string>
 
-#include "configClass.h"
+#include "cfgDataStruct.h"
 #include "ClassLogImage.h"
-#include "ClassControlCamera.h"
-#include "ClassFlowDefineTypes.h"
 
 
 class ClassFlowTakeImage : public ClassLogImage

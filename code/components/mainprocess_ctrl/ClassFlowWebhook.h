@@ -6,11 +6,10 @@
 
 #include <string>
 
-#include "configClass.h"
+#include "cfgDataStruct.h"
 #include "ClassFlow.h"
-#include "ClassFlowPostProcessing.h"
 
-
+#include "configClass.h"
 class ClassFlowWebhook : public ClassFlow
 {
   protected:

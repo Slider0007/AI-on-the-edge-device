@@ -4,11 +4,10 @@
 #include <string>
 
 #include <esp_log.h>
-#include "esp_camera.h"
 
 #include "http_auth.h"
+#include "configClass.h"
 #include "ClassControlCamera.h"
-#include "ClassLogFile.h"
 
 
 static const char *TAG = "SERVER_CAM";

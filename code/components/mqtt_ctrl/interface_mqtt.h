@@ -5,7 +5,6 @@
 #define INTERFACE_MQTT_H
 
 #include <string>
-#include <map>
 #include <functional>
 
 #include "cfgDataStruct.h"

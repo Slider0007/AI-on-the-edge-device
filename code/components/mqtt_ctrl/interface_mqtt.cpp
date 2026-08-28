@@ -11,14 +11,13 @@
 #include <esp_timer.h>
 #endif // DEBUG_DETAIL_ON
 
-#include "configClass.h"
+#include "cfgDataStruct.h"
 #include "MainFlowControl.h"
 #include "ClassLogFile.h"
 #include "network_main.h"
-#include "connect_wlan.h"
-#include "server_mqtt.h"
 #include "time_sntp.h"
 #include "server_ota.h"
+#include "helper.h"
 
 
 static const char *TAG = "MQTT_IF";

@@ -1,28 +1,16 @@
 #include "ClassFlowControl.h"
 #include "../../include/defines.h"
 
-#include "freertos/task.h"
 #include <sys/stat.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <dirent.h>
-#ifdef __cplusplus
-}
-#endif
 
-#include "configClass.h"
-#include "connect_wlan.h"
+#include "ClassControlCamera.h"
 #include "ClassLogFile.h"
 #include "time_sntp.h"
 #include "helper.h"
 #include "system.h"
 #include "statusled.h"
-#include "server_ota.h"
-#include "server_help.h"
 #include "MainFlowControl.h"
-#include "gpioControl.h"
 #include "server_file.h"
 
 #ifdef ENABLE_MQTT

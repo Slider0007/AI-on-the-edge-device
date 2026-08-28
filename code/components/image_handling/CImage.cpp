@@ -3,7 +3,6 @@
 #include "CImage.h"
 
 #include "esp_heap_caps.h"
-#include "esp_system.h"
 
 #include "webserver.h"
 #include "helper.h"

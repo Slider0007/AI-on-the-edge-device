@@ -6,13 +6,14 @@
 #include <driver/gpio.h>
 #include <driver/ledc.h>
 
-#include "psram.h"
+#include "configClass.h"
 #include "helper.h"
 #include "statusled.h"
 #include "gpioControl.h"
 #include "MainFlowControl.h"
 #include "ClassLogFile.h"
 #include "ov2640_sharpness.h"
+#include "CImageMod.h"
 
 
 static const char *TAG = "CAMCTRL";

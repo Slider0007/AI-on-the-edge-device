@@ -4,10 +4,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <vector>
 
 #include "CImageMod.h"
-#include "psram.h"
 #include "ClassLogFile.h"
 #include "helper.h"
 

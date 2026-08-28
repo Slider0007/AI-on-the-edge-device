@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <inttypes.h>
 #include <sys/stat.h>
 
 #include "esp_rom_crc.h"

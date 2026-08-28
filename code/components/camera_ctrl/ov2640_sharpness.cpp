@@ -1,6 +1,7 @@
 #include "ov2640_sharpness.h"
 
 #include <stdint.h>
+#include <cstddef>
 
 
 #define OV2640_MAXLEVEL_SHARPNESS 6

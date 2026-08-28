@@ -3,9 +3,8 @@
 
 #include <string>
 
-#include "configClass.h"
+#include "cfgDataStruct.h"
 #include "ClassFlow.h"
-#include "ClassFlowDefineTypes.h"
 #include "ClassFlowTakeImage.h"
 #include "ClassFlowCNNGeneral.h"
 

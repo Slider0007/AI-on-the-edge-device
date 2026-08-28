@@ -5,6 +5,7 @@
 #include <lwip/sockets.h>
 #include <arpa/inet.h>
 
+#include "esp_heap_caps.h"
 #include <esp_log.h>
 #include <esp_http_server.h>
 #include <nvs_flash.h>

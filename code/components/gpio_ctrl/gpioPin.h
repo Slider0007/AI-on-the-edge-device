@@ -6,7 +6,7 @@
 #include <string>
 
 #include "hal/gpio_types.h"
-#include "driver/ledc.h"
+#include "hal/ledc_types.h"
 #include "SmartLeds.h"
 
 

@@ -9,7 +9,6 @@
 
 #include "configClass.h"
 #include "ClassLogFile.h"
-#include "helper.h"
 #include "interface_mqtt.h"
 
 

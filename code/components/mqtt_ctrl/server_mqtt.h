@@ -6,7 +6,7 @@
 
 #include "ClassFlowDefineTypes.h"
 #include "ClassFlowMQTT.h"
-#include "configClass.h"
+#include "cfgDataStruct.h"
 
 
 struct HAMeterConfig {

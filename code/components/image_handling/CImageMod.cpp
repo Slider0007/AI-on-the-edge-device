@@ -2,9 +2,6 @@
 
 #include <math.h>
 
-#include "esp_log.h"
-
-#include "psram.h"
 #include "ClassLogFile.h"
 
 

@@ -7,7 +7,7 @@
 #include <esp_log.h>
 
 #include "configClass.h"
-#include "helper.h"
+#include "ClassControlCamera.h"
 #include "ClassLogFile.h"
 #include "CImage.h"
 #include "CImageJpg.h"

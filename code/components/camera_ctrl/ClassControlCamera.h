@@ -11,8 +11,8 @@
 #include <esp_http_server.h>
 #include <esp_camera.h>
 
-#include "configClass.h"
 #include "CImage.h"
+#include "cfgDataStruct.h"
 
 
 typedef struct {

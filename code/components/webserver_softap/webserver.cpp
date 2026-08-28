@@ -6,6 +6,7 @@
 
 #include <esp_log.h>
 #include <esp_wifi.h>
+#include "esp_heap_caps.h"
 #include <esp_private/esp_clk.h>
 #include <cJSON.h>
 
@@ -16,9 +17,9 @@
 #include "../main/version.h" // Only include once
 #include "http_auth.h"
 #include "MainFlowControl.h"
+#include "ClassControlCamera.h"
 #include "ClassLogFile.h"
 #include "server_file.h"
-#include "server_help.h"
 #include "time_sntp.h"
 #include "network_main.h"
 #include "connect_wlan.h"

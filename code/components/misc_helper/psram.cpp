@@ -1,4 +1,8 @@
 #include "psram.h"
+
+#include "esp_heap_caps.h"
+#include <cJSON.h>
+
 #include "ClassLogFile.h"
 
 
