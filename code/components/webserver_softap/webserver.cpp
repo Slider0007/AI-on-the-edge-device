@@ -6,6 +6,7 @@
 
 #include <esp_log.h>
 #include <esp_wifi.h>
+#include "esp_heap_caps.h"
 #include <esp_private/esp_clk.h>
 #include <cJSON.h>
 

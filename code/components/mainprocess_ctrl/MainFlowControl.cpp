@@ -6,6 +6,7 @@
 
 #include <esp_log.h>
 #include <esp_timer.h>
+#include "esp_heap_caps.h"
 #include <cJSON.h>
 
 #include "configClass.h"

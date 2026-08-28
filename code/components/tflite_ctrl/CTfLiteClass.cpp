@@ -1,6 +1,7 @@
 #include "CTfLiteClass.h"
 #include "../../include/defines.h"
 
+#include "esp_heap_caps.h"
 #include <flatbuffers/verifier.h>
 
 #include "ClassLogFile.h"
