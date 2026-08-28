@@ -179,11 +179,6 @@ bool readFileToString(const std::string &path, std::string &out)
         return false;
     }
 
-    if (fileSize > CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "readFileToString: File size exceeds buffer limit: " + path);
-        return false;
-    }
-
     FILE *fp = fopen(path.c_str(), "rb");
     if (!fp) {
         const int error = errno;
