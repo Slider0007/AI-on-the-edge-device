@@ -2835,14 +2835,13 @@ esp_err_t ConfigClass::writeConfigFile()
 bool ConfigClass::persistConfig()
 {
     if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex) {
-        return ESP_FAIL;
+        return false;
     }
 
     CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(5000));
     if (!lock.isAcquired()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire cfgMutex - timeout expired");
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
-        return ESP_FAIL;
+        return false;
     }
 
     // Activates TLS PSRAM arena for this thread during serialization
