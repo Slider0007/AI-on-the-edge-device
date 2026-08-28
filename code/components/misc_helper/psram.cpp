@@ -9,7 +9,6 @@
 static const char *TAG = "PSRAM";
 
 struct strSTBI STBIObjectPSRAM = {};
-struct strcJSON cJSONObjectPSRAM = {};
 
 void *malloc_psram_heap(std::string name, size_t size, uint32_t caps)
 {
@@ -103,29 +102,37 @@ void free_psram_heap(std::string name, void *ptr)
 }
 
 
-void *malloc_psram_heap_cjson(size_t size)
+// cJSON custom hooks
+// *****************
+static void *mallocCjson(size_t size)
 {
-    cJSONObjectPSRAM.usedMemory += size;
-    if (cJSONObjectPSRAM.preallocatedMemory != NULL && cJSONObjectPSRAM.preallocatedMemorySize >= cJSONObjectPSRAM.usedMemory) {
-        return (uint8_t *)cJSONObjectPSRAM.preallocatedMemory + cJSONObjectPSRAM.usedMemory - size;
+    if (tActiveArena != nullptr && tActiveArena->active) {
+        size_t alignedSize = (size + 3) & ~3; // Ensure 4-byte boundary alignment
+        if (tActiveArena->offset + alignedSize > tActiveArena->capacity) {
+            ESP_LOGE("cJSON", "PSRAM Arena Exhausted! Needed: %zu, Capacity: %zu", alignedSize, tActiveArena->capacity);
+            return nullptr;
+        }
+        void *ptr = &tActiveArena->buffer[tActiveArena->offset];
+        tActiveArena->offset += alignedSize;
+        return ptr;
     }
-    else {
-#ifdef DEBUG_DETAIL_ON
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "cJSON: Use default region");
-#endif // DEBUG_DETAIL_ON
-        cJSONObjectPSRAM.useDefaultAllocation = true;
-        return heap_caps_malloc(size, MALLOC_CAP_DEFAULT);
-    }
+    return malloc(size); // Fallback to standard heap for non-arena tasks
 }
 
 
-void free_psram_heap_cjson(void *ptr)
+static void freeCjson(void *ptr)
 {
-    if (!cJSONObjectPSRAM.useDefaultAllocation) {
-        cJSONObjectPSRAM.usedMemory = 0;
+    if (tActiveArena != nullptr && tActiveArena->active) {
+        return; // Arena deallocations are cleared in bulk when offset resets
     }
-    else {
-        cJSONObjectPSRAM.useDefaultAllocation = false;
-        heap_caps_free(ptr);
-    }
+    free(ptr); // Standard heap free for non-arena tasks
+}
+
+
+void initCjsonHooks(void)
+{
+    cJSON_Hooks hooks;
+    hooks.malloc_fn = mallocCjson;
+    hooks.free_fn = freeCjson;
+    cJSON_InitHooks(&hooks);
 }

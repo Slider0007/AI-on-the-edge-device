@@ -27,12 +27,13 @@ class ConfigClass
                                  // reinitConfig())
     CfgData cfgData;             // Keep parameter configuration (in use by process)
 
-    portMUX_TYPE mutex = portMUX_INITIALIZER_UNLOCKED;
+    SemaphoreHandle_t cfgMutex = nullptr;
     cJSON *cJsonObject = NULL;
     uint8_t *cJsonObjectBuffer = NULL;
     char *jsonBuffer = NULL;
     char *httpBuffer = NULL;
 
+    bool parseJsonFromFile(const char *jsonStr, bool isUnityTest);
     esp_err_t parseConfig(httpd_req_t *req = NULL, bool init = false, bool unityTest = false);
     esp_err_t serializeConfig(bool unityTest = false);
     esp_err_t writeConfigFile(void);
@@ -77,6 +78,31 @@ class ConfigClass
     CfgData *get(void) { return &cfgData; };
     char *getJsonBuffer(void) { return jsonBuffer; };
 };
+
+
+class CfgMutexGuard
+{
+    SemaphoreHandle_t mMutex;
+    bool mAcquired;
+
+  public:
+    explicit CfgMutexGuard(SemaphoreHandle_t mutex, TickType_t timeout = portMAX_DELAY) : mMutex(mutex), mAcquired(false)
+    {
+        if (mMutex && xSemaphoreTake(mMutex, timeout) == pdTRUE) {
+            mAcquired = true;
+        }
+    }
+
+    bool isAcquired() const { return mAcquired; }
+
+    ~CfgMutexGuard()
+    {
+        if (mAcquired) {
+            xSemaphoreGive(mMutex);
+        }
+    }
+};
+
 
 void registerConfigFileUri(httpd_handle_t server);
 

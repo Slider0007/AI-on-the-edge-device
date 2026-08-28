@@ -47,15 +47,6 @@ struct strSTBI {
 extern struct strSTBI STBIObjectPSRAM;
 
 
-struct strcJSON {
-    uint8_t *preallocatedMemory = NULL;
-    int preallocatedMemorySize = 0;
-    int usedMemory = 0;
-    bool useDefaultAllocation = false;
-};
-extern struct strcJSON cJSONObjectPSRAM;
-
-
 void *malloc_psram_heap(std::string name, size_t size, uint32_t caps);
 void *malloc_psram_heap_STBI(std::string name, size_t size, uint32_t caps);
 void *remalloc_psram_heap(std::string name, void *p, size_t size, uint32_t caps);
@@ -63,7 +54,38 @@ void *calloc_psram_heap(std::string name, size_t n, size_t size, uint32_t caps);
 
 void free_psram_heap(std::string name, void *ptr);
 
-void *malloc_psram_heap_cjson(size_t size);
-void free_psram_heap_cjson(void *ptr);
+
+// cJSON - PSRAM arena
+// ****************************************
+void initCjsonHooks(void);
+
+typedef struct {
+    uint8_t *buffer;
+    size_t capacity;
+    size_t offset;
+    bool active;
+} taskArena_t;
+
+// Thread-Local Storage pointer
+static __thread taskArena_t *tActiveArena = nullptr;
+
+class cJsonPsramArena
+{
+  public:
+    cJsonPsramArena(uint8_t *buffer, size_t capacity)
+    {
+        arenaState.buffer = buffer;
+        arenaState.capacity = capacity;
+        arenaState.offset = 0;
+        arenaState.active = true;
+
+        tActiveArena = &arenaState;
+    }
+
+    ~cJsonPsramArena() { tActiveArena = nullptr; }
+
+  private:
+    taskArena_t arenaState;
+};
 
 #endif // PSRAM_H_

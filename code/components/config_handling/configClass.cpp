@@ -26,72 +26,89 @@ static const char *TAG = "CONFIG";
 ConfigClass ConfigClass::cfgClass;
 
 
-bool isValidIpAddress(const char *ipAddress)
+static bool isValidIpAddress(const char *ipAddress)
 {
     struct sockaddr_in sa;
     return inet_pton(AF_INET, ipAddress, &(sa.sin_addr)) == 1;
 }
 
 
+template <typename ConfigDataType> inline void clearConfigDataStructure(ConfigDataType &data)
+{
+    // Clear and release outer sequence vectors
+    data.sectionNumberSequences.sequence.clear();
+    decltype(data.sectionNumberSequences.sequence)().swap(data.sectionNumberSequences.sequence);
+
+    // Clear inner and outer vectors for Digit
+    for (auto &seq : data.sectionDigit.sequence) {
+        seq.roi.clear();
+        decltype(seq.roi)().swap(seq.roi);
+    }
+    data.sectionDigit.sequence.clear();
+    decltype(data.sectionDigit.sequence)().swap(data.sectionDigit.sequence);
+
+    // Clear inner and outer vectors for Analog
+    for (auto &seq : data.sectionAnalog.sequence) {
+        seq.roi.clear();
+        decltype(seq.roi)().swap(seq.roi);
+    }
+    data.sectionAnalog.sequence.clear();
+    decltype(data.sectionAnalog.sequence)().swap(data.sectionAnalog.sequence);
+
+    // Clear remaining sections
+    data.sectionPostProcessing.sequence.clear();
+    decltype(data.sectionPostProcessing.sequence)().swap(data.sectionPostProcessing.sequence);
+
+    data.sectionInfluxDBv1.sequence.clear();
+    decltype(data.sectionInfluxDBv1.sequence)().swap(data.sectionInfluxDBv1.sequence);
+
+    data.sectionInfluxDBv2.sequence.clear();
+    decltype(data.sectionInfluxDBv2.sequence)().swap(data.sectionInfluxDBv2.sequence);
+
+    data.sectionGpio.gpioPin.clear();
+    decltype(data.sectionGpio.gpioPin)().swap(data.sectionGpio.gpioPin);
+}
+
+
 void ConfigClass::clearCfgDataTemp()
 {
-    cfgDataTemp.sectionNumberSequences.sequence.clear();
-    cfgDataTemp.sectionNumberSequences.sequence.shrink_to_fit();
-    for (auto &seq : cfgDataTemp.sectionDigit.sequence) {
-        seq.roi.clear();
-        seq.roi.shrink_to_fit();
-    }
-    cfgDataTemp.sectionDigit.sequence.clear();
-    cfgDataTemp.sectionDigit.sequence.shrink_to_fit();
-    for (auto &seq : cfgDataTemp.sectionAnalog.sequence) {
-        seq.roi.clear();
-        seq.roi.shrink_to_fit();
-    }
-    cfgDataTemp.sectionAnalog.sequence.clear();
-    cfgDataTemp.sectionAnalog.sequence.shrink_to_fit();
-    cfgDataTemp.sectionPostProcessing.sequence.clear();
-    cfgDataTemp.sectionPostProcessing.sequence.shrink_to_fit();
-    cfgDataTemp.sectionInfluxDBv1.sequence.clear();
-    cfgDataTemp.sectionInfluxDBv1.sequence.shrink_to_fit();
-    cfgDataTemp.sectionInfluxDBv2.sequence.clear();
-    cfgDataTemp.sectionInfluxDBv2.sequence.shrink_to_fit();
-    cfgDataTemp.sectionGpio.gpioPin.clear();
-    cfgDataTemp.sectionGpio.gpioPin.shrink_to_fit();
+    clearConfigDataStructure(cfgDataTemp);
 }
 
 
 void ConfigClass::clearCfgData()
 {
-    cfgData.sectionNumberSequences.sequence.clear();
-    cfgData.sectionNumberSequences.sequence.shrink_to_fit();
-    for (auto &seq : cfgData.sectionDigit.sequence) {
-        seq.roi.clear();
-        seq.roi.shrink_to_fit();
-    }
-    cfgData.sectionDigit.sequence.clear();
-    cfgData.sectionDigit.sequence.shrink_to_fit();
-    for (auto &seq : cfgData.sectionAnalog.sequence) {
-        seq.roi.clear();
-        seq.roi.shrink_to_fit();
-    }
-    cfgData.sectionAnalog.sequence.clear();
-    cfgData.sectionAnalog.sequence.shrink_to_fit();
-    cfgData.sectionPostProcessing.sequence.clear();
-    cfgData.sectionPostProcessing.sequence.shrink_to_fit();
-    cfgData.sectionInfluxDBv1.sequence.clear();
-    cfgData.sectionInfluxDBv1.sequence.shrink_to_fit();
-    cfgData.sectionInfluxDBv2.sequence.clear();
-    cfgData.sectionInfluxDBv2.sequence.shrink_to_fit();
-    cfgData.sectionGpio.gpioPin.clear();
-    cfgData.sectionGpio.gpioPin.shrink_to_fit();
+    clearConfigDataStructure(cfgData);
 }
 
 
 ConfigClass::ConfigClass()
 {
+    // Create a FreeRTOS mutex semaphore to protect JSON buffer & global hooks
+    cfgMutex = xSemaphoreCreateMutex();
+
+    if (cfgMutex == nullptr) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create mutex");
+    }
+
     // Use preallocted buffer to avoid fragmentation and reduce internal RAM usage using SPIRAM
     cJsonObjectBuffer = (uint8_t *)heap_caps_calloc(1, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     jsonBuffer = (char *)heap_caps_calloc(1, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+
+    if (!cJsonObjectBuffer || !jsonBuffer) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate PSRAM buffers");
+
+        if (cJsonObjectBuffer) {
+            heap_caps_free(cJsonObjectBuffer);
+            cJsonObjectBuffer = nullptr;
+        }
+        if (jsonBuffer) {
+            heap_caps_free(jsonBuffer);
+            jsonBuffer = nullptr;
+        }
+    }
+
+    initCjsonHooks();
 }
 
 
@@ -100,11 +117,67 @@ ConfigClass::~ConfigClass()
     clearCfgDataTemp();
     clearCfgData();
 
-    heap_caps_free(cJsonObjectBuffer);
-    cJsonObjectBuffer = nullptr;
+    if (cJsonObjectBuffer) {
+        heap_caps_free(cJsonObjectBuffer);
+        cJsonObjectBuffer = nullptr;
+    }
 
-    heap_caps_free(jsonBuffer);
-    jsonBuffer = nullptr;
+    if (jsonBuffer) {
+        heap_caps_free(jsonBuffer);
+        jsonBuffer = nullptr;
+    }
+
+    if (cfgMutex != nullptr) {
+        vSemaphoreDelete(cfgMutex);
+        cfgMutex = nullptr;
+    }
+}
+
+
+//**************************************************************************************************
+// Helper: Parse JSON string from file using Thread-Local PSRAM arena and extract into class state
+//**************************************************************************************************
+bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool isUnityTest)
+{
+    if (!cfgMutex || !cJsonObjectBuffer) {
+        return false;
+    }
+
+    if (jsonStr == nullptr) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJson: JSON input is null");
+        return false;
+    }
+
+    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(5000));
+    if (!lock.isAcquired()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJson: Failed to acquire cfgMutex: Timeout");
+        return false;
+    }
+
+    // Activates TLS PSRAM arena for this thread only (Auto-clears on scope exit)
+    cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE);
+
+    // Parse JSON payload (allocates AST inside cJsonObjectBuffer)
+    cJsonObject = cJSON_Parse(jsonStr);
+    if (cJsonObject == nullptr) {
+        const char *errPtr = cJSON_GetErrorPtr();
+        if (errPtr != nullptr) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJson: Parse error near: %.20s", errPtr);
+        }
+        else {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJson: Parse failed (null or invalid payload)");
+        }
+        return false;
+    }
+
+    // Extract configuration fields into class structures
+    bool retVal = (parseConfig(nullptr, true, isUnityTest) == ESP_OK);
+
+    // Delete JSON AST while TLS arena is still active
+    cJSON_Delete(cJsonObject);
+    cJsonObject = nullptr;
+
+    return retVal;
 }
 
 
@@ -142,62 +215,30 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
         fallbackCfgChecked = true;
     }
 
-    portENTER_CRITICAL(&mutex);
-    // Modify hook to use SPIRAM for cJSON object
-    cJSON_Hooks hooks;
-    hooks.malloc_fn = malloc_psram_heap_cjson;
-    hooks.free_fn = free_psram_heap_cjson;
-    cJSON_InitHooks(&hooks);
-    cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
-    cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
-    cJSONObjectPSRAM.usedMemory = 0;
+    // Attempt primary parse
+    bool parseSuccess = parseJsonFromFile(content.c_str(), unityTest);
 
-    // Parse content to cJSON object structure
-    cJsonObject = cJSON_Parse(content.c_str());
-
-    // Reset cJSON hooks to default
-    cJSON_InitHooks(NULL);
-    portEXIT_CRITICAL(&mutex);
-
-    // Check for invalid content -> bad/malformed syntax
-    if (cJsonObject == NULL) {
-        // Save invalid config file for debug purpose
+    if (!parseSuccess) {
         copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_INVALID);
 
         if (!fallbackCfgChecked) { // Try read fallback file if not yet read
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "Invalid persistent config data | Check for fallback config file");
+
             content.clear();
 
             if (readFileToString(CONFIG_PERSISTENCE_FILE_FALLBACK, content)) {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Fallback config file found");
-
-                portENTER_CRITICAL(&mutex);
-                // Modify hook to use SPIRAM for cJSON object
-                cJSON_Hooks hooks;
-                hooks.malloc_fn = malloc_psram_heap_cjson;
-                hooks.free_fn = free_psram_heap_cjson;
-                cJSON_InitHooks(&hooks);
-                cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
-                cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
-                cJSONObjectPSRAM.usedMemory = 0;
-
-                // Parse content to cJSON object structure
-                cJsonObject = cJSON_Parse(content.c_str());
-
-                // Reset cJSON hooks to default
-                cJSON_InitHooks(NULL);
-                portEXIT_CRITICAL(&mutex);
+                parseSuccess = parseJsonFromFile(content.c_str(), unityTest);
             }
         }
 
-        if (cJsonObject == NULL) {
+        if (!parseSuccess) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Invalid persistent config data | Use default config");
-            // Continue to try to restore WLAN config from NVS, otherwise Access Point is getting started to reconfigure.
+
+            clearCfgDataTemp();
+            parseJsonFromFile("{}", unityTest);
         }
     }
-
-    // Parse config out of cJSON object structure
-    parseConfig(NULL, true, unityTest);
 }
 
 
@@ -206,56 +247,88 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 //**************************************************************************************************
 esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 {
-    int remaining = req->content_len; // Content length of the request gives the size of the file being uploaded
-    int received = 0;
-    jsonBuffer[0] = '\0'; // Reset buffer content before usage
-
-    httpd_resp_set_type(req, "application/json");
-
-    char *httpBuffer = (char *)((struct HttpServerData *)req->user_ctx)->scratch;
-    while (remaining > 0) {
-        // Receive the file part by part into a buffer
-        if ((received = httpd_req_recv(req, httpBuffer, std::min(remaining, WEBSERVER_SCRATCH_BUFSIZE))) <= 0) {
-            if (received == HTTPD_SOCK_ERR_TIMEOUT) {
-                continue; // Retry if timeout occurred
-            }
-
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Config reception failed");
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Config reception failed");
-            return ESP_FAIL;
-        }
-
-        // Concat content
-        std::strncat(jsonBuffer, httpBuffer, received);
-
-        // Keep track of remaining size of the file left to be uploaded
-        remaining -= received;
-    }
-
-    portENTER_CRITICAL(&mutex);
-    // Modify hook to use SPIRAM for cJSON object
-    cJSON_Hooks hooks;
-    hooks.malloc_fn = malloc_psram_heap_cjson;
-    hooks.free_fn = free_psram_heap_cjson;
-    cJSON_InitHooks(&hooks);
-    cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
-    cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
-    cJSONObjectPSRAM.usedMemory = 0;
-
-    // Parse content to cJSON object structure
-    cJsonObject = cJSON_Parse(jsonBuffer);
-
-    // Reset cJSON hooks to default
-    cJSON_InitHooks(NULL);
-    portEXIT_CRITICAL(&mutex);
-
-    if (cJsonObject == NULL) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E91: Failed to parse JSON data, e.g. malformed notation");
+    if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex) {
         return ESP_FAIL;
     }
 
-    // Parse config out of cJSON object structure
-    return parseConfig(req);
+    size_t remaining = req->content_len;
+    int received = 0;
+    size_t offset = 0;
+
+    httpd_resp_set_type(req, "application/json");
+
+    if (remaining >= CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE - 1) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Payload exceeds maximum buffer size");
+        httpd_resp_send_err(req, HTTPD_413_CONTENT_TOO_LARGE, "E93: Payload too large");
+        return ESP_FAIL;
+    }
+
+    if (req->user_ctx == nullptr) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Server context is null");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Internal Server Error");
+        return ESP_FAIL;
+    }
+
+    // Scoped block to handle JSON processing under the mutex guard safely
+    esp_err_t retVal = ESP_FAIL;
+    {
+        CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(5000));
+        if (!lock.isAcquired()) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Failed to acquire cfgMutex - timeout expired");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
+            return ESP_FAIL;
+        }
+
+        char *httpBuffer = static_cast<char *>(((struct HttpServerData *)req->user_ctx)->scratch);
+
+        int retries = 0;
+        while (remaining > 0) {
+            received = httpd_req_recv(req, httpBuffer, std::min<size_t>(remaining, WEBSERVER_SCRATCH_BUFSIZE));
+
+            if (received <= 0) {
+                if (received == HTTPD_SOCK_ERR_TIMEOUT && ++retries < 5) {
+                    vTaskDelay(pdMS_TO_TICKS(10));
+                    continue;
+                }
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Config reception failed");
+                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Config reception failed");
+                return ESP_FAIL;
+            }
+
+            memcpy(jsonBuffer + offset, httpBuffer, received);
+            offset += received;
+            remaining -= received;
+        }
+        jsonBuffer[offset] = '\0';
+
+        // Activates TLS PSRAM arena for this thread only
+        cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE);
+
+        // Parse JSON payload (allocates AST inside cJsonObjectBuffer)
+        cJsonObject = cJSON_Parse(jsonBuffer);
+        if (cJsonObject == nullptr) {
+            const char *errPtr = cJSON_GetErrorPtr();
+            if (errPtr != nullptr) {
+                char errMsg[64];
+                snprintf(errMsg, sizeof(errMsg), "Parse JSON error near: %.20s", errPtr);
+                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, errMsg);
+            }
+            else {
+                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Parse JSON failed");
+            }
+            return ESP_FAIL;
+        }
+
+        // Extract configuration fields into class structures
+        retVal = parseConfig(req);
+
+        // Delete JSON AST while TLS arena is still active
+        cJSON_Delete(cJsonObject);
+        cJsonObject = nullptr;
+
+    } // CfgMutexGuard releases here
+
+    return retVal;
 }
 
 
@@ -443,7 +516,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
     }
 
     objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "marker");
-    for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
+    for (int i = 0; i < std::min(cJSON_GetArraySize(objEl), 2); i++) {
         cJSON *objArrEl = cJSON_GetArrayItem(objEl, i);
         cJSON *arrEl;
 
@@ -1768,15 +1841,10 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
 //**************************************************************************************************
 esp_err_t ConfigClass::serializeConfig(bool unityTest)
 {
-    portENTER_CRITICAL(&mutex);
-    // Modify hook to use SPIRAM for cJSON object
-    cJSON_Hooks hooks;
-    hooks.malloc_fn = malloc_psram_heap_cjson;
-    hooks.free_fn = free_psram_heap_cjson;
-    cJSON_InitHooks(&hooks);
-    cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
-    cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
-    cJSONObjectPSRAM.usedMemory = 0;
+    if (cJsonObject != nullptr) {
+        cJSON_Delete(cJsonObject);
+        cJsonObject = nullptr;
+    }
 
     cJsonObject = cJSON_CreateObject();
     if (cJsonObject == NULL) {
@@ -2679,14 +2747,15 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
         retVal = ESP_FAIL;
     }
 
-    cJSON_InitHooks(NULL); // Reset cJSON hooks to default
-    portEXIT_CRITICAL(&mutex);
-
     jsonBuffer[0] = '\0'; // Reset content
     // Print to preallocted buffer
     if (!cJSON_PrintPreallocated(cJsonObject, jsonBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, unityTest ? 0 : 1)) {
         retVal = ESP_FAIL;
     }
+
+    // Cleanup root cJSON structure
+    cJSON_Delete(cJsonObject);
+    cJsonObject = NULL;
 
     return retVal;
 }
@@ -2697,16 +2766,42 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 //**************************************************************************************************
 esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 {
-    httpd_resp_set_type(req, "application/json");
-
-    if (serializeConfig() == ESP_OK) {
-        httpd_resp_send(req, jsonBuffer, strlen(jsonBuffer));
-        return ESP_OK;
-    }
-    else {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E93: Failed to serialize JSON data");
+    if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex) {
         return ESP_FAIL;
     }
+
+    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(5000));
+    if (!lock.isAcquired()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire cfgMutex - timeout expired");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
+        return ESP_FAIL;
+    }
+
+    // Activates TLS PSRAM arena for this thread during serialization
+    cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE);
+
+    // Clear existing buffer target
+    jsonBuffer[0] = '\0';
+
+    // Serialize config data into cJSON / jsonBuffer
+    esp_err_t ret = serializeConfig();
+
+    if (ret == ESP_OK) {
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_send(req, jsonBuffer, HTTPD_RESP_USE_STRLEN);
+    }
+    else {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to serialize configuration");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E93: Failed to serialize JSON data");
+    }
+
+    // Delete root cJSON tree if allocated
+    if (cJsonObject != nullptr) {
+        cJSON_Delete(cJsonObject);
+        cJsonObject = nullptr;
+    }
+
+    return ret;
 }
 
 
@@ -2856,7 +2951,7 @@ void ConfigClass::validateStructure(std::string &structureName)
     }
 
     // Remove slash at the end of the string
-    if (structureName.back() == '/') {
+    if (!structureName.empty() && structureName.back() == '/') {
         structureName.pop_back();
     }
 }
