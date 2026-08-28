@@ -106,7 +106,7 @@ void free_psram_heap(std::string name, void *ptr)
 // *****************
 
 // cJSON memory management: Thread-Local Storage pointer
-static __thread taskArena_t *tActiveArena = nullptr;
+__thread taskArena_t *tActiveArena = nullptr;
 
 static void *mallocCjson(size_t size)
 {
