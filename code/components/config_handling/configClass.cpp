@@ -2832,6 +2832,33 @@ esp_err_t ConfigClass::writeConfigFile()
 }
 
 
+bool ConfigClass::persistConfig()
+{
+    if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex) {
+        return ESP_FAIL;
+    }
+
+    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(5000));
+    if (!lock.isAcquired()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire cfgMutex - timeout expired");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
+        return ESP_FAIL;
+    }
+
+    // Activates TLS PSRAM arena for this thread during serialization
+    cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE);
+
+    // Clear existing buffer target
+    jsonBuffer[0] = '\0';
+
+    if (serializeConfig() != ESP_OK) {
+        return false;
+    }
+
+    return (writeConfigFile() == ESP_OK);
+}
+
+
 bool ConfigClass::loadDataFromNVS(std::string key, std::string &value)
 {
     if (key.empty() || key.length() > 15) {

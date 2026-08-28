@@ -36,6 +36,7 @@ class ConfigClass
     bool parseJsonFromFile(const char *jsonStr, bool isUnityTest);
     esp_err_t parseConfig(httpd_req_t *req = NULL, bool init = false, bool unityTest = false);
     esp_err_t serializeConfig(bool unityTest = false);
+    bool serializeConfigToPersist(void);
     esp_err_t writeConfigFile(void);
 
     bool loadDataFromNVS(std::string key, std::string &value);
@@ -53,11 +54,7 @@ class ConfigClass
 
     void readConfigFile(bool unityTest = false, std::string unityTestData = "{}");
     void reinitConfig(void) { cfgData = cfgDataTemp; };
-    void persistConfig(void)
-    {
-        serializeConfig();
-        writeConfigFile();
-    };
+    void persistConfig(void);
 
     static ConfigClass *getInstance(void) { return &cfgClass; }
     const CfgData *get(void) const { return &cfgData; };
