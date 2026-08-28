@@ -1,8 +1,6 @@
 #include "ClassFlowMQTT.h"
 
 #ifdef ENABLE_MQTT
-#include <sstream>
-#include <iomanip>
 #include <time.h>
 
 #include <cJSON.h>
@@ -45,8 +43,6 @@ bool ClassFlowMQTT::loadParameter()
 
 bool ClassFlowMQTT::initMqttService(float _processingInterval)
 {
-    std::stringstream stream;
-
     mqttServer_setParameter(cfgDataPtr, &sequenceData, _processingInterval);
     mqttServer_schedulePublishDeviceInfo();
 

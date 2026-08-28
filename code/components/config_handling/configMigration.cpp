@@ -1,7 +1,6 @@
 #include "configMigration.h"
 #include "../../include/defines.h"
 
-#include <fstream>
 #include <algorithm>
 
 #include "configClass.h"
@@ -135,8 +134,11 @@ void migrateConfigIni(void)
     static int sequenceID = 0;
 
     // Read config file
-    std::ifstream ifs(CONFIG_FILE_LEGACY);
-    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+    std::string content;
+    if (!readFileToString(CONFIG_FILE_LEGACY, content) || content.empty()) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to load config.ini");
+        return;
+    }
     std::vector<std::string> configLines = splitStringAtNewline(content); // Split config file in array of lines
 
     // Read config file version
