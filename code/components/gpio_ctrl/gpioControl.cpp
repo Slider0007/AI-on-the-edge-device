@@ -2,17 +2,15 @@
 
 #include <string>
 #include <functional>
+#include <math.h>
 
-#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp_system.h"
 
 #include <esp_log.h>
 #include <cJSON.h>
-
 #include <sys/stat.h>
-#include <vector>
 
+#include "configClass.h"
 #include "http_auth.h"
 #include "ClassLogFile.h"
 #include "helper.h"

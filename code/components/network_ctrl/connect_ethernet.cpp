@@ -2,25 +2,22 @@
 
 #ifdef BOARD_FEATURE_ETHERNET
 
-#include "esp_event.h"
-#include "esp_eth.h"
+#include <esp_event.h>
+#include <esp_eth.h>
 #include <esp_mac.h>
-#include "esp_log.h"
-#include "esp_netif.h"
+#include <esp_netif.h>
 #include <esp_netif_sntp.h>
-#include "driver/spi_master.h"
-#include "driver/gpio.h"
+#include <driver/spi_master.h>
+#include <driver/gpio.h>
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
 #endif // ENABLE_MQTT
 
 #include "configClass.h"
-#include "connect_wlan.h"
 #include "time_sntp.h"
 #include "ClassLogFile.h"
 #include "helper.h"
-#include "statusled.h"
 #include "mdns_service.h"
 
 static const char *TAG = "ETHERNET";

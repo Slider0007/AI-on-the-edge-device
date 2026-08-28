@@ -1,4 +1,6 @@
 #include "psram.h"
+
+#include <cJSON.h>
 #include "ClassLogFile.h"
 
 

@@ -2,14 +2,7 @@
 #include "../../include/defines.h"
 
 #include <sys/stat.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <dirent.h>
-#ifdef __cplusplus
-}
-#endif
 
 #include <esp_log.h>
 

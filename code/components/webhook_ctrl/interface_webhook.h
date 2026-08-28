@@ -4,9 +4,7 @@
 #ifndef INTERFACE_WEBHOOK_H
 #define INTERFACE_WEBHOOK_H
 
-#include <string>
-
-#include "configClass.h"
+#include "cfgDataStruct.h"
 #include "CImageJpg.h"
 
 bool webhookInit(const CfgData::SectionWebhook *_cfgDataPtr);

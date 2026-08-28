@@ -4,7 +4,6 @@
 #include "freertos/queue.h"
 #include <cJSON.h>
 
-#include "gpioControl.h"
 #include "ClassLogFile.h"
 #include "helper.h"
 #include "MainFlowControl.h"

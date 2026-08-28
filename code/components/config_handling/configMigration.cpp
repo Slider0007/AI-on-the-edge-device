@@ -6,7 +6,6 @@
 #include "configClass.h"
 #include "helper.h"
 #include "ClassLogFile.h"
-#include "ClassControlCamera.h"
 
 
 static const char *TAG = "CFGMIG";

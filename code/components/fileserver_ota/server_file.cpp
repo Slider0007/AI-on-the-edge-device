@@ -9,14 +9,7 @@
 #include <sys/unistd.h>
 #include <sys/stat.h>
 #include <cJSON.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <dirent.h>
-#ifdef __cplusplus
-}
-#endif
 
 #include <esp_partition.h>
 #include <esp_core_dump.h>
@@ -30,11 +23,8 @@ extern "C" {
 #include "webserver.h"
 #include "server_help.h"
 #include "ClassLogFile.h"
-#include "MainFlowControl.h"
-#include "gpioControl.h"
 #include "helper.h"
 #include "system.h"
-#include "psram.h"
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"

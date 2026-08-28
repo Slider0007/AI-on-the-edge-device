@@ -4,9 +4,8 @@
 #include <string>
 
 #include "ClassFlowDefineTypes.h"
-#include "configClass.h"
+#include "cfgDataStruct.h"
 #include "ClassFlow.h"
-#include "helper.h"
 
 
 class ClassFlowAlignment : public ClassFlow

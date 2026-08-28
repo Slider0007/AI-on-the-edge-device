@@ -8,8 +8,9 @@
 #include <esp_private/esp_clk.h>
 #include <cJSON.h>
 
+#include "configClass.h"
 #include "http_auth.h"
-#include "MainFlowControl.h"
+#include "ClassControlCamera.h"
 #include "ClassLogFile.h"
 #include "network_main.h"
 #include "connect_wlan.h"

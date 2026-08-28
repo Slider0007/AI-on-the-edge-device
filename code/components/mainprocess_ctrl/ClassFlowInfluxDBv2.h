@@ -6,9 +6,8 @@
 
 #include <string>
 
-#include "configClass.h"
+#include "cfgDataStruct.h"
 #include "ClassFlow.h"
-#include "ClassFlowPostProcessing.h"
 
 
 class ClassFlowInfluxDBv2 : public ClassFlow

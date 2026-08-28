@@ -10,6 +10,7 @@
 #include "ClassLogFile.h"
 #include "ClassControlCamera.h"
 #include "CImageMod.h"
+#include "helper.h"
 
 
 static const char *TAG = "CNN";

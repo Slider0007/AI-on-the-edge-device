@@ -5,14 +5,7 @@
 #include <sys/stat.h>
 #include <algorithm>
 #include <unistd.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <dirent.h>
-#ifdef __cplusplus
-}
-#endif
 
 #include "helper.h"
 #include "system.h"

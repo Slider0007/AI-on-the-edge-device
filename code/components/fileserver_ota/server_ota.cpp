@@ -3,21 +3,14 @@
 
 #include <string>
 
-#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include <sys/stat.h>
-
-/* TODO Rethink the usage of the int watchdog. It is no longer to be used, see
-https://docs.espressif.com/projects/esp-idf/en/latest/esp32/migration-guides/release-5.x/5.0/system.html?highlight=esp_int_wdt */
-#include "esp_private/esp_int_wdt.h"
 #include <esp_task_wdt.h>
-
 #include <esp_ota_ops.h>
 #include "esp_system.h"
 #include <esp_log.h>
 #include <esp_http_client.h>
-#include "esp_flash_partitions.h"
 #include "esp_partition.h"
 #include "esp_app_format.h"
 #include "miniz.h"

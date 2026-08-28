@@ -6,7 +6,6 @@
 
 #include <esp_log.h>
 #include <esp_timer.h>
-#include "esp_camera.h"
 #include <cJSON.h>
 
 #include "configClass.h"
@@ -22,6 +21,7 @@
 #include "network_main.h"
 #include "connect_wlan.h"
 #include "psram.h"
+#include "CImageMod.h"
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"

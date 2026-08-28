@@ -1,7 +1,6 @@
-#include "../../include/defines.h"
+#include "../include/defines.h"
 
 #include <string>
-#include <regex>
 
 #include <nvs_flash.h>
 #include <esp_psram.h>
@@ -16,6 +15,7 @@
 
 #include "configClass.h"
 #include "configMigration.h"
+#include "ClassControlCamera.h"
 #include "ClassLogFile.h"
 #include "helper.h"
 #include "system.h"

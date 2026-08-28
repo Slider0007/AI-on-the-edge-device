@@ -8,7 +8,6 @@
 #include <esp_log.h>
 
 #include "ClassLogFile.h"
-#include "psram.h"
 #include "helper.h"
 #include "time_sntp.h"
 

@@ -11,7 +11,7 @@
 #include <driver/gpio.h>
 #include <driver/ledc.h>
 
-#include "configClass.h"
+#include "cfgDataStruct.h"
 #include "gpioPin.h"
 
 

@@ -1,5 +1,6 @@
 #include "psram.h"
 
+#include "esp_heap_caps.h"
 
 #define STBI_ONLY_JPEG       // JPG handling only (disable other file types to save flash)
 #define STBI_FAILURE_USERMSG // Compile user friendly error messages

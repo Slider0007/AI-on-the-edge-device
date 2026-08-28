@@ -2,7 +2,6 @@
 #define CONFIGCLASS_H
 
 #include <string>
-#include <vector>
 
 #include <freertos/FreeRTOS.h>
 #include <esp_log.h>

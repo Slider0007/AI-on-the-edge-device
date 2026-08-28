@@ -3,10 +3,9 @@
 
 #include "ClassFlowDefineTypes.h"
 #include "ClassLogImage.h"
-#include "ClassFlowAlignment.h"
 #include "CTfLiteClass.h"
 #include "ClassLogImage.h"
-#include "configClass.h"
+#include "cfgDataStruct.h"
 
 
 class ClassFlowCNNGeneral : public ClassLogImage

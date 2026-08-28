@@ -10,9 +10,11 @@
 #include "http_auth.h"
 #include "system.h"
 #include "ClassFlowDefineTypes.h"
+#include "ClassControlCamera.h"
 #include "MainFlowControl.h"
 #include "network_main.h"
 #include "connect_wlan.h"
+#include "helper.h"
 
 extern std::string getFwVersion(void);
 

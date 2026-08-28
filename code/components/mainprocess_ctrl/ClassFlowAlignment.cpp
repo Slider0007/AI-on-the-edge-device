@@ -1,19 +1,16 @@
 #include "ClassFlowAlignment.h"
 #include "../../include/defines.h"
 
-#include "nvs_flash.h"
-#include "nvs.h"
-
+#include <nvs.h>
 #include <esp_log.h>
 
 #include "CImage.h"
 #include "CImageMod.h"
 #include "CImageTplMatch.h"
-#include "ClassFlowTakeImage.h"
+#include "ClassControlCamera.h"
 #include "ClassLogFile.h"
 #include "MainFlowControl.h"
-#include "time_sntp.h"
-#include "psram.h"
+#include "helper.h"
 
 
 static const char *TAG = "ALIGN";
