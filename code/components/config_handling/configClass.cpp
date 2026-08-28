@@ -148,7 +148,7 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool isUnityTest)
         return false;
     }
 
-    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(5000));
+    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
     if (!lock.isAcquired()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJson: Failed to acquire cfgMutex: Timeout");
         return false;
@@ -269,36 +269,50 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    char *httpBuffer = static_cast<char *>(((struct HttpServerData *)req->user_ctx)->scratch);
+
+    int retries = 0;
+    while (remaining > 0) {
+        received = httpd_req_recv(req, httpBuffer, std::min<size_t>(remaining, WEBSERVER_SCRATCH_BUFSIZE));
+
+        if (received <= 0) {
+            if (received == HTTPD_SOCK_ERR_TIMEOUT && ++retries < 5) {
+                vTaskDelay(pdMS_TO_TICKS(10));
+                continue;
+            }
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Config reception failed");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Config reception failed");
+            return ESP_FAIL;
+        }
+
+        retries = 0;
+
+        // Scoped block to handle JSON processing under the mutex guard safely
+        {
+            CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
+            if (!lock.isAcquired()) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Failed to acquire cfgMutex - timeout expired");
+                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
+                return ESP_FAIL;
+            }
+
+            memcpy(jsonBuffer + offset, httpBuffer, received);
+            offset += received;
+        } // CfgMutexGuard releases here
+
+        remaining -= received;
+    }
+
     // Scoped block to handle JSON processing under the mutex guard safely
     esp_err_t retVal = ESP_FAIL;
     {
-        CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(5000));
+        CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
         if (!lock.isAcquired()) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Failed to acquire cfgMutex - timeout expired");
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
             return ESP_FAIL;
         }
 
-        char *httpBuffer = static_cast<char *>(((struct HttpServerData *)req->user_ctx)->scratch);
-
-        int retries = 0;
-        while (remaining > 0) {
-            received = httpd_req_recv(req, httpBuffer, std::min<size_t>(remaining, WEBSERVER_SCRATCH_BUFSIZE));
-
-            if (received <= 0) {
-                if (received == HTTPD_SOCK_ERR_TIMEOUT && ++retries < 5) {
-                    vTaskDelay(pdMS_TO_TICKS(10));
-                    continue;
-                }
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Config reception failed");
-                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Config reception failed");
-                return ESP_FAIL;
-            }
-
-            memcpy(jsonBuffer + offset, httpBuffer, received);
-            offset += received;
-            remaining -= received;
-        }
         jsonBuffer[offset] = '\0';
 
         // Activates TLS PSRAM arena for this thread only
@@ -2769,7 +2783,7 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(5000));
+    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
     if (!lock.isAcquired()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire cfgMutex - timeout expired");
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
@@ -2838,7 +2852,7 @@ bool ConfigClass::persistConfig()
         return false;
     }
 
-    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(5000));
+    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
     if (!lock.isAcquired()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire cfgMutex - timeout expired");
         return false;
