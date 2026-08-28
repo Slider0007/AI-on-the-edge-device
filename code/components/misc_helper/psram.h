@@ -1,6 +1,7 @@
 #ifndef COMPONENTS_HELPER_PSRAM_H_
 #define COMPONENTS_HELPER_PSRAM_H_
 
+#include <cstdint>
 #include <string>
 #include <unistd.h>
 
