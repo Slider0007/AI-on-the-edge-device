@@ -127,6 +127,10 @@ static void *mallocCjson(size_t size)
 
 static void freeCjson(void *ptr)
 {
+    if (ptr == nullptr) {
+        return;
+    }
+
     if (cJsonActiveArena != nullptr && cJsonActiveArena->active) {
         return; // Arena deallocations are cleared in bulk when offset resets
     }

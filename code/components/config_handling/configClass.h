@@ -55,6 +55,7 @@ class ConfigClass
     void readConfigFile(bool unityTest = false, std::string unityTestData = "{}");
     void reinitConfig(void) { cfgData = cfgDataTemp; };
     bool persistConfig(void);
+    bool persistConfigAfterMigration(void);
 
     static ConfigClass *getInstance(void) { return &cfgClass; }
     const CfgData *get(void) const { return &cfgData; };

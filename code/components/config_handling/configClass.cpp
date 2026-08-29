@@ -2606,7 +2606,7 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 
     jsonBuffer[0] = '\0'; // Reset content
     // Print to preallocted buffer
-    if (!cJSON_PrintPreallocated(cJsonObject, jsonBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE, unityTest ? 0 : 1)) {
+    if (!cJSON_PrintPreallocated(cJsonObject, jsonBuffer, CONFIG_HANDLING_CJSON_STRING_BUFFER_SIZE, unityTest ? 0 : 1)) {
         retVal = ESP_FAIL;
     }
 
@@ -2636,6 +2636,16 @@ bool ConfigClass::persistConfig()
     // Activates TLS PSRAM arena
     cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
 
+    if (serializeConfig() != ESP_OK) {
+        return false;
+    }
+
+    return (writeConfigFile() == ESP_OK);
+}
+
+
+bool ConfigClass::persistConfigAfterMigration()
+{
     if (serializeConfig() != ESP_OK) {
         return false;
     }
