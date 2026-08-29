@@ -9,6 +9,8 @@
 static const char *TAG = "PSRAM";
 
 struct strSTBI STBIObjectPSRAM = {};
+static __thread taskArena_t *cJsonActiveArena = nullptr; // cJSON memory management: Thread-Local Storage pointer
+
 
 void *malloc_psram_heap(std::string name, size_t size, uint32_t caps)
 {
@@ -104,32 +106,32 @@ void free_psram_heap(std::string name, void *ptr)
 
 // cJSON custom hooks
 // *****************
-
-// cJSON memory management: Thread-Local Storage pointer
-__thread taskArena_t *tActiveArena = nullptr;
-
 static void *mallocCjson(size_t size)
 {
-    if (tActiveArena != nullptr && tActiveArena->active) {
+    if (cJsonActiveArena != nullptr && cJsonActiveArena->active) {
         size_t alignedSize = (size + 3) & ~3; // Ensure 4-byte boundary alignment
-        if (tActiveArena->offset + alignedSize > tActiveArena->capacity) {
-            ESP_LOGE("cJSON", "PSRAM Arena Exhausted! Needed: %zu, Capacity: %zu", alignedSize, tActiveArena->capacity);
+        if (cJsonActiveArena->offset > cJsonActiveArena->capacity || alignedSize > cJsonActiveArena->capacity - cJsonActiveArena->offset) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                "cJSON PSRAM arena insuffcient | Capacity:" + std::to_string(cJsonActiveArena->capacity) +
+                                    ", Used: " + std::to_string(cJsonActiveArena->offset) + ", Required: " + std::to_string(alignedSize));
             return nullptr;
         }
-        void *ptr = &tActiveArena->buffer[tActiveArena->offset];
-        tActiveArena->offset += alignedSize;
+        void *ptr = &cJsonActiveArena->buffer[cJsonActiveArena->offset];
+        cJsonActiveArena->offset += alignedSize;
         return ptr;
     }
-    return malloc(size); // Fallback to standard heap for non-arena tasks
+
+    return heap_caps_malloc(size, MALLOC_CAP_DEFAULT); // Fallback to default heap for non-arena tasks
 }
 
 
 static void freeCjson(void *ptr)
 {
-    if (tActiveArena != nullptr && tActiveArena->active) {
+    if (cJsonActiveArena != nullptr && cJsonActiveArena->active) {
         return; // Arena deallocations are cleared in bulk when offset resets
     }
-    free(ptr); // Standard heap free for non-arena tasks
+
+    heap_caps_free(ptr); // Standard heap free for non-arena tasks
 }
 
 
@@ -139,4 +141,31 @@ void initCjsonHooks(void)
     hooks.malloc_fn = mallocCjson;
     hooks.free_fn = freeCjson;
     cJSON_InitHooks(&hooks);
+}
+
+
+// cJSON memory arena
+// *****************
+cJsonPsramArena::cJsonPsramArena(uint8_t *buffer, size_t capacity)
+{
+    arenaState.buffer = buffer;
+    arenaState.capacity = capacity;
+    arenaState.offset = 0;
+    arenaState.active = true;
+
+    cJsonActiveArena = &arenaState;
+}
+
+
+cJsonPsramArena::~cJsonPsramArena()
+{
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
+                        "cJSON PSRAM arena used: " + std::to_string(arenaState.offset) + "/" + std::to_string(arenaState.capacity));
+
+    arenaState.active = false;
+    arenaState.offset = 0;
+
+    if (cJsonActiveArena == &arenaState) {
+        cJsonActiveArena = nullptr;
+    }
 }

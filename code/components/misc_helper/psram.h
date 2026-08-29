@@ -66,23 +66,15 @@ typedef struct {
     bool active;
 } taskArena_t;
 
-// Thread-Local Storage pointer
-extern __thread taskArena_t *tActiveArena;
 
 class cJsonPsramArena
 {
   public:
-    cJsonPsramArena(uint8_t *buffer, size_t capacity)
-    {
-        arenaState.buffer = buffer;
-        arenaState.capacity = capacity;
-        arenaState.offset = 0;
-        arenaState.active = true;
+    cJsonPsramArena(uint8_t *buffer, size_t capacity);
+    ~cJsonPsramArena();
 
-        tActiveArena = &arenaState;
-    }
-
-    ~cJsonPsramArena() { tActiveArena = nullptr; }
+    cJsonPsramArena(const cJsonPsramArena &) = delete;
+    cJsonPsramArena &operator=(const cJsonPsramArena &) = delete;
 
   private:
     taskArena_t arenaState;
