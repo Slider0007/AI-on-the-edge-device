@@ -1243,7 +1243,7 @@ void migrateConfigIni(void)
     // At least one replacement happened
     if (migrated || migratedToJson) {
         if (migratedToJson) {
-            ConfigClass::getInstance()->persistConfigAfterMigration();
+            ConfigClass::getInstance()->persistConfig();
             ConfigClass::getInstance()->initCfgTmp();
         }
 

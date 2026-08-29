@@ -2644,16 +2644,6 @@ bool ConfigClass::persistConfig()
 }
 
 
-bool ConfigClass::persistConfigAfterMigration()
-{
-    if (serializeConfig() != ESP_OK) {
-        return false;
-    }
-
-    return (writeConfigFile() == ESP_OK);
-}
-
-
 //**************************************************************************************************
 // Write configuration to file (JSON string)
 //**************************************************************************************************
