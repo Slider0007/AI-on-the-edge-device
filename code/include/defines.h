@@ -66,11 +66,6 @@
 #define XTENSA
 
 
-// ConfigClass
-//******************************
-#define CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE 32768 // Size of preallocated buffer for larger files (cJSON Object, JSON string buffer)
-
-
 // ClassControlCamera
 //******************************
 // Camera image size which is used for further processing (Max. 640 x 480 due to RAM restrictions)
@@ -114,8 +109,13 @@
 
 #define LOGFILE_LAST_PART_BYTES 80 * 1024 // 80 kBytes  // Size of partial log file to return
 
-#define WEBSERVER_SCRATCH_BUFSIZE  4096
+#define WEBSERVER_SCRATCH_BUFSIZE   32768
 #define SERVER_OTA_SCRATCH_BUFSIZE  1024
+
+
+// ConfigClass
+//******************************
+#define CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE 32768 // Size of preallocated buffer for larger files (cJSON Object, JSON string buffer)
 
 
 // Server_file + server_help

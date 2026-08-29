@@ -108,6 +108,9 @@ ConfigClass::ConfigClass()
         }
     }
 
+    static_assert(WEBSERVER_SCRATCH_BUFSIZE >= CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE,
+                  "Webserver scratch buffer must be at least as large as the config JSON buffer");
+
     initCjsonHooks();
 }
 
@@ -251,95 +254,93 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    size_t remaining = req->content_len;
-    int received = 0;
-    size_t offset = 0;
-
-    httpd_resp_set_type(req, "application/json");
-
-    if (remaining >= CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE - 1) {
-        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Payload exceeds maximum buffer size");
-        httpd_resp_send_err(req, HTTPD_413_CONTENT_TOO_LARGE, "Payload exceeds maximum buffer size");
-        return ESP_FAIL;
-    }
-
-    if (req->user_ctx == nullptr) {
-        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Server context is null");
+    if (req == nullptr || req->user_ctx == nullptr) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Server context is null");
         return ESP_FAIL;
     }
 
     char *httpBuffer = static_cast<char *>(((struct HttpServerData *)req->user_ctx)->scratch);
 
-    int retries = 0;
+    if (httpBuffer == nullptr) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Scratch buffer is null");
+        return ESP_FAIL;
+    }
+
+    // Scratch buffer must accommodate the complete payload plus the terminating '\0'
+    if (req->content_len >= WEBSERVER_SCRATCH_BUFSIZE) {
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_send_err(req, HTTPD_413_CONTENT_TOO_LARGE, "Payload exceeds maximum buffer size");
+        return ESP_FAIL;
+    }
+
+    httpd_resp_set_type(req, "application/json");
+
+    size_t remaining = req->content_len;
+    size_t offset = 0;
+    uint8_t retries = 0;
+
+    // Receive the complete request into the webserver scratch buffer
     while (remaining > 0) {
-        received = httpd_req_recv(req, httpBuffer, std::min<size_t>(remaining, WEBSERVER_SCRATCH_BUFSIZE));
+        const int received = httpd_req_recv(req, httpBuffer + offset, remaining);
 
         if (received <= 0) {
             if (received == HTTPD_SOCK_ERR_TIMEOUT && ++retries < 5) {
                 vTaskDelay(pdMS_TO_TICKS(10));
                 continue;
             }
-            // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Config reception failed");
+
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Config reception failed");
             return ESP_FAIL;
         }
 
         retries = 0;
-
-        // Scoped block to handle JSON processing under the mutex guard safely
-        {
-            CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
-            if (!lock.isAcquired()) {
-                // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Failed to acquire cfgMutex - Timeout");
-                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Failed to acquire cfgMutex - Timeout");
-                return ESP_FAIL;
-            }
-
-            memcpy(jsonBuffer + offset, httpBuffer, received);
-            offset += received;
-        } // CfgMutexGuard releases here
-
+        offset += received;
         remaining -= received;
     }
 
-    // Scoped block to handle JSON processing under the mutex guard safely
+    httpBuffer[offset] = '\0';
+
     esp_err_t retVal = ESP_FAIL;
+
     {
         CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
         if (!lock.isAcquired()) {
-            // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Failed to acquire cfgMutex - Timeout");
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Failed to acquire cfgMutex - Timeout");
             return ESP_FAIL;
         }
 
-        jsonBuffer[offset] = '\0';
+        // Copy the complete request atomically with respect to other configuration users
+        memcpy(jsonBuffer, httpBuffer, offset + 1);
 
-        // Activates TLS PSRAM arena for this thread only
+        // Activates TLS PSRAM arena for this thread only.
         cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE);
 
-        // Parse JSON payload (allocates AST inside cJsonObjectBuffer)
+        // Parse JSON payload (allocates AST inside cJsonObjectBuffer).
         cJsonObject = cJSON_Parse(jsonBuffer);
+
         if (cJsonObject == nullptr) {
             const char *errPtr = cJSON_GetErrorPtr();
+
             if (errPtr != nullptr) {
                 char errMsg[64];
                 snprintf(errMsg, sizeof(errMsg), "Parse JSON error near: %.20s", errPtr);
+
                 httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, errMsg);
             }
             else {
                 httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Parse JSON failed");
             }
+
             return ESP_FAIL;
         }
 
-        // Extract configuration fields into class structures
+        // Extract configuration fields into class structures.
         retVal = parseConfig(req);
 
-        // Delete JSON AST while TLS arena is still active
+        // Delete JSON AST while TLS arena is still active.
         cJSON_Delete(cJsonObject);
         cJsonObject = nullptr;
-    } // CfgMutexGuard releases here
+    }
 
     return retVal;
 }
@@ -2783,11 +2784,22 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
         return ESP_FAIL;
     }
 
+    if (req == nullptr || req->user_ctx == nullptr) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Server context is null");
+        return ESP_FAIL;
+    }
+
+    char *httpBuffer = static_cast<char *>(((struct HttpServerData *)req->user_ctx)->scratch);
+
+    if (httpBuffer == nullptr) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Scratch buffer is null");
+        return ESP_FAIL;
+    }
+
     esp_err_t retVal = ESP_FAIL;
     {
         CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
         if (!lock.isAcquired()) {
-            // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire cfgMutex - Timeout");
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Failed to acquire cfgMutex - Timeout");
             return ESP_FAIL;
         }
@@ -2798,17 +2810,19 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
         // Clear existing buffer target
         jsonBuffer[0] = '\0';
 
-        // Serialize config data into cJSON / jsonBuffer
+        // Serialize config data into jsonBuffer
         retVal = serializeConfig();
-    }
 
-    if (retVal == ESP_OK) {
-        httpd_resp_set_type(req, "application/json");
-        httpd_resp_send(req, jsonBuffer, HTTPD_RESP_USE_STRLEN);
-    }
-    else {
-        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to serialize configuration");
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to serialize configuration");
+        if (retVal == ESP_OK) {
+            const size_t length = strlen(jsonBuffer);
+
+            if (length >= WEBSERVER_SCRATCH_BUFSIZE) {
+                retVal = ESP_ERR_NO_MEM;
+            }
+            else {
+                memcpy(httpBuffer, jsonBuffer, length + 1);
+            }
+        }
     }
 
     // Delete root cJSON tree if allocated
@@ -2817,6 +2831,12 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
         cJsonObject = nullptr;
     }
 
+    if (retVal == ESP_OK) {
+        httpd_resp_set_type(req, "application/json");
+        return httpd_resp_send(req, httpBuffer, HTTPD_RESP_USE_STRLEN);
+    }
+
+    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to serialize configuration");
     return retVal;
 }
 
