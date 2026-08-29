@@ -2802,7 +2802,7 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
         retVal = serializeConfig();
     }
 
-    if (ret == ESP_OK) {
+    if (retVal == ESP_OK) {
         httpd_resp_set_type(req, "application/json");
         httpd_resp_send(req, jsonBuffer, HTTPD_RESP_USE_STRLEN);
     }
@@ -2817,7 +2817,7 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
         cJsonObject = nullptr;
     }
 
-    return ret;
+    return retVal;
 }
 
 
