@@ -88,7 +88,7 @@ ConfigClass::ConfigClass()
     cfgMutex = xSemaphoreCreateMutex();
 
     if (cfgMutex == nullptr) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create mutex");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ConfigClass: Failed to create mutex");
     }
 
     // Use preallocted buffer to avoid fragmentation and reduce internal RAM usage using SPIRAM
@@ -96,7 +96,7 @@ ConfigClass::ConfigClass()
     jsonBuffer = (char *)heap_caps_calloc(1, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
     if (!cJsonObjectBuffer || !jsonBuffer) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate PSRAM buffers");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ConfigClass: Failed to allocate PSRAM buffers");
 
         if (cJsonObjectBuffer) {
             heap_caps_free(cJsonObjectBuffer);
@@ -144,13 +144,13 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool isUnityTest)
     }
 
     if (jsonStr == nullptr) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJson: JSON input is null");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: JSON input is null");
         return false;
     }
 
     CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
     if (!lock.isAcquired()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJson: Failed to acquire cfgMutex: Timeout");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: Failed to acquire cfgMutex: Timeout");
         return false;
     }
 
@@ -162,10 +162,10 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool isUnityTest)
     if (cJsonObject == nullptr) {
         const char *errPtr = cJSON_GetErrorPtr();
         if (errPtr != nullptr) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJson: Parse error near: %.20s", errPtr);
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: Parse error near: %.20s", errPtr);
         }
         else {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJson: Parse failed (null or invalid payload)");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: Parse failed (null or invalid payload)");
         }
         return false;
     }
@@ -258,14 +258,14 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
     httpd_resp_set_type(req, "application/json");
 
     if (remaining >= CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE - 1) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Payload exceeds maximum buffer size");
-        httpd_resp_send_err(req, HTTPD_413_CONTENT_TOO_LARGE, "E93: Payload too large");
+        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Payload exceeds maximum buffer size");
+        httpd_resp_send_err(req, HTTPD_413_CONTENT_TOO_LARGE, "Payload exceeds maximum buffer size");
         return ESP_FAIL;
     }
 
     if (req->user_ctx == nullptr) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Server context is null");
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: Internal Server Error");
+        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Server context is null");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Server context is null");
         return ESP_FAIL;
     }
 
@@ -280,8 +280,8 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
                 vTaskDelay(pdMS_TO_TICKS(10));
                 continue;
             }
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Config reception failed");
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E92: Config reception failed");
+            // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Config reception failed");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Config reception failed");
             return ESP_FAIL;
         }
 
@@ -291,8 +291,8 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
         {
             CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
             if (!lock.isAcquired()) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Failed to acquire cfgMutex - timeout expired");
-                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
+                // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Failed to acquire cfgMutex - Timeout");
+                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Failed to acquire cfgMutex - Timeout");
                 return ESP_FAIL;
             }
 
@@ -308,8 +308,8 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
     {
         CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
         if (!lock.isAcquired()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Failed to acquire cfgMutex - timeout expired");
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
+            // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setConfig: Failed to acquire cfgMutex - Timeout");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Failed to acquire cfgMutex - Timeout");
             return ESP_FAIL;
         }
 
@@ -2783,29 +2783,32 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
-    if (!lock.isAcquired()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire cfgMutex - timeout expired");
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E90: System busy");
-        return ESP_FAIL;
+    esp_err_t retVal = ESP_FAIL;
+    {
+        CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
+        if (!lock.isAcquired()) {
+            // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire cfgMutex - Timeout");
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Failed to acquire cfgMutex - Timeout");
+            return ESP_FAIL;
+        }
+
+        // Activates TLS PSRAM arena for this thread during serialization
+        cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE);
+
+        // Clear existing buffer target
+        jsonBuffer[0] = '\0';
+
+        // Serialize config data into cJSON / jsonBuffer
+        retVal = serializeConfig();
     }
-
-    // Activates TLS PSRAM arena for this thread during serialization
-    cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE);
-
-    // Clear existing buffer target
-    jsonBuffer[0] = '\0';
-
-    // Serialize config data into cJSON / jsonBuffer
-    esp_err_t ret = serializeConfig();
 
     if (ret == ESP_OK) {
         httpd_resp_set_type(req, "application/json");
         httpd_resp_send(req, jsonBuffer, HTTPD_RESP_USE_STRLEN);
     }
     else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to serialize configuration");
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "E93: Failed to serialize JSON data");
+        // LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to serialize configuration");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to serialize configuration");
     }
 
     // Delete root cJSON tree if allocated
@@ -2854,7 +2857,7 @@ bool ConfigClass::persistConfig()
 
     CfgMutexGuard lock(cfgMutex, pdMS_TO_TICKS(10000));
     if (!lock.isAcquired()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to acquire cfgMutex - timeout expired");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "persistConfig: Failed to acquire cfgMutex - Timeout");
         return false;
     }
 
