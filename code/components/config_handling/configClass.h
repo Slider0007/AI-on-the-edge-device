@@ -33,8 +33,8 @@ class ConfigClass
     char *jsonBuffer = NULL;
     char *httpBuffer = NULL;
 
-    bool parseJsonFromFile(const char *jsonStr, bool isUnityTest);
-    esp_err_t parseConfig(httpd_req_t *req = NULL, bool init = false, bool unityTest = false);
+    bool parseJsonFromFile(const char *jsonStr, bool isUnityTest = false);
+    esp_err_t parseConfig(bool init = false, bool unityTest = false);
     esp_err_t serializeConfig(bool unityTest = false);
     bool serializeConfigToPersist(void);
     esp_err_t writeConfigFile(void);

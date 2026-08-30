@@ -185,14 +185,14 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool isUnityTest)
         return false;
     }
 
-    return (parseConfig(nullptr, true, isUnityTest) == ESP_OK);
+    return (parseConfig(true, isUnityTest) == ESP_OK);
 }
 
 
 //**************************************************************************************************
 // Parse JSON string and save to internal struct
 //**************************************************************************************************
-esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
+esp_err_t ConfigClass::parseConfig(bool init, bool unityTest)
 {
     // Config Version
     // ***************************
@@ -1678,13 +1678,7 @@ esp_err_t ConfigClass::parseConfig(httpd_req_t *req, bool init, bool unityTest)
         return ESP_FAIL;
     }
 
-    // Response actual config to HTTP POST request
-    if (req) {
-        httpd_resp_set_status(req, HTTPD_200);
-        httpd_resp_send(req, jsonBuffer, strlen(jsonBuffer));
-    }
-
-    // Only for testing purpose
+    // Write config file
     if (!unityTest) {
         return writeConfigFile();
     }
@@ -2677,11 +2671,11 @@ esp_err_t ConfigClass::writeConfigFile()
 //**************************************************************************************************
 esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 {
-    if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex) {
+    if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex || !req) {
         return ESP_FAIL;
     }
 
-    if (req == nullptr || req->user_ctx == nullptr) {
+    if (req->user_ctx == nullptr) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Server context is null");
         return ESP_FAIL;
     }
@@ -2708,15 +2702,14 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 
         // Serialize config data into jsonBuffer
         retVal = serializeConfig();
-
         if (retVal == ESP_OK) {
             const size_t length = strlen(jsonBuffer);
 
-            if (length >= WEBSERVER_SCRATCH_BUFSIZE) {
-                retVal = ESP_ERR_NO_MEM;
+            if (length < WEBSERVER_SCRATCH_BUFSIZE) {
+                memcpy(httpBuffer, jsonBuffer, length + 1);
             }
             else {
-                memcpy(httpBuffer, jsonBuffer, length + 1);
+                retVal = ESP_ERR_NO_MEM;
             }
         }
     } // Release mutex guard (RAII)
@@ -2736,11 +2729,11 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 //**************************************************************************************************
 esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 {
-    if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex) {
+    if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex || !req) {
         return ESP_FAIL;
     }
 
-    if (req == nullptr || req->user_ctx == nullptr) {
+    if (req->user_ctx == nullptr) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Internal Server Error: Server context is null");
         return ESP_FAIL;
     }
@@ -2786,7 +2779,9 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
     httpBuffer[offset] = '\0';
 
-    esp_err_t retVal = ESP_FAIL;
+    esp_err_t retVal = ESP_OK;
+    bool parseFailed = false;
+    char errorMsg[64] = "Failed to update configuration";
 
     // Lock mutex guard (RAII)
     {
@@ -2807,23 +2802,45 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
         if (cJsonObject == NULL) {
             const char *errPtr = cJSON_GetErrorPtr();
-
             if (errPtr != NULL) {
-                char errMsg[64];
-                snprintf(errMsg, sizeof(errMsg), "Parse JSON error near: %.20s", errPtr);
-
-                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, errMsg);
+                snprintf(errorMsg, sizeof(errorMsg), "Parse JSON error near: %.20s", errPtr);
             }
             else {
-                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Parse JSON failed");
+                snprintf(errorMsg, sizeof(errorMsg), "Parse JSON failed");
             }
-
-            return ESP_FAIL;
+            parseFailed = true;
         }
 
-        retVal = parseConfig(req);
+        if (retVal == ESP_OK && !parseFailed) {
+            retVal = parseConfig();
+
+            if (retVal == ESP_OK) {
+                const size_t length = strlen(jsonBuffer);
+
+                if (length < WEBSERVER_SCRATCH_BUFSIZE) {
+                    memcpy(httpBuffer, jsonBuffer, length + 1);
+                }
+                else {
+                    snprintf(errorMsg, sizeof(errorMsg), "JSON size exceeds buffer");
+                    retVal = ESP_ERR_NO_MEM;
+                }
+            }
+        }
     } // Release mutex guard (RAII)
 
+    // HTTP response
+    if (retVal == ESP_OK) {
+        httpd_resp_set_type(req, "application/json");
+        return httpd_resp_send(req, httpBuffer, HTTPD_RESP_USE_STRLEN);
+    }
+
+    // Error return
+    if (parseFailed) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, errorMsg);
+    }
+    else {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, errorMsg);
+    }
     return retVal;
 }
 
