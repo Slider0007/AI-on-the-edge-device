@@ -173,7 +173,7 @@ cJsonObjectArena::~cJsonObjectArena()
     }
 
     arenaState.active = false;
-    s arenaState.offset = 0;
+    arenaState.offset = 0;
 
     if (cJsonActiveArena == &arenaState) {
         cJsonActiveArena = nullptr;
