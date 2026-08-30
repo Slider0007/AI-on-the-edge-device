@@ -204,7 +204,6 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool unityTest)
         }
     } // Free serialization arena
 
-
     // Persist updated configuration
     if (!unityTest && writeConfigFile() != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: Failed to write configuration file");
@@ -1699,6 +1698,10 @@ esp_err_t ConfigClass::parseConfig(bool init, bool unityTest)
         cfgData = cfgDataTemp;
     }
 
+    // Cleanup root cJSON structure
+    cJSON_Delete(cJsonObject);
+    cJsonObject = NULL;
+
     return ESP_OK;
 }
 
@@ -1708,11 +1711,6 @@ esp_err_t ConfigClass::parseConfig(bool init, bool unityTest)
 //**************************************************************************************************
 esp_err_t ConfigClass::serializeConfig(bool unityTest)
 {
-    if (cJsonObject != NULL) {
-        cJSON_Delete(cJsonObject);
-        cJsonObject = NULL;
-    }
-
     cJsonObject = cJSON_CreateObject();
     if (cJsonObject == NULL) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "serializeConfig: Error while creating JSON object");
