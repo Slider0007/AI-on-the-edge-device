@@ -171,7 +171,7 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool unityTest)
 
     // Parse JSON and update internal configuration
     {
-        cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
+        cJsonObjectArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
 
         cJsonObject = cJSON_Parse(jsonStr);
         if (cJsonObject != nullptr) {
@@ -196,7 +196,7 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool unityTest)
 
     // Serialize updated configuration
     {
-        cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
+        cJsonObjectArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
 
         if (serializeConfig(unityTest) != ESP_OK) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: Failed to serialize configuration");
@@ -2643,8 +2643,7 @@ bool ConfigClass::persistConfig()
         return false;
     }
 
-    // Activates TLS PSRAM arena
-    cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
+    cJsonObjectArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
 
     if (serializeConfig() != ESP_OK) {
         return false;
@@ -2886,8 +2885,7 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
             return ESP_FAIL;
         }
 
-        // Activates TLS PSRAM arena
-        cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
+        cJsonObjectArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
 
         // Serialize config data into jsonBuffer
         retVal = serializeConfig();
@@ -2989,7 +2987,7 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
         // Parse JSON and update internal configuration
         {
-            cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
+            cJsonObjectArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
 
             cJsonObject = cJSON_Parse(jsonBuffer);
 
@@ -3013,7 +3011,7 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
         // Serialize updated configuration
         if (retVal == ESP_OK) {
-            cJsonPsramArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
+            cJsonObjectArena jsonArena(cJsonObjectBuffer, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE);
 
             retVal = serializeConfig();
 

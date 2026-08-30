@@ -115,7 +115,7 @@
 
 // ConfigClass
 //******************************
-#define CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE 65536 // Size of preallocated buffer for larger files (cJSON Object)
+#define CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE 32768 // Size of preallocated buffer for larger files (cJSON Object)
 #define CONFIG_HANDLING_CJSON_STRING_BUFFER_SIZE 32768 // Size of preallocated buffer for larger files (JSON string buffer)
 
 

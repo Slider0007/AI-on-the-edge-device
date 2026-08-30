@@ -9,9 +9,11 @@
 static const char *TAG = "PSRAM";
 
 struct strSTBI STBIObjectPSRAM = {};
-static __thread taskArena_t *cJsonActiveArena = nullptr; // cJSON memory management: Thread-Local Storage pointer
+static __thread taskArena_t *cJsonActiveArena = nullptr; // Thread-local storage pointer for cJSON (config handling)
 
 
+// Custom hooks (incl. logging feature)
+// ********************************************************
 void *malloc_psram_heap(std::string name, size_t size, uint32_t caps)
 {
     void *ptr;
@@ -48,6 +50,8 @@ void *remalloc_psram_heap(std::string name, void *p, size_t size, uint32_t caps)
 }
 
 
+// STBI custom hooks
+// ********************************************************
 void *malloc_psram_heap_STBI(std::string name, size_t size, uint32_t caps)
 {
     void *ptr;
@@ -105,7 +109,7 @@ void free_psram_heap(std::string name, void *ptr)
 
 
 // cJSON custom hooks
-// *****************
+// ********************************************************
 static void *mallocCjson(size_t size)
 {
     if (cJsonActiveArena != nullptr && cJsonActiveArena->active) {
@@ -150,7 +154,7 @@ void initCjsonHooks(void)
 
 // cJSON memory arena
 // *****************
-cJsonPsramArena::cJsonPsramArena(uint8_t *buffer, size_t capacity)
+cJsonObjectArena::cJsonObjectArena(uint8_t *buffer, size_t capacity)
 {
     arenaState.buffer = buffer;
     arenaState.capacity = capacity;
@@ -161,13 +165,15 @@ cJsonPsramArena::cJsonPsramArena(uint8_t *buffer, size_t capacity)
 }
 
 
-cJsonPsramArena::~cJsonPsramArena()
+cJsonObjectArena::~cJsonObjectArena()
 {
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                        "cJSON PSRAM arena used: " + std::to_string(arenaState.offset) + "/" + std::to_string(arenaState.capacity));
+    if (arenaState.capacity > 0 && arenaState.offset >= (arenaState.capacity * 97U) / 100U) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "cJSON arena usage high (%): " + std::to_string((arenaState.offset * 100U) / arenaState.capacity));
+    }
 
     arenaState.active = false;
-    arenaState.offset = 0;
+    s arenaState.offset = 0;
 
     if (cJsonActiveArena == &arenaState) {
         cJsonActiveArena = nullptr;

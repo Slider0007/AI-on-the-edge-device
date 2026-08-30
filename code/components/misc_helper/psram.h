@@ -67,14 +67,14 @@ typedef struct {
 } taskArena_t;
 
 
-class cJsonPsramArena
+class cJsonObjectArena
 {
   public:
-    cJsonPsramArena(uint8_t *buffer, size_t capacity);
-    ~cJsonPsramArena();
+    cJsonObjectArena(uint8_t *buffer, size_t capacity);
+    ~cJsonObjectArena();
 
-    cJsonPsramArena(const cJsonPsramArena &) = delete;
-    cJsonPsramArena &operator=(const cJsonPsramArena &) = delete;
+    cJsonObjectArena(const cJsonObjectArena &) = delete;
+    cJsonObjectArena &operator=(const cJsonObjectArena &) = delete;
 
   private:
     taskArena_t arenaState;
