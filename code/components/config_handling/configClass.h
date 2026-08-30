@@ -13,10 +13,32 @@
 
 
 /* Function calls
- * 1. Restore Config : readConfigFile()       > parseConfig > serializeConfig > writeConfigFile
- * 2. REST API Set   : setConfigRequest()     > parseConfig > serializeConfig > REST API Response
- * 3. REST API Get   : getConfigRequest()                   > serializeConfig > REST API Response
- * 4. Cfg Migration  : readConfigFile()       > parseConfig >  migrateConfiguration() > serializeConfig > writeConfigFile
+ *
+ * 1. Load Config From File (once after boot)
+ *    readConfigFile()
+ *      > parseJsonFromFile()
+ *        > parseConfig()
+ *          > migrateConfiguration()
+ *        > serializeConfig()
+ *        > writeConfigFile()
+ *
+ * 2. REST API Set
+ *    setConfigRequest()
+ *      > parseConfig()
+ *      > serializeConfig()
+ *      > writeConfigFile()
+ *      > REST API Response
+ *
+ * 3. REST API Get
+ *    getConfigRequest()
+ *      > serializeConfig()
+ *      > REST API Response
+ *
+ * 4. Unity Tests
+ *    parseJsonFromFile(..., true)
+ *      > parseConfig(..., true)
+ *      > serializeConfig(true)
+ *      > no writeConfigFile()
  */
 
 class ConfigClass
@@ -33,7 +55,7 @@ class ConfigClass
     char *jsonBuffer = NULL;
     char *httpBuffer = NULL;
 
-    bool parseJsonFromFile(const char *jsonStr, bool isUnityTest = false);
+    bool parseJsonFromFile(const char *jsonStr, bool unityTest = false);
     esp_err_t parseConfig(bool init = false, bool unityTest = false);
     esp_err_t serializeConfig(bool unityTest = false);
     bool serializeConfigToPersist(void);
