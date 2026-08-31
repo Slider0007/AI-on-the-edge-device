@@ -9,8 +9,11 @@
 static const char *TAG = "PSRAM";
 
 struct strSTBI STBIObjectPSRAM = {};
-struct strcJSON cJSONObjectPSRAM = {};
+static __thread taskArena_t *cJsonActiveArena = nullptr; // Thread-local storage pointer for cJSON (config handling)
 
+
+// Custom hooks (incl. logging feature)
+// ********************************************************
 void *malloc_psram_heap(std::string name, size_t size, uint32_t caps)
 {
     void *ptr;
@@ -47,6 +50,8 @@ void *remalloc_psram_heap(std::string name, void *p, size_t size, uint32_t caps)
 }
 
 
+// STBI custom hooks
+// ********************************************************
 void *malloc_psram_heap_STBI(std::string name, size_t size, uint32_t caps)
 {
     void *ptr;
@@ -103,29 +108,74 @@ void free_psram_heap(std::string name, void *ptr)
 }
 
 
-void *malloc_psram_heap_cjson(size_t size)
+// cJSON custom hooks
+// ********************************************************
+static void *mallocCjson(size_t size)
 {
-    cJSONObjectPSRAM.usedMemory += size;
-    if (cJSONObjectPSRAM.preallocatedMemory != NULL && cJSONObjectPSRAM.preallocatedMemorySize >= cJSONObjectPSRAM.usedMemory) {
-        return (uint8_t *)cJSONObjectPSRAM.preallocatedMemory + cJSONObjectPSRAM.usedMemory - size;
+    if (cJsonActiveArena != nullptr && cJsonActiveArena->active) {
+        size_t alignedSize = (size + 3) & ~3; // Ensure 4-byte boundary alignment
+        if (cJsonActiveArena->offset > cJsonActiveArena->capacity || alignedSize > cJsonActiveArena->capacity - cJsonActiveArena->offset) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                "cJSON PSRAM arena insuffcient | Capacity:" + std::to_string(cJsonActiveArena->capacity) +
+                                    ", Used: " + std::to_string(cJsonActiveArena->offset) + ", Required: " + std::to_string(alignedSize));
+            return nullptr;
+        }
+        void *ptr = &cJsonActiveArena->buffer[cJsonActiveArena->offset];
+        cJsonActiveArena->offset += alignedSize;
+        return ptr;
     }
-    else {
-#ifdef DEBUG_DETAIL_ON
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "cJSON: Use default region");
-#endif // DEBUG_DETAIL_ON
-        cJSONObjectPSRAM.useDefaultAllocation = true;
-        return heap_caps_malloc(size, MALLOC_CAP_DEFAULT);
-    }
+
+    return heap_caps_malloc(size, MALLOC_CAP_DEFAULT); // Fallback to default heap for non-arena tasks
 }
 
 
-void free_psram_heap_cjson(void *ptr)
+static void freeCjson(void *ptr)
 {
-    if (!cJSONObjectPSRAM.useDefaultAllocation) {
-        cJSONObjectPSRAM.usedMemory = 0;
+    if (ptr == nullptr) {
+        return;
     }
-    else {
-        cJSONObjectPSRAM.useDefaultAllocation = false;
-        heap_caps_free(ptr);
+
+    if (cJsonActiveArena != nullptr && cJsonActiveArena->active) {
+        return; // Arena deallocations are cleared in bulk when offset resets
+    }
+
+    heap_caps_free(ptr); // Standard heap free for non-arena tasks
+}
+
+
+void initCjsonHooks(void)
+{
+    cJSON_Hooks hooks;
+    hooks.malloc_fn = mallocCjson;
+    hooks.free_fn = freeCjson;
+    cJSON_InitHooks(&hooks);
+}
+
+
+// cJSON memory arena
+// *****************
+cJsonObjectArena::cJsonObjectArena(uint8_t *buffer, size_t capacity)
+{
+    arenaState.buffer = buffer;
+    arenaState.capacity = capacity;
+    arenaState.offset = 0;
+    arenaState.active = true;
+
+    cJsonActiveArena = &arenaState;
+}
+
+
+cJsonObjectArena::~cJsonObjectArena()
+{
+    if (arenaState.capacity > 0 && arenaState.offset >= (arenaState.capacity * 97U) / 100U) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "cJSON arena usage high (%): " + std::to_string((arenaState.offset * 100U) / arenaState.capacity));
+    }
+
+    arenaState.active = false;
+    arenaState.offset = 0;
+
+    if (cJsonActiveArena == &arenaState) {
+        cJsonActiveArena = nullptr;
     }
 }
