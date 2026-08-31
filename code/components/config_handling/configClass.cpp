@@ -35,15 +35,15 @@ static bool isValidIpAddress(const char *ipAddress)
 
 ConfigClass::ConfigClass()
 {
-    static_assert(WEBSERVER_SCRATCH_BUFSIZE >= CONFIG_HANDLING_CJSON_STRING_BUFFER_SIZE,
-                  "Webserver scratch buffer must be at least as large as the config JSON string buffer");
-
     // Create a FreeRTOS mutex semaphore to protect JSON buffer & global hooks
     cfgMutex = xSemaphoreCreateMutex();
 
     if (cfgMutex == nullptr) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "ConfigClass: Failed to create mutex");
     }
+
+    static_assert(WEBSERVER_SCRATCH_BUFSIZE >= CONFIG_HANDLING_CJSON_STRING_BUFFER_SIZE,
+                  "Webserver scratch buffer must be at least as large as the config JSON string buffer");
 
     // Use preallocted buffer to avoid fragmentation and reduce internal RAM usage using SPIRAM
     cJsonObjectBuffer = (uint8_t *)heap_caps_calloc(1, CONFIG_HANDLING_CJSON_OBJECT_BUFFER_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
@@ -2909,9 +2909,6 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 }
 
 
-//**************************************************************************************************
-// Update configuration via REST API (JSON notation)
-//**************************************************************************************************
 //**************************************************************************************************
 // Update configuration via REST API (JSON notation)
 //**************************************************************************************************
