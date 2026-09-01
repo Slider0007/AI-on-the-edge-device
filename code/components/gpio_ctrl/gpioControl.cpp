@@ -377,7 +377,7 @@ void GpioHandler::clearData()
             // Free smartLED instances
             if ((it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED || it->second->getMode() == GPIO_PIN_MODE_STATUSLED_SMARTLED) &&
                 it->second->getSmartLed() != NULL) {
-                it->second->getSmartLed()->wait();
+                it->second->getSmartLed()->wait(pdMS_TO_TICKS(50));
                 delete it->second->getSmartLed();
                 it->second->setSmartLed(NULL);
             }
