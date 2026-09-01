@@ -377,6 +377,7 @@ void GpioHandler::clearData()
             // Free smartLED instances
             if ((it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED || it->second->getMode() == GPIO_PIN_MODE_STATUSLED_SMARTLED) &&
                 it->second->getSmartLed() != NULL) {
+                it->second->getSmartLed()->wait();
                 delete it->second->getSmartLed();
                 it->second->setSmartLed(NULL);
             }
@@ -391,6 +392,9 @@ void GpioHandler::clearData()
     }
 
     frequencyTable.clear();
+
+    // Yield to let IPC background tasks finishing ISR deinit
+    vTaskDelay(pdMS_TO_TICKS(100));
 
     // gpio_uninstall_isr_service(); can't uninstall, ISR service is also used by camera
 }
