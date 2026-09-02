@@ -117,38 +117,58 @@ bool doInit(void)
 
 esp_err_t triggerReloadConfig(httpd_req_t *req)
 {
-    httpd_resp_set_type(req, "text/plain");
+    static char codeBuf[16] = {0};
+    static char messageBuf[128] = {0};
+
+    const std::string timestamp = getCurrentTimeString("%H:%M:%S");
 
     if (taskAutoFlowState == FLOW_TASK_STATE_INIT || taskAutoFlowState == FLOW_TASK_STATE_SETUPMODE ||
         taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART) {
-        const std::string zw = "001: Reload config and redo flow initialization (" + getCurrentTimeString("%H:%M:%S") + ")";
-        httpd_resp_send(req, zw.c_str(), zw.length());
+
+        snprintf(codeBuf, sizeof(codeBuf), "001");
+        snprintf(messageBuf, sizeof(messageBuf), "001: Reload config and redo flow initialization (%s)", timestamp.c_str());
         reloadConfig = true;
     }
     else if (taskAutoFlowState == FLOW_TASK_STATE_INIT_DELAYED) {
-        const std::string zw = "002: Abort waiting delay and continue with process initialization (" + getCurrentTimeString("%H:%M:%S") +
-                               ")";
-        httpd_resp_send(req, zw.c_str(), zw.length());
-        xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state.
+        snprintf(codeBuf, sizeof(codeBuf), "002");
+        snprintf(messageBuf, sizeof(messageBuf), "002: Abort waiting delay and continue with process initialization (%s)",
+                 timestamp.c_str());
+        xTaskAbortDelay(xHandletask_autodoFlow);
     }
     else if (taskAutoFlowState == FLOW_TASK_STATE_IDLE_AUTOSTART) {
-        const std::string zw = "003: Abort waiting delay, reload config and reinitialize process(" + getCurrentTimeString("%H:%M:%S") + ")";
-        httpd_resp_send(req, zw.c_str(), zw.length());
+        snprintf(codeBuf, sizeof(codeBuf), "003");
+        snprintf(messageBuf, sizeof(messageBuf), "003: Abort waiting delay, reload config and reinitialize process (%s)",
+                 timestamp.c_str());
         reloadConfig = true;
-        xTaskAbortDelay(xHandletask_autodoFlow); // Delay will be aborted if task is in blocked (waiting) state.
+        xTaskAbortDelay(xHandletask_autodoFlow);
     }
     else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING || taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
              taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) {
+
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Reload config and schedule process reinitialization");
-        const std::string zw = "004: Reload config and reinitialization got scheduled (" + getCurrentTimeString("%H:%M:%S") + ")";
-        httpd_resp_send(req, zw.c_str(), zw.length());
+        snprintf(codeBuf, sizeof(codeBuf), "004");
+        snprintf(messageBuf, sizeof(messageBuf), "004: Reload config and reinitialization got scheduled (%s)", timestamp.c_str());
         reloadConfig = true;
     }
     else {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reload configuration not possible. No main task. Request rejected");
-        const std::string zw = "E90: Reload config not possible. No main task. Request rejected (" + getCurrentTimeString("%H:%M:%S") + ")";
-        httpd_resp_send(req, zw.c_str(), zw.length());
+        snprintf(codeBuf, sizeof(codeBuf), "E90");
+        snprintf(messageBuf, sizeof(messageBuf), "E90: Reload config not possible. No main task. Request rejected (%s)", timestamp.c_str());
     }
+
+    // --- Send Response
+    if (req->method == HTTP_GET) {
+        // GET Request: Plain text response body
+        httpd_resp_set_type(req, "text/plain");
+        return httpd_resp_send(req, messageBuf, strlen(messageBuf));
+    }
+    else if (req->method == HTTP_POST) {
+        // httpd_resp_set_type(req, "application/json");
+        httpd_resp_set_hdr(req, "Access-Control-Expose-Headers", "X-Reload-Code, X-Reload-Message");
+        httpd_resp_set_hdr(req, "X-Reload-Code", codeBuf);
+        httpd_resp_set_hdr(req, "X-Reload-Message", messageBuf);
+    }
+
     return ESP_OK;
 }
 

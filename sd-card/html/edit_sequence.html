@@ -1526,16 +1526,14 @@
     function SaveToConfig()
     {
         if (confirm("Are you sure you want to save and apply the new configuration?")) {
-            saveConfig(JSON.stringify(jsonConfigModifiedDelta));
-            RefreshROI();
-
             document.getElementById("saveconfig").disabled = true;
-
-            firework.launch('Save and apply configuration...', 'success', 2000, true);
-            setTimeout(function() {
-                reloadConfig();
-                loadConfigData();
-            }, 1000);
+            
+			saveConfig(JSON.stringify(jsonConfigModifiedDelta), true).then(() => {
+                setTimeout(function() {
+                    loadConfigData();
+                    RefreshROI();
+                }, 500);
+			});
         }
     }
 

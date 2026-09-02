@@ -56,10 +56,14 @@ class ConfigClass
     char *httpBuffer = NULL;
 
     bool parseJsonFromFile(const char *jsonStr, bool unityTest = false);
+
+    // Parse JSON to internal struct
     esp_err_t parseConfig(bool init = false, bool unityTest = false);
+
+    // Serialize internal struct to JSON string
     esp_err_t serializeConfig(bool unityTest = false);
-    bool serializeConfigToPersist(void);
-    esp_err_t writeConfigFile(void);
+
+    esp_err_t writeConfigFile(const char *buf, const size_t bufLen);
 
     bool loadDataFromNVS(std::string key, std::string &value);
     bool saveDataToNVS(std::string key, std::string value);
@@ -82,7 +86,7 @@ class ConfigClass
     const CfgData *get(void) const { return &cfgData; };
 
     esp_err_t getConfigRequest(httpd_req_t *req);
-    esp_err_t setConfigRequest(httpd_req_t *req);
+    esp_err_t setConfigRequest(httpd_req_t *req, bool triggerReload = false);
 
     // Only for migration and internal parameter modification purpose
     void initCfgTmp(void)
@@ -98,7 +102,12 @@ class ConfigClass
     char *getJsonBuffer(void) { return jsonBuffer; };
 };
 
+void registerConfigFileUri(httpd_handle_t server);
 
+
+//-------------------------------------------------------------------------------------
+// Mutex Guard
+//-------------------------------------------------------------------------------------
 class CfgMutexGuard
 {
     SemaphoreHandle_t mMutex;
@@ -121,8 +130,5 @@ class CfgMutexGuard
         }
     }
 };
-
-
-void registerConfigFileUri(httpd_handle_t server);
 
 #endif // CONFIGCLASS_H

@@ -39,21 +39,33 @@ static char *getAuthBase64Encoded(const std::string username, const std::string 
 esp_err_t handleHttpAuthBasic(httpd_req_t *req, esp_err_t httpHandler(httpd_req_t *))
 {
     // Cross origin handling (e.g. allow access from localhost (test environment))
-    size_t bufLen = httpd_req_get_hdr_value_len(req, "Origin") + 1;
-    if (bufLen > 1) {
-        char *buf = (char *)calloc(1, bufLen);
-        if (buf == NULL) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to allocate memory (buf1)");
-            return ESP_ERR_NO_MEM;
-        }
+    char originBuf[128] = {0};
+    const char *originKey = "Origin";
 
-        if (httpd_req_get_hdr_value_str(req, "Origin", buf, bufLen) == ESP_OK) {
-            static const std::string origin(buf, bufLen);
-            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", origin.c_str()); //@TODO FEATURE: Origin whitelist?
-            httpd_resp_set_hdr(req, "Access-Control-Allow-Credentials", "true");
-        }
+    size_t bufLen = httpd_req_get_hdr_value_len(req, "Origin");
+    if (bufLen == 0) {
+        bufLen = httpd_req_get_hdr_value_len(req, "origin");
+        originKey = "origin";
+    }
 
-        free(buf);
+    if (bufLen > 0 && bufLen < sizeof(originBuf)) {
+        if (httpd_req_get_hdr_value_str(req, originKey, originBuf, sizeof(originBuf)) == ESP_OK) {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", originBuf);
+        }
+    }
+    else {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    }
+
+    // Always set remaining CORS rules
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Credentials", "true");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    // Bypass Auth for CORS Preflight (OPTIONS Requests)
+    if (req->method == HTTP_OPTIONS) {
+        httpd_resp_send(req, NULL, 0); // Respond 200 OK to CORS preflight
+        return ESP_OK;
     }
 
     // Skip authorization check if

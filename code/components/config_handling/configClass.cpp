@@ -205,7 +205,7 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool unityTest)
     } // Free serialization arena
 
     // Persist updated configuration
-    if (!unityTest && writeConfigFile() != ESP_OK) {
+    if (!unityTest && writeConfigFile(jsonBuffer, strlen(jsonBuffer)) != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: Failed to write configuration file");
         return false;
     }
@@ -2647,14 +2647,14 @@ bool ConfigClass::persistConfig()
         return false;
     }
 
-    return (writeConfigFile() == ESP_OK);
+    return (writeConfigFile(jsonBuffer, strlen(jsonBuffer)) == ESP_OK);
 }
 
 
 //**************************************************************************************************
 // Write configuration to file (JSON string)
 //**************************************************************************************************
-esp_err_t ConfigClass::writeConfigFile()
+esp_err_t ConfigClass::writeConfigFile(const char *buf, const size_t bufLen)
 {
     FILE *file = fopen(CONFIG_PERSISTENCE_FILE, "w");
 
@@ -2912,7 +2912,7 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 //**************************************************************************************************
 // Update configuration via REST API (JSON notation)
 //**************************************************************************************************
-esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
+esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req, bool triggerReload)
 {
     if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex || !req) {
         return ESP_FAIL;
@@ -2949,7 +2949,6 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
         if (received <= 0) {
             if (received == HTTPD_SOCK_ERR_TIMEOUT && ++retries < 5) {
-                vTaskDelay(pdMS_TO_TICKS(10));
                 continue;
             }
 
@@ -3022,19 +3021,29 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
                 }
             }
         } // Free serialization arena
-
-        // Persist updated configuration
-        if (retVal == ESP_OK) {
-            retVal = writeConfigFile();
-        }
     } // Release cfgMutex
 
     // HTTP response
-    if (retVal == ESP_OK) {
-        return httpd_resp_send(req, httpBuffer, HTTPD_RESP_USE_STRLEN);
+    if (retVal != ESP_OK) {
+        httpd_resp_send_err(req, httpError, errorMsg);
+        return retVal;
     }
 
-    httpd_resp_send_err(req, httpError, errorMsg);
+    // Stage config reload + add headers
+    if (triggerReload) {
+        triggerReloadConfig(req);
+    }
+    retVal = httpd_resp_send(req, httpBuffer, HTTPD_RESP_USE_STRLEN);
+
+    // Persist updated configuration
+    // Note: Using httpBuffer - exclusivly used until functions returns
+    esp_err_t writeStatus = writeConfigFile(httpBuffer, strlen(httpBuffer));
+
+    // Return write stataus only if send step was successful
+    if (retVal == ESP_OK) {
+        return writeStatus;
+    }
+
     return retVal;
 }
 
@@ -3066,7 +3075,24 @@ esp_err_t handlerGetConfigRequest(httpd_req_t *req)
 
 esp_err_t handlerSetConfigRequest(httpd_req_t *req)
 {
-    return ConfigClass::getInstance()->setConfigRequest(req);
+    // Check for query parameter
+    bool triggerReload = false;
+    size_t queryLen = httpd_req_get_url_query_len(req);
+
+    if (queryLen > 0) {
+        char queryBuf[queryLen + 1];
+        if (httpd_req_get_url_query_str(req, queryBuf, sizeof(queryBuf)) == ESP_OK) {
+            char valBuf[16] = {0};
+            if (httpd_query_key_value(queryBuf, "reload", valBuf, sizeof(valBuf)) == ESP_OK) {
+                if (strcasecmp(valBuf, "true") == 0 || strcmp(valBuf, "1") == 0) {
+                    triggerReload = true;
+                }
+            }
+        }
+    }
+
+    // Process setConfigRequest
+    return ConfigClass::getInstance()->setConfigRequest(req, triggerReload);
 }
 
 
@@ -3084,7 +3110,13 @@ void registerConfigFileUri(httpd_handle_t server)
 
     camuri.uri = "/config";
     camuri.handler = HTTP_AUTH_BASIC(handlerSetConfigRequest);
-    camuri.method = HTTP_POST,
+    camuri.method = HTTP_POST;
     camuri.user_ctx = httpServerData; // Pass server data as context
+    httpd_register_uri_handler(server, &camuri);
+
+    camuri.uri = "/config";
+    camuri.handler = HTTP_AUTH_BASIC(NULL);
+    camuri.method = HTTP_OPTIONS;
+    camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 }

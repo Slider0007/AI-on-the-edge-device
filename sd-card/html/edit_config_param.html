@@ -3633,20 +3633,12 @@
 	function saveConfigData(reboot = false)
 	{
 		if (confirm("Are you sure you want to save and apply the new configuration?")) {
-			firework.launch('Save and apply configuration...', 'success', 2000, true);
-
-			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
-				setTimeout(function() {
-					if (!reboot) {
-						reloadConfig();
-						setTimeout(function() {
-							init();
-						}, 500);
-					}
-					else {
+			saveConfig(JSON.stringify(jsonConfigModifiedDelta), !reboot).then(() => {
+				if (reboot) {
+					setTimeout(function() {
 						window.location.replace("sys_reboot_page.html?v=$COMMIT_HASH#reboot");
-					}
-				}, 500);
+					}, 500);
+				}
 			});
 		}
 	}

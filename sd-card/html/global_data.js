@@ -207,29 +207,34 @@ async function getCertFileList()
 }
 
 
-function reloadConfig()
-{
+// Helper function to handle status codes & display firework messages
+function processReloadFeedback(code) {
+    if (!code) return;
+
+    if (code === "001" || code === "002" || code === "003") {
+        firework.launch('Configuration saved and applied successfully', 'success', 3000);
+    }
+    else if (code === "004") {
+        firework.launch('Configuration saved. Will apply after current cycle', 'success', 3000);
+    }
+    else if (code === "099" || code === "E90") {
+        firework.launch('Configuration saved, but failed to apply: Process uninitialized', 'danger', 10000);
+    }
+}
+
+
+function reloadConfig() {
     let url = getDomainname() + '/config?task=reload';
 
     let xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
             if (this.status >= 200 && this.status < 300) {
-                if (xhttp.responseText.substring(0,3) == "001" || xhttp.responseText.substring(0,3) == "002" ||
-                        xhttp.responseText.substring(0,3) == "003")
-                {
-                        firework.launch('Configuration updated and applied', 'success', 2000);
-                }
-                else if (xhttp.responseText.substring(0,3) == "004") {
-                        firework.launch('Configuration updated and get applied after actual cycle is completed', 'success', 3000);
-                }
-                else if (xhttp.responseText.substring(0,3) == "099") {
-                        firework.launch('Configuration updated, but cannot get applied (flow not initialized)', 'danger', 30000);
-                }
+                // For GET requests, extract the 3-character code from the text response
+                processReloadFeedback(this.responseText.substring(0, 3));
             }
             else {
-                firework.launch("Configuration update failed (Response status: " + this.status +
-                                "). Repeat action or check logs.", 'danger', 30000);
+                firework.launch("Configuration update failed (Response status: " + this.status + "). Repeat action or check logs.", 'danger', 30000);
                 console.error("Configuration update failed. Response status: " + this.status);
             }
         }
@@ -242,32 +247,47 @@ function reloadConfig()
 }
 
 
+async function saveConfig(data, reload = false) {
+    const fireworkSaveConfig = firework.launch('Save and apply configuration...', 'success', 10000, true);
 
-async function saveConfig(data)
-{
     return new Promise(function (resolve, reject) {
         let url = getDomainname() + "/config";
+        if (reload) url += "?reload=true";
 
         let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4) {
                 if (xhttp.status >= 200 && xhttp.status < 300) {
-                        sessionStorage.setItem("jsonConfigData", xhttp.responseText); // Store the object into storage
-                        return resolve();
+                    sessionStorage.setItem("jsonConfigData", xhttp.responseText); // Store JSON into session storage
+                    firework.remove(fireworkSaveConfig);
+
+                    // If reload was requested, process response headers
+                    if (reload) {
+                        const reloadCode = xhttp.getResponseHeader("X-Reload-Code");
+                        if (reloadCode) {
+                            processReloadFeedback(reloadCode);
+                        }
+                    }
+                    else {
+                        firework.launch('Configuration saved successfully', 'success', 3000);
+                    }
+
+                    return resolve();
                 }
                 else if (xhttp.status == 0) {
-                        firework.launch('Save config failed failed. Server closed the connection abruptly!', 'danger', 30000);
+                    firework.launch('Save config failed. Server closed the connection abruptly!', 'danger', 30000);
+                    return reject("Save config failed");
                 }
                 else {
-                        firework.launch("Save config failed (Response status: " + this.status +
-                                            "). Repeat action or check logs.", 'danger', 30000);
-                        console.error("Save config failed. Response status: " + this.status);
-                        return reject("Save config failed");
+                    firework.launch("Save config failed (Response status: " + xhttp.status + "). Repeat action or check logs.", 'danger', 30000);
+                    console.error("Save config failed. Response status: " + xhttp.status);
+                    return reject("Save config failed");
                 }
             }
         };
 
         xhttp.open("POST", url, true);
+        xhttp.setRequestHeader("Content-Type", "application/json");
         xhttp.withCredentials = true;
         xhttp.send(data);
     });
