@@ -38,26 +38,24 @@ static char *getAuthBase64Encoded(const std::string username, const std::string 
 
 esp_err_t handleHttpAuthBasic(httpd_req_t *req, esp_err_t httpHandler(httpd_req_t *))
 {
-    // Cross origin handling (e.g. allow access from localhost (test environment))
+    // Allow permissive cross-origin requests by design
     char originBuf[128] = {0};
-    const char *originKey = "Origin";
 
     size_t bufLen = httpd_req_get_hdr_value_len(req, "Origin");
-    if (bufLen == 0) {
-        bufLen = httpd_req_get_hdr_value_len(req, "origin");
-        originKey = "origin";
-    }
 
     if (bufLen > 0 && bufLen < sizeof(originBuf)) {
-        if (httpd_req_get_hdr_value_str(req, originKey, originBuf, sizeof(originBuf)) == ESP_OK) {
+        if (httpd_req_get_hdr_value_str(req, "Origin", originBuf, sizeof(originBuf)) == ESP_OK) {
             httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", originBuf);
+        }
+        else {
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         }
     }
     else {
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     }
 
-    // Always set remaining CORS rules
+    // Permissive CORS parameters
     httpd_resp_set_hdr(req, "Access-Control-Allow-Credentials", "true");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type, Authorization");

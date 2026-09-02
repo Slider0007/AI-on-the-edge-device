@@ -2932,12 +2932,9 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req, bool triggerReload)
 
     // Scratch buffer must accommodate the complete payload plus '\0'
     if (req->content_len >= WEBSERVER_SCRATCH_BUFSIZE) {
-        httpd_resp_set_type(req, "application/json");
         httpd_resp_send_err(req, HTTPD_413_CONTENT_TOO_LARGE, "Payload exceeds maximum buffer size");
         return ESP_FAIL;
     }
-
-    httpd_resp_set_type(req, "application/json");
 
     // Receive the complete request into the webserver scratch buffer
     size_t remaining = req->content_len;
@@ -3021,6 +3018,11 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req, bool triggerReload)
                 }
             }
         } // Free serialization arena
+
+        // Persist updated configuration
+        if (retVal == ESP_OK) {
+            retVal = writeConfigFile();
+        }
     } // Release cfgMutex
 
     // HTTP response
@@ -3029,21 +3031,18 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req, bool triggerReload)
         return retVal;
     }
 
-    // Stage config reload + add headers
-    if (triggerReload) {
-        triggerReloadConfig(req);
-    }
-    retVal = httpd_resp_send(req, httpBuffer, HTTPD_RESP_USE_STRLEN);
-
-    // Persist updated configuration
-    // Note: Using httpBuffer - exclusivly used until functions returns
-    esp_err_t writeStatus = writeConfigFile(httpBuffer, strlen(httpBuffer));
-
-    // Return write stataus only if send step was successful
+    // HTTP response
     if (retVal == ESP_OK) {
-        return writeStatus;
+        // Stage config reload + add custom headers
+        if (triggerReload) {
+            triggerReloadConfig(req);
+        }
+
+        httpd_resp_set_type(req, "application/json");
+        return httpd_resp_send(req, httpBuffer, HTTPD_RESP_USE_STRLEN);
     }
 
+    httpd_resp_send_err(req, httpError, errorMsg);
     return retVal;
 }
 

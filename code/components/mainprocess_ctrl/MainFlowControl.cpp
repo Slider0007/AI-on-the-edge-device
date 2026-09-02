@@ -124,7 +124,6 @@ esp_err_t triggerReloadConfig(httpd_req_t *req)
 
     if (taskAutoFlowState == FLOW_TASK_STATE_INIT || taskAutoFlowState == FLOW_TASK_STATE_SETUPMODE ||
         taskAutoFlowState == FLOW_TASK_STATE_IDLE_NO_AUTOSTART) {
-
         snprintf(codeBuf, sizeof(codeBuf), "001");
         snprintf(messageBuf, sizeof(messageBuf), "001: Reload config and redo flow initialization (%s)", timestamp.c_str());
         reloadConfig = true;
@@ -144,7 +143,6 @@ esp_err_t triggerReloadConfig(httpd_req_t *req)
     }
     else if (taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING || taskAutoFlowState == FLOW_TASK_STATE_PUBLISH_DATA ||
              taskAutoFlowState == FLOW_TASK_STATE_ADDITIONAL_TASKS) {
-
         LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Reload config and schedule process reinitialization");
         snprintf(codeBuf, sizeof(codeBuf), "004");
         snprintf(messageBuf, sizeof(messageBuf), "004: Reload config and reinitialization got scheduled (%s)", timestamp.c_str());
@@ -158,12 +156,10 @@ esp_err_t triggerReloadConfig(httpd_req_t *req)
 
     // --- Send Response
     if (req->method == HTTP_GET) {
-        // GET Request: Plain text response body
         httpd_resp_set_type(req, "text/plain");
         return httpd_resp_send(req, messageBuf, strlen(messageBuf));
     }
     else if (req->method == HTTP_POST) {
-        // httpd_resp_set_type(req, "application/json");
         httpd_resp_set_hdr(req, "Access-Control-Expose-Headers", "X-Reload-Code, X-Reload-Message");
         httpd_resp_set_hdr(req, "X-Reload-Code", codeBuf);
         httpd_resp_set_hdr(req, "X-Reload-Message", messageBuf);
