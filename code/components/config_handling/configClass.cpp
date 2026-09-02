@@ -3025,12 +3025,6 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req, bool triggerReload)
     } // Release cfgMutex
 
     // HTTP response
-    if (retVal != ESP_OK) {
-        httpd_resp_send_err(req, httpError, errorMsg);
-        return retVal;
-    }
-
-    // HTTP response
     if (retVal == ESP_OK) {
         // Stage config reload + add custom headers
         if (triggerReload) {
