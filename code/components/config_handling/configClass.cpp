@@ -205,7 +205,7 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool unityTest)
     } // Free serialization arena
 
     // Persist updated configuration
-    if (!unityTest && writeConfigFile(jsonBuffer, strlen(jsonBuffer)) != ESP_OK) {
+    if (!unityTest && writeConfigFile() != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: Failed to write configuration file");
         return false;
     }
@@ -2647,17 +2647,16 @@ bool ConfigClass::persistConfig()
         return false;
     }
 
-    return (writeConfigFile(jsonBuffer, strlen(jsonBuffer)) == ESP_OK);
+    return (writeConfigFile() == ESP_OK);
 }
 
 
 //**************************************************************************************************
 // Write configuration to file (JSON string)
 //**************************************************************************************************
-esp_err_t ConfigClass::writeConfigFile(const char *buf, const size_t bufLen)
+esp_err_t ConfigClass::writeConfigFile()
 {
     FILE *file = fopen(CONFIG_PERSISTENCE_FILE, "w");
-
     if (!file) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write JSON file");
         return ESP_FAIL;

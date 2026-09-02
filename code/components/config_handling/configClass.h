@@ -63,7 +63,7 @@ class ConfigClass
     // Serialize internal struct to JSON string
     esp_err_t serializeConfig(bool unityTest = false);
 
-    esp_err_t writeConfigFile(const char *buf, const size_t bufLen);
+    esp_err_t writeConfigFile();
 
     bool loadDataFromNVS(std::string key, std::string &value);
     bool saveDataToNVS(std::string key, std::string value);
