@@ -1,9 +1,6 @@
 #include "configClass.h"
 #include "../../include/defines.h"
 
-#include <lwip/sockets.h>
-#include <arpa/inet.h>
-
 #include <esp_heap_caps.h>
 #include <esp_log.h>
 #include <esp_http_server.h>
@@ -11,6 +8,7 @@
 #include <nvs.h>
 
 #include "cJsonUtils.h"
+#include "configClassHelper.h"
 #include "configMigration.h"
 #include "webserver.h"
 #include "MainFlowControl.h"
@@ -24,13 +22,6 @@
 static const char *TAG = "CONFIG";
 
 ConfigClass ConfigClass::cfgClass;
-
-
-static bool isValidIpAddress(const char *ipAddress)
-{
-    struct sockaddr_in sa;
-    return inet_pton(AF_INET, ipAddress, &(sa.sin_addr)) == 1;
-}
 
 
 ConfigClass::ConfigClass()
@@ -739,19 +730,24 @@ void ConfigClass::parseSectionNetwork(bool init, bool unityTest)
     }
 
     cJsonUtils::parseIntClamped(network, {"wlan", "ipv4", "networkconfig"}, section.wlan.ipv4.networkConfig, 0, 1);
-    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "ipaddress"}, section.wlan.ipv4.ipAddress, isValidIpAddress);
-    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "subnetmask"}, section.wlan.ipv4.subnetMask, isValidIpAddress);
-    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "gatewayaddress"}, section.wlan.ipv4.gatewayAddress, isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "ipaddress"}, section.wlan.ipv4.ipAddress,
+                                     configClassHelper::isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "subnetmask"}, section.wlan.ipv4.subnetMask,
+                                     configClassHelper::isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "gatewayaddress"}, section.wlan.ipv4.gatewayAddress,
+                                     configClassHelper::isValidIpAddress);
 
     if (section.wlan.ipv4.networkConfig == NETWORK_IP_CONFIG_STATIC) {
-        if (!isValidIpAddress(section.wlan.ipv4.ipAddress.c_str()) || !isValidIpAddress(section.wlan.ipv4.subnetMask.c_str()) ||
-            !isValidIpAddress(section.wlan.ipv4.gatewayAddress.c_str())) {
+        if (!configClassHelper::isValidIpAddress(section.wlan.ipv4.ipAddress.c_str()) ||
+            !configClassHelper::isValidIpAddress(section.wlan.ipv4.subnetMask.c_str()) ||
+            !configClassHelper::isValidIpAddress(section.wlan.ipv4.gatewayAddress.c_str())) {
             section.wlan.ipv4.networkConfig = NETWORK_IP_CONFIG_DHCP;
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Static network config invalid. Use DHCP as fallback");
         }
     }
 
-    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "dnsserver"}, section.wlan.ipv4.dnsServer, isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "dnsserver"}, section.wlan.ipv4.dnsServer,
+                                     configClassHelper::isValidIpAddress);
 
     cJsonUtils::parseBool(network, {"wlan", "wlanroaming", "enabled"}, section.wlan.wlanRoaming.enabled);
     cJsonUtils::parseIntClamped(network, {"wlan", "wlanroaming", "rssithreshold"}, section.wlan.wlanRoaming.rssiThreshold, -100, 0);
@@ -760,24 +756,29 @@ void ConfigClass::parseSectionNetwork(bool init, bool unityTest)
     cJsonUtils::parseStringValidated(network, {"wlanap", "password"}, section.wlanAp.password,
                                      [](const char *s) { return strlen(s) == 0 || strlen(s) >= 8; });
     cJsonUtils::parseIntClamped(network, {"wlanap", "channel"}, section.wlanAp.channel, 1, 14);
-    cJsonUtils::parseStringValidated(network, {"wlanap", "ipv4", "ipaddress"}, section.wlanAp.ipv4.ipAddress, isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"wlanap", "ipv4", "ipaddress"}, section.wlanAp.ipv4.ipAddress,
+                                     configClassHelper::isValidIpAddress);
 
 #ifdef BOARD_FEATURE_ETHERNET
     cJsonUtils::parseIntClamped(network, {"ethernet", "ipv4", "networkconfig"}, section.ethernet.ipv4.networkConfig, 0, 1);
-    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "ipaddress"}, section.ethernet.ipv4.ipAddress, isValidIpAddress);
-    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "subnetmask"}, section.ethernet.ipv4.subnetMask, isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "ipaddress"}, section.ethernet.ipv4.ipAddress,
+                                     configClassHelper::isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "subnetmask"}, section.ethernet.ipv4.subnetMask,
+                                     configClassHelper::isValidIpAddress);
     cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "gatewayaddress"}, section.ethernet.ipv4.gatewayAddress,
-                                     isValidIpAddress);
+                                     configClassHelper::isValidIpAddress);
 
     if (section.ethernet.ipv4.networkConfig == NETWORK_IP_CONFIG_STATIC) {
-        if (!isValidIpAddress(section.ethernet.ipv4.ipAddress.c_str()) || !isValidIpAddress(section.ethernet.ipv4.subnetMask.c_str()) ||
-            !isValidIpAddress(section.ethernet.ipv4.gatewayAddress.c_str())) {
+        if (!configClassHelper::isValidIpAddress(section.ethernet.ipv4.ipAddress.c_str()) ||
+            !configClassHelper::isValidIpAddress(section.ethernet.ipv4.subnetMask.c_str()) ||
+            !configClassHelper::isValidIpAddress(section.ethernet.ipv4.gatewayAddress.c_str())) {
             section.ethernet.ipv4.networkConfig = NETWORK_IP_CONFIG_DHCP;
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Static network config invalid. Use DHCP as fallback");
         }
     }
 
-    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "dnsserver"}, section.ethernet.ipv4.dnsServer, isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "dnsserver"}, section.ethernet.ipv4.dnsServer,
+                                     configClassHelper::isValidIpAddress);
 #endif
 
     cJsonUtils::parseString(network, {"time", "timesetmanual"}, section.time.timeSetManual);
@@ -1390,7 +1391,7 @@ bool ConfigClass::loadDataFromNVS(const std::string &key, std::string &value)
     }
 
     if (requiredSize > 0) {
-        char cValue[requiredSize + 1];
+        char cValue[requiredSize];
         err = nvs_get_str(nvshandle, key.c_str(), cValue, &requiredSize);
         if (err != ESP_OK) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadDataFromNVS: nvs_get_str | Key: " + key + " | error: " + intToHexString(err));
