@@ -514,7 +514,7 @@
         let flashtime = document.getElementById("takeimage_flashlight_flashtime_value").value;
         if (flashtime == "") flashtime = "2000";
 
-        firework.launch('Taking image...', 'success', flashtime, true);
+        firework.launch('Taking image...', 'success', parseInt(flashtime, 10), true);
 
         let flashintensity = document.getElementById("takeimage_flashlight_flashintensity_value").value;
         if (flashintensity == "") flashintensity = "50";
@@ -751,12 +751,7 @@
             drawRotated(false);
             SaveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
 
-            firework.launch('Save and apply configuration...', 'success', 2000, true);
-			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
-				setTimeout(function() {
-					reloadConfig();
-				}, 500);
-			});
+            saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
         }
     }
 

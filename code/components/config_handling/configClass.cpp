@@ -2657,23 +2657,31 @@ bool ConfigClass::persistConfig()
 esp_err_t ConfigClass::writeConfigFile()
 {
     FILE *file = fopen(CONFIG_PERSISTENCE_FILE, "w");
-
     if (!file) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write JSON file");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to open config file");
         return ESP_FAIL;
     }
 
     const size_t bufLength = strlen(jsonBuffer);
-    size_t written = fwrite(jsonBuffer, 1, bufLength, file);
-    fclose(file);
 
-    if (written != bufLength) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write complete JSON data");
+    bool writeFailed = fwrite(jsonBuffer, 1, bufLength, file) != bufLength;
+    if (!writeFailed) {
+        writeFailed = fflush(file) != 0;
+    }
+    if (!writeFailed) {
+        writeFailed = fsync(fileno(file)) != 0;
+    }
+    if (fclose(file) != 0) {
+        writeFailed = true;
+    }
+    if (writeFailed) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write config file");
         return ESP_FAIL;
     }
 
-    // Save config file additionally as fallback config file
-    copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK);
+    if (copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK) != ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "writeConfigFile: Failed to update fallback config file");
+    }
 
     return ESP_OK;
 }
@@ -2912,7 +2920,7 @@ esp_err_t ConfigClass::getConfigRequest(httpd_req_t *req)
 //**************************************************************************************************
 // Update configuration via REST API (JSON notation)
 //**************************************************************************************************
-esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
+esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req, bool triggerReload)
 {
     if (!cJsonObjectBuffer || !jsonBuffer || !cfgMutex || !req) {
         return ESP_FAIL;
@@ -2932,12 +2940,9 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
     // Scratch buffer must accommodate the complete payload plus '\0'
     if (req->content_len >= WEBSERVER_SCRATCH_BUFSIZE) {
-        httpd_resp_set_type(req, "application/json");
         httpd_resp_send_err(req, HTTPD_413_CONTENT_TOO_LARGE, "Payload exceeds maximum buffer size");
         return ESP_FAIL;
     }
-
-    httpd_resp_set_type(req, "application/json");
 
     // Receive the complete request into the webserver scratch buffer
     size_t remaining = req->content_len;
@@ -2949,7 +2954,6 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
         if (received <= 0) {
             if (received == HTTPD_SOCK_ERR_TIMEOUT && ++retries < 5) {
-                vTaskDelay(pdMS_TO_TICKS(10));
                 continue;
             }
 
@@ -3031,6 +3035,12 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
 
     // HTTP response
     if (retVal == ESP_OK) {
+        // Stage config reload + add custom headers
+        if (triggerReload) {
+            triggerReloadConfig(req);
+        }
+
+        httpd_resp_set_type(req, "application/json");
         return httpd_resp_send(req, httpBuffer, HTTPD_RESP_USE_STRLEN);
     }
 
@@ -3066,7 +3076,24 @@ esp_err_t handlerGetConfigRequest(httpd_req_t *req)
 
 esp_err_t handlerSetConfigRequest(httpd_req_t *req)
 {
-    return ConfigClass::getInstance()->setConfigRequest(req);
+    // Check for query parameter
+    bool triggerReload = false;
+    size_t queryLen = httpd_req_get_url_query_len(req);
+
+    if (queryLen > 0) {
+        char queryBuf[queryLen + 1];
+        if (httpd_req_get_url_query_str(req, queryBuf, sizeof(queryBuf)) == ESP_OK) {
+            char valBuf[16] = {0};
+            if (httpd_query_key_value(queryBuf, "reload", valBuf, sizeof(valBuf)) == ESP_OK) {
+                if (strcasecmp(valBuf, "true") == 0 || strcmp(valBuf, "1") == 0) {
+                    triggerReload = true;
+                }
+            }
+        }
+    }
+
+    // Process setConfigRequest
+    return ConfigClass::getInstance()->setConfigRequest(req, triggerReload);
 }
 
 
@@ -3084,7 +3111,13 @@ void registerConfigFileUri(httpd_handle_t server)
 
     camuri.uri = "/config";
     camuri.handler = HTTP_AUTH_BASIC(handlerSetConfigRequest);
-    camuri.method = HTTP_POST,
+    camuri.method = HTTP_POST;
     camuri.user_ctx = httpServerData; // Pass server data as context
+    httpd_register_uri_handler(server, &camuri);
+
+    camuri.uri = "/config";
+    camuri.handler = HTTP_AUTH_BASIC(NULL);
+    camuri.method = HTTP_OPTIONS;
+    camuri.user_ctx = NULL;
     httpd_register_uri_handler(server, &camuri);
 }

@@ -653,12 +653,7 @@
             fileCopyOnServer("/img_tmp/marker1.jpg", "/config/marker1.jpg", getDomainname(), false);
             fileCopyOnServer("/img_tmp/marker2.jpg", "/config/marker2.jpg", getDomainname(), false);
 
-            firework.launch('Save and apply configuration...', 'success', 2000, true);
-			saveConfig(JSON.stringify(jsonConfigModifiedDelta)).then(() => {
-				setTimeout(function() {
-					reloadConfig();
-				}, 500);
-			});
+            saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
         }
     }
 
