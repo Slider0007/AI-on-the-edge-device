@@ -134,8 +134,15 @@ static std::string unzipOta(std::string &inputZipFile, std::string rootFolder)
         std::string archiveFilename(fileStat.m_filename);
 
         if (!fileStat.m_is_directory) {
+            if (!isSafePath(archiveFilename)) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: Unsafe path rejected: " + archiveFilename);
+
+                mz_zip_reader_end(&zipArchive);
+                return "ERROR";
+            }
+
             std::string archiveFilenameTemp = archiveFilename;
-            ESP_LOGD(TAG, "archive filename: %s", archiveFilenameTemp.c_str());
+            // ESP_LOGD(TAG, "archive filename: %s", archiveFilenameTemp.c_str());
 
             const std::string archiveFilenameUpper = toUpper(archiveFilenameTemp);
             if (archiveFilenameUpper == "FIRMWARE.BIN") {

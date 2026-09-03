@@ -96,6 +96,30 @@ bool deleteFile(std::string fn)
 }
 
 
+bool isValidFilename(const std::string &filename)
+{
+    if (filename.empty() || filename.length() > 128) {
+        return false;
+    }
+
+    if (filename == "." || filename == "..") {
+        return false;
+    }
+
+    if (filename.find('/') != std::string::npos || filename.find('\\') != std::string::npos || filename.find("..") != std::string::npos) {
+        return false;
+    }
+
+    for (const unsigned char c : filename) {
+        if (c < 0x20 || c == 0x7F) {
+            return false;
+        }
+    }
+
+    return filename.length() >= 4 && toLower(filename.substr(filename.length() - 4)) == ".zip";
+}
+
+
 std::string getFileName(const std::string &path)
 {
     if (path.empty()) {
@@ -190,6 +214,33 @@ bool readFileToString(const std::string &path, std::string &out)
 
 // Directory related helper
 // **********************************************************
+bool isSafePath(const std::string &path)
+{
+    if (path.empty() || path[0] == '/' || path[0] == '\\') {
+        return false;
+    }
+
+    size_t start = 0;
+    while (start < path.length()) {
+        const size_t end = path.find('/', start);
+        const size_t length = (end == std::string::npos) ? path.length() - start : end - start;
+
+        if (length == 0 || (length == 1 && path[start] == '.') || (length == 2 && path[start] == '.' && path[start + 1] == '.')) {
+            return false;
+        }
+
+        // Reject Windows path separators.
+        if (path.find('\\', start, end == std::string::npos ? std::string::npos : end - start) != std::string::npos) {
+            return false;
+        }
+
+        start = (end == std::string::npos) ? path.length() : end + 1;
+    }
+
+    return true;
+}
+
+
 std::string getDirectory(std::string filename)
 {
     size_t lastpos = filename.rfind('/');
