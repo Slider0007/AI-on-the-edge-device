@@ -1297,7 +1297,7 @@ esp_err_t ConfigClass::writeConfigFile()
         return ESP_FAIL;
     }
 
-    if (copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK) != ESP_OK) {
+    if (!copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK)) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "writeConfigFile: Failed to update fallback config file");
     }
 
