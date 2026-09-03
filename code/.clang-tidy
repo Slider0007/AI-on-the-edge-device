@@ -1,0 +1,20 @@
+# Enable checks
+Checks: >
+  bugprone-*,
+  performance-*,
+  -bugprone-branch-clone,
+  -bugprone-easily-swappable-parameters
+
+# Treat checks as warnings
+WarningsAsErrors: ''
+
+# Pass compiler arguments to bypass GCC-specific flags and warnings in clang-tidy
+ExtraArgs:
+  - "-Wno-attributes"
+  - "-Wno-unknown-attributes"
+  - "-Wno-ignored-attributes"
+  - "-Wno-missing-designated-field-initializers"
+  - "-Wno-vla-cxx-extension"
+
+ExtraArgsBefore:
+  - "-fno-strict-volatile-bitfields"
