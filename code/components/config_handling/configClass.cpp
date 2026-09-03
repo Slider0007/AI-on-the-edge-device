@@ -1360,7 +1360,7 @@ void ConfigClass::clearCfgData()
 //**************************************************************************************************
 // Load data from NVS storage
 //**************************************************************************************************
-bool ConfigClass::loadDataFromNVS(const std::string &key, const std::string &value)
+bool ConfigClass::loadDataFromNVS(const std::string &key, std::string &value)
 {
     if (key.empty() || key.length() > 15) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadDataFromNVS: Key: " + key + ": empty / too long (max. 15)");

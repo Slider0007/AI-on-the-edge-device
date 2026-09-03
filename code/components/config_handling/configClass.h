@@ -85,7 +85,7 @@ class ConfigClass
 
     esp_err_t writeConfigFile();
 
-    bool loadDataFromNVS(const std::string &key, const std::string &value);
+    bool loadDataFromNVS(const std::string &key, std::string &value);
     bool saveDataToNVS(const std::string &key, const std::string &value);
 
   public:
