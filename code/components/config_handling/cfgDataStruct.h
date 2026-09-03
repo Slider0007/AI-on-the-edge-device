@@ -202,6 +202,14 @@ struct GpioElement {
 };
 
 
+struct TLSParams {
+    uint8_t serverCertVerification = TLS_SERVER_CERT_VERIFICATION_FULL;
+    std::string caCert = "";
+    std::string clientCert = "";
+    std::string clientKey = "";
+};
+
+
 //************************************************
 // MAIN CONFIG STRUCT
 // ----------------------------------------------
@@ -210,7 +218,7 @@ struct GpioElement {
 struct CfgData {
     // Config File
     struct SectionConfig {
-        int version = 6; // NOTE: Increment when existing parameter name changed and add migration routine
+        int version = 6; // NOTE: Increment whenever existing parameter names changed and migration is required
         std::string lastModified = "";
     } sectionConfig;
 
@@ -298,6 +306,7 @@ struct CfgData {
     struct SectionAnalog {
         bool enabled = true;
         std::string model = "ana-class100_0201_s1_q.tflite"; // with extention, but without path
+        float cnnGoodThreshold = 0.80;                       // placeholder: not in use
         std::vector<RoiPerSequence> sequence;
         struct Debug {
             bool saveRoiImages = false;
@@ -327,12 +336,7 @@ struct CfgData {
         int authMode = AUTH_NONE;
         std::string username = "";
         std::string password = "";
-        struct TLS {
-            uint8_t serverCertVerification = TLS_SERVER_CERT_VERIFICATION_FULL;
-            std::string caCert = "";
-            std::string clientCert = "";
-            std::string clientKey = "";
-        } tls;
+        TLSParams tls;
         int processDataNotation = PROCESSDATA_JSON;
         bool retainProcessData = false;
         struct HomeAssistant {
@@ -352,12 +356,7 @@ struct CfgData {
         int authMode = AUTH_NONE;
         std::string username = "";
         std::string password = "";
-        struct TLS {
-            uint8_t serverCertVerification = TLS_SERVER_CERT_VERIFICATION_FULL;
-            std::string caCert = "";
-            std::string clientCert = "";
-            std::string clientKey = "";
-        } tls;
+        TLSParams tls;
         std::vector<InfluxDBPerSequence> sequence;
     } sectionInfluxDBv1;
 
@@ -369,12 +368,7 @@ struct CfgData {
         std::string organization = "";
         int authMode = AUTH_BASIC; // AUTH_BASIC: Tokenized authentication
         std::string token = "";
-        struct TLS {
-            uint8_t serverCertVerification = TLS_SERVER_CERT_VERIFICATION_FULL;
-            std::string caCert = "";
-            std::string clientCert = "";
-            std::string clientKey = "";
-        } tls;
+        TLSParams tls;
         std::vector<InfluxDBPerSequence> sequence;
     } sectionInfluxDBv2;
 
@@ -387,12 +381,7 @@ struct CfgData {
         int authMode = AUTH_NONE;
         std::string username = "";
         std::string password = "";
-        struct TLS {
-            uint8_t serverCertVerification = TLS_SERVER_CERT_VERIFICATION_FULL;
-            std::string caCert = "";
-            std::string clientCert = "";
-            std::string clientKey = "";
-        } tls;
+        TLSParams tls;
     } sectionWebhook;
 
     // GPIO
@@ -490,7 +479,7 @@ struct CfgData {
                 bool enabled = false;
                 int refreshTime = 60;
             } dataGraphPage;
-        } AutoRefresh;
+        } autoRefresh;
     } sectionWebUi;
 };
 

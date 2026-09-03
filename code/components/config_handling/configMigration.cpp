@@ -875,18 +875,18 @@ void migrateConfigIni(void)
                     }
 
                     if (toUpper(splitted[0]) == "OVERVIEWAUTOREFRESH") {
-                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.overviewPage.enabled = (toUpper(splitted[1]) ==
+                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.autoRefresh.overviewPage.enabled = (toUpper(splitted[1]) ==
                                                                                                                "TRUE");
                     }
                     else if (toUpper(splitted[0]) == "OVERVIEWAUTOREFRESHTIME") {
-                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.overviewPage.refreshTime = atoi(splitted[1].c_str());
+                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.autoRefresh.overviewPage.refreshTime = atoi(splitted[1].c_str());
                     }
                     else if (toUpper(splitted[0]) == "DATAGRAPHAUTOREFRESH") {
-                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.dataGraphPage.enabled = (toUpper(splitted[1]) ==
+                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.autoRefresh.dataGraphPage.enabled = (toUpper(splitted[1]) ==
                                                                                                                 "TRUE");
                     }
                     else if (toUpper(splitted[0]) == "DATAGRAPHAUTOREFRESHTIME") {
-                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.AutoRefresh.dataGraphPage.refreshTime =
+                        ConfigClass::getInstance()->cfgTmp()->sectionWebUi.autoRefresh.dataGraphPage.refreshTime =
                             atoi(splitted[1].c_str());
                     }
                 }

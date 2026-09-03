@@ -1,16 +1,14 @@
 #include "configClass.h"
 #include "../../include/defines.h"
 
-#include <algorithm>
-#include <lwip/sockets.h>
-#include <arpa/inet.h>
-
-#include "esp_heap_caps.h"
+#include <esp_heap_caps.h>
 #include <esp_log.h>
 #include <esp_http_server.h>
 #include <nvs_flash.h>
 #include <nvs.h>
 
+#include "cJsonUtils.h"
+#include "configClassHelper.h"
 #include "configMigration.h"
 #include "webserver.h"
 #include "MainFlowControl.h"
@@ -24,13 +22,6 @@
 static const char *TAG = "CONFIG";
 
 ConfigClass ConfigClass::cfgClass;
-
-
-static bool isValidIpAddress(const char *ipAddress)
-{
-    struct sockaddr_in sa;
-    return inet_pton(AF_INET, ipAddress, &(sa.sin_addr)) == 1;
-}
 
 
 ConfigClass::ConfigClass()
@@ -149,9 +140,7 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
 }
 
 
-//**************************************************************************************************
 // Helper: Parse JSON string from file using Thread-Local PSRAM arena and extract into class state
-//**************************************************************************************************
 bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool unityTest)
 {
     if (!cfgMutex || !cJsonObjectBuffer) {
@@ -219,1490 +208,649 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool unityTest)
 //**************************************************************************************************
 esp_err_t ConfigClass::parseConfig(bool init, bool unityTest)
 {
-    // Config Version
-    // ***************************
-    cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "config"), "version");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionConfig.version = objEl->valueint;
+    if (!cJsonObject) {
+        return ESP_ERR_INVALID_ARG;
     }
 
-    if (init) { // Reload data from backup during initial boot
-        cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "config"), "lastmodified");
-        if (cJSON_IsString(objEl)) {
-            cfgDataTemp.sectionConfig.lastModified = objEl->valuestring;
+    parseSectionConfig(init);
+    parseSectionOperationMode();
+    parseSectionTakeImage();
+    parseSectionImageAlignment();
+    parseSectionSequences(init);
+    parseSectionRoi("digit", cfgDataTemp.sectionDigit, "_dig");
+    parseSectionRoi("analog", cfgDataTemp.sectionAnalog, "_ana");
+    parseSectionPostProcessing();
+    parseSectionMqtt(unityTest);
+    parseSectionInfluxDBv1(unityTest);
+    parseSectionInfluxDBv2(unityTest);
+    parseSectionWebhook(unityTest);
+    parseSectionGpio(init);
+    parseSectionLogging();
+    parseSectionNetwork(init, unityTest);
+    parseSectionSystem();
+    parseSectionWebUi(unityTest);
+
+    if (init) {
+        if (!unityTest) {
+            migrateConfiguration(cJsonObject);
         }
+        cfgData = cfgDataTemp;
     }
-    else { // Update timestamp whenever content gets updated
+
+    cJSON_Delete(cJsonObject);
+    cJsonObject = NULL;
+
+    return ESP_OK;
+}
+
+
+void ConfigClass::parseSectionConfig(bool init)
+{
+    cJSON *config = cJSON_GetObjectItem(cJsonObject, "config");
+
+    cJsonUtils::parseInt(config, {"version"}, cfgDataTemp.sectionConfig.version);
+
+    if (init) {
+        cJsonUtils::parseString(config, {"lastmodified"}, cfgDataTemp.sectionConfig.lastModified);
+    }
+    else {
         cfgDataTemp.sectionConfig.lastModified = getCurrentTimeString(TIME_FORMAT_OUTPUT);
     }
+}
 
 
-    // Operation Mode
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "operationmode"), "opmode");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionOperationMode.opMode = (objEl->valueint < OPMODE_SETUP || objEl->valueint >= OPMODE_MAX) ? OPMODE_AUTO
-                                                                                                                    : objEl->valueint;
+void ConfigClass::parseSectionOperationMode()
+{
+    cJSON *opMode = cJSON_GetObjectItem(cJsonObject, "operationmode");
+    auto &section = cfgDataTemp.sectionOperationMode;
+
+    int mode;
+    if (cJsonUtils::parseInt(opMode, {"opmode"}, mode)) {
+        cfgDataTemp.sectionOperationMode.opMode = (mode < OPMODE_SETUP || mode >= OPMODE_MAX) ? OPMODE_AUTO : mode;
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "operationmode"), "automaticprocessinterval");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionOperationMode.automaticProcessInterval = std::max(std::stof(objEl->valuestring), (float)0.01);
+    cJsonUtils::parseFloatClamped(opMode, {"automaticprocessinterval"}, section.automaticProcessInterval, 0.01f,
+                                  std::numeric_limits<float>::max());
+
+    cJsonUtils::parseBool(opMode, {"usedemoimages"}, section.useDemoImages);
+}
+
+
+void ConfigClass::parseSectionTakeImage()
+{
+    cJSON *takeImage = cJSON_GetObjectItem(cJsonObject, "takeimage");
+    auto &section = cfgDataTemp.sectionTakeImage;
+
+    cJsonUtils::parseIntClampedMin(takeImage, {"flashlight", "flashtime"}, section.flashlight.flashTime, 100);
+    cJsonUtils::parseIntClamped(takeImage, {"flashlight", "flashintensity"}, section.flashlight.flashIntensity, 0, 100);
+
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "cameramodel"}, section.camera.cameraModel, camera_model_t(0), camera_model_t(14));
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "camerafrequency"}, section.camera.cameraFrequency, 6, 20);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "imagequality"}, section.camera.imageQuality, 8, 63);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "brightness"}, section.camera.brightness, -2, 2);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "contrast"}, section.camera.contrast, -2, 2);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "saturation"}, section.camera.saturation, -2, 2);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "sharpness"}, section.camera.sharpness, -3, 3);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "exposurecontrolmode"}, section.camera.exposureControlMode, 0, 2);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "autoexposurelevel"}, section.camera.autoExposureLevel, -5, 5);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "manualexposurevalue"}, section.camera.manualExposureValue, 0, 1920);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "gaincontrolmode"}, section.camera.gainControlMode, 0, 1);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "manualgainvalue"}, section.camera.manualGainValue, 0, 30);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "specialeffect"}, section.camera.specialEffect, 0, 7);
+    cJsonUtils::parseBool(takeImage, {"camera", "mirrorimage"}, section.camera.mirrorImage);
+    cJsonUtils::parseBool(takeImage, {"camera", "flipimage"}, section.camera.flipImage);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "zoomfactor"}, section.camera.zoomFactor, 1000, 4000);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "zoomoffsetx"}, section.camera.zoomOffsetX, -960, 960);
+    cJsonUtils::parseIntClamped(takeImage, {"camera", "zoomoffsety"}, section.camera.zoomOffsetY, -720, 720);
+
+    cJsonUtils::parseBool(takeImage, {"debug", "saverawimages"}, section.debug.saveRawImages);
+    if (cJsonUtils::parseString(takeImage, {"debug", "rawimageslocation"}, section.debug.rawImagesLocation)) {
+        configClassHelper::validatePath(section.debug.rawImagesLocation);
+    }
+    cJsonUtils::parseIntClampedMin(takeImage, {"debug", "rawimagesretention"}, section.debug.rawImagesRetention, 0);
+}
+
+
+void ConfigClass::parseSectionImageAlignment()
+{
+    cJSON *imgAlign = cJSON_GetObjectItem(cJsonObject, "imagealignment");
+    auto &section = cfgDataTemp.sectionImageAlignment;
+
+    cJsonUtils::parseIntClamped(imgAlign, {"alignmentalgo"}, section.alignmentAlgo, 0, 4);
+    cJsonUtils::parseIntClampedMin(imgAlign, {"searchfield", "x"}, section.searchField.x, 1);
+    cJsonUtils::parseIntClampedMin(imgAlign, {"searchfield", "y"}, section.searchField.y, 1);
+    cJsonUtils::parseFloatClamped(imgAlign, {"imagerotation"}, section.imageRotation, -180.0f, 180.0f);
+
+    // Fixed-size 2-element array
+    cJSON *markerArr = cJSON_GetObjectItem(imgAlign, "marker");
+    for (int i = 0; i < std::min(cJSON_GetArraySize(markerArr), 2); i++) {
+        cJSON *el = cJSON_GetArrayItem(markerArr, i);
+        cJsonUtils::parseIntClampedMin(el, {"x"}, section.marker[i].x, 1);
+        cJsonUtils::parseIntClampedMin(el, {"y"}, section.marker[i].y, 1);
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "operationmode"), "usedemoimages");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionOperationMode.useDemoImages = objEl->valueint;
-    }
+    cJsonUtils::parseBool(imgAlign, {"debug", "savedebuginfo"}, section.debug.saveDebugInfo);
+}
 
 
-    // TakeImage
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "flashlight"), "flashtime");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.flashlight.flashTime = std::max(objEl->valueint, 100); // milliseconds
-    }
+void ConfigClass::parseSectionSequences(bool init)
+{
+    cJSON *seqArr = cJsonUtils::getNestedItem(cJsonObject, {"numbersequences", "sequence"});
+    auto &master = cfgDataTemp.sectionNumberSequences.sequence;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "flashlight"), "flashintensity");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.flashlight.flashIntensity = std::clamp(objEl->valueint, 0, 100);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "cameramodel");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.cameraModel = (camera_model_t)std::clamp(objEl->valueint, 0, 14);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "camerafrequency");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.cameraFrequency = std::clamp(objEl->valueint, 6, 20);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "imagequality");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.imageQuality = std::clamp(objEl->valueint, 8, 63);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "brightness");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.brightness = std::clamp(objEl->valueint, -2, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "contrast");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.contrast = std::clamp(objEl->valueint, -2, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "saturation");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.saturation = std::clamp(objEl->valueint, -2, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "sharpness");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.sharpness = std::clamp(objEl->valueint, -3, 3);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "exposurecontrolmode");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.exposureControlMode = std::clamp(objEl->valueint, 0, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "autoexposurelevel");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.autoExposureLevel = std::clamp(objEl->valueint, -5, 5);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "manualexposurevalue");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.manualExposureValue = std::clamp(objEl->valueint, 0, 1920);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "gaincontrolmode");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.gainControlMode = std::clamp(objEl->valueint, 0, 1);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "manualgainvalue");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.manualGainValue = std::clamp(objEl->valueint, 0, 30);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "specialeffect");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.specialEffect = std::clamp(objEl->valueint, 0, 7);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "mirrorimage");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.mirrorImage = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "flipimage");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.flipImage = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoomfactor");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.zoomFactor = std::clamp(objEl->valueint, 1000, 4000);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoomoffsetx");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.zoomOffsetX = std::clamp(objEl->valueint, -960, 960);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "camera"), "zoomoffsety");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.camera.zoomOffsetY = std::clamp(objEl->valueint, -720, 720);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "debug"), "saverawimages");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionTakeImage.debug.saveRawImages = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "debug"), "rawimageslocation");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionTakeImage.debug.rawImagesLocation = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionTakeImage.debug.rawImagesLocation);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "takeimage"), "debug"), "rawimagesretention");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionTakeImage.debug.rawImagesRetention = std::max(objEl->valueint, 0);
-    }
-
-
-    // Image Alignment
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "alignmentalgo");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionImageAlignment.alignmentAlgo = std::clamp(objEl->valueint, 0, 4);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "searchfield"), "x");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionImageAlignment.searchField.x = std::max(objEl->valueint, 1);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "searchfield"), "y");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionImageAlignment.searchField.y = std::max(objEl->valueint, 1);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "imagerotation");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionImageAlignment.imageRotation = std::clamp(std::stof(objEl->valuestring), (float)-180.0, (float)180.0);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "marker");
-    for (int i = 0; i < std::min(cJSON_GetArraySize(objEl), 2); i++) {
-        cJSON *objArrEl = cJSON_GetArrayItem(objEl, i);
-        cJSON *arrEl;
-
-        arrEl = cJSON_GetObjectItem(objArrEl, "x");
-        if (cJSON_IsNumber(arrEl)) {
-            cfgDataTemp.sectionImageAlignment.marker[i].x = std::max(arrEl->valueint, 1);
-        }
-
-        arrEl = cJSON_GetObjectItem(objArrEl, "y");
-        if (cJSON_IsNumber(arrEl)) {
-            cfgDataTemp.sectionImageAlignment.marker[i].y = std::max(arrEl->valueint, 1);
-        }
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "imagealignment"), "debug"), "savedebuginfo");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionImageAlignment.debug.saveDebugInfo = objEl->valueint;
-    }
-
-
-    // Number Sequences
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "numbersequences"), "sequence");
-
-    if (cJSON_GetArraySize(objEl) > 0) {
-        // Restore backup --> Add sequences
+    if (cJSON_GetArraySize(seqArr) > 0) {
         if (init) {
-            for (int j = 0; j < cJSON_GetArraySize(objEl); j++) {
-                cJSON *objArrEl = cJSON_GetArrayItem(objEl, j);
-
-                std::string sequenceNameTemp = "";
-                cJSON *sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequencename");
-                if (cJSON_IsString(sequenceArrEl)) {
-                    sequenceNameTemp = sequenceArrEl->valuestring;
-                }
-
-                sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequenceid");
-                if (cJSON_IsNumber(sequenceArrEl)) {
-                    SequenceList sequenceEl;
-                    sequenceEl.sequenceId = sequenceArrEl->valueint;
-                    sequenceEl.sequenceName = sequenceNameTemp;
-                    cfgDataTemp.sectionNumberSequences.sequence.push_back(sequenceEl);
-                    RoiPerSequence sequenceRoiEl;
-                    sequenceRoiEl.sequenceId = sequenceArrEl->valueint;
-                    sequenceRoiEl.sequenceName = sequenceNameTemp;
-                    cfgDataTemp.sectionDigit.sequence.push_back(sequenceRoiEl);
-                    cfgDataTemp.sectionAnalog.sequence.push_back(sequenceRoiEl);
-                    PostProcessingPerSequence sequencePostProcEl;
-                    sequencePostProcEl.sequenceId = sequenceArrEl->valueint;
-                    sequencePostProcEl.sequenceName = sequenceNameTemp;
-                    cfgDataTemp.sectionPostProcessing.sequence.push_back(sequencePostProcEl);
-                    InfluxDBPerSequence sequenceInfluxDBEl;
-                    sequenceInfluxDBEl.sequenceId = sequenceArrEl->valueint;
-                    sequenceInfluxDBEl.sequenceName = sequenceNameTemp;
-                    cfgDataTemp.sectionInfluxDBv1.sequence.push_back(sequenceInfluxDBEl);
-                    cfgDataTemp.sectionInfluxDBv2.sequence.push_back(sequenceInfluxDBEl);
+            for (int j = 0; j < cJSON_GetArraySize(seqArr); j++) {
+                cJSON *el = cJSON_GetArrayItem(seqArr, j);
+                std::string name;
+                int id;
+                cJsonUtils::parseString(el, {"sequencename"}, name);
+                if (cJsonUtils::parseInt(el, {"sequenceid"}, id)) {
+                    master.push_back({id, name});
                 }
             }
         }
         else {
-            // Remove deleted sequences
-            for (int i = 0; i < cfgDataTemp.sectionNumberSequences.sequence.size(); i++) {
-                bool existing = false;
-                for (int j = 0; j < cJSON_GetArraySize(objEl); j++) {
-                    cJSON *objArrEl = cJSON_GetArrayItem(objEl, j);
-                    cJSON *sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequenceid");
-                    if (cJSON_IsNumber(sequenceArrEl)) {
-                        if (cfgDataTemp.sectionNumberSequences.sequence[i].sequenceId == sequenceArrEl->valueint) {
-                            existing = true;
-                            break;
-                        }
-                    }
-                    else {
-                        LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Sequence ID malformed");
-                        existing = true;
-                        break;
-                    }
-                }
-                if (!existing) {
-                    cfgDataTemp.sectionNumberSequences.sequence.erase(cfgDataTemp.sectionNumberSequences.sequence.begin() + i);
-                    // cfgDataTemp.sectionNumberSequences.sequence.shrink_to_fit();
-                    cfgDataTemp.sectionDigit.sequence.erase(cfgDataTemp.sectionDigit.sequence.begin() + i);
-                    // cfgDataTemp.sectionDigit.sequence.shrink_to_fit();
-                    cfgDataTemp.sectionAnalog.sequence.erase(cfgDataTemp.sectionAnalog.sequence.begin() + i);
-                    // cfgDataTemp.sectionAnalog.sequence.shrink_to_fit();
-                    cfgDataTemp.sectionPostProcessing.sequence.erase(cfgDataTemp.sectionPostProcessing.sequence.begin() + i);
-                    // cfgDataTemp.sectionPostProcessing.sequence.shrink_to_fit();
-                    cfgDataTemp.sectionInfluxDBv1.sequence.erase(cfgDataTemp.sectionInfluxDBv1.sequence.begin() + i);
-                    // cfgDataTemp.sectionInfluxDBv1.sequence.shrink_to_fit();
-                    cfgDataTemp.sectionInfluxDBv2.sequence.erase(cfgDataTemp.sectionInfluxDBv2.sequence.begin() + i);
-                    // cfgDataTemp.sectionInfluxDBv2.sequence.shrink_to_fit();
-                    i--;
-                }
-            }
+            // Remove sequences no longer present in the incoming JSON
+            master.erase(std::remove_if(master.begin(), master.end(),
+                                        [&](const SequenceList &existing) {
+                                            for (int j = 0; j < cJSON_GetArraySize(seqArr); j++) {
+                                                cJSON *el = cJSON_GetArrayItem(seqArr, j);
+                                                int id;
+                                                if (!cJsonUtils::parseInt(el, {"sequenceid"}, id)) {
+                                                    LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Sequence ID malformed");
+                                                    return false; // keep on malformed entry
+                                                }
+                                                if (id == existing.sequenceId) {
+                                                    return false;
+                                                }
+                                            }
+                                            return true;
+                                        }),
+                         master.end());
 
-            // Add sequences / Update existing sequences
-            for (int j = 0; j < cJSON_GetArraySize(objEl); j++) {
-                cJSON *objArrEl = cJSON_GetArrayItem(objEl, j);
+            // Add new (-1 => increment) / update existing (by id)
+            for (int j = 0; j < cJSON_GetArraySize(seqArr); j++) {
+                cJSON *el = cJSON_GetArrayItem(seqArr, j);
+                std::string name;
+                cJsonUtils::parseString(el, {"sequencename"}, name);
 
-                std::string sequenceNameTemp = "";
-                cJSON *sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequencename");
-                if (cJSON_IsString(sequenceArrEl)) {
-                    sequenceNameTemp = sequenceArrEl->valuestring;
-                }
-
-                sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequenceid");
-                if (cJSON_IsNumber(sequenceArrEl)) {
-                    if (sequenceArrEl->valueint == -1) { // Indication for new sequence --> Add sequence (Increment ID)
-                        SequenceList sequenceEl;
-                        if (cfgDataTemp.sectionNumberSequences.sequence.empty()) {
-                            sequenceEl.sequenceId = 0;
-                        }
-                        else {
-                            sequenceEl.sequenceId = cfgDataTemp.sectionNumberSequences.sequence.back().sequenceId + 1;
-                        }
-                        sequenceEl.sequenceName = sequenceNameTemp;
-                        cfgDataTemp.sectionNumberSequences.sequence.push_back(sequenceEl);
-                        RoiPerSequence sequenceRoiEl;
-                        sequenceRoiEl.sequenceId = cfgDataTemp.sectionNumberSequences.sequence.back().sequenceId;
-                        sequenceRoiEl.sequenceName = cfgDataTemp.sectionNumberSequences.sequence.back().sequenceName;
-                        cfgDataTemp.sectionDigit.sequence.push_back(sequenceRoiEl);
-                        cfgDataTemp.sectionAnalog.sequence.push_back(sequenceRoiEl);
-                        PostProcessingPerSequence sequencePostProcEl;
-                        sequencePostProcEl.sequenceId = cfgDataTemp.sectionNumberSequences.sequence.back().sequenceId;
-                        sequencePostProcEl.sequenceName = cfgDataTemp.sectionNumberSequences.sequence.back().sequenceName;
-                        cfgDataTemp.sectionPostProcessing.sequence.push_back(sequencePostProcEl);
-                        InfluxDBPerSequence sequenceInfluxDBEl;
-                        sequenceInfluxDBEl.sequenceId = cfgDataTemp.sectionNumberSequences.sequence.back().sequenceId;
-                        sequenceInfluxDBEl.sequenceName = cfgDataTemp.sectionNumberSequences.sequence.back().sequenceName;
-                        cfgDataTemp.sectionInfluxDBv1.sequence.push_back(sequenceInfluxDBEl);
-                        cfgDataTemp.sectionInfluxDBv2.sequence.push_back(sequenceInfluxDBEl);
-                    }
-                    else if (sequenceArrEl->valueint > -1) { // Update existing sequence
-                        for (int i = 0; i < cfgDataTemp.sectionNumberSequences.sequence.size(); i++) {
-                            if (sequenceArrEl->valueint == cfgDataTemp.sectionNumberSequences.sequence[i].sequenceId) {
-                                cfgDataTemp.sectionNumberSequences.sequence[i].sequenceName = sequenceNameTemp;
-                                cfgDataTemp.sectionDigit.sequence[i].sequenceId = cfgDataTemp.sectionNumberSequences.sequence[i].sequenceId;
-                                cfgDataTemp.sectionDigit.sequence[i].sequenceName =
-                                    cfgDataTemp.sectionNumberSequences.sequence[i].sequenceName;
-                                cfgDataTemp.sectionAnalog.sequence[i].sequenceId =
-                                    cfgDataTemp.sectionNumberSequences.sequence[i].sequenceId;
-                                cfgDataTemp.sectionAnalog.sequence[i].sequenceName =
-                                    cfgDataTemp.sectionNumberSequences.sequence[i].sequenceName;
-                                cfgDataTemp.sectionPostProcessing.sequence[i].sequenceId =
-                                    cfgDataTemp.sectionNumberSequences.sequence[i].sequenceId;
-                                cfgDataTemp.sectionPostProcessing.sequence[i].sequenceName =
-                                    cfgDataTemp.sectionNumberSequences.sequence[i].sequenceName;
-                                cfgDataTemp.sectionInfluxDBv1.sequence[i].sequenceId =
-                                    cfgDataTemp.sectionNumberSequences.sequence[i].sequenceId;
-                                cfgDataTemp.sectionInfluxDBv1.sequence[i].sequenceName =
-                                    cfgDataTemp.sectionNumberSequences.sequence[i].sequenceName;
-                                cfgDataTemp.sectionInfluxDBv2.sequence[i].sequenceId =
-                                    cfgDataTemp.sectionNumberSequences.sequence[i].sequenceId;
-                                cfgDataTemp.sectionInfluxDBv2.sequence[i].sequenceName =
-                                    cfgDataTemp.sectionNumberSequences.sequence[i].sequenceName;
-                                break;
-                            }
-                        }
-                    }
-                }
-                else {
+                int id;
+                if (!cJsonUtils::parseInt(el, {"sequenceid"}, id)) {
                     LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Sequence ID malformed");
                     continue;
                 }
-            }
-        }
 
-        // Sort sequences
-        std::sort(cfgDataTemp.sectionNumberSequences.sequence.begin(), cfgDataTemp.sectionNumberSequences.sequence.end(),
-                  [](const SequenceList &x, const SequenceList &y) { return x.sequenceId < y.sequenceId; });
-        std::sort(cfgDataTemp.sectionDigit.sequence.begin(), cfgDataTemp.sectionDigit.sequence.end(),
-                  [](const RoiPerSequence &x, const RoiPerSequence &y) { return x.sequenceId < y.sequenceId; });
-        std::sort(cfgDataTemp.sectionAnalog.sequence.begin(), cfgDataTemp.sectionAnalog.sequence.end(),
-                  [](const RoiPerSequence &x, const RoiPerSequence &y) { return x.sequenceId < y.sequenceId; });
-        std::sort(cfgDataTemp.sectionPostProcessing.sequence.begin(), cfgDataTemp.sectionPostProcessing.sequence.end(),
-                  [](const PostProcessingPerSequence &x, const PostProcessingPerSequence &y) { return x.sequenceId < y.sequenceId; });
-        std::sort(cfgDataTemp.sectionInfluxDBv1.sequence.begin(), cfgDataTemp.sectionInfluxDBv1.sequence.end(),
-                  [](const InfluxDBPerSequence &x, const InfluxDBPerSequence &y) { return x.sequenceId < y.sequenceId; });
-        std::sort(cfgDataTemp.sectionInfluxDBv2.sequence.begin(), cfgDataTemp.sectionInfluxDBv2.sequence.end(),
-                  [](const InfluxDBPerSequence &x, const InfluxDBPerSequence &y) { return x.sequenceId < y.sequenceId; });
-    }
-    else if (cfgDataTemp.sectionNumberSequences.sequence.size() == 0) {
-        // Make sure, at least one sequence is available
-        cfgDataTemp.sectionNumberSequences.sequence.push_back({0, "main"});
-        RoiPerSequence sequenceRoiEl;
-        sequenceRoiEl.sequenceId = 0;
-        sequenceRoiEl.sequenceName = "main";
-        cfgDataTemp.sectionDigit.sequence.push_back(sequenceRoiEl);
-        cfgDataTemp.sectionAnalog.sequence.push_back(sequenceRoiEl);
-        PostProcessingPerSequence sequencePostProcEl;
-        sequencePostProcEl.sequenceId = 0;
-        sequencePostProcEl.sequenceName = "main";
-        cfgDataTemp.sectionPostProcessing.sequence.push_back(sequencePostProcEl);
-        InfluxDBPerSequence sequenceInfluxDBEl;
-        sequenceInfluxDBEl.sequenceId = 0;
-        sequenceInfluxDBEl.sequenceName = "main";
-        cfgDataTemp.sectionInfluxDBv1.sequence.push_back(sequenceInfluxDBEl);
-        cfgDataTemp.sectionInfluxDBv2.sequence.push_back(sequenceInfluxDBEl);
-    }
-
-
-    // Digit
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionDigit.enabled = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "model");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionDigit.model = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "cnngoodthreshold");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionDigit.cnnGoodThreshold = std::clamp(std::stof(objEl->valuestring), (float)0.00, (float)1.00);
-    }
-
-    // Update sequences
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "sequence");
-    if (cJSON_GetArraySize(objEl) > 0) {
-        for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
-            cJSON *objArrEl = cJSON_GetArrayItem(objEl, i);
-
-            std::string sequenceNameTemp = "";
-            cJSON *sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequencename");
-            if (cJSON_IsString(sequenceArrEl)) {
-                sequenceNameTemp = sequenceArrEl->valuestring;
-            }
-
-            RoiPerSequence *sequenceEl = NULL;
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequenceid");
-            if (cJSON_IsNumber(sequenceArrEl)) {
-                for (auto &seqEl : cfgDataTemp.sectionDigit.sequence) {
-                    if (sequenceArrEl->valueint == -1) { // Update new sequence
-                        if (seqEl.sequenceName == sequenceNameTemp) {
-                            sequenceEl = &seqEl; // Get sequence config structure
-                            break;
-                        }
-                    }
-                    else if (sequenceArrEl->valueint == seqEl.sequenceId) { // Update existing sequence
-                        sequenceEl = &seqEl;                                // Get sequence config structure
-                        break;
+                if (id == -1) {
+                    int newId = master.empty() ? 0 : master.back().sequenceId + 1;
+                    master.push_back({newId, name});
+                }
+                else if (id > -1) {
+                    if (auto *found = configClassHelper::findSequenceByIdOrName(master, id, name)) {
+                        found->sequenceName = name;
                     }
                 }
             }
-            if (sequenceEl == NULL) {
-                continue;
-            }
+        }
+
+        std::sort(master.begin(), master.end(), [](const SequenceList &x, const SequenceList &y) { return x.sequenceId < y.sequenceId; });
+    }
+    else if (master.empty()) {
+        master.push_back({0, "main"});
+    }
+
+    // Sync all underlaying  vectors with master vector
+    configClassHelper::syncSequenceVectors(master, cfgDataTemp.sectionDigit.sequence, cfgDataTemp.sectionAnalog.sequence,
+                                           cfgDataTemp.sectionPostProcessing.sequence, cfgDataTemp.sectionInfluxDBv1.sequence,
+                                           cfgDataTemp.sectionInfluxDBv2.sequence);
+}
 
 
-            sequenceEl->roi.clear();
-            sequenceEl->roi.shrink_to_fit();
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "roi");
-            for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
-                cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
-                cJSON *roiEl;
-                RoiElement roiElTemp;
+template <typename SectionType> void ConfigClass::parseSectionRoi(const char *sectionKey, SectionType &section, const char *roiSuffix)
+{
+    cJSON *sectionObj = cJSON_GetObjectItem(cJsonObject, sectionKey);
 
-                roiElTemp.roiName = sequenceEl->sequenceName + "_dig" + std::to_string(j + 1);
+    cJsonUtils::parseBool(sectionObj, {"enabled"}, section.enabled);
+    cJsonUtils::parseString(sectionObj, {"model"}, section.model);
+    cJsonUtils::parseFloatClamped(sectionObj, {"cnngoodthreshold"}, section.cnnGoodThreshold, 0.0f, 1.0f); // Only digit
 
-                roiEl = cJSON_GetObjectItem(roiArrEl, "x");
-                if (cJSON_IsNumber(roiEl)) {
-                    roiElTemp.x = std::max(roiEl->valueint, 1);
-                }
+    cJSON *seqArr = cJSON_GetObjectItem(sectionObj, "sequence");
+    for (int i = 0; i < cJSON_GetArraySize(seqArr); i++) {
+        cJSON *seqEl = cJSON_GetArrayItem(seqArr, i);
 
-                roiEl = cJSON_GetObjectItem(roiArrEl, "y");
-                if (cJSON_IsNumber(roiEl)) {
-                    roiElTemp.y = std::max(roiEl->valueint, 1);
-                }
+        std::string name;
+        cJsonUtils::parseString(seqEl, {"sequencename"}, name);
 
-                roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
-                if (cJSON_IsNumber(roiEl)) {
-                    roiElTemp.dx = std::max(roiEl->valueint, 1);
-                }
+        int id;
+        if (!cJsonUtils::parseInt(seqEl, {"sequenceid"}, id)) {
+            continue;
+        }
 
-                roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
-                if (cJSON_IsNumber(roiEl)) {
-                    roiElTemp.dy = std::max(roiEl->valueint, 1);
-                }
+        auto *target = configClassHelper::findSequenceByIdOrName(section.sequence, id, name);
+        if (!target) {
+            continue;
+        }
 
-                sequenceEl->roi.push_back(roiElTemp);
-            }
+        target->roi.clear();
+        target->roi.shrink_to_fit();
+
+        cJSON *roiArr = cJSON_GetObjectItem(seqEl, "roi");
+        for (int j = 0; j < cJSON_GetArraySize(roiArr); j++) {
+            cJSON *roiEl = cJSON_GetArrayItem(roiArr, j);
+            RoiElement roi{};
+            roi.roiName = target->sequenceName + roiSuffix + std::to_string(j + 1);
+
+            cJsonUtils::parseIntClampedMin(roiEl, {"x"}, roi.x, 1);
+            cJsonUtils::parseIntClampedMin(roiEl, {"y"}, roi.y, 1);
+            cJsonUtils::parseIntClampedMin(roiEl, {"dx"}, roi.dx, 1);
+            cJsonUtils::parseIntClampedMin(roiEl, {"dy"}, roi.dy, 1);
+            cJsonUtils::parseBool(roiEl, {"ccw"}, roi.ccw); // only analog
+
+            target->roi.push_back(roi);
         }
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "debug"), "saveroiimages");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionDigit.debug.saveRoiImages = objEl->valueint;
+    cJsonUtils::parseBool(sectionObj, {"debug", "saveroiimages"}, section.debug.saveRoiImages);
+    if (cJsonUtils::parseString(sectionObj, {"debug", "roiimageslocation"}, section.debug.roiImagesLocation)) {
+        configClassHelper::validatePath(section.debug.roiImagesLocation);
+    }
+    cJsonUtils::parseIntClampedMin(sectionObj, {"debug", "roiimagesretention"}, section.debug.roiImagesRetention, 0);
+    cJsonUtils::parseIntClamped(sectionObj, {"debug", "roisavingsize"}, section.debug.roiSavingSize, RoiImageSavingSize(0),
+                                RoiImageSavingSize(2));
+}
+
+
+void ConfigClass::parseSectionPostProcessing()
+{
+    cJSON *seqArr = cJsonUtils::getNestedItem(cJsonObject, {"postprocessing", "sequence"});
+    auto &section = cfgDataTemp.sectionPostProcessing;
+
+
+    for (int i = 0; i < cJSON_GetArraySize(seqArr); i++) {
+        cJSON *el = cJSON_GetArrayItem(seqArr, i);
+
+        std::string name;
+        if (!cJsonUtils::parseString(el, {"sequencename"}, name)) {
+            continue;
+        }
+        auto *seq = configClassHelper::findSequenceByName(section.sequence, name);
+        if (!seq) {
+            continue;
+        }
+
+        cJsonUtils::parseIntClamped(el, {"decimalshift"}, seq->decimalShift, -9, 9);
+        cJsonUtils::parseFloatClamped(el, {"analogdigitsyncvalue"}, seq->analogDigitSyncValue, 6.0f, 9.9f);
+        cJsonUtils::parseBool(el, {"extendedresolution"}, seq->extendedResolution);
+        cJsonUtils::parseBool(el, {"ignoreleadingnan"}, seq->ignoreLeadingNaN);
+        cJsonUtils::parseBool(el, {"checkdigitincreaseconsistency"}, seq->checkDigitIncreaseConsistency);
+        cJsonUtils::parseIntClamped(el, {"maxratechecktype"}, seq->maxRateCheckType, 0, 2);
+        cJsonUtils::parseFloatClamped(el, {"maxrate"}, seq->maxRate, 0.001f, std::numeric_limits<float>::max());
+        cJsonUtils::parseBool(el, {"allownegativerate"}, seq->allowNegativeRate);
+        cJsonUtils::parseBool(el, {"usefallbackvalue"}, seq->useFallbackValue);
+        cJsonUtils::parseIntClampedMin(el, {"fallbackvalueagestartup"}, seq->fallbackValueAgeStartup, 0);
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "debug"), "roiimageslocation");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionDigit.debug.roiImagesLocation = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionDigit.debug.roiImagesLocation);
+    cJsonUtils::parseBool(cJsonObject, {"postprocessing", "debug", "savedebuginfo"}, section.debug.saveDebugInfo);
+}
+
+
+void ConfigClass::parseSectionMqtt(bool unityTest)
+{
+    cJSON *mqtt = cJSON_GetObjectItem(cJsonObject, "mqtt");
+    auto &section = cfgDataTemp.sectionMqtt;
+
+    cJsonUtils::parseBool(mqtt, {"enabled"}, section.enabled);
+    cJsonUtils::parseString(mqtt, {"uri"}, section.uri);
+    if (cJsonUtils::parseString(mqtt, {"maintopic"}, section.mainTopic)) {
+        configClassHelper::validateStructure(section.mainTopic);
     }
+    cJsonUtils::parseStringValidated(mqtt, {"clientid"}, section.clientID, [](const char *s) { return strlen(s) <= 23; });
+    cJsonUtils::parseIntClamped(mqtt, {"authmode"}, section.authMode, 0, 2);
+    cJsonUtils::parseString(mqtt, {"username"}, section.username);
+    parseSecretParameter(mqtt, {"password"}, section.password, "mqtt_pw", unityTest);
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "debug"), "roiimagesretention");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionDigit.debug.roiImagesRetention = std::max(objEl->valueint, 0);
+    parseTlsParameters(cJSON_GetObjectItem(mqtt, "tls"), section.tls);
+
+    cJsonUtils::parseIntClamped(mqtt, {"processdatanotation"}, section.processDataNotation, 0, 2);
+    cJsonUtils::parseBool(mqtt, {"retainprocessdata"}, section.retainProcessData);
+
+    cJsonUtils::parseBool(mqtt, {"homeassistant", "discoveryenabled"}, section.homeAssistant.discoveryEnabled);
+    if (cJsonUtils::parseString(mqtt, {"homeassistant", "discoveryprefix"}, section.homeAssistant.discoveryPrefix)) {
+        configClassHelper::validateStructure(section.homeAssistant.discoveryPrefix);
     }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "digit"), "debug"), "roisavingsize");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionDigit.debug.roiSavingSize = objEl->valueint;
+    if (cJsonUtils::parseString(mqtt, {"homeassistant", "statustopic"}, section.homeAssistant.statusTopic)) {
+        configClassHelper::validateStructure(section.homeAssistant.statusTopic);
     }
+    cJsonUtils::parseIntClamped(mqtt, {"homeassistant", "metertype"}, section.homeAssistant.meterType, 0, 16);
+    cJsonUtils::parseBool(mqtt, {"homeassistant", "retaindiscovery"}, section.homeAssistant.retainDiscovery);
+}
 
 
-    // Analog
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "analog"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionAnalog.enabled = objEl->valueint;
-    }
+void ConfigClass::parseSectionInfluxDBv1(bool unityTest)
+{
+    cJSON *influx = cJSON_GetObjectItem(cJsonObject, "influxdbv1");
+    auto &section = cfgDataTemp.sectionInfluxDBv1;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "analog"), "model");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionAnalog.model = objEl->valuestring;
-    }
+    cJsonUtils::parseBool(influx, {"enabled"}, section.enabled);
+    cJsonUtils::parseString(influx, {"uri"}, section.uri);
+    cJsonUtils::parseString(influx, {"database"}, section.database);
+    cJsonUtils::parseIntClamped(influx, {"authmode"}, section.authMode, 0, 2);
+    cJsonUtils::parseString(influx, {"username"}, section.username);
+    parseSecretParameter(influx, {"password"}, section.password, "influxdbv1_pw", unityTest);
 
+    parseTlsParameters(cJSON_GetObjectItem(influx, "tls"), section.tls);
 
-    // Update sequences
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "analog"), "sequence");
-    if (cJSON_GetArraySize(objEl) > 0) {
-        for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
-            cJSON *objArrEl = cJSON_GetArrayItem(objEl, i);
-
-            std::string sequenceNameTemp = "";
-            cJSON *sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequencename");
-            if (cJSON_IsString(sequenceArrEl)) {
-                sequenceNameTemp = sequenceArrEl->valuestring;
-            }
-
-            RoiPerSequence *sequenceEl = NULL;
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequenceid");
-            if (cJSON_IsNumber(sequenceArrEl)) {
-                for (auto &seqEl : cfgDataTemp.sectionAnalog.sequence) {
-                    if (sequenceArrEl->valueint == -1) { // Update new sequence
-                        if (seqEl.sequenceName == sequenceNameTemp) {
-                            sequenceEl = &seqEl; // Get sequence config structure
-                            break;
-                        }
-                    }
-                    else if (sequenceArrEl->valueint == seqEl.sequenceId) { // Update existing sequence
-                        sequenceEl = &seqEl;                                // Get sequence config structure
-                        break;
-                    }
-                }
-            }
-            if (sequenceEl == NULL) {
-                continue;
-            }
-
-            sequenceEl->roi.clear();
-            sequenceEl->roi.shrink_to_fit();
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "roi");
-            for (int j = 0; j < cJSON_GetArraySize(sequenceArrEl); j++) {
-                cJSON *roiArrEl = cJSON_GetArrayItem(sequenceArrEl, j);
-                cJSON *roiEl;
-                RoiElement roiElTemp;
-
-                roiElTemp.roiName = sequenceEl->sequenceName + "_ana" + std::to_string(j + 1);
-
-                roiEl = cJSON_GetObjectItem(roiArrEl, "x");
-                if (cJSON_IsNumber(roiEl)) {
-                    roiElTemp.x = std::max(roiEl->valueint, 1);
-                }
-
-                roiEl = cJSON_GetObjectItem(roiArrEl, "y");
-                if (cJSON_IsNumber(roiEl)) {
-                    roiElTemp.y = std::max(roiEl->valueint, 1);
-                }
-
-                roiEl = cJSON_GetObjectItem(roiArrEl, "dx");
-                if (cJSON_IsNumber(roiEl)) {
-                    roiElTemp.dx = std::max(roiEl->valueint, 1);
-                }
-
-                roiEl = cJSON_GetObjectItem(roiArrEl, "dy");
-                if (cJSON_IsNumber(roiEl)) {
-                    roiElTemp.dy = std::max(roiEl->valueint, 1);
-                }
-
-                roiEl = cJSON_GetObjectItem(roiArrEl, "ccw");
-                if (cJSON_IsBool(roiEl)) {
-                    roiElTemp.ccw = roiEl->valueint;
-                }
-
-                sequenceEl->roi.push_back(roiElTemp);
-            }
+    cJSON *seqArr = cJSON_GetObjectItem(influx, "sequence");
+    for (int i = 0; i < cJSON_GetArraySize(seqArr); i++) {
+        cJSON *el = cJSON_GetArrayItem(seqArr, i);
+        std::string name;
+        if (!cJsonUtils::parseString(el, {"sequencename"}, name)) {
+            continue;
+        }
+        auto *seq = configClassHelper::findSequenceByName(section.sequence, name);
+        if (!seq) {
+            continue;
+        }
+        if (cJsonUtils::parseString(el, {"measurementname"}, seq->measurementName)) {
+            configClassHelper::validateStructure(seq->measurementName);
+        }
+        if (cJsonUtils::parseString(el, {"fieldkey1"}, seq->fieldKey1)) {
+            configClassHelper::validateStructure(seq->fieldKey1);
         }
     }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "analog"), "debug"), "saveroiimages");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionAnalog.debug.saveRoiImages = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "analog"), "debug"), "roiimageslocation");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionAnalog.debug.roiImagesLocation = objEl->valuestring;
-        validatePath(cfgDataTemp.sectionAnalog.debug.roiImagesLocation);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "analog"), "debug"), "roiimagesretention");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionAnalog.debug.roiImagesRetention = std::max(objEl->valueint, 0);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "analog"), "debug"), "roisavingsize");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionAnalog.debug.roiSavingSize = objEl->valueint;
-    }
+}
 
 
-    // Post-Processing
-    // ***************************
-    // Disable post-processing not yet implemented // @TODO FEATURE
-    /*objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "postprocessing"), "enabled");
-    if (cJSON_IsBool(objEl))
-        cfgDataTemp.sectionPostProcessing.enabled = objEl->valueint;*/
+void ConfigClass::parseSectionInfluxDBv2(bool unityTest)
+{
+    cJSON *influx = cJSON_GetObjectItem(cJsonObject, "influxdbv2");
+    auto &section = cfgDataTemp.sectionInfluxDBv2;
 
-    // Update sequences
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "postprocessing"), "sequence");
-    if (cJSON_GetArraySize(objEl) > 0) {
-        for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
-            cJSON *objArrEl = cJSON_GetArrayItem(objEl, i);
+    cJsonUtils::parseBool(influx, {"enabled"}, section.enabled);
+    cJsonUtils::parseString(influx, {"uri"}, section.uri);
+    cJsonUtils::parseString(influx, {"bucket"}, section.bucket);
+    cJsonUtils::parseString(influx, {"organization"}, section.organization);
+    cJsonUtils::parseIntClamped(influx, {"authmode"}, section.authMode, 1, 2);
+    parseSecretParameter(influx, {"token"}, section.token, "influxdbv2_pw", unityTest);
 
-            PostProcessingPerSequence *sequenceEl = NULL;
-            cJSON *sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequencename");
-            if (cJSON_IsString(sequenceArrEl)) {
-                for (auto &seqEl : cfgDataTemp.sectionPostProcessing.sequence) {
-                    if (sequenceArrEl->valuestring == seqEl.sequenceName) { // Update existing sequence
-                        sequenceEl = &seqEl;                                // Get sequence config structure
-                        break;
-                    }
-                }
-            }
-            if (sequenceEl == NULL) {
-                continue;
-            }
+    parseTlsParameters(cJSON_GetObjectItem(influx, "tls"), section.tls);
 
-            // Disable post-processing per sequence not yet implemented // @TODO FEATURE
-            /*sequenceArrEl = cJSON_GetObjectItem(objArrEl, "enabled");
-            if (cJSON_IsBool(sequenceArrEl))
-                sequenceEl->enabled = sequenceArrEl->valueint;*/
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "decimalshift");
-            if (cJSON_IsNumber(sequenceArrEl)) {
-                sequenceEl->decimalShift = std::clamp(sequenceArrEl->valueint, -9, 9);
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "analogdigitsyncvalue");
-            if (cJSON_IsString(sequenceArrEl)) {
-                sequenceEl->analogDigitSyncValue = std::clamp(std::stof(sequenceArrEl->valuestring), (float)6.0, (float)9.9);
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "extendedresolution");
-            if (cJSON_IsBool(sequenceArrEl)) {
-                sequenceEl->extendedResolution = sequenceArrEl->valueint;
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "ignoreleadingnan");
-            if (cJSON_IsBool(sequenceArrEl)) {
-                sequenceEl->ignoreLeadingNaN = sequenceArrEl->valueint;
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "checkdigitincreaseconsistency");
-            if (cJSON_IsBool(sequenceArrEl)) {
-                sequenceEl->checkDigitIncreaseConsistency = sequenceArrEl->valueint;
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "maxratechecktype");
-            if (cJSON_IsNumber(sequenceArrEl)) {
-                sequenceEl->maxRateCheckType = std::clamp(sequenceArrEl->valueint, 0, 2);
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "maxrate");
-            if (cJSON_IsString(sequenceArrEl)) {
-                sequenceEl->maxRate = std::max(std::stof(sequenceArrEl->valuestring), (float)0.001);
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "allownegativerate");
-            if (cJSON_IsBool(sequenceArrEl)) {
-                sequenceEl->allowNegativeRate = sequenceArrEl->valueint;
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "usefallbackvalue");
-            if (cJSON_IsBool(sequenceArrEl)) {
-                sequenceEl->useFallbackValue = sequenceArrEl->valueint;
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "fallbackvalueagestartup");
-            if (cJSON_IsNumber(sequenceArrEl)) {
-                sequenceEl->fallbackValueAgeStartup = std::max(sequenceArrEl->valueint, 0);
-            }
+    cJSON *seqArr = cJSON_GetObjectItem(influx, "sequence");
+    for (int i = 0; i < cJSON_GetArraySize(seqArr); i++) {
+        cJSON *el = cJSON_GetArrayItem(seqArr, i);
+        std::string name;
+        if (!cJsonUtils::parseString(el, {"sequencename"}, name)) {
+            continue;
+        }
+        auto *seq = configClassHelper::findSequenceByName(section.sequence, name);
+        if (!seq) {
+            continue;
+        }
+        if (cJsonUtils::parseString(el, {"measurementname"}, seq->measurementName)) {
+            configClassHelper::validateStructure(seq->measurementName);
+        }
+        if (cJsonUtils::parseString(el, {"fieldkey1"}, seq->fieldKey1)) {
+            configClassHelper::validateStructure(seq->fieldKey1);
         }
     }
+}
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "postprocessing"), "debug"), "savedebuginfo");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionPostProcessing.debug.saveDebugInfo = objEl->valueint;
-    }
 
+void ConfigClass::parseSectionWebhook(bool unityTest)
+{
+    cJSON *webhook = cJSON_GetObjectItem(cJsonObject, "webhook");
+    auto &section = cfgDataTemp.sectionWebhook;
 
-    // MQTT
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionMqtt.enabled = objEl->valueint;
-    }
+    cJsonUtils::parseBool(webhook, {"enabled"}, section.enabled);
+    cJsonUtils::parseString(webhook, {"uri"}, section.uri);
+    cJsonUtils::parseString(webhook, {"apikey"}, section.apiKey);
+    cJsonUtils::parseIntClamped(webhook, {"publishimage"}, section.publishImage, 0, 2);
+    cJsonUtils::parseIntClamped(webhook, {"authmode"}, section.authMode, 0, 2);
+    cJsonUtils::parseString(webhook, {"username"}, section.username);
+    parseSecretParameter(webhook, {"password"}, section.password, "webhook_pw", unityTest);
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "uri");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionMqtt.uri = objEl->valuestring;
-    }
+    parseTlsParameters(cJSON_GetObjectItem(webhook, "tls"), section.tls);
+}
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "maintopic");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionMqtt.mainTopic = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionMqtt.mainTopic);
-    }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "clientid");
-    if (cJSON_IsString(objEl) && strlen(objEl->valuestring) <= 23) { // MQTT v3.1 spec limits to max 23 character
-        cfgDataTemp.sectionMqtt.clientID = objEl->valuestring;
-    }
+void ConfigClass::parseSectionGpio(bool init)
+{
+    cJSON *gpio = cJSON_GetObjectItem(cJsonObject, "gpio");
+    auto &section = cfgDataTemp.sectionGpio;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "authmode");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionMqtt.authMode = std::clamp(objEl->valueint, 0, 2);
-    }
+    cJsonUtils::parseBool(gpio, {"customizationenabled"}, section.customizationEnabled);
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "username");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionMqtt.username = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "password");
-    if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
-        cfgDataTemp.sectionMqtt.password = objEl->valuestring;
-        saveDataToNVS("mqtt_pw", cfgDataTemp.sectionMqtt.password);
-    }
-    else {
-        if (!unityTest) {
-            loadDataFromNVS("mqtt_pw", cfgDataTemp.sectionMqtt.password);
-        }
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "tls"), "servercertverification");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionMqtt.tls.serverCertVerification = std::clamp(objEl->valueint, 0, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "tls"), "cacert");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionMqtt.tls.caCert = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionMqtt.tls.caCert);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "tls"), "clientcert");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionMqtt.tls.clientCert = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionMqtt.tls.clientCert);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "tls"), "clientkey");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionMqtt.tls.clientKey = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionMqtt.tls.clientKey);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "processdatanotation");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionMqtt.processDataNotation = std::clamp(objEl->valueint, 0, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "retainprocessdata");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionMqtt.retainProcessData = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "discoveryenabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionMqtt.homeAssistant.discoveryEnabled = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "discoveryprefix");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionMqtt.homeAssistant.discoveryPrefix = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionMqtt.homeAssistant.discoveryPrefix);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "statustopic");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionMqtt.homeAssistant.statusTopic = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionMqtt.homeAssistant.statusTopic);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "metertype");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionMqtt.homeAssistant.meterType = std::clamp(objEl->valueint, 0, 16);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "mqtt"), "homeassistant"), "retaindiscovery");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionMqtt.homeAssistant.retainDiscovery = objEl->valueint;
-    }
-
-
-    // InfluxDB v1.x
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionInfluxDBv1.enabled = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "uri");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv1.uri = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "database");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv1.database = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "authmode");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionInfluxDBv1.authMode = std::clamp(objEl->valueint, 0, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "username");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv1.username = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "password");
-    if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
-        cfgDataTemp.sectionInfluxDBv1.password = objEl->valuestring;
-        saveDataToNVS("influxdbv1_pw", cfgDataTemp.sectionInfluxDBv1.password);
-    }
-    else {
-        if (!unityTest) {
-            loadDataFromNVS("influxdbv1_pw", cfgDataTemp.sectionInfluxDBv1.password);
-        }
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "tls"), "servercertverification");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionInfluxDBv1.tls.serverCertVerification = std::clamp(objEl->valueint, 0, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "tls"), "cacert");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv1.tls.caCert = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionInfluxDBv1.tls.caCert);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "tls"), "clientcert");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv1.tls.clientCert = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionInfluxDBv1.tls.clientCert);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "tls"), "clientkey");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv1.tls.clientKey = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionInfluxDBv1.tls.clientKey);
-    }
-
-    // Update sequences
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv1"), "sequence");
-    if (cJSON_GetArraySize(objEl) > 0) {
-        for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
-            cJSON *objArrEl = cJSON_GetArrayItem(objEl, i);
-
-            InfluxDBPerSequence *sequenceEl = NULL;
-            cJSON *sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequencename");
-            if (cJSON_IsString(sequenceArrEl)) {
-                for (auto &seqEl : cfgDataTemp.sectionInfluxDBv1.sequence) {
-                    if (sequenceArrEl->valuestring == seqEl.sequenceName) { // Update existing sequence
-                        sequenceEl = &seqEl;                                // Get sequence config structure
-                        break;
-                    }
-                }
-            }
-            if (sequenceEl == NULL) {
-                continue;
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "measurementname");
-            if (cJSON_IsString(sequenceArrEl)) {
-                sequenceEl->measurementName = sequenceArrEl->valuestring;
-                validateStructure(sequenceEl->measurementName);
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "fieldkey1");
-            if (cJSON_IsString(sequenceArrEl)) {
-                sequenceEl->fieldKey1 = sequenceArrEl->valuestring;
-                validateStructure(sequenceEl->fieldKey1);
-            }
-        }
-    }
-
-
-    // InfluxDB v2.x
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionInfluxDBv2.enabled = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "uri");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv2.uri = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "bucket");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv2.bucket = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "organization");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv2.organization = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "authmode");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionInfluxDBv2.authMode = std::clamp(objEl->valueint, 1, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "token");
-    if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
-        cfgDataTemp.sectionInfluxDBv2.token = objEl->valuestring;
-        saveDataToNVS("influxdbv2_pw", cfgDataTemp.sectionInfluxDBv2.token);
-    }
-    else {
-        if (!unityTest) {
-            loadDataFromNVS("influxdbv2_pw", cfgDataTemp.sectionInfluxDBv2.token);
-        }
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "tls"), "servercertverification");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionInfluxDBv2.tls.serverCertVerification = std::clamp(objEl->valueint, 0, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "tls"), "cacert");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv2.tls.caCert = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionInfluxDBv2.tls.caCert);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "tls"), "clientcert");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv2.tls.clientCert = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionInfluxDBv2.tls.clientCert);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "tls"), "clientkey");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionInfluxDBv2.tls.clientKey = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionInfluxDBv2.tls.clientKey);
-    }
-
-
-    // Update sequences
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "influxdbv2"), "sequence");
-    if (cJSON_GetArraySize(objEl) > 0) {
-        for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
-            cJSON *objArrEl = cJSON_GetArrayItem(objEl, i);
-
-            InfluxDBPerSequence *sequenceEl = NULL;
-            cJSON *sequenceArrEl = cJSON_GetObjectItem(objArrEl, "sequencename");
-            if (cJSON_IsString(sequenceArrEl)) {
-                for (auto &seqEl : cfgDataTemp.sectionInfluxDBv2.sequence) {
-                    if (sequenceArrEl->valuestring == seqEl.sequenceName) { // Update existing sequence
-                        sequenceEl = &seqEl;                                // Get sequence config structure
-                        break;
-                    }
-                }
-            }
-            if (sequenceEl == NULL) {
-                continue;
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "measurementname");
-            if (cJSON_IsString(sequenceArrEl)) {
-                sequenceEl->measurementName = sequenceArrEl->valuestring;
-                validateStructure(sequenceEl->measurementName);
-            }
-
-            sequenceArrEl = cJSON_GetObjectItem(objArrEl, "fieldkey1");
-            if (cJSON_IsString(sequenceArrEl)) {
-                sequenceEl->fieldKey1 = sequenceArrEl->valuestring;
-                validateStructure(sequenceEl->fieldKey1);
-            }
-        }
-    }
-
-
-    // Webhook
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionWebhook.enabled = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "uri");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionWebhook.uri = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "apikey");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionWebhook.apiKey = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "publishimage");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionWebhook.publishImage = std::clamp(objEl->valueint, 0, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "authmode");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionWebhook.authMode = std::clamp(objEl->valueint, 0, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "username");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionWebhook.username = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "password");
-    if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
-        cfgDataTemp.sectionWebhook.password = objEl->valuestring;
-        saveDataToNVS("webhook_pw", cfgDataTemp.sectionWebhook.password);
-    }
-    else {
-        if (!unityTest) {
-            loadDataFromNVS("webhook_pw", cfgDataTemp.sectionWebhook.password);
-        }
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "servercertverification");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionWebhook.tls.serverCertVerification = std::clamp(objEl->valueint, 0, 2);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "cacert");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionWebhook.tls.caCert = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionWebhook.tls.caCert);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "clientcert");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionWebhook.tls.clientCert = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionWebhook.tls.clientCert);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webhook"), "tls"), "clientkey");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionWebhook.tls.clientKey = objEl->valuestring;
-        validateStructure(cfgDataTemp.sectionWebhook.tls.clientKey);
-    }
-
-
-    // GPIO
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "gpio"), "customizationenabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionGpio.customizationEnabled = objEl->valueint;
-    }
-
-    // Restore backup --> Add sequences
     if (init) {
         for (int i = 0; i < GPIO_SPARE_PIN_COUNT; i++) {
             if (gpio_spare[i] == -1) {
                 continue;
             }
-
-            bool elementVerified = false;
-            for (auto it = std::begin(cfgDataTemp.sectionGpio.gpioPin); it != std::end(cfgDataTemp.sectionGpio.gpioPin); ++it) {
-                if (gpio_spare[i] == (gpio_num_t)it->gpioNumber) {
-                    elementVerified = true;
-                }
-            }
-
-            if (!elementVerified) {
-                GpioElement gpioEl;
-                gpioEl.gpioNumber = (int)gpio_spare[i];
-                gpioEl.gpioUsage = gpio_spare_usage[i];
+            bool exists = std::any_of(section.gpioPin.begin(), section.gpioPin.end(),
+                                      [&](const GpioElement &e) { return gpio_spare[i] == (gpio_num_t)e.gpioNumber; });
+            if (!exists) {
+                GpioElement el;
+                el.gpioNumber = (int)gpio_spare[i];
+                el.gpioUsage = gpio_spare_usage[i];
                 if (std::string(gpio_spare_usage[i]).substr(0, 10) == "flashlight") {
-                    gpioEl.pinMode = "flashlight-default";
+                    el.pinMode = "flashlight-default";
                 }
-
-                cfgDataTemp.sectionGpio.gpioPin.push_back(gpioEl);
+                section.gpioPin.push_back(el);
             }
         }
     }
 
-    // Sort gpio pins
-    std::sort(cfgDataTemp.sectionGpio.gpioPin.begin(), cfgDataTemp.sectionGpio.gpioPin.end(),
+    std::sort(section.gpioPin.begin(), section.gpioPin.end(),
               [](const GpioElement &x, const GpioElement &y) { return x.gpioNumber < y.gpioNumber; });
 
-    // Gather gpio data
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "gpio"), "gpiopin");
-    for (int i = 0; i < cJSON_GetArraySize(objEl); i++) {
-        cJSON *objArrEl = cJSON_GetArrayItem(objEl, i);
-        cJSON *arrEl;
-        GpioElement *gpioElTemp = NULL;
+    cJSON *pinArr = cJSON_GetObjectItem(gpio, "gpiopin");
+    for (int i = 0; i < cJSON_GetArraySize(pinArr); i++) {
+        cJSON *el = cJSON_GetArrayItem(pinArr, i);
 
-        arrEl = cJSON_GetObjectItem(objArrEl, "gpionumber");
-        if (cJSON_IsNumber(arrEl)) {
-            for (auto &gpioEl : cfgDataTemp.sectionGpio.gpioPin) {
-                if (gpioEl.gpioNumber == arrEl->valueint) {
-                    gpioElTemp = &gpioEl; // Get pin config structure
-                }
-            }
-        }
-        if (gpioElTemp == NULL) {
+        int gpioNumber;
+        if (!cJsonUtils::parseInt(el, {"gpionumber"}, gpioNumber)) {
             continue;
         }
+        auto it = std::find_if(section.gpioPin.begin(), section.gpioPin.end(),
+                               [&](const GpioElement &e) { return e.gpioNumber == gpioNumber; });
+        if (it == section.gpioPin.end()) {
+            continue;
+        }
+        GpioElement &pin = *it;
 
-        for (int i = 0; i < GPIO_SPARE_PIN_COUNT; i++) {
-            if (gpio_spare[i] == gpioElTemp->gpioNumber) {
-                gpioElTemp->gpioUsage = gpio_spare_usage[i];
+        for (int k = 0; k < GPIO_SPARE_PIN_COUNT; k++) {
+            if (gpio_spare[k] == pin.gpioNumber) {
+                pin.gpioUsage = gpio_spare_usage[k];
             }
         }
 
-        arrEl = cJSON_GetObjectItem(objArrEl, "pinenabled");
-        if (cJSON_IsBool(arrEl)) {
-            gpioElTemp->pinEnabled = arrEl->valueint;
-        }
+        cJsonUtils::parseBool(el, {"pinenabled"}, pin.pinEnabled);
+        cJsonUtils::parseString(el, {"pinname"}, pin.pinName);
+        cJsonUtils::parseString(el, {"pinmode"}, pin.pinMode);
+        cJsonUtils::parseString(el, {"capturemode"}, pin.captureMode);
+        cJsonUtils::parseIntClamped(el, {"inputdebouncetime"}, pin.inputDebounceTime, 0, 5000);
+        cJsonUtils::parseIntClamped(el, {"pwmfrequency"}, pin.pwmFrequency, 5, 1000000);
+        cJsonUtils::parseBool(el, {"logicactivelow"}, pin.logicActiveLow);
+        cJsonUtils::parseBool(el, {"exposetomqtt"}, pin.exposeToMqtt);
+        cJsonUtils::parseBool(el, {"exposetorest"}, pin.exposeToRest);
 
-        arrEl = cJSON_GetObjectItem(objArrEl, "pinname");
-        if (cJSON_IsString(arrEl)) {
-            gpioElTemp->pinName = arrEl->valuestring;
-        }
+        cJsonUtils::parseIntClamped(el, {"smartled", "type"}, pin.smartLed.type, 0, 5);
+        cJsonUtils::parseIntClampedMin(el, {"smartled", "quantity"}, pin.smartLed.quantity, 1);
+        cJsonUtils::parseIntClamped(el, {"smartled", "colorredchannel"}, pin.smartLed.colorRedChannel, 0, 255);
+        cJsonUtils::parseIntClamped(el, {"smartled", "colorgreenchannel"}, pin.smartLed.colorGreenChannel, 0, 255);
+        cJsonUtils::parseIntClamped(el, {"smartled", "colorbluechannel"}, pin.smartLed.colorBlueChannel, 0, 255);
 
-        arrEl = cJSON_GetObjectItem(objArrEl, "pinmode");
-        if (cJSON_IsString(arrEl)) {
-            gpioElTemp->pinMode = arrEl->valuestring;
-        }
-
-        arrEl = cJSON_GetObjectItem(objArrEl, "capturemode");
-        if (cJSON_IsString(arrEl)) {
-            gpioElTemp->captureMode = arrEl->valuestring;
-        }
-
-        arrEl = cJSON_GetObjectItem(objArrEl, "inputdebouncetime");
-        if (cJSON_IsNumber(arrEl)) {
-            gpioElTemp->inputDebounceTime = std::clamp(arrEl->valueint, 0, 5000); // Milliseconds
-        }
-
-        arrEl = cJSON_GetObjectItem(objArrEl, "pwmfrequency");
-        if (cJSON_IsNumber(arrEl)) {
-            gpioElTemp->pwmFrequency = std::clamp(arrEl->valueint, 5, 1000000); // Hertz
-        }
-
-        arrEl = cJSON_GetObjectItem(objArrEl, "logicactivelow");
-        if (cJSON_IsBool(arrEl)) {
-            gpioElTemp->logicActiveLow = arrEl->valueint;
-        }
-
-        arrEl = cJSON_GetObjectItem(objArrEl, "exposetomqtt");
-        if (cJSON_IsBool(arrEl)) {
-            gpioElTemp->exposeToMqtt = arrEl->valueint;
-        }
-
-        arrEl = cJSON_GetObjectItem(objArrEl, "exposetorest");
-        if (cJSON_IsBool(arrEl)) {
-            gpioElTemp->exposeToRest = arrEl->valueint;
-        }
-
-        arrEl = cJSON_GetObjectItem(cJSON_GetObjectItem(objArrEl, "smartled"), "type");
-        if (cJSON_IsNumber(arrEl)) {
-            gpioElTemp->smartLed.type = std::clamp(arrEl->valueint, 0, 5);
-        }
-
-        arrEl = cJSON_GetObjectItem(cJSON_GetObjectItem(objArrEl, "smartled"), "quantity");
-        if (cJSON_IsNumber(arrEl)) {
-            gpioElTemp->smartLed.quantity = std::max(arrEl->valueint, 1);
-        }
-
-        arrEl = cJSON_GetObjectItem(cJSON_GetObjectItem(objArrEl, "smartled"), "colorredchannel");
-        if (cJSON_IsNumber(arrEl)) {
-            gpioElTemp->smartLed.colorRedChannel = std::clamp(arrEl->valueint, 0, 255);
-        }
-
-        arrEl = cJSON_GetObjectItem(cJSON_GetObjectItem(objArrEl, "smartled"), "colorgreenchannel");
-        if (cJSON_IsNumber(arrEl)) {
-            gpioElTemp->smartLed.colorGreenChannel = std::clamp(arrEl->valueint, 0, 255);
-        }
-
-        arrEl = cJSON_GetObjectItem(cJSON_GetObjectItem(objArrEl, "smartled"), "colorbluechannel");
-        if (cJSON_IsNumber(arrEl)) {
-            gpioElTemp->smartLed.colorBlueChannel = std::clamp(arrEl->valueint, 0, 255);
-        }
-
-        arrEl = cJSON_GetObjectItem(objArrEl, "intensitycorrectionfactor");
-        if (cJSON_IsNumber(arrEl)) {
-            gpioElTemp->intensityCorrectionFactor = std::clamp(arrEl->valueint, 1, 100);
-        }
+        cJsonUtils::parseIntClamped(el, {"intensitycorrectionfactor"}, pin.intensityCorrectionFactor, 1, 100);
     }
+}
 
 
-    // Logging
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "log"), "debug"), "loglevel");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionLog.debug.logLevel = std::clamp(objEl->valueint, 1, 4);
-    }
+void ConfigClass::parseSectionLogging()
+{
+    cJSON *log = cJSON_GetObjectItem(cJsonObject, "log");
+    auto &section = cfgDataTemp.sectionLog;
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "log"), "debug"), "logfilesretention");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionLog.debug.logFilesRetention = std::max(objEl->valueint, 0);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "log"), "debug"), "debugfilesretention");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionLog.debug.debugFilesRetention = std::max(objEl->valueint, 0);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "log"), "data"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionLog.data.enabled = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "log"), "data"), "datafilesretention");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionLog.data.dataFilesRetention = std::max(objEl->valueint, 0);
-    }
+    cJsonUtils::parseIntClamped(log, {"debug", "loglevel"}, section.debug.logLevel, 1, 4);
+    cJsonUtils::parseIntClampedMin(log, {"debug", "logfilesretention"}, section.debug.logFilesRetention, 0);
+    cJsonUtils::parseIntClampedMin(log, {"debug", "debugfilesretention"}, section.debug.debugFilesRetention, 0);
+    cJsonUtils::parseBool(log, {"data", "enabled"}, section.data.enabled);
+    cJsonUtils::parseIntClampedMin(log, {"data", "datafilesretention"}, section.data.dataFilesRetention, 0);
+}
 
 
-    // Network
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "opmode");
-    if (cJSON_IsNumber(objEl)) {
+void ConfigClass::parseSectionNetwork(bool init, bool unityTest)
+{
+    cJSON *network = cJSON_GetObjectItem(cJsonObject, "network");
+    auto &section = cfgDataTemp.sectionNetwork;
+
+    int opmode;
+    if (cJsonUtils::parseInt(network, {"opmode"}, opmode)) {
 #ifdef BOARD_FEATURE_ETHERNET
-        cfgDataTemp.sectionNetwork.opmode = (objEl->valueint < NETWORK_OPMODE_DISABLED || objEl->valueint >= NETWORK_OPMODE_MAX)
-                                                ? NETWORK_OPMODE_ETHERNET_FALLBACK_WLAN
-                                                : objEl->valueint;
+        section.opmode = (opmode < NETWORK_OPMODE_DISABLED || opmode >= NETWORK_OPMODE_MAX) ? NETWORK_OPMODE_ETHERNET_FALLBACK_WLAN
+                                                                                            : opmode;
 #else
-        cfgDataTemp.sectionNetwork.opmode = (objEl->valueint < NETWORK_OPMODE_DISABLED || objEl->valueint >= NETWORK_OPMODE_MAX)
-                                                ? NETWORK_OPMODE_WLAN_CLIENT
-                                                : objEl->valueint;
-#endif // BOARD_FEATURE_ETHERNET
+        section.opmode = (opmode < NETWORK_OPMODE_DISABLED || opmode >= NETWORK_OPMODE_MAX) ? NETWORK_OPMODE_WLAN_CLIENT : opmode;
+#endif
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "timedoffdelay");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionNetwork.timedOffDelay = std::max(objEl->valueint, 1);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "hostname");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionNetwork.hostname = objEl->valuestring;
-    }
+    cJsonUtils::parseIntClampedMin(network, {"timedoffdelay"}, section.timedOffDelay, 1);
+    cJsonUtils::parseString(network, {"hostname"}, section.hostname);
 
     bool ssidEmpty = false;
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ssid");
-    if (cJSON_IsString(objEl) && strlen(objEl->valuestring) > 0) {
-        cfgDataTemp.sectionNetwork.wlan.ssid = objEl->valuestring;
-        cfgDataTemp.sectionNetwork.wlan.ssid = trim(cfgDataTemp.sectionNetwork.wlan.ssid); // Remove leading / trailing whitespaces
-        saveDataToNVS("wlan_ssid", cfgDataTemp.sectionNetwork.wlan.ssid);
+    std::string ssid;
+    if (cJsonUtils::parseString(network, {"wlan", "ssid"}, ssid) && !ssid.empty()) {
+        section.wlan.ssid = trim(ssid);
+        saveDataToNVS("wlan_ssid", section.wlan.ssid);
     }
     else {
         if (init) {
-            ssidEmpty = true; // If SSID is empty or no config provided, try to use saved data from NVS for SSID and password
+            ssidEmpty = true;
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "parseConfig: No SSID config, try to use SSID and password from NVS");
         }
-
         if (!unityTest) {
-            loadDataFromNVS("wlan_ssid", cfgDataTemp.sectionNetwork.wlan.ssid);
+            loadDataFromNVS("wlan_ssid", section.wlan.ssid);
         }
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "password");
-    if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0 && !ssidEmpty) {
-        cfgDataTemp.sectionNetwork.wlan.password = objEl->valuestring;
-        saveDataToNVS("wlan_pw", cfgDataTemp.sectionNetwork.wlan.password);
+    std::string wlanPw;
+    if (cJsonUtils::parseString(network, {"wlan", "password"}, wlanPw) && wlanPw != "******" && !ssidEmpty) {
+        section.wlan.password = wlanPw;
+        saveDataToNVS("wlan_pw", section.wlan.password);
     }
-    else {
-        if (!unityTest) {
-            loadDataFromNVS("wlan_pw", cfgDataTemp.sectionNetwork.wlan.password);
-        }
+    else if (!unityTest) {
+        loadDataFromNVS("wlan_pw", section.wlan.password);
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ipv4"),
-                                "networkconfig");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = std::clamp(objEl->valueint, 0, 1);
-    }
+    cJsonUtils::parseIntClamped(network, {"wlan", "ipv4", "networkconfig"}, section.wlan.ipv4.networkConfig, 0, 1);
+    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "ipaddress"}, section.wlan.ipv4.ipAddress,
+                                     configClassHelper::isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "subnetmask"}, section.wlan.ipv4.subnetMask,
+                                     configClassHelper::isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "gatewayaddress"}, section.wlan.ipv4.gatewayAddress,
+                                     configClassHelper::isValidIpAddress);
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ipv4"),
-                                "ipaddress");
-    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
-        cfgDataTemp.sectionNetwork.wlan.ipv4.ipAddress = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ipv4"),
-                                "subnetmask");
-    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
-        cfgDataTemp.sectionNetwork.wlan.ipv4.subnetMask = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ipv4"),
-                                "gatewayaddress");
-    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
-        cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress = objEl->valuestring;
-    }
-
-    // Static IP config selected, but IP config invalid --> Fallback to DHCP
-    if (cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig == NETWORK_IP_CONFIG_STATIC) {
-        if (!isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.ipAddress.c_str()) ||
-            !isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.subnetMask.c_str()) ||
-            !isValidIpAddress(cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress.c_str())) {
-            cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig = NETWORK_IP_CONFIG_DHCP;
+    if (section.wlan.ipv4.networkConfig == NETWORK_IP_CONFIG_STATIC) {
+        if (!configClassHelper::isValidIpAddress(section.wlan.ipv4.ipAddress.c_str()) ||
+            !configClassHelper::isValidIpAddress(section.wlan.ipv4.subnetMask.c_str()) ||
+            !configClassHelper::isValidIpAddress(section.wlan.ipv4.gatewayAddress.c_str())) {
+            section.wlan.ipv4.networkConfig = NETWORK_IP_CONFIG_DHCP;
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Static network config invalid. Use DHCP as fallback");
         }
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "ipv4"),
-                                "dnsserver");
-    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
-        cfgDataTemp.sectionNetwork.wlan.ipv4.dnsServer = objEl->valuestring;
-    }
+    cJsonUtils::parseStringValidated(network, {"wlan", "ipv4", "dnsserver"}, section.wlan.ipv4.dnsServer,
+                                     configClassHelper::isValidIpAddress);
 
-    objEl = cJSON_GetObjectItem(
-        cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "wlanroaming"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionNetwork.wlan.wlanRoaming.enabled = objEl->valueint;
-    }
+    cJsonUtils::parseBool(network, {"wlan", "wlanroaming", "enabled"}, section.wlan.wlanRoaming.enabled);
+    cJsonUtils::parseIntClamped(network, {"wlan", "wlanroaming", "rssithreshold"}, section.wlan.wlanRoaming.rssiThreshold, -100, 0);
 
-    objEl = cJSON_GetObjectItem(
-        cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "wlanroaming"), "rssithreshold");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionNetwork.wlan.wlanRoaming.rssiThreshold = std::clamp(objEl->valueint, -100, 0);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "ssid");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionNetwork.wlanAp.ssid = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "password");
-    if (cJSON_IsString(objEl) && (strlen(objEl->valuestring) == 0 || strlen(objEl->valuestring) >= 8)) {
-        cfgDataTemp.sectionNetwork.wlanAp.password = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "channel");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionNetwork.wlanAp.channel = std::clamp(objEl->valueint, 1, 14);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlanap"), "ipv4"),
-                                "ipaddress");
-    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
-        cfgDataTemp.sectionNetwork.wlanAp.ipv4.ipAddress = objEl->valuestring;
-    }
+    cJsonUtils::parseString(network, {"wlanap", "ssid"}, section.wlanAp.ssid);
+    cJsonUtils::parseStringValidated(network, {"wlanap", "password"}, section.wlanAp.password,
+                                     [](const char *s) { return strlen(s) == 0 || strlen(s) >= 8; });
+    cJsonUtils::parseIntClamped(network, {"wlanap", "channel"}, section.wlanAp.channel, 1, 14);
+    cJsonUtils::parseStringValidated(network, {"wlanap", "ipv4", "ipaddress"}, section.wlanAp.ipv4.ipAddress,
+                                     configClassHelper::isValidIpAddress);
 
 #ifdef BOARD_FEATURE_ETHERNET
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
-                                "networkconfig");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionNetwork.ethernet.ipv4.networkConfig = std::clamp(objEl->valueint, 0, 1);
-    }
+    cJsonUtils::parseIntClamped(network, {"ethernet", "ipv4", "networkconfig"}, section.ethernet.ipv4.networkConfig, 0, 1);
+    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "ipaddress"}, section.ethernet.ipv4.ipAddress,
+                                     configClassHelper::isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "subnetmask"}, section.ethernet.ipv4.subnetMask,
+                                     configClassHelper::isValidIpAddress);
+    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "gatewayaddress"}, section.ethernet.ipv4.gatewayAddress,
+                                     configClassHelper::isValidIpAddress);
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
-                                "ipaddress");
-    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
-        cfgDataTemp.sectionNetwork.ethernet.ipv4.ipAddress = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
-                                "subnetmask");
-    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
-        cfgDataTemp.sectionNetwork.ethernet.ipv4.subnetMask = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
-                                "gatewayaddress");
-    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
-        cfgDataTemp.sectionNetwork.ethernet.ipv4.gatewayAddress = objEl->valuestring;
-    }
-
-    // Static IP config selected, but IP config invalid --> Fallback to DHCP
-    if (cfgDataTemp.sectionNetwork.ethernet.ipv4.networkConfig == NETWORK_IP_CONFIG_STATIC) {
-        if (!isValidIpAddress(cfgDataTemp.sectionNetwork.ethernet.ipv4.ipAddress.c_str()) ||
-            !isValidIpAddress(cfgDataTemp.sectionNetwork.ethernet.ipv4.subnetMask.c_str()) ||
-            !isValidIpAddress(cfgDataTemp.sectionNetwork.ethernet.ipv4.gatewayAddress.c_str())) {
-            cfgDataTemp.sectionNetwork.ethernet.ipv4.networkConfig = NETWORK_IP_CONFIG_DHCP;
+    if (section.ethernet.ipv4.networkConfig == NETWORK_IP_CONFIG_STATIC) {
+        if (!configClassHelper::isValidIpAddress(section.ethernet.ipv4.ipAddress.c_str()) ||
+            !configClassHelper::isValidIpAddress(section.ethernet.ipv4.subnetMask.c_str()) ||
+            !configClassHelper::isValidIpAddress(section.ethernet.ipv4.gatewayAddress.c_str())) {
+            section.ethernet.ipv4.networkConfig = NETWORK_IP_CONFIG_DHCP;
             LogFile.writeToFile(ESP_LOG_WARN, TAG, "parseConfig: Static network config invalid. Use DHCP as fallback");
         }
     }
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "ethernet"), "ipv4"),
-                                "dnsserver");
-    if (cJSON_IsString(objEl) && isValidIpAddress(objEl->valuestring)) {
-        cfgDataTemp.sectionNetwork.ethernet.ipv4.dnsServer = objEl->valuestring;
+    cJsonUtils::parseStringValidated(network, {"ethernet", "ipv4", "dnsserver"}, section.ethernet.ipv4.dnsServer,
+                                     configClassHelper::isValidIpAddress);
+#endif
+
+    cJsonUtils::parseString(network, {"time", "timesetmanual"}, section.time.timeSetManual);
+    cJsonUtils::parseString(network, {"time", "timezone"}, section.time.timeZone);
+    cJsonUtils::parseBool(network, {"time", "ntp", "timesyncenabled"}, section.time.ntp.timeSyncEnabled);
+    cJsonUtils::parseString(network, {"time", "ntp", "timeserver"}, section.time.ntp.timeServer);
+    cJsonUtils::parseBool(network, {"time", "processstartinterlock"}, section.time.processStartInterlock);
+}
+
+
+void ConfigClass::parseSectionSystem()
+{
+    cJsonUtils::parseIntClamped(cJSON_GetObjectItem(cJsonObject, "system"), {"cpufrequency"}, cfgDataTemp.sectionSystem.cpuFrequency, 160,
+                                240);
+}
+
+
+void ConfigClass::parseSectionWebUi(bool unityTest)
+{
+    cJSON *webui = cJSON_GetObjectItem(cJsonObject, "webui");
+    auto &section = cfgDataTemp.sectionWebUi;
+
+    cJsonUtils::parseIntClamped(webui, {"httpauth", "authmode"}, section.httpAuth.authMode, 0, 1);
+    cJsonUtils::parseString(webui, {"httpauth", "username"}, section.httpAuth.username);
+    parseSecretParameter(webui, {"httpauth", "password"}, section.httpAuth.password, "webui_httpauth", unityTest);
+
+    cJsonUtils::parseBool(webui, {"autorefresh", "overviewpage", "enabled"}, section.autoRefresh.overviewPage.enabled);
+    cJsonUtils::parseIntClampedMin(webui, {"autorefresh", "overviewpage", "refreshtime"}, section.autoRefresh.overviewPage.refreshTime, 1);
+    cJsonUtils::parseBool(webui, {"autorefresh", "datagraphpage", "enabled"}, section.autoRefresh.dataGraphPage.enabled);
+    cJsonUtils::parseIntClampedMin(webui, {"autorefresh", "datagraphpage", "refreshtime"}, section.autoRefresh.dataGraphPage.refreshTime,
+                                   1);
+}
+
+
+void ConfigClass::parseSecretParameter(cJSON *root, std::initializer_list<const char *> path, std::string &out, const char *nvsKey,
+                                       bool unityTest)
+{
+    std::string tmpOut;
+    if (cJsonUtils::parseString(root, path, tmpOut) && tmpOut != "******") {
+        out = tmpOut;
+        saveDataToNVS(nvsKey, out);
     }
-#endif // BOARD_FEATURE_ETHERNET
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "timesetmanual");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionNetwork.time.timeSetManual = objEl->valuestring;
+    else if (!unityTest) {
+        loadDataFromNVS(nvsKey, out);
     }
+}
 
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "timezone");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionNetwork.time.timeZone = objEl->valuestring;
+
+void ConfigClass::parseTlsParameters(cJSON *tlsObj, TLSParams &tls)
+{
+    cJsonUtils::parseIntClamped(tlsObj, {"servercertverification"}, tls.serverCertVerification, TlsServerCertVerification(0),
+                                TlsServerCertVerification(2));
+    if (cJsonUtils::parseString(tlsObj, {"cacert"}, tls.caCert)) {
+        configClassHelper::validateStructure(tls.caCert);
     }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"),
-                                "timesyncenabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionNetwork.time.ntp.timeSyncEnabled = objEl->valueint;
+    if (cJsonUtils::parseString(tlsObj, {"clientcert"}, tls.clientCert)) {
+        configClassHelper::validateStructure(tls.clientCert);
     }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"),
-                                "timeserver");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionNetwork.time.ntp.timeServer = objEl->valuestring;
+    if (cJsonUtils::parseString(tlsObj, {"clientkey"}, tls.clientKey)) {
+        configClassHelper::validateStructure(tls.clientKey);
     }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "processstartinterlock");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionNetwork.time.processStartInterlock = objEl->valueint;
-    }
-
-
-    // System
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "system"), "cpufrequency");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionSystem.cpuFrequency = std::clamp(objEl->valueint, 160, 240);
-    }
-
-
-    // WebUI
-    // ***************************
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "httpauth"), "authmode");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionWebUi.httpAuth.authMode = std::clamp(objEl->valueint, 0, 1);
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "httpauth"), "username");
-    if (cJSON_IsString(objEl)) {
-        cfgDataTemp.sectionWebUi.httpAuth.username = objEl->valuestring;
-    }
-
-    objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "httpauth"), "password");
-    if (cJSON_IsString(objEl) && strcmp(objEl->valuestring, "******") != 0) {
-        cfgDataTemp.sectionWebUi.httpAuth.password = objEl->valuestring;
-        saveDataToNVS("webui_httpauth", cfgDataTemp.sectionWebUi.httpAuth.password);
-    }
-    else {
-        if (!unityTest) {
-            loadDataFromNVS("webui_httpauth", cfgDataTemp.sectionWebUi.httpAuth.password);
-        }
-    }
-
-    objEl = cJSON_GetObjectItem(
-        cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "overviewpage"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionWebUi.AutoRefresh.overviewPage.enabled = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(
-        cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "overviewpage"), "refreshtime");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionWebUi.AutoRefresh.overviewPage.refreshTime = std::max(objEl->valueint, 1);
-    }
-
-    objEl = cJSON_GetObjectItem(
-        cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "datagraphpage"), "enabled");
-    if (cJSON_IsBool(objEl)) {
-        cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.enabled = objEl->valueint;
-    }
-
-    objEl = cJSON_GetObjectItem(
-        cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "webui"), "autorefresh"), "datagraphpage"), "refreshtime");
-    if (cJSON_IsNumber(objEl)) {
-        cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.refreshTime = std::max(objEl->valueint, 1);
-    }
-
-    if (init) {
-        // Check for configuration migration
-        if (!unityTest) {
-            migrateConfiguration(cJsonObject);
-        }
-
-        // Init active config struct with latest configuration data
-        cfgData = cfgDataTemp;
-    }
-
-    // Cleanup root cJSON structure
-    cJSON_Delete(cJsonObject);
-    cJsonObject = NULL;
-
-    return ESP_OK;
 }
 
 
@@ -1719,901 +867,386 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 
     esp_err_t retVal = ESP_OK;
 
+    // Helper alias for clean inline calls
+    auto addEl = [&](cJSON *obj, const char *key, const auto &val) { cJsonUtils::addElementHelper(obj, key, val, retVal); };
+    auto addObj = [&](cJSON *obj, const char *key) { return cJsonUtils::addObjectHelper(obj, key, retVal); };
+    auto addArr = [&](cJSON *obj, const char *key) { return cJsonUtils::addArrayHelper(obj, key, retVal); };
+    auto addArrObj = [&](cJSON *arr) { return cJsonUtils::addArrayObjectHelper(arr, retVal); };
+
+
     // Config Version
-    // ***************************
-    cJSON *config;
-    if (!cJSON_AddItemToObject(cJsonObject, "config", config = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(config, "version", cfgDataTemp.sectionConfig.version) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(config, "lastmodified", cfgDataTemp.sectionConfig.lastModified.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *config = addObj(cJsonObject, "config");
+    addEl(config, "version", cfgDataTemp.sectionConfig.version);
+    addEl(config, "lastmodified", cfgDataTemp.sectionConfig.lastModified);
 
 
     // Operation Mode
-    // ***************************
-    cJSON *operationmode;
-    if (!cJSON_AddItemToObject(cJsonObject, "operationmode", operationmode = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(operationmode, "opmode", cfgDataTemp.sectionOperationMode.opMode) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(operationmode, "automaticprocessinterval",
-                                to_stringWithPrecision(cfgDataTemp.sectionOperationMode.automaticProcessInterval, 2).c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(operationmode, "usedemoimages", cfgDataTemp.sectionOperationMode.useDemoImages) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *opmode = addObj(cJsonObject, "operationmode");
+    addEl(opmode, "opmode", cfgDataTemp.sectionOperationMode.opMode);
+    addEl(opmode, "automaticprocessinterval", to_stringWithPrecision(cfgDataTemp.sectionOperationMode.automaticProcessInterval, 2));
+    addEl(opmode, "usedemoimages", cfgDataTemp.sectionOperationMode.useDemoImages);
 
 
     // Take Image
-    // ***************************
-    cJSON *takeImage, *flashlight, *camera, *takeImageDebug;
-    if (!cJSON_AddItemToObject(cJsonObject, "takeimage", takeImage = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(takeImage, "flashlight", flashlight = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(flashlight, "flashtime", cfgDataTemp.sectionTakeImage.flashlight.flashTime) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(flashlight, "flashintensity", cfgDataTemp.sectionTakeImage.flashlight.flashIntensity) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(takeImage, "camera", camera = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "cameramodel", cfgDataTemp.sectionTakeImage.camera.cameraModel) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "camerafrequency", cfgDataTemp.sectionTakeImage.camera.cameraFrequency) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "imagequality", cfgDataTemp.sectionTakeImage.camera.imageQuality) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "brightness", cfgDataTemp.sectionTakeImage.camera.brightness) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "contrast", cfgDataTemp.sectionTakeImage.camera.contrast) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "saturation", cfgDataTemp.sectionTakeImage.camera.saturation) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "sharpness", cfgDataTemp.sectionTakeImage.camera.sharpness) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "exposurecontrolmode", cfgDataTemp.sectionTakeImage.camera.exposureControlMode) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "autoexposurelevel", cfgDataTemp.sectionTakeImage.camera.autoExposureLevel) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "manualexposurevalue", cfgDataTemp.sectionTakeImage.camera.manualExposureValue) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "gaincontrolmode", cfgDataTemp.sectionTakeImage.camera.gainControlMode) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "manualgainvalue", cfgDataTemp.sectionTakeImage.camera.manualGainValue) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "specialeffect", cfgDataTemp.sectionTakeImage.camera.specialEffect) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(camera, "mirrorimage", cfgDataTemp.sectionTakeImage.camera.mirrorImage) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(camera, "flipimage", cfgDataTemp.sectionTakeImage.camera.flipImage) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "zoomfactor", cfgDataTemp.sectionTakeImage.camera.zoomFactor) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "zoomoffsetx", cfgDataTemp.sectionTakeImage.camera.zoomOffsetX) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(camera, "zoomoffsety", cfgDataTemp.sectionTakeImage.camera.zoomOffsetY) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(takeImage, "debug", takeImageDebug = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(takeImageDebug, "saverawimages", cfgDataTemp.sectionTakeImage.debug.saveRawImages) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(takeImageDebug, "rawimageslocation", cfgDataTemp.sectionTakeImage.debug.rawImagesLocation.c_str()) ==
-        NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(takeImageDebug, "rawimagesretention", cfgDataTemp.sectionTakeImage.debug.rawImagesRetention) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *takeImage = addObj(cJsonObject, "takeimage");
+
+    cJSON *flashlight = addObj(takeImage, "flashlight");
+    addEl(flashlight, "flashtime", cfgDataTemp.sectionTakeImage.flashlight.flashTime);
+    addEl(flashlight, "flashintensity", cfgDataTemp.sectionTakeImage.flashlight.flashIntensity);
+
+    cJSON *camera = addObj(takeImage, "camera");
+    addEl(camera, "cameramodel", cfgDataTemp.sectionTakeImage.camera.cameraModel);
+    addEl(camera, "camerafrequency", cfgDataTemp.sectionTakeImage.camera.cameraFrequency);
+    addEl(camera, "imagequality", cfgDataTemp.sectionTakeImage.camera.imageQuality);
+    addEl(camera, "brightness", cfgDataTemp.sectionTakeImage.camera.brightness);
+    addEl(camera, "contrast", cfgDataTemp.sectionTakeImage.camera.contrast);
+    addEl(camera, "saturation", cfgDataTemp.sectionTakeImage.camera.saturation);
+    addEl(camera, "sharpness", cfgDataTemp.sectionTakeImage.camera.sharpness);
+    addEl(camera, "exposurecontrolmode", cfgDataTemp.sectionTakeImage.camera.exposureControlMode);
+    addEl(camera, "autoexposurelevel", cfgDataTemp.sectionTakeImage.camera.autoExposureLevel);
+    addEl(camera, "manualexposurevalue", cfgDataTemp.sectionTakeImage.camera.manualExposureValue);
+    addEl(camera, "gaincontrolmode", cfgDataTemp.sectionTakeImage.camera.gainControlMode);
+    addEl(camera, "manualgainvalue", cfgDataTemp.sectionTakeImage.camera.manualGainValue);
+    addEl(camera, "specialeffect", cfgDataTemp.sectionTakeImage.camera.specialEffect);
+    addEl(camera, "mirrorimage", cfgDataTemp.sectionTakeImage.camera.mirrorImage);
+    addEl(camera, "flipimage", cfgDataTemp.sectionTakeImage.camera.flipImage);
+    addEl(camera, "zoomfactor", cfgDataTemp.sectionTakeImage.camera.zoomFactor);
+    addEl(camera, "zoomoffsetx", cfgDataTemp.sectionTakeImage.camera.zoomOffsetX);
+    addEl(camera, "zoomoffsety", cfgDataTemp.sectionTakeImage.camera.zoomOffsetY);
+
+    cJSON *takeImageDebug = addObj(takeImage, "debug");
+    addEl(takeImageDebug, "saverawimages", cfgDataTemp.sectionTakeImage.debug.saveRawImages);
+    addEl(takeImageDebug, "rawimageslocation", cfgDataTemp.sectionTakeImage.debug.rawImagesLocation);
+    addEl(takeImageDebug, "rawimagesretention", cfgDataTemp.sectionTakeImage.debug.rawImagesRetention);
 
 
     // Image Alignment
-    // ***************************
-    cJSON *imageAlignment, *searchField, *marker, *markerEl, *imageAlignmentDebug;
-    if (!cJSON_AddItemToObject(cJsonObject, "imagealignment", imageAlignment = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(imageAlignment, "alignmentalgo", cfgDataTemp.sectionImageAlignment.alignmentAlgo) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(imageAlignment, "searchfield", searchField = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(searchField, "x", cfgDataTemp.sectionImageAlignment.searchField.x) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(searchField, "y", cfgDataTemp.sectionImageAlignment.searchField.y) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(imageAlignment, "imagerotation",
-                                to_stringWithPrecision(cfgDataTemp.sectionImageAlignment.imageRotation, 1).c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(imageAlignment, "marker", marker = cJSON_CreateArray())) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *imageAlignment = addObj(cJsonObject, "imagealignment");
+    addEl(imageAlignment, "alignmentalgo", cfgDataTemp.sectionImageAlignment.alignmentAlgo);
+
+    cJSON *searchField = addObj(imageAlignment, "searchfield");
+    addEl(searchField, "x", cfgDataTemp.sectionImageAlignment.searchField.x);
+    addEl(searchField, "y", cfgDataTemp.sectionImageAlignment.searchField.y);
+    addEl(imageAlignment, "imagerotation", to_stringWithPrecision(cfgDataTemp.sectionImageAlignment.imageRotation, 1));
+
+    cJSON *markerArr = addArr(imageAlignment, "marker");
     for (int i = 0; i < 2; ++i) {
-        cJSON_AddItemToArray(marker, markerEl = cJSON_CreateObject());
-        if (cJSON_AddNumberToObject(markerEl, "x", cfgDataTemp.sectionImageAlignment.marker[i].x) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(markerEl, "y", cfgDataTemp.sectionImageAlignment.marker[i].y) == NULL) {
-            retVal = ESP_FAIL;
-        }
+        cJSON *markerEl = addArrObj(markerArr);
+        addEl(markerEl, "x", cfgDataTemp.sectionImageAlignment.marker[i].x);
+        addEl(markerEl, "y", cfgDataTemp.sectionImageAlignment.marker[i].y);
     }
-    if (!cJSON_AddItemToObject(imageAlignment, "debug", imageAlignmentDebug = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(imageAlignmentDebug, "savedebuginfo", cfgDataTemp.sectionImageAlignment.debug.saveDebugInfo) == NULL) {
-        retVal = ESP_FAIL;
-    }
+
+    cJSON *imageAlignmentDebug = addObj(imageAlignment, "debug");
+    addEl(imageAlignmentDebug, "savedebuginfo", cfgDataTemp.sectionImageAlignment.debug.saveDebugInfo);
 
 
     // Number Sequences
-    // ***************************
-    cJSON *numbersequences, *sequences, *sequence;
-    if (!cJSON_AddItemToObject(cJsonObject, "numbersequences", numbersequences = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(numbersequences, "sequence", sequences = cJSON_CreateArray())) {
-        retVal = ESP_FAIL;
-    }
-    for (int i = 0; i < cfgDataTemp.sectionNumberSequences.sequence.size(); ++i) {
-        cJSON_AddItemToArray(sequences, sequence = cJSON_CreateObject());
-        if (cJSON_AddNumberToObject(sequence, "sequenceid", cfgDataTemp.sectionNumberSequences.sequence[i].sequenceId) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(sequence, "sequencename", cfgDataTemp.sectionNumberSequences.sequence[i].sequenceName.c_str()) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
+    cJSON *numbersequences = addObj(cJsonObject, "numbersequences");
+    cJSON *sequencesArr = addArr(numbersequences, "sequence");
+    for (const auto &seq : cfgDataTemp.sectionNumberSequences.sequence) {
+        cJSON *seqEl = addArrObj(sequencesArr);
+        addEl(seqEl, "sequenceid", seq.sequenceId);
+        addEl(seqEl, "sequencename", seq.sequenceName);
     }
 
 
     // Digit
-    // ***************************
-    cJSON *digit, *digitSequence, *digitSequenceEl, *digitRoi, *digitRoiEl, *digitDebug;
-    if (!cJSON_AddItemToObject(cJsonObject, "digit", digit = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(digit, "enabled", cfgDataTemp.sectionDigit.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(digit, "model", cfgDataTemp.sectionDigit.model.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(digit, "cnngoodthreshold", to_stringWithPrecision(cfgDataTemp.sectionDigit.cnnGoodThreshold, 2).c_str()) ==
-        NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(digit, "sequence", digitSequence = cJSON_CreateArray())) {
-        retVal = ESP_FAIL;
-    }
-    for (int i = 0; i < cfgDataTemp.sectionDigit.sequence.size(); i++) {
-        cJSON_AddItemToArray(digitSequence, digitSequenceEl = cJSON_CreateObject());
-        if (cJSON_AddNumberToObject(digitSequenceEl, "sequenceid", cfgDataTemp.sectionDigit.sequence[i].sequenceId) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(digitSequenceEl, "sequencename", cfgDataTemp.sectionDigit.sequence[i].sequenceName.c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (!cJSON_AddItemToObject(digitSequenceEl, "roi", digitRoi = cJSON_CreateArray())) {
-            retVal = ESP_FAIL;
-        }
-        for (int j = 0; j < cfgDataTemp.sectionDigit.sequence[i].roi.size(); j++) {
-            cJSON_AddItemToArray(digitRoi, digitRoiEl = cJSON_CreateObject());
-            if (cJSON_AddNumberToObject(digitRoiEl, "x", cfgDataTemp.sectionDigit.sequence[i].roi[j].x) == NULL) {
-                retVal = ESP_FAIL;
-            }
-            if (cJSON_AddNumberToObject(digitRoiEl, "y", cfgDataTemp.sectionDigit.sequence[i].roi[j].y) == NULL) {
-                retVal = ESP_FAIL;
-            }
-            if (cJSON_AddNumberToObject(digitRoiEl, "dx", cfgDataTemp.sectionDigit.sequence[i].roi[j].dx) == NULL) {
-                retVal = ESP_FAIL;
-            }
-            if (cJSON_AddNumberToObject(digitRoiEl, "dy", cfgDataTemp.sectionDigit.sequence[i].roi[j].dy) == NULL) {
-                retVal = ESP_FAIL;
-            }
+    cJSON *digit = addObj(cJsonObject, "digit");
+    addEl(digit, "enabled", cfgDataTemp.sectionDigit.enabled);
+    addEl(digit, "model", cfgDataTemp.sectionDigit.model);
+    addEl(digit, "cnngoodthreshold", to_stringWithPrecision(cfgDataTemp.sectionDigit.cnnGoodThreshold, 2));
+
+    cJSON *digitSeqArr = addArr(digit, "sequence");
+    for (const auto &seq : cfgDataTemp.sectionDigit.sequence) {
+        cJSON *seqEl = addArrObj(digitSeqArr);
+        addEl(seqEl, "sequenceid", seq.sequenceId);
+        addEl(seqEl, "sequencename", seq.sequenceName);
+
+        cJSON *roiArr = addArr(seqEl, "roi");
+        for (const auto &r : seq.roi) {
+            cJSON *roiEl = addArrObj(roiArr);
+            addEl(roiEl, "x", r.x);
+            addEl(roiEl, "y", r.y);
+            addEl(roiEl, "dx", r.dx);
+            addEl(roiEl, "dy", r.dy);
         }
     }
-    if (!cJSON_AddItemToObject(digit, "debug", digitDebug = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(digitDebug, "saveroiimages", cfgDataTemp.sectionDigit.debug.saveRoiImages) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(digitDebug, "roiimageslocation", cfgDataTemp.sectionDigit.debug.roiImagesLocation.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(digitDebug, "roiimagesretention", cfgDataTemp.sectionDigit.debug.roiImagesRetention) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(digitDebug, "roisavingsize", cfgDataTemp.sectionDigit.debug.roiSavingSize) == NULL) {
-        retVal = ESP_FAIL;
-    }
+
+    cJSON *digitDebug = addObj(digit, "debug");
+    addEl(digitDebug, "saveroiimages", cfgDataTemp.sectionDigit.debug.saveRoiImages);
+    addEl(digitDebug, "roiimageslocation", cfgDataTemp.sectionDigit.debug.roiImagesLocation);
+    addEl(digitDebug, "roiimagesretention", cfgDataTemp.sectionDigit.debug.roiImagesRetention);
+    addEl(digitDebug, "roisavingsize", cfgDataTemp.sectionDigit.debug.roiSavingSize);
 
 
     // Analog
-    // ***************************
-    cJSON *analog, *analogSequence, *analogSequenceEl, *analogRoi, *analogRoiEl, *analogDebug;
-    if (!cJSON_AddItemToObject(cJsonObject, "analog", analog = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(analog, "enabled", cfgDataTemp.sectionAnalog.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(analog, "model", cfgDataTemp.sectionAnalog.model.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(analog, "sequence", analogSequence = cJSON_CreateArray())) {
-        retVal = ESP_FAIL;
-    }
-    for (int i = 0; i < cfgDataTemp.sectionAnalog.sequence.size(); i++) {
-        cJSON_AddItemToArray(analogSequence, analogSequenceEl = cJSON_CreateObject());
-        if (cJSON_AddNumberToObject(analogSequenceEl, "sequenceid", cfgDataTemp.sectionAnalog.sequence[i].sequenceId) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(analogSequenceEl, "sequencename", cfgDataTemp.sectionAnalog.sequence[i].sequenceName.c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (!cJSON_AddItemToObject(analogSequenceEl, "roi", analogRoi = cJSON_CreateArray())) {
-            retVal = ESP_FAIL;
-        }
-        for (int j = 0; j < cfgDataTemp.sectionAnalog.sequence[i].roi.size(); j++) {
-            cJSON_AddItemToArray(analogRoi, analogRoiEl = cJSON_CreateObject());
-            if (cJSON_AddNumberToObject(analogRoiEl, "x", cfgDataTemp.sectionAnalog.sequence[i].roi[j].x) == NULL) {
-                retVal = ESP_FAIL;
-            }
-            if (cJSON_AddNumberToObject(analogRoiEl, "y", cfgDataTemp.sectionAnalog.sequence[i].roi[j].y) == NULL) {
-                retVal = ESP_FAIL;
-            }
-            if (cJSON_AddNumberToObject(analogRoiEl, "dx", cfgDataTemp.sectionAnalog.sequence[i].roi[j].dx) == NULL) {
-                retVal = ESP_FAIL;
-            }
-            if (cJSON_AddNumberToObject(analogRoiEl, "dy", cfgDataTemp.sectionAnalog.sequence[i].roi[j].dy) == NULL) {
-                retVal = ESP_FAIL;
-            }
-            if (cJSON_AddBoolToObject(analogRoiEl, "ccw", cfgDataTemp.sectionAnalog.sequence[i].roi[j].ccw) == NULL) {
-                retVal = ESP_FAIL;
-            }
+    cJSON *analog = addObj(cJsonObject, "analog");
+    addEl(analog, "enabled", cfgDataTemp.sectionAnalog.enabled);
+    addEl(analog, "model", cfgDataTemp.sectionAnalog.model);
+
+    cJSON *analogSeqArr = addArr(analog, "sequence");
+    for (const auto &seq : cfgDataTemp.sectionAnalog.sequence) {
+        cJSON *seqEl = addArrObj(analogSeqArr);
+        addEl(seqEl, "sequenceid", seq.sequenceId);
+        addEl(seqEl, "sequencename", seq.sequenceName);
+
+        cJSON *roiArr = addArr(seqEl, "roi");
+        for (const auto &r : seq.roi) {
+            cJSON *roiEl = addArrObj(roiArr);
+            addEl(roiEl, "x", r.x);
+            addEl(roiEl, "y", r.y);
+            addEl(roiEl, "dx", r.dx);
+            addEl(roiEl, "dy", r.dy);
+            addEl(roiEl, "ccw", r.ccw);
         }
     }
-    if (!cJSON_AddItemToObject(analog, "debug", analogDebug = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(analogDebug, "saveroiimages", cfgDataTemp.sectionAnalog.debug.saveRoiImages) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(analogDebug, "roiimageslocation", cfgDataTemp.sectionAnalog.debug.roiImagesLocation.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(analogDebug, "roiimagesretention", cfgDataTemp.sectionAnalog.debug.roiImagesRetention) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(analogDebug, "roisavingsize", cfgDataTemp.sectionAnalog.debug.roiSavingSize) == NULL) {
-        retVal = ESP_FAIL;
-    }
+
+    cJSON *analogDebug = addObj(analog, "debug");
+    addEl(analogDebug, "saveroiimages", cfgDataTemp.sectionAnalog.debug.saveRoiImages);
+    addEl(analogDebug, "roiimageslocation", cfgDataTemp.sectionAnalog.debug.roiImagesLocation);
+    addEl(analogDebug, "roiimagesretention", cfgDataTemp.sectionAnalog.debug.roiImagesRetention);
+    addEl(analogDebug, "roisavingsize", cfgDataTemp.sectionAnalog.debug.roiSavingSize);
 
 
     // Post-Processing
-    // ***************************
-    cJSON *postprocessing, *postprocessingSequence, *postprocessingSequenceEl, *postprocessingDebug;
-    if (!cJSON_AddItemToObject(cJsonObject, "postprocessing", postprocessing = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
+    cJSON *postprocessing = addObj(cJsonObject, "postprocessing");
+    cJSON *postSeqArr = addArr(postprocessing, "sequence");
+    for (const auto &seq : cfgDataTemp.sectionPostProcessing.sequence) {
+        cJSON *seqEl = addArrObj(postSeqArr);
+        addEl(seqEl, "sequenceid", seq.sequenceId);
+        addEl(seqEl, "sequencename", seq.sequenceName);
+        addEl(seqEl, "decimalshift", seq.decimalShift);
+        addEl(seqEl, "analogdigitsyncvalue", to_stringWithPrecision(seq.analogDigitSyncValue, 1));
+        addEl(seqEl, "extendedresolution", seq.extendedResolution);
+        addEl(seqEl, "ignoreleadingnan", seq.ignoreLeadingNaN);
+        addEl(seqEl, "checkdigitincreaseconsistency", seq.checkDigitIncreaseConsistency);
+        addEl(seqEl, "maxratechecktype", seq.maxRateCheckType);
+        addEl(seqEl, "maxrate", to_stringWithPrecision(seq.maxRate, 3));
+        addEl(seqEl, "allownegativerate", seq.allowNegativeRate);
+        addEl(seqEl, "usefallbackvalue", seq.useFallbackValue);
+        addEl(seqEl, "fallbackvalueagestartup", seq.fallbackValueAgeStartup);
     }
-    // Disable post-processing not yet implemented // @TODO FEATURE
-    /*if (cJSON_AddBoolToObject(postprocessing, "enabled", cfgDataTemp.sectionPostProcessing.enabled) == NULL)
-        retVal = ESP_FAIL;*/
-    if (!cJSON_AddItemToObject(postprocessing, "sequence", postprocessingSequence = cJSON_CreateArray())) {
-        retVal = ESP_FAIL;
-    }
-    for (int i = 0; i < cfgDataTemp.sectionPostProcessing.sequence.size(); ++i) {
-        cJSON_AddItemToArray(postprocessingSequence, postprocessingSequenceEl = cJSON_CreateObject());
-        if (cJSON_AddNumberToObject(postprocessingSequenceEl, "sequenceid", cfgDataTemp.sectionPostProcessing.sequence[i].sequenceId) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(postprocessingSequenceEl, "sequencename",
-                                    cfgDataTemp.sectionPostProcessing.sequence[i].sequenceName.c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        // Disable post-processing per sequence not yet implemented // @TODO FEATURE
-        /*if (cJSON_AddBoolToObject(postprocessingSequenceEl, "enabled",
-                                    cfgDataTemp.sectionPostProcessing.sequence[i].enabled) == NULL)
-            retVal = ESP_FAIL;*/
-        if (cJSON_AddNumberToObject(postprocessingSequenceEl, "decimalshift", cfgDataTemp.sectionPostProcessing.sequence[i].decimalShift) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(
-                postprocessingSequenceEl, "analogdigitsyncvalue",
-                to_stringWithPrecision(cfgDataTemp.sectionPostProcessing.sequence[i].analogDigitSyncValue, 1).c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "extendedresolution",
-                                  cfgDataTemp.sectionPostProcessing.sequence[i].extendedResolution) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "ignoreleadingnan",
-                                  cfgDataTemp.sectionPostProcessing.sequence[i].ignoreLeadingNaN) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "checkdigitincreaseconsistency",
-                                  cfgDataTemp.sectionPostProcessing.sequence[i].checkDigitIncreaseConsistency) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(postprocessingSequenceEl, "maxratechecktype",
-                                    cfgDataTemp.sectionPostProcessing.sequence[i].maxRateCheckType) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(postprocessingSequenceEl, "maxrate",
-                                    to_stringWithPrecision(cfgDataTemp.sectionPostProcessing.sequence[i].maxRate, 3).c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "allownegativerate",
-                                  cfgDataTemp.sectionPostProcessing.sequence[i].allowNegativeRate) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(postprocessingSequenceEl, "usefallbackvalue",
-                                  cfgDataTemp.sectionPostProcessing.sequence[i].useFallbackValue) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(postprocessingSequenceEl, "fallbackvalueagestartup",
-                                    cfgDataTemp.sectionPostProcessing.sequence[i].fallbackValueAgeStartup) == NULL) {
-            retVal = ESP_FAIL;
-        }
-    }
-    if (!cJSON_AddItemToObject(postprocessing, "debug", postprocessingDebug = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(postprocessingDebug, "savedebuginfo", cfgDataTemp.sectionPostProcessing.debug.saveDebugInfo) == NULL) {
-        retVal = ESP_FAIL;
-    }
+
+    cJSON *postDebug = addObj(postprocessing, "debug");
+    addEl(postDebug, "savedebuginfo", cfgDataTemp.sectionPostProcessing.debug.saveDebugInfo);
 
 
     // MQTT
-    // ***************************
-    cJSON *mqtt, *mqttTls, *mqttHomeAssistant;
-    if (!cJSON_AddItemToObject(cJsonObject, "mqtt", mqtt = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(mqtt, "enabled", cfgDataTemp.sectionMqtt.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqtt, "uri", cfgDataTemp.sectionMqtt.uri.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqtt, "maintopic", cfgDataTemp.sectionMqtt.mainTopic.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqtt, "clientid", cfgDataTemp.sectionMqtt.clientID.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(mqtt, "authmode", cfgDataTemp.sectionMqtt.authMode) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqtt, "username", cfgDataTemp.sectionMqtt.username.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqtt, "password", cfgDataTemp.sectionMqtt.password.empty() ? "" : "******") == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(mqtt, "tls", mqttTls = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(mqttTls, "servercertverification", cfgDataTemp.sectionMqtt.tls.serverCertVerification) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqttTls, "cacert", cfgDataTemp.sectionMqtt.tls.caCert.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqttTls, "clientcert", cfgDataTemp.sectionMqtt.tls.clientCert.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqttTls, "clientkey", cfgDataTemp.sectionMqtt.tls.clientKey.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(mqtt, "processdatanotation", cfgDataTemp.sectionMqtt.processDataNotation) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(mqtt, "retainprocessdata", cfgDataTemp.sectionMqtt.retainProcessData) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(mqtt, "homeassistant", mqttHomeAssistant = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(mqttHomeAssistant, "discoveryenabled", cfgDataTemp.sectionMqtt.homeAssistant.discoveryEnabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqttHomeAssistant, "discoveryprefix", cfgDataTemp.sectionMqtt.homeAssistant.discoveryPrefix.c_str()) ==
-        NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(mqttHomeAssistant, "statustopic", cfgDataTemp.sectionMqtt.homeAssistant.statusTopic.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(mqttHomeAssistant, "metertype", cfgDataTemp.sectionMqtt.homeAssistant.meterType) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(mqttHomeAssistant, "retaindiscovery", cfgDataTemp.sectionMqtt.homeAssistant.retainDiscovery) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *mqtt = addObj(cJsonObject, "mqtt");
+    addEl(mqtt, "enabled", cfgDataTemp.sectionMqtt.enabled);
+    addEl(mqtt, "uri", cfgDataTemp.sectionMqtt.uri);
+    addEl(mqtt, "maintopic", cfgDataTemp.sectionMqtt.mainTopic);
+    addEl(mqtt, "clientid", cfgDataTemp.sectionMqtt.clientID);
+    addEl(mqtt, "authmode", cfgDataTemp.sectionMqtt.authMode);
+    addEl(mqtt, "username", cfgDataTemp.sectionMqtt.username);
+    addEl(mqtt, "password", cfgDataTemp.sectionMqtt.password.empty() ? "" : "******");
+
+    cJSON *mqttTls = addObj(mqtt, "tls");
+    addEl(mqttTls, "servercertverification", cfgDataTemp.sectionMqtt.tls.serverCertVerification);
+    addEl(mqttTls, "cacert", cfgDataTemp.sectionMqtt.tls.caCert);
+    addEl(mqttTls, "clientcert", cfgDataTemp.sectionMqtt.tls.clientCert);
+    addEl(mqttTls, "clientkey", cfgDataTemp.sectionMqtt.tls.clientKey);
+
+    addEl(mqtt, "processdatanotation", cfgDataTemp.sectionMqtt.processDataNotation);
+    addEl(mqtt, "retainprocessdata", cfgDataTemp.sectionMqtt.retainProcessData);
+
+    cJSON *mqttHA = addObj(mqtt, "homeassistant");
+    addEl(mqttHA, "discoveryenabled", cfgDataTemp.sectionMqtt.homeAssistant.discoveryEnabled);
+    addEl(mqttHA, "discoveryprefix", cfgDataTemp.sectionMqtt.homeAssistant.discoveryPrefix);
+    addEl(mqttHA, "statustopic", cfgDataTemp.sectionMqtt.homeAssistant.statusTopic);
+    addEl(mqttHA, "metertype", cfgDataTemp.sectionMqtt.homeAssistant.meterType);
+    addEl(mqttHA, "retaindiscovery", cfgDataTemp.sectionMqtt.homeAssistant.retainDiscovery);
 
 
     // InfluxDB v1.x
-    // ***************************
-    cJSON *influxdbv1, *influxdbv1Tls, *influxdbv1Sequence, *influxdbv1SequenceEl;
-    if (!cJSON_AddItemToObject(cJsonObject, "influxdbv1", influxdbv1 = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(influxdbv1, "enabled", cfgDataTemp.sectionInfluxDBv1.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv1, "uri", cfgDataTemp.sectionInfluxDBv1.uri.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv1, "database", cfgDataTemp.sectionInfluxDBv1.database.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(influxdbv1, "authmode", cfgDataTemp.sectionInfluxDBv1.authMode) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv1, "username", cfgDataTemp.sectionInfluxDBv1.username.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv1, "password", cfgDataTemp.sectionInfluxDBv1.password.empty() ? "" : "******") == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(influxdbv1, "tls", influxdbv1Tls = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(influxdbv1Tls, "servercertverification", cfgDataTemp.sectionInfluxDBv1.tls.serverCertVerification) ==
-        NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv1Tls, "cacert", cfgDataTemp.sectionInfluxDBv1.tls.caCert.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv1Tls, "clientcert", cfgDataTemp.sectionInfluxDBv1.tls.clientCert.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv1Tls, "clientkey", cfgDataTemp.sectionInfluxDBv1.tls.clientKey.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(influxdbv1, "sequence", influxdbv1Sequence = cJSON_CreateArray())) {
-        retVal = ESP_FAIL;
-    }
-    for (int i = 0; i < cfgDataTemp.sectionInfluxDBv1.sequence.size(); ++i) {
-        cJSON_AddItemToArray(influxdbv1Sequence, influxdbv1SequenceEl = cJSON_CreateObject());
-        if (cJSON_AddNumberToObject(influxdbv1SequenceEl, "sequenceid", cfgDataTemp.sectionInfluxDBv1.sequence[i].sequenceId) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(influxdbv1SequenceEl, "sequencename", cfgDataTemp.sectionInfluxDBv1.sequence[i].sequenceName.c_str()) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(influxdbv1SequenceEl, "measurementname",
-                                    cfgDataTemp.sectionInfluxDBv1.sequence[i].measurementName.c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(influxdbv1SequenceEl, "fieldkey1", cfgDataTemp.sectionInfluxDBv1.sequence[i].fieldKey1.c_str()) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
+    cJSON *influxv1 = addObj(cJsonObject, "influxdbv1");
+    addEl(influxv1, "enabled", cfgDataTemp.sectionInfluxDBv1.enabled);
+    addEl(influxv1, "uri", cfgDataTemp.sectionInfluxDBv1.uri);
+    addEl(influxv1, "database", cfgDataTemp.sectionInfluxDBv1.database);
+    addEl(influxv1, "authmode", cfgDataTemp.sectionInfluxDBv1.authMode);
+    addEl(influxv1, "username", cfgDataTemp.sectionInfluxDBv1.username);
+    addEl(influxv1, "password", cfgDataTemp.sectionInfluxDBv1.password.empty() ? "" : "******");
+
+    cJSON *influxv1Tls = addObj(influxv1, "tls");
+    addEl(influxv1Tls, "servercertverification", cfgDataTemp.sectionInfluxDBv1.tls.serverCertVerification);
+    addEl(influxv1Tls, "cacert", cfgDataTemp.sectionInfluxDBv1.tls.caCert);
+    addEl(influxv1Tls, "clientcert", cfgDataTemp.sectionInfluxDBv1.tls.clientCert);
+    addEl(influxv1Tls, "clientkey", cfgDataTemp.sectionInfluxDBv1.tls.clientKey);
+
+    cJSON *influxv1SeqArr = addArr(influxv1, "sequence");
+    for (const auto &seq : cfgDataTemp.sectionInfluxDBv1.sequence) {
+        cJSON *seqEl = addArrObj(influxv1SeqArr);
+        addEl(seqEl, "sequenceid", seq.sequenceId);
+        addEl(seqEl, "sequencename", seq.sequenceName);
+        addEl(seqEl, "measurementname", seq.measurementName);
+        addEl(seqEl, "fieldkey1", seq.fieldKey1);
     }
 
 
     // InfluxDB v2.x
-    // ***************************
-    cJSON *influxdbv2, *influxdbv2Tls, *influxdbv2Sequence, *influxdbv2SequenceEl;
-    if (!cJSON_AddItemToObject(cJsonObject, "influxdbv2", influxdbv2 = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(influxdbv2, "enabled", cfgDataTemp.sectionInfluxDBv2.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv2, "uri", cfgDataTemp.sectionInfluxDBv2.uri.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv2, "bucket", cfgDataTemp.sectionInfluxDBv2.bucket.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv2, "organization", cfgDataTemp.sectionInfluxDBv2.organization.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(influxdbv2, "authmode", cfgDataTemp.sectionInfluxDBv2.authMode) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv2, "token", cfgDataTemp.sectionInfluxDBv2.token.empty() ? "" : "******") == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(influxdbv2, "tls", influxdbv2Tls = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(influxdbv2Tls, "servercertverification", cfgDataTemp.sectionInfluxDBv2.tls.serverCertVerification) ==
-        NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv2Tls, "cacert", cfgDataTemp.sectionInfluxDBv2.tls.caCert.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv2Tls, "clientcert", cfgDataTemp.sectionInfluxDBv2.tls.clientCert.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(influxdbv2Tls, "clientkey", cfgDataTemp.sectionInfluxDBv2.tls.clientKey.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(influxdbv2, "sequence", influxdbv2Sequence = cJSON_CreateArray())) {
-        retVal = ESP_FAIL;
-    }
-    for (int i = 0; i < cfgDataTemp.sectionInfluxDBv2.sequence.size(); ++i) {
-        cJSON_AddItemToArray(influxdbv2Sequence, influxdbv2SequenceEl = cJSON_CreateObject());
-        if (cJSON_AddNumberToObject(influxdbv2SequenceEl, "sequenceid", cfgDataTemp.sectionInfluxDBv2.sequence[i].sequenceId) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(influxdbv2SequenceEl, "sequencename", cfgDataTemp.sectionInfluxDBv2.sequence[i].sequenceName.c_str()) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(influxdbv2SequenceEl, "measurementname",
-                                    cfgDataTemp.sectionInfluxDBv2.sequence[i].measurementName.c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(influxdbv2SequenceEl, "fieldkey1", cfgDataTemp.sectionInfluxDBv2.sequence[i].fieldKey1.c_str()) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
+    cJSON *influxv2 = addObj(cJsonObject, "influxdbv2");
+    addEl(influxv2, "enabled", cfgDataTemp.sectionInfluxDBv2.enabled);
+    addEl(influxv2, "uri", cfgDataTemp.sectionInfluxDBv2.uri);
+    addEl(influxv2, "bucket", cfgDataTemp.sectionInfluxDBv2.bucket);
+    addEl(influxv2, "organization", cfgDataTemp.sectionInfluxDBv2.organization);
+    addEl(influxv2, "authmode", cfgDataTemp.sectionInfluxDBv2.authMode);
+    addEl(influxv2, "token", cfgDataTemp.sectionInfluxDBv2.token.empty() ? "" : "******");
+
+    cJSON *influxv2Tls = addObj(influxv2, "tls");
+    addEl(influxv2Tls, "servercertverification", cfgDataTemp.sectionInfluxDBv2.tls.serverCertVerification);
+    addEl(influxv2Tls, "cacert", cfgDataTemp.sectionInfluxDBv2.tls.caCert);
+    addEl(influxv2Tls, "clientcert", cfgDataTemp.sectionInfluxDBv2.tls.clientCert);
+    addEl(influxv2Tls, "clientkey", cfgDataTemp.sectionInfluxDBv2.tls.clientKey);
+
+    cJSON *influxv2SeqArr = addArr(influxv2, "sequence");
+    for (const auto &seq : cfgDataTemp.sectionInfluxDBv2.sequence) {
+        cJSON *seqEl = addArrObj(influxv2SeqArr);
+        addEl(seqEl, "sequenceid", seq.sequenceId);
+        addEl(seqEl, "sequencename", seq.sequenceName);
+        addEl(seqEl, "measurementname", seq.measurementName);
+        addEl(seqEl, "fieldkey1", seq.fieldKey1);
     }
 
 
     // Webhook
-    // ***************************
-    cJSON *webhook, *webhookTls;
-    if (!cJSON_AddItemToObject(cJsonObject, "webhook", webhook = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(webhook, "enabled", cfgDataTemp.sectionWebhook.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(webhook, "uri", cfgDataTemp.sectionWebhook.uri.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(webhook, "apikey", cfgDataTemp.sectionWebhook.apiKey.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(webhook, "publishimage", cfgDataTemp.sectionWebhook.publishImage) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(webhook, "authmode", cfgDataTemp.sectionWebhook.authMode) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(webhook, "username", cfgDataTemp.sectionWebhook.username.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(webhook, "password", cfgDataTemp.sectionWebhook.password.empty() ? "" : "******") == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(webhook, "tls", webhookTls = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(webhookTls, "servercertverification", cfgDataTemp.sectionWebhook.tls.serverCertVerification) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(webhookTls, "cacert", cfgDataTemp.sectionWebhook.tls.caCert.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(webhookTls, "clientcert", cfgDataTemp.sectionWebhook.tls.clientCert.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(webhookTls, "clientkey", cfgDataTemp.sectionWebhook.tls.clientKey.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *webhook = addObj(cJsonObject, "webhook");
+    addEl(webhook, "enabled", cfgDataTemp.sectionWebhook.enabled);
+    addEl(webhook, "uri", cfgDataTemp.sectionWebhook.uri);
+    addEl(webhook, "apikey", cfgDataTemp.sectionWebhook.apiKey);
+    addEl(webhook, "publishimage", cfgDataTemp.sectionWebhook.publishImage);
+    addEl(webhook, "authmode", cfgDataTemp.sectionWebhook.authMode);
+    addEl(webhook, "username", cfgDataTemp.sectionWebhook.username);
+    addEl(webhook, "password", cfgDataTemp.sectionWebhook.password.empty() ? "" : "******");
+
+    cJSON *webhookTls = addObj(webhook, "tls");
+    addEl(webhookTls, "servercertverification", cfgDataTemp.sectionWebhook.tls.serverCertVerification);
+    addEl(webhookTls, "cacert", cfgDataTemp.sectionWebhook.tls.caCert);
+    addEl(webhookTls, "clientcert", cfgDataTemp.sectionWebhook.tls.clientCert);
+    addEl(webhookTls, "clientkey", cfgDataTemp.sectionWebhook.tls.clientKey);
 
 
     // GPIO
     // ***************************
-    cJSON *gpio, *gpiopin, *gpiopinEl, *gpiopinSmartled;
-    if (!cJSON_AddItemToObject(cJsonObject, "gpio", gpio = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(gpio, "customizationenabled", cfgDataTemp.sectionGpio.customizationEnabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(gpio, "gpiopin", gpiopin = cJSON_CreateArray())) {
-        retVal = ESP_FAIL;
-    }
-    for (int i = 0; i < cfgDataTemp.sectionGpio.gpioPin.size(); ++i) {
-        cJSON_AddItemToArray(gpiopin, gpiopinEl = cJSON_CreateObject());
-        if (cJSON_AddNumberToObject(gpiopinEl, "gpionumber", cfgDataTemp.sectionGpio.gpioPin[i].gpioNumber) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(gpiopinEl, "gpiousage", cfgDataTemp.sectionGpio.gpioPin[i].gpioUsage.c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(gpiopinEl, "pinenabled", cfgDataTemp.sectionGpio.gpioPin[i].pinEnabled) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(gpiopinEl, "pinname", cfgDataTemp.sectionGpio.gpioPin[i].pinName.c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(gpiopinEl, "pinmode", cfgDataTemp.sectionGpio.gpioPin[i].pinMode.c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(gpiopinEl, "capturemode", cfgDataTemp.sectionGpio.gpioPin[i].captureMode.c_str()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(gpiopinEl, "inputdebouncetime", cfgDataTemp.sectionGpio.gpioPin[i].inputDebounceTime) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(gpiopinEl, "pwmfrequency", cfgDataTemp.sectionGpio.gpioPin[i].pwmFrequency) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(gpiopinEl, "logicactivelow", cfgDataTemp.sectionGpio.gpioPin[i].logicActiveLow) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(gpiopinEl, "exposetomqtt", cfgDataTemp.sectionGpio.gpioPin[i].exposeToMqtt) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddBoolToObject(gpiopinEl, "exposetorest", cfgDataTemp.sectionGpio.gpioPin[i].exposeToRest) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        cJSON_AddItemToObject(gpiopinEl, "smartled", gpiopinSmartled = cJSON_CreateObject());
-        if (cJSON_AddNumberToObject(gpiopinSmartled, "type", cfgDataTemp.sectionGpio.gpioPin[i].smartLed.type) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(gpiopinSmartled, "quantity", cfgDataTemp.sectionGpio.gpioPin[i].smartLed.quantity) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(gpiopinSmartled, "colorredchannel", cfgDataTemp.sectionGpio.gpioPin[i].smartLed.colorRedChannel) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(gpiopinSmartled, "colorgreenchannel", cfgDataTemp.sectionGpio.gpioPin[i].smartLed.colorGreenChannel) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(gpiopinSmartled, "colorbluechannel", cfgDataTemp.sectionGpio.gpioPin[i].smartLed.colorBlueChannel) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddNumberToObject(gpiopinEl, "intensitycorrectionfactor", cfgDataTemp.sectionGpio.gpioPin[i].intensityCorrectionFactor) ==
-            NULL) {
-            retVal = ESP_FAIL;
-        }
+    cJSON *gpio = addObj(cJsonObject, "gpio");
+    addEl(gpio, "customizationenabled", cfgDataTemp.sectionGpio.customizationEnabled);
+
+    cJSON *gpioPinArr = addArr(gpio, "gpiopin");
+    for (const auto &pin : cfgDataTemp.sectionGpio.gpioPin) {
+        cJSON *pinEl = addArrObj(gpioPinArr);
+        addEl(pinEl, "gpionumber", pin.gpioNumber);
+        addEl(pinEl, "gpiousage", pin.gpioUsage);
+        addEl(pinEl, "pinenabled", pin.pinEnabled);
+        addEl(pinEl, "pinname", pin.pinName);
+        addEl(pinEl, "pinmode", pin.pinMode);
+        addEl(pinEl, "capturemode", pin.captureMode);
+        addEl(pinEl, "inputdebouncetime", pin.inputDebounceTime);
+        addEl(pinEl, "pwmfrequency", pin.pwmFrequency);
+        addEl(pinEl, "logicactivelow", pin.logicActiveLow);
+        addEl(pinEl, "exposetomqtt", pin.exposeToMqtt);
+        addEl(pinEl, "exposetorest", pin.exposeToRest);
+
+        cJSON *smartled = addObj(pinEl, "smartled");
+        addEl(smartled, "type", pin.smartLed.type);
+        addEl(smartled, "quantity", pin.smartLed.quantity);
+        addEl(smartled, "colorredchannel", pin.smartLed.colorRedChannel);
+        addEl(smartled, "colorgreenchannel", pin.smartLed.colorGreenChannel);
+        addEl(smartled, "colorbluechannel", pin.smartLed.colorBlueChannel);
+
+        addEl(pinEl, "intensitycorrectionfactor", pin.intensityCorrectionFactor);
     }
 
 
     // Logging
     // ***************************
-    cJSON *log, *logDebug, *logDatda;
-    if (!cJSON_AddItemToObject(cJsonObject, "log", log = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(log, "debug", logDebug = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(logDebug, "loglevel", cfgDataTemp.sectionLog.debug.logLevel) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(logDebug, "logfilesretention", cfgDataTemp.sectionLog.debug.logFilesRetention) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(logDebug, "debugfilesretention", cfgDataTemp.sectionLog.debug.debugFilesRetention) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(log, "data", logDatda = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(logDatda, "enabled", cfgDataTemp.sectionLog.data.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(logDatda, "datafilesretention", cfgDataTemp.sectionLog.data.dataFilesRetention) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *log = addObj(cJsonObject, "log");
+
+    cJSON *logDebug = addObj(log, "debug");
+    addEl(logDebug, "loglevel", cfgDataTemp.sectionLog.debug.logLevel);
+    addEl(logDebug, "logfilesretention", cfgDataTemp.sectionLog.debug.logFilesRetention);
+    addEl(logDebug, "debugfilesretention", cfgDataTemp.sectionLog.debug.debugFilesRetention);
+
+    cJSON *logData = addObj(log, "data");
+    addEl(logData, "enabled", cfgDataTemp.sectionLog.data.enabled);
+    addEl(logData, "datafilesretention", cfgDataTemp.sectionLog.data.dataFilesRetention);
 
 
     // Network
     // ***************************
-    cJSON *network, *networkWlan, *networkWlanIpv4, *networkWlanRoaming, *networkWlanAp, *networkApIpv4, *networkTime, *networkTimeNtp;
-    if (!cJSON_AddItemToObject(cJsonObject, "network", network = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(network, "opmode", cfgDataTemp.sectionNetwork.opmode) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(network, "timedoffdelay", cfgDataTemp.sectionNetwork.timedOffDelay) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(network, "hostname", cfgDataTemp.sectionNetwork.hostname.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(network, "wlan", networkWlan = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkWlan, "ssid", cfgDataTemp.sectionNetwork.wlan.ssid.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkWlan, "password", cfgDataTemp.sectionNetwork.wlan.password.empty() ? "" : "******") == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(networkWlan, "ipv4", networkWlanIpv4 = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(networkWlanIpv4, "networkconfig", cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkWlanIpv4, "ipaddress", cfgDataTemp.sectionNetwork.wlan.ipv4.ipAddress.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkWlanIpv4, "subnetmask", cfgDataTemp.sectionNetwork.wlan.ipv4.subnetMask.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkWlanIpv4, "gatewayaddress", cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkWlanIpv4, "dnsserver", cfgDataTemp.sectionNetwork.wlan.ipv4.dnsServer.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(networkWlan, "wlanroaming", networkWlanRoaming = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(networkWlanRoaming, "enabled", cfgDataTemp.sectionNetwork.wlan.wlanRoaming.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(networkWlanRoaming, "rssithreshold", cfgDataTemp.sectionNetwork.wlan.wlanRoaming.rssiThreshold) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(network, "wlanap", networkWlanAp = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkWlanAp, "ssid", cfgDataTemp.sectionNetwork.wlanAp.ssid.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkWlanAp, "password", cfgDataTemp.sectionNetwork.wlanAp.password.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(networkWlanAp, "channel", cfgDataTemp.sectionNetwork.wlanAp.channel) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(networkWlanAp, "ipv4", networkApIpv4 = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkApIpv4, "ipaddress", cfgDataTemp.sectionNetwork.wlanAp.ipv4.ipAddress.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *network = addObj(cJsonObject, "network");
+    addEl(network, "opmode", cfgDataTemp.sectionNetwork.opmode);
+    addEl(network, "timedoffdelay", cfgDataTemp.sectionNetwork.timedOffDelay);
+    addEl(network, "hostname", cfgDataTemp.sectionNetwork.hostname);
+
+    cJSON *networkWlan = addObj(network, "wlan");
+    addEl(networkWlan, "ssid", cfgDataTemp.sectionNetwork.wlan.ssid);
+    addEl(networkWlan, "password", cfgDataTemp.sectionNetwork.wlan.password.empty() ? "" : "******");
+
+    cJSON *networkWlanIpv4 = addObj(networkWlan, "ipv4");
+    addEl(networkWlanIpv4, "networkconfig", cfgDataTemp.sectionNetwork.wlan.ipv4.networkConfig);
+    addEl(networkWlanIpv4, "ipaddress", cfgDataTemp.sectionNetwork.wlan.ipv4.ipAddress);
+    addEl(networkWlanIpv4, "subnetmask", cfgDataTemp.sectionNetwork.wlan.ipv4.subnetMask);
+    addEl(networkWlanIpv4, "gatewayaddress", cfgDataTemp.sectionNetwork.wlan.ipv4.gatewayAddress);
+    addEl(networkWlanIpv4, "dnsserver", cfgDataTemp.sectionNetwork.wlan.ipv4.dnsServer);
+
+    cJSON *networkWlanRoaming = addObj(networkWlan, "wlanroaming");
+    addEl(networkWlanRoaming, "enabled", cfgDataTemp.sectionNetwork.wlan.wlanRoaming.enabled);
+    addEl(networkWlanRoaming, "rssithreshold", cfgDataTemp.sectionNetwork.wlan.wlanRoaming.rssiThreshold);
+
+    cJSON *networkWlanAp = addObj(network, "wlanap");
+    addEl(networkWlanAp, "ssid", cfgDataTemp.sectionNetwork.wlanAp.ssid);
+    addEl(networkWlanAp, "password", cfgDataTemp.sectionNetwork.wlanAp.password);
+    addEl(networkWlanAp, "channel", cfgDataTemp.sectionNetwork.wlanAp.channel);
+
+    cJSON *networkApIpv4 = addObj(networkWlanAp, "ipv4");
+    addEl(networkApIpv4, "ipaddress", cfgDataTemp.sectionNetwork.wlanAp.ipv4.ipAddress);
 
 #ifdef BOARD_FEATURE_ETHERNET
-    cJSON *networkEth, *networkEthIpv4;
-    if (!cJSON_AddItemToObject(network, "ethernet", networkEth = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(networkEth, "ipv4", networkEthIpv4 = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(networkEthIpv4, "networkconfig", cfgDataTemp.sectionNetwork.ethernet.ipv4.networkConfig) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkEthIpv4, "ipaddress", cfgDataTemp.sectionNetwork.ethernet.ipv4.ipAddress.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkEthIpv4, "subnetmask", cfgDataTemp.sectionNetwork.ethernet.ipv4.subnetMask.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkEthIpv4, "gatewayaddress", cfgDataTemp.sectionNetwork.ethernet.ipv4.gatewayAddress.c_str()) ==
-        NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkEthIpv4, "dnsserver", cfgDataTemp.sectionNetwork.ethernet.ipv4.dnsServer.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *networkEth = addObj(network, "ethernet");
+    cJSON *networkEthIpv4 = addObj(networkEth, "ipv4");
+    addEl(networkEthIpv4, "networkconfig", cfgDataTemp.sectionNetwork.ethernet.ipv4.networkConfig);
+    addEl(networkEthIpv4, "ipaddress", cfgDataTemp.sectionNetwork.ethernet.ipv4.ipAddress);
+    addEl(networkEthIpv4, "subnetmask", cfgDataTemp.sectionNetwork.ethernet.ipv4.subnetMask);
+    addEl(networkEthIpv4, "gatewayaddress", cfgDataTemp.sectionNetwork.ethernet.ipv4.gatewayAddress);
+    addEl(networkEthIpv4, "dnsserver", cfgDataTemp.sectionNetwork.ethernet.ipv4.dnsServer);
 #endif // BOARD_FEATURE_ETHERNET
 
-    if (!cJSON_AddItemToObject(network, "time", networkTime = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkTime, "timezone", cfgDataTemp.sectionNetwork.time.timeZone.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(networkTime, "ntp", networkTimeNtp = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(networkTimeNtp, "timesyncenabled", cfgDataTemp.sectionNetwork.time.ntp.timeSyncEnabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(networkTimeNtp, "timeserver", cfgDataTemp.sectionNetwork.time.ntp.timeServer.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(networkTime, "processstartinterlock", cfgDataTemp.sectionNetwork.time.processStartInterlock) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *networkTime = addObj(network, "time");
+    addEl(networkTime, "timezone", cfgDataTemp.sectionNetwork.time.timeZone);
+
+    cJSON *networkTimeNtp = addObj(networkTime, "ntp");
+    addEl(networkTimeNtp, "timesyncenabled", cfgDataTemp.sectionNetwork.time.ntp.timeSyncEnabled);
+    addEl(networkTimeNtp, "timeserver", cfgDataTemp.sectionNetwork.time.ntp.timeServer);
+
+    addEl(networkTime, "processstartinterlock", cfgDataTemp.sectionNetwork.time.processStartInterlock);
 
 
     // System
     // ***************************
-    cJSON *system;
-    if (!cJSON_AddItemToObject(cJsonObject, "system", system = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(system, "cpufrequency", cfgDataTemp.sectionSystem.cpuFrequency) == NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *system = addObj(cJsonObject, "system");
+    addEl(system, "cpufrequency", cfgDataTemp.sectionSystem.cpuFrequency);
 
 
     // WebUI
     // ***************************
-    cJSON *webui, *webuiHttpAuth, *webuiAutorefresh, *webuiAutorefreshOverview, *webuiAutorefreshDataGraph;
-    if (!cJSON_AddItemToObject(cJsonObject, "webui", webui = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(webui, "httpauth", webuiHttpAuth = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(webuiHttpAuth, "authmode", cfgDataTemp.sectionWebUi.httpAuth.authMode) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(webuiHttpAuth, "username", cfgDataTemp.sectionWebUi.httpAuth.username.c_str()) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddStringToObject(webuiHttpAuth, "password", cfgDataTemp.sectionWebUi.httpAuth.password.empty() ? "" : "******") == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(webui, "autorefresh", webuiAutorefresh = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(webuiAutorefresh, "overviewpage", webuiAutorefreshOverview = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(webuiAutorefreshOverview, "enabled", cfgDataTemp.sectionWebUi.AutoRefresh.overviewPage.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(webuiAutorefreshOverview, "refreshtime", cfgDataTemp.sectionWebUi.AutoRefresh.overviewPage.refreshTime) ==
-        NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (!cJSON_AddItemToObject(webuiAutorefresh, "datagraphpage", webuiAutorefreshDataGraph = cJSON_CreateObject())) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddBoolToObject(webuiAutorefreshDataGraph, "enabled", cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.enabled) == NULL) {
-        retVal = ESP_FAIL;
-    }
-    if (cJSON_AddNumberToObject(webuiAutorefreshDataGraph, "refreshtime", cfgDataTemp.sectionWebUi.AutoRefresh.dataGraphPage.refreshTime) ==
-        NULL) {
-        retVal = ESP_FAIL;
-    }
+    cJSON *webui = addObj(cJsonObject, "webui");
 
+    cJSON *webuiHttpAuth = addObj(webui, "httpauth");
+    addEl(webuiHttpAuth, "authmode", cfgDataTemp.sectionWebUi.httpAuth.authMode);
+    addEl(webuiHttpAuth, "username", cfgDataTemp.sectionWebUi.httpAuth.username);
+    addEl(webuiHttpAuth, "password", cfgDataTemp.sectionWebUi.httpAuth.password.empty() ? "" : "******");
+
+    cJSON *webuiAutorefresh = addObj(webui, "autorefresh");
+
+    cJSON *webuiAutorefreshOverview = addObj(webuiAutorefresh, "overviewpage");
+    addEl(webuiAutorefreshOverview, "enabled", cfgDataTemp.sectionWebUi.autoRefresh.overviewPage.enabled);
+    addEl(webuiAutorefreshOverview, "refreshtime", cfgDataTemp.sectionWebUi.autoRefresh.overviewPage.refreshTime);
+
+    cJSON *webuiAutorefreshDataGraph = addObj(webuiAutorefresh, "datagraphpage");
+    addEl(webuiAutorefreshDataGraph, "enabled", cfgDataTemp.sectionWebUi.autoRefresh.dataGraphPage.enabled);
+    addEl(webuiAutorefreshDataGraph, "refreshtime", cfgDataTemp.sectionWebUi.autoRefresh.dataGraphPage.refreshTime);
+
+    // Print to preallocated buffer
     jsonBuffer[0] = '\0'; // Reset content
-    // Print to preallocted buffer
     if (!cJSON_PrintPreallocated(cJsonObject, jsonBuffer, CONFIG_HANDLING_CJSON_STRING_BUFFER_SIZE, unityTest ? 0 : 1)) {
         retVal = ESP_FAIL;
     }
@@ -2679,7 +1312,7 @@ esp_err_t ConfigClass::writeConfigFile()
         return ESP_FAIL;
     }
 
-    if (copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK) != ESP_OK) {
+    if (!copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK)) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "writeConfigFile: Failed to update fallback config file");
     }
 
@@ -2687,6 +1320,9 @@ esp_err_t ConfigClass::writeConfigFile()
 }
 
 
+//**************************************************************************************************
+// Clear internal structs
+//**************************************************************************************************
 template <typename ConfigDataType> inline void clearConfigDataStructure(ConfigDataType &data)
 {
     // Clear and release outer sequence vectors
@@ -2736,7 +1372,10 @@ void ConfigClass::clearCfgData()
 }
 
 
-bool ConfigClass::loadDataFromNVS(std::string key, std::string &value)
+//**************************************************************************************************
+// Load data from NVS storage
+//**************************************************************************************************
+bool ConfigClass::loadDataFromNVS(const std::string &key, std::string &value)
 {
     if (key.empty() || key.length() > 15) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadDataFromNVS: Key: " + key + ": empty / too long (max. 15)");
@@ -2766,7 +1405,7 @@ bool ConfigClass::loadDataFromNVS(std::string key, std::string &value)
     }
 
     if (requiredSize > 0) {
-        char cValue[requiredSize + 1];
+        char cValue[requiredSize];
         err = nvs_get_str(nvshandle, key.c_str(), cValue, &requiredSize);
         if (err != ESP_OK) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "loadDataFromNVS: nvs_get_str | Key: " + key + " | error: " + intToHexString(err));
@@ -2781,7 +1420,10 @@ bool ConfigClass::loadDataFromNVS(std::string key, std::string &value)
 }
 
 
-bool ConfigClass::saveDataToNVS(std::string key, std::string value)
+//**************************************************************************************************
+// Save data to NVS storage
+//**************************************************************************************************
+bool ConfigClass::saveDataToNVS(const std::string &key, const std::string &value)
 {
     if (key.empty() || key.length() > 15) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "saveDataToNVS: Key: " + key + ": empty / too long (max. 15)");
@@ -2813,50 +1455,6 @@ bool ConfigClass::saveDataToNVS(std::string key, std::string value)
     }
 
     return true;
-}
-
-
-void ConfigClass::validatePath(std::string &path, bool withFile)
-{
-    if (path.empty()) {
-        return;
-    }
-
-    // Replace backslashes
-    std::replace(path.begin(), path.end(), '\\', '/');
-
-    if (!withFile) {
-        // Remove slash or backslash at the end of the string
-        if (path.back() == '/') {
-            path.pop_back();
-        }
-    }
-
-    // Add slash at the beginning
-    if (path[0] != '/') {
-        path = "/" + path;
-    }
-}
-
-
-void ConfigClass::validateStructure(std::string &structureName)
-{
-    if (structureName.empty()) {
-        return;
-    }
-
-    // Replace backslashes
-    std::replace(structureName.begin(), structureName.end(), '\\', '/');
-
-    // Remove slash at the begin of the string
-    if (structureName[0] == '/') {
-        structureName.erase(structureName.begin());
-    }
-
-    // Remove slash at the end of the string
-    if (!structureName.empty() && structureName.back() == '/') {
-        structureName.pop_back();
-    }
 }
 
 
