@@ -258,6 +258,7 @@ void ConfigClass::parseSectionConfig(bool init)
     }
 }
 
+
 void ConfigClass::parseSectionOperationMode()
 {
     cJSON *opMode = cJSON_GetObjectItem(cJsonObject, "operationmode");
@@ -273,6 +274,7 @@ void ConfigClass::parseSectionOperationMode()
 
     cJsonUtils::parseBool(opMode, {"usedemoimages"}, section.useDemoImages);
 }
+
 
 void ConfigClass::parseSectionTakeImage()
 {
@@ -308,6 +310,7 @@ void ConfigClass::parseSectionTakeImage()
     cJsonUtils::parseIntClampedMin(takeImage, {"debug", "rawimagesretention"}, section.debug.rawImagesRetention, 0);
 }
 
+
 void ConfigClass::parseSectionImageAlignment()
 {
     cJSON *imgAlign = cJSON_GetObjectItem(cJsonObject, "imagealignment");
@@ -328,6 +331,7 @@ void ConfigClass::parseSectionImageAlignment()
 
     cJsonUtils::parseBool(imgAlign, {"debug", "savedebuginfo"}, section.debug.saveDebugInfo);
 }
+
 
 void ConfigClass::parseSectionSequences(bool init)
 {
@@ -400,6 +404,7 @@ void ConfigClass::parseSectionSequences(bool init)
                                            cfgDataTemp.sectionPostProcessing.sequence, cfgDataTemp.sectionInfluxDBv1.sequence,
                                            cfgDataTemp.sectionInfluxDBv2.sequence);
 }
+
 
 template <typename SectionType> void ConfigClass::parseSectionRoi(const char *sectionKey, SectionType &section, const char *roiSuffix)
 {
@@ -520,6 +525,7 @@ void ConfigClass::parseSectionMqtt(bool unityTest)
     cJsonUtils::parseBool(mqtt, {"homeassistant", "retaindiscovery"}, section.homeAssistant.retainDiscovery);
 }
 
+
 void ConfigClass::parseSectionInfluxDBv1(bool unityTest)
 {
     cJSON *influx = cJSON_GetObjectItem(cJsonObject, "influxdbv1");
@@ -553,6 +559,7 @@ void ConfigClass::parseSectionInfluxDBv1(bool unityTest)
         }
     }
 }
+
 
 void ConfigClass::parseSectionInfluxDBv2(bool unityTest)
 {
@@ -588,6 +595,7 @@ void ConfigClass::parseSectionInfluxDBv2(bool unityTest)
     }
 }
 
+
 void ConfigClass::parseSectionWebhook(bool unityTest)
 {
     cJSON *webhook = cJSON_GetObjectItem(cJsonObject, "webhook");
@@ -603,6 +611,7 @@ void ConfigClass::parseSectionWebhook(bool unityTest)
 
     parseTlsParameters(cJSON_GetObjectItem(webhook, "tls"), section.tls);
 }
+
 
 void ConfigClass::parseSectionGpio(bool init)
 {
@@ -674,6 +683,7 @@ void ConfigClass::parseSectionGpio(bool init)
     }
 }
 
+
 void ConfigClass::parseSectionLogging()
 {
     cJSON *log = cJSON_GetObjectItem(cJsonObject, "log");
@@ -685,6 +695,7 @@ void ConfigClass::parseSectionLogging()
     cJsonUtils::parseBool(log, {"data", "enabled"}, section.data.enabled);
     cJsonUtils::parseIntClampedMin(log, {"data", "datafilesretention"}, section.data.dataFilesRetention, 0);
 }
+
 
 void ConfigClass::parseSectionNetwork(bool init, bool unityTest)
 {
@@ -788,11 +799,13 @@ void ConfigClass::parseSectionNetwork(bool init, bool unityTest)
     cJsonUtils::parseBool(network, {"time", "processstartinterlock"}, section.time.processStartInterlock);
 }
 
+
 void ConfigClass::parseSectionSystem()
 {
     cJsonUtils::parseIntClamped(cJSON_GetObjectItem(cJsonObject, "system"), {"cpufrequency"}, cfgDataTemp.sectionSystem.cpuFrequency, 160,
                                 240);
 }
+
 
 void ConfigClass::parseSectionWebUi(bool unityTest)
 {
@@ -823,6 +836,7 @@ void ConfigClass::parseSecretParameter(cJSON *root, std::initializer_list<const 
         loadDataFromNVS(nvsKey, out);
     }
 }
+
 
 void ConfigClass::parseTlsParameters(cJSON *tlsObj, TLSParams &tls)
 {

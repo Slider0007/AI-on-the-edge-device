@@ -218,7 +218,7 @@ struct TLSParams {
 struct CfgData {
     // Config File
     struct SectionConfig {
-        int version = 6; // NOTE: Increment when existing parameter name changed and add migration routine
+        int version = 6; // NOTE: Increment whenever existing parameter names changed and migration is required
         std::string lastModified = "";
     } sectionConfig;
 

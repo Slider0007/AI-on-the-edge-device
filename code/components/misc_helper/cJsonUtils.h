@@ -75,7 +75,7 @@ inline bool parseIntClamped(cJSON *root, std::initializer_list<const char *> key
     }
 
     if (!cJSON_IsNumber(node)) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int element");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int value");
         return false;
     }
 
@@ -94,7 +94,7 @@ template <typename T> inline bool parseIntClampedMin(cJSON *root, std::initializ
     }
 
     if (!cJSON_IsNumber(node)) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int element");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int value");
         return false;
     }
     target = static_cast<T>(std::max(node->valueint, static_cast<int>(minVal)));
@@ -112,7 +112,7 @@ template <typename T> inline bool parseInt(cJSON *root, std::initializer_list<co
     }
 
     if (!cJSON_IsNumber(node)) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int element");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int value");
         return false;
     }
     target = static_cast<T>(node->valueint);
@@ -130,7 +130,7 @@ inline bool parseFloatClamped(cJSON *root, std::initializer_list<const char *> k
     }
 
     if (!cJSON_IsString(node) || !node->valuestring) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing float element");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing float value");
         return false;
     }
 
@@ -141,7 +141,7 @@ inline bool parseFloatClamped(cJSON *root, std::initializer_list<const char *> k
 
     // Reject: empty string, no digits consumed, or trailing garbage after the number
     if (endPtr == str || *endPtr != '\0' || errno == ERANGE) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing float element");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing float value");
         return false;
     }
 
@@ -160,7 +160,7 @@ inline bool parseString(cJSON *root, std::initializer_list<const char *> keys, s
     }
 
     if (!cJSON_IsString(node) || !node->valuestring) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing string element");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing string value");
         return false;
     }
     target = node->valuestring;
@@ -179,11 +179,11 @@ inline bool parseStringValidated(cJSON *root, std::initializer_list<const char *
     }
 
     if (!cJSON_IsString(node) || !node->valuestring) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed to parse string element");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing string value");
         return false;
     }
     if (!pred(node->valuestring)) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed to validate string element");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed to validate string value > reject value");
         return false;
     }
     target = node->valuestring;
@@ -201,7 +201,7 @@ inline bool parseBool(cJSON *root, std::initializer_list<const char *> keys, boo
     }
 
     if (!cJSON_IsBool(node)) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing bool path");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing boolean value");
         return false;
     }
     target = cJSON_IsTrue(node);
@@ -219,7 +219,7 @@ inline void addElementHelper(cJSON *parent, const char *name, const bool value, 
         return;
     }
     if (!parent) {
-        logJsonAddError(name, "Adding key failed: Parent object is NULL");
+        logJsonAddError(name, "Failed to create element: Parent object is NULL");
         retVal = ESP_FAIL;
         return;
     }
@@ -238,7 +238,7 @@ inline void addElementHelper(cJSON *parent, const char *name, const T value, esp
         return;
     }
     if (!parent) {
-        logJsonAddError(name, "Adding key failed: Parent object is NULL");
+        logJsonAddError(name, "Failed to create element: Parent object is NULL");
         retVal = ESP_FAIL;
         return;
     }
@@ -256,7 +256,7 @@ inline void addElementHelper(cJSON *parent, const char *name, const char *const 
         return;
     }
     if (!parent) {
-        logJsonAddError(name, "Adding key failed: Parent object is NULL");
+        logJsonAddError(name, "Failed to create element: Parent object is NULL");
         retVal = ESP_FAIL;
         return;
     }
@@ -311,7 +311,7 @@ static cJSON *addArrayHelper(cJSON *parent, const char *name, esp_err_t &retVal)
     const char *keyName = name ? name : "UNKNOWN";
 
     if (parent == NULL) {
-        logJsonAddError(keyName, "Failed to create array: parent object is NULL");
+        logJsonAddError(keyName, "Failed to create array: Parent object is NULL");
         retVal = ESP_FAIL;
         return NULL;
     }
@@ -336,14 +336,14 @@ static cJSON *addArrayObjectHelper(cJSON *array, esp_err_t &retVal)
     }
 
     if (array == NULL) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG_JSONUTILS, "Failed to append element: Parent array is NULL");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG_JSONUTILS, "Failed to create element: Parent array is NULL");
         retVal = ESP_FAIL;
         return NULL;
     }
 
     cJSON *obj = cJSON_CreateObject();
     if (obj == NULL || !cJSON_AddItemToArray(array, obj)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG_JSONUTILS, "Failed to create or append object into array");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG_JSONUTILS, "Failed to create or append element into array");
         if (obj) {
             cJSON_Delete(obj);
         }

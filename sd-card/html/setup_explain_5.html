@@ -183,18 +183,18 @@
     function completeSetup()
     {
         if (confirm("Do you want to complete the setup mode and switch to regular web interface?")) {
-            firework.launch('Setup completed', 'success', 5000);
+            firework.launch('Setup completed', 'success', 3000);
 
             jsonConfig.operationmode.opmode = 1; // AUTO mode
-            jsonConfig.webui.httpauth.authmode = $("#webui_httpauth_authmode_value").val();
+            jsonConfig.webui.httpauth.authmode = parseInt($("#webui_httpauth_authmode_value").val(), 10);
             jsonConfig.webui.httpauth.username = $("#webui_httpauth_username_value").val();
             jsonConfig.webui.httpauth.password = $("#webui_httpauth_password_value").val();
 
             saveConfig(JSON.stringify(jsonConfig), true);
-			
+
 			sessionStorage.removeItem("setupStep");
 
-            firework.launch('Regular web interface gets loaded in a few seconds...', 'success', 10000);
+            firework.launch('Redirecting to the standard web interface in a few seconds...', 'success', 10000);
             setTimeout(function() {
                 let stringota = getDomainname();
                 parent.location = stringota;
