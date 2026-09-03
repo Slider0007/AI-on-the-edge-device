@@ -75,7 +75,7 @@ inline bool parseIntClamped(cJSON *root, std::initializer_list<const char *> key
     }
 
     if (!cJSON_IsNumber(node)) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int path");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int element");
         return false;
     }
 
@@ -94,7 +94,7 @@ template <typename T> inline bool parseIntClampedMin(cJSON *root, std::initializ
     }
 
     if (!cJSON_IsNumber(node)) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int path");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int element");
         return false;
     }
     target = static_cast<T>(std::max(node->valueint, static_cast<int>(minVal)));
@@ -112,7 +112,7 @@ template <typename T> inline bool parseInt(cJSON *root, std::initializer_list<co
     }
 
     if (!cJSON_IsNumber(node)) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int path");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing int element");
         return false;
     }
     target = static_cast<T>(node->valueint);
@@ -130,7 +130,7 @@ inline bool parseFloatClamped(cJSON *root, std::initializer_list<const char *> k
     }
 
     if (!cJSON_IsString(node) || !node->valuestring) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing float path");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing float element");
         return false;
     }
 
@@ -141,7 +141,7 @@ inline bool parseFloatClamped(cJSON *root, std::initializer_list<const char *> k
 
     // Reject: empty string, no digits consumed, or trailing garbage after the number
     if (endPtr == str || *endPtr != '\0' || errno == ERANGE) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing float path");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing float element");
         return false;
     }
 
@@ -160,7 +160,7 @@ inline bool parseString(cJSON *root, std::initializer_list<const char *> keys, s
     }
 
     if (!cJSON_IsString(node) || !node->valuestring) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing string path");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing string element");
         return false;
     }
     target = node->valuestring;
@@ -179,11 +179,11 @@ inline bool parseStringValidated(cJSON *root, std::initializer_list<const char *
     }
 
     if (!cJSON_IsString(node) || !node->valuestring) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG_JSONUTILS, std::string("Failed parsing string path '") + buildKeyPath(keys) + "'");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed to parse string element");
         return false;
     }
     if (!pred(node->valuestring)) {
-        logJsonAddError(buildKeyPath(keys).c_str(), "Failed parsing string path");
+        logJsonAddError(buildKeyPath(keys).c_str(), "Failed to validate string element");
         return false;
     }
     target = node->valuestring;
