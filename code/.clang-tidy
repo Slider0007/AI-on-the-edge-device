@@ -1,0 +1,22 @@
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  -bugprone-branch-clone,
+  -bugprone-easily-swappable-parameters
+
+WarningsAsErrors: ''
+
+# Ignore diagnostics in third-party and IDF headers
+HeaderFilterRegex: '^(main|components)/.*'
+
+# Ignore system header issues when clangd/clang-tidy parses ESP-IDF includes
+SystemHeaders: false
+
+# FormatStyle: none
+
+# CheckOptions:
+#  - key: cppcoreguidelines-pro-type-member-init.IgnoreArrays
+#    value: 'true'
+#  - key: modernize-use-auto.MinTypeNameLength
+#    value: '10'
