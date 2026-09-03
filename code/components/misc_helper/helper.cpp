@@ -216,7 +216,7 @@ bool readFileToString(const std::string &path, std::string &out)
 // **********************************************************
 bool isSafePath(const std::string &path)
 {
-    if (path.empty() || path[0] == '/' || path[0] == '\\') {
+    if (path.empty() || path[0] == '/' || path[0] == '\\' || path.find('\\') != std::string::npos) {
         return false;
     }
 
@@ -226,11 +226,6 @@ bool isSafePath(const std::string &path)
         const size_t length = (end == std::string::npos) ? path.length() - start : end - start;
 
         if (length == 0 || (length == 1 && path[start] == '.') || (length == 2 && path[start] == '.' && path[start + 1] == '.')) {
-            return false;
-        }
-
-        // Reject Windows path separators.
-        if (path.find('\\', start, end == std::string::npos ? std::string::npos : end - start) != std::string::npos) {
             return false;
         }
 

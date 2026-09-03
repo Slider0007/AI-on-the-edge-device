@@ -383,36 +383,36 @@ void taskOtaUpdate(void *pvParameter)
         std::string retVal = unzipOta(fileNameUpdate, "/sdcard/");
         if (retVal.length() > 0) {
             if (retVal == "ERROR") {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to unzip files. Update process failed");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to unzip files. Update process failed. Rebooting...");
             }
             else {
                 LogFile.writeToFile(ESP_LOG_INFO, TAG, "Found firmware.bin");
                 if (!otaUpdateFirmware(retVal)) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to update firmware. Update process failed");
+                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to update MCU firmware. Update process failed. Rebooting...");
                 }
             }
         }
         else {
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Files unzipped");
+            deleteAllFilesInDirectory("/sdcard/firmware");
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Rebooting to finalize update process...");
         }
-        deleteAllFilesInDirectory("/sdcard/firmware");
 
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Reboot to finalize update process");
         doRebootOTA();
     }
     else if (filetype == "BIN") {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Processing BIN file: " + fileNameUpdate);
         if (!otaUpdateFirmware(fileNameUpdate)) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware update failed");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to update MCU firmware. Update process failed. Rebooting...");
         }
-        deleteAllFilesInDirectory("/sdcard/firmware");
+        else {
+            deleteAllFilesInDirectory("/sdcard/firmware");
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Rebooting to finalize update process...");
+        }
 
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Reboot to finalize update process");
         doRebootOTA();
     }
     else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Only ZIP or BIN files are supported. Skip update request");
-        deleteAllFilesInDirectory("/sdcard/firmware");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Only ZIP or BIN files are supported. Skip update request");
     }
 }
 
