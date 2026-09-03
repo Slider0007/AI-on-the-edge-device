@@ -2664,7 +2664,17 @@ esp_err_t ConfigClass::writeConfigFile()
 
     const size_t bufLength = strlen(jsonBuffer);
 
-    if (fwrite(jsonBuffer, 1, bufLength, file) != bufLength || fflush(file) != 0 || fsync(fileno(file)) != 0 || fclose(file) != 0) {
+    bool writeFailed = fwrite(jsonBuffer, 1, bufLength, file) != bufLength;
+    if (!writeFailed) {
+        writeFailed = fflush(file) != 0;
+    }
+    if (!writeFailed) {
+        writeFailed = fsync(fileno(file)) != 0;
+    }
+    if (fclose(file) != 0) {
+        writeFailed = true;
+    }
+    if (writeFailed) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write config file");
         return ESP_FAIL;
     }
