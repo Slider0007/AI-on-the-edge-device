@@ -2658,21 +2658,20 @@ esp_err_t ConfigClass::writeConfigFile()
 {
     FILE *file = fopen(CONFIG_PERSISTENCE_FILE, "w");
     if (!file) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write JSON file");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to open config file");
         return ESP_FAIL;
     }
 
     const size_t bufLength = strlen(jsonBuffer);
-    size_t written = fwrite(jsonBuffer, 1, bufLength, file);
-    fclose(file);
 
-    if (written != bufLength) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write complete JSON data");
+    if (fwrite(jsonBuffer, 1, bufLength, file) != bufLength || fflush(file) != 0 || fsync(fileno(file)) != 0 || fclose(file) != 0) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "writeConfigFile: Failed to write config file");
         return ESP_FAIL;
     }
 
-    // Save config file additionally as fallback config file
-    copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK);
+    if (copyFile(CONFIG_PERSISTENCE_FILE, CONFIG_PERSISTENCE_FILE_FALLBACK) != ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "writeConfigFile: Failed to update fallback config file");
+    }
 
     return ESP_OK;
 }
