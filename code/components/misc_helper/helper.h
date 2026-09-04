@@ -11,14 +11,14 @@ bool fileExists(std::string filename);
 bool copyFile(std::string input, std::string output);
 bool renameFile(std::string from, std::string to);
 bool deleteFile(std::string fn);
-
-std::string getFileFullFileName(std::string filename);
-std::string getFileType(std::string filename);
+bool isValidFilename(const std::string &filename);
+std::string getFileName(const std::string &path);
+std::string getFileType(const std::string &filename);
 bool getFileIsFiletype(const std::string &filename, const std::string &filetype);
 size_t getFileSize(const std::string &filename);
 bool readFileToString(const std::string &path, std::string &out);
 
-
+bool isSafePath(const std::string &path);
 std::string getDirectory(std::string filename);
 bool makeDir(std::string _what);
 int makeDirRecursive(const char *dir, const mode_t mode);

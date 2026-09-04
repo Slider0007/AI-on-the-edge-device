@@ -117,9 +117,9 @@ extern "C" void app_main()
     // Note: OTA Status check only necessary if OTA rollback feature is enabled
     // ********************************************
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOTAPartitionState();
+    checkOtaPartitionState();
 #endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOTAUpdate();
+    checkOtaStaged();
 
     // Set log level to DEBUG
     // Be aware: Output is limited to max defined log level in sdkconfig

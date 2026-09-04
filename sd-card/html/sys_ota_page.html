@@ -205,8 +205,6 @@
                         document.getElementById("status").innerText = "Status: Installing...";
                         firework.launch('Upload completed, the device will now restart and install the update', 'success', 5000);
 
-                        doRebootAfterUpdate();
-
                         actionRuntime = 0;
                         updateTimer = setInterval(function() {
                             actionRuntime += 1;
@@ -234,8 +232,13 @@
                     }
                 } else if (xhttp.status >= 400) {
                     firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
+                    document.getElementById("status").innerText = "Status: Update failed";
+                    document.getElementById("fileSelector").disabled = false;
+
                 } else {
                     firework.launch('Server closed the connection abruptly', 'danger', 30000);
+                    document.getElementById("status").innerText = "Status: Update failed";
+                    document.getElementById("fileSelector").disabled = false;
                 }
             }
         };
@@ -243,15 +246,6 @@
         const file_name = document.getElementById("fileSelector").value;
         let url = getDomainname() + "/ota?task=update&file=" + filePath;
         xhttp.open("GET", url, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
-    }
-
-
-    function doRebootAfterUpdate()
-    {
-        const xhttp = new XMLHttpRequest();
-        xhttp.open("GET", "/reboot", true);
         xhttp.withCredentials = true;
         xhttp.send();
     }

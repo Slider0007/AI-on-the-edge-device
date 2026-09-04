@@ -119,13 +119,12 @@ extern "C" void app_main(void)
     makeDir("/sdcard/img_tmp");       // mandatory for setting up alignment marker
     makeDir("/sdcard/demo");          // mandatory for demo mode
 
-    // Check for updates
-    // Note: OTA status check only necessary if OTA rollback feature is enabled
+    // Check for OTA updates
     // ********************************************
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOTAPartitionState();
+    checkOtaPartitionState();
 #endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOTAUpdate();
+    checkOtaStaged();
 
     // Configuration migration for legacy config.ini / wlan.ini
     // Firmware version: v15.0 - v16.x, Config version: 0 - 2

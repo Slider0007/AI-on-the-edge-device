@@ -96,52 +96,64 @@ bool deleteFile(std::string fn)
 }
 
 
-std::string getFileFullFileName(std::string filename)
+bool isValidFilename(const std::string &filename)
 {
-    size_t lastpos = filename.find_last_of('/');
-
-    if (lastpos == std::string::npos) {
-        return "";
+    if (filename.empty() || filename.length() > 128) {
+        return false;
     }
 
-    //	ESP_LOGD(TAG, "Last position: %d", lastpos);
+    if (filename == "." || filename == "..") {
+        return false;
+    }
 
-    std::string zw = filename.substr(lastpos + 1, filename.size() - lastpos);
+    if (filename.find('/') != std::string::npos || filename.find('\\') != std::string::npos || filename.find("..") != std::string::npos) {
+        return false;
+    }
 
-    return zw;
+    for (const unsigned char c : filename) {
+        if (c < 0x20 || c == 0x7F) {
+            return false;
+        }
+    }
+
+    return filename.length() >= 4 && toLower(filename.substr(filename.length() - 4)) == ".zip";
 }
 
 
-std::string getFileType(std::string filename)
+std::string getFileName(const std::string &path)
 {
-    size_t lastpos = filename.rfind(".", filename.length());
-    size_t neu_pos;
-    while ((neu_pos = filename.find(".", lastpos + 1)) > -1) {
-        lastpos = neu_pos;
+    if (path.empty()) {
+        return "";
     }
 
+    const size_t lastpos = path.find_last_of("/\\");
+    if (lastpos == std::string::npos) {
+        return path;
+    }
+
+    return path.substr(lastpos + 1);
+}
+
+
+std::string getFileType(const std::string &filename)
+{
+    const size_t lastpos = filename.find_last_of('.');
     if (lastpos == std::string::npos) {
         return "";
     }
 
-    std::string zw = filename.substr(lastpos + 1, filename.size() - lastpos);
-    zw = toUpper(zw);
-
-    return zw;
+    return toUpper(filename.substr(lastpos + 1));
 }
 
 
 bool getFileIsFiletype(const std::string &filename, const std::string &filetype)
 {
-    return (filename.substr(filename.find_last_of(".") + 1) == filetype);
-
-    /*std::size_t extPos = filename.rfind(".", filename.length());
-    if (extPos == std::string::npos)
+    const size_t pos = filename.find_last_of('.');
+    if (pos == std::string::npos) {
         return false;
+    }
 
-    ESP_LOGI(TAG, "check: %s, %s", filename.substr(filename.rfind(".", filename.length()) + 1).c_str(), filetype.c_str());
-
-    return (filename.substr(filename.rfind(".", filename.length()) + 1) == filetype);*/
+    return toUpper(filename.substr(pos + 1)) == toUpper(filetype);
 }
 
 
@@ -202,6 +214,28 @@ bool readFileToString(const std::string &path, std::string &out)
 
 // Directory related helper
 // **********************************************************
+bool isSafePath(const std::string &path)
+{
+    if (path.empty() || path[0] == '/' || path[0] == '\\' || path.find("\\") != std::string::npos) {
+        return false;
+    }
+
+    size_t start = 0;
+    while (start < path.length()) {
+        const size_t end = path.find("/", start);
+        const size_t length = (end == std::string::npos) ? path.length() - start : end - start;
+
+        if (length == 0 || (length == 1 && path[start] == '.') || (length == 2 && path[start] == '.' && path[start + 1] == '.')) {
+            return false;
+        }
+
+        start = (end == std::string::npos) ? path.length() : end + 1;
+    }
+
+    return true;
+}
+
+
 std::string getDirectory(std::string filename)
 {
     size_t lastpos = filename.rfind('/');
