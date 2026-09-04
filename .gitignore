@@ -5,7 +5,6 @@
 **/.vscode/launch.json
 **/.vscode/ipch
 **/.idea
-**/code/.clang*
 
 # OS metadata
 .DS_Store
