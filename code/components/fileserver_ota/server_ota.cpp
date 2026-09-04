@@ -52,6 +52,17 @@ static bool diagnostic(void)
 }
 
 
+static void infiniteLoop(void)
+{
+    int i = 0;
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "When a new firmware is available on the server, press the reset button to download it");
+    while (1) {
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Waiting for a new firmware (" + std::to_string(++i) + ")");
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+
 // OTA Partition State Check is only needed if sdkconfig flag CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE is set
 // Rollback functionality is not yet implemented in this firmware
 void checkOtaPartitionState(void)
@@ -95,122 +106,108 @@ void checkOtaPartitionState(void)
         }
     }
 }
-
-static void infiniteLoop(void)
-{
-    int i = 0;
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "When a new firmware is available on the server, press the reset button to download it");
-    while (1) {
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Waiting for a new firmware (" + std::to_string(++i) + ")");
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
 #endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
 
 
-static std::string unzipOta(std::string &inputZipFile, std::string rootFolder)
+static UnzipOtaResult unzipOta(const std::string &inputZipFile, const std::string &rootFolder)
 {
-    mz_zip_archive zipArchive;
-    std::string retVal; // return string "ERROR" -> FAILURE | return string != "ERROR" -> firmware filename
+    mz_zip_archive zipArchive = {};
 
-    // Open archive
-    memset(&zipArchive, 0, sizeof(zipArchive));
     if (!mz_zip_reader_init_file(&zipArchive, inputZipFile.c_str(), 0)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: mz_zip_reader_init_file() failed");
-        return "ERROR";
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: Failed to init");
+        return {UnzipOtaStatus::Failed, {}};
     }
 
-    // Get and print information about each file in the archive.
-    int numberoffiles = (int)mz_zip_reader_get_num_files(&zipArchive);
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Files to be extracted: " + std::to_string(numberoffiles));
+    const mz_uint numberOfFiles = mz_zip_reader_get_num_files(&zipArchive);
 
-    for (int i = 0; i < numberoffiles; i++) {
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Files to be extracted: " + std::to_string(numberOfFiles));
+
+    std::string firmwarePath;
+
+    for (mz_uint i = 0; i < numberOfFiles; ++i) {
         mz_zip_archive_file_stat fileStat;
+
         if (!mz_zip_reader_file_stat(&zipArchive, i, &fileStat)) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to get file stat for file index: " + std::to_string(i));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: Failed to get file stat | File index: " + std::to_string(i));
+
+            mz_zip_reader_end(&zipArchive);
+            return {UnzipOtaStatus::Failed, {}};
+        }
+
+        if (fileStat.m_is_directory) {
             continue;
         }
 
-        std::string archiveFilename(fileStat.m_filename);
+        const std::string archiveFilename(fileStat.m_filename);
 
-        if (!fileStat.m_is_directory) {
-            if (!isSafePath(archiveFilename)) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: Unsafe path rejected: " + archiveFilename);
+        if (!isSafePath(archiveFilename)) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: Unzip rejected | Unsafe path: " + archiveFilename);
 
-                mz_zip_reader_end(&zipArchive);
-                return "ERROR";
-            }
+            mz_zip_reader_end(&zipArchive);
+            return {UnzipOtaStatus::Failed, {}};
+        }
 
-            std::string archiveFilenameTemp = archiveFilename;
-            // ESP_LOGD(TAG, "archive filename: %s", archiveFilenameTemp.c_str());
+        const std::string archiveFilenameUpper = toUpper(archiveFilename);
 
-            const std::string archiveFilenameUpper = toUpper(archiveFilenameTemp);
-            if (archiveFilenameUpper == "FIRMWARE.BIN") {
-                // Redirect firmware.bin to /sdcard/firmware/
-                archiveFilenameTemp = rootFolder + "firmware/" + archiveFilenameTemp;
-                retVal = archiveFilenameTemp; // Return file for further processing
-            }
-            else if (archiveFilenameUpper == "BOOTLOADER.BIN" || archiveFilenameUpper == "PARTITIONS.BIN" ||
-                     archiveFilenameUpper == "README.MD" || archiveFilenameUpper == "META.JSON") {
-                // Skip not required binary files, readme.md from OTA package and meta.json from backup file
-                continue;
-            }
-            else {
-                // Other files use path structure of zip file
-                archiveFilenameTemp = rootFolder + archiveFilenameTemp;
-            }
+        std::string destinationPath;
 
-            ESP_LOGI(TAG, "Unzip file: %s", archiveFilenameTemp.c_str());
+        if (archiveFilenameUpper == "FIRMWARE.BIN") {
+            // Always extract firmware.bin into the dedicated firmware directory
+            destinationPath = rootFolder + "firmware/" + archiveFilename;
+            firmwarePath = destinationPath;
+        }
+        else if (archiveFilenameUpper == "BOOTLOADER.BIN" || archiveFilenameUpper == "PARTITIONS.BIN" ||
+                 archiveFilenameUpper == "README.MD" || archiveFilenameUpper == "META.JSON") {
+            // Not required for OTA / handled elsewhere.
+            continue;
+        }
+        else {
+            // Preserve the directory structure from the ZIP.
+            destinationPath = rootFolder + archiveFilename;
+        }
 
-            // Add suffix to ensure not directly overwriting original file
-            constexpr const char *TEMP_SUFFIX = "_0xge";
-            std::string archiveFilenameTempSuffix = archiveFilenameTemp + TEMP_SUFFIX;
+        ESP_LOGI(TAG, "Unzip file: %s", destinationPath.c_str());
 
-            // Create directory if not yet existing
-            makeDir(getDirectory(archiveFilenameTemp));
+        constexpr const char *TEMP_SUFFIX = "_0xge";
+        const std::string tempPath = destinationPath + TEMP_SUFFIX;
 
-            // Ensure that temp file is surly deleted before writing data
-            deleteFile(archiveFilenameTempSuffix);
+        makeDir(getDirectory(destinationPath));
+        deleteFile(tempPath);
 
-            // Extract to file (No heap allocation required)
-            mz_bool extracted = mz_zip_reader_extract_to_file(&zipArchive, i, archiveFilenameTempSuffix.c_str(), 0);
+        if (!mz_zip_reader_extract_to_file(&zipArchive, i, tempPath.c_str(), 0)) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: Failed to unzip | File: " + archiveFilename);
+            deleteFile(tempPath);
+            mz_zip_reader_end(&zipArchive);
+            return {UnzipOtaStatus::Failed, {}};
+        }
 
-            if (!extracted) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: mz_zip_reader_extract_to_file() failed | file: " + archiveFilename);
-                mz_zip_reader_end(&zipArchive);
-                return "ERROR";
-            }
+        deleteFile(destinationPath);
 
-            // Rename temp file to destination target
-            deleteFile(archiveFilenameTemp);
-            if (!renameFile(archiveFilenameTempSuffix, archiveFilenameTemp)) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
-                                    "unzipOta: Failed to rename file: " + archiveFilenameTempSuffix + " -> " + archiveFilenameTemp);
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: File failed: " + archiveFilename);
-                mz_zip_reader_end(&zipArchive);
-                return "ERROR";
-            }
-
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "unzipOta: File successful: " + archiveFilename);
+        if (!renameFile(tempPath, destinationPath)) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "unzipOta: Failed to rename | File: " + tempPath + " -> " + destinationPath);
+            deleteFile(tempPath);
+            mz_zip_reader_end(&zipArchive);
+            return {UnzipOtaStatus::Failed, {}};
         }
     }
-    // Close the archive, freeing any resources it was using
+
     mz_zip_reader_end(&zipArchive);
-    return retVal;
+
+    return {UnzipOtaStatus::Success, firmwarePath};
 }
 
 
 // OTA update: 3rd step
-static bool otaUpdateFirmware(const std::string &fn)
+static bool otaUpdateFirmware(const std::string &filename)
 {
     esp_ota_handle_t otaHandle = 0;
     esp_err_t retVal = ESP_OK;
     bool success = false;
 
-    ESP_LOGI(TAG, "Starting firmware update");
-
     const esp_partition_t *configured = esp_ota_get_boot_partition();
     const esp_partition_t *running = esp_ota_get_running_partition();
+
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Flashing firmware...");
 
     if (configured != running) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG,
@@ -228,15 +225,15 @@ static bool otaUpdateFirmware(const std::string &fn)
 
     ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%x", updatePartition->subtype, (unsigned int)updatePartition->address);
 
-    FILE *file = fopen(fn.c_str(), "rb");
+    FILE *file = fopen(filename.c_str(), "rb");
     if (!file) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: Failed to open file: " + fn);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: Failed to open file: " + filename);
         return false;
     }
 
     struct stat st;
     if (fstat(fileno(file), &st) != 0 || st.st_size < 0) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: Binary file size eval failed or invalid size on: " + fn);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: Binary file size eval failed or invalid size on: " + filename);
         fclose(file);
         return false;
     }
@@ -371,49 +368,45 @@ cleanup:
 
 
 // OTA update: 2nd step
-void taskOtaUpdate(void *pvParameter)
+static void taskOtaUpdate(void *pvParameter)
 {
-    setStatusLed(AP_OR_OTA, 1, true); // Signaling an OTA update
+    setStatusLed(AP_OR_OTA, 1, true);
 
-    std::string filetype = toUpper(getFileType(fileNameUpdate));
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File name: " + fileNameUpdate + " | File type: " + filetype);
+    const std::string fileType = toUpper(getFileType(fileNameUpdate));
+    std::string firmwarePath;
 
-    if (filetype == "ZIP") {
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Processing ZIP file: " + fileNameUpdate);
-        std::string retVal = unzipOta(fileNameUpdate, "/sdcard/");
-        if (retVal.length() > 0) {
-            if (retVal == "ERROR") {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to unzip files. Update process failed. Rebooting...");
-            }
-            else {
-                LogFile.writeToFile(ESP_LOG_INFO, TAG, "Found firmware.bin");
-                if (!otaUpdateFirmware(retVal)) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to update MCU firmware. Update process failed. Rebooting...");
-                }
-            }
+    if (fileType == "ZIP") {
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Processing ZIP file...");
+        const UnzipOtaResult result = unzipOta(fileNameUpdate, "/sdcard/");
+
+        if (result.status == UnzipOtaStatus::Failed) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to unzip files. Rebooting...");
         }
         else {
-            deleteAllFilesInDirectory("/sdcard/firmware");
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Rebooting to finalize update process...");
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Unzip successful");
+            firmwarePath = result.firmwarePath;
         }
-
-        doRebootOTA();
     }
-    else if (filetype == "BIN") {
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Processing BIN file: " + fileNameUpdate);
-        if (!otaUpdateFirmware(fileNameUpdate)) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to update MCU firmware. Update process failed. Rebooting...");
-        }
-        else {
-            deleteAllFilesInDirectory("/sdcard/firmware");
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Rebooting to finalize update process...");
-        }
-
-        doRebootOTA();
+    else if (fileType == "BIN") {
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Processing BIN file...");
+        firmwarePath = fileNameUpdate;
     }
     else {
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Only ZIP or BIN files are supported. Skip update request");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Only ZIP or BIN files are supported. Skip update request. Rebooting...");
     }
+
+    // Process firmware.bin
+    if (!firmwarePath.empty()) {
+        if (otaUpdateFirmware(firmwarePath)) {
+            deleteAllFilesInDirectory("/sdcard/firmware");
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Rebooting to finalize update process...");
+        }
+        else {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to update firmware. Rebooting...");
+        }
+    }
+
+    doRebootOTA();
 }
 
 
@@ -432,7 +425,7 @@ void checkOtaStaged()
     fclose(pfile);
     deleteFile("/sdcard/update.txt"); // Delete after processing
 
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Prepare update process | File: " + fileNameUpdate);
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Preparing update process | Staged file: " + fileNameUpdate);
     xTaskCreate(&taskOtaUpdate, "taskOTAUpdate", 16384, NULL, tskIDLE_PRIORITY + 5, NULL);
 
     while (1) { // wait until reboot is performed
