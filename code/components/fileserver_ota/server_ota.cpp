@@ -294,7 +294,7 @@ static bool otaUpdateFirmware(const std::string &filename)
 
                 retVal = esp_ota_begin(updatePartition, totalFileSize, &otaHandle);
                 if (retVal != ESP_OK) {
-                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_begin failed: " + intToHexString(retVal));
+                    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_begin failed | Error: " + intToHexString(retVal));
                     goto cleanup;
                 }
                 ESP_LOGI(TAG, "esp_ota_begin succeeded");
@@ -307,7 +307,7 @@ static bool otaUpdateFirmware(const std::string &filename)
 
         retVal = esp_ota_write(otaHandle, (const void *)otaDataBuffer, bytesRead);
         if (retVal != ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_write failed: " + intToHexString(retVal));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_write failed | Error: " + intToHexString(retVal));
             goto cleanup;
         }
 
@@ -327,9 +327,11 @@ static bool otaUpdateFirmware(const std::string &filename)
     retVal = esp_ota_end(otaHandle);
     if (retVal != ESP_OK) {
         if (retVal == ESP_ERR_OTA_VALIDATE_FAILED) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: Image validation failed (corrupt image)");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: Image validation failed (corrupt or mismatched chip ID)");
         }
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_end failed: " + intToHexString(retVal));
+        else {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_end failed | Error: " + intToHexString(retVal));
+        }
         otaHandle = 0; // esp_ota_end already cleaned handle
         goto cleanup;
     }
@@ -337,7 +339,7 @@ static bool otaUpdateFirmware(const std::string &filename)
 
     retVal = esp_ota_set_boot_partition(updatePartition);
     if (retVal != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_set_boot_partition failed: " + intToHexString(retVal));
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "otaUpdateFirmware: esp_ota_set_boot_partition failed | Error: " + intToHexString(retVal));
         goto cleanup;
     }
 
