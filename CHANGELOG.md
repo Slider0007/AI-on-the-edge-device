@@ -1,5 +1,27 @@
 # Changelog
 
+## [17.4.2-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.4.1-SLFork...v17.4.2-SLFork) (2026-09-04)
+
+
+### Bug Fixes
+
+* **alignment:** Add validation for corrupt/malformed alignment marker image ([#379](https://github.com/Slider0007/AI-on-the-edge-device/issues/379)) ([615926c](https://github.com/Slider0007/AI-on-the-edge-device/commit/615926c688c5f43e5fcc6e6da6d5d91ccdb3dc2b))
+* **config handling:** Fix thread-safety issue using cJSON with PSRAM ([#385](https://github.com/Slider0007/AI-on-the-edge-device/issues/385)) ([dc7df91](https://github.com/Slider0007/AI-on-the-edge-device/commit/dc7df9156cbb21bb993aa985ae02bca2385e3dea))
+* **gpio handler:** Fix sporadic race condition using smartleds during reinit ([#386](https://github.com/Slider0007/AI-on-the-edge-device/issues/386)) ([30099bb](https://github.com/Slider0007/AI-on-the-edge-device/commit/30099bb3717ce83cd713732ee481ad081e39cb43))
+* **rest api - config:** Reload configuration on POST request ([#387](https://github.com/Slider0007/AI-on-the-edge-device/issues/387)) ([af81c1d](https://github.com/Slider0007/AI-on-the-edge-device/commit/af81c1d592e9b72036b29307a692a6390d24ec75))
+
+
+### Refactoring / Style Changes
+
+* **config handling:** Refactor config handling for better maintainability ([#388](https://github.com/Slider0007/AI-on-the-edge-device/issues/388)) ([72620e9](https://github.com/Slider0007/AI-on-the-edge-device/commit/72620e986829656aa6fa2b97a3ed2f31d8b39585))
+* **file handling:** Replace c++ stream-based file handling ([#383](https://github.com/Slider0007/AI-on-the-edge-device/issues/383)) ([9f4c161](https://github.com/Slider0007/AI-on-the-edge-device/commit/9f4c1610ec6303fd6cac3b1bb45ce70535e0779c))
+* **source code:** Cleanup header includes ([#384](https://github.com/Slider0007/AI-on-the-edge-device/issues/384)) ([68880c8](https://github.com/Slider0007/AI-on-the-edge-device/commit/68880c88f269c0d8f889b8e33c849477d455d060))
+
+
+### Other Changes
+
+* **source code:** Add clang tools for intellisense, autocompletion and linting ([#389](https://github.com/Slider0007/AI-on-the-edge-device/issues/389)) ([b9dade8](https://github.com/Slider0007/AI-on-the-edge-device/commit/b9dade8e9d5cda0509e8659dee5f250ff599ac27))
+
 ## [17.4.1-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.4.0-SLFork...v17.4.1-SLFork) (2026-08-24)
 
 ### Installation / Migration Notes
