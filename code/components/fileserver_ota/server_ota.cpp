@@ -349,18 +349,18 @@ static bool otaUpdateFirmware(const std::string &filename)
                 memcpy(&newAppInfo, &otaDataBuffer[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)],
                        sizeof(esp_app_desc_t));
 
-                ESP_LOGI(TAG, "New firmware version: %.*s", newAppInfo.version);
+                ESP_LOGI(TAG, "New firmware version: %.*s", sizeof(newAppInfo.version), newAppInfo.version);
 
                 esp_app_desc_t runningAppInfo;
                 if (esp_ota_get_partition_description(running, &runningAppInfo) == ESP_OK) {
-                    ESP_LOGI(TAG, "Running firmware version: %.*s", runningAppInfo.version);
+                    ESP_LOGI(TAG, "Running firmware version: %.*s", sizeof(runningAppInfo.version), runningAppInfo.version);
                 }
 
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
                 const esp_partition_t *lastInvalidApp = esp_ota_get_last_invalid_partition();
                 esp_app_desc_t invalidAppInfo;
                 if (lastInvalidApp && esp_ota_get_partition_description(lastInvalidApp, &invalidAppInfo) == ESP_OK) {
-                    ESP_LOGI(TAG, "Last invalid firmware version: %.*s", invalidAppInfo.version);
+                    ESP_LOGI(TAG, "Last invalid firmware version: %.*s", sizeof(invalidAppInfo.version), invalidAppInfo.version);
                     if (strncmp(invalidAppInfo.version, newAppInfo.version, sizeof(invalidAppInfo.version)) == 0) {
                         LogFile.writeToFile(ESP_LOG_INFO, TAG, "New firmware version was previously already marked as invalid");
                     }
