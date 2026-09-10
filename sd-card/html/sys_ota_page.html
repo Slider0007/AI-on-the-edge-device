@@ -355,7 +355,7 @@
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4) {
                 if (xhttp.status >= 200 && xhttp.status < 300) {
-                    if (xhttp.responseText.startsWith("reboot")) {
+                    if (xhttp.responseText.startsWith("success")) {
                         firework.launch('Update staged, the device will now restart and install it', 'success', 5000);
                         _("status").innerText = "Status: Installing...";
                         doRebootAfterUpdate();

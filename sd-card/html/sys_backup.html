@@ -420,7 +420,7 @@
         _("progressBar").value = 0;
         _("loadedBytes").innerHTML = "";
 
-        if (event.response.startsWith("reboot")) {
+        if (event.response.startsWith("success")) {
             _("status").innerText = "Status: Restoring...";
             firework.launch('Update staged, the device will now restart and restore configuration', 'success', 5000);
 

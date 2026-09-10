@@ -4,30 +4,42 @@
 
 `http://IP-ADDRESS/ota`
 
-
 Perform an Over-The-Air (OTA) update
 
+The firmware or OTA package is sent directly as the `POST` request body. 
+No query parameters or additional requests are required.
 
-Payload:
-- `task` Task
-  - Available options:
-    - `emptyfirmwaredir`
-      - Delete all content in `/firmware`
-      - No additional parameter necessary
-    - `update`
-      - Perform an OTA update / Upload any content to sd card
-      - Mandatory parameter: `file` 
-- `file` Filename with extension but without path
-  - Supported file extensions:
-    - `TFLITE`: TFLite model
-    - `TFL`: TFLite model (legacy)
-    - `ZIP`: ZIP file (e.g. OTA release package)
-    - `BIN`: MCU firmware (e.g. firmware.bin)
-  - Note: File needs to be existing and located in folder `/firmware`
-    
-Example: `/ota?task=update&file=AI-on-the-edge-device__update__*.zip`
+### Request
+
+- **Method:** `POST`
+- **Endpoint:** `/ota`
+- **Parameters:** None
+- **Body:**
+  - OTA firmware package (Firmware image + WebUI assets)
+  - MCU firmware image (ESP-format)
+
+Supported file types:
+
+| Extension | Description |
+|---|---|
+| `.ZIP` | OTA package containing firmware image and WebUI assets |
+| `.BIN` | MCU firmware image |
 
 
-Response:
-- Content type: `HTML`
-- Content: Query response, e.g. `reboot`
+The OTA handler automatically:
+
+1. Receives the uploaded file
+2. Determines the file type
+3. Validates the uploaded content
+4. Stages and processes the update
+5. Safely extracts and promotes files
+6. Installs firmware to the OTA partition
+7. Performs firmware rollback validation (Pre-condition: latest bootloader, to be flashed manually)
+
+
+### Response
+
+- Content type: `text/html`
+- Content:
+  - On success: `success: Upload successful. Device reboots to process OTA package`
+  - On failure: An appropriate HTTP error response is returned

@@ -163,14 +163,9 @@ static bool updateOtaAssets(void)
  */
 static bool firmwareVerification(void)
 {
-    // Basic system checks
-    if (!esp_ota_get_running_partition()) {
-        return false;
-    }
-
     // Reject firmware when boot looping
     if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware panicked on boot. Rejecting firmware");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware panicked on boot");
         return false;
     }
 
@@ -358,17 +353,6 @@ static bool otaUpdateFirmware(const std::string &filename)
                     ESP_LOGI(TAG, "Running firmware version: %.*s", sizeof(runningAppInfo.version), runningAppInfo.version);
                 }
 
-#ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-                const esp_partition_t *lastInvalidApp = esp_ota_get_last_invalid_partition();
-                esp_app_desc_t invalidAppInfo;
-                if (lastInvalidApp && esp_ota_get_partition_description(lastInvalidApp, &invalidAppInfo) == ESP_OK) {
-                    ESP_LOGI(TAG, "Last invalid firmware version: %.*s", sizeof(invalidAppInfo.version), invalidAppInfo.version);
-                    if (strncmp(invalidAppInfo.version, newAppInfo.version, sizeof(invalidAppInfo.version)) == 0) {
-                        LogFile.writeToFile(ESP_LOG_INFO, TAG, "New firmware version was previously already marked as invalid");
-                    }
-                }
-#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-
                 imageHeaderValid = true;
 
                 retVal = esp_ota_begin(updatePartition, totalFileSize, &otaHandle);
@@ -524,7 +508,7 @@ static void taskOtaUpdate(void *pvParameter)
     setStatusLed(AP_OR_OTA, 1, true);
 
     if (!processOtaUpdate()) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "OTA update aborted/rejected");
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "OTA update aborted / rejected");
     }
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Rebooting to finalize process...");
@@ -615,7 +599,7 @@ static esp_err_t handler_ota(httpd_req_t *req)
     }
 
     // Send response before triggering reboot to guarantee delivery
-    httpd_resp_sendstr(req, "reboot: Device reboots to process OTA file");
+    httpd_resp_sendstr(req, "success: Upload successful. Device reboots to process OTA package");
 
     vTaskDelay(pdMS_TO_TICKS(500));
     doReboot(); // mandatory reboot before the actual OTA is performed
