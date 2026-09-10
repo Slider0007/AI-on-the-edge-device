@@ -234,12 +234,11 @@ static void finalizeOtaUpdate(void)
     }
     // Bootloader with rollback support (firmware version >= v18.x.x-SLFORK)
     else if (otaState == ESP_OTA_IMG_PENDING_VERIFY) {
-        updateOtaAssets();
-        deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
-
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Firmware verification...");
 
         if (!firmwareVerification()) {
+            deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
+
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware verification failed. Trying to rollback...");
             const esp_err_t rollbackError = esp_ota_mark_app_invalid_rollback_and_reboot();
             if (rollbackError != ESP_OK) {
@@ -261,6 +260,11 @@ static void finalizeOtaUpdate(void)
         }
 
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Firmware verification successful | OTA State: VALID");
+
+        // Update assets when firmware is validated.
+        // Note: Firmware remains valid even assetUpdate is failing. Could be resolved with another OTA update.
+        updateOtaAssets();
+        deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
     }
 }
 #endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
