@@ -12,8 +12,8 @@ No query parameters or additional requests are required.
 ### Request
 
 - **Method:** `POST`
-- **Endpoint:** `/ota`
-- **Parameters:** None
+- **Endpoint:** `/ota/<filename>`
+- **Parameter:** `filename` (URL-encoded)
 - **Body:**
   - OTA firmware package (Firmware image + WebUI assets)
   - MCU firmware image (ESP-format)
