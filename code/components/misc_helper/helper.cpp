@@ -444,6 +444,10 @@ bool replaceFolder(const std::string &sourceDir, const std::string &targetDir)
 
 bool mergeFolder(const std::string &sourceDir, const std::string &targetDir)
 {
+    if (!makeDir(targetDir)) {
+        return false;
+    }
+
     DIR *dir = opendir(sourceDir.c_str());
     if (!dir) {
         return false;

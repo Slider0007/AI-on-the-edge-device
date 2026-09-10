@@ -220,7 +220,7 @@
     }
 
 
-    function uploadErrorHandler(event)
+    async function uploadErrorHandler(event)
     {
         let message;
         switch (event.type) {
@@ -233,17 +233,14 @@
             case "network":
                 // TODO: Remove legacy OTA support once old API versions are no longer supported
                 // --------------------------------------------------------------------------------
-                hasLegacyOtaApi().then(hasLegacy => {
-                    if (hasLegacy) {
-                        firework.launch("Network error. Retry with legacy OTA API", "warning", 5000);
-                        startLegacyOTA(); return;
-                    }
-                });
-                return;
+                if (await hasLegacyOtaApi()) {
+                    firework.launch("Network error. Retry with legacy OTA API", "warning", 5000);
+                    startLegacyOTA();
+                    return;
+                }
                 // --------------------------------------------------------------------------------
-
                 message = "Network error";
-
+                break;
             // TODO: Remove legacy OTA support once old API versions are no longer supported
             // --------------------------------------------------------------------------------
             case "legacy_network":

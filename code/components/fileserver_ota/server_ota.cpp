@@ -234,11 +234,13 @@ static void finalizeOtaUpdate(void)
     }
     // Bootloader with rollback support (firmware version >= v18.x.x-SLFORK)
     else if (otaState == ESP_OTA_IMG_PENDING_VERIFY) {
+        updateOtaAssets();
+        deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
+
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Firmware verification...");
 
         if (!firmwareVerification()) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware verification failed. Trying to rollback...");
-            deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
             const esp_err_t rollbackError = esp_ota_mark_app_invalid_rollback_and_reboot();
             if (rollbackError != ESP_OK) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Rollback failed: " + intToHexString(rollbackError) + ". Rebooting...");
@@ -250,7 +252,6 @@ static void finalizeOtaUpdate(void)
         const esp_err_t otaMarkError = esp_ota_mark_app_valid_cancel_rollback();
         if (otaMarkError != ESP_OK) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to mark firmware valid. Trying to rollback: " + intToHexString(otaMarkError));
-            deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
             const esp_err_t rollbackError = esp_ota_mark_app_invalid_rollback_and_reboot();
             if (rollbackError != ESP_OK) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Rollback failed: " + intToHexString(rollbackError) + ". Rebooting...");
@@ -260,9 +261,6 @@ static void finalizeOtaUpdate(void)
         }
 
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Firmware verification successful | OTA State: VALID");
-
-        updateOtaAssets();
-        deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
     }
 }
 #endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
