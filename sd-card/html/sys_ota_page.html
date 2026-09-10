@@ -39,18 +39,17 @@
 <body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
     <h2>OTA Update</h2>
 
-    <p>Supported files / file types:</p>
+    <p>Supported types:</p>
     <ul>
-        <li>firmware.bin: Firmware is flashed to device flash storage</li>
-        <li>zip: Content is extracted to SD card root folder</li>
-        <li>tfl/tflite: Tensorflow model is copied to SD card /config/models folder</li>
+        <li>OTA firmware package (*.zip)</li>
+        <li>Firmware binary file (*.bin)</li>
     </ul>
 
     <br>
 
     <p><b>Recommended procedure to update the complete device over the air:</b></p>
     <b>Use board specific firmware (<i>*__{board type}__*.zip</i>) from
-    <a href="https://github.com/Slider0007/AI-on-the-edge-device/releases" target="_blank">github release page</a></b>
+    <a href="https://github.com/Slider0007/AI-on-the-edge-device/releases/latest" target="_blank">github release page</a></b>
     <br>
     Note: Firmware and SD card content gets updated, configuration remains unchanged.
 
@@ -68,7 +67,7 @@
     <br>
 
     <form id="uploadForm" enctype="multipart/form-data" method="post">
-        <input type="file" accept=".bin,.zip,.tfl,.tflite" name="fileSelector" id="fileSelector" onchange="validateFileInput()">
+        <input type="file" accept=".bin,.zip" name="fileSelector" id="fileSelector" onchange="validateFileInput()">
         <br><br>
         <button class="button" id="startOtaButton" type="button" onclick="startOTA()" disabled>Upload & Install</button>
         <br><br>
@@ -85,6 +84,13 @@
     const MAX_FILE_SIZE_STR = "8MB";
 
     let actionRuntime = 0;
+    let updateTimer = null;
+
+
+    function _(el)
+    {
+        return document.getElementById(el);
+    }
 
 
     async function validateFileInput()
@@ -132,9 +138,6 @@
                                 "or press 'Upload & Install' to continue on own risk", "warning", 10000);
             }
         }
-        else if (/[a-zRC0-9()_\-.]*(\.tfl$)/i.test(filename) || /[a-zRC0-9()_\-.]*(\.tflite$)/i.test(filename)) {
-            firework.launch("Press 'Upload & Install' to install TFLite model", "success", 5000);
-        }
         else if (filename == "firmware.bin") {
             firework.launch("Press 'Upload & Install' to install MCU firmware", "success", 5000);
         }
@@ -158,96 +161,7 @@
         document.getElementById("startOtaButton").disabled = true;
         document.getElementById("fileSelector").disabled = true;
 
-        let file_name = document.getElementById("fileSelector").value;
-        file_name = file_name.split(/[\\\/]/).pop();
-        filePath = file_name.split(/[\\\/]/).pop();
-
-        prepareOnServer();
-    }
-
-
-    function prepareOnServer()
-    {
-        document.getElementById("status").innerText = "Status: Preparing device...";
-
-        // Empty /firmware directory and start file upload
-        const xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (xhttp.readyState == 4) {
-                if (xhttp.status == 200) {
-                    uploadFile();
-                } else if (xhttp.status == 0) {
-                    firework.launch('Server closed the connection abruptly', 'danger', 30000);
-                } else {
-                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
-                }
-            }
-        };
-
-        const url = getDomainname() + "/ota?task=emptyfirmwaredir";
-        xhttp.open("GET", url, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
-    }
-
-
-    function processOnServer()
-    {
-        document.getElementById("status").innerText = "Status: Processing on device...";
-
-        const xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (xhttp.readyState == 4) {
-                if (xhttp.status >= 200 && xhttp.status < 300) {
-                    document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax"; // Make sure after the reboot we go to the overview page
-
-                    if (xhttp.responseText.startsWith("reboot")) { // Reboot required
-                        document.getElementById("status").innerText = "Status: Installing...";
-                        firework.launch('Upload completed, the device will now restart and install the update', 'success', 5000);
-
-                        actionRuntime = 0;
-                        updateTimer = setInterval(function() {
-                            actionRuntime += 1;
-                            _("progressBar").value = Math.round(actionRuntime);
-
-                            if (actionRuntime > 10) { // After 30 seconds, start to check if we are up again
-                                /* Check if the device is up again and forward to index page if so */
-                                fetch(getDomainname(), {mode: 'no-cors', credentials: 'include'})
-                                    .then(r=>{
-                                        parent.location.href=('index.html');
-                                    });
-                            }
-
-                            if (actionRuntime > 100) { // We reached 300 seconds but device is not ready yet
-                                firework.launch("Reboot takes unusually long. Reload this page or power cycle the device", 'danger', 30000);
-                                clearInterval(updateTimer);
-                            }
-                        }, 3000);
-                    }
-                    else // No reboot required
-                    {
-                        document.getElementById("status").innerText = "Status: Update completed";
-                        firework.launch('Update completed', 'success', 5000);
-                        document.getElementById("fileSelector").disabled = false;
-                    }
-                } else if (xhttp.status >= 400) {
-                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
-                    document.getElementById("status").innerText = "Status: Update failed";
-                    document.getElementById("fileSelector").disabled = false;
-
-                } else {
-                    firework.launch('Server closed the connection abruptly', 'danger', 30000);
-                    document.getElementById("status").innerText = "Status: Update failed";
-                    document.getElementById("fileSelector").disabled = false;
-                }
-            }
-        };
-
-        const file_name = document.getElementById("fileSelector").value;
-        let url = getDomainname() + "/ota?task=update&file=" + filePath;
-        xhttp.open("GET", url, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
+        uploadFile();
     }
 
 
@@ -255,33 +169,46 @@
     {
         document.getElementById("status").innerText = "Status: Uploading...";
 
-        const upload_path = "/upload/firmware/" + filePath;
         const file = _("fileSelector").files[0];
+        const uploadPath = "/ota/" + encodeURIComponent(file.name);
 
         const xhttp = new XMLHttpRequest();
-        xhttp.upload.addEventListener("progress", progressHandler, false);
+        xhttp.upload.addEventListener("progress", uploadProgressHandler, false);
         xhttp.addEventListener("load", function () {
             if (xhttp.status >= 200 && xhttp.status < 300) {
-                completeHandler({ target: xhttp });
+                uploadCompleteHandler({ response: xhttp.responseText });
             } else {
-                // Handle error codes like 404, 500, etc.
-                errorHandler({
+                uploadErrorHandler({
+                    type: "http",
                     status: xhttp.status,
                     statusText: xhttp.statusText,
                     response: xhttp.responseText
                 });
             }
         });
-        xhttp.addEventListener("error", errorHandler, false);
-        xhttp.addEventListener("abort", abortHandler, false);
+        xhttp.addEventListener("error", () => uploadErrorHandler({ type: "network" }), false);
+        xhttp.addEventListener("abort", () => uploadErrorHandler({ type: "abort" }), false);
 
-        xhttp.open("POST", upload_path);
+        xhttp.open("POST", uploadPath);
         xhttp.withCredentials = true;
         xhttp.send(file);
     }
 
 
-    function progressHandler(event)
+    function uploadCompleteHandler(event) {
+        _("status").innerHTML = "Status: Upload completed";
+        _("progressBar").value = 0;
+        _("loadedBytes").innerHTML = "";
+
+        if (event.response.startsWith("reboot")) {
+            _("status").innerText = "Status: Installing...";
+            firework.launch('Update staged, the device will now restart and install it', 'success', 5000);
+            updateTimer = setTimeout(checkStatus, 2500);
+        }
+    }
+
+
+    function uploadProgressHandler(event)
     {
         const percent = (event.loaded / event.total) * 100;
         _("progressBar").value = Math.round(percent);
@@ -291,39 +218,201 @@
     }
 
 
-    function completeHandler(event)
+    function uploadErrorHandler(event)
     {
-        _("status").innerHTML = "Status: " + event.target.responseText;
-        _("progressBar").value = 0; // will clear progress bar after successful upload
-        _("loadedBytes").innerHTML = "";
+        let message;
+        switch (event.type) {
+            case "http":
+                // Server's specific reason (set via httpd_resp_send_err on the device)
+                message = event.response && event.response.trim().length > 0
+                    ? event.response.trim()
+                    : `HTTP ${event.status} ${event.statusText || ''}`.trim();
+                break;
+            case "network":
+                // TODO: Remove legacy OTA support once old API versions are no longer supported
+                // --------------------------------------------------------------------------------
+                hasLegacyOtaApi().then(isOld => {
+                    if (isOld) {
+                        firework.launch("Network error. Retry with legacy OTA API", "warning", 5000);
+                        startLegacyOTA(); return;
+                    }
+                    uploadErrorHandler({ type: "legacy_network" });
+                });
+                return;
+                // --------------------------------------------------------------------------------
+                message = "Network error";
+            // TODO: Remove legacy OTA support once old API versions are no longer supported
+            // --------------------------------------------------------------------------------
+            case "legacy_network":
+                message = "Network error (Legacy API)";
+                break;
+            // --------------------------------------------------------------------------------
+            case "abort":
+                message = "Upload aborted";
+                break;
+            default:
+                message = "Unknown error";
+        }
 
-        processOnServer();
-    }
+        console.error("OTA upload failed:", event);
 
+        _("status").innerHTML = "Status: Upload failed | " + message;
+        firework.launch("Upload failed: " + message, "danger", 30000);
 
-    function errorHandler(event)
-    {
-        _("status").innerHTML = `Status: Upload failed (${event.status || 'Unknown'} - ${event.statusText || 'No message'})`;
-        firework.launch('Upload failed', 'danger', 30000);
+        document.getElementById("startOtaButton").disabled = false;
         document.getElementById("fileSelector").disabled = false;
         _("loadedBytes").innerHTML = "";
     }
 
 
-    function abortHandler(event)
-    {
-        _("status").innerHTML = `Status: Upload aborted (${event.status || 'Unknown'} - ${event.statusText || 'No message'})`;
-        firework.launch('Upload aborted', 'danger', 30000);
-        document.getElementById("fileSelector").disabled = false;
-        _("loadedBytes").innerHTML = "";
+    function checkStatus() {
+        actionRuntime += 1;
+        _("progressBar").value = Math.min(Math.round(actionRuntime * 2), 100);
+
+        // Timeout threshold check (150 seconds)
+        if (actionRuntime >= 40) {
+            firework.launch("Reboot takes unusually long. Reload this page or power cycle the device", 'danger', 30000);
+            return;
+        }
+
+        // Start polling after 15 seconds (6 ticks * 2,5 seconds)
+        if (actionRuntime >= 6) {
+            fetch("/index.html", { credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(2000) })
+                .then(r => {
+                    if (r.ok) {
+                        _("progressBar").value = 100;
+                        document.cookie = "page=overview.html;path=/;SameSite=Lax";
+
+                        const topWindow = window.top || window.parent || window;
+                        topWindow.location.href = '/index.html';
+                    }
+                    else {
+                        updateTimer = setTimeout(checkStatus, 2500);
+                    }
+                })
+                .catch(() => {
+                    updateTimer = setTimeout(checkStatus, 2500);
+                });
+        } else {
+            updateTimer = setTimeout(checkStatus, 2500);
+        }
     }
 
-
-    function _(el)
-    {
-        return document.getElementById(el);
+    // Legacy OTA code - Fallback for firmware downgrades
+    // TODO: Remove legacy OTA support once old API versions are no longer supported
+    // --------------------------------------------------------------------------------
+    async function hasLegacyOtaApi() {
+        try {
+            const response = await fetch("/ota?task=api_check", {
+                method: "GET",
+                credentials: "include",
+                cache: "no-store",
+                signal: AbortSignal.timeout(2000)
+            });
+            return response.status === 400; // Old handler exists and rejects the unknown task
+        }
+        catch {
+            return false; // Device is unreachable; cannot determine API version
+        }
     }
 
+    function startLegacyOTA() {
+        prepareOnServer();
+    }
+
+    function prepareOnServer() {
+        document.getElementById("status").innerText = "Status: Preparing device...";
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (xhttp.readyState != 4) return;
+            if (xhttp.status == 200) {
+                // Delete the new OTA staging directory
+                const deleteRequest = new XMLHttpRequest();
+                deleteRequest.onreadystatechange = function() {
+                    if (deleteRequest.readyState != 4) return;
+                    legacyUploadFile();
+                };
+                deleteRequest.open("POST", getDomainname() + "/delete/.ota_staged/?task=deldir");
+                deleteRequest.withCredentials = true;
+                deleteRequest.send();
+            } else if (xhttp.status == 0) {
+                firework.launch('Server closed the connection abruptly', 'danger', 30000);
+            } else {
+                firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
+            }
+        };
+
+        xhttp.open("GET", getDomainname() + "/ota?task=emptyfirmwaredir");
+        xhttp.withCredentials = true;
+        xhttp.send();
+    }
+
+    function processOnServer() {
+        document.getElementById("status").innerText = "Status: Processing on device...";
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (xhttp.readyState == 4) {
+                if (xhttp.status >= 200 && xhttp.status < 300) {
+                    if (xhttp.responseText.startsWith("reboot")) {
+                        firework.launch('Update staged, the device will now restart and install it', 'success', 5000);
+                        _("status").innerText = "Status: Installing...";
+                        doRebootAfterUpdate();
+                        updateTimer = setTimeout(checkStatus, 2500);
+                    }
+                } else if (xhttp.status >= 400) {
+                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
+                } else {
+                    firework.launch('Server closed the connection abruptly', 'danger', 30000);
+                }
+            }
+        };
+
+        const file = document.getElementById("fileSelector").files[0];
+        let url = getDomainname() + "/ota?task=update&file=" + encodeURIComponent(file.name);
+        xhttp.open("GET", url, true);
+        xhttp.withCredentials = true;
+        xhttp.send();
+    }
+
+    function doRebootAfterUpdate() {
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "/reboot");
+        xhttp.withCredentials = true;
+        xhttp.send();
+    }
+
+    function legacyUploadFile() {
+        document.getElementById("status").innerText = "Status: Uploading...";
+
+        const file = _("fileSelector").files[0];
+        const uploadPath = "/upload/firmware/" + encodeURIComponent(file.name);
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.upload.addEventListener("progress", uploadProgressHandler, false);
+        xhttp.addEventListener("load", function () {
+            if (xhttp.status >= 200 && xhttp.status < 300) {
+                _("status").innerHTML = "Status: Upload completed";
+                _("progressBar").value = 0;
+                _("loadedBytes").innerHTML = "";
+                processOnServer();
+            } else { // Handle error codes like 404, 500, etc.
+                errorHandler({
+                    status: xhttp.status,
+                    statusText: xhttp.statusText,
+                    response: xhttp.responseText
+                });
+            }
+        });
+        xhttp.addEventListener("error", () => uploadErrorHandler({ type: "network_legacy" }), false);
+        xhttp.addEventListener("abort", () => uploadErrorHandler({ type: "abort" }), false);
+
+        xhttp.open("POST", uploadPath);
+        xhttp.withCredentials = true;
+        xhttp.send(file);
+    }
+    // --------------------------------------------------------------------------------
 
     function getBoardType()
     {

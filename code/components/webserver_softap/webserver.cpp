@@ -659,11 +659,17 @@ httpd_handle_t startWebserver(void)
     config.uri_match_fn = httpd_uri_match_wildcard;
 
     ESP_LOGI(TAG, "Starting webserver on port: '%d'", config.server_port);
-    if (httpd_start(&server, &config) == ESP_OK) {
+    esp_err_t ret = httpd_start(&server, &config);
+    if (ret == ESP_OK) {
         return server;
     }
+    else if (ret == ESP_ERR_HTTPD_HANDLERS_FULL) {
+        ESP_LOGE(TAG, "Failed to start webserver | Error: URI handlers exhausted (max configured: %d)", config.max_uri_handlers);
+    }
+    else {
+        ESP_LOGE(TAG, "Failed to start webserver | Error: 0x%X", ret);
+    }
 
-    ESP_LOGE(TAG, "Failed to start webserver");
     return NULL;
 }
 

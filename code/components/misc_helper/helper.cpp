@@ -70,29 +70,18 @@ bool copyFile(std::string input, std::string output)
 }
 
 
-bool renameFile(std::string from, std::string to)
+bool renameFile(std::string srcFile, std::string destFile)
 {
-    FILE *fpFile = fopen(from.c_str(), "rb");
-    if (!fpFile) { // File not existing
-        ESP_LOGE(TAG, "renameFile: File %s not existing", from.c_str());
-        return false;
-    }
-    fclose(fpFile);
+    // Remove target file first to guarantee overwrite on FATFS / LittleFS
+    unlink(destFile.c_str());
 
-    return (rename(from.c_str(), to.c_str()) == 0);
+    return (rename(srcFile.c_str(), destFile.c_str()) == 0);
 }
 
 
-bool deleteFile(std::string fn)
+bool deleteFile(std::string file)
 {
-    FILE *fpFile = fopen(fn.c_str(), "rb");
-    if (!fpFile) { // File not existing
-        return false;
-    }
-    fclose(fpFile);
-
-    unlink(fn.c_str());
-    return true;
+    return (unlink(file.c_str()) == 0);
 }
 
 
@@ -216,27 +205,40 @@ bool readFileToString(const std::string &path, std::string &out)
 // **********************************************************
 bool isSafePath(const std::string &path)
 {
-    if (path.empty() || path[0] == '/' || path[0] == '\\' || path.find("\\") != std::string::npos) {
+    if (path.empty() || path[0] == '/' || path[0] == '\\' || path.find('\\') != std::string::npos) {
         return false;
     }
 
-    size_t start = 0;
-    while (start < path.length()) {
-        const size_t end = path.find("/", start);
-        const size_t length = (end == std::string::npos) ? path.length() - start : end - start;
+    for (size_t start = 0; start < path.length();) {
+        const size_t end = path.find('/', start);
+        const size_t length = (end == std::string::npos ? path.length() : end) - start;
 
         if (length == 0 || (length == 1 && path[start] == '.') || (length == 2 && path[start] == '.' && path[start + 1] == '.')) {
             return false;
         }
 
-        start = (end == std::string::npos) ? path.length() : end + 1;
+        if (end == std::string::npos) {
+            break;
+        }
+
+        start = end + 1;
     }
 
     return true;
 }
 
 
-std::string getDirectory(std::string filename)
+bool dirExists(const std::string &directory)
+{
+    struct stat info;
+    if (stat(directory.c_str(), &info) != 0) {
+        return false; // Cannot access path or does not exist
+    }
+    return (info.st_mode & S_IFDIR) != 0; // Check if it's a directory
+}
+
+
+std::string getDirectory(const std::string &filename)
 {
     size_t lastpos = filename.rfind('/');
 
@@ -399,11 +401,94 @@ int removeFolder(const char *folderPath, const char *logTag)
 }
 
 
-esp_err_t deleteAllFilesInDirectory(std::string directory, bool recursive, bool deleteRootFolder)
+/**
+ * @brief Transactional directory replacement with fallback backup strategy
+ */
+bool replaceFolder(const std::string &sourceDir, const std::string &targetDir)
+{
+    const std::string backupDir = targetDir + "_backup";
+
+    // Purge previous backup if lingering
+    deleteAllFilesInDirectory(backupDir, true, true);
+
+    // Move existing target to backup
+    struct stat st;
+    bool hadTarget = (stat(targetDir.c_str(), &st) == 0);
+    if (hadTarget) {
+        if (rename(targetDir.c_str(), backupDir.c_str()) != 0) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to move target " + targetDir + " to backup " + backupDir);
+            return false;
+        }
+    }
+
+    // Promote staged source to target
+    if (rename(sourceDir.c_str(), targetDir.c_str()) == 0) {
+        // Success: Delete backup
+        deleteAllFilesInDirectory(backupDir, true, true);
+        return true;
+    }
+
+    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to promote " + sourceDir + " to " + targetDir + ". Restoring backup...");
+
+    // Recovery: Revert from backup if promotion failed
+    if (hadTarget) {
+        rename(backupDir.c_str(), targetDir.c_str());
+    }
+    return false;
+}
+
+
+bool mergeFolder(const std::string &sourceDir, const std::string &targetDir)
+{
+    DIR *dir = opendir(sourceDir.c_str());
+    if (!dir) {
+        return false;
+    }
+
+    makeDir(targetDir);
+
+    struct dirent *entry;
+    bool success = true;
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        std::string srcPath = sourceDir + "/" + entry->d_name;
+        std::string dstPath = targetDir + "/" + entry->d_name;
+
+        struct stat st;
+        if (stat(srcPath.c_str(), &st) != 0) {
+            continue;
+        }
+
+        if (S_ISDIR(st.st_mode)) {
+            if (!mergeFolder(srcPath, dstPath)) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to merge folder " + srcPath + " to " + dstPath);
+                success = false;
+                break;
+            }
+        }
+        else {
+            if (!renameFile(srcPath, dstPath)) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to merge file " + srcPath + " to " + dstPath);
+                success = false;
+                break;
+            }
+        }
+    }
+
+    closedir(dir);
+    deleteAllFilesInDirectory(sourceDir, true);
+    return success;
+}
+
+
+esp_err_t deleteAllFilesInDirectory(const std::string &directory, bool recursive, bool deleteRootFolder)
 {
     DIR *dir = opendir(directory.c_str());
     if (!dir) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "deleteAllFilesInDirectory: Failed to open directory: " + directory);
         return ESP_ERR_NOT_FOUND;
     }
 

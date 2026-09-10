@@ -85,6 +85,15 @@
     const MAX_FILE_SIZE = 8000*1024;
     const MAX_FILE_SIZE_STR = "8MB";
 
+    let actionRuntime = 0;
+    let updateTimer = null;
+
+
+    function _(el)
+    {
+        return document.getElementById(el);
+    }
+
 
     function startBackup()
     {
@@ -372,93 +381,7 @@
         document.getElementById("startRestoreButton").disabled = true;
         document.getElementById("fileSelector").disabled = true;
 
-        let file_name = document.getElementById("fileSelector").value;
-        file_name = file_name.split(/[\\\/]/).pop();
-        filePath = file_name.split(/[\\\/]/).pop();
-
-        prepareOnServer();
-    }
-
-
-    function prepareOnServer()
-    {
-        document.getElementById("status").innerText = "Status: Preparing device...";
-
-        // Empty /firmware directory and start file upload
-        const xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (xhttp.readyState == 4) {
-                if (xhttp.status == 200) {
-                    uploadFile();
-                } else if (xhttp.status == 0) {
-                    firework.launch('Server closed the connection abruptly', 'danger', 30000);
-                } else {
-                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
-                }
-            }
-        };
-
-        const url = getDomainname() + "/ota?task=emptyfirmwaredir";
-        xhttp.open("GET", url, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
-    }
-
-
-    function processOnServer()
-    {
-        document.getElementById("status").innerText = "Status: Processing on device...";
-
-        const xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (xhttp.readyState == 4) {
-                if (xhttp.status >= 200 && xhttp.status < 300) {
-                    document.cookie = "page=overview.html?v=$COMMIT_HASH;path=/;SameSite=Lax"; // Make sure after the reboot we go to the overview page
-
-                    if (xhttp.responseText.startsWith("reboot")) { // Reboot required
-                        document.getElementById("status").innerText = "Status: Restoring...";
-                        firework.launch('Upload completed, the device will now restart and restore the config', 'success', 5000);
-
-                        doRebootAfterUpdate();
-
-                        action_runtime = 0;
-                        updateTimer = setInterval(function() {
-                            action_runtime += 1;
-                            _("progressBar").value = Math.round(action_runtime);
-
-                            if (action_runtime > 10) { // After 30 seconds, start to check if we are up again
-                                /* Check if the device is up again and forward to index page if so */
-                                fetch(getDomainname(), {mode: 'no-cors', credentials: 'include'})
-                                    .then(r=>{
-                                        parent.location.href=('index.html');
-                                    });
-                            }
-
-                            if (action_runtime > 100) { // We reached 300 seconds but device is not ready yet
-                                firework.launch("Reboot takes unusually long. Reload this page or power cycle the device", 'danger', 30000);
-                                clearInterval(updateTimer);
-                            }
-                        }, 3000);
-                    }
-                    else // No reboot required
-                    {
-                        document.getElementById("status").innerText = "Status: Restore completed";
-                        firework.launch('Restore completed', 'success', 5000);
-                        document.getElementById("fileSelector").disabled = false;
-                    }
-                } else if (xhttp.status >= 400) {
-                    firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
-                } else {
-                    firework.launch('Server closed the connection abruptly', 'danger', 30000);
-                }
-            }
-        };
-
-        const file_name = document.getElementById("fileSelector").value;
-        const url = getDomainname() + "/ota?task=update&file=" + filePath;
-        xhttp.open("GET", url, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
+        uploadFile();
     }
 
 
@@ -466,42 +389,46 @@
     {
         document.getElementById("status").innerText = "Status: Uploading...";
 
-        const upload_path = "/upload/firmware/" + filePath;
         const file = _("fileSelector").files[0];
+        const uploadPath = "/ota/" + encodeURIComponent(file.name);
 
         const xhttp = new XMLHttpRequest();
-        xhttp.upload.addEventListener("progress", progressHandler, false);
+        xhttp.upload.addEventListener("progress", uploadProgressHandler, false);
         xhttp.addEventListener("load", function () {
             if (xhttp.status >= 200 && xhttp.status < 300) {
-                completeHandler({ target: xhttp });
+                uploadCompleteHandler({ response: xhttp.responseText });
             } else {
-                // Handle error codes like 404, 500, etc.
-                errorHandler({
+                uploadErrorHandler({
+                    type: "http",
                     status: xhttp.status,
                     statusText: xhttp.statusText,
                     response: xhttp.responseText
                 });
             }
         });
-        xhttp.addEventListener("error", errorHandler, false);
-        xhttp.addEventListener("abort", abortHandler, false);
+        xhttp.addEventListener("error", () => uploadErrorHandler({ type: "network" }), false);
+        xhttp.addEventListener("abort", () => uploadErrorHandler({ type: "abort" }), false);
 
-        xhttp.open("POST", upload_path);
+        xhttp.open("POST", uploadPath);
         xhttp.withCredentials = true;
         xhttp.send(file);
     }
 
 
-    function doRebootAfterUpdate()
-    {
-        const xhttp = new XMLHttpRequest();
-        xhttp.open("GET", getDomainname() + "/reboot", true);
-        xhttp.withCredentials = true;
-        xhttp.send();
+    function uploadCompleteHandler(event) {
+        _("status").innerHTML = "Status: Upload completed";
+        _("progressBar").value = 0;
+        _("loadedBytes").innerHTML = "";
+
+        if (event.response.startsWith("reboot")) {
+            _("status").innerText = "Status: Restoring...";
+            firework.launch('Update staged, the device will now restart and restore configuration', 'success', 5000);
+            updateTimer = setTimeout(checkStatus, 2500);
+        }
     }
 
 
-    function progressHandler(event)
+    function uploadProgressHandler(event)
     {
         const percent = (event.loaded / event.total) * 100;
         _("progressBar").value = Math.round(percent);
@@ -511,39 +438,69 @@
     }
 
 
-    function completeHandler(event)
+    function uploadErrorHandler(event)
     {
-        _("status").innerHTML = "Status: " + event.target.responseText;
-        _("progressBar").value = 0; // will clear progress bar after successful upload
-        _("loadedBytes").innerHTML = "";
+        let message;
+        switch (event.type) {
+            case "http":
+                // Server's specific reason (set via httpd_resp_send_err on the device)
+                message = event.response && event.response.trim().length > 0
+                    ? event.response.trim()
+                    : `HTTP ${event.status} ${event.statusText || ''}`.trim();
+                break;
+            case "network":
+                message = "Network error";
+                break;
+            case "abort":
+                message = "Upload aborted";
+                break;
+            default:
+                message = "Unknown error";
+        }
 
-        processOnServer();
-    }
+        console.error("OTA upload failed:", event);
 
+        _("status").innerHTML = "Status: Upload failed | " + message;
+        firework.launch("Upload failed: " + message, "danger", 30000);
 
-    function errorHandler(event)
-    {
-        _("status").innerHTML = `Status: Upload Failed (${event.status || 'Unknown'} - ${event.statusText || 'No message'})`;
-        firework.launch('Upload failed', 'danger', 30000);
+        document.getElementById("startOtaButton").disabled = false;
         document.getElementById("fileSelector").disabled = false;
         _("loadedBytes").innerHTML = "";
     }
 
 
-    function abortHandler(event)
-    {
-        _("status").innerHTML = `Status: Upload Aborted (${event.status || 'Unknown'} - ${event.statusText || 'No message'})`;
-        firework.launch('Upload aborted', 'danger', 30000);
-        document.getElementById("fileSelector").disabled = false;
-        _("loadedBytes").innerHTML = "";
+    function checkStatus() {
+        actionRuntime += 1;
+        _("progressBar").value = Math.min(Math.round(actionRuntime * 2), 100);
+
+        // Timeout threshold check (150 seconds)
+        if (actionRuntime >= 40) {
+            firework.launch("Reboot takes unusually long. Reload this page or power cycle the device", 'danger', 30000);
+            return;
+        }
+
+        // Start polling after 5 seconds (2 ticks * 2,5 seconds)
+        if (actionRuntime >= 2) {
+            fetch("/index.html", { credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(2000) })
+                .then(r => {
+                    if (r.ok) {
+                        _("progressBar").value = 100;
+                        document.cookie = "page=overview.html;path=/;SameSite=Lax";
+
+                        const topWindow = window.top || window.parent || window;
+                        topWindow.location.href = '/index.html';
+                    }
+                    else {
+                        updateTimer = setTimeout(checkStatus, 2500);
+                    }
+                })
+                .catch(() => {
+                    updateTimer = setTimeout(checkStatus, 2500);
+                });
+        } else {
+            updateTimer = setTimeout(checkStatus, 2500);
+        }
     }
-
-
-    function _(el)
-    {
-        return document.getElementById(el);
-    }
-
 </script>
 
 </body>

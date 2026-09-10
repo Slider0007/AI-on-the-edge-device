@@ -64,6 +64,7 @@ bool isSetSystemStatusFlag(SystemStatusFlag_t flag);
 
 std::string getResetReason(void);
 
+void markPlannedReboot();
 void checkIsPlannedReboot();
 bool getIsPlannedReboot();
 

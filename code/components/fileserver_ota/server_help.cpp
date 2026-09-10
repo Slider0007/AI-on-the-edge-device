@@ -9,12 +9,14 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#include "esp_http_server.h"
-#include "esp_err.h"
+#include <esp_http_server.h>
+#include <esp_err.h>
 #include <esp_log.h>
 
+#include "webserver.h"
 
-// static const char *TAG = "SERVER_HELP"; // Unsed
+
+static const char *TAG = "SERVER_HELP";
 
 // Check file type (file extention, case-insensitive)
 bool endsWith(std::string const &str, std::string const &suffix)
@@ -83,4 +85,52 @@ esp_err_t setContentTypeFromFile(httpd_req_t *req, const char *filename)
     /* This is a limited set only */
     /* For any other type always set as plain text */
     return httpd_resp_set_type(req, "text/plain");
+}
+
+
+esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
+{
+    FILE *file = fopen(filePath, "wb");
+    if (!file) {
+        std::string msg = "Failed to create file: " + std::string(filePath);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+        return ESP_FAIL;
+    }
+
+    // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
+    setvbuf(file, NULL, _IOFBF, 512);
+
+    ESP_LOGI(TAG, "Receiving file: %s", filePath);
+
+    char *buffer = ((HttpServerData *)req->user_ctx)->scratch;
+    int remaining = req->content_len;
+    int received = 0;
+
+    while (remaining > 0) {
+        ESP_LOGI(TAG, "Remaining size: %d", remaining);
+        if ((received = httpd_req_recv(req, buffer, MIN(remaining, WEBSERVER_SCRATCH_BUFSIZE))) <= 0) {
+            if (received == HTTPD_SOCK_ERR_TIMEOUT) {
+                continue;
+            }
+            fclose(file);
+            unlink(filePath);
+            std::string msg = "Failed to receive file: " + std::string(filePath);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+            return ESP_FAIL;
+        }
+
+        if (received && (received != fwrite(buffer, 1, received, file))) {
+            fclose(file);
+            unlink(filePath);
+            std::string msg = "Failed to write file: " + std::string(filePath);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+            return ESP_FAIL;
+        }
+
+        remaining -= received;
+    }
+
+    fclose(file);
+    ESP_LOGI(TAG, "File reception completed");
+    return ESP_OK;
 }

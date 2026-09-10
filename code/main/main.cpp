@@ -86,6 +86,10 @@ extern "C" void app_main(void)
         return; // Stop here, SD card is required for proper operation
     }
 
+    // Check if reboot was a requested one
+    // ********************************************
+    checkIsPlannedReboot();
+
     // Init status LED
     // ********************************************
     initStatusLed();
@@ -115,16 +119,13 @@ extern "C" void app_main(void)
     makeDir("/sdcard/config/backup"); // mandatory for config migration
     makeDir("/sdcard/config/certs");  // mandatory for TLS encryption
     makeDir("/sdcard/config/models"); // mandatory for TFLite models
-    makeDir("/sdcard/firmware");      // mandatory for OTA firmware update
+    makeDir(DIR_OTA_STAGED);          // mandatory for OTA firmware update
     makeDir("/sdcard/img_tmp");       // mandatory for setting up alignment marker
     makeDir("/sdcard/demo");          // mandatory for demo mode
 
     // Check for OTA updates
     // ********************************************
-#ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOtaPartitionState();
-#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOtaStaged();
+    checkOtaUpdate();
 
     // Configuration migration for legacy config.ini / wlan.ini
     // Firmware version: v15.0 - v16.x, Config version: 0 - 2
@@ -194,7 +195,6 @@ extern "C" void app_main(void)
 
     // Check reboot reason
     // ********************************************
-    checkIsPlannedReboot();
     if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
         LogFile.writeToFile(ESP_LOG_WARN, TAG,
