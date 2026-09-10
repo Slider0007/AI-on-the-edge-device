@@ -423,6 +423,8 @@
         if (event.response.startsWith("reboot")) {
             _("status").innerText = "Status: Restoring...";
             firework.launch('Update staged, the device will now restart and restore configuration', 'success', 5000);
+
+            actionRuntime = 0;
             updateTimer = setTimeout(checkStatus, 2500);
         }
     }
@@ -463,7 +465,7 @@
         _("status").innerHTML = "Status: Upload failed | " + message;
         firework.launch("Upload failed: " + message, "danger", 30000);
 
-        document.getElementById("startOtaButton").disabled = false;
+        document.getElementById("startRestoreButton").disabled = false;
         document.getElementById("fileSelector").disabled = false;
         _("loadedBytes").innerHTML = "";
     }
@@ -473,8 +475,8 @@
         actionRuntime += 1;
         _("progressBar").value = Math.min(Math.round(actionRuntime * 2), 100);
 
-        // Timeout threshold check (150 seconds)
-        if (actionRuntime >= 40) {
+        // Timeout threshold check (120 seconds)
+        if (actionRuntime >= 48) {
             firework.launch("Reboot takes unusually long. Reload this page or power cycle the device", 'danger', 30000);
             return;
         }

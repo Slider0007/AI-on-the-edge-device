@@ -105,12 +105,16 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
     char *buffer = ((HttpServerData *)req->user_ctx)->scratch;
     int remaining = req->content_len;
     int received = 0;
+    uint8_t timeoutRetries = 0;
+    constexpr uint8_t MAX_TIMEOUT_RETRIES = 5;
 
     while (remaining > 0) {
         ESP_LOGI(TAG, "Remaining size: %d", remaining);
         if ((received = httpd_req_recv(req, buffer, MIN(remaining, WEBSERVER_SCRATCH_BUFSIZE))) <= 0) {
             if (received == HTTPD_SOCK_ERR_TIMEOUT) {
-                continue;
+                if (++timeoutRetries <= MAX_TIMEOUT_RETRIES) {
+                    continue;
+                }
             }
             fclose(file);
             unlink(filePath);
@@ -130,7 +134,13 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
         remaining -= received;
     }
 
-    fclose(file);
+    if (fclose(file) != 0) {
+        unlink(filePath);
+        std::string msg = "Failed to finalize file: " + std::string(filePath);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+        return ESP_FAIL;
+    }
+
     ESP_LOGI(TAG, "File reception completed");
     return ESP_OK;
 }

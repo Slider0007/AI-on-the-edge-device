@@ -2,6 +2,7 @@
 #include "helper.h"
 #include "../../include/defines.h"
 
+#include <vector>
 #include <algorithm>
 #include <cstring>
 #include <cmath>
@@ -234,7 +235,7 @@ bool dirExists(const std::string &directory)
     if (stat(directory.c_str(), &info) != 0) {
         return false; // Cannot access path or does not exist
     }
-    return (info.st_mode & S_IFDIR) != 0; // Check if it's a directory
+    return S_ISDIR(info.st_mode); // Check if it's a directory
 }
 
 
@@ -432,7 +433,10 @@ bool replaceFolder(const std::string &sourceDir, const std::string &targetDir)
 
     // Recovery: Revert from backup if promotion failed
     if (hadTarget) {
-        rename(backupDir.c_str(), targetDir.c_str());
+        if (rename(backupDir.c_str(), targetDir.c_str()) != 0) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                "Failed to restore backup " + backupDir + " to " + targetDir + ". Content remains in backup folder");
+        }
     }
     return false;
 }
@@ -445,18 +449,22 @@ bool mergeFolder(const std::string &sourceDir, const std::string &targetDir)
         return false;
     }
 
-    makeDir(targetDir);
-
+    std::vector<std::string> entries;
     struct dirent *entry;
-    bool success = true;
 
-    while ((entry = readdir(dir)) != NULL) {
+    while ((entry = readdir(dir)) != nullptr) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
 
-        std::string srcPath = sourceDir + "/" + entry->d_name;
-        std::string dstPath = targetDir + "/" + entry->d_name;
+        entries.emplace_back(entry->d_name);
+    }
+
+    closedir(dir);
+
+    for (const auto &name : entries) {
+        const std::string srcPath = sourceDir + "/" + name;
+        const std::string dstPath = targetDir + "/" + name;
 
         struct stat st;
         if (stat(srcPath.c_str(), &st) != 0) {
@@ -466,22 +474,18 @@ bool mergeFolder(const std::string &sourceDir, const std::string &targetDir)
         if (S_ISDIR(st.st_mode)) {
             if (!mergeFolder(srcPath, dstPath)) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to merge folder " + srcPath + " to " + dstPath);
-                success = false;
-                break;
+                return false;
             }
         }
         else {
             if (!renameFile(srcPath, dstPath)) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to merge file " + srcPath + " to " + dstPath);
-                success = false;
-                break;
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to move file " + srcPath + " to " + dstPath);
+                return false;
             }
         }
     }
 
-    closedir(dir);
-    deleteAllFilesInDirectory(sourceDir, true);
-    return success;
+    return true;
 }
 
 

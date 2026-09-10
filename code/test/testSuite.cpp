@@ -111,16 +111,6 @@ extern "C" void app_main()
         return; // Stop here, SD card is needed for proper operation
     }
 
-    // Check for updates before start testing
-    // It is possible to update thr firmware also by placing 'firmware.bin' to '/sdcard/firmware' and
-    // file 'update.txt' with content '/sdcard/firmware/firmware.bin' to sd card root folder.
-    // Note: OTA Status check only necessary if OTA rollback feature is enabled
-    // ********************************************
-#ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOtaPartitionState();
-#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOtaStaged();
-
     // Set log level to DEBUG
     // Be aware: Output is limited to max defined log level in sdkconfig
     // ********************************************

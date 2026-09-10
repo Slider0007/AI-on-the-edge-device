@@ -203,6 +203,8 @@
         if (event.response.startsWith("reboot")) {
             _("status").innerText = "Status: Installing...";
             firework.launch('Update staged, the device will now restart and install it', 'success', 5000);
+
+            actionRuntime = 0;
             updateTimer = setTimeout(checkStatus, 2500);
         }
     }
@@ -231,16 +233,17 @@
             case "network":
                 // TODO: Remove legacy OTA support once old API versions are no longer supported
                 // --------------------------------------------------------------------------------
-                hasLegacyOtaApi().then(isOld => {
-                    if (isOld) {
+                hasLegacyOtaApi().then(hasLegacy => {
+                    if (hasLegacy) {
                         firework.launch("Network error. Retry with legacy OTA API", "warning", 5000);
                         startLegacyOTA(); return;
                     }
-                    uploadErrorHandler({ type: "legacy_network" });
                 });
                 return;
                 // --------------------------------------------------------------------------------
+
                 message = "Network error";
+
             // TODO: Remove legacy OTA support once old API versions are no longer supported
             // --------------------------------------------------------------------------------
             case "legacy_network":
@@ -269,8 +272,8 @@
         actionRuntime += 1;
         _("progressBar").value = Math.min(Math.round(actionRuntime * 2), 100);
 
-        // Timeout threshold check (150 seconds)
-        if (actionRuntime >= 40) {
+        // Timeout threshold check (120 seconds)
+        if (actionRuntime >= 48) {
             firework.launch("Reboot takes unusually long. Reload this page or power cycle the device", 'danger', 30000);
             return;
         }
@@ -405,7 +408,7 @@
                 });
             }
         });
-        xhttp.addEventListener("error", () => uploadErrorHandler({ type: "network_legacy" }), false);
+        xhttp.addEventListener("error", () => uploadErrorHandler({ type: "legacy_network" }), false);
         xhttp.addEventListener("abort", () => uploadErrorHandler({ type: "abort" }), false);
 
         xhttp.open("POST", uploadPath);

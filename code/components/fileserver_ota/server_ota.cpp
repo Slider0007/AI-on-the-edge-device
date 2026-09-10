@@ -237,17 +237,25 @@ static void finalizeOtaUpdate(void)
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Firmware verification...");
 
         if (!firmwareVerification()) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware verification failed! Triggering rollback...");
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware verification failed. Trying to rollback...");
             deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
-            esp_ota_mark_app_invalid_rollback_and_reboot();
+            const esp_err_t rollbackError = esp_ota_mark_app_invalid_rollback_and_reboot();
+            if (rollbackError != ESP_OK) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Rollback failed: " + intToHexString(rollbackError) + ". Rebooting...");
+                doRebootOTA();
+            }
             return;
         }
 
         const esp_err_t otaMarkError = esp_ota_mark_app_valid_cancel_rollback();
         if (otaMarkError != ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to mark firmware valid. Triggering rollback: " + intToHexString(otaMarkError));
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to mark firmware valid. Trying to rollback: " + intToHexString(otaMarkError));
             deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
-            esp_ota_mark_app_invalid_rollback_and_reboot();
+            const esp_err_t rollbackError = esp_ota_mark_app_invalid_rollback_and_reboot();
+            if (rollbackError != ESP_OK) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Rollback failed: " + intToHexString(rollbackError) + ". Rebooting...");
+                doRebootOTA();
+            }
             return;
         }
 
@@ -341,18 +349,18 @@ static bool otaUpdateFirmware(const std::string &filename)
                 memcpy(&newAppInfo, &otaDataBuffer[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)],
                        sizeof(esp_app_desc_t));
 
-                ESP_LOGI(TAG, "New firmware version: %s", newAppInfo.version);
+                ESP_LOGI(TAG, "New firmware version: %.*s", newAppInfo.version);
 
                 esp_app_desc_t runningAppInfo;
                 if (esp_ota_get_partition_description(running, &runningAppInfo) == ESP_OK) {
-                    ESP_LOGI(TAG, "Running firmware version: %s", runningAppInfo.version);
+                    ESP_LOGI(TAG, "Running firmware version: %.*s", runningAppInfo.version);
                 }
 
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
                 const esp_partition_t *lastInvalidApp = esp_ota_get_last_invalid_partition();
                 esp_app_desc_t invalidAppInfo;
                 if (lastInvalidApp && esp_ota_get_partition_description(lastInvalidApp, &invalidAppInfo) == ESP_OK) {
-                    ESP_LOGI(TAG, "Last invalid firmware version: %s", invalidAppInfo.version);
+                    ESP_LOGI(TAG, "Last invalid firmware version: %.*s", invalidAppInfo.version);
                     if (strncmp(invalidAppInfo.version, newAppInfo.version, sizeof(invalidAppInfo.version)) == 0) {
                         LogFile.writeToFile(ESP_LOG_INFO, TAG, "New firmware version was previously already marked as invalid");
                     }
@@ -599,9 +607,8 @@ static esp_err_t handler_ota(httpd_req_t *req)
 
     const std::string fileType = detectPackageType(FILE_OTA_STAGED_PACKAGE);
     if (fileType != "ZIP" && fileType != "BIN") {
-        std::string msg = "Unsupported file type (supported: ZIP, ESP firmware BIN): " + sanitizedFile;
         deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, msg.c_str());
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Unsupported file type (supported: ZIP, ESP firmware BIN)");
         return ESP_FAIL;
     }
 
