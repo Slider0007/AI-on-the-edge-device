@@ -1,6 +1,6 @@
 CompileFlags:
   # Directs clangd to look for compile_commands.json -> adapt accordingly
-  CompilationDatabase: ".pio/build/freenove-esp32s3-n16r8"
+  CompilationDatabase: ".pio/build/esp32cam"
 
   Add:
     # Disable attribute-related warnings directly in the compiler frontend
