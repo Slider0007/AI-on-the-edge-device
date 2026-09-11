@@ -200,7 +200,7 @@
         _("progressBar").value = 0;
         _("loadedBytes").innerHTML = "";
 
-        if (event.response.startsWith("reboot")) {
+        if (event.response.startsWith("success")) {
             _("status").innerText = "Status: Installing...";
             firework.launch('Update staged, the device will now restart and install it', 'success', 5000);
 
@@ -355,7 +355,7 @@
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4) {
                 if (xhttp.status >= 200 && xhttp.status < 300) {
-                    if (xhttp.responseText.startsWith("success")) {
+                    if (xhttp.responseText.startsWith("reboot")) {
                         firework.launch('Update staged, the device will now restart and install it', 'success', 5000);
                         _("status").innerText = "Status: Installing...";
                         doRebootAfterUpdate();
