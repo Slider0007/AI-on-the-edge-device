@@ -61,6 +61,16 @@
 // GLOBAL GENERAL FLAGS
 //**************************************************************************************
 
+// SD-card basic paths
+//******************************
+#define FS_ROOT "/sdcard"
+#define DIR_CONFIG_ROOT FS_ROOT "/config"
+#define DIR_HTML_ROOT FS_ROOT "/html"
+#define DIR_OTA_STAGED FS_ROOT "/.ota_staged"
+#define FILE_REBOOT_TRACKER FS_ROOT "/reboot.txt"
+
+
+
 // Compiler optimization for tflite-micro-esp-examples
 //******************************
 #define XTENSA
@@ -110,7 +120,7 @@
 #define LOGFILE_LAST_PART_BYTES 80 * 1024 // 80 kBytes  // Size of partial log file to return
 
 #define WEBSERVER_SCRATCH_BUFSIZE   32768
-#define SERVER_OTA_SCRATCH_BUFSIZE  1024
+#define SERVER_OTA_SCRATCH_BUFSIZE  8192
 
 
 // ConfigClass

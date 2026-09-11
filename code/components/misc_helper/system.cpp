@@ -349,9 +349,20 @@ std::string getResetReason(void)
 }
 
 
+void markPlannedReboot(void)
+{
+    FILE *pfile = fopen(FILE_REBOOT_TRACKER, "w");
+    if (pfile) {
+        std::string zw = "reboot";
+        fwrite(zw.c_str(), strlen(zw.c_str()), 1, pfile);
+        fclose(pfile);
+    }
+}
+
+
 void checkIsPlannedReboot()
 {
-    FILE *file = fopen("/sdcard/reboot.txt", "r");
+    FILE *file = fopen(FILE_REBOOT_TRACKER, "r");
     if (!file) {
         isPlannedReboot = false;
         return;
@@ -359,7 +370,7 @@ void checkIsPlannedReboot()
 
     fclose(file);
 
-    if (!deleteFile("/sdcard/reboot.txt")) {
+    if (!deleteFile(FILE_REBOOT_TRACKER)) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Failed to delete reboot file");
     }
 

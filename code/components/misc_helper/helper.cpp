@@ -2,6 +2,7 @@
 #include "helper.h"
 #include "../../include/defines.h"
 
+#include <vector>
 #include <algorithm>
 #include <cstring>
 #include <cmath>
@@ -70,78 +71,79 @@ bool copyFile(std::string input, std::string output)
 }
 
 
-bool renameFile(std::string from, std::string to)
+bool renameFile(std::string srcFile, std::string destFile)
 {
-    FILE *fpFile = fopen(from.c_str(), "rb");
-    if (!fpFile) { // File not existing
-        ESP_LOGE(TAG, "renameFile: File %s not existing", from.c_str());
-        return false;
-    }
-    fclose(fpFile);
+    // Remove target file first to guarantee overwrite on FATFS / LittleFS
+    unlink(destFile.c_str());
 
-    return (rename(from.c_str(), to.c_str()) == 0);
+    return (rename(srcFile.c_str(), destFile.c_str()) == 0);
 }
 
 
-bool deleteFile(std::string fn)
+bool deleteFile(std::string file)
 {
-    FILE *fpFile = fopen(fn.c_str(), "rb");
-    if (!fpFile) { // File not existing
-        return false;
-    }
-    fclose(fpFile);
-
-    unlink(fn.c_str());
-    return true;
+    return (unlink(file.c_str()) == 0);
 }
 
 
-std::string getFileFullFileName(std::string filename)
+bool isValidFilename(const std::string &filename)
 {
-    size_t lastpos = filename.find_last_of('/');
+    if (filename.empty() || filename.length() > 128) {
+        return false;
+    }
 
+    if (filename == "." || filename == "..") {
+        return false;
+    }
+
+    if (filename.find('/') != std::string::npos || filename.find('\\') != std::string::npos || filename.find("..") != std::string::npos) {
+        return false;
+    }
+
+    for (const unsigned char c : filename) {
+        if (c < 0x20 || c == 0x7F) {
+            return false;
+        }
+    }
+
+    return filename.length() >= 4 && toLower(filename.substr(filename.length() - 4)) == ".zip";
+}
+
+
+std::string getFileName(const std::string &path)
+{
+    if (path.empty()) {
+        return "";
+    }
+
+    const size_t lastpos = path.find_last_of("/\\");
+    if (lastpos == std::string::npos) {
+        return path;
+    }
+
+    return path.substr(lastpos + 1);
+}
+
+
+std::string getFileType(const std::string &filename)
+{
+    const size_t lastpos = filename.find_last_of('.');
     if (lastpos == std::string::npos) {
         return "";
     }
 
-    //	ESP_LOGD(TAG, "Last position: %d", lastpos);
-
-    std::string zw = filename.substr(lastpos + 1, filename.size() - lastpos);
-
-    return zw;
-}
-
-
-std::string getFileType(std::string filename)
-{
-    size_t lastpos = filename.rfind(".", filename.length());
-    size_t neu_pos;
-    while ((neu_pos = filename.find(".", lastpos + 1)) > -1) {
-        lastpos = neu_pos;
-    }
-
-    if (lastpos == std::string::npos) {
-        return "";
-    }
-
-    std::string zw = filename.substr(lastpos + 1, filename.size() - lastpos);
-    zw = toUpper(zw);
-
-    return zw;
+    return toUpper(filename.substr(lastpos + 1));
 }
 
 
 bool getFileIsFiletype(const std::string &filename, const std::string &filetype)
 {
-    return (filename.substr(filename.find_last_of(".") + 1) == filetype);
-
-    /*std::size_t extPos = filename.rfind(".", filename.length());
-    if (extPos == std::string::npos)
+    const size_t pos = filename.find_last_of('.');
+    if (pos == std::string::npos) {
         return false;
+    }
 
-    ESP_LOGI(TAG, "check: %s, %s", filename.substr(filename.rfind(".", filename.length()) + 1).c_str(), filetype.c_str());
-
-    return (filename.substr(filename.rfind(".", filename.length()) + 1) == filetype);*/
+    return toUpper(filename.substr(pos + 1)) == toUpper(filetype);
 }
 
 
@@ -202,7 +204,42 @@ bool readFileToString(const std::string &path, std::string &out)
 
 // Directory related helper
 // **********************************************************
-std::string getDirectory(std::string filename)
+bool isSafePath(const std::string &path)
+{
+    if (path.empty() || path[0] == '/' || path[0] == '\\' || path.find('\\') != std::string::npos) {
+        return false;
+    }
+
+    for (size_t start = 0; start < path.length();) {
+        const size_t end = path.find('/', start);
+        const size_t length = (end == std::string::npos ? path.length() : end) - start;
+
+        if (length == 0 || (length == 1 && path[start] == '.') || (length == 2 && path[start] == '.' && path[start + 1] == '.')) {
+            return false;
+        }
+
+        if (end == std::string::npos) {
+            break;
+        }
+
+        start = end + 1;
+    }
+
+    return true;
+}
+
+
+bool dirExists(const std::string &directory)
+{
+    struct stat info;
+    if (stat(directory.c_str(), &info) != 0) {
+        return false; // Cannot access path or does not exist
+    }
+    return S_ISDIR(info.st_mode); // Check if it's a directory
+}
+
+
+std::string getDirectory(const std::string &filename)
 {
     size_t lastpos = filename.rfind('/');
 
@@ -365,11 +402,101 @@ int removeFolder(const char *folderPath, const char *logTag)
 }
 
 
-esp_err_t deleteAllFilesInDirectory(std::string directory, bool recursive, bool deleteRootFolder)
+/**
+ * @brief Transactional directory replacement with fallback backup strategy
+ */
+bool replaceFolder(const std::string &sourceDir, const std::string &targetDir)
+{
+    const std::string backupDir = targetDir + "_backup";
+
+    // Purge previous backup if lingering
+    deleteAllFilesInDirectory(backupDir, true, true);
+
+    // Move existing target to backup
+    struct stat st;
+    bool hadTarget = (stat(targetDir.c_str(), &st) == 0);
+    if (hadTarget) {
+        if (rename(targetDir.c_str(), backupDir.c_str()) != 0) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to move target " + targetDir + " to backup " + backupDir);
+            return false;
+        }
+    }
+
+    // Promote staged source to target
+    if (rename(sourceDir.c_str(), targetDir.c_str()) == 0) {
+        // Success: Delete backup
+        deleteAllFilesInDirectory(backupDir, true, true);
+        return true;
+    }
+
+    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to promote " + sourceDir + " to " + targetDir + ". Restoring backup...");
+
+    // Recovery: Revert from backup if promotion failed
+    if (hadTarget) {
+        if (rename(backupDir.c_str(), targetDir.c_str()) != 0) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                "Failed to restore backup " + backupDir + " to " + targetDir + ". Content remains in backup folder");
+        }
+    }
+    return false;
+}
+
+
+bool mergeFolder(const std::string &sourceDir, const std::string &targetDir)
+{
+    if (!makeDir(targetDir)) {
+        return false;
+    }
+
+    DIR *dir = opendir(sourceDir.c_str());
+    if (!dir) {
+        return false;
+    }
+
+    std::vector<std::string> entries;
+    struct dirent *entry;
+
+    while ((entry = readdir(dir)) != nullptr) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        entries.emplace_back(entry->d_name);
+    }
+
+    closedir(dir);
+
+    for (const auto &name : entries) {
+        const std::string srcPath = sourceDir + "/" + name;
+        const std::string dstPath = targetDir + "/" + name;
+
+        struct stat st;
+        if (stat(srcPath.c_str(), &st) != 0) {
+            continue;
+        }
+
+        if (S_ISDIR(st.st_mode)) {
+            if (!mergeFolder(srcPath, dstPath)) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to merge folder " + srcPath + " to " + dstPath);
+                return false;
+            }
+        }
+        else {
+            if (!renameFile(srcPath, dstPath)) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to move file " + srcPath + " to " + dstPath);
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+esp_err_t deleteAllFilesInDirectory(const std::string &directory, bool recursive, bool deleteRootFolder)
 {
     DIR *dir = opendir(directory.c_str());
     if (!dir) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "deleteAllFilesInDirectory: Failed to open directory: " + directory);
         return ESP_ERR_NOT_FOUND;
     }
 

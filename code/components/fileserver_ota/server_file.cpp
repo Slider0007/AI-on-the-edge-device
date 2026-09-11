@@ -730,86 +730,34 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 static esp_err_t upload_post_handler(httpd_req_t *req)
 {
     char filePath[FILE_PATH_MAX];
-    struct stat fileStat;
-
     const char *filename = getPathFromUri(filePath, ((HttpServerData *)req->user_ctx)->basePathFileserver, req->uri + sizeof("/upload") - 1,
                                           sizeof(filePath));
-
     if (!filename) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Path malformed or too long");
         return ESP_FAIL;
     }
 
-    // Filename cannot have a trailing '/'
     if (filename[strlen(filename) - 1] == '/') {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Trailing slash");
         return ESP_FAIL;
     }
 
-    // File cannot be larger than a limit
     if (req->content_len > MAX_FILE_SIZE) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "File size must be less than " MAX_FILE_SIZE_STR);
         return ESP_FAIL;
     }
 
-    if (stat(filePath, &fileStat) == 0) {
+    if (fileExists(filePath)) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "File already exists");
         return ESP_FAIL;
     }
 
-    FILE *file = fopen(filePath, "wb");
-    if (!file) {
-        std::string msg = "Failed to create file: " + std::string(filePath);
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
-        return ESP_FAIL;
+    if (receiveRequestBodyToFile(req, filePath) != ESP_OK) {
+        return ESP_FAIL; // Error response already sent
     }
 
-    // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
-    // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
-    setvbuf(file, NULL, _IOFBF, 512);
-
-    ESP_LOGI(TAG, "Receiving file: %s", filename);
-
-    char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
-    int remaining = req->content_len;                          // Content length of the request gives the size of the file being uploaded
-    int received = 0;
-
-    while (remaining > 0) {
-        ESP_LOGI(TAG, "Remaining size: %d", remaining);
-        // Receive the file part by part into a buffer
-        if ((received = httpd_req_recv(req, buffer, MIN(remaining, WEBSERVER_SCRATCH_BUFSIZE))) <= 0) {
-            if (received == HTTPD_SOCK_ERR_TIMEOUT) {
-                continue; // Retry if timeout occurred
-            }
-
-            // In case of unrecoverable error, close and delete the unfinished file
-            fclose(file);
-            unlink(filePath);
-
-            std::string msg = "Failed to receive file: " + std::string(filePath);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
-            return ESP_FAIL;
-        }
-
-        // Write buffer content to file on storage
-        if (received && (received != fwrite(buffer, 1, received, file))) {
-            fclose(file);
-            unlink(filePath);
-            std::string msg = "Failed to write file: " + std::string(filePath);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
-            return ESP_FAIL;
-        }
-
-        // Keep track of remaining size of the file left to be uploaded
-        remaining -= received;
-    }
-
-    // Close file upon upload completion
-    fclose(file);
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File saved: " + std::string(filename));
-    ESP_LOGI(TAG, "File reception completed");
 
-    // Redirect to parent folder (exception: special files)
     if (noRedirectFiles.count(filename) > 0) {
         httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
         std::string msg = "File saved successfully: " + std::string(filename);

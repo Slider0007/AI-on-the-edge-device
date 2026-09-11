@@ -9,12 +9,14 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#include "esp_http_server.h"
-#include "esp_err.h"
+#include <esp_http_server.h>
+#include <esp_err.h>
 #include <esp_log.h>
 
+#include "webserver.h"
 
-// static const char *TAG = "SERVER_HELP"; // Unsed
+
+static const char *TAG = "SERVER_HELP";
 
 // Check file type (file extention, case-insensitive)
 bool endsWith(std::string const &str, std::string const &suffix)
@@ -83,4 +85,70 @@ esp_err_t setContentTypeFromFile(httpd_req_t *req, const char *filename)
     /* This is a limited set only */
     /* For any other type always set as plain text */
     return httpd_resp_set_type(req, "text/plain");
+}
+
+
+esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
+{
+    ESP_LOGI(TAG, "File upload started: %s", filePath);
+
+    FILE *file = fopen(filePath, "wb");
+    if (!file) {
+        std::string msg = "Failed to create file: " + std::string(filePath);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+        return ESP_FAIL;
+    }
+
+    // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
+    setvbuf(file, NULL, _IOFBF, 512);
+
+    char *buffer = ((HttpServerData *)req->user_ctx)->scratch;
+    int received = 0;
+    int remaining = req->content_len;
+    int totalSize = remaining;
+    int lastLoggedPercent = -1;
+
+    constexpr uint8_t MAX_TIMEOUT_RETRIES = 5;
+    uint8_t timeoutRetries = 0;
+
+    while (remaining > 0) {
+        int percent = (int)(((totalSize - remaining) * 100ULL) / totalSize);
+        if (percent / 10 != lastLoggedPercent / 10) { // Logs every 10%
+            ESP_LOGI(TAG, "Upload Progress: %d%% (%d bytes remaining)", percent, remaining);
+            lastLoggedPercent = percent;
+        }
+
+        if ((received = httpd_req_recv(req, buffer, MIN(remaining, WEBSERVER_SCRATCH_BUFSIZE))) <= 0) {
+            if (received == HTTPD_SOCK_ERR_TIMEOUT) {
+                if (++timeoutRetries <= MAX_TIMEOUT_RETRIES) {
+                    continue;
+                }
+            }
+            fclose(file);
+            unlink(filePath);
+            std::string msg = "Failed to receive file: " + std::string(filePath);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+            return ESP_FAIL;
+        }
+
+        if (received && (received != fwrite(buffer, 1, received, file))) {
+            fclose(file);
+            unlink(filePath);
+            std::string msg = "Failed to write file: " + std::string(filePath);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+            return ESP_FAIL;
+        }
+
+        remaining -= received;
+    }
+
+    if (fclose(file) != 0) {
+        unlink(filePath);
+        std::string msg = "Failed to finalize file: " + std::string(filePath);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+        return ESP_FAIL;
+    }
+
+    ESP_LOGI(TAG, "File upload completed: 100%%");
+    return ESP_OK;
 }

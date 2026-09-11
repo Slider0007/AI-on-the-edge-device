@@ -115,17 +115,13 @@ extern "C" void app_main(void)
     makeDir("/sdcard/config/backup"); // mandatory for config migration
     makeDir("/sdcard/config/certs");  // mandatory for TLS encryption
     makeDir("/sdcard/config/models"); // mandatory for TFLite models
-    makeDir("/sdcard/firmware");      // mandatory for OTA firmware update
+    makeDir(DIR_OTA_STAGED);          // mandatory for OTA firmware update
     makeDir("/sdcard/img_tmp");       // mandatory for setting up alignment marker
     makeDir("/sdcard/demo");          // mandatory for demo mode
 
-    // Check for updates
-    // Note: OTA status check only necessary if OTA rollback feature is enabled
+    // Check for OTA updates
     // ********************************************
-#ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOTAPartitionState();
-#endif // CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
-    checkOTAUpdate();
+    checkOtaUpdate();
 
     // Configuration migration for legacy config.ini / wlan.ini
     // Firmware version: v15.0 - v16.x, Config version: 0 - 2
