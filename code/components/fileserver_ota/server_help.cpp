@@ -90,6 +90,8 @@ esp_err_t setContentTypeFromFile(httpd_req_t *req, const char *filename)
 
 esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
 {
+    ESP_LOGI(TAG, "File upload started: %s", filePath);
+
     FILE *file = fopen(filePath, "wb");
     if (!file) {
         std::string msg = "Failed to create file: " + std::string(filePath);
@@ -99,8 +101,6 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
 
     // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
     setvbuf(file, NULL, _IOFBF, 512);
-
-    ESP_LOGI(TAG, "Receiving file: %s", filePath);
 
     char *buffer = ((HttpServerData *)req->user_ctx)->scratch;
     int received = 0;
@@ -114,7 +114,7 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
     while (remaining > 0) {
         int percent = (int)(((totalSize - remaining) * 100ULL) / totalSize);
         if (percent / 10 != lastLoggedPercent / 10) { // Logs every 10%
-            ESP_LOGI(TAG, "Progress: %d%% (%d bytes remaining)", percent, remaining);
+            ESP_LOGI(TAG, "Upload Progress: %d%% (%d bytes remaining)", percent, remaining);
             lastLoggedPercent = percent;
         }
 
@@ -149,6 +149,6 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
         return ESP_FAIL;
     }
 
-    ESP_LOGI(TAG, "Upload complete: 100%%");
+    ESP_LOGI(TAG, "File upload completed: 100%%");
     return ESP_OK;
 }

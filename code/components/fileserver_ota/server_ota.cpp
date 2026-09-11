@@ -602,12 +602,14 @@ static esp_err_t handler_ota(httpd_req_t *req)
     makeDir(DIR_OTA_STAGED);
     deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
 
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "OTA upload | File: " + sanitizedFile);
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "OTA upload | File: " + sanitizedFile);
 
     if (receiveRequestBodyToFile(req, FILE_OTA_STAGED_PACKAGE) != ESP_OK) {
         deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
         return ESP_FAIL;
     }
+
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "OTA upload completed | File: " + sanitizedFile);
 
     const std::string fileType = detectPackageType(FILE_OTA_STAGED_PACKAGE);
     if (fileType != "ZIP" && fileType != "BIN") {
