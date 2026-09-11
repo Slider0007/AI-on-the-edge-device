@@ -86,10 +86,6 @@ extern "C" void app_main(void)
         return; // Stop here, SD card is required for proper operation
     }
 
-    // Check if reboot was a requested one
-    // ********************************************
-    checkIsPlannedReboot();
-
     // Init status LED
     // ********************************************
     initStatusLed();
@@ -195,6 +191,7 @@ extern "C" void app_main(void)
 
     // Check reboot reason
     // ********************************************
+    checkIsPlannedReboot();
     if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reset reason: " + getResetReason());
         LogFile.writeToFile(ESP_LOG_WARN, TAG,

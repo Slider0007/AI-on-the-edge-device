@@ -78,6 +78,11 @@ static bool unzipFile(const std::string &inputZipFile, const std::string &destFo
 
         const std::string destinationPath = destFolderValid + archiveFilename;
 
+        // Ignore an archive entry that would overwrite the uploaded ZIP itself
+        if (destinationPath == inputZipFile) {
+            continue;
+        }
+
         ESP_LOGI(TAG, "Unzip file: %s", destinationPath.c_str());
 
         makeDir(getDirectory(destinationPath));
@@ -85,10 +90,8 @@ static bool unzipFile(const std::string &inputZipFile, const std::string &destFo
 
         if (!mz_zip_reader_extract_to_file(&zipArchive, i, destinationPath.c_str(), 0)) {
             const mz_zip_error zipError = mz_zip_get_last_error(&zipArchive);
-
             LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                 "unzipFile: Failed to extract: " + archiveFilename + " | Error: " + std::to_string(zipError));
-
             deleteFile(destinationPath);
             mz_zip_reader_end(&zipArchive);
             return false;
@@ -163,9 +166,9 @@ static bool updateOtaAssets(void)
  */
 static bool firmwareVerification(void)
 {
-    // Reject firmware when boot looping
-    if (!getIsPlannedReboot() && (esp_reset_reason() == ESP_RST_PANIC)) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware panicked on boot");
+    const esp_reset_reason_t resetReason = esp_reset_reason();
+    if (resetReason == ESP_RST_PANIC || resetReason == ESP_RST_INT_WDT || resetReason == ESP_RST_TASK_WDT || resetReason == ESP_RST_WDT) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Firmware verification failed | Reset reason: " + std::to_string(resetReason));
         return false;
     }
 
@@ -274,6 +277,11 @@ static bool otaUpdateFirmware(const std::string &filename)
 
     const esp_partition_t *configured = esp_ota_get_boot_partition();
     const esp_partition_t *running = esp_ota_get_running_partition();
+
+    if (!configured || !running) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to get OTA partition information");
+        return false;
+    }
 
     LogFile.writeToFile(ESP_LOG_INFO, TAG, "Flashing firmware...");
 
@@ -385,6 +393,13 @@ static bool otaUpdateFirmware(const std::string &filename)
         }
     }
 
+    if (binaryFileLength != totalFileSize) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                            "otaUpdateFirmware: Incomplete firmware read | Expected: " + std::to_string(totalFileSize) +
+                                " | Written: " + std::to_string(binaryFileLength));
+        goto cleanup;
+    }
+
     ESP_LOGI(TAG, "Total written image length: %u", (unsigned int)binaryFileLength);
 
     retVal = esp_ota_end(otaHandle);
@@ -476,8 +491,10 @@ static bool processOtaUpdate()
         }
 
 #ifdef CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE
+        // Keep extracted assets until the new firmware has been verified
         deleteFile(FILE_OTA_STAGED_PACKAGE);
 #else
+        // Legacy bootloader cannot rollback, so promote assets immediately
         updateOtaAssets();
         deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
 #endif
@@ -498,6 +515,7 @@ static bool processOtaUpdate()
     }
 
     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "processOtaUpdate: File type not supported");
+    deleteAllFilesInDirectory(DIR_OTA_STAGED, true);
     return false;
 }
 
@@ -609,24 +627,28 @@ static esp_err_t handler_ota(httpd_req_t *req)
 
 static void forceReboot()
 {
-    esp_task_wdt_config_t twdt_config = {
-        .timeout_ms = 1,
-        .idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Bitmask of all cores
+    const esp_task_wdt_config_t twdtConfig = {
+        .timeout_ms = 100,
+        .idle_core_mask = (1 << SOC_CPU_CORES_NUM) - 1,
         .trigger_panic = true,
     };
 
-    esp_err_t err = esp_task_wdt_init(&twdt_config);
+    esp_err_t err = esp_task_wdt_init(&twdtConfig);
     if (err == ESP_ERR_INVALID_STATE) { // Already initialized
-        esp_task_wdt_reconfigure(&twdt_config);
+        err = esp_task_wdt_reconfigure(&twdtConfig);
     }
-    else if (err != ESP_OK) {
+
+    if (err != ESP_OK) {
         abort();
     }
 
-    esp_task_wdt_add(NULL);
+    err = esp_task_wdt_add(NULL);
+    if (err != ESP_OK) {
+        abort();
+    }
 
     while (true) {
-        // Waiting for watchdog catch
+        // Wait for watchdog reset
     }
 }
 
@@ -647,7 +669,7 @@ static void taskReboot(void *DeleteMainFlow)
 
     cameraCtrl.setFlashlight(false);
     forceStatusLedOff();
-    esp_camera_deinit();
+    cameraCtrl.deinitCam();
 
     destroyGpioHandler();
 
@@ -657,13 +679,11 @@ static void taskReboot(void *DeleteMainFlow)
     deinitNetwork();
 
     vTaskDelay(pdMS_TO_TICKS(1000));
-    esp_restart(); // Reset type: CPU reset (Reset both CPUs)
+    esp_restart();
 
+    // Only reached if esp_restart() unexpectedly returns.
     vTaskDelay(pdMS_TO_TICKS(5000));
-    forceReboot(); // Reset type: System reset (Triggered by watchdog), if esp_restart stalls (WDT needs to be activated)
-
-    LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Reboot failed");
-    vTaskDelete(NULL); // Delete this task if it comes to this point
+    forceReboot();
 }
 
 
@@ -691,11 +711,11 @@ void doRebootOTA()
     cameraCtrl.deinitCam();
 
     vTaskDelay(5000 / portTICK_PERIOD_MS);
-    esp_restart(); // Reset type: CPU reset (Reset both CPUs)
+    esp_restart();
 
     // Only reached if esp_restart() unexpectedly returns
     vTaskDelay(5000 / portTICK_PERIOD_MS);
-    forceReboot(); // Reset type: System reset (Triggered by watchdog), if esp_restart stalls (WDT needs to be activated)
+    forceReboot();
 }
 
 
