@@ -103,13 +103,21 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
     ESP_LOGI(TAG, "Receiving file: %s", filePath);
 
     char *buffer = ((HttpServerData *)req->user_ctx)->scratch;
-    int remaining = req->content_len;
     int received = 0;
-    uint8_t timeoutRetries = 0;
+    int remaining = req->content_len;
+    int totalSize = remaining;
+    int lastLoggedPercent = -1;
+
     constexpr uint8_t MAX_TIMEOUT_RETRIES = 5;
+    uint8_t timeoutRetries = 0;
 
     while (remaining > 0) {
-        ESP_LOGI(TAG, "Remaining size: %d", remaining);
+        int percent = (int)(((totalSize - remaining) * 100ULL) / totalSize);
+        if (percent / 10 != lastLoggedPercent / 10) { // Logs every 10%
+            ESP_LOGI(TAG, "Progress: %d%% (%d bytes remaining)", percent, remaining);
+            lastLoggedPercent = percent;
+        }
+
         if ((received = httpd_req_recv(req, buffer, MIN(remaining, WEBSERVER_SCRATCH_BUFSIZE))) <= 0) {
             if (received == HTTPD_SOCK_ERR_TIMEOUT) {
                 if (++timeoutRetries <= MAX_TIMEOUT_RETRIES) {
@@ -141,6 +149,6 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
         return ESP_FAIL;
     }
 
-    ESP_LOGI(TAG, "File reception completed");
+    ESP_LOGI(TAG, "Upload complete: 100%%");
     return ESP_OK;
 }
