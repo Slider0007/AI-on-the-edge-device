@@ -585,6 +585,29 @@ std::string trim(std::string istring, std::string adddelimiter)
 }
 
 
+size_t findDelimiterPos(std::string input, std::string delimiter)
+{
+    size_t pos = std::string::npos;
+    size_t zw;
+    std::string akt_del;
+
+    for (int anz = 0; anz < delimiter.length(); ++anz) {
+        akt_del = delimiter[anz];
+        if ((zw = input.find(akt_del)) != std::string::npos) {
+            if (pos != std::string::npos) {
+                if (zw < pos) {
+                    pos = zw;
+                }
+            }
+            else {
+                pos = zw;
+            }
+        }
+    }
+    return pos;
+}
+
+
 std::string toUpper(std::string in)
 {
     for (int i = 0; i < in.length(); ++i) {

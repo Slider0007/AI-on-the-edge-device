@@ -32,7 +32,10 @@ std::string formatFileName(std::string input);
 std::string trim(std::string istring, std::string adddelimiter = "");
 std::string toLower(std::string in);
 std::string toUpper(std::string in);
+
 void replaceAll(std::string &s, const std::string &toReplace, const std::string &replaceWith);
+size_t findDelimiterPos(std::string input, std::string delimiter);
+
 std::string to_stringWithPrecision(const double _value, int _decPlace);
 std::string intToHexString(int _valueInt);
 
