@@ -1,6 +1,8 @@
 #include "configMigration.h"
 #include "../../include/defines.h"
 
+#include <string>
+
 #include "configClass.h"
 #include "helper.h"
 #include "ClassLogFile.h"

@@ -93,11 +93,6 @@
 #define CONFIG_PERSISTENCE_FILE_INVALID "/sdcard/config/backup/config_invalid.json" // Config persistence file (invalid, save for debug)
 #define CONFIG_PERSISTENCE_FILE_BACKUP "/sdcard/config/backup/config_json.bak" // Config persistence file (migration backup)
 
-#define CONFIG_FILE_LEGACY "/sdcard/config/config.ini" // Config file for firmware v16.x and older
-#define CONFIG_FILE_BACKUP_LEGACY "/sdcard/config/backup/config_ini.bak"
-#define CONFIG_WIFI_FILE_LEGACY "/sdcard/wlan.ini"
-#define CONFIG_WIFI_FILE_BACKUP_LEGACY "/sdcard/config/backup/wlan_ini.bak"
-
 
 // Server_file + Helper
 //******************************

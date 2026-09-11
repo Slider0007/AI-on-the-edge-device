@@ -27,19 +27,12 @@ int removeFolder(const char *folderPath, const char *logTag);
 bool replaceFolder(const std::string &sourceDir, const std::string &targetDir);
 bool mergeFolder(const std::string &sourceDir, const std::string &targetDir);
 esp_err_t deleteAllFilesInDirectory(const std::string &directory, bool recursive = false, bool deleteRootFolder = false);
-void moveAllFilesWithFiletype(std::string sourceDir, std::string destinationDir, std::string filetype);
 
 std::string formatFileName(std::string input);
 std::string trim(std::string istring, std::string adddelimiter = "");
 std::string toLower(std::string in);
 std::string toUpper(std::string in);
-
-void findReplace(std::string &line, std::string &oldString, std::string &newString);
 void replaceAll(std::string &s, const std::string &toReplace, const std::string &replaceWith);
-bool isInString(std::string &s, std::string const &toFind);
-std::vector<std::string> splitStringAtNewline(const std::string &str);
-size_t findDelimiterPos(std::string input, std::string delimiter);
-
 std::string to_stringWithPrecision(const double _value, int _decPlace);
 std::string intToHexString(int _valueInt);
 
