@@ -123,13 +123,8 @@ extern "C" void app_main(void)
     // ********************************************
     checkOtaUpdate();
 
-    // Configuration migration for legacy config.ini / wlan.ini
-    // Firmware version: v15.0 - v16.x, Config version: 0 - 2
-    // Note: Migration of v17.x and newer is handled while parsing JSON config (migrateConfiguration)
-    // ********************************************************************************
-    migrateConfigIni();
-
-    // Load persistent config from file (json notation)
+    // Load configuration
+    // ********************************************
     ConfigClass::getInstance()->readConfigFile();
 
     // Init time

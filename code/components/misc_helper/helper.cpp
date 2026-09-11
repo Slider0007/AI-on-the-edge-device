@@ -540,47 +540,10 @@ esp_err_t deleteAllFilesInDirectory(const std::string &directory, bool recursive
 }
 
 
-void moveAllFilesWithFiletype(std::string sourceDir, std::string destinationDir, std::string filetype)
-{
-    DIR *dir = opendir(sourceDir.c_str());
-
-    if (!dir) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "moveAllFilesWithFiletype: Failed to open directory: " + sourceDir);
-        return;
-    }
-
-    // Iterate over all files in folder and move if extention is matching
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (!(entry->d_type == DT_DIR)) {
-            if (getFileIsFiletype(std::string(entry->d_name), filetype)) {
-                std::string sourceFilename = sourceDir + "/" + std::string(entry->d_name);
-                std::string destFilename = destinationDir + "/" + std::string(entry->d_name);
-                if (!fileExists(destFilename)) { // Move source file if file not existing at destination
-                    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Move file: " + sourceFilename);
-                    renameFile(sourceFilename, destinationDir + "/" + std::string(entry->d_name));
-                }
-                else { // Delete source file if file is already existing at destination
-                    deleteFile(sourceFilename);
-                }
-            }
-        }
-    }
-
-    closedir(dir);
-}
-
-
 // String manipulation helper
 // **********************************************************
 std::string formatFileName(std::string input)
 {
-#ifdef ISWINDOWS_TRUE
-    input.erase(0, 1);
-    std::string os = "/";
-    std::string ns = "\\";
-    findReplace(input, os, ns);
-#endif // ISWINDOWS_TRUE
     return input;
 }
 
@@ -665,35 +628,6 @@ std::string toLower(std::string in)
 }
 
 
-void findReplace(std::string &line, std::string &oldString, std::string &newString)
-{
-    const size_t oldSize = oldString.length();
-
-    // do nothing if line is shorter than the string to find
-    if (oldSize > line.length()) {
-        return;
-    }
-
-    const size_t newSize = newString.length();
-    for (size_t pos = 0;; pos += newSize) {
-        // Locate the substring to replace
-        pos = line.find(oldString, pos);
-        if (pos == std::string::npos) {
-            return;
-        }
-        if (oldSize == newSize) {
-            // if they're same size, use std::string::replace
-            line.replace(pos, oldSize, newString);
-        }
-        else {
-            // if not same size, replace by erasing and inserting
-            line.erase(pos, oldSize);
-            line.insert(pos, newString);
-        }
-    }
-}
-
-
 // from https://stackoverflow.com/a/14678800
 void replaceAll(std::string &s, const std::string &toReplace, const std::string &replaceWith)
 {
@@ -702,43 +636,6 @@ void replaceAll(std::string &s, const std::string &toReplace, const std::string 
         s.replace(pos, toReplace.length(), replaceWith);
         pos += replaceWith.length();
     }
-}
-
-
-bool isInString(std::string &s, std::string const &toFind)
-{
-    std::size_t pos = s.find(toFind);
-
-    if (pos == std::string::npos) { // Not found
-        return false;
-    }
-    return true;
-}
-
-
-std::vector<std::string> splitStringAtNewline(const std::string &str)
-{
-    std::vector<std::string> tokens;
-    size_t start = 0;
-    size_t end = str.find('\n');
-
-    while (end != std::string::npos) {
-        // Optional: strip trailing '\r' if dealing with Windows CRLF newlines
-        size_t len = end - start;
-        if (len > 0 && str[end - 1] == '\r') {
-            len--;
-        }
-        tokens.push_back(str.substr(start, len));
-        start = end + 1;
-        end = str.find('\n', start);
-    }
-
-    // Push the remaining piece after the last newline
-    if (start < str.size()) {
-        tokens.push_back(str.substr(start));
-    }
-
-    return tokens;
 }
 
 
