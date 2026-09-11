@@ -27,7 +27,7 @@ jobs:
       - uses: googleapis/release-please-action@v5
         id: release
         with:
-          target-branch: develop
+          target-branch: ${{ (github.base_ref == 'develop' || startsWith(github.base_ref, 'release/v')) && github.base_ref || ((github.ref_name == 'develop' || startsWith(github.ref_name, 'release/v')) && github.ref_name || 'develop') }}
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
