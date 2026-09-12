@@ -13,11 +13,8 @@ class ClassFlowAlignment : public ClassFlow
   protected:
     const CfgData::SectionImageAlignment *cfgDataPtr = NULL;
     AlignmentMarker alignmentMarker[2];
-    int alignSimilarityCheckSADThreshold;
 
     void drawAlignmentMarker(CImage &image);
-    bool loadAlignmentMarkerData(void);
-    bool saveAlignmentMarkerData(void);
 
     void doPostProcessEventHandling();
 
