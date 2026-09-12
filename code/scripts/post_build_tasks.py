@@ -34,9 +34,11 @@ def postBuildAction(source, target, env):
     envName = env["PIOENV"]  # PlatformIO environment name (target)
 
     projectRoot = os.getenv("PROJECT_DIR", os.path.abspath(os.path.join(".", "..")))
-
     htmlSourceDir = os.path.join(projectRoot, "sd-card", "html")
-    htmlTempDir = os.path.join(projectRoot, "sd-card", "html_compiled")
+
+    sdCardRoot = os.path.join(projectRoot, "sd-card")
+    configDir = os.path.join(sdCardRoot, "config")
+    htmlTempDir = os.path.join(projectRoot, ".builds", "html_compiled")
 
     # -------------------------------------------------------------------------------------------------
     # Detect if triggered by GitHub Actions
@@ -71,16 +73,16 @@ def postBuildAction(source, target, env):
     # -------------------------------------------------------------------------------------------------
     # Step 3: Replace $COMMIT_HASH in all HTML files
     # -------------------------------------------------------------------------------------------------
-    print(f"{scriptName}: Step 3: WebUI - Set hash in all HTML files")
+    print(f"{scriptName}: Step 3: WebUI - Set hash in HTML files")
     # Determine commitHash
     if inGithubActions:
         try:
             commitHash = (subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=projectRoot).decode("utf-8").strip())
         except Exception:
             print(f"{scriptName}: Failed to parse git commit hash")
-            commitHash = str(time.strftime("%y%m%d%H%M%S"))
+            commitHash = str(time.strftime("%y%m%d-%H%M%S"))
     else:
-        commitHash = str(time.strftime("%y%m%d%H%M%S"))
+        commitHash = str(time.strftime("%y%m%d-%H%M%S"))
 
     # Replace $COMMIT_HASH
     for root, _, files in os.walk(htmlTempDir):
@@ -109,36 +111,41 @@ def postBuildAction(source, target, env):
     # Step 5: Create ZIP after compilation (local only)
     # -------------------------------------------------------------------------------------------------
     if not inGithubActions:
-        print(f"{scriptName}: Step 5: Create firmware package (ZIP file)")
+        print(f"{scriptName}: Step 5: Create firmware package (ZIP file in .builds folder)")
 
         zipFilename = f"AI-on-the-edge-device__{envName}__SLFork_{commitHash}.zip"
-        zipPath = os.path.join(projectRoot, zipFilename)
+        zipPath = os.path.join(projectRoot, ".builds", zipFilename)
 
         def addDirectoryToZip(zipFile, directory, basePath, targetPrefix="", renameMap=None, excludeFiles=None):
-            """
-            Add a directory to a zip, keeping structure relative to basePath.
-            Optionally remap top-level folder names with renameMap dict.
-            """
             excludeFiles = excludeFiles or []
             renameMap = renameMap or {}
 
-            for root, _, files in os.walk(directory):
+            # Normalize the source directory to an absolute path for reliable comparison
+            abs_directory = os.path.abspath(directory)
+
+            for root, _, files in os.walk(abs_directory):
                 for fname in files:
                     if fname in excludeFiles:
                         continue
                     fullPath = os.path.join(root, fname)
-                    relPath = os.path.relpath(fullPath, start=basePath)
 
-                    parts = relPath.split(os.sep)
-                    parts = [renameMap.get(p, p) for p in parts]
-                    arcName = os.path.join(targetPrefix, *parts)
+                    # If this specific directory is mapped, calculate relative to it and prepend the mapped target name (e.g. "html")
+                    if abs_directory in renameMap:
+                        relPath = os.path.relpath(fullPath, start=abs_directory)
+                        arcName = os.path.join(targetPrefix, renameMap[abs_directory], relPath)
+                    else:
+                        # Fallback to normal behavior relative to basePath
+                        relPath = os.path.relpath(fullPath, start=basePath)
+                        parts = relPath.split(os.sep)
+                        parts = [renameMap.get(p, p) for p in parts]
+                        arcName = os.path.join(targetPrefix, *parts)
 
+                    arcName = arcName.replace(os.sep, "/")
                     zipFile.write(fullPath, arcname=arcName)
 
         with zipfile.ZipFile(zipPath, "w", compression=zipfile.ZIP_DEFLATED) as zipFile:
-            sdCardRoot = os.path.join(projectRoot, "sd-card")
-            addDirectoryToZip(zipFile, os.path.join(sdCardRoot, "config"), sdCardRoot)
-            addDirectoryToZip(zipFile, os.path.join(sdCardRoot, "html_compiled"), sdCardRoot, renameMap={"html_compiled": "html"})
+            addDirectoryToZip(zipFile, configDir, sdCardRoot)
+            addDirectoryToZip(zipFile, htmlTempDir, sdCardRoot, renameMap={htmlTempDir: "html"})
 
             # Place binaries in zip root
             buildDir = env.subst("$BUILD_DIR")

@@ -21,7 +21,7 @@ except Exception:
 
 # Define HTML directory
 htmlSourceDir = os.path.join(rootPath, "sd-card", "html")
-htmlTempDir = os.path.join(rootPath, "sd-card", "html_compiled")
+htmlTempDir = os.path.join(rootPath, ".builds", "html_compiled")
 
 # Prepare folder (if not yet prepared by calling script)
 if not os.path.exists(htmlTempDir):
