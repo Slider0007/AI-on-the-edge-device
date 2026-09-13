@@ -83,7 +83,7 @@ jobs:
     - name: Install PlatformIO environment
       run: |
         python -m pip install --upgrade pip
-        pip install markdown
+        pip install markdown esp_idf_size
         pip install --upgrade platformio
 
     - name: Build firmware
@@ -106,8 +106,8 @@ jobs:
         cp -f "./code/.pio/build/${{ matrix.plat }}/partitions.bin" "./artifact/partitions.bin"
         cp -f "./docs/Installation/DeviceReadme/${{ matrix.plat }}.md" "./artifact/README.md"
 
-        if [ -d "./sd-card/html_compiled" ]; then
-            cp -r ./sd-card/html_compiled ./artifact/html
+        if [ -d "./.builds/html_compiled" ]; then
+            cp -r ./.builds/html_compiled ./artifact/html
         else
             cp -r ./sd-card/html ./artifact/html
         fi
@@ -215,25 +215,25 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare-release, build, upload-release-artifacts]
     if: ${{ needs.prepare-release.outputs.release_created }}
- 
+
     # Sets permissions of the GITHUB_TOKEN to allow uploading to the release
     permissions:
       actions: read
       contents: write
- 
+
     steps:
     - name: Checkout tag
       uses: actions/checkout@v7
       with:
         ref: ${{ needs.prepare-release.outputs.tag_name }}
- 
+
     - name: Pull all debug artifacts
       uses: actions/download-artifact@v8
       with:
         pattern: "aioted__debug-files_developer-only__*__SLFork_${{ needs.upload-release-artifacts.outputs.branch }}_${{ needs.upload-release-artifacts.outputs.sha_short }}"
         path: ./debug
         merge-multiple: false
- 
+
     - name: Combine and zip all debug artifacts
       run: |
         mkdir -p release
@@ -242,7 +242,7 @@ jobs:
         # zip them all together, preserving the per-platform folder structure.
         zip -r ../release/aioted__debug-files_developer-only__SLFork_v${{ needs.prepare-release.outputs.version }}.zip .
         cd ..
- 
+
     - name: Upload combined debug artifact to release tag
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -4,9 +4,25 @@ Grab all parameter files (markdown) and convert them to HTML tooltips
 """
 import os
 import glob
-import markdown
 import shutil
 import sys
+import subprocess
+
+
+# check for missing markdown package
+def ensure_markdown():
+    """Install the 'markdown' package on demand if it isn't available."""
+    try:
+        import markdown
+    except ImportError:
+        print("generate_param_tooltips.py: 'markdown' package not found, installing...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "markdown"])
+        import markdown
+    return markdown
+
+
+markdown = ensure_markdown()
+
 
 # Get root path (Parent folder of sd-card, tools, docs, ...)
 try:
@@ -22,7 +38,7 @@ except Exception:
 
 # Define HTML directory
 htmlSourceDir = os.path.join(rootPath, "sd-card", "html")
-htmlTempDir = os.path.join(rootPath, "sd-card", "html_compiled")
+htmlTempDir = os.path.join(rootPath, ".builds", "html_compiled")
 
 # Prepare folder (if not yet prepared by calling script)
 if not os.path.exists(htmlTempDir):

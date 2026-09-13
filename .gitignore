@@ -21,8 +21,7 @@ cmake_install.cmake
 install_manifest.txt
 compile_commands.json
 **/.pio/
-sd-card/html_compiled
-AI-on-the-edge-device*
+**.builds/
 dependencies.lock
 managed_components
 **/managed_components/**
