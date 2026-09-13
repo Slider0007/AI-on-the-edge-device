@@ -33,6 +33,29 @@ void migrateConfiguration(cJSON *cJsonObject)
     }
 
     //*************************************************************************************************
+    // Migrate from version 6 to version 7
+    // Date: September 2027
+    // Description: Remove fast alignment algorithm ()
+    //*************************************************************************************************
+    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 6) {
+        // Update config version
+        // ---------------------
+        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
+                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
+
+        // Update parameter
+        // ---------------------
+        auto &sectionAlignment = ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment;
+        if (sectionAlignment.alignmentAlgo == 2) { // formerly ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR --> Migrate to default
+            sectionAlignment.alignmentAlgo = ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH;
+        }
+    }
+
+    //*************************************************************************************************
     // Migrate from version 5 to version 6
     // Date: August 2025
     // Description: Implement function to set time manually (#275)

@@ -2,7 +2,7 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
 
 {
   "config": {
-    "version": 6,
+    "version": 7,
     "lastmodified": ""
   },
   "operationmode": {

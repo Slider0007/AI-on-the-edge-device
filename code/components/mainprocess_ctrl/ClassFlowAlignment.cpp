@@ -19,8 +19,6 @@ static const char *TAG = "ALIGN";
 ClassFlowAlignment::ClassFlowAlignment()
 {
     presetFlowStateHandler(true);
-    alignSimilarityCheckSADThreshold = 10; // Alignment image template similarity check threshold
-                                           // If result smaller than threshold use alignment values of last cycle
 }
 
 
@@ -35,8 +33,7 @@ bool ClassFlowAlignment::loadParameter()
 
     // Configure two alignment marker
     if (cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH ||
-        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH ||
-        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR) {
+        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH) {
         for (int i = 0; i < 2; i++) {
             int x = 0, y = 0, channels = 0;
             std::string sIndex = std::to_string(i + 1);
@@ -74,7 +71,6 @@ bool ClassFlowAlignment::loadParameter()
             alignmentMarker[i].alignmentAlgo = cfgDataPtr->alignmentAlgo;
             alignmentMarker[i].searchX = cfgDataPtr->searchField.x;
             alignmentMarker[i].searchY = cfgDataPtr->searchField.y;
-            alignmentMarker[i].similarityCheckSADThreshold = alignSimilarityCheckSADThreshold;
             alignmentMarker[i].targetX = cfgDataPtr->marker[i].x;
             alignmentMarker[i].targetY = cfgDataPtr->marker[i].y;
             alignmentMarker[i].width = alignmentMarker[i].markerImage->getWidth();
@@ -95,10 +91,6 @@ bool ClassFlowAlignment::loadParameter()
                 return false;
             }
         }
-    }
-
-    if (cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR) { // Load alignment marker if "similarity check" is enabled
-        loadAlignmentMarkerData();
     }
 
     return true;
@@ -137,14 +129,10 @@ bool ClassFlowAlignment::doFlow(std::string time)
     // Note: Only if any additional alignment algo is configured
     // *******************************************
     if (cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH ||
-        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH ||
-        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR) {
-        TplMatchStatus AlignRetval = CImageTplMatch::invokeTplMatch(*flowImageData->imgProcess, imgAlgRoi, alignmentMarker[0],
+        cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH) {
+        TplMatchStatus alignRetval = CImageTplMatch::invokeTplMatch(*flowImageData->imgProcess, imgAlgRoi, alignmentMarker[0],
                                                                     alignmentMarker[1]);
-        if (AlignRetval == TPL_MATCH_OK_SIMILAR) { // Alignment with similarity check successful
-            saveAlignmentMarkerData();
-        }
-        else if (AlignRetval == TPL_MATCH_FAILED) { // Alignment not successful
+        if (alignRetval == TPL_MATCH_FAILED) { // Alignment not successful
             LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                 "Fine alignment unsuccessful. Use alignment marker areas with sharp edges, unique shapes and high contrast "
                                 "on a sharply focused image");
@@ -206,90 +194,6 @@ void ClassFlowAlignment::doPostProcessEventHandling()
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Fine alignment unsuccessful, debug infos saved: " + destination);
         }
     }
-}
-
-
-bool ClassFlowAlignment::saveAlignmentMarkerData()
-{
-    esp_err_t err = ESP_OK;
-
-    nvs_handle_t align_nvshandle;
-    err = nvs_open("align", NVS_READWRITE, &align_nvshandle);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: No valid NVS handle - error code : " + std::to_string(err));
-        return false;
-    }
-
-    err = nvs_set_i32(align_nvshandle, "Ref0fastalg_x", alignmentMarker[0].similarityCheckX);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: Ref0fastalg_x - error code: " + std::to_string(err));
-        return false;
-    }
-    err = nvs_set_i32(align_nvshandle, "Ref0fastalg_y", alignmentMarker[0].similarityCheckY);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: Ref0fastalg_y - error code: " + std::to_string(err));
-        return false;
-    }
-
-    err = nvs_set_i32(align_nvshandle, "Ref1fastalg_x", alignmentMarker[1].similarityCheckX);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: Ref1fastalg_x - error code: " + std::to_string(err));
-        return false;
-    }
-    err = nvs_set_i32(align_nvshandle, "Ref1fastalg_y", alignmentMarker[1].similarityCheckY);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: Ref1fastalg_y - error code: " + std::to_string(err));
-        return false;
-    }
-
-    err = nvs_commit(align_nvshandle);
-    nvs_close(align_nvshandle);
-
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "SaveReferenceAlignmentValues: nvs_commit - error code: " + std::to_string(err));
-        return false;
-    }
-
-    return true;
-}
-
-
-bool ClassFlowAlignment::loadAlignmentMarkerData(void)
-{
-    esp_err_t err = ESP_OK;
-
-    nvs_handle_t align_nvshandle;
-    err = nvs_open("align", NVS_READONLY, &align_nvshandle);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: No valid NVS handle - error code : " + std::to_string(err));
-        return false;
-    }
-
-    err = nvs_get_i32(align_nvshandle, "Ref0fastalg_x", (int32_t *)&alignmentMarker[0].similarityCheckX);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: Ref0fastalg_x - error code: " + std::to_string(err));
-        return false;
-    }
-    err = nvs_get_i32(align_nvshandle, "Ref0fastalg_y", (int32_t *)&alignmentMarker[0].similarityCheckY);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: Ref0fastalg_y - error code: " + std::to_string(err));
-        return false;
-    }
-
-    err = nvs_get_i32(align_nvshandle, "Ref1fastalg_x", (int32_t *)&alignmentMarker[1].similarityCheckX);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: Ref1fastalg_x - error code: " + std::to_string(err));
-        return false;
-    }
-    err = nvs_get_i32(align_nvshandle, "Ref1fastalg_y", (int32_t *)&alignmentMarker[1].similarityCheckY);
-    if (err != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "LoadReferenceAlignmentValues: Ref1fastalg_y - error code: " + std::to_string(err));
-        return false;
-    }
-
-    nvs_close(align_nvshandle);
-
-    return true;
 }
 
 

@@ -26,15 +26,19 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::invokeTplMatch(CImage &img, CImage &img
         return TPL_MATCH_ERROR_IMAGE;
     }
 
-    int resultMarker1 = TPL_MATCH_FAILED;
-    int resultMarker2 = TPL_MATCH_FAILED;
-
     switch (tplMatchAlgorithm) {
-        case TplMatchAlgorithm::SAD:
-            resultMarker1 = tplMatchBySad(img, marker1);
-            resultMarker2 = tplMatchBySad(img, marker2, resultMarker1 != TPL_MATCH_OK_SIMILAR);
-            break;
+        case TplMatchAlgorithm::SAD: {
+            TplMatchStatus retVal = tplMatchBySad(img, marker1);
+            if (retVal != TPL_MATCH_OK) {
+                return retVal;
+            }
 
+            retVal = tplMatchBySad(img, marker2);
+            if (retVal != TPL_MATCH_OK) {
+                return retVal;
+            }
+            break;
+        }
         default:
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "invokeTplMatch: Unknown matching algorithm");
             return TPL_MATCH_UNKNOWN_ALGORITHM;
@@ -93,14 +97,11 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::invokeTplMatch(CImage &img, CImage &img
                         "Angle dev: " + to_stringWithPrecision(angleDeviation, 1) + ", dX1: " + std::to_string(deltaX1) + ", dY1: " +
                             std::to_string(deltaY1) + ", dX2: " + std::to_string(deltaX2) + ", dY2: " + std::to_string(deltaY2));
 
-    // Return based on matching results
-    return (resultMarker1 == TPL_MATCH_OK_SIMILAR && resultMarker2 == TPL_MATCH_OK_SIMILAR)
-               ? TPL_MATCH_OK_SIMILAR // Template similarity found
-               : TPL_MATCH_OK;        // Template match found
+    return TPL_MATCH_OK;
 }
 
 
-TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMarker &marker, bool noSimilarityCheck)
+TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMarker &marker)
 {
     if (!img.isValid()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "tplMatchBySad: Invalid source image");
@@ -120,24 +121,6 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMar
     if (!lock1.isLocked() || !lock2.isLocked()) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "tplMatchBySad: Failed to lock");
         return TPL_MATCH_ERROR_TIMEOUT;
-    }
-
-    // Similarity matching logic
-    // NOTE: @DEPRECATED -> Will be removed with next major release 18.x
-    if (marker.alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR && marker.similarityCheckX > 0 && marker.similarityCheckY > 0 &&
-        !noSimilarityCheck) {
-        if (calcSimilarities(img, marker)) {
-            marker.foundX = marker.similarityCheckX;
-            marker.foundY = marker.similarityCheckY;
-
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
-                                "Similarity found: X:" + std::to_string(marker.foundX) + ", Y:" + std::to_string(marker.foundY));
-
-            return TPL_MATCH_OK_SIMILAR;
-        }
-        else {
-            LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Similarity: No match -> Continue with SAD");
-        }
     }
 
     // Get image properties
@@ -162,10 +145,7 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMar
     const int ohStop = std::clamp(marker.targetY + marker.searchY, 0, std::max(1, imgHeight - tplHeight));
 
     int sadMin = INT_MAX;
-    const int consideredChannels = (marker.alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH ||
-                                    marker.alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR)
-                                       ? 1
-                                       : imgChannels;
+    const int consideredChannels = marker.alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH ? 1 : imgChannels;
 
     for (int yOuter = ohStart; yOuter <= ohStop; ++yOuter) {
         const uint8_t *pOrgStartRow = imgData + (yOuter * imgWidth * imgChannels);
@@ -207,53 +187,10 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMar
         }
     }
 
-    // Save found coordinates for similarity check
-    marker.similarityCheckX = marker.foundX;
-    marker.similarityCheckY = marker.foundY;
-
     // Log results
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG,
                         "SAD result: SADmin:" + std::to_string(sadMin) + ", X:" + std::to_string(marker.foundX) +
                             ", Y:" + std::to_string(marker.foundY));
 
     return TPL_MATCH_OK;
-}
-
-
-// NOTE: @DEPRECATED -> Will be removed with next major release 18.x
-bool IRAM_ATTR CImageTplMatch::calcSimilarities(CImage &img, AlignmentMarker &marker)
-{
-    int anz = 0;
-    long SADsum = 0;
-
-    for (int xouter = 0; xouter <= marker.markerImage->getWidth(); xouter++) {
-        for (int youter = 0; youter <= marker.markerImage->getHeight(); ++youter) {
-            uint8_t *p_org = img.getImgData() + (img.getChannels() * ((youter + marker.similarityCheckY) * img.getWidth() +
-                                                                      (xouter + marker.similarityCheckX)));
-            uint8_t *p_tpl = marker.markerImage->getImgData() +
-                             (marker.markerImage->getChannels() * (youter * marker.markerImage->getWidth() + xouter));
-            for (int ch = 0; ch < marker.markerImage->getChannels(); ++ch) {
-                SADsum += labs(p_tpl[ch] - p_org[ch]);
-                anz++;
-            }
-        }
-    }
-
-    // Normalize by number of sums
-    const int SADNorm = SADsum / anz;
-
-    // Print results
-    std::string zw = "SADThreshold:" + std::to_string(marker.similarityCheckSADThreshold) + ", SADNorm:" + std::to_string(SADNorm) +
-                     ", X:" + std::to_string(marker.similarityCheckX) + ", Y:" + std::to_string(marker.similarityCheckY);
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Similarity check results: " + zw);
-
-    // Evaluate results
-    if (SADNorm <= marker.similarityCheckSADThreshold) {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Similarity check: Match found");
-        return true;
-    }
-    else {
-        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Similarity check: No match (SADNorm>SADThreshold) -> Use STANDARD Algo");
-        return false;
-    }
 }

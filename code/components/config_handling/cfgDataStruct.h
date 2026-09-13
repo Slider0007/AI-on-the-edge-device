@@ -37,7 +37,6 @@ enum TlsServerCertVerification {
 enum AlignmentAlgo {
     ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH = 0,
     ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH = 1,
-    ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR = 2,
     ALIGNALGO_ROTATION_ONLY = 3,
     ALIGNALGO_OFF = 4,
 };
@@ -218,7 +217,7 @@ struct TLSParams {
 struct CfgData {
     // Config File
     struct SectionConfig {
-        int version = 6; // NOTE: Increment whenever existing parameter names changed and migration is required
+        int version = 7; // NOTE: Increment whenever existing parameter names changed or any migration is required
         std::string lastModified = "";
     } sectionConfig;
 

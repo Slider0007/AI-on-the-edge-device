@@ -17,7 +17,6 @@ enum class TplMatchAlgorithm {
  * @brief Status codes
  */
 enum TplMatchStatus {
-    TPL_MATCH_OK_SIMILAR = 1,                 // Match successful with similarity check
     TPL_MATCH_OK = 0,                         // Match successful with algorithm
     TPL_MATCH_FAILED = -1,                    // Match failed
     TPL_MATCH_UNKNOWN_ALGORITHM = -2,         // Error unkown algorithm
@@ -38,18 +37,9 @@ class CImageTplMatch
      * @brief Performs template matching using the Sum of Absolute Differences (SAD) algorithm
      * @param img Source image
      * @param marker Alignment marker to match
-     * @param noSimilarityCheck Disable similarity check (default: false)
      * @return Status code
      */
-    static TplMatchStatus tplMatchBySad(CImage &img, AlignmentMarker &marker, bool noSimilarityCheck = false);
-
-    /**
-     * @brief Calculates similarity of a given template image
-     * @param img Source image
-     * @param marker Alignment marker reference
-     * @return true if similarity check is succeeded, false otherwise
-     */
-    static bool calcSimilarities(CImage &img, AlignmentMarker &marker);
+    static TplMatchStatus tplMatchBySad(CImage &img, AlignmentMarker &marker);
 
   public:
     /**
