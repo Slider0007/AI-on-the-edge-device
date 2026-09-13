@@ -1,6 +1,23 @@
 import os
 import sys
+import subprocess
+
 Import("env")
+
+
+def ensure_esp_idf_size():
+    """Install the 'esp_idf_size' package on demand if it isn't available."""
+    try:
+        import esp_idf_size
+    except ImportError:
+        print("[Memory Report] 'esp_idf_size' package not found. Installing via pip...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "esp_idf_size"])
+        import esp_idf_size
+    return esp_idf_size
+
+# Ensures esp-idf-size is available before SCons targets run
+ensure_esp_idf_size()
+
 
 def post_build_memory_info(source, target, env):
     build_dir = env.subst("$BUILD_DIR")

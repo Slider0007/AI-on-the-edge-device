@@ -6,6 +6,7 @@ import os
 import glob
 import shutil
 import sys
+import subprocess
 
 
 # check for missing markdown package
