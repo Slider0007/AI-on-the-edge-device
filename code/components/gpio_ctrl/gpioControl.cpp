@@ -232,6 +232,12 @@ bool GpioHandler::init()
     // Handler task is only needed to maintain input pin state (interrupt or polling)
     if (initHandlerTask && xHandleTaskGpio == NULL) {
         gpio_queue_handle = xQueueCreate(10, sizeof(GpioResult));
+        if (gpio_queue_handle == NULL) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create GPIO queue");
+            clearData();
+            return false;
+        }
+
         BaseType_t xReturned = xTaskCreate(&gpioHandlerTask, "gpioHandlerTask", 3 * 1024, (void *)this, tskIDLE_PRIORITY + 4,
                                            &xHandleTaskGpio);
 
@@ -384,6 +390,11 @@ esp_err_t GpioHandler::loadParameter()
 
 void GpioHandler::clearData()
 {
+    if (xHandleTaskGpio != NULL) {
+        vTaskDelete(xHandleTaskGpio);
+        xHandleTaskGpio = NULL;
+    }
+
     gpioHandlerEnabled = false;
 
     if (gpioMap != NULL) {
@@ -435,11 +446,6 @@ void GpioHandler::deinit()
 #endif // ENABLE_MQTT
 
     clearData();
-
-    if (xHandleTaskGpio != NULL) {
-        vTaskDelete(xHandleTaskGpio);
-        xHandleTaskGpio = NULL;
-    }
 
     if (gpio_queue_handle != NULL) {
         vQueueDelete(gpio_queue_handle);
