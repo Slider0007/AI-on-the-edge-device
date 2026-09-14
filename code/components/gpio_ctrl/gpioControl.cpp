@@ -89,7 +89,7 @@ void GpioHandler::gpioInputStatePolling()
 }
 
 
-void GpioHandler::ledcInitGpio(ledc_timer_t _timer, ledc_channel_t _channel, int _gpioNum, int _frequency)
+bool GpioHandler::ledcInitGpio(ledc_timer_t _timer, ledc_channel_t _channel, int _gpioNum, int _frequency)
 {
     LogFile.writeToFile(ESP_LOG_INFO, TAG,
                         "Init LEDC timer " + std::to_string((int)_timer) + ", Frequency: " + std::to_string(_frequency) +
@@ -109,6 +109,7 @@ void GpioHandler::ledcInitGpio(ledc_timer_t _timer, ledc_channel_t _channel, int
     if (retVal != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                             "Failed to init LEDC timer " + std::to_string((int)_timer) + ", Error: " + intToHexString(retVal));
+        return false;
     }
 
     // Prepare and then apply the LEDC PWM channel configuration
@@ -127,7 +128,9 @@ void GpioHandler::ledcInitGpio(ledc_timer_t _timer, ledc_channel_t _channel, int
     if (retVal != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                             "Failed to init LEDC channel " + std::to_string((int)_channel) + ", Error: " + intToHexString(retVal));
+        return false;
     }
+    return true;
 }
 
 
@@ -184,8 +187,9 @@ bool GpioHandler::init()
 
             smartLedChannel++;
         }
-        else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM) {
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init PWM (Flashlight): GPIO" + std::to_string((int)it->second->getGPIO()));
+        else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM || it->second->getMode() == GPIO_PIN_MODE_OUTPUT_PWM) {
+            std::string typeStr = (mode == GPIO_PIN_MODE_FLASHLIGHT_PWM) ? "Flashlight" : "GPIO output";
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init PWM (" + typeStr + "): GPIO" + std::to_string((int)it->second->getGPIO()));
 
             ledc_timer_t timer = getFreeTimer(it->second->getFrequency());
             if (timer == LEDC_TIMER_MAX) {
@@ -204,28 +208,13 @@ bool GpioHandler::init()
                 return false;
             }
 
-            ledcInitGpio(timer, (ledc_channel_t)ledcChannel, it->second->getGPIO(), it->second->getFrequency());
-            it->second->setLedcChannel(static_cast<ledc_channel_t>(ledcChannel));
-            ledcChannel++;
-        }
-        else if (it->second->getMode() == GPIO_PIN_MODE_OUTPUT_PWM) {
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init PWM (GPIO output): GPIO" + std::to_string((int)it->second->getGPIO()));
-
-            ledc_timer_t timer = getFreeTimer(it->second->getFrequency());
-            if (timer == LEDC_TIMER_MAX) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient LEDC timer");
+            if (!ledcInitGpio(timer, (ledc_channel_t)ledcChannel, it->second->getGPIO(), it->second->getFrequency())) {
                 clearData();
                 return false;
             }
 
-            ledcInitGpio(timer, (ledc_channel_t)ledcChannel, it->second->getGPIO(), it->second->getFrequency());
             it->second->setLedcChannel(static_cast<ledc_channel_t>(ledcChannel));
             ledcChannel++;
-            if (ledcChannel == LEDC_CHANNEL_MAX) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient LEDC channels");
-                clearData();
-                return false;
-            }
         }
 
         // Handler task is only needed to maintain input pin state (interrupt or polling)
@@ -437,13 +426,13 @@ void GpioHandler::deinit()
 
     clearData();
 
-    vQueueDelete(gpio_queue_handle);
-    gpio_queue_handle = NULL;
-
     if (xHandleTaskGpio != NULL) {
         vTaskDelete(xHandleTaskGpio);
         xHandleTaskGpio = NULL;
     }
+
+    vQueueDelete(gpio_queue_handle);
+    gpio_queue_handle = NULL;
 }
 
 
