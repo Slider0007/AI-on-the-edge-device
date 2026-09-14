@@ -71,7 +71,10 @@ static void ethEventHandler(void *arg, esp_event_base_t eventBase, int32_t event
 
 static void ipEventHandler(void *arg, esp_event_base_t eventBase, int32_t eventId, void *eventData)
 {
-    if (eventId == IP_EVENT_ETH_GOT_IP) {
+    if (eventId == IP_EVENT_NETIF_UP) {
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Network interface up");
+    }
+    else if (eventId == IP_EVENT_ETH_GOT_IP) {
         ethState.connected = true;
         ethState.connectionSuccessful = true;
 
@@ -105,11 +108,11 @@ static void ipEventHandler(void *arg, esp_event_base_t eventBase, int32_t eventI
     }
     else if (eventId == IP_EVENT_ETH_LOST_IP) {
         ethState.connectionSuccessful = false;
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Ethernet: IP address lost");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "IP address lost");
     }
-    else {
+    else if (eventId == IP_EVENT_NETIF_DOWN) {
         ethState.connectionSuccessful = false;
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Unhandled IP event: " + std::to_string(eventId));
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Network interface down");
     }
 }
 
