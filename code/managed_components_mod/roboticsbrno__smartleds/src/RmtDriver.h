@@ -8,27 +8,31 @@
 #define SMARTLEDS_NEW_RMT_DRIVER 1
 #else
 #define SMARTLEDS_NEW_RMT_DRIVER 0
-#endif
+#endif // ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
 #ifndef SOC_RMT_GROUPS
 #define SOC_RMT_GROUPS 1
-#endif
+#endif // SOC_RMT_GROUPS
+
+// Maximum usable RMT TX channels
 #ifndef SOC_RMT_CHANNELS_PER_GROUP
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
-#define SOC_RMT_CHANNELS_PER_GROUP 4
-#else
+#if defined(CONFIG_IDF_TARGET_ESP32)
 #define SOC_RMT_CHANNELS_PER_GROUP 8
-#endif
-#endif
+#elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+#define SOC_RMT_CHANNELS_PER_GROUP 4
+#else // ESP32-C3, ESP32-C6, ESP32-H2, ESP32-C2
+#define SOC_RMT_CHANNELS_PER_GROUP 2
+#endif // TARGET BASED
+#endif // SOC_RMT_CHANNELS_PER_GROUP
+
 #ifndef HSPI_HOST
 #define HSPI_HOST SPI2_HOST
-#endif
-#endif
-
+#endif // HSPI_HOST
+#endif // ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(6, 0, 0)
 #else
 #define SMARTLEDS_NEW_RMT_DRIVER 0
-#endif
+#endif // ESP_IDF_VERSION
 
 namespace SmartLeds::detail
 {
