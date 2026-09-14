@@ -431,8 +431,10 @@ void GpioHandler::deinit()
         xHandleTaskGpio = NULL;
     }
 
-    vQueueDelete(gpio_queue_handle);
-    gpio_queue_handle = NULL;
+    if (gpio_queue_handle != NULL) {
+        vQueueDelete(gpio_queue_handle);
+        gpio_queue_handle = NULL;
+    }
 }
 
 
