@@ -196,16 +196,17 @@ bool GpioHandler::init()
                 return false;
             }
 
-            ledcInitGpio(timer, (ledc_channel_t)ledcChannel, it->second->getGPIO(), it->second->getFrequency());
-            it->second->setLedcChannel(static_cast<ledc_channel_t>(ledcChannel));
-            ledcChannel++;
-            if (ledcChannel == LEDC_CHANNEL_MAX) {
+            if (ledcChannel >= LEDC_CHANNEL_MAX) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                     "Insufficient LEDC channels. Reduce usage of PWM configured pins | Max: " +
                                         std::to_string(LEDC_CHANNEL_MAX - 1));
                 clearData();
                 return false;
             }
+
+            ledcInitGpio(timer, (ledc_channel_t)ledcChannel, it->second->getGPIO(), it->second->getFrequency());
+            it->second->setLedcChannel(static_cast<ledc_channel_t>(ledcChannel));
+            ledcChannel++;
         }
         else if (it->second->getMode() == GPIO_PIN_MODE_OUTPUT_PWM) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init PWM (GPIO output): GPIO" + std::to_string((int)it->second->getGPIO()));
@@ -248,6 +249,8 @@ bool GpioHandler::init()
 
         if (xReturned != pdPASS) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create gpioHandlerTask");
+            vQueueDelete(gpio_queue_handle);
+            gpio_queue_handle = NULL;
             clearData();
             return false;
         }
@@ -404,7 +407,10 @@ void GpioHandler::clearData()
             }
             // Disable LEDC channels
             else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM || it->second->getMode() == GPIO_PIN_MODE_OUTPUT_PWM) {
-                ledc_stop(LEDC_LOW_SPEED_MODE, it->second->getLedcChannel(), 0);
+                ledc_channel_t channel = it->second->getLedcChannel();
+                if (channel < LEDC_CHANNEL_MAX) {
+                    ledc_stop(LEDC_LOW_SPEED_MODE, channel, 0);
+                }
             }
 
             delete it->second; // Free GPIO pin instance
@@ -430,6 +436,9 @@ void GpioHandler::deinit()
 #endif // ENABLE_MQTT
 
     clearData();
+
+    vQueueDelete(gpio_queue_handle);
+    gpio_queue_handle = NULL;
 
     if (xHandleTaskGpio != NULL) {
         vTaskDelete(xHandleTaskGpio);
