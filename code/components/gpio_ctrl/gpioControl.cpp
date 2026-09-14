@@ -156,7 +156,7 @@ bool GpioHandler::init()
         return true;
     }
 
-    uint8_t smartLedChannel = 0; // Max channels --> Smartleds::detail::CHANNEL_COUNT (ESP32: max. 8 channels / ESP32S3: max. 4 channels)
+    uint8_t smartLedChannel = 0; // Max channels --> SmartLeds::detail::CHANNEL_COUNT (ESP32: max. 8 channels / ESP32S3: max. 4 channels)
     uint8_t ledcChannel = 1;     // max 8 channels (CH0: camera, CH1 - CH7: spare)
     bool initHandlerTask = false;
 
@@ -167,10 +167,10 @@ bool GpioHandler::init()
             std::string sourceType = (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED) ? "Flashlight" : "StatusLED";
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init SmartLED (" + sourceType + "): GPIO" + std::to_string((int)it->second->getGPIO()));
 
-            if (smartLedChannel >= Smartleds::detail::CHANNEL_COUNT) {
+            if (smartLedChannel >= SmartLeds::detail::CHANNEL_COUNT) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                     "Insufficient RMT channels. Reduce usage of smartLED configured pins | Max: " +
-                                        std::to_string(Smartleds::detail::CHANNEL_COUNT));
+                                        std::to_string(SmartLeds::detail::CHANNEL_COUNT));
                 clearData();
                 return false;
             }
