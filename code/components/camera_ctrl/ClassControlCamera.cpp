@@ -963,8 +963,10 @@ esp_err_t ClassControlCamera::captureToStream(httpd_req_t *_req, bool _flashligh
 }
 
 
-void ClassControlCamera::initFlashlight()
+bool ClassControlCamera::initFlashlight()
 {
+    bool success = true;
+
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
     if (ConfigClass::getInstance()->get()->sectionGpio.customizationEnabled) {
         // Disable default flashlight
@@ -973,27 +975,31 @@ void ClassControlCamera::initFlashlight()
         // Init GPIO handler to handle flashlight
         GpioHandler *handle = getGpioHandle();
         if (handle == NULL || !handle->gpioHandlerIsEnabled()) {
-            initGpioHandler();
+            success = initGpioHandler();
         }
     }
     else {
         // Init default flashlight
-        ledcInitFlashlightDefault();
+        success = ledcInitFlashlightDefault();
     }
 #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
     // Init GPIO handler to handle flashlight
     GpioHandler *handle = getGpioHandle();
     if (handle == NULL || !handle->gpioHandlerIsEnabled()) {
-        initGpioHandler();
+        success = initGpioHandler();
     }
 #endif
 
-    cameraCtrl.setFlashlight(false);
+    if (success) {
+        cameraCtrl.setFlashlight(false);
+    }
+
+    return success;
 }
 
 
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-void ClassControlCamera::ledcInitFlashlightDefault()
+bool ClassControlCamera::ledcInitFlashlightDefault()
 {
     // Prepare GPIO for flashlight default
     gpio_config_t gpioConfig = {};
@@ -1016,6 +1022,7 @@ void ClassControlCamera::ledcInitFlashlightDefault()
         LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                             "Failed to init LEDC timer " + std::to_string((int)FLASHLIGHT_DEFAULT_LEDC_TIMER) +
                                 ", Error: " + intToHexString(retVal));
+        return false;
     }
 
     // Prepare LEDC PWM channel configuration
@@ -1035,7 +1042,10 @@ void ClassControlCamera::ledcInitFlashlightDefault()
         LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                             "Failed to init LEDC channel " + std::to_string((int)FLASHLIGHT_DEFAULT_LEDC_CHANNEL) +
                                 ", Error: " + intToHexString(retVal));
+        return false;
     }
+
+    return true;
 }
 #endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
 
