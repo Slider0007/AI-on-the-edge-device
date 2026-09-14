@@ -385,8 +385,23 @@ esp_err_t GpioHandler::loadParameter()
 
 void GpioHandler::clearData()
 {
+    gpioHandlerEnabled = false;
+
     if (gpioMap != NULL) {
-        for (std::map<gpio_num_t, GpioPin *>::iterator it = gpioMap->begin(); it != gpioMap->end(); it++) {
+        // Disable all interrupts
+        for (auto it = gpioMap->begin(); it != gpioMap->end(); ++it) {
+            if (it->second != NULL && it->second->getInterruptType() != GPIO_INTR_DISABLE) {
+                gpio_intr_disable(it->second->getGPIO());
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(50));
+
+        for (auto it = gpioMap->begin(); it != gpioMap->end(); ++it) {
+            if (it->second == NULL) {
+                continue;
+            }
+
             // Free smartLED instances
             if ((it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED || it->second->getMode() == GPIO_PIN_MODE_STATUSLED_SMARTLED) &&
                 it->second->getSmartLed() != NULL) {
@@ -411,17 +426,11 @@ void GpioHandler::clearData()
 
     // Yield to let IPC background tasks finishing ISR deinit
     vTaskDelay(pdMS_TO_TICKS(100));
-
-    gpioHandlerEnabled = false;
-
-    // gpio_uninstall_isr_service(); can't uninstall, ISR service is also used by camera
 }
 
 
 void GpioHandler::deinit()
 {
-    gpioHandlerEnabled = false;
-
 #ifdef ENABLE_MQTT
     unregisterMqttConnectFunction("gpioHandler");
 #endif // ENABLE_MQTT
