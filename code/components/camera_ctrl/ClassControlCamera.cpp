@@ -986,7 +986,7 @@ bool ClassControlCamera::initFlashlight()
     // Init GPIO handler to handle flashlight
     GpioHandler *handle = getGpioHandle();
     if (handle == NULL || !handle->gpioHandlerIsEnabled()) {
-        success = 0initGpioHandler();
+        success = initGpioHandler();
     }
 #endif
 
