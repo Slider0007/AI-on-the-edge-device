@@ -154,7 +154,7 @@ bool GpioHandler::init()
         return true;
     }
 
-    uint8_t smartLedChannel = 0; // max. 8 channels
+    uint8_t smartLedChannel = 0; // Max channels --> SmartLeds::detail::CHANNEL_COUNT (ESP32: max. 8 channels / ESP32S3: max. 4 channels)
     uint8_t ledcChannel = 1;     // max 8 channels (CH0: camera, CH1 - CH7: spare)
     bool initHandlerTask = false;
 
@@ -164,20 +164,35 @@ bool GpioHandler::init()
         if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED || it->second->getMode() == GPIO_PIN_MODE_STATUSLED_SMARTLED) {
             std::string sourceType = (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED) ? "Flashlight" : "StatusLED";
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init SmartLED (" + sourceType + "): GPIO" + std::to_string((int)it->second->getGPIO()));
-            it->second->setSmartLed(new SmartLed(it->second->getLEDType(), it->second->getLEDQuantity(), it->second->getGPIO(),
-                                                 smartLedChannel, DoubleBuffer));
-            smartLedChannel++;
-            if (smartLedChannel == detail::CHANNEL_COUNT) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient SmartLED channels");
+
+            if (smartLedChannel >= SmartLeds::detail::CHANNEL_COUNT) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Insufficient RMT channels. Reduce usage of smartLED configured pins | Max: " +
+                                        std::to_string(SmartLeds::detail::CHANNEL_COUNT));
+                clearData();
                 return false;
             }
+
+            it->second->setSmartLed(new SmartLed(it->second->getLEDType(), it->second->getLEDQuantity(), it->second->getGPIO(),
+                                                 smartLedChannel, DoubleBuffer));
+
+            if (it->second->getSmartLed() == NULL) {
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create smartLED instance");
+                clearData();
+                return false;
+            }
+
+            smartLedChannel++;
         }
         else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM) {
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init PWM (Flashlight): GPIO" + std::to_string((int)it->second->getGPIO()));
 
             ledc_timer_t timer = getFreeTimer(it->second->getFrequency());
             if (timer == LEDC_TIMER_MAX) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient LEDC timer");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Insufficient LEDC timer. Reduce usage of PWM frequency variants | Max: " +
+                                        std::to_string(LEDC_TIMER_MAX - 1));
+                clearData();
                 return false;
             }
 
@@ -185,7 +200,10 @@ bool GpioHandler::init()
             it->second->setLedcChannel(static_cast<ledc_channel_t>(ledcChannel));
             ledcChannel++;
             if (ledcChannel == LEDC_CHANNEL_MAX) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient LEDC channels");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Insufficient LEDC channels. Reduce usage of PWM configured pins | Max: " +
+                                        std::to_string(LEDC_CHANNEL_MAX - 1));
+                clearData();
                 return false;
             }
         }
@@ -195,6 +213,7 @@ bool GpioHandler::init()
             ledc_timer_t timer = getFreeTimer(it->second->getFrequency());
             if (timer == LEDC_TIMER_MAX) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient LEDC timer");
+                clearData();
                 return false;
             }
 
@@ -203,6 +222,7 @@ bool GpioHandler::init()
             ledcChannel++;
             if (ledcChannel == LEDC_CHANNEL_MAX) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient LEDC channels");
+                clearData();
                 return false;
             }
         }
@@ -228,6 +248,7 @@ bool GpioHandler::init()
 
         if (xReturned != pdPASS) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create gpioHandlerTask");
+            clearData();
             return false;
         }
     }

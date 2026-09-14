@@ -1022,6 +1022,7 @@ bool ClassControlCamera::ledcInitFlashlightDefault()
         LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                             "Failed to init LEDC timer " + std::to_string((int)FLASHLIGHT_DEFAULT_LEDC_TIMER) +
                                 ", Error: " + intToHexString(retVal));
+        return false;
     }
 
     // Prepare LEDC PWM channel configuration
