@@ -412,6 +412,8 @@ void GpioHandler::clearData()
     // Yield to let IPC background tasks finishing ISR deinit
     vTaskDelay(pdMS_TO_TICKS(100));
 
+    gpioHandlerEnabled = false;
+
     // gpio_uninstall_isr_service(); can't uninstall, ISR service is also used by camera
 }
 
