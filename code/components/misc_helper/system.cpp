@@ -187,6 +187,22 @@ bool setCPUFrequency(void)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef DEBUG_DETAIL_ON
+void logHeap(const char *label)
+{
+    multi_heap_info_t info;
+    heap_caps_get_info(&info, MALLOC_CAP_INTERNAL);
+
+    ESP_LOGI(TAG, "Heap log - %s: Internal(free/largest/min)=%u/%u/%u | DMA(free/largest/min)=%u/%u/%u | PSRAM(free/largest)=%u/%u", label,
+             info.total_free_bytes, info.largest_free_block, info.minimum_free_bytes,
+             heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA),
+             heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA),
+             heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA), heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+}
+#endif // DEBUG_DETAIL_ON
+
+
 std::string getESPHeapInfo()
 {
     std::string espInfoResultStr = "";

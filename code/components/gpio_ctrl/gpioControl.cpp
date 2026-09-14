@@ -117,7 +117,6 @@ void GpioHandler::ledcInitGpio(ledc_timer_t _timer, ledc_channel_t _channel, int
     ledc_channel.speed_mode = LEDC_LOW_SPEED_MODE;
     ledc_channel.channel = _channel;
     ledc_channel.timer_sel = _timer;
-    ledc_channel.intr_type = LEDC_INTR_DISABLE;
     ledc_channel.gpio_num = _gpioNum;
     ledc_channel.duty = 0; // Set duty to 0%
     ledc_channel.hpoint = 0;
@@ -167,7 +166,7 @@ bool GpioHandler::init()
             it->second->setSmartLed(new SmartLed(it->second->getLEDType(), it->second->getLEDQuantity(), it->second->getGPIO(),
                                                  smartLedChannel, DoubleBuffer));
             smartLedChannel++;
-            if (smartLedChannel == detail::CHANNEL_COUNT) {
+            if (smartLedChannel == SmartLeds::detail::CHANNEL_COUNT) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient SmartLED channels");
                 return false;
             }

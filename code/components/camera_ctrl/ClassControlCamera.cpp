@@ -1024,9 +1024,8 @@ void ClassControlCamera::ledcInitFlashlightDefault()
     ledcChannel.speed_mode = LEDC_LOW_SPEED_MODE;
     ledcChannel.channel = FLASHLIGHT_DEFAULT_LEDC_CHANNEL; // CH0: Camera, CH2 - CH7: GPIO
     ledcChannel.timer_sel = FLASHLIGHT_DEFAULT_LEDC_TIMER; // Use TIMER1 (TIMER0: camera)
-    ledcChannel.intr_type = LEDC_INTR_DISABLE;
-    ledcChannel.gpio_num = GPIO_FLASHLIGHT_DEFAULT; // Use default flashlight GPIO pin
-    ledcChannel.duty = 0;                           // Set duty to 0%
+    ledcChannel.gpio_num = GPIO_FLASHLIGHT_DEFAULT;        // Use default flashlight GPIO pin
+    ledcChannel.duty = 0;                                  // Set duty to 0%
     ledcChannel.hpoint = 0;
 
     retVal = ledc_channel_config(&ledcChannel);

@@ -199,7 +199,7 @@ esp_err_t initEthernetW5500()
     gpio_set_direction(GPIO_ETH_INT, GPIO_MODE_INPUT);
     gpio_set_pull_mode(GPIO_ETH_INT, GPIO_PULLUP_ONLY);
     eth_w5500_config_t ethW5500Cfg = ETH_W5500_DEFAULT_CONFIG(SPI2_HOST, &spiDevCfg);
-    ethW5500Cfg.int_gpio_num = GPIO_ETH_INT;
+    ethW5500Cfg.base.int_gpio_num = GPIO_ETH_INT;
     gpio_install_isr_service(0);
 
     eth_mac_config_t ethMacCfg = ETH_MAC_DEFAULT_CONFIG();
