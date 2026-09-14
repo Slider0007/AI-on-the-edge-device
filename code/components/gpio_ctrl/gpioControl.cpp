@@ -153,7 +153,7 @@ bool GpioHandler::init()
         return true;
     }
 
-    uint8_t smartLedChannel = 0; // max. 8 channels
+    uint8_t smartLedChannel = 0; // ESP32: max. 8 channels / ESP32S3: max. 4 channels
     uint8_t ledcChannel = 1;     // max 8 channels (CH0: camera, CH1 - CH7: spare)
     bool initHandlerTask = false;
 
@@ -167,7 +167,9 @@ bool GpioHandler::init()
                                                  smartLedChannel, DoubleBuffer));
             smartLedChannel++;
             if (smartLedChannel == SmartLeds::detail::CHANNEL_COUNT) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient SmartLED channels");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Insufficient RMT channels. Reduce usage of smartLED configured pins | Max: " +
+                                        std::to_string(SmartLeds::detail::CHANNEL_COUNT));
                 return false;
             }
         }
@@ -176,7 +178,9 @@ bool GpioHandler::init()
 
             ledc_timer_t timer = getFreeTimer(it->second->getFrequency());
             if (timer == LEDC_TIMER_MAX) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient LEDC timer");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Insufficient LEDC timer. Reduce usage of PWM frequency variants | Max: " +
+                                        std::to_string(LEDC_TIMER_MAX - 1));
                 return false;
             }
 
@@ -184,7 +188,9 @@ bool GpioHandler::init()
             it->second->setLedcChannel(static_cast<ledc_channel_t>(ledcChannel));
             ledcChannel++;
             if (ledcChannel == LEDC_CHANNEL_MAX) {
-                LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Insufficient LEDC channels");
+                LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                    "Insufficient LEDC channels. Reduce usage of PWM configured pins | Max: " +
+                                        std::to_string(LEDC_CHANNEL_MAX - 1));
                 return false;
             }
         }
