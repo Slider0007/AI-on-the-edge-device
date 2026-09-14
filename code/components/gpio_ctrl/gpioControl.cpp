@@ -165,7 +165,7 @@ bool GpioHandler::init()
             std::string sourceType = (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED) ? "Flashlight" : "StatusLED";
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init SmartLED (" + sourceType + "): GPIO" + std::to_string((int)it->second->getGPIO()));
 
-            if (smartLedChannel >= SmartLeds::detail::CHANNEL_COUNT) {
+            if (smartLedChannel >= detail::CHANNEL_COUNT) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                     "Insufficient RMT channels. Reduce usage of smartLED configured pins | Max: " +
                                         std::to_string(SmartLeds::detail::CHANNEL_COUNT));
