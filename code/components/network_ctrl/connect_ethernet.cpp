@@ -9,6 +9,8 @@
 #include <esp_netif_sntp.h>
 #include <driver/spi_master.h>
 #include <driver/gpio.h>
+#include <esp_eth_phy_w5500.h>
+#include <esp_eth_mac_w5500.h>
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
