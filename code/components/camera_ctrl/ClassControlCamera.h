@@ -49,7 +49,7 @@ class ClassControlCamera
     bool setImageManipulation(void);
 
 #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_PWM
-    void ledcInitFlashlightDefault(void);
+    bool ledcInitFlashlightDefault(void);
 #endif // GPIO_FLASHLIGHT_DEFAULT_USE_PWM
 
     bool loadNextDemoImage(camera_fb_t *_fb);
@@ -77,7 +77,7 @@ class ClassControlCamera
                             CfgData::SectionTakeImage::Flashlight *_paramFlashlightTemp = NULL);
     esp_err_t captureToStream(httpd_req_t *_req, bool _flashlightOn);
 
-    void initFlashlight(void);
+    bool initFlashlight(void);
     esp_err_t setFlashlightParameter(const CfgData::SectionTakeImage::Flashlight *_paramFlashlight = NULL);
     void setFlashlight(bool _status);
 
