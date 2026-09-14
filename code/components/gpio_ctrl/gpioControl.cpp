@@ -188,7 +188,7 @@ bool GpioHandler::init()
             smartLedChannel++;
         }
         else if (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM || it->second->getMode() == GPIO_PIN_MODE_OUTPUT_PWM) {
-            std::string typeStr = (mode == GPIO_PIN_MODE_FLASHLIGHT_PWM) ? "Flashlight" : "GPIO output";
+            std::string typeStr = (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_PWM) ? "Flashlight" : "GPIO output";
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init PWM (" + typeStr + "): GPIO" + std::to_string((int)it->second->getGPIO()));
 
             ledc_timer_t timer = getFreeTimer(it->second->getFrequency());
