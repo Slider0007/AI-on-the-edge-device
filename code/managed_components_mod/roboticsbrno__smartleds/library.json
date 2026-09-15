@@ -1,0 +1,20 @@
+{
+  "name": "SmartLeds",
+  "keywords": "LED, esp32, NeoPixel, WS2812, WS2812B, APA102",
+  "description": "Simple & intuitive way to drive various smart LEDs on ESP32.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RoboticsBrno/SmartLeds.git"
+  },
+  "authors": [
+    {
+      "name": "Jan Mrázek",
+      "email": "email@honzamrazek.cz",
+      "url": "http://www.robotikabrno.cz",
+      "maintainer": true
+    }
+  ],
+  "version": "3.2.0",
+  "frameworks": ["arduino", "espidf"],
+  "platforms": "espressif32"
+}

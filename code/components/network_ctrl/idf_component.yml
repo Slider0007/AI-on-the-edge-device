@@ -1,2 +1,6 @@
 dependencies:
   espressif/mdns: "1.12.0"
+  espressif/w5500:
+    version: "2.0.0"
+    rules:
+      - if: "$CONFIG{ETH_USE_SPI_ETHERNET} == True"

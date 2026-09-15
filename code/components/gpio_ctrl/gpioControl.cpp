@@ -118,7 +118,6 @@ bool GpioHandler::ledcInitGpio(ledc_timer_t _timer, ledc_channel_t _channel, int
     ledc_channel.speed_mode = LEDC_LOW_SPEED_MODE;
     ledc_channel.channel = _channel;
     ledc_channel.timer_sel = _timer;
-    ledc_channel.intr_type = LEDC_INTR_DISABLE;
     ledc_channel.gpio_num = _gpioNum;
     ledc_channel.duty = 0; // Set duty to 0%
     ledc_channel.hpoint = 0;
@@ -157,7 +156,7 @@ bool GpioHandler::init()
         return true;
     }
 
-    uint8_t smartLedChannel = 0; // Max channels --> detail::CHANNEL_COUNT (ESP32: max. 8 channels / ESP32S3: max. 4 channels)
+    uint8_t smartLedChannel = 0; // Max channels --> SmartLeds::detail::CHANNEL_COUNT (ESP32: max. 8 channels / ESP32S3: max. 4 channels)
     uint8_t ledcChannel = 1;     // max 8 channels (CH0: camera, CH1 - CH7: spare)
     bool initHandlerTask = false;
 
@@ -168,10 +167,10 @@ bool GpioHandler::init()
             std::string sourceType = (it->second->getMode() == GPIO_PIN_MODE_FLASHLIGHT_SMARTLED) ? "Flashlight" : "StatusLED";
             LogFile.writeToFile(ESP_LOG_INFO, TAG, "Init SmartLED (" + sourceType + "): GPIO" + std::to_string((int)it->second->getGPIO()));
 
-            if (smartLedChannel >= detail::CHANNEL_COUNT) {
+            if (smartLedChannel >= SmartLeds::detail::CHANNEL_COUNT) {
                 LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                     "Insufficient RMT channels. Reduce usage of smartLED configured pins | Max: " +
-                                        std::to_string(detail::CHANNEL_COUNT));
+                                        std::to_string(SmartLeds::detail::CHANNEL_COUNT));
                 clearData();
                 return false;
             }
@@ -233,6 +232,12 @@ bool GpioHandler::init()
     // Handler task is only needed to maintain input pin state (interrupt or polling)
     if (initHandlerTask && xHandleTaskGpio == NULL) {
         gpio_queue_handle = xQueueCreate(10, sizeof(GpioResult));
+        if (gpio_queue_handle == NULL) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create GPIO queue");
+            clearData();
+            return false;
+        }
+
         BaseType_t xReturned = xTaskCreate(&gpioHandlerTask, "gpioHandlerTask", 3 * 1024, (void *)this, tskIDLE_PRIORITY + 4,
                                            &xHandleTaskGpio);
 
@@ -385,6 +390,11 @@ esp_err_t GpioHandler::loadParameter()
 
 void GpioHandler::clearData()
 {
+    if (xHandleTaskGpio != NULL) {
+        vTaskDelete(xHandleTaskGpio);
+        xHandleTaskGpio = NULL;
+    }
+
     gpioHandlerEnabled = false;
 
     if (gpioMap != NULL) {
@@ -436,11 +446,6 @@ void GpioHandler::deinit()
 #endif // ENABLE_MQTT
 
     clearData();
-
-    if (xHandleTaskGpio != NULL) {
-        vTaskDelete(xHandleTaskGpio);
-        xHandleTaskGpio = NULL;
-    }
 
     if (gpio_queue_handle != NULL) {
         vQueueDelete(gpio_queue_handle);

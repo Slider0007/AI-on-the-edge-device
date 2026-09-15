@@ -9,6 +9,8 @@
 #include <esp_netif_sntp.h>
 #include <driver/spi_master.h>
 #include <driver/gpio.h>
+#include <esp_eth_phy_w5500.h>
+#include <esp_eth_mac_w5500.h>
 
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
@@ -69,7 +71,10 @@ static void ethEventHandler(void *arg, esp_event_base_t eventBase, int32_t event
 
 static void ipEventHandler(void *arg, esp_event_base_t eventBase, int32_t eventId, void *eventData)
 {
-    if (eventId == IP_EVENT_ETH_GOT_IP) {
+    if (eventId == IP_EVENT_NETIF_UP) {
+        LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "Network interface up");
+    }
+    else if (eventId == IP_EVENT_ETH_GOT_IP) {
         ethState.connected = true;
         ethState.connectionSuccessful = true;
 
@@ -103,11 +108,11 @@ static void ipEventHandler(void *arg, esp_event_base_t eventBase, int32_t eventI
     }
     else if (eventId == IP_EVENT_ETH_LOST_IP) {
         ethState.connectionSuccessful = false;
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Ethernet: IP address lost");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "IP address lost");
     }
-    else {
+    else if (eventId == IP_EVENT_NETIF_DOWN) {
         ethState.connectionSuccessful = false;
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Unhandled IP event: " + std::to_string(eventId));
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Network interface down");
     }
 }
 
@@ -199,7 +204,7 @@ esp_err_t initEthernetW5500()
     gpio_set_direction(GPIO_ETH_INT, GPIO_MODE_INPUT);
     gpio_set_pull_mode(GPIO_ETH_INT, GPIO_PULLUP_ONLY);
     eth_w5500_config_t ethW5500Cfg = ETH_W5500_DEFAULT_CONFIG(SPI2_HOST, &spiDevCfg);
-    ethW5500Cfg.int_gpio_num = GPIO_ETH_INT;
+    ethW5500Cfg.base.int_gpio_num = GPIO_ETH_INT;
     gpio_install_isr_service(0);
 
     eth_mac_config_t ethMacCfg = ETH_MAC_DEFAULT_CONFIG();

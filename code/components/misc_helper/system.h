@@ -29,6 +29,9 @@ float getSOCTemperature();
 
 bool setCPUFrequency(void);
 
+#ifdef DEBUG_DETAIL_ON
+void logHeap(const char *label);
+#endif // DEBUG_DETAIL_ON
 std::string getESPHeapInfo(void);
 size_t getESPHeapSizeTotalFree(void);
 size_t getESPHeapSizeInternalFree(void);

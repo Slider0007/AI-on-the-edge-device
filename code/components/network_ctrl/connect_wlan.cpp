@@ -91,7 +91,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
                 setStatusLed(WLAN_CONN, 1, false);
             }
             else if (disconn->reason == WIFI_REASON_AUTH_EXPIRE || disconn->reason == WIFI_REASON_AUTH_FAIL ||
-                     disconn->reason == WIFI_REASON_NOT_AUTHED || disconn->reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT ||
+                     disconn->reason == WIFI_REASON_ASSOC_NOT_AUTHED || disconn->reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT ||
                      disconn->reason == WIFI_REASON_HANDSHAKE_TIMEOUT || disconn->reason == WIFI_REASON_NO_AP_FOUND_W_COMPATIBLE_SECURITY) {
                 LogFile.writeToFile(ESP_LOG_WARN, TAG, "Disconnected (" + std::to_string(disconn->reason) + ", Auth fail)");
                 setStatusLed(WLAN_CONN, 2, false);
@@ -384,8 +384,8 @@ esp_err_t initWifiClient(void)
         }
     }
 
-    // Force bandwidth to 20Mhz to reduce risk of interference with other channels (Default: WIFI_BW_HT40)
-    retVal = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
+    // Force bandwidth to 20Mhz to reduce risk of interference with other channels (Default: WIFI_BW40)
+    retVal = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW20);
     if (retVal != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_bandwidth: Error: " + intToHexString(retVal));
     }
@@ -545,8 +545,8 @@ esp_err_t initWifiAp(bool _useDefaultConfig)
         }
     }
 
-    // Force bandwidth to 20Mhz to reduce risk of interference with other channels (Default: WIFI_BW_HT40)
-    retVal = esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
+    // Force bandwidth to 20Mhz to reduce risk of interference with other channels (Default: WIFI_BW40)
+    retVal = esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW20);
     if (retVal != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_bandwidth: Error: " + intToHexString(retVal));
     }
