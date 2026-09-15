@@ -10,8 +10,9 @@ Use the contents of `AI-on-the-edge-device__{Board Type}__*.zip`.
 **IMPORTANT:** Ensure you are using the correct firmware package for your specific board type.
 
 There are multiple ways to flash the microcontroller:
-- [Espressif Flash Tool](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/production_stage/tools/flash_download_tool.html)  
-- [esptool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
+- [ESPConnect (Web-based)](https://espconnect.msnow.icu/)
+- [Espressif Flash Tool (UI-based)](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/production_stage/tools/flash_download_tool.html)  
+- [esptool (command-line)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
 Refer to the `README` file included in the firmware ZIP package for detailed instructions.
 
@@ -22,7 +23,7 @@ Refer to the `README` file included in the firmware ZIP package for detailed ins
 An SD card is required for device operation, as the internal memory is insufficient to store all necessary files. 
 The SD card must be preloaded with the correct content for the device to function properly.  
 
-⚠️ **Ensure the SD card is properly formatted** using the FAT or FAT32 file system. macOS-formatted cards may cause issues.
+⚠️ **Ensure the SD card is properly formatted** using the FAT or FAT32 file system. macOS-formatted cards may cause issues. Recommended SD-card size: ≤ 32GB
 
 ℹ️ Use the same firmware package `AI-on-the-edge-device__{Board Type}__*.zip` for this step.  
 

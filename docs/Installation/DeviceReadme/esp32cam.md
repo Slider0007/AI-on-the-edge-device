@@ -9,8 +9,9 @@ The MCU of the device must first be flashed via a USB or serial connection.
 - ⚠️ Ensure you are using the correct firmware package for your specific board type.
 
 There are multiple ways to flash the microcontroller:
-- [Espressif Flash Tool](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/production_stage/tools/flash_download_tool.html)  
-- [esptool (command-line tool)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
+- [ESPConnect (Web-based)](https://espconnect.msnow.icu/)
+- [Espressif Flash Tool (UI-based)](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/production_stage/tools/flash_download_tool.html)  
+- [esptool (command-line)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
 #### Procedure
   1. **Enter bootloader mode**: Keep 'IO0' button pushed or keep IO0 pulled to GND while reseting the board
@@ -34,7 +35,7 @@ from official precompiled release packages or GitHub CI compiled test versions. 
 in limited or broken functionality.
 
 #### Procedure
-  1. Format SD card with FAT32 (Windows recommended. In MacOS formatted cards may not working properly)
+  1. Format SD card (≤ 32GB) with FAT32 (Windows recommended. In MacOS formatted cards may not working properly)
   2. Copy the complete `config` and `html` folders from the firmware ZIP to the root directory of the SD card
   3. Copy the config template file `/config/template/config.json` to the `/config` folder<br>
      - If the device has already been booted, a full default config file will exist in `/config`. You can modify that instead.
