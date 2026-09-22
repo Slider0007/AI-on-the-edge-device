@@ -8,6 +8,8 @@
 #include <esp_vfs_fat.h>
 #include <esp_netif.h>
 #include <driver/sdmmc_host.h>
+#include <driver/sdspi_host.h>
+#include <driver/spi_common.h>
 
 #ifdef DISABLE_BROWNOUT_DETECTOR
 #include <soc/soc.h>
@@ -373,7 +375,44 @@ esp_err_t initNVSFlash()
 esp_err_t initSDCard()
 {
     esp_err_t ret = ESP_OK;
+    sdmmc_card_t *card;
 
+    // Options for mounting the filesystem (protocol independent).
+    // If format_if_mount_failed is set to true, SD card will be partitioned and
+    // formatted in case when mounting fails.
+    esp_vfs_fat_sdmmc_mount_config_t mount_config = VFS_FAT_MOUNT_DEFAULT_CONFIG();
+    mount_config.max_files = 12;
+    mount_config.allocation_unit_size = 16 * 1024;
+
+#ifdef BOARD_SDCARD_USE_SPI
+    // Boards whose SD socket is wired for SPI rather than for SD/MMC mode.
+    ESP_LOGI(TAG, "Initializing SD card: Using SPI peripheral");
+
+    spi_bus_config_t bus_config = {};
+    bus_config.mosi_io_num = GPIO_SDCARD_CMD; // CMD -> MOSI
+    bus_config.miso_io_num = GPIO_SDCARD_D0;  // D0  -> MISO
+    bus_config.sclk_io_num = GPIO_SDCARD_CLK; // CLK -> SCK
+    bus_config.quadwp_io_num = -1;
+    bus_config.quadhd_io_num = -1;
+    bus_config.max_transfer_sz = 16 * 1024;
+
+    ret = spi_bus_initialize(BOARD_SDCARD_SPI_HOST, &bus_config, SDSPI_DEFAULT_DMA);
+    if (ret != ESP_OK) {
+        initStatusLed(); // Init status LED if required. Ensure it is not init twice
+        ESP_LOGE(TAG, "SD card init failed: Unable to initialize SPI bus");
+        setStatusLed(SDCARD_NVS_INIT, 3, true);
+        return ret;
+    }
+
+    sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
+    slot_config.gpio_cs = GPIO_SDCARD_D3; // D3 -> CS
+    slot_config.host_id = BOARD_SDCARD_SPI_HOST;
+
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    host.slot = BOARD_SDCARD_SPI_HOST;
+
+    ret = esp_vfs_fat_sdspi_mount("/sdcard", &host, &slot_config, &mount_config, &card);
+#else
     ESP_LOGI(TAG, "Initializing SD card: Using SDMMC peripheral");
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
 
@@ -407,20 +446,12 @@ esp_err_t initSDCard()
     // connected on the bus. This is for debug / example purpose only.
     slot_config.flags |= SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
 
-    // Options for mounting the filesystem.
-    // If format_if_mount_failed is set to true, SD card will be partitioned and
-    // formatted in case when mounting fails.
-    esp_vfs_fat_sdmmc_mount_config_t mount_config = VFS_FAT_MOUNT_DEFAULT_CONFIG();
-    mount_config.max_files = 12;
-    mount_config.allocation_unit_size = 16 * 1024;
-
-    sdmmc_card_t *card;
-
     // Use settings defined above to initialize SD card and mount FAT filesystem.
     // Note: esp_vfs_fat_sdmmc_mount is an all-in-one convenience function.
     // Please check its source code and implement error recovery when developing
     // production applications.
     ret = esp_vfs_fat_sdmmc_mount("/sdcard", &host, &slot_config, &mount_config, &card);
+#endif // BOARD_SDCARD_USE_SPI
 
     if (ret != ESP_OK) {
         initStatusLed(); // Init status LED if required. Ensure it is not init twice

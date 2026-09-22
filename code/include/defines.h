@@ -664,8 +664,19 @@ CONFIG_WPA_11R_SUPPORT=n
         #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1              // Only 1 line SD card operation is supported (hardware related)
     #endif
 
-    // SD card (operated with SDMMC peripheral)
+    // SD card (operated with SPI peripheral)
     //-------------------------------------------------
+    // This board's SD socket is wired for SPI, not for SD/MMC mode: Waveshare's own
+    // schematic (ESP32S3-ETH.SchDoc) names the socket nets SD_CLK / SD_MOSI / SD_MISO /
+    // SD_CS. Driving it with the SDMMC peripheral gets no response from the card
+    // (sdmmc_init_ocr: send_op_cond returned 0x107 = ESP_ERR_TIMEOUT), while SPI mounts
+    // and reads reliably. Verified on hardware 2026-09-22 by running both protocols
+    // against the same card, on the same pins, in a single boot.
+    #define BOARD_SDCARD_USE_SPI
+    #define BOARD_SDCARD_SPI_HOST           SPI3_HOST   // SPI2_HOST is taken by the W5500
+
+    // Standard SD-to-SPI pin correspondence, kept on the existing names so the pin
+    // numbers stay single-sourced: CLK -> SCK, CMD -> MOSI, D0 -> MISO, D3 -> CS.
     #define GPIO_SDCARD_CLK                 GPIO_NUM_7
     #define GPIO_SDCARD_CMD                 GPIO_NUM_6
     #define GPIO_SDCARD_D0                  GPIO_NUM_5
