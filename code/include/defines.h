@@ -343,6 +343,7 @@ CONFIG_WPA_11R_SUPPORT=n
 #define FLASHLIGHT_DIGITAL                      "flashlight-digital"
 
 
+
 //*************************************************************************
 // HARDWARE RELATED DEFINITIONS
 //*************************************************************************
@@ -360,7 +361,7 @@ CONFIG_WPA_11R_SUPPORT=n
 #define BOARD_TYPE_NAME     "Freenove-ESP32S3-N16R8"// Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
 #elif defined(BOARD_NULLLAB_ESP32S3CAM)
-#define BOARD_TYPE_NAME     "NULLLAB-ESP32S3CAM"    // Keep Board type equal to main board environment name.
+#define BOARD_TYPE_NAME     "NULLLAB-ESP32S3-CAM"   // Keep Board type equal to main board environment name.
                                                     // This is used for OTA update package verification (converted to lower case)
 #elif defined(BOARD_WAVESHARE_ESP32S3_ETH)
 #define BOARD_TYPE_NAME     "Waveshare-ESP32S3-ETH" // Keep Board type equal to main board environment name.
@@ -377,11 +378,14 @@ CONFIG_WPA_11R_SUPPORT=n
 
 // Board types
 //************************************
+
+//####################################################
+// AI-THINKER ESP32-CAM
+//####################################################
 #ifdef BOARD_AITHINKER_ESP32CAM
     #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1                  // Set 1 line SD card operation
 
     // SD card (operated with SDMMC peripheral)
-    //-------------------------------------------------
     #define GPIO_SDCARD_CLK                 GPIO_NUM_14
     #define GPIO_SDCARD_CMD                 GPIO_NUM_15
     #define GPIO_SDCARD_D0                  GPIO_NUM_2
@@ -393,7 +397,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Camera pin config (OV2640, OV3660, OV5460)
-    //-------------------------------------------------
     #define GPIO_CAMERA_PWDN       GPIO_NUM_32
     #define GPIO_CAMERA_RESET      -1
     #define GPIO_CAMERA_XCLK       GPIO_NUM_0
@@ -414,7 +417,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // LEDs
-    //-------------------------------------------------
     #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_33     // Onboard status LED (red, active low)
     #define GPIO_STATUS_LED_ONBOARD_LOWACTIVE               // Enable if status LED is low active
 
@@ -436,7 +438,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Improv Serial / Improv WiFi
-    //-------------------------------------------------
     #define DEFAULT_UART_NUM        UART_NUM_0
     #define DEFAULT_UART_TX_PIN     GPIO_NUM_1
     #define DEFAULT_UART_RX_PIN     GPIO_NUM_3
@@ -484,13 +485,15 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SPARE_6                    GPIO_NUM_NC     // Not defined spare position
     #define GPIO_SPARE_6_USAGE              ""
 
+//####################################################
+// FREENOVE BOARDS
+//####################################################
 #elif defined(BOARD_FREENOVE_ESP32S3_N8R8) || defined(BOARD_FREENOVE_ESP32S3_N16R8)
     #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
         #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1              // Only 1 line SD card operation is supported (hardware related)
     #endif
 
     // SD card (operated with SDMMC peripheral)
-    //-------------------------------------------------
     #define GPIO_SDCARD_CLK                 GPIO_NUM_39
     #define GPIO_SDCARD_CMD                 GPIO_NUM_38
     #define GPIO_SDCARD_D0                  GPIO_NUM_40
@@ -500,7 +503,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Camera pin config (OV2640, OV3660, OV5460)
-    //-------------------------------------------------
     #define GPIO_CAMERA_PWDN       -1
     #define GPIO_CAMERA_RESET      -1
     #define GPIO_CAMERA_XCLK       GPIO_NUM_15
@@ -521,7 +523,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // LEDs
-    //-------------------------------------------------
     #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_2     // Onboard status LED (blue, active high)
     //#define GPIO_STATUS_LED_ONBOARD_LOWACTIVE            // Enable if status LED is low active
 
@@ -538,7 +539,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Improv Serial / Improv WiFi
-    //-------------------------------------------------
     #define BOARD_FEATURE_USB                             // Use USB Serial/JTAG controller console (USB-OTG port)
 
 
@@ -569,20 +569,23 @@ CONFIG_WPA_11R_SUPPORT=n
 
     #define GPIO_SPARE_6                    GPIO_FLASHLIGHT_DEFAULT // Flashlight default
     #if defined(GPIO_FLASHLIGHT_DEFAULT_USE_PWM)
-        #define GPIO_SPARE6_USAGE          FLASHLIGHT_PWM          // Define flashlight-default as ...
+        #define GPIO_SPARE_6_USAGE          FLASHLIGHT_PWM          // Define flashlight-default as ...
     #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
         #define GPIO_SPARE_6_USAGE          FLASHLIGHT_SMARTLED     // Define flashlight-default as ...
     #else
         #define GPIO_SPARE_6_USAGE          FLASHLIGHT_DIGITAL      // Define flashlight-default as ...
     #endif
 
+//####################################################
+// NULLLAB ESP32S3-CAM
+// https://github.com/nulllaborg/esp32s3-cam
+//####################################################
 #elif defined(BOARD_NULLLAB_ESP32S3CAM)
     #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
         #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1              // Only 1 line SD card operation is supported (hardware related)
     #endif
 
     // SD card (operated with SDMMC peripheral)
-    //-------------------------------------------------
     #define GPIO_SDCARD_CLK                 GPIO_NUM_39
     #define GPIO_SDCARD_CMD                 GPIO_NUM_38
     #define GPIO_SDCARD_D0                  GPIO_NUM_40
@@ -592,7 +595,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Camera pin config (OV2640, OV3660, OV5460)
-    //-------------------------------------------------
     #define GPIO_CAMERA_PWDN       -1
     #define GPIO_CAMERA_RESET      -1
     #define GPIO_CAMERA_XCLK       GPIO_NUM_15
@@ -613,11 +615,10 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // LEDs
-    //-------------------------------------------------
     #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_2     // Onboard status LED (blue, active high)
     //#define GPIO_STATUS_LED_ONBOARD_LOWACTIVE            // Enable if status LED is low active
 
-    #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_3     // Onboard flashlight (WS2812)
+    #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_3     // Onboard flashlight (2x LED, PWM)
     #define GPIO_FLASHLIGHT_DEFAULT         GPIO_FLASHLIGHT_ONBOARD // Default flashlight GPIO pin (can be modified by activiating GPIO functionality in WebUI)
 
     #define GPIO_FLASHLIGHT_DEFAULT_USE_PWM                // Default flashlight LED is PWM controlled
@@ -630,7 +631,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Improv Serial / Improv WiFi
-    //-------------------------------------------------
     #define BOARD_FEATURE_USB                             // Use USB Serial/JTAG controller console (USB-OTG port)
 
 
@@ -668,13 +668,15 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SPARE_6                    GPIO_NUM_48
     #define GPIO_SPARE_6_USAGE              "spare"
 
+//####################################################
+// WAVESHARE ESP32-S3 ETH
+//####################################################
 #elif defined(BOARD_WAVESHARE_ESP32S3_ETH)
     #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
         #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1              // Only 1 line SD card operation is supported (hardware related)
     #endif
 
     // SD card (operated with SDMMC peripheral)
-    //-------------------------------------------------
     #define GPIO_SDCARD_CLK                 GPIO_NUM_7
     #define GPIO_SDCARD_CMD                 GPIO_NUM_6
     #define GPIO_SDCARD_D0                  GPIO_NUM_5
@@ -684,7 +686,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Ethernet pin config (WS5500)
-    //-------------------------------------------------
     #define BOARD_FEATURE_ETHERNET
     #define GPIO_ETH_RST        GPIO_NUM_9
     #define GPIO_ETH_INT        GPIO_NUM_10
@@ -695,7 +696,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Camera pin config (OV2640, OV3660, OV5460)
-    //-------------------------------------------------
     #define GPIO_CAMERA_PWDN       GPIO_NUM_8
     #define GPIO_CAMERA_RESET      -1
     #define GPIO_CAMERA_XCLK       GPIO_NUM_3
@@ -716,7 +716,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // LEDs
-    //-------------------------------------------------
     #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_21    // Onboard status LED (smartLED WS2812B)
     //#define GPIO_STATUS_LED_ONBOARD_LOWACTIVE            // Enable if status LED is low active
     #define GPIO_STATUS_LED_ONBOARD_USE_SMARTLED           // Enable if status LED is a smartLED (WS2812x)
@@ -740,7 +739,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Improv Serial / Improv WiFi
-    //-------------------------------------------------
     #define BOARD_FEATURE_USB                              // Use USB Serial controller console (USB port)
 
 
@@ -778,13 +776,15 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_SPARE_6                    GPIO_NUM_37
     #define GPIO_SPARE_6_USAGE              "spare"
 
+//####################################################
+// SEEED STUDIO XIAO ESP32-S3
+//####################################################
 #elif defined(BOARD_XIAO_ESP32S3)
     #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
         #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1              // Only 1 line SD card operation is supported (hardware related)
     #endif
 
     // SD card (operated with SDMMC peripheral)
-    //-------------------------------------------------
     #define GPIO_SDCARD_CLK                 GPIO_NUM_7
     #define GPIO_SDCARD_CMD                 GPIO_NUM_9
     #define GPIO_SDCARD_D0                  GPIO_NUM_8
@@ -794,7 +794,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Camera pin config (OV2640, OV3660, OV5460)
-    //-------------------------------------------------
     #define GPIO_CAMERA_PWDN       -1
     #define GPIO_CAMERA_RESET      -1
     #define GPIO_CAMERA_XCLK       GPIO_NUM_10
@@ -815,7 +814,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // LEDs
-    //-------------------------------------------------
     #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_21     // Onboard yellow status LED (USER LED, yellow, active low)
     #define GPIO_STATUS_LED_ONBOARD_LOWACTIVE               // Enable if status LED is low active
 
@@ -832,7 +830,6 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // Improv Serial / Improv WiFi
-    //-------------------------------------------------
     #define BOARD_FEATURE_USB                               // Use USB Serial/JTAG controller console
 
 

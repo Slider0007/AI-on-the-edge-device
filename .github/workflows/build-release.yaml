@@ -45,7 +45,7 @@ jobs:
          - esp32cam
          - freenove-esp32s3-n8r8
          - freenove-esp32s3-n16r8
-         - nulllab-esp32s3cam
+         - nulllab-esp32s3-cam
          - waveshare-esp32s3-eth
          - xiao-esp32s3-sense
     steps:
@@ -169,7 +169,7 @@ jobs:
          - esp32cam
          - freenove-esp32s3-n8r8
          - freenove-esp32s3-n16r8
-         - nulllab-esp32s3cam
+         - nulllab-esp32s3-cam
          - waveshare-esp32s3-eth
          - xiao-esp32s3-sense
 
@@ -268,7 +268,7 @@ jobs:
          - esp32cam
          - freenove-esp32s3-n8r8
          - freenove-esp32s3-n16r8
-         - nulllab-esp32s3cam
+         - nulllab-esp32s3-cam
          - waveshare-esp32s3-eth
          - xiao-esp32s3-sense
 
