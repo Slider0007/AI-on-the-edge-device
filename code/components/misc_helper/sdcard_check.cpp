@@ -101,13 +101,7 @@ bool checkSdCardFolderFilePresence()
     if (stat("/sdcard/html", &sb) != 0) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Folder/file check: Folder /html not found");
         bRetval = false;
-    }
-
-    /* check if folder exists: firmware */
-    if (stat("/sdcard/firmware", &sb) != 0) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Folder/file check: Folder /firmware not found");
-        bRetval = false;
-    }
+    }
 
     /* check if folder exists: img_tmp */
     if (stat("/sdcard/img_tmp", &sb) != 0) {
