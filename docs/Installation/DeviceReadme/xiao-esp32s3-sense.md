@@ -37,7 +37,7 @@ in limited or broken functionality.
 #### Procedure
   1. Format SD card (≤ 32GB) with FAT32 (Windows recommended. In MacOS formatted cards may not working properly)
   2. Copy the complete `config` and `html` folders from the firmware ZIP to the root directory of the SD card
-  3. Copy the config template file `/config/template/config.json` to the `/config` folder<br>
+  3. Copy the config template file `/config/templates/config.json` to the `/config` folder<br>
      - If the device has already been booted, a full default config file will exist in `/config`. You can modify that instead.
      - Ensure proper JSON syntax. Invalid formatting will cause the user configuration to be rejected and default will be used.
   4. Configure the network connection:
