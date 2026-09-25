@@ -1,5 +1,46 @@
 # Changelog
 
+## [18.0.0-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.4.1-SLFork...v18.0.0-SLFork) (2026-09-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* **image alignment:** Remove deprecated alignment algorithm '1CH with similarity check' ([#397](https://github.com/Slider0007/AI-on-the-edge-device/issues/397))
+* **config:** Remove legacy config.ini migration path ([#396](https://github.com/Slider0007/AI-on-the-edge-device/issues/396))
+* **rest api:** Refactor REST API /ota to align with new OTA handling
+* **ota:** Harden OTA update handling ([#390](https://github.com/Slider0007/AI-on-the-edge-device/issues/390))
+
+### Bug Fixes
+
+* **alignment:** Add validation for corrupt/malformed alignment marker image ([#379](https://github.com/Slider0007/AI-on-the-edge-device/issues/379)) ([615926c](https://github.com/Slider0007/AI-on-the-edge-device/commit/615926c688c5f43e5fcc6e6da6d5d91ccdb3dc2b))
+* **config handling:** Fix thread-safety issue using cJSON with PSRAM ([#385](https://github.com/Slider0007/AI-on-the-edge-device/issues/385)) ([dc7df91](https://github.com/Slider0007/AI-on-the-edge-device/commit/dc7df9156cbb21bb993aa985ae02bca2385e3dea))
+* **gpio - flashlight:** Fix exception when GPIO handler init has failed ([#400](https://github.com/Slider0007/AI-on-the-edge-device/issues/400)) ([5a03890](https://github.com/Slider0007/AI-on-the-edge-device/commit/5a03890b92be1de8ad5f72fb69ccc9413ab06f46))
+* **gpio handler:** Fix sporadic race condition using smartleds during reinit ([#386](https://github.com/Slider0007/AI-on-the-edge-device/issues/386)) ([30099bb](https://github.com/Slider0007/AI-on-the-edge-device/commit/30099bb3717ce83cd713732ee481ad081e39cb43))
+* **ota:** Harden OTA update handling ([#390](https://github.com/Slider0007/AI-on-the-edge-device/issues/390)) ([2d0c2e3](https://github.com/Slider0007/AI-on-the-edge-device/commit/2d0c2e345c5ccf8bccc2dbc24a2262cc0543bcfe))
+* **rest api - config:** Reload configuration on POST request ([#387](https://github.com/Slider0007/AI-on-the-edge-device/issues/387)) ([af81c1d](https://github.com/Slider0007/AI-on-the-edge-device/commit/af81c1d592e9b72036b29307a692a6390d24ec75))
+* **webui:** Fix html links within reduced WebUI ([#407](https://github.com/Slider0007/AI-on-the-edge-device/issues/407)) ([67f8ec1](https://github.com/Slider0007/AI-on-the-edge-device/commit/67f8ec14a67c41e3deeff123ec959260b040ddd6))
+
+
+### Refactoring / Style Changes
+
+* **config handling:** Refactor config handling for better maintainability ([#388](https://github.com/Slider0007/AI-on-the-edge-device/issues/388)) ([72620e9](https://github.com/Slider0007/AI-on-the-edge-device/commit/72620e986829656aa6fa2b97a3ed2f31d8b39585))
+* **file handling:** Replace c++ stream-based file handling ([#383](https://github.com/Slider0007/AI-on-the-edge-device/issues/383)) ([9f4c161](https://github.com/Slider0007/AI-on-the-edge-device/commit/9f4c1610ec6303fd6cac3b1bb45ce70535e0779c))
+* **ota:** Refactor OTA handling ([2d0c2e3](https://github.com/Slider0007/AI-on-the-edge-device/commit/2d0c2e345c5ccf8bccc2dbc24a2262cc0543bcfe))
+* **rest api:** Refactor REST API /ota to align with new OTA handling ([2d0c2e3](https://github.com/Slider0007/AI-on-the-edge-device/commit/2d0c2e345c5ccf8bccc2dbc24a2262cc0543bcfe))
+* **source code:** Cleanup header includes ([#384](https://github.com/Slider0007/AI-on-the-edge-device/issues/384)) ([68880c8](https://github.com/Slider0007/AI-on-the-edge-device/commit/68880c88f269c0d8f889b8e33c849477d455d060))
+
+
+### Other Changes
+
+* **build:** Store local build artifacts into subfolder '.builds' ([#398](https://github.com/Slider0007/AI-on-the-edge-device/issues/398)) ([7a7f568](https://github.com/Slider0007/AI-on-the-edge-device/commit/7a7f5680a91ae67383aca027a61fd6f78f049f0f))
+* **config:** Remove legacy config.ini migration path ([#396](https://github.com/Slider0007/AI-on-the-edge-device/issues/396)) ([9dc2855](https://github.com/Slider0007/AI-on-the-edge-device/commit/9dc28557e32829acf743495e2bd4c8cba9c1a2e0))
+* **deps:** Update esp-tflite-micro to v1.4.0 ([#395](https://github.com/Slider0007/AI-on-the-edge-device/issues/395)) ([2e2e59c](https://github.com/Slider0007/AI-on-the-edge-device/commit/2e2e59cfb1eac615b1329b6aea4b6b909be35afd))
+* **deps:** Update esp32-camera to v2.1.7 ([#393](https://github.com/Slider0007/AI-on-the-edge-device/issues/393)) ([9f0a541](https://github.com/Slider0007/AI-on-the-edge-device/commit/9f0a5412e5fe73f7babaabcc8e387a5b5ec012ff))
+* **deps:** Update mdns-service to v1.12.0 ([#394](https://github.com/Slider0007/AI-on-the-edge-device/issues/394)) ([d57ced2](https://github.com/Slider0007/AI-on-the-edge-device/commit/d57ced2678dfe4f16ee27924a223a2a153bec737))
+* **framework:** Upgrade platformio-espressif32 to 7.1.3 (ESP-IDF 6.1.0) ([#399](https://github.com/Slider0007/AI-on-the-edge-device/issues/399)) ([5f3db1a](https://github.com/Slider0007/AI-on-the-edge-device/commit/5f3db1a0390947437cf9cb9f87ab54be1e1bc730))
+* **image alignment:** Remove deprecated alignment algorithm '1CH with similarity check' ([#397](https://github.com/Slider0007/AI-on-the-edge-device/issues/397)) ([411d2c1](https://github.com/Slider0007/AI-on-the-edge-device/commit/411d2c19da8fb103985f3b87d2b2574174011132))
+* **source code:** Add clang tools for intellisense, autocompletion and linting ([#389](https://github.com/Slider0007/AI-on-the-edge-device/issues/389)) ([b9dade8](https://github.com/Slider0007/AI-on-the-edge-device/commit/b9dade8e9d5cda0509e8659dee5f250ff599ac27))
+
 ## [17.4.1-SLFork](https://github.com/Slider0007/AI-on-the-edge-device/compare/v17.4.0-SLFork...v17.4.1-SLFork) (2026-08-24)
 
 ### Installation / Migration Notes
