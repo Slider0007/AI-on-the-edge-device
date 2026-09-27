@@ -630,9 +630,9 @@ esp_err_t handler_main(httpd_req_t *req)
                        "href=\"https://jomjol.github.io/AI-on-the-edge-device-docs/Error-Codes\" "
                        "target=_blank>jomjol.github.io/AI-on-the-edge-device-docs/Error-Codes</a> for more information.";
             message += "<br><br><button onclick=\"window.location.href='/reboot';\">Reboot</button>";
-            message += "&nbsp;<button onclick=\"window.open('/ota_page.html');\">OTA Update</button>";
-            message += "&nbsp;<button onclick=\"window.open('/log.html');\">Log Viewer</button>";
-            message += "&nbsp;<button onclick=\"window.open('/info.html');\">Show System Info</button>";
+            message += "&nbsp;<button onclick=\"window.open('/sys_ota_page.html');\">OTA Update</button>";
+            message += "&nbsp;<button onclick=\"window.open('/sys_log.html');\">Log Viewer</button>";
+            message += "&nbsp;<button onclick=\"window.open('/sys_info.html');\">Show System Info</button>";
             httpd_resp_send(req, message.c_str(), message.length());
             return ESP_OK;
         }
