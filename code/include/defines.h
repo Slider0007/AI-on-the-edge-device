@@ -615,7 +615,7 @@ CONFIG_WPA_11R_SUPPORT=n
 
 
     // LEDs
-    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_2     // Onboard status LED (blue, active high)
+    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_2     // Onboard status LED (yellow-green, active high)
     //#define GPIO_STATUS_LED_ONBOARD_LOWACTIVE            // Enable if status LED is low active
 
     #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_3     // Onboard flashlight (2x LED, PWM)

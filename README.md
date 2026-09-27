@@ -109,8 +109,7 @@ web interface**: `System > OTA Update`. This method ensures seamless upgrades wi
 ### Option 1: Web Installer (Only For Releases)
 
 For the easiest and most user-friendly setup, use the **[Web Installer](https://slider0007.github.io/AI-on-the-edge-device/)**.<br>
-Follow the step-by-step instructions on the Web Installer page. For more details, see the 
-[Web Installer Provisioning Guide](docs/Installation/DeviceProvisioning/WebInstaller.md).
+Follow the step-by-step instructions on the Web Installer page. More details: [Web Installer Provisioning Guide](docs/Installation/DeviceProvisioning/WebInstaller.md)
 
 <img src="images/webinstaller_home.jpg" width="800">
 
@@ -121,8 +120,8 @@ prepare the SD card manually.
 
 
 ## Build Yourself
-Developers and advanced users can build the firmware from source. Follow the [build / debug Instructions](code/README.md) for environment setup, firmware compilation and debugging. If you don’t need to customize the firmware, it’s easier to use the precompiled releases provided on the 
-[Releases page](https://github.com/slider0007/AI-on-the-edge-device/releases).
+Developers and advanced users can build the firmware from source. Follow the [Build / Developer Guide](docs/Development/Instructions.md) for environment setup, firmware compilation and debugging. If you don’t need to customize the firmware, it’s easier to use the precompiled releases provided on the 
+[Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases/).
 
 
 ## Support / Community
