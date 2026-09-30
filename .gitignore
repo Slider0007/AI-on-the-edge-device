@@ -8,8 +8,7 @@
 
 # OS metadata
 .DS_Store
-images/Thumbs.db
-sd-card/html/Thumbs.db
+Thumbs.db
 venv/
 
 # Build artifacts

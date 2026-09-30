@@ -1,0 +1,43 @@
+##################################################
+# Application and board specific configuration
+# Edit this file instead of sdkconfig.{board_type}!
+# After editing make sure to explicitly delete
+# sdkconfig.{board_type} to apply your changes!
+##################################################
+
+#
+# Serial flasher config
+#
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="8MB"
+
+
+#
+# Partition Table
+#
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_8MB.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+CONFIG_PARTITION_TABLE_MD5=y
+
+
+#
+# Common ESP-related
+#
+CONFIG_ESP_ERR_TO_NAME_LOOKUP=n
+
+
+#
+# SPI RAM config
+#
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=n
+
+
+#
+# Ethernet
+#
+CONFIG_ETH_ENABLED=n
+CONFIG_ETH_USE_SPI_ETHERNET=n
+CONFIG_ETH_USE_OPENETH=n
