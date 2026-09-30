@@ -10,7 +10,6 @@ Use the contents of `AI-on-the-edge-device__{Board Type}__*.zip`.
 **IMPORTANT:** Ensure you are using the correct firmware package for your specific board type.
 
 There are multiple ways to flash the microcontroller:
-- [ESPConnect (Web-based)](https://espconnect.msnow.icu/)
 - [Espressif Flash Tool (UI-based)](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/production_stage/tools/flash_download_tool.html)  
 - [esptool (command-line)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
@@ -36,7 +35,7 @@ in limited or broken functionality.
 ##### Option 1: Manual SD Card Setup
 
 1. Copy the complete `config` and `html` folders from the firmware ZIP to the root directory of the SD card
-2. Copy the file `/config/template/config.json` to the `/config` folder
+2. Copy the file `/config/templates/config.json` to the `/config` folder
 3. Configure the network connection:
    - **Wi-Fi**: Enter your Wi-Fi credentials and optionally configure network settings (default: DHCP)
    - **Ethernet** (for devices with an ethernet port, default connection): Optionally configure network settings (default: DHCP)

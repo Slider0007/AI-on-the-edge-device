@@ -9,7 +9,6 @@ The MCU of the device must first be flashed via a USB or serial connection.
 - ⚠️ Ensure you are using the correct firmware package for your specific board type.
 
 There are multiple ways to flash the microcontroller:
-- [ESPConnect (Web-based)](https://espconnect.msnow.icu/)
 - [Espressif Flash Tool (UI-based)](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/production_stage/tools/flash_download_tool.html)  
 - [esptool (command-line)](https://docs.espressif.com/projects/esptool/en/latest/esp32/esptool/index.html)
 
