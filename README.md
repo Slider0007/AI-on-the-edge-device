@@ -62,6 +62,7 @@ and converted into a digital reading, ready to be sent or accessed through vario
 
 ## Supported Hardware
 ### Board Compatibility Matrix
+
 | Board Type | MCU / Module | Flash (Mode) | RAM (Mode) | Network Interfaces | Flashlight LED | Minimum Firmware | Firmware Package | Remarks |
 |:---|:---|:---|:---|:---|:---|:---|:---|:---|
 | [Ai-Thinker ESP32-CAM](images/boards/esp32-cam.png) | ESP32 | 4MB (`DIO`) | 4MB / 8MB (`QUAD`) | • WiFi Client<br>• WiFi AP | ✅ Onboard LED<br>→ Pin: GPIO4 (PWM) | All Releases | `esp32cam` | ⚠️ Only variants with ≥ 4MB RAM are supported. 8MB variant: Only 4MB are usable |
@@ -74,6 +75,7 @@ and converted into a digital reading, ready to be sent or accessed through vario
 | [XIAO ESP32S3 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32-S3R8 | 8MB (`QIO`) | 8MB (`OCT`) | • WiFi Client<br>• WiFi AP | ❌ No onboard LED, external required<br>→ Pin: GPIO1 (PWM, configurable) | ≥ v17.0.0 | `xiao-esp32s3-sense` | ⚠️ Small heatsink recommended |
 
 ### Camera Compatibility Matrix 
+
 | Camera Type | Sensor Resolution | Digital Zoom | Minimum Firmware | Remarks                       
 |:---         |:---               |:---          |:---              |:---
 | [OV2640](docs/Installation/ComponentDocu/Camera/OV2640/OV2640%20datasheet.pdf) | 2MP | 1.0x - 2.5x | All Releases |
