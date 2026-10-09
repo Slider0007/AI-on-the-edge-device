@@ -62,17 +62,18 @@ and converted into a digital reading, ready to be sent or accessed through vario
 
 ## Supported Hardware
 ### Board Compatibility Matrix
-| Board Type | SOC / Module | Network Interfaces | Flashlight LED | Minimum Firmware | Firmware Package | Remarks |
-|:---|:---|:---|:---|:---|:---|:---|
-| [ESP32-CAM](images/boards/esp32-cam.png) | ESP32 | • WiFi Client<br>• WiFi AP | ✅ Onboard LED<br>→ Pin: GPIO4 (PWM) | All Releases | `esp32cam` | ⚠️ Only boards with ≥ 4MB RAM are supported |
-| [ESP32-S3-CAM (AI-THINKER)](images/boards/esp32s3-cam.png) | ESP32S3-WROOM-1-N16R8 | • WiFi Client<br>• WiFi AP | ✅ Onboard LED<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.4.0 | `freenove-esp32s3-n16r8` | ℹ️ Board is pin-compatible and identified as `freenove-esp32s3-n16r8` |
-| [ESP32-S3-CAM (NULLLAB)](images/boards/nulllab-esp32s3-cam.jpg) | ESP32S3 | • WiFi Client<br>• WiFi AP | ✅ Onboard LEDs (2x)<br>→ Pin: GPIO3 (PWM) | ≥ v18.0.0 | `nulllab-esp32s3-cam` | ℹ️ Features dual onboard flashlight LED |
-| [Freenove ESP32S3-WROOM-N8R8](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32S3-WROOM-1-N8R8 | • WiFi Client<br>• WiFi AP | ⚠️ Onboard LED (Low intensity: External LED recommended (PWM, SmartLED))<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.1.0 | `freenove-esp32s3-n8r8` | ℹ️ SOC and pin-compatible boards with 8MB flash and 8MB RAM supported |
-| [Freenove ESP32S3-WROOM-N16R8](images/boards/freenove-esp32s3-n16r8.png) | ESP32S3-WROOM-1-N16R8 | • WiFi Client<br>• WiFi AP | ⚠️ Onboard LED (Low intensity: External LED recommended (PWM, SmartLED))<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.0.0 | `freenove-esp32s3-n16r8` | ℹ️ SOC and pin-compatible boards with 16MB flash and 8MB RAM supported |
-| [Waveshare ESP32S3-ETH](https://www.waveshare.com/esp32-s3-eth.htm) | ESP32S3 | • WiFi Client<br>• WiFi AP<br>• 10/100M Ethernet | ❌ No Onboard LED: External LED required (PWM, SmartLED)<br>→ Pin (Configurable): GPIO17 (PWM) | ≥ v17.2.0  | `waveshare-esp32s3-eth` | ℹ️ POE supported (optional hardware required) |
-| [XIAO ESP32S3 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32S3 | • WiFi Client<br>• WiFi AP | ❌ No Onboard LED: External LED required (PWM, SmartLED)<br>→ Pin (Configurable): GPIO1 (PWM) | ≥ v17.0.0  | `xiao-esp32s3-sense` | ⚠️ Small heatsink recommended |
+| Board Type | MCU / Module | Flash (Mode) | RAM (Mode) | Network Interfaces | Flashlight LED | Minimum Firmware | Firmware Package | Remarks |
+|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| [Ai-Thinker ESP32-CAM](images/boards/esp32-cam.png) | ESP32 | 4MB (`DIO`) | 4MB / 8MB (`QUAD`) | • WiFi Client<br>• WiFi AP | ✅ Onboard LED<br>→ Pin: GPIO4 (PWM) | All Releases | `esp32cam` | ⚠️ Only variants with ≥ 4MB RAM are supported. 8MB variant: Only 4MB are usable |
+| [Ai-Thinker ESP32-S3-CAM](images/boards/esp32s3-cam.png) | ESP32-S3-WROOM-1-N16R8 | 16MB (`QIO`) | 8MB (`OCT`) | • WiFi Client<br>• WiFi AP | ✅ Onboard LED<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.4.0 | `freenove-esp32s3-n16r8` | ℹ️ Board is pin-compatible and identified as `freenove-esp32s3-n16r8` |
+| [Freenove ESP32S3-WROOM-N8R8](https://github.com/Freenove/Freenove_ESP32_S3_WROOM_Board) | ESP32-S3-WROOM-1-N8R8 | 8MB (`QIO`) | 8MB (`OCT`) | • WiFi Client<br>• WiFi AP | ⚠️ Onboard LED (Low intensity)<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.1.0 | `freenove-esp32s3-n8r8` | ℹ️ SOC and pin-compatible boards with 8MB flash and 8MB RAM are supported |
+| [Freenove ESP32S3-WROOM-N16R8](images/boards/freenove-esp32s3-n16r8.png) | ESP32-S3-WROOM-1-N16R8 | 16MB (`QIO`) | 8MB (`OCT`) | • WiFi Client<br>• WiFi AP | ⚠️ Onboard LED (Low intensity)<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.0.0 | `freenove-esp32s3-n16r8` | ℹ️ SOC and pin-compatible boards with 16MB flash and 8MB RAM are supported |
+| [GOOUUU ESP32-S3-CAM](images/boards/goouuu-esp32s3-cam.jpg) | ESP32-S3-WROOM-1-N16R8 | 16MB (`QIO`) | 8MB (`OCT`) | • WiFi Client<br>• WiFi AP | ⚠️ Onboard LED (Low intensity)<br>→ Pin: GPIO48 (SmartLED) | ≥ v17.0.0 | `freenove-esp32s3-n16r8` | ℹ️ Board is pin-compatible and identified as `freenove-esp32s3-n16r8` |
+| [NULLLAB ESP32-S3-CAM](images/boards/nulllab-esp32s3-cam.jpg) | ESP32-S3R8 | 8MB (`QIO`) | 8MB (`OCT`) | • WiFi Client<br>• WiFi AP | ✅ Onboard LEDs<br>→ Pin: GPIO3 (PWM) | ≥ v18.0.0 | `nulllab-esp32s3-cam` | ℹ️ Features dual onboard flashlight LED |
+| [Waveshare ESP32S3-ETH](https://www.waveshare.com/esp32-s3-eth.htm) | ESP32-S3R8 | 16MB (`QIO`) | 8MB (`OCT`) | • WiFi Client<br>• WiFi AP<br>• 10/100M Ethernet | ❌ No onboard LED, external required<br>→ Pin: GPIO17 (PWM, configurable) | ≥ v17.2.0 | `waveshare-esp32s3-eth` | ℹ️ POE supported (optional hardware required) |
+| [XIAO ESP32S3 Sense](https://www.seeedstudio.com/XIAO-ESP32S3-Sense-p-5639.html) | ESP32-S3R8 | 8MB (`QIO`) | 8MB (`OCT`) | • WiFi Client<br>• WiFi AP | ❌ No onboard LED, external required<br>→ Pin: GPIO1 (PWM, configurable) | ≥ v17.0.0 | `xiao-esp32s3-sense` | ⚠️ Small heatsink recommended |
 
-### Camera Compatibility Matrix
+### Camera Compatibility Matrix 
 | Camera Type | Sensor Resolution | Digital Zoom | Minimum Firmware | Remarks                       
 |:---         |:---               |:---          |:---              |:---
 | [OV2640](docs/Installation/ComponentDocu/Camera/OV2640/OV2640%20datasheet.pdf) | 2MP | 1.0x - 2.5x | All Releases |
