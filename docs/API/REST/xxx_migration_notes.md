@@ -2,6 +2,10 @@
 
 ## Migration notes
 
+### Migration from v17.x to v18.x
+
+No endpoints removed or renamed, but check chnagelog and/or API description for changes of existing APIs.
+
 ### Migration from v16.x to v17.x
 
 Mapping which new endpoint replaces functionality of removed endpoint:
