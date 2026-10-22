@@ -1,301 +1,181 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xml:lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
     <title>Set Fallback Value</title>
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
     <style>
-        h1 {font-size: 1.8em;}
-        h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-        h3 {font-size: 1.2em;}
-        p {font-size: 1em;}
+      input[type='number'],
+      select {
+        font-family: inherit;
+        font-size: inherit;
+        padding: 3px 5px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        max-width: 150px;
+        overflow: hidden;
+        appearance: textfield;
+        -moz-appearance: textfield; /* Hide arrows Firefox */
+      }
 
-        body, html {
-            font-size: 100%;
-            -webkit-text-size-adjust: 100%;
-            text-size-adjust: 100%;
-        }
+      /* Hide arrows Chrome/Safari */
+      #input_fallbackvalue::-webkit-outer-spin-button,
+      #input_fallbackvalue::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
 
-        div {
-            padding: 3px 5px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            height: 20px;
-            width: 130px;
-            vertical-align: middle;
-        }
-
-        input[type=number] {
-            width: 130px;
-            margin-right: 10px;
-            padding: 3px 5px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-
-        .invalid-input {
-            background-color: #FFAA00;
-        }
-
-        th, td {
-            padding: 5px 5px 5px 0px;
-        }
-
-        select {
-            padding: 3px 5px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            margin-right: 10px;
-            min-width: 100px;
-            vertical-align: middle;
-        }
-
-        .button {
-            padding: 5px 10px;
-            width: 205px;
-            font-size: 16px;
-        }
-
-        table {
-            width: 660px;
-            padding: 5px 5px 5px 0px;
-            table-layout: fixed;
-        }
-
-        details {
-                text-align: justify;
-                font-size: 16px;
-                margin-right: 10px;
-        }
+      input[readonly] {
+        border-color: var(--border);
+        color: var(--text-secondary);
+        cursor: not-allowed;
+      }
     </style>
 
-    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
-    <script src="js.cookie.min.js?v=$COMMIT_HASH"></script>
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
     <script src="firework.js?v=$COMMIT_HASH"></script>
-</head>
+  </head>
 
-<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
-    <h2>Set Fallback Value</h2>
-    <details id="desc_details">
-        <summary><b>CLICK HERE</b> for usage description
-        </summary>
-        <p>
-            Set the Fallback Value for consistency checks and substitution for N positions in number sequence.
-        </p>
-        <p>
-            The Fallback Value is the last successful valid reading of any processing cycle. The result of the the
-            actual processing cycle, as long it's a valid result, will be promoted to the new Fallback Value. If
-            the result is not usable (e.g. rate negative, rate too high) the Fallback Value will not be updated.
-            If activated in configuration, the Fallback Value will be used in the following processing cycle to
-            identify negative rates and too high rates (MaxRateValue / MaxRateType) as well as for the "Check Digit
-            Increase Consistency" (configuration parameter, only for dig-class11* models) and for possible substitution
-            of any N positions in the "Raw Value" reading (only valid for dig-class11* models and dig-cont* models).
-        </p>
-        <p>
-            The field to enter new Fallback Value is prefilled with actual "Raw Value" because it's the most likely
-            use case. Nevertheless every other positive value can be set as new Fallback Value.
-        </p>
-    </details>
-    <hr>
+  <body>
+    <div class="container">
+      <div class="container-header">
+        <div class="container-title"><span>🛡️</span>Set Fallback Value</div>
 
-    <table>
-        <colgroup>
-            <col span="1" style="width: 35.0%;">
-            <col span="1" style="width: 65.0%;">
-        </colgroup>
-        <tr>
-            <td style="height: 40px;">
-                <span>Number sequence</span>
-            </td>
-            <td>
-                <select id="sequence_selection" onchange="sequenceChanged()"></select>
-            </td>
-        </tr>
-    </table>
+        <div class="info-box"><strong>📖 Fallback Value?</strong> The Fallback Value is the last successful valid reading.</div>
+      </div>
 
-    <table>
-        <colgroup>
-            <col span="1" style="width: 35%;">
-            <col span="1" style="width: 65%;">
-        </colgroup>
-        <tr>
-            <td>Current Fallback Value</td>
-            <td>
-                <input type="number" style="padding-left:5px" id="current_fallbackvalue" step="any" readonly></input>
-            </td>
-        </tr>
-        <tr>
-            <td style="vertical-align: text-top; padding-top: 12px;">
-                Enter new Fallback Value
-            </td>
-            <td>
-                <input required type="number" id="input_fallbackvalue" min="0" onchange="(!validity.rangeUnderflow||(value=0));">
-                <button class="button" type="button" onclick="setFallbackValue()">Update Value</button>
-                <p style="padding-left: 5px;">NOTE: The current Raw Value is prefilled as
-                    <br>the suggested new Fallback Value</p>
-            </td>
-        </tr>
-        <tr>
-            <td id="result_text">
-                Fallback Value updated to
-            </td>
-            <td>
-                <input type="number" id="result" style="padding-left:5px;" step="any" readonly></input>
-            </td>
-        </tr>
-    </table>
+      <div class="container-content">
+        <div style="margin-bottom: 20px">
+          <label for="sequence_selection" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px">Select Sequence</label>
+          <select id="sequence_selection" style="width: 170px" onchange="sequenceChanged()"></select>
+        </div>
 
+        <div style="display: flex; gap: 20px">
+          <div style="flex: 1">
+            <label for="current_fallbackvalue" style="display: block; font-size: 0.85rem; margin-bottom: 4px">Current Value</label>
+            <input type="number" id="current_fallbackvalue" readonly />
+          </div>
+          <div style="flex: 1">
+            <label for="input_fallbackvalue" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px">Enter New Value</label>
+            <input required type="number" id="input_fallbackvalue" step="any" /><br />
+            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 5px">Pre-filled with 'Raw Value'</div>
+          </div>
+          <div style="flex: 1">
+            <label for="result" style="display: block; font-size: 0.85rem; margin-bottom: 4px">Updated Value</label>
+            <input type="number" id="result" readonly />
+          </div>
+        </div>
+        <button class="button btn-wide btn-action" id="btn" type="button" onclick="setFallbackValue()">Update Fallback Value</button>
+      </div>
+    </div>
 
-<script src="global_common.js?v=$COMMIT_HASH"></script>
-<script src="global_data.js?v=$COMMIT_HASH"></script>
-<script>
-    function sequenceChanged()
-    {
-        loadFallbackValue(getDomainname());
-    }
+    <script src="global.js?v=$COMMIT_HASH"></script>
+    <script>
+      let fallbackLoadController = null;
+      let fallbackLoadRequestToken = 0;
 
+      function resetResultUI() {
+        const resultField = document.getElementById('result');
+        if (resultField) resultField.value = '';
+      }
 
-	function fillSequenceSelectionOptions()
-	{
-		$("#sequence_selection").find('option').remove().end();
+      function sequenceChanged() {
+        resetResultUI();
+        loadFallbackValue();
+      }
 
-        for (let i = 0; i < jsonConfig.numbersequences.sequence.length; ++i)
-            $("#sequence_selection").append(new Option(jsonConfig.numbersequences.sequence[i].sequencename, i));
-	}
+      function fillSequenceSelectionOptions() {
+        const select = document.getElementById('sequence_selection');
 
+        if (!select || !jsonConfig?.numbersequences?.sequence) return;
 
-    function setFallbackValue()
-    {
-        firework.launch('Update Fallback Value ...', 'success', 2000, true);
+        select.innerHTML = '';
+        jsonConfig.numbersequences.sequence.forEach((seq, i) => {
+          select.add(new Option(seq.sequencename, i));
+        });
+      }
 
-        let sel = document.getElementById("sequence_selection");
-        let sequenceName = sel.options[sel.selectedIndex].text;
-        let value = (document.getElementById("input_fallbackvalue").value).replace(",", ".");
+      async function setFallbackValue() {
+        const sel = document.getElementById('sequence_selection');
+        const btnEl = document.getElementById('btn');
 
-        url = getDomainname() + "/set_fallbackvalue?sequence=" + sequenceName + "&value=" + value
+        if (sel.selectedIndex === -1) return;
 
-        let xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4) {
-                if (this.status >= 200 && this.status < 300) {
-                    document.getElementById("result").value = xhttp.responseText;
-                    firework.launch('New Fallback Value set', 'success', 2000, true);
-                }
-                else if (this.status == 403) {
-                    firework.launch("Setting new value rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
-                    console.error("Setting new value rejected. Process not (yet) initialized. Response status: " + this.status);
-                }
-                else {
-                    firework.launch("Setting new value failed (Response status: " + this.status +
-                                    "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Setting new value failed. Response status: " + this.status);
-                }
-            }
-        };
+        const sequenceName = sel.options[sel.selectedIndex].text;
+        const cleanValue = parseFloat(document.getElementById('input_fallbackvalue').value.replace(',', '.'));
 
-        xhttp.timeout = 10000;  // 10 seconds
-        xhttp.open("GET", url, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
-    }
+        if (isNaN(cleanValue)) return firework.launch('Invalid number entered', 'warning', 2000);
+        if (cleanValue < 0) return firework.launch('Fallback value must be >= 0', 'warning', 2000);
 
+        if (btnEl) btnEl.disabled = true;
 
-    function loadFallbackValue(_domainname)
-    {
-        // Get current Fallback Value
-        let sel = document.getElementById("sequence_selection");
-        let sequenceName = sel.options[sel.selectedIndex].text;
-        let url_sequence = _domainname + '/set_fallbackvalue?sequence=' + sequenceName;
+        const endpoint = `/set_fallbackvalue?sequence=${encodeURIComponent(sequenceName)}&value=${encodeURIComponent(cleanValue)}`;
+        const res = await apiCallNotify(endpoint, {}, {
+          action: 'Fallback value update',
+          loadingMsg: 'Updating fallback value...',
+          resultMsg: 'Fallback value successfully updated',
+        });
 
-        let xhttp_sequence = new XMLHttpRequest();
-        xhttp_sequence.onreadystatechange = function() {
-            if (this.readyState == 4) {
-                if (this.status >= 200 && this.status < 300) {
-                    document.getElementById("current_fallbackvalue").value = xhttp_sequence.responseText;
-                }
-                else if (this.status == 403) {
-                    firework.launch("Sequence name request rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
-                    console.error("Sequence name request rejected. Process not (yet) initialized. Response status: " + this.status);
-                }
-                else {
-                    firework.launch("Sequence name request failed (Response status: " + this.status +
-                                    "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Sequence name request failed. Response status: " + this.status);
-                }
-            }
+        if (btnEl) btnEl.disabled = false;
+        if (!res.ok) return;
+
+        const value = res.data.trim();
+        document.getElementById('result').value = value;
+        document.getElementById('current_fallbackvalue').value = value; // Sync current value immediately
+      }
+
+      async function loadFallbackValue() {
+        const sel = document.getElementById('sequence_selection');
+
+        if (sel.selectedIndex === -1) return;
+
+        const sequenceName = sel.options[sel.selectedIndex].text;
+        resetResultUI();
+        const requestToken = ++fallbackLoadRequestToken;
+
+        // Cancel requests of the previous selection
+        fallbackLoadController?.abort();
+        fallbackLoadController = new AbortController();
+        const init = { signal: fallbackLoadController.signal };
+
+        const [fallbackRes, rawValueRes] = await Promise.all([
+          apiCallNotify(`/set_fallbackvalue?sequence=${encodeURIComponent(sequenceName)}`, init, { action: 'Fallback value request' }),
+          apiCallNotify('/process_data?type=raw_value', init, { action: 'Raw value request' }),
+        ]);
+
+        // Safety net: ignore results that finished before the abort
+        if (requestToken !== fallbackLoadRequestToken) return;
+
+        if (fallbackRes.ok) {
+          document.getElementById('current_fallbackvalue').value = fallbackRes.data;
         }
 
-        xhttp_sequence.timeout = 10000;  // 10 seconds
-        xhttp_sequence.open("GET", url_sequence, true);
-        xhttp_sequence.withCredentials = true;
-        xhttp_sequence.send();
+        if (rawValueRes.ok) {
+          const rawLines = rawValueRes.data ? rawValueRes.data.split(/\r?\n/) : [];
+          const targetLine = rawLines.map((line) => line.split('\t')).find((parts) => parts[0] === sequenceName);
 
-        // Get current RAW Value
-        let url_rawvalue = _domainname + '/process_data?type=raw_value';
-        let xhttp_rawvalue = new XMLHttpRequest();
-        xhttp_rawvalue.onreadystatechange = function() {
-            if (this.readyState == 4) {
-                if (this.status >= 200 && this.status < 300) {
-                    lines = xhttp_rawvalue.responseText.split(/\r?\n/);
-
-                    lines.forEach(function(line) {
-                        arr = line.split("\t");
-                        if (sequenceName == arr[0]) {
-                            document.getElementById("input_fallbackvalue").value = Number(arr[1]);
-                            return;
-                        }
-                    });
-                }
-                else if (this.status == 403) {
-                    firework.launch("Raw value request rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
-                    console.error("Raw value request rejected. Process not (yet) initialized. Response status: " + this.status);
-                }
-                else {
-                    firework.launch("Raw value request failed (Response status: " + this.status +
-                                    "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Raw value request failed. Response status: " + this.status);
-                }
+          if (targetLine && targetLine[1] !== undefined && targetLine[1].trim() !== '') {
+            const val = parseFloat(targetLine[1]);
+            if (!Number.isNaN(val)) {
+              document.getElementById('input_fallbackvalue').value = val;
             }
+          }
         }
+      }
 
-        xhttp_rawvalue.timeout = 10000;  // 10 seconds
-        xhttp_rawvalue.open("GET", url_rawvalue, true);
-        xhttp_rawvalue.withCredentials = true;
-        xhttp_rawvalue.send();
+      async function init() {
+        try {
+          await loadConfig();
+          jsonConfig = getConfigFromStorage();
+          fillSequenceSelectionOptions();
+          await loadFallbackValue();
+        } catch (e) {
+          console.error('Initialization failed:', e);
+        }
+      }
 
-        // Reset result
-        document.getElementById("result").value = "";
-    }
-
-
-    function loadConfigData()
-    {
-        jsonConfig = getConfigFromStorage(); // Get config
-        fillSequenceSelectionOptions();
-        loadFallbackValue(getDomainname());
-    }
-
-
-    function init()
-    {
-        // @TODO. Check if config reloading can be avoided, because still up to date.
-        // Up to now reload config before every usage
-        /*if (noConfigInStorage())
-			loadConfig().then(() => loadConfigData());
-		else
-            loadConfigData();
-        */
-        loadConfig().then(() => loadConfigData());
-    }
-
-
-    init();
-
-</script>
-
-</body>
+      init();
+    </script>
+  </body>
 </html>

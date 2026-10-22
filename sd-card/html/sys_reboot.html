@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" xml:lang="en">
+  <head>
+    <title>Reboot</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
+
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+    <script src="firework.js?v=$COMMIT_HASH"></script>
+  </head>
+
+  <body onload="checkRebootTriggeredByHash()">
+    <div class="container">
+      <div class="container-header">
+        <div class="container-title"><span>🔄</span>Reboot Device</div>
+      </div>
+
+      <div class="container-content">
+        <div id="rebootRequest">
+          <div style="font-weight: bold; margin-block-end: 1rem">
+            <span>Do you really want to reboot now?</span>
+          </div>
+          <button class="button btn-wide btn-action" id="reboot" type="button" onclick="doReboot()">Reboot</button>
+        </div>
+
+        <div id="rebootChecker" style="display: none">
+          <p style="font-weight: bold">
+            <span id="rebootCheckerText"><br /><br />Status: Rebooting</span>
+          </p>
+          <span style="color: var(--text-secondary); font-size: 0.85rem">The device usually reboots in 10 to 20 seconds.</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="global.js?v=$COMMIT_HASH"></script>
+    <script>
+      let rebootRequestInFlight = false;
+
+      function showRebootRequestUI(show) {
+        document.getElementById('rebootRequest').style.display = show ? '' : 'none';
+        document.getElementById('rebootChecker').style.display = show ? 'none' : '';
+      }
+
+      async function doReboot() {
+        if (rebootRequestInFlight) return;
+        rebootRequestInFlight = true;
+
+        const rebootBtn = document.getElementById('reboot');
+        if (rebootBtn) rebootBtn.disabled = true;
+
+        const res = await apiCallNotify('/reboot', {}, { action: 'Reboot request' });
+
+        if (res.ok) {
+          showRebootRequestUI(false);
+          rebootChecker();
+        } else {
+          rebootRequestInFlight = false;
+          if (rebootBtn) rebootBtn.disabled = false;
+        }
+      }
+
+      async function rebootChecker() {
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const dotInterval = setInterval(() => {
+          document.getElementById('rebootCheckerText').innerHTML += '.';
+        }, 1000);
+
+        const start = Date.now();
+
+        try {
+          while (Date.now() - start < 120000) {
+            await sleep(2000);
+
+            const elapsed = Date.now() - start;
+
+            // Start polling after ~8 seconds
+            if (elapsed < 8000) continue;
+
+            const res = await apiCall('/index.html', { timeout: 2000 });
+            if (res.ok) {
+              document.cookie = 'page=dashboard.html?v=$COMMIT_HASH;path=/;SameSite=Lax';
+              parent.location.href = 'index.html?v=$COMMIT_HASH';
+              return;
+            }
+          }
+
+          // 120 seconds elapsed but device is not ready yet
+          firework.launch('Reboot takes unusually long. Retry reboot or power cycle the device', 'danger', 30000);
+          rebootRequestInFlight = false;
+          const rebootBtn = document.getElementById('reboot');
+          if (rebootBtn) rebootBtn.disabled = false;
+          showRebootRequestUI(true);
+        } finally {
+          clearInterval(dotInterval);
+        }
+      }
+
+      // Trigger reboot with hash #reboot
+      function checkRebootTriggeredByHash() {
+        if (window.location.hash) {
+          let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+          if (hash == 'reboot') {
+            doReboot();
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

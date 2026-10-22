@@ -704,7 +704,7 @@ void doReboot()
 
 void doRebootOTA()
 {
-    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot in 5sec");
+    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot in 5 seconds");
 
     markPlannedReboot();
 

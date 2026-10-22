@@ -1,392 +1,410 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xml:lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
     <title>Backup/Restore Configuration</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
 
     <style>
-        h1 {font-size: 1.8em;}
-        h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-        h3 {font-size: 1.2em;}
-        h4 {font-size: 1.1em;}
-        p {font-size: 1em;}
+      .card-body {
+        padding: 10px;
+      }
 
-        body, html {
-            font-size: 100%;
-            -webkit-text-size-adjust: 100%;
-            text-size-adjust: 100%;
-        }
+      #progress-backup {
+        font-family: monospace;
+        font-size: 0.8rem;
+        margin-top: 10px;
+        height: 55px;
+        max-height: 55px;
+        overflow-y: auto;
+        padding: 8px;
+        border-radius: var(--card-radius);
+        border: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column-reverse;
+      }
 
-        input[type=number] {
-            width: 138px;
-            padding: 10px 5px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
+      input[type="file"] {
+        font-family: inherit;
+        font-size: inherit;
+        width: 100%;
+      }
 
-        input[type=file] {
-            width: 660px;
-            padding: 5px 0px;
-            display: inline-block;
-            font-size: 16px;
-        }
-
-        .button {
-            padding: 5px 10px;
-            width: 205px;
-            font-size: 16px;
-        }
-
-        details {
-            text-align: justify;
-        }
+      #progress-restore {
+        width: 100%;
+        accent-color: var(--primary);
+      }
     </style>
 
-    <script src="jszip.min.js?v=$COMMIT_HASH"></script>
-    <script src="FileSaver.min.js?v=$COMMIT_HASH"></script>
-    <script src="global_common.js?v=$COMMIT_HASH"></script>
-    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
-    <script src="js.cookie.min.js?v=$COMMIT_HASH"></script>
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
     <script src="firework.js?v=$COMMIT_HASH"></script>
-    <script src="global_data.js?v=$COMMIT_HASH"></script>
-</head>
+  </head>
 
-<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
-    <h2>Backup / Restore</h2>
-    <h3>Backup Configuration</h3>
-    <p>Create a backup of the device configuration (Content of <a href="/fileserver/config/" target="_self">config</a> folder incl. subfolders).</p>
-    <button class="button" id="startBackupButton" type="button" onclick="startBackup()">Create Backup</button>
-    <p id="progress"></p>
-    <br>
-    <hr>
-    <h3>Restore Configuration</h3>
+  <body>
+    <div class="container">
+      <div class="container-header">
+        <div class="container-title"><span>💾</span>Backup / Restore</div>
+      </div>
 
-    <h4>Partial Restore</h4>
-    <p>To restore specific configuration files, use the <a href="/fileserver/config/" target="_self">File Server</a> to upload them individually.</p>
-    <h4>Full Restore</h4>
-    <p><strong>Warning:</strong> This will overwrite your current device configuration.</p>
+      <div class="container-content">
+        <div class="card">
+          <div class="card-header"><span>Backup Configuration</span></div>
+          <div class="card-body">
+            <div style="border-bottom: 1px solid var(--border-color)">
+              <button class="button btn-wide btn-action" id="startBackupButton" onclick="startBackup()">
+                Create Backup
+              </button>
+              <div id="progress-backup"></div>
+            </div>
+          </div>
+        </div>
 
-    <form id="uploadForm" enctype="multipart/form-data" method="post">
-        <input type="file" accept=".zip" name="fileSelector" id="fileSelector" onchange="validateFileInput()">
-        <br><br>
-        <button class="button" id="startRestoreButton" type="button" onclick="startRestore()" disabled>Upload & Restore</button>
-        <br><br>
-        <progress id="progressBar" value="0" max="100" style="width: 100%; max-width: 600px;"></progress>
-        <h3><span id="status">Status: Idle</span></h3>
-        <p id="loadedBytes"></p>
-    </form>
+        <div class="card">
+          <div class="card-header"><span>Restore Configuration</span></div>
+          <div class="card-body">
+            <div style="font-weight: bold"><span>A. Partial Restore</span></div>
+            <div class="info-box">
+              <strong>💡 Tip: </strong>To restore specific configuration files,
+              upload them individually via the
+              <a href="/fileserver/config/" target="_self">File Server</a>.
+            </div>
+            <div style="
+                font-weight: bold;
+                padding-top: 10px;
+                border-top: 1px solid var(--border);
+              ">
+              <span>B. Full Restore</span>
+            </div>
+            <div class="warning-box">
+              <strong>⚠️ Warning: </strong>Full restore overwrites existing
+              configuration!
+            </div>
+            <form id="uploadForm" enctype="multipart/form-data" method="post">
+              <input type="file" accept=".zip" name="fileSelector" id="fileSelector" onchange="validateFile()" />
+              <div style="
+                  color: var(--text-secondary);
+                  font-size: 0.85rem;
+                  margin-top: 5px;
+                  margin-bottom: 30px;
+                ">
+                Supported File Type (max. 16MB): *.zip
+              </div>
+              <button class="button btn-wide btn-action" id="startRestoreButton" type="button" onclick="startRestore()" disabled>
+                Restore
+              </button>
+              <div style="margin-top: 20px">
+                <progress id="progress-restore" value="0" max="100"></progress>
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 8px;
+                    color: var(--text-secondary);
+                  ">
+                  <span id="status">Status: Idle</span>
+                  <span id="loadedBytes"></span>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<script>
-    const configBasePath = "/fileserver/config/";
+    <script src="global.js?v=$COMMIT_HASH"></script>
+    <script src="fflate.min.js?v=$COMMIT_HASH"></script>
+    <script>
+      let hostname = "unknown";
 
-    // Max size of an individual file. Make sure this value is same as that set in server_file.c
-    const MAX_FILE_SIZE = 8000*1024;
-    const MAX_FILE_SIZE_STR = "8MB";
+      const MAX_RETRIES = 5;
+      const RETRY_TIMEOUTS = [2000, 5000, 10000, 20000, 30000]; // ms per attempt, the last one repeats
+      const CFG_BASE_PATH = "/fileserver/config/";
 
-    let actionRuntime = 0;
-    let updateTimer = null;
+      const describeError = (res) => [res.error ?? `HTTP ${res.status}`, plainTextSnippet(res.data)].filter(Boolean).join(' | ');
 
-
-    function _(el)
-    {
+      function _(el) {
         return document.getElementById(el);
-    }
+      }
 
+      function failStatus(msg) {
+        setStatus(`<span style="color: red">${msg}</span>`);
+        _('startBackupButton').disabled = false;
+      }
 
-    function startBackup()
-    {
-        document.getElementById("startBackupButton").disabled = true;
-        document.getElementById("progress").innerHTML = "";
+      async function startBackup() {
+        _('startBackupButton').disabled = true;
+        _('progress-backup').innerHTML = '';
 
-        // Get hostname
-        try {
-            const xhttp = new XMLHttpRequest();
-            xhttp.open("GET", getDomainname() + "/info?type=hostname", false);
-            xhttp.withCredentials = true;
-            xhttp.send();
-            hostname = xhttp.responseText;
-        }
-        catch(err) {
-            setStatus("<span style=\"color: red\">Failed to get hostname: " + err.message + "</span>");
-            document.getElementById("startBackupButton").disabled = false;
-            return;
-        }
+        const hostnameRes = await apiCall('/info?type=hostname');
+        if (!hostnameRes.ok) return failStatus(`Failed to get hostname. Error: ${describeError(hostnameRes)}`);
+        hostname = hostnameRes.data.trim();
 
-        // Get files list from config base folder
-        setStatus("Get file list...");
-        try {
-            const xhttp = new XMLHttpRequest();
-            xhttp.open("GET", getDomainname() + configBasePath, false);
-            xhttp.withCredentials = true;
-            xhttp.send();
+        setStatus('Getting file list...');
+        const baseRes = await apiCall(CFG_BASE_PATH);
+        if (!baseRes.ok) return failStatus(`Failed to get file list. Error: ${describeError(baseRes)}`);
 
-            const parser = new DOMParser();
-            content = parser.parseFromString(xhttp.responseText, 'text/html');
-        }
-        catch(err) {
-            setStatus("Failed to get file list: " + err.message);
-            document.getElementById("startBackupButton").disabled = false;
-            return;
+        const parser = new DOMParser();
+        const hrefsOf = (html) => [...parser.parseFromString(html, 'text/html').querySelectorAll('a')].map((a) => a.getAttribute('href'));
+
+        const urls = [];
+        const subfolders = [];
+        for (const href of hrefsOf(baseRes.data)) {
+          if (href.split('?')[0].endsWith('/')) subfolders.push(href); // subfolder
+          else urls.push(getDomainname() + href);
         }
 
-        let urls = [];
-        let cfgSubfolderUrl = [];
-        for (const el of content.querySelectorAll("a")) {
-            if (el.getAttribute("href").split("?")[0].endsWith("/")) { // indication for subfolder
-                cfgSubfolderUrl.push(el.getAttribute("href"));
-            }
-            else {
-                urls.push(getDomainname() + el.getAttribute("href"));
-            }
+        for (const folder of subfolders) {
+          const subRes = await apiCall(folder);
+          if (!subRes.ok) return failStatus(`Failed to get file list. Error: ${describeError(subRes)}`);
+          urls.push(...hrefsOf(subRes.data).map((href) => getDomainname() + href));
         }
 
-        // Get files list from config subfolders
-        for (const cfgSubfolderUrlEl of cfgSubfolderUrl) {
-            try {
-                const xhttp = new XMLHttpRequest();
-                xhttp.open("GET", getDomainname() + cfgSubfolderUrlEl, false);
-                xhttp.withCredentials = true;
-                xhttp.send();
+        await backupFiles(urls);
+      }
 
-                let parser = new DOMParser();
-                content = parser.parseFromString(xhttp.responseText, 'text/html');
-            }
-            catch(err) {
-                setStatus("Failed to get file list: " + err.message);
-                document.getElementById("startBackupButton").disabled = false;
-                return;
-            }
-
-            for (const el of content.querySelectorAll("a")) {
-                urls.push(getDomainname() + el.getAttribute("href"));
-            }
+      const backupFiles = (urls) => {
+        if (!urls || urls.length === 0) {
+          setStatus('<span style="color: red">No files</span>');
+          _("startBackupButton").disabled = false;
+          return;
         }
-
-        // Pack as zip and download
-        try {
-            backupFiles(urls);
-        }
-        catch(err) {
-            setStatus("<span style=\"color: red\">Failed to zip files: " + err.message + "</span>");
-            document.getElementById("startBackupButton").disabled = false;
-            return;
-        }
-    }
-
-
-    const backupFiles = (urls) =>
-    {
-        if(!urls)
-            return;
 
         setStatus("Processing files...");
         fetchFiles(urls, [], 0, 0);
-    };
+      };
 
-
-
-    function fetchFiles(urls, filesData, index, retry)
-    {
+      function fetchFiles(urls, filesData, index, retry) {
         const url = urls[index];
+        const name = getFilenameFromUrl(url);
 
-        if (retry == 0) {
-            setStatus("&nbsp;- " + getFilenameFromUrl(urls[index]) + " (" + (index+1) + "/" + urls.length + ")...");
-        }
-        else {
-            setStatus("<span style=\"color: gray\">&nbsp;&nbsp;&nbsp;Retrying (" + retry + ")...</span>");
-        }
+        setStatus(
+          retry === 0
+            ? `- ${name} (${index + 1}/${urls.length})`
+            : `<span style="color: gray">&nbsp;&nbsp;&nbsp;Retrying (${retry})...</span>`,
+        );
 
+        // Retry with a longer timeout, or give up after MAX_RETRIES
+        const retryOrFail = (reason) => {
+          console.error(`Failed to fetch ${url}: ${reason}`);
+          if (retry >= MAX_RETRIES) {
+            setStatus(`<span style="color: red">Backup failed. Error: Failed to fetch ${name} (${reason})</span>`);
+            _('startBackupButton').disabled = false;
+          } else {
+            fetchFiles(urls, filesData, index, retry + 1);
+          }
+        };
+
+        // XMLHttpRequest instead of apiCall: timeout is extended while data is still arriving
         const xhttp = new XMLHttpRequest();
         xhttp.open('GET', url, true);
         xhttp.withCredentials = true;
-        xhttp.responseType = "blob";
+        xhttp.responseType = 'arraybuffer';
+        xhttp.timeout = RETRY_TIMEOUTS[Math.min(retry, RETRY_TIMEOUTS.length - 1)];
 
-        if (retry == 0) { // Short timeout on first retry
-            xhttp.timeout = 2000; // time in milliseconds
-        }
-        else if (retry == 1) { // longer timeout
-            xhttp.timeout = 5000; // time in milliseconds
-        }
-        else if (retry == 2) { // longer timeout
-            xhttp.timeout = 10000; // time in milliseconds
-        }
-        else if (retry == 3) { // longer timeout
-            xhttp.timeout = 20000; // time in milliseconds
-        }
-        else { // very long timeout
-            xhttp.timeout = 30000; // time in milliseconds
-        }
-
-        xhttp.onload = () => { // Request finished
-            //console.log(url + " done");
-
-            filesData[index] = xhttp.response;
-
-            if (index == urls.length - 1) {
-                setStatus("All files processed");
-                generateZipFile(urls, filesData);
-                setStatus("Backup completed");
-                document.getElementById("startBackupButton").disabled = false;
-                return;
-            }
-            else { // Next file
-                fetchFiles(urls, filesData, index+1, 0);
-            }
+        xhttp.onprogress = () => {
+          xhttp.timeout += 500;
         };
 
-        xhttp.onprogress = (e) => { // XMLHttpRequest progress ... extend timeout
-            xhttp.timeout = xhttp.timeout + 500;
+        xhttp.onload = () => {
+          if (xhttp.status < 200 || xhttp.status >= 300) {
+            retryOrFail(`HTTP ${xhttp.status}`);
+            return;
+          }
+
+          filesData[index] = new Uint8Array(xhttp.response);
+
+          if (index === urls.length - 1) {
+            setStatus('All files processed');
+            generateZipFile(urls, filesData);
+            _('startBackupButton').disabled = false;
+          } else {
+            fetchFiles(urls, filesData, index + 1, 0);
+          }
         };
 
-        xhttp.onerror = (e) => { // XMLHttpRequest error loading
-            console.error("Error on fetching " + url);
-            if (retry > 5) {
-                setStatus("<span style=\"color: red\">Backup failed, please restart the device and try again</span>");
-            }
-            else {
-                fetchFiles(urls, filesData, index, retry+1);
-            }
-        };
-
-        xhttp.ontimeout = (e) => { // XMLHttpRequest timed out
-            console.error("Timeout on fetching " + url);
-            if (retry > 5) {
-                setStatus("<span style=\"color: red\">Backup failed, please restart the device and try again</span>");
-            }
-            else {
-                fetchFiles(urls, filesData, index, retry+1);
-            }
-        };
+        xhttp.onerror = () => retryOrFail('network error');
+        xhttp.ontimeout = () => retryOrFail('timeout');
 
         xhttp.send(null);
-    }
+      }
 
-
-    function generateZipFile(urls, filesData)
-    {
+      function generateZipFile(urls, filesData) {
         setStatus("Creating zip file...");
 
-        const zip = new JSZip();
+        const zipFiles = {};
         for (let i = 0; i < urls.length; i++) {
-            let filepath = "config/" + getFilenameFromUrl(urls[i]);
-            zip.file(filepath, filesData[i]);
+          zipFiles["config/" + getFilenameFromUrl(urls[i])] = filesData[i];
         }
 
         const now = new Date();
-        const timestamp = now.getFullYear() + "-" +
-            String(now.getMonth() + 1).padStart(2, "0") + "-" +
-            String(now.getDate()).padStart(2, "0") + "_" +
-            String(now.getHours()).padStart(2, "0") + "-" +
-            String(now.getMinutes()).padStart(2, "0") + "-" +
-            String(now.getSeconds()).padStart(2, "0");
+        const timestamp =
+          now.getFullYear() +
+          "-" +
+          String(now.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(now.getDate()).padStart(2, "0") +
+          "_" +
+          String(now.getHours()).padStart(2, "0") +
+          "-" +
+          String(now.getMinutes()).padStart(2, "0") +
+          "-" +
+          String(now.getSeconds()).padStart(2, "0");
 
         // Add backup meta data
         const meta = {
-            app: "AI-on-the-Edge Device [SLFork]",
-            timestamp: timestamp
+          app: "AI-on-the-Edge Device [SLFork]",
+          timestamp: timestamp,
         };
-        zip.file("meta.json", JSON.stringify(meta, null, 2));
+        zipFiles["meta.json"] = new TextEncoder().encode(
+          JSON.stringify(meta, null, 2),
+        );
 
-        zip.generateAsync({ type: "blob" }).then(function(content) {
-            saveAs(content, `${hostname}_${timestamp}.zip`);
-        });
-    }
-
-
-    function setStatus(status)
-    {
-        document.getElementById("progress").innerHTML += status + "<br>\n";
-    }
-
-
-    function getFilenameFromUrl(url)
-    {
-        const path = url.substring(url.indexOf(configBasePath) + configBasePath.length);
-        return path.split("?")[0];  // Remove any query parameters
-    }
-
-
-    async function validateFileInput()
-    {
-        document.getElementById("startRestoreButton").disabled = true;
-
-        const fileInput = document.getElementById("fileSelector").files;
-        const filepath = document.getElementById("fileSelector").value;
-        const filename = filepath.split(/[\\\/]/).pop();
-
-        if (fileInput.length === 0) {
-            firework.launch('No file selected', 'danger', 30000);
-            return;
+        try {
+          const zipData = fflate.zipSync(zipFiles, { level: 6 });
+          const backupFileName = `${hostname}_${timestamp}.zip`;
+          downloadBlob(zipData, backupFileName);
+          setStatus(`Backup completed: ${backupFileName}`);
+          firework.launch(
+            `Backup completed: ${backupFileName}`,
+            "success",
+            5000,
+          );
+        } catch (err) {
+          console.error("ZIP creation error:", err);
+          setStatus(
+            '<span style="color: red">Failed to create ZIP file. Error: ' +
+              err.message +
+              "</span>",
+          );
+          _("startBackupButton").disabled = false;
         }
-        else if (fileInput[0].size > MAX_FILE_SIZE) {
-            firework.launch(`File size must be less than ${MAX_FILE_SIZE_STR}`, 'danger', 30000);
-            return;
+      }
+
+      function downloadBlob(data, filename) {
+        const url = URL.createObjectURL(
+          new Blob([data], { type: "application/zip" }),
+        );
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function setStatus(status) {
+        const container = _("progress-backup");
+        if (!container) return;
+        const line = document.createElement("div");
+        line.innerHTML = String(status).replace(/\u00a0/g, " ");
+        container.prepend(line);
+      }
+
+      function getFilenameFromUrl(url) {
+        const path = url.substring(
+          url.indexOf(CFG_BASE_PATH) + CFG_BASE_PATH.length,
+        );
+        return path.split("?")[0]; // Remove any query parameters
+      }
+
+
+      async function validateFile() {
+        _("startRestoreButton").disabled = true;
+
+        const files = _("fileSelector").files;
+
+        if (files.length === 0) {
+          firework.launch("No file selected", "danger", 30000);
+          return;
         }
-        else if (filename.length === 0) {
-            firework.launch('File path on server is not set', 'danger', 30000);
-            return;
-        }
-        else if (filename.length > 255) {
-            firework.launch('File name is too long (max. 255 characters)', 'danger', 30000);
-            return;
-        }
-        else if (filename.includes(' ')) {
-            firework.launch('File name cannot contain spaces', 'danger', 30000);
-            return;
-        }
-        else if (filename.endsWith('/')) {
-            firework.launch('Path selected, but file name cannot be parsed', 'danger', 30000);
-            return;
-        }
-        else if (!filename.toLowerCase().endsWith('.zip')) {
-            firework.launch('Only ZIP files are allowed', 'danger', 30000);
-            return;
+
+        const file = files[0];
+        const filename = file.name;
+
+        // Validation Logic
+        const MAX_FILE_SIZE = 16000 * 1024;
+        const MAX_FILE_SIZE_STR = "16MB";
+
+        if (file.size > MAX_FILE_SIZE) {
+          firework.launch(`File size must be less than ${MAX_FILE_SIZE_STR}`, "danger", 30000);
+          return;
+        } else if (filename.length === 0) {
+          firework.launch("File path on server is not set", "danger", 30000);
+          return;
+        } else if (filename.length > 255) {
+          firework.launch("File name is too long (max. 255 characters)", "danger", 30000);
+          return;
+        } else if (filename.includes(" ")) {
+          firework.launch("File name cannot contain spaces", "danger", 30000);
+          return;
+        } else if (filename.endsWith("/")) {
+          firework.launch("Path selected, but file name cannot be parsed", "danger", 30000);
+          return;
+        } else if (!filename.toLowerCase().endsWith(".zip")) {
+          firework.launch("Only ZIP files are supported", "danger", 30000);
+          return;
         }
 
         // Validate meta data
         try {
-            const file = fileInput[0];
-            const zip = await JSZip.loadAsync(file);
+          const zipData = new Uint8Array(await file.arrayBuffer());
+          const zip = fflate.unzipSync(zipData);
 
-            if (!zip.files['meta.json']) {
-                firework.launch("Backup file cannot be validated ('meta.json' file missing)", 'danger', 30000);
-                return;
-            }
+          if (!zip["meta.json"]) {
+            firework.launch(
+              "Backup file cannot be validated ('meta.json' file missing)",
+              "danger",
+              30000,
+            );
+            return;
+          }
 
-            const metaContent = await zip.files['meta.json'].async("string");
-            const meta = JSON.parse(metaContent);
+          const metaContent = new TextDecoder().decode(zip["meta.json"]);
+          const meta = JSON.parse(metaContent);
 
-            if (!meta.app || meta.app.toLowerCase() !== "ai-on-the-edge device [slfork]") {
-                firework.launch("Backup file invalid (app name: wrong or missing)", 'danger', 30000);
-                return;
-            }
+          if (
+            !meta.app ||
+            meta.app.toLowerCase() !== "ai-on-the-edge device [slfork]"
+          ) {
+            firework.launch(
+              "Backup file invalid (app name: wrong or missing)",
+              "danger",
+              30000,
+            );
+            return;
+          }
 
-            // All validations passed
-            firework.launch("Press 'Upload & Restore' to perform the config restore", "success", 5000);
-            document.getElementById("startRestoreButton").disabled = false;
+          // All validations passed
+          firework.launch(
+            "Press 'Restore' to perform the config restore",
+            "success",
+            5000,
+          );
+          _("startRestoreButton").disabled = false;
+        } catch (err) {
+          firework.launch(
+            "Failed to validate ZIP file contents. Check structure and try again.",
+            "danger",
+            30000,
+          );
+          console.error("ZIP validation error:", err);
         }
-        catch (err) {
-            firework.launch("Failed to validate ZIP file contents. Check structure and try again.", 'danger', 30000);
-            console.error("ZIP validation error:", err);
-        }
-    }
+      }
 
-
-    function startRestore()
-    {
-        firework.launch('Do not reload this page or switch to another page while the restore is in progress', 'warning', 90000);
+      function startRestore() {
+        firework.launch(
+          "Do not reload this page or switch to another page while the restore is in progress",
+          "warning",
+          90000,
+        );
 
         document.getElementById("startRestoreButton").disabled = true;
         document.getElementById("fileSelector").disabled = true;
 
         uploadFile();
-    }
+      }
 
-
-    function uploadFile()
-    {
+      function uploadFile() {
         document.getElementById("status").innerText = "Status: Uploading...";
 
         const file = _("fileSelector").files[0];
@@ -395,115 +413,118 @@
         const xhttp = new XMLHttpRequest();
         xhttp.upload.addEventListener("progress", uploadProgressHandler, false);
         xhttp.addEventListener("load", function () {
-            if (xhttp.status >= 200 && xhttp.status < 300) {
-                uploadCompleteHandler({ response: xhttp.responseText });
-            } else {
-                uploadErrorHandler({
-                    type: "http",
-                    status: xhttp.status,
-                    statusText: xhttp.statusText,
-                    response: xhttp.responseText
-                });
-            }
+          if (xhttp.status >= 200 && xhttp.status < 300) {
+            uploadCompleteHandler({ response: xhttp.responseText });
+          } else {
+            uploadErrorHandler({
+              type: "http",
+              status: xhttp.status,
+              statusText: xhttp.statusText,
+              response: xhttp.responseText,
+            });
+          }
         });
-        xhttp.addEventListener("error", () => uploadErrorHandler({ type: "network" }), false);
-        xhttp.addEventListener("abort", () => uploadErrorHandler({ type: "abort" }), false);
+        xhttp.addEventListener(
+          "error",
+          () => uploadErrorHandler({ type: "network" }),
+          false,
+        );
+        xhttp.addEventListener(
+          "abort",
+          () => uploadErrorHandler({ type: "abort" }),
+          false,
+        );
 
         xhttp.open("POST", uploadPath);
         xhttp.withCredentials = true;
         xhttp.send(file);
-    }
+      }
 
-
-    function uploadCompleteHandler(event) {
+      function uploadCompleteHandler(event) {
         _("status").innerHTML = "Status: Upload completed";
-        _("progressBar").value = 0;
+        _("progress-restore").value = 0;
         _("loadedBytes").innerHTML = "";
 
-        if (event.response.startsWith("success")) {
-            _("status").innerText = "Status: Restoring...";
-            firework.launch('Update staged, the device will now restart and restore configuration', 'success', 5000);
-
-            actionRuntime = 0;
-            updateTimer = setTimeout(checkStatus, 2500);
+        if (!event.response.startsWith('success')) {
+          uploadErrorHandler({ type: 'response', response: event.response });
+          return;
         }
-    }
 
+        _("status").innerText = "Status: Restoring...";
+        firework.launch("Package staged. The device will restart and restore the configuration", "success", 5000,);
+        checkStatus();
+      }
 
-    function uploadProgressHandler(event)
-    {
+      function uploadProgressHandler(event) {
         const percent = (event.loaded / event.total) * 100;
-        _("progressBar").value = Math.round(percent);
-        _("status").innerHTML = "Status: " + Math.round(percent) + "% uploaded. Please wait...";
-        _("loadedBytes").innerHTML = "Uploaded " + (event.loaded / 1024 / 1024).toFixed(2) +
-                " MB of " + (event.total / 1024/ 1024).toFixed(2) + " MB";
-    }
+        _("progress-restore").value = Math.round(percent);
+        _("status").innerHTML =
+          "Status: " + Math.round(percent) + "% uploaded. Please wait...";
+        _("loadedBytes").innerHTML =
+          "Uploaded " +
+          (event.loaded / 1024 / 1024).toFixed(2) +
+          " MB of " +
+          (event.total / 1024 / 1024).toFixed(2) +
+          " MB";
+      }
 
-
-    function uploadErrorHandler(event)
-    {
+      function uploadErrorHandler(event) {
         let message;
         switch (event.type) {
-            case "http":
-                // Server's specific reason (set via httpd_resp_send_err on the device)
-                message = event.response && event.response.trim().length > 0
-                    ? event.response.trim()
-                    : `HTTP ${event.status} ${event.statusText || ''}`.trim();
-                break;
-            case "network":
-                message = "Network error";
-                break;
-            case "abort":
-                message = "Upload aborted";
-                break;
-            default:
-                message = "Unknown error";
+          case "http":
+            // Server's specific reason (set via httpd_resp_send_err on the device)
+            message =
+              event.response && event.response.trim().length > 0
+                ? event.response.trim()
+                : `HTTP ${event.status} ${event.statusText || ""}`.trim();
+            break;
+          case 'response':
+            message = event.response?.trim() || 'Unexpected server response';
+            break;
+          case "network":
+            message = "Network error";
+            break;
+          case "abort":
+            message = "Upload aborted";
+            break;
+          default:
+            message = "Unknown error";
         }
 
         console.error("OTA upload failed:", event);
 
-        _("status").innerHTML = "Status: Upload failed | " + message;
-        firework.launch("Upload failed: " + message, "danger", 30000);
+        _("status").innerHTML = "Status: Upload failed. Status: " + message;
+        firework.launch("Upload failed. Status: " + message, "danger", 30000);
 
         document.getElementById("startRestoreButton").disabled = false;
         document.getElementById("fileSelector").disabled = false;
         _("loadedBytes").innerHTML = "";
-    }
+      }
 
+      async function checkStatus() {
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const start = Date.now();
 
-    function checkStatus() {
-        actionRuntime += 1;
-        _("progressBar").value = Math.min(Math.round(actionRuntime * 2), 100);
+        while (Date.now() - start < 120000) {
+          await sleep(2500);
 
-        // Timeout threshold check (120 seconds)
-        if (actionRuntime >= 48) {
-            firework.launch("Reboot takes unusually long. Reload this page or power cycle the device", 'danger', 30000);
+          const elapsed = Date.now() - start;
+          _('progress-restore').value = Math.min(Math.round(elapsed / 1250), 100);
+
+          // Start polling after ~8 seconds
+          if (elapsed < 8000) continue;
+
+          const res = await apiCall('/index.html', { timeout: 2000 });
+          if (res.ok) {
+            _('progress-restore').value = 100;
+            document.cookie = 'page=dashboard.html?v=$COMMIT_HASH;path=/;SameSite=Lax';
+            (window.top || window.parent || window).location.href = '/index.html?v=$COMMIT_HASH';
             return;
+          }
         }
 
-        // Start polling after 5 seconds (2 ticks * 2,5 seconds)
-        if (actionRuntime >= 2) {
-            fetch("/index.html", { credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(2000) })
-                .then(r => {
-                    if (r.ok) {
-                        _("progressBar").value = 100;
-                        document.cookie = "page=overview.html;path=/;SameSite=Lax";
-
-                        const topWindow = window.top || window.parent || window;
-                        topWindow.location.href = '/index.html';
-                    }
-                    else {
-                        updateTimer = setTimeout(checkStatus, 2500);
-                    }
-                })
-                .catch(() => {
-                    updateTimer = setTimeout(checkStatus, 2500);
-                });
-        } else {
-            updateTimer = setTimeout(checkStatus, 2500);
-        }
-    }
-</script>
-
-</body>
+        firework.launch('Restore takes unusually long. Reload this page or power cycle the device', 'danger', 30000);
+      }
+    </script>
+  </body>
 </html>

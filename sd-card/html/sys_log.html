@@ -1,131 +1,915 @@
-<!DOCTYPE html>
-<html lang="en" xml:lang="en">
-<head>
-    <meta charset="UTF-8">
+<!doctype html>
+<html lang="en">
+  <head>
     <title>Log Viewer</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
 
     <style>
-        h1 {font-size: 1.8em;}
-        h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.5em;}
-        h3 {font-size: 1.2em;}
-        p {font-size: 1em;}
+      :root {
+        --row-height: 28px;
+        --err-main: #d73a49;
+        --err-bg: #ffeef0;
+        --wrn-main: #b08800;
+        --wrn-bg: #fff5b1;
+        --inf-main: #344ac7;
+        --inf-bg: #f1f8ff;
+        --dbg-main: #6a737d;
+        --dbg-bg: #f6f8fa;
+      }
 
-        html, body {
-            height: 100%;
-            margin: 1px;
-            font-family: Arial;
-            font-size: 100%;
-            -webkit-text-size-adjust: 100%;
-            text-size-adjust: 100%;
+      html,
+      body {
+        width: unset;
+        max-width: unset;
+      }
+
+      .container {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .container-header {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .controls-row {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        gap: 6px;
+      }
+
+      .container-content {
+        position: relative;
+        padding: 0;
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      #loading-bar {
+        height: 2px;
+        width: 0%;
+        background: var(--primary);
+        z-index: 1000;
+        transition: width 0.3s ease;
+      }
+
+      /* Form Elements & Inputs */
+      input[type='number'],
+      input[type='datetime-local'],
+      .date-input {
+        font-family: inherit;
+        font-size: inherit;
+        padding: 3px 5px;
+        display: inline-block;
+        border: 1px solid var(--border);
+        border-radius: var(--input-radius);
+        vertical-align: middle;
+        max-width: 195px;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      input[type='number'] {
+        -moz-appearance: textfield;
+      }
+
+      input[type='datetime-local']::-webkit-datetime-edit {
+        display: inline-flex;
+        padding: 0;
+      }
+
+      .filter-input {
+        width: 80%;
+        border: 1px solid var(--border);
+        border-radius: var(--input-radius);
+        padding: 5px 6px;
+        font-size: 12px;
+      }
+
+      .level-filters {
+        display: flex;
+        gap: 4px;
+      }
+
+      .chip {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        padding: 2px 10px;
+        border-radius: var(--input-radius);
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: 0.1s;
+      }
+
+      .chip.active.err {
+        border-color: var(--err-main);
+        color: var(--err-main);
+        background: var(--err-bg);
+      }
+
+      .chip.active.wrn {
+        border-color: var(--wrn-main);
+        color: var(--wrn-main);
+        background: var(--wrn-bg);
+      }
+
+      .chip.active.inf {
+        border-color: var(--inf-main);
+        color: var(--inf-main);
+        background: var(--inf-bg);
+      }
+
+      .chip.active.dbg {
+        border-color: var(--dbg-main);
+        color: var(--dbg-main);
+        background: var(--dbg-bg);
+      }
+
+      .chip:not(.active) {
+        opacity: 0.3;
+        filter: grayscale(1);
+      }
+
+      .log-header-container {
+        background: var(--bg-header);
+        border-bottom: 2px solid var(--border);
+        flex-shrink: 0;
+        scrollbar-gutter: stable;
+      }
+
+      .log-header-row,
+      .log-filter-row {
+        display: flex;
+        align-items: center;
+        padding: 4px 10px;
+        font-size: 12px;
+        box-sizing: border-box;
+      }
+
+      .log-header-row {
+        font-weight: bold;
+        text-transform: uppercase;
+        color: var(--text-main);
+        padding-top: 6px;
+      }
+
+      .log-table-container {
+        flex: 1;
+        overflow-y: auto;
+        position: relative;
+        will-change: transform;
+      }
+
+      .log-scroll-phantom {
+        width: 100%;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      .log-viewport {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        will-change: transform;
+      }
+
+      .log-row {
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+        padding: 0 10px;
+      }
+
+      .log-row:hover {
+        background-color: var(--surface-hover) !important;
+      }
+
+      .col-ts { width: 220px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+      .col-lvl { width: 60px; flex-shrink: 0; }
+      .col-mod { width: 110px; flex-shrink: 0; overflow: hidden; }
+      .col-msg { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: normal; word-break: break-word; }
+
+      .time-full { color: var(--text-main); }
+      .time-uptime { color: var(--text-secondary) }
+      .mod-cell { color: var(--text-secondary); }
+      .msg-cell { font-size: 12px; }
+
+      .lvl-pill {
+        display: inline-block;
+        padding: 1px 5px;
+        border-radius: var(--input-radius);
+        font-size: 11px;
+        font-weight: bold;
+        color: white;
+        min-width: 36px;
+        text-align: center;
+      }
+
+      .row-err .lvl-pill { background: var(--err-main); }
+      .row-wrn .lvl-pill { background: var(--wrn-main); }
+      .row-inf .lvl-pill { background: var(--inf-main); }
+      .row-dbg .lvl-pill { background: var(--dbg-main); }
+
+      .no-data-msg {
+        position: absolute;
+        top: 3%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-style: italic;
+        pointer-events: none;
+      }
+
+      .hidden { display: none !important; }
+
+      /* Scroll-to-end overlay button */
+      .scroll-bottom-btn {
+        position: absolute;
+        right: 30px;
+        bottom: 30px;
+        width: 50px;
+        height: 50px;
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        background: var(--primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        z-index: 500;
+        opacity: 1;
+        transform: translateY(0);
+        transition:
+          opacity 0.15s ease,
+          transform 0.15s ease;
+      }
+
+      .scroll-bottom-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .scroll-bottom-btn:hover {
+        filter: brightness(1.1);
+      }
+
+      .scroll-bottom-btn.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(8px);
+      }
+
+      /* Media Queries */
+      @media screen and (max-width: 720px) {
+        .filter-input,
+        .log-row,
+        .log-header-row,
+        .log-filter-row,
+        .msg-cell {
+          font-size: 14px;
         }
 
-        .box {
-            display: flex;
-            flex-flow: column;
-            height: 99.75%;
+        .col-ts {
+          width: 145px;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 1px;
         }
 
-        .box .row.header {
-            flex: 0 1 auto;
+        .col-ts .time-full,
+        .col-ts .time-uptime {
+          line-height: 1;
+          white-space: nowrap;
         }
 
-        .box .row.content {
-            flex: 1 1 auto;
-        }
-
-        .box .row.footer {
-            flex: 0 1 auto;
-        }
-
-        #log {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: small;
-        }
-
-        .button {
-            padding: 5px 10px;
-            width: 190px;
-            font-size: 16px;
-        }
+        .col-lvl { width: 65px; }
+        .col-mod { width: 110px; }
+      }
     </style>
 
-</head>
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+    <script src="firework.js?v=$COMMIT_HASH"></script>
+  </head>
 
-<body>
-    <div class="box">
-        <h2>Log Viewer</h2>
-        <div class="row header">
-            <button class="button" onClick="reload();">Refresh</button>
-            <button class="button" onClick="window.open(getDomainname() + '/log?type=full');">Show Full Log</button>
-            <button class="button" onClick="window.location.href = getDomainname() + '/fileserver/log/message/'">Show Older Log Files</button>
+  <body>
+    <div class="container">
+      <div class="container-header">
+        <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%">
+          <div class="container-title"><span>📋</span>Log Viewer</div>
+          <div id="status" style="color: var(--text-secondary); font-style: italic"></div>
+          <div class="refresh-group">
+            <div id="autoRefreshSettings" class="refresh-settings is-disabled">
+              <input type="checkbox" id="autoRefreshCtrl" onchange="autoRefreshContent()" />
+              <label for="autoRefreshCtrl">Auto Refresh</label>
+              <span>(</span>
+              <span class="timer-wrap">
+                <input type="number" id="autoRefreshTime" min="1" value="5" onchange="if (value < 1) value = 1; autoRefreshContent();" />
+              </span>
+              <span>) s</span>
+            </div>
+
+            <div class="refresh-timestamp">
+              <span style="font-size: 14px">↻</span>
+              <output id="refreshTimestamp">--:--:--</output>
+            </div>
+          </div>
         </div>
-        <div class="row content" id="log"><br>Loading log entries ...</div>
-        <div class="row footer">
-            <button class="button" onClick="reload();">Refresh</button>
-            <button class="button" onClick="window.open(getDomainname() + '/log?type=full');">Show Full Log</button>
-            <button class="button" onClick="window.location.href = getDomainname() + '/fileserver/log/message/'">Show Older Log Files</button>
+        <div class="header-row" style="display: flex; justify-content: flex-end; width: 100%">
+          <div class="controls-row">
+            <div>
+              <input type="checkbox" id="dateRangeCtrl" onchange="autoRefreshContent()" />
+              <label for="dateRangeCtrl">Range: </label>
+            </div>
+            <div>
+              <input type="datetime-local" id="startTime" class="date-input" disabled />
+              <input type="datetime-local" id="endTime" class="date-input" disabled />
+            </div>
+            <div class="refresh-loader">
+              <div id="refreshLoadingImg" class="loader">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" class="spinner-svg">
+                  <path d="M12 3a9 9 0 1 1-6.36 2.64"></path>
+                </svg>
+              </div>
+              <button id="refreshButton" onclick="refreshContent()" class="button btn-action">Refresh</button>
+            </div>
+          </div>
         </div>
+        <div class="header-row">
+          <div class="level-filters">
+            <label style="align-content: center">FILTER:</label>
+            <div class="chip active err" onclick="toggleLvl('ERR', this)">ERR | <span id="s-err">0</span></div>
+            <div class="chip active wrn" onclick="toggleLvl('WRN', this)">WRN | <span id="s-wrn">0</span></div>
+            <div class="chip active inf" onclick="toggleLvl('INF', this)">INF | <span id="s-inf">0</span></div>
+            <div class="chip active dbg" onclick="toggleLvl('DBG', this)">DBG | <span id="s-dbg">0</span></div>
+          </div>
+          <div class="controls-row">
+            <button class="button" onclick="SaveFilteredLogs()">Save Logs</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="container-content">
+        <div id="loading-bar"></div>
+
+        <div class="log-header-container">
+          <div class="log-header-row">
+            <div class="col-ts">Time [Uptime]</div>
+            <div class="col-lvl">Level</div>
+            <div class="col-mod">Module</div>
+            <div class="col-msg">Message</div>
+          </div>
+          <div class="log-filter-row">
+            <div class="col-ts">
+              <input type="text" class="filter-in filter-input" placeholder="Filter time..." oninput="processFilter()" />
+            </div>
+            <div class="col-lvl"></div>
+            <div class="col-mod">
+              <input type="text" class="filter-in filter-input" placeholder="Filter module..." oninput="processFilter()" />
+            </div>
+            <div class="col-msg">
+              <input type="text" class="filter-in filter-input" placeholder="Filter message..." oninput="processFilter()" />
+            </div>
+          </div>
+        </div>
+
+        <div id="scrollContainer" class="log-table-container">
+          <div id="scrollPhantom" class="log-scroll-phantom"></div>
+          <div id="logViewport" class="log-viewport"></div>
+          <div id="noDataMessage" class="no-data-msg hidden">No data available</div>
+        </div>
+
+        <button id="scrollToEndBtn" class="scroll-bottom-btn hidden" type="button" title="Scroll to end" aria-label="Scroll to end" onclick="scrollVirtualToBottom()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14"></path>
+            <path d="M6 13l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
     </div>
 
+    <script src="global.js?v=$COMMIT_HASH"></script>
+    <script>
+      const elements = {
+        container: document.getElementById('scrollContainer'),
+        bar: document.getElementById('loading-bar'),
+        status: document.getElementById('status'),
+        startTime: document.getElementById('startTime'),
+        endTime: document.getElementById('endTime'),
+        autoRefresh: document.getElementById('autoRefreshCtrl'),
+        refreshTs: document.getElementById('refreshTimestamp'),
+        dateRangeCtrl: document.getElementById('dateRangeCtrl'),
+        scrollBtn: document.getElementById('scrollToEndBtn'),
+        noDataMsg: document.getElementById('noDataMessage'),
+        filterInputs: null,
+      };
 
-<script src="global_common.js?v=$COMMIT_HASH"></script>
-<script>
-    function reload() {
-        document.getElementById('log').innerHTML += "<b>Refreshing...</b>";
-        window.scrollBy(0,document.body.scrollHeight);
-        funcRequest(getDomainname() + '/log');
-    }
+      let autoRefreshTimeoutHandle = null;
+      let refreshRunning = false;
 
+      let logCache = [];
+      let activeLvls = { ERR: true, WRN: true, INF: true, DBG: true };
+      const logRegex = /^(\[.*?\])\s+(.*?)\s+<(.*?)>\s+\[(.*?)\]\s+(.*)/;
 
-    function processLogLine(line, index, arr) {
-        /* Make sure the whitespaces in the uptime field get persevered */
-        uptimePart = line.slice(0, line.indexOf("]")).replace(/ /g, "&nbsp;");
-        line = uptimePart + line.slice(line.indexOf("]"))
+      /*  Virtual Container */
+      let virtualContainer = null;
+      let phantomEl = null;
+      let viewportEl = null;
 
-        if (line.includes("&lt;WRN&gt;")) {
-            arr[index] = "<span style=\"color:#e83c00\">" + line + "</span>";
+      let rowPool = [];
+      let stickToBottom = true;
+      let isProgrammaticScroll = false;
+      let renderPending = false;
+
+      let virtualRows = [];
+      let rowHeightCache = []; // Stores individual calculated heights
+      let rowOffsetCache = []; // Stores cumulative Y-offset for each row
+
+      const BUFFER_COUNT = 15;
+
+      function initVirtualViewer() {
+        virtualContainer = document.getElementById('scrollContainer');
+        phantomEl = document.getElementById('scrollPhantom');
+        viewportEl = document.getElementById('logViewport');
+
+        virtualContainer.addEventListener('wheel', (e) => {
+          if (e.deltaY < 0) stickToBottom = false;
+        }, { passive: true });
+
+        virtualContainer.addEventListener('touchstart', () => {
+          stickToBottom = false;
+        }, { passive: true });
+
+        virtualContainer.addEventListener('scroll', () => {
+          if (isProgrammaticScroll) return;
+
+          const maxScroll = virtualContainer.scrollHeight - virtualContainer.clientHeight;
+          const distanceFromBottom = maxScroll - virtualContainer.scrollTop;
+
+          if (distanceFromBottom > 10) {
+            stickToBottom = false;
+          } else if (distanceFromBottom <= 2) {
+            stickToBottom = true;
+          }
+
+          updateScrollBtnVisibility();
+          requestRender();
+        }, { passive: true });
+      }
+
+      function getDeviceMetrics() {
+        const isMobile = window.innerWidth <= 720;
+
+        return {
+          BASE_ROW_HEIGHT: isMobile ? 34 : 24, // Default single-line height
+          LINE_HEIGHT: isMobile ? 22 : 18,     // Height added per extra line of wrapped text
+          CHARS_PER_LINE: isMobile ? 80 : 120  // Approx characters before message wraps
+        };
+      }
+
+      function calculateOffsets() {
+        const { BASE_ROW_HEIGHT, LINE_HEIGHT, CHARS_PER_LINE } = getDeviceMetrics();
+
+        let currentOffset = 0;
+        rowHeightCache = new Array(virtualRows.length);
+        rowOffsetCache = new Array(virtualRows.length);
+
+        for (let i = 0; i < virtualRows.length; i++) {
+          rowOffsetCache[i] = currentOffset;
+
+          // Estimate lines based on message length
+          const msgLength = virtualRows[i].msg ? virtualRows[i].msg.length : 0;
+          const estimatedLines = Math.max(1, Math.ceil(msgLength / CHARS_PER_LINE));
+
+          // Calculate row height dynamically
+          const height = BASE_ROW_HEIGHT + (estimatedLines - 1) * LINE_HEIGHT;
+          rowHeightCache[i] = height;
+
+          currentOffset += height;
         }
-        else if (line.includes("&lt;ERR&gt;")) {
-            arr[index] = "<span style=\"color:red\"><b>" + line + "</b></span>";
+
+        // Update total scrollable phantom height
+        if (phantomEl) {
+          phantomEl.style.height = `${currentOffset}px`;
         }
-        else if (line.includes("&lt;DBG&gt;")) {
-            arr[index] = "<span style=\"color:gray\">" + line + "</span>";
+      }
+
+      // Binary search to quickly find top visible row index in O(log N)
+      function findStartIndex(scrollTop) {
+        let low = 0;
+        let high = rowOffsetCache.length - 1;
+
+        while (low <= high) {
+          const mid = Math.floor((low + high) / 2);
+          if (rowOffsetCache[mid] <= scrollTop) {
+            low = mid + 1;
+          } else {
+            high = mid - 1;
+          }
         }
-        else {
-            arr[index] = line;
+
+        return Math.max(0, low - 1);
+      }
+
+      function updateScrollBtnVisibility() {
+        if (!elements.scrollBtn || !virtualContainer) return;
+        const maxScroll = virtualContainer.scrollHeight - virtualContainer.clientHeight;
+        const distanceFromBottom = maxScroll - virtualContainer.scrollTop;
+        if (distanceFromBottom > 50) {
+          elements.scrollBtn.classList.remove('hidden');
+        } else {
+          elements.scrollBtn.classList.add('hidden');
         }
+      }
 
-        arr[index] += "<br>";
-    }
+      function scrollVirtualToBottom() {
+        stickToBottom = true;
+        if (elements.scrollBtn) {
+          elements.scrollBtn.classList.add('hidden');
+        }
+        requestRender();
+      }
 
-    async function funcRequest(url){
-        await fetch(url, {credentials: 'include'})
-        .then((res) => {
-            if (!res.ok) {
-                document.getElementById("log").innerHTML = "HTTP error " + res.status;
-            }
+      function requestRender() {
+        if (renderPending) return;
+        renderPending = true;
 
-            return res.text();
-        })
-        .then((log) => {
-            log = log.replace(/</g, "&lt;");
-            log = log.replace(/>/g, "&gt;");
-            logArr = log.split("\n");
-            logArr.forEach(processLogLine);
-
-            document.getElementById('log').innerHTML = "<br>" + logArr.join("\n") + "&nbsp;";
-
-            window.scrollBy(0,document.body.scrollHeight);
-
-        })
-        .catch((err) => {
-            document.getElementById("log").innerHTML = err;
+        requestAnimationFrame(() => {
+          renderPending = false;
+          render();
         });
-    }
+      }
 
-    funcRequest(getDomainname() + '/log');
+      function createRowNode() {
+        const row = document.createElement('div');
+        row.className = 'log-row';
 
-</script>
+        row.innerHTML = `
+          <div class="col-ts time-cell-container">
+            <span class="time-full"></span>
+            <span class="time-uptime"></span>
+          </div>
+          <div class="col-lvl"><span class="lvl-pill"></span></div>
+          <div class="col-mod mod-cell"></div>
+          <div class="col-msg msg-cell"></div>
+        `;
 
-</body>
+        return {
+          el: row,
+          ts: row.querySelector('.time-full'),
+          uptime: row.querySelector('.time-uptime'),
+          lvlPill: row.querySelector('.lvl-pill'),
+          mod: row.querySelector('.col-mod'),
+          msg: row.querySelector('.col-msg'),
+          idx: -1
+        };
+      }
+
+      function syncPoolSize(needed) {
+        while (rowPool.length < needed) {
+          const node = createRowNode();
+          rowPool.push(node);
+          viewportEl.appendChild(node.el);
+        }
+        while (rowPool.length > needed) {
+          const node = rowPool.pop();
+          node.el.remove();
+        }
+      }
+
+      function render() {
+        if (!virtualContainer || !virtualRows.length) {
+          if (phantomEl) phantomEl.style.height = '0px';
+          viewportEl.style.transform = 'translate3d(0, 0px, 0)';
+          syncPoolSize(0);
+          if (elements.noDataMsg) elements.noDataMsg.classList.remove('hidden');
+          return;
+        }
+
+        if (elements.noDataMsg) elements.noDataMsg.classList.add('hidden');
+
+        const totalHeight = rowOffsetCache[rowOffsetCache.length - 1] + rowHeightCache[rowHeightCache.length - 1];
+        phantomEl.style.height = `${totalHeight}px`;
+
+        const containerHeight = virtualContainer.clientHeight;
+        const scrollTop = stickToBottom
+          ? Math.max(0, totalHeight - containerHeight)
+          : virtualContainer.scrollTop;
+
+        if (stickToBottom && Math.abs(virtualContainer.scrollTop - scrollTop) > 1) {
+          isProgrammaticScroll = true;
+          virtualContainer.scrollTop = scrollTop;
+          requestAnimationFrame(() => { isProgrammaticScroll = false; });
+        }
+
+        // Find visible row range using binary search
+        const startIndex = Math.max(0, findStartIndex(scrollTop) - BUFFER_COUNT);
+
+        let endIndex = startIndex;
+        while (endIndex < virtualRows.length && rowOffsetCache[endIndex] < scrollTop + containerHeight) {
+          endIndex++;
+        }
+        endIndex = Math.min(virtualRows.length, endIndex + BUFFER_COUNT);
+
+        const visibleCount = endIndex - startIndex;
+        syncPoolSize(visibleCount);
+
+        // Position viewport container at start of visible region
+        const startOffsetY = rowOffsetCache[startIndex] || 0;
+        viewportEl.style.transform = `translate3d(0, ${startOffsetY}px, 0)`;
+
+        for (let i = 0; i < visibleCount; i++) {
+          const dataIdx = startIndex + i;
+          const item = virtualRows[dataIdx];
+          const poolNode = rowPool[i];
+
+          if (poolNode.idx !== dataIdx) {
+            poolNode.idx = dataIdx;
+            poolNode.uptime.textContent = item.uptime || '';
+            poolNode.ts.textContent = item.ts;
+            poolNode.mod.textContent = item.mod;
+            poolNode.msg.textContent = item.msg;
+            poolNode.lvlPill.textContent = item.lvl;
+            poolNode.el.className = `log-row row-${item.lvl.toLowerCase()}`;
+
+            // Apply variable height per row element
+            poolNode.el.style.height = `${rowHeightCache[dataIdx]}px`;
+          }
+        }
+
+        updateScrollBtnVisibility();
+      }
+
+      function filter() {
+        if (!elements.filterInputs) {
+          elements.filterInputs = Array.from(document.querySelectorAll('.filter-in'));
+        }
+
+        const filters = elements.filterInputs.map((i) => i.value.toLowerCase());
+
+        virtualRows = logCache.filter((p) => {
+          if (!activeLvls[p.lvl]) return false;
+          if (filters[0] && !p.ts.toLowerCase().includes(filters[0])) return false;
+          if (filters[1] && !p.mod.toLowerCase().includes(filters[1])) return false;
+          if (filters[2] && !p.msg.toLowerCase().includes(filters[2])) return false;
+          return true;
+        });
+
+        rowPool.forEach((node) => {
+          node.idx = -1;
+        });
+
+        calculateOffsets(); // Recompute offsets for newly filtered set
+        requestRender();
+      }
+
+      function debounce(func, timeout = 300) {
+        let timer;
+        return (...args) => {
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            func.apply(this, args);
+          }, timeout);
+        };
+      }
+
+      const processFilter = debounce(() => filter());
+      const ensureSeconds = (str) => (str && str.length === 16 ? `${str}:00` : str);
+
+      function toggleLvl(l, el) {
+        activeLvls[l] = !activeLvls[l];
+        el.classList.toggle('active');
+        filter();
+      }
+
+      function SaveFilteredLogs() {
+        const inputs = Array.from(document.querySelectorAll('.filter-in')).map((i) => i.value.toLowerCase().trim());
+        const content = logCache
+          .filter((p) => {
+            if (!activeLvls[p.lvl]) return false;
+            if (inputs[0] && !p.ts.toLowerCase().includes(inputs[0])) return false;
+            if (inputs[1] && !p.mod.toLowerCase().includes(inputs[1])) return false;
+            if (inputs[2] && !p.msg.toLowerCase().includes(inputs[2])) return false;
+            return true;
+          })
+          .map((p) => `${p.uptime} ${p.ts} <${p.lvl}> [${p.mod}] ${p.msg}`)
+          .join('\n');
+
+        const now = new Date();
+        const timestamp =
+          now.getFullYear().toString() +
+          (now.getMonth() + 1).toString().padStart(2, '0') +
+          now.getDate().toString().padStart(2, '0') +
+          '_' +
+          now.getHours().toString().padStart(2, '0') +
+          now.getMinutes().toString().padStart(2, '0') +
+          now.getSeconds().toString().padStart(2, '0');
+        const filename = `aioted_logs_${timestamp}.txt`;
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        a.href = objectUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(() => {
+          URL.revokeObjectURL(objectUrl);
+        }, 1000);
+
+        if (typeof firework !== 'undefined' && firework.launch) {
+          firework.launch(`Filtered logs saved: ${filename}`, 'success', 5000);
+        }
+      }
+
+      async function reload() {
+        elements.status.innerHTML = '';
+
+        let currentProgress = 30;
+        elements.bar.style.width = currentProgress + '%';
+
+        try {
+          let url = '/log';
+
+          if (elements.dateRangeCtrl.checked) {
+            const start = ensureSeconds(elements.startTime.value);
+            const end = ensureSeconds(elements.endTime.value);
+            url += `?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+          }
+
+          const res = await apiCallNotify(url, { timeout: 30000 }, { action: 'Log request' });
+
+          if (!res.ok) {
+            if (res.error === 'timeout') {
+              elements.status.innerHTML = '⚠️ <b>Loading Timeout</b>';
+            } else if (res.error !== 'aborted') {
+              elements.status.innerHTML = '⚠️ <b>Loading Error</b>'; // toast already shown by the API layer
+            }
+            return;
+          }
+
+          processLogs(res.data);
+          updateStats();
+
+          if (res.data.includes('--TRUNCATED_SIZELIMIT--')) {
+            elements.status.innerHTML = '⚠️ <b>Log Truncated (Max. 2MB)</b>';
+          }
+
+          elements.refreshTs.value = new Date().toLocaleTimeString([], { hour12: false });
+
+          currentProgress = Math.min(currentProgress + 5, 95);
+          elements.bar.style.width = currentProgress + '%';
+        } catch (e) {
+          // Only local processing errors can land here (ensureSeconds, processLogs, updateStats)
+          console.error('Log processing failed:', e);
+          elements.status.innerHTML = '⚠️ <b>Loading Error</b>';
+          firework.launch('Log processing failed', 'danger', 10000);
+        } finally {
+          elements.bar.style.width = '100%';
+          setTimeout(() => (elements.bar.style.width = '0%'), 300);
+        }
+      }
+
+      function processLogs(text) {
+        const lines = text.split('\n');
+
+        const entries = lines
+          .filter((line) => !line.includes('TRUNCATED'))
+          .map((line) => line.match(logRegex))
+          .filter((m) => m !== null)
+          .map((m) => ({
+            uptime: m[1],
+            ts: m[2].replace('T', ' '),
+            lvl: m[3],
+            mod: m[4],
+            msg: m[5],
+          }));
+
+        logCache = entries;
+        filter();
+      }
+
+      function updateStats() {
+        const stats = { ERR: 0, WRN: 0, INF: 0, DBG: 0 };
+        logCache.forEach((e) => {
+          if (stats[e.lvl] !== undefined) stats[e.lvl]++;
+        });
+
+        for (let key in stats) {
+          const el = document.getElementById(`s-${key.toLowerCase()}`);
+          if (el) el.innerText = stats[key];
+        }
+      }
+
+      async function refreshContent(auto = false) {
+        if (refreshRunning) return;
+        refreshRunning = true;
+
+        const btn = document.getElementById('refreshButton');
+        const loader = document.getElementById('refreshLoadingImg');
+
+        if (!auto) btn.disabled = true;
+        loader?.classList.add('is-loading');
+
+        try {
+          await reload();
+        } finally {
+          refreshRunning = false;
+          setTimeout(function () {
+            if (!auto) btn.disabled = false;
+            loader?.classList.remove('is-loading');
+          }, 200);
+        }
+      }
+
+      function autoRefreshContent() {
+        const isAutoRefresh = document.getElementById('autoRefreshCtrl').checked;
+        const autoRefreshSettings = document.getElementById('autoRefreshSettings');
+        const autoRefreshTime = document.getElementById('autoRefreshTime');
+
+        autoRefreshSettings.classList.toggle('is-disabled', !isAutoRefresh);
+        autoRefreshTime.disabled = !isAutoRefresh;
+
+        elements.startTime.disabled = !elements.dateRangeCtrl.checked;
+        elements.endTime.disabled = !elements.dateRangeCtrl.checked;
+
+        if (autoRefreshTimeoutHandle) {
+          clearTimeout(autoRefreshTimeoutHandle);
+          autoRefreshTimeoutHandle = null;
+        }
+
+        if (elements.autoRefresh.checked) {
+          const delayMs = parseInt(autoRefreshTime.value) * 1000;
+
+          if (!delayMs || delayMs <= 0) {
+            elements.autoRefresh.checked = false;
+            return;
+          }
+          autoRefreshTimeoutHandle = setTimeout(() => {
+            refreshContent(true).then(autoRefreshContent);
+          }, delayMs);
+        }
+      }
+
+      function initAutoRefreshContent() {
+        autoRefreshContent();
+      }
+
+      function init() {
+        const now = new Date();
+        const startTime = new Date(now.getTime() - 1 * 60 * 60 * 1000);
+        const endOfDay = new Date(now);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const format = (dt) => {
+          const p = (n) => n.toString().padStart(2, '0');
+          return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}T${p(dt.getHours())}:${p(dt.getMinutes())}`;
+        };
+
+        document.getElementById('startTime').value = format(startTime);
+        document.getElementById('endTime').value = format(endOfDay);
+
+        if (typeof getConfigFromStorage === 'function') {
+          jsonConfig = getConfigFromStorage();
+        }
+
+        initVirtualViewer();
+        initAutoRefreshContent();
+        refreshContent();
+      }
+
+      init();
+    </script>
+  </body>
 </html>

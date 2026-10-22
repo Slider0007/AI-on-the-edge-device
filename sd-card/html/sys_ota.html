@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en" xml:lang="en">
+  <head>
+    <title>OTA Update</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
+
+    <style>
+      .card-body {
+        padding: 10px;
+      }
+
+      .badge-board {
+        background: var(--text-secondary);
+        color: var(--bg);
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-family: monospace;
+        font-size: 0.9rem;
+      }
+
+      .info-block {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        margin: 10px 0 10px;
+      }
+
+      input[type='file'] {
+        font-family: inherit;
+        font-size: inherit;
+        width: 100%;
+      }
+
+      .update-check-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 20px;
+      }
+
+      #updateCheckStatus {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-height: 2.7em;
+      }
+
+      #updateCheckStatus a {
+        color: var(--primary);
+        text-decoration: underline;
+      }
+    </style>
+
+    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+    <script src="firework.js?v=$COMMIT_HASH"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="container-header">
+        <div class="container-title"><span>🚀</span>OTA Update</div>
+      </div>
+      <div class="container-content">
+        <div class="card">
+          <div class="card-header"><span>Installation</span></div>
+          <div class="card-body">
+            <div class="info-box">
+              <strong>💡 Tip: </strong>Update everything at once using the board-specific latest firmware package from
+              <a href="https://github.com/Slider0007/AI-on-the-edge-device/releases/latest" target="_blank" rel="noopener noreferrer">GitHub Releases page</a>.
+              Your current configuration will be preserved. It's still recommended to have a full configuration backup in hand (System > Backup / Restore).
+            </div>
+
+            <div class="info-block">
+              <span>Installed Firmware:</span>
+              <span id="firmware_version" class="badge-board">Unknown</span>
+            </div>
+
+            <div class="info-block">
+              <span>Detected Board Type:</span>
+              <span id="board_type" class="badge-board">Unknown</span>
+            </div>
+
+            <br><br><br>
+
+            <form id="uploadForm" enctype="multipart/form-data" method="post">
+              <input type="file" accept=".bin,.zip" name="fileSelector" id="fileSelector" onchange="validateFile()" />
+              <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 5px; margin-bottom: 30px">
+                Supported File Types (max. 8MB): *.bin, *.zip
+              </div>
+              <button class="button btn-wide btn-action" id="startOtaButton" type="button" onclick="startOTA()" disabled>Install</button>
+              <div style="margin-top: 20px">
+                <progress id="progressBar" value="0" max="100" style="width: 100%; accent-color: var(--primary)"></progress>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px; color: var(--text-secondary)">
+                  <span id="status">Status: Idle</span>
+                  <span id="loadedBytes"></span>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="global.js?v=$COMMIT_HASH"></script>
+    <script>
+      // Max size of an individual file. Make sure this value is same as that set in server_file.c
+      const RELEASE_NOTES_URL = 'https://github.com/Slider0007/AI-on-the-edge-device/releases/latest';
+
+      let actionRuntime = 0;
+      let updateTimer = null;
+
+      function _(el) {
+        return document.getElementById(el);
+      }
+
+      function resetControls() {
+        _('fileSelector').disabled = false;
+        _('startOtaButton').disabled = false;
+        _('progressBar').value = 0;
+      }
+
+      async function validateFile() {
+        document.getElementById('startOtaButton').disabled = true;
+
+        const fileInput = document.getElementById('fileSelector').files;
+        const filepath = document.getElementById('fileSelector').value;
+        const filename = filepath.split(/[\\\/]/).pop();
+
+        // Validation Logic
+        const MAX_FILE_SIZE = 8000 * 1024;
+        const MAX_FILE_SIZE_STR = '8MB';
+
+        if (fileInput.length === 0) {
+          firework.launch('No file selected', 'danger', 30000);
+          return;
+        } else if (fileInput[0].size > MAX_FILE_SIZE) {
+          firework.launch(`File size must be less than ${MAX_FILE_SIZE_STR}`, 'danger', 30000);
+          return;
+        } else if (filename.length === 0) {
+          firework.launch('File path on server is not set', 'danger', 30000);
+          return;
+        } else if (filename.length > 255) {
+          firework.launch('File name is too long (max. 255 characters)', 'danger', 30000);
+          return;
+        } else if (filename.includes(' ')) {
+          firework.launch('File name cannot contain spaces', 'danger', 30000);
+          return;
+        } else if (filename.endsWith('/')) {
+          firework.launch('Path selected, but file name cannot be parsed', 'danger', 30000);
+          return;
+        }
+
+        // Check if the filename is valid
+        if (
+          /(^AI-on-the-edge-device__update__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename) ||
+          /(^AI-on-the-edge-device__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename)
+        ) {
+          if (document.getElementById('board_type').innerText.toLowerCase() == filename.split('__')[1]) {
+            // Check if board type of filename matches
+            firework.launch("Press 'Install' to perform the OTA update", 'success', 5000);
+          } else {
+            firework.launch(
+              'The selected OTA package does not match the detected board type. Please select proper OTA package ' +
+                "or press 'Install' to continue on own risk",
+              'warning',
+              10000,
+            );
+          }
+        } else if (filename == 'firmware.bin') {
+          firework.launch("Press 'Install' to install MCU firmware", 'success', 5000);
+        } else if (filename.endsWith('.zip') || filename.endsWith('.bin')) {
+          // Warning but still accepted
+          firework.launch(
+            'The selected file does not fully match the expected name pattern. ' + "Press 'Install' to continue on own risk",
+            'warning',
+            10000,
+          );
+        } else {
+          firework.launch('The selected file does not match the expected name pattern. Please select valid file', 'danger', 10000);
+          return;
+        }
+
+        document.getElementById('startOtaButton').disabled = false;
+      }
+
+      function startOTA() {
+        firework.launch('Do not reload this page or switch to another page while the update is in progress', 'warning', 90000);
+
+        _('startOtaButton').disabled = true;
+        _('fileSelector').disabled = true;
+
+        uploadFile();
+      }
+
+      function uploadFile() {
+        document.getElementById('status').innerText = 'Status: Uploading...';
+
+        const file = _('fileSelector').files[0];
+        const uploadPath = '/ota/' + encodeURIComponent(file.name);
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.upload.addEventListener('progress', uploadProgressHandler, false);
+        xhttp.addEventListener('load', function () {
+          if (xhttp.status >= 200 && xhttp.status < 300) {
+            uploadCompleteHandler({ response: xhttp.responseText });
+          } else {
+            uploadErrorHandler({ type: 'http', status: xhttp.status, statusText: xhttp.statusText, response: xhttp.responseText });
+          }
+        });
+        xhttp.addEventListener('error', () => uploadErrorHandler({ type: 'network' }), false);
+        xhttp.addEventListener('abort', () => uploadErrorHandler({ type: 'abort' }), false);
+
+        xhttp.open('POST', uploadPath);
+        xhttp.withCredentials = true;
+        xhttp.send(file);
+      }
+
+      function uploadCompleteHandler(event) {
+        _('status').innerHTML = 'Status: Upload completed';
+        _('progressBar').value = 0;
+        _('loadedBytes').innerHTML = '';
+
+        if (event.response.startsWith('success')) {
+          _('status').innerText = 'Status: Installing...';
+          firework.launch('Update staged. The device will restart and install it', 'success', 5000);
+
+          actionRuntime = 0;
+          updateTimer = setTimeout(checkStatus, 2500);
+        }
+      }
+
+      function uploadProgressHandler(event) {
+        const percent = (event.loaded / event.total) * 100;
+        _('progressBar').value = Math.round(percent);
+        _('status').innerHTML = 'Status: ' + Math.round(percent) + '% uploaded. Please wait...';
+        _('loadedBytes').innerHTML =
+          'Uploaded ' + (event.loaded / 1024 / 1024).toFixed(2) + ' MB of ' + (event.total / 1024 / 1024).toFixed(2) + ' MB';
+      }
+
+      async function uploadErrorHandler(event) {
+        let message;
+        switch (event.type) {
+          case 'http': // Server's specific reason (set via httpd_resp_send_err on the device)
+            message =
+              event.response && event.response.trim().length > 0
+                ? event.response.trim()
+                : `HTTP ${event.status} ${event.statusText || ''}`.trim();
+            break;
+          case 'network':
+            //@Deprecated: Remove legacy OTA support once old API versions are no longer supported
+            // --------------------------------------------------------------------------------
+            if (await hasLegacyOtaApi()) {
+              firework.launch('Network error. Retry with legacy OTA API', 'warning', 5000);
+              startLegacyOTA();
+              return;
+            }
+            // --------------------------------------------------------------------------------
+            message = 'Network error';
+            break;
+          //@Deprecated: Remove legacy OTA support once old API versions are no longer supported
+          // --------------------------------------------------------------------------------
+          case 'legacy_network':
+            message = 'Network error (Legacy API)';
+            break;
+          // --------------------------------------------------------------------------------
+          case 'abort':
+            message = 'Upload aborted';
+            break;
+          default:
+            message = 'Unknown error';
+        }
+
+        console.error('OTA upload failed:', event);
+
+        _('status').innerHTML = 'Status: Upload failed | ' + message;
+        firework.launch('Upload failed: ' + message, 'danger', 30000);
+        resetControls();
+      }
+
+      async function checkStatus() {
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const start = Date.now();
+
+        while (Date.now() - start < 120000) {
+          await sleep(2500);
+
+          const elapsed = Date.now() - start;
+          _('progressBar').value = Math.min(Math.round(elapsed / 1250), 100);
+
+          // Start polling after ~8 seconds
+          if (elapsed < 8000) continue;
+
+          const res = await apiCall('/index.html', { timeout: 2000 });
+          if (res.ok) {
+            _('progressBar').value = 100;
+            document.cookie = 'page=dashboard.html;path=/;SameSite=Lax';
+            (window.top || window.parent || window).location.href = '/index.html';
+            return;
+          }
+        }
+
+        firework.launch('Reboot takes unusually long. Reload this page or power cycle the device', 'danger', 30000);
+      }
+
+      // Legacy OTA code - Fallback for firmware downgrades
+      // @Deprecated: Remove legacy OTA support once old API versions are no longer supported
+      // --------------------------------------------------------------------------------
+      async function hasLegacyOtaApi() {
+        try {
+          const response = await fetch('/ota?task=api_check', {
+            method: 'GET',
+            credentials: 'include',
+            cache: 'no-store',
+            signal: AbortSignal.timeout(2000),
+          });
+          return response.status === 400; // Old handler exists and rejects the unknown task
+        } catch {
+          return false; // Device is unreachable; cannot determine API version
+        }
+      }
+
+      function startLegacyOTA() {
+        legacyPrepareOnServer();
+      }
+
+      function legacyPrepareOnServer() {
+        document.getElementById('status').innerText = 'Status: Preparing device...';
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (xhttp.readyState != 4) return;
+          if (xhttp.status == 200) {
+            // Delete the new OTA staging directory
+            const deleteRequest = new XMLHttpRequest();
+            deleteRequest.onreadystatechange = function () {
+              if (deleteRequest.readyState != 4) return;
+              legacyUploadFile();
+            };
+            deleteRequest.open('POST', getDomainname() + '/delete/.ota_staged/?task=deldir');
+            deleteRequest.withCredentials = true;
+            deleteRequest.send();
+          } else if (xhttp.status == 0) {
+            firework.launch('Server closed the connection abruptly', 'danger', 30000);
+          } else {
+            firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
+          }
+        };
+
+        xhttp.open('GET', getDomainname() + '/ota?task=emptyfirmwaredir');
+        xhttp.withCredentials = true;
+        xhttp.send();
+      }
+
+      function legacyProcessOnServer() {
+        document.getElementById('status').innerText = 'Status: Processing on device...';
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (xhttp.readyState == 4) {
+            if (xhttp.status >= 200 && xhttp.status < 300) {
+              if (xhttp.responseText.startsWith('reboot')) {
+                firework.launch('Update staged. The device will restart and install it', 'success', 5000);
+                _('status').innerText = 'Status: Installing...';
+                legacyDoRebootAfterUpdate();
+                updateTimer = setTimeout(checkStatus, 2500);
+              }
+            } else if (xhttp.status >= 400) {
+              firework.launch('An error occurred: ' + xhttp.responseText, 'danger', 30000);
+            } else {
+              firework.launch('Server closed the connection abruptly', 'danger', 30000);
+            }
+          }
+        };
+
+        const file = document.getElementById('fileSelector').files[0];
+        let url = getDomainname() + '/ota?task=update&file=' + encodeURIComponent(file.name);
+        xhttp.open('GET', url, true);
+        xhttp.withCredentials = true;
+        xhttp.send();
+      }
+
+      function legacyDoRebootAfterUpdate() {
+        const xhttp = new XMLHttpRequest();
+        xhttp.open('GET', '/reboot');
+        xhttp.withCredentials = true;
+        xhttp.send();
+      }
+
+      function legacyUploadFile() {
+        document.getElementById('status').innerText = 'Status: Uploading...';
+
+        const file = _('fileSelector').files[0];
+        const uploadPath = '/upload/firmware/' + encodeURIComponent(file.name);
+
+        const xhttp = new XMLHttpRequest();
+        xhttp.upload.addEventListener('progress', uploadProgressHandler, false);
+        xhttp.addEventListener('load', function () {
+          if (xhttp.status >= 200 && xhttp.status < 300) {
+            _('status').innerHTML = 'Status: Upload completed';
+            _('progressBar').value = 0;
+            _('loadedBytes').innerHTML = '';
+            legacyProcessOnServer();
+          } else {
+            // Handle error codes like 404, 500, etc.
+            uploadErrorHandler({ status: xhttp.status, statusText: xhttp.statusText, response: xhttp.responseText });
+          }
+        });
+        xhttp.addEventListener('error', () => uploadErrorHandler({ type: 'legacy_network' }), false);
+        xhttp.addEventListener('abort', () => uploadErrorHandler({ type: 'abort' }), false);
+
+        xhttp.open('POST', uploadPath);
+        xhttp.withCredentials = true;
+        xhttp.send(file);
+      }
+      // --------------------------------------------------------------------------------
+
+      async function loadInfo(type, elementId, label) {
+        const res = await apiCallNotify(`/info?type=${type}`, {}, { action: `Loading ${label}` });
+        if (res.ok) _(elementId).textContent = res.data;
+      }
+
+      const getBoardType = () => loadInfo('board_type', 'board_type', 'board type');
+      const getFirmwareVersion = () => loadInfo('firmware_version', 'firmware_version', 'firmware version');
+
+      getBoardType();
+      getFirmwareVersion();
+    </script>
+  </body>
+</html>

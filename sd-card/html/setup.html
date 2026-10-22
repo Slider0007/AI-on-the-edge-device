@@ -1,335 +1,1159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xml:lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>AI on the Edge | Initial Setup Wizard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-on-the-Edge Device | Initial Setup Wizard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=720, initial-scale=1" />
 
-    <style>
-        h1 {font-size: 1.8em;}
-        h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-        h3 {font-size: 1.2em;}
-        p {font-size: 1em;}
+  <script>
+    // Theme Control
+    (function () {
+      const savedTheme = localStorage.getItem('theme') || (document.cookie.match(/(?:^|; )theme=(light|dark)/) || [])[1];
+      // If user saved a preference, use it; otherwise read live system theme
+      const systemIsDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme ? savedTheme : (systemIsDark ? 'dark' : 'light');
+      document.documentElement.classList.remove(theme === 'dark' ? 'light' : 'dark');
+      document.documentElement.classList.add(theme);
+    })();
+  </script>
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            min-height: 800px;
-            margin: 0px 0px 0px 2px;
-            padding: 0;
-            font-family: arial;
-            width: -moz-fit-content;
-            width: fit-content;
-            font-size: 100%;
-            -webkit-text-size-adjust: 100%;
-            text-size-adjust: 100%;
+  <link rel="stylesheet" href="style.css?v=$COMMIT_HASH" type="text/css" />
+
+  <style>
+    html,
+    body {
+      max-width: 721px;
+    }
+
+    #fw-container {
+      right: max(20px, calc(100vw - 721px + 20px)) !important;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 35px;
+      margin-left: auto;
+    }
+
+    .rssi-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #wlan_rssi_info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .button {
+      color: var(--text-main);
+      border: 1px solid #a0a0a0;
+      width: 130px;
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 5px 5px;
+      border-radius: var(--input-radius);
+      cursor: pointer;
+      font-size: inherit;
+      transition:
+        opacity 0.2s,
+        filter 0.2s,
+        background-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .button:hover:not(:disabled) {
+      filter: brightness(0.9);
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      filter: grayscale(1);
+      opacity: 0.75;
+    }
+
+    .btn-action {
+      background: var(--primary);
+      text-transform: uppercase;
+      color: white;
+      font-weight: bold;
+      border: 1px solid transparent;
+    }
+
+    .button.btn-action:hover:not(:disabled) {
+      filter: brightness(1.1);
+    }
+
+    .btn-wide {
+      width: 100%;
+      padding: 10px;
+      font-size: 1.1rem;
+    }
+
+    #next {
+      text-transform: unset;
+    }
+
+    .progress-container {
+      text-align: right;
+    }
+
+    progress {
+      width: 120px;
+      height: 10px;
+      accent-color: var(--primary);
+    }
+
+    .content-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0px;
+      margin-top: 0px;
+    }
+
+    iframe {
+      overflow: hidden;
+      transition: height 0.2s ease-in-out;
+      display: block;
+    }
+
+    .instruction-box {
+      margin-bottom: 10px;
+      margin-left: 10px;
+    }
+
+    .steps {
+      display: none;
+    }
+
+    .step-content {
+      padding: 10px;
+      border-left: 5px solid var(--primary);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      margin-block-start: 15px;
+    }
+
+    .table {
+      border: 0pt;
+      border-collapse: collapse;
+      table-layout: fixed;
+      width: 700px;
+      margin-block-start: 10px;
+    }
+
+    th {
+      vertical-align: middle;
+      text-align: left;
+      font-size: 1em;
+      background-color: var(--bg-header);
+      padding: 5px;
+    }
+
+    td {
+      padding: 10px;
+      vertical-align: middle;
+    }
+
+    input[type='text'],
+    input[type='password'],
+    input[type='number'] {
+      width: 96%;
+      min-width: 240px;
+      max-width: 96%;
+      margin-right: 10px;
+      padding: 3px 5px;
+      display: inline-block;
+      border: 1px solid var(--border);
+      vertical-align: middle;
+      font-family: inherit;
+      font-size: inherit;
+      border-radius: var(--input-radius);
+    }
+
+    input[type='number'] {
+      width: 70px;
+      min-width: 70px;
+    }
+
+    select {
+      min-width: 72px;
+      max-width: 100%;
+      padding: 3px 5px;
+      display: inline-block;
+      border: 1px solid var(--border);
+      margin-right: 10px;
+      vertical-align: middle;
+      font-family: inherit;
+      font-size: inherit;
+      border-radius: var(--input-radius);
+    }
+
+    .indent1 {
+      padding-left: 25px;
+    }
+
+    .indent2 {
+      padding-left: 50px;
+    }
+
+    .field-icon {
+      float: right;
+      margin-right: 12px;
+      margin-top: -19px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .info-box {
+      background-color: var(--info-box-bg);
+      border-left: 4px solid #007bff;
+      padding: 12px;
+      border-radius: var(--card-radius);
+      margin: 50px 0;
+    }
+
+    .warning-box {
+      background-color: var(--warning-box-bg);
+      border-left: 4px solid #f7bbbb;
+      padding: 12px;
+      border-radius: var(--card-radius);
+      margin: 15px 0;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 15px;
+      margin-top: 15px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+
+    /* Preview Image & Loading Spinner Styles */
+    #raw_preview_img {
+      width: auto;
+      height: 480px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    #raw_preview_img.is-loading {
+      width: 50px;
+      height: 480px;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+  </style>
+
+  <script>
+    let mainIframeResizeObserver = null;
+    const UI = {
+      get deviceName() {
+        return document.getElementById('device-name');
+      },
+      get main() {
+        return document.getElementById('maincontent');
+      },
+    };
+
+    function resizeIframe(obj) {
+      const setHeight = () => {
+        obj.style.height = 'auto'; // Reset to recalculate
+        obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 10 + 'px';
+      };
+      setHeight();
+      // Observe internal changes (details opening, etc.)
+      if (obj.contentWindow.ResizeObserver) {
+        if (mainIframeResizeObserver) {
+          mainIframeResizeObserver.disconnect();
         }
+        mainIframeResizeObserver = new obj.contentWindow.ResizeObserver(() => {
+          setHeight();
+        });
+        mainIframeResizeObserver.observe(obj.contentWindow.document.body);
+      }
+    }
 
-        .h_iframe_explain iframe {
-            width: 690px;
-            height: 155px;
-            padding: 3px;
-            padding-top: 0px;
-            padding-bottom: 0px;
-            border: 0pt;
+    function getCookie(cname) {
+      const name = cname + '=';
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      const cookie = ca.find((row) => row.trim().startsWith(name));
+      return cookie ? cookie.trim().substring(name.length) : '';
+    }
+    // Theme Control
+    function setTheme(isLight) {
+      const theme = isLight ? 'light' : 'dark';
+      const oldTheme = isLight ? 'dark' : 'light';
+      document.documentElement.classList.remove(oldTheme);
+      document.documentElement.classList.add(theme);
+      localStorage.setItem('theme', theme);
+      document.cookie = `theme=${theme};path=/;max-age=${60 * 60 * 24 * 400};SameSite=Lax`;
+      syncIframeTheme();
+    }
+
+    function syncIframeTheme() {
+      const isLight = document.documentElement.classList.contains('light');
+      try {
+        const iframeWin = UI.main?.contentWindow;
+        const iframeDoc = iframeWin?.document?.documentElement;
+        if (iframeDoc) {
+          iframeDoc.classList.remove(isLight ? 'dark' : 'light');
+          iframeDoc.classList.add(isLight ? 'light' : 'dark');
+          iframeWin.refreshTheme?.();
         }
-
-        .h_iframe iframe {
-            width: 690px;
-            height: 800px;
-            padding: 3px;
-            border: 0pt;
+      } catch {
+        const iframeWin = UI.main?.contentWindow;
+        if (iframeWin) {
+          iframeWin.postMessage({
+            type: 'SYNC_THEME',
+            theme: isLight ? 'light' : 'dark'
+          }, '*');
+          iframeWin.refreshTheme?.();
         }
+      }
+    }
+  </script>
 
-        .button {
-            padding: 5px 0px;
-            width: 135px;
-            font-size: 16px;
-            margin: 0px;
-        }
-
-        table {
-            width: 690px;
-            padding: 0px;
-        }
-
-        .main {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            flex-direction: column;
-            overflow: hidden;
-        }
-    </style>
-
-    <script>
-        function resizeIframe(obj)
-        {
-            obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 50 + 'px';
-        }
-    </script>
-
-    <link rel="prefetch" href="setup_explain_0.html?v=$COMMIT_HASH" as="document"/>
-    <link rel="prefetch" href="setup_explain_1.html?v=$COMMIT_HASH" as="document"/>
-    <link rel="prefetch" href="setup_explain_2.html?v=$COMMIT_HASH" as="document"/>
-    <link rel="prefetch" href="edit_reference.html?v=$COMMIT_HASH" as="document"/>
-    <link rel="prefetch" href="setup_explain_3.html?v=$COMMIT_HASH" as="document"/>
-    <link rel="prefetch" href="edit_alignment.html?v=$COMMIT_HASH" as="document"/>
-    <link rel="prefetch" href="setup_explain_4.html?v=$COMMIT_HASH" as="document"/>
-    <link rel="prefetch" href="edit_sequence.html?v=$COMMIT_HASH" as="document"/>
-    <link rel="prefetch" href="setup_explain_5.html?v=$COMMIT_HASH" as="document"/>
-    <link rel="prefetch" href="setup_explain_5_abort.html?v=$COMMIT_HASH" as="document"/>
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="firework.js?v=$COMMIT_HASH"></script>
+  <link href="tooltips.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="tooltips.js?v=$COMMIT_HASH"></script>
 </head>
 
-<body style="font-family: arial">
-    <table style="border: none; width:100%">
-        <tr>
-            <td style="padding: 10px; width: 64px; height: 64px"><img style="width:64px; height:64px" src="favicon.ico?v=$COMMIT_HASH"></td>
-            <td><h1 id="id_title" style="margin-block-start: 0.2em;margin-block-end: 0.1em;">AI on the Edge | Initial Setup Wizard</h1>
-                <h4 style="margin-top: 0px; margin-bottom: 10px">A Neural Network Recognition System For Meter Digitization</h4>
-            </td>
-        </tr>
-    </table>
+<body>
+  <header class="header">
+    <div class="header-main">
+      <img src="favicon.ico" alt="ico" class="brand-logo" />
+      <div class="brand-text">
+        <h1 class="brand-font">AI-on-the-Edge Device</h1>
+        <div class="device-name">
+          <span>Initial Setup Wizard</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-controls">
+      <div class="rssi-indicator">
+        <output id="wlan_rssi"></output>
+        <span>
+          <svg id="rssi_svg" width="20" height="16" viewBox="0 0 24 16" fill="currentColor" style="overflow: visible">
+            <rect class="bar" x="1" y="12" width="3" height="4" rx="1" />
+            <rect class="bar" x="7" y="8" width="3" height="8" rx="1" />
+            <rect class="bar" x="13" y="4" width="3" height="12" rx="1" />
+            <rect class="bar" x="19" y="0" width="3" height="16" rx="1" />
+          </svg>
+        </span>
+      </div>
 
-    <table>
-        <tr id="wlan_rssi_info">
-            <td style="padding:10px">
-                <output id="wlan_rssi">WLAN Signal: </output>
+      <label class="theme-switch">
+        <input type="checkbox" id="themeToggle" onchange="setTheme(this.checked)" />
+        <span class="track">
+          <span class="thumb">
+            <svg class="icon-sun" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 3v1.5M12 19.5V21M4.9 4.9l1.1 1.1M18 18l1.1 1.1M3 12h1.5M19.5 12H21M4.9 19.1l1.1-1.1M18 6l1.1-1.1" />
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24">
+              <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
+            </svg>
+          </span>
+        </span>
+      </label>
+    </div>
+  </header>
+
+  <section class="controls">
+    <div class="button-group">
+      <button class="button" id="restart" onclick="clickRestart()">Restart Wizard</button>
+      <button class="button" id="previous" onclick="clickPrevious()">Previous Step</button>
+      <button class="button btn-action" id="next" onclick="clickNext()">Next Step</button>
+      <button class="button" id="skip" onclick="clickAbort()">Abort Wizard</button>
+    </div>
+    <div class="progress-container">
+      <span>Progress</span><br />
+      <progress id="progressBar" value="0" max="5"></progress>
+    </div>
+  </section>
+
+  <main class="content-wrapper">
+    <div id="explanation-container" class="instruction-box">
+      <div id="desc-step0" class="steps" style="display: none">
+        <h2>Initial Setup Wizard</h2>
+        <p><img src="flow_overview.jpg" alt="" width="auto" height="auto" style="max-width: 710px" /></p>
+        <p>
+          Welcome! This wizard configures your device for first use. Upon completion, the device will restart to the operational web
+          interface. <strong>Note:</strong> All wizard settings remain accessible via the operational web interface.
+        </p>
+        <p>Use <b>Next Step</b> or <b>Previous Step</b> to navigate. Select <b>Restart Wizard</b> to restart or <b>Abort Wizard</b> to skip this wizard.</p>
+        <hr />
+
+        <h3>Setup Overview</h3>
+        <ol>
+          <li>
+            <strong>Basic Flashlight Setup & Lens Focus Adjustment:</strong>
+            Basic flashlight setup and lens focus adjustment
+          </li>
+          <li>
+            <strong>Camera / Flashlight Configuration:</strong>
+            Configure camera and flashlight for proper visual evaluation
+          </li>
+          <li>
+            <strong>Alignment Marker Configuration:</strong>
+            Define marker to ensure consistent image orientation during processing
+          </li>
+          <li>
+            <strong>Number Sequences Configuration:</strong>
+            Group digital and/or analog ROIs together to generate result
+          </li>
+          <li>
+            <strong>Security & Completion:</strong>
+            Configure WebUI security and complete setup
+          </li>
+        </ol>
+      </div>
+
+      <!-- Step 1: Flashlight Setup & Lens Focus Adjustment -->
+      <div id="desc-step1" class="steps" style="display: none">
+        <div class="step-content">
+          <strong>Step 1: Basic Flashlight Setup & Lens Focus Adjustment</strong>
+          <p>
+            Configure flashlight basic setup and save flashlight configuration before proceeding. Usually default configuration / mapping is sufficient.
+            Reconfiguration is only required if a customization is required, e.g. driving additional external LEDs or usage of specific pin or LED type, ...<br>
+            After image is visible in preview, adjust lens focus until image is as sharp as possible. Detailed instructions are available in the
+            <a href="https://jomjol.github.io/AI-on-the-edge-device-docs/Reference-Image/#focus" target="_blank">focus adjustment guide</a><br>
+            Verify that the flashlight does not create glare in critical processing areas. If the internal LED is insufficient or glare cannot be avoided,
+            refer to <a href="https://jomjol.github.io/AI-on-the-edge-device-docs/External-LED/" target="_blank">installation of external LEDs</a>.
+          </p>
+          <p>
+            Note 1: Any pending image refresh is blocking saving or step change.<br>
+            Note 2: Camera configuration and flashlight fine-tuning is performed in next step.
+          </p>
+        </div>
+
+        <!-- CARD: Flashlight Setup -->
+        <div class="card">
+          <div class="card-header"><span>Flashlight Setup</span></div>
+          <div class="card-body">
+            <table class="table">
+              <colgroup>
+                <col style="width: 350px" />
+                <col />
+                <col style="width: 40px" />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td class="indent1">
+                    <span>Actual GPIO Mapping</span>
+                  </td>
+                  <td>
+                    <span id="takeimage_flashlightgpiomapping_value"></span>
+                  </td>
+                  <!-- <td style="visibility: keep hidden">$TOOLTIP_takeimage_flashlight_gpiomapping</td> -->
+                </tr>
+                <tr>
+                  <td class="indent1"><span>GPIO Customization</span></td>
+                  <td>
+                    <form id="gpio_customizationenabled_form" style="text-transform: none; margin: 0;">
+                      <select style="font-weight: bold" class="classvisibility_init" name="gpio.customizationenabled" id="gpio_customizationenabled_value" onchange="
+                              setClassVisibility('classvisibility_gpio_customizationenabled', this.value);
+                              this.value == 'true' ? $('[id$=\'pinenabled_value\']').trigger('onchange') : null;
+                              gpioPinModeChanged();
+                              gatherChangedParameter(this.form);
+                            ">
+                        <option value="false" selected>Disabled</option>
+                        <option value="true">Enabled</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_gpio_customizationenabled</td>
+                </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled">
+                  <td class="indent2"><span style="font-weight: bold">Pin Selection</span></td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_gpionumber_form">
+                      <select style="font-weight: bold" class="classvisibility_init" name="gpio.gpiopin.0.gpionumber" id="gpio_gpiopin_0_gpionumber_value" onchange="
+                              gpioPinSelectAfterChange();
+                              gatherChangedParameter(this.form, true);
+                            "></select>
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_gpionumber</td>
+                </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled">
+                  <td class="indent2"><span>Pin Status</span></td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_pinenabled_form">
+                      <select name="gpio.gpiopin.0.pinenabled" id="gpio_gpiopin_0_pinenabled_value" onchange="
+                              setClassVisibility('classvisibility_gpio_gpiopin_pinenabled', this.value);
+                              this.value == 'true' ? $('[id$=\'pinmode_value\']').trigger('onchange') : null;
+                              gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
+                              gatherChangedParameter(this.form);
+                            ">
+                        <option value="false" selected>Disabled</option>
+                        <option value="true">Enabled</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_pinenabled</td>
+                </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled">
+                  <td class="indent2">
+                    <span>Pin Mode</span>
+                    <span id="gpio_gpiopin_pinmode_restrictedusagetext" style="display: none; color: red"></span>
+                  </td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_pinmode_form">
+                      <select name="gpio.gpiopin.0.pinmode" id="gpio_gpiopin_0_pinmode_value" onchange="
+                              gpioPinModeChanged();
+                              gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
+                              gatherChangedParameter(this.form);
+                            ">
+                        <option value="flashlight-default">Flashlight Default</option>
+                        <option value="flashlight-pwm">Flashlight PWM</option>
+                        <option value="flashlight-smartled">Flashlight Smartled</option>
+                        <option value="flashlight-digital">Flashlight Digital</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_pinmode</td>
+                </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled gpio_show_logiclevel">
+                  <td class="indent2"><span>Pin Logic Level</span></td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_logicactivelow_form">
+                      <select name="gpio.gpiopin.0.logicactivelow" id="gpio_gpiopin_0_logicactivelow_value" onchange="
+                              gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
+                              gatherChangedParameter(this.form);
+                            ">
+                        <option value="false" selected>Active High</option>
+                        <option value="true">Active Low</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_logicactivelow</td>
+                </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled gpio_show_smartled">
+                  <td class="indent2"><span>LED Type</span></td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_smartled_type_form">
+                      <select name="gpio.gpiopin.0.smartled.type" id="gpio_gpiopin_0_smartled_type_value" onchange="
+                              gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
+                              gatherChangedParameter(this.form, true);
+                            ">
+                        <option value="0" selected>WS2812</option>
+                        <option value="1">WS2812B (universal)</option>
+                        <option value="2">WS2812B (newer variant)</option>
+                        <option value="3">WS2812B (older variant)</option>
+                        <option value="4">SK6812</option>
+                        <option value="5">WS2813</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_smartled_type</td>
+                </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled gpio_show_smartled">
+                  <td class="indent2"><span>LED Color (RGB)</span></td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_smartled_color_form">
+                      R
+                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorredchannel" id="gpio_gpiopin_0_smartled_colorredchannel_value" onchange="
+                              (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
+                              gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
+                              gatherChangedParameter(this.form, true);
+                            " />
+                      G
+                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorgreenchannel" id="gpio_gpiopin_0_smartled_colorgreenchannel_value" onchange="
+                              (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
+                              gatherChangedParameter(this.form, true);
+                            " />
+                      B
+                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorbluechannel" id="gpio_gpiopin_0_smartled_colorbluechannel_value" onchange="
+                              (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
+                              gatherChangedParameter(this.form, true);
+                            " />
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_smartled_color</td>
+                </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled gpio_show_intersity_correction">
+                  <td class="indent2"><span>LED Intensity Correction</span></td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_intensitycorrectionfactor_form">
+                      <input required type="number" min="1" max="100" value="100" name="gpio.gpiopin.0.intensitycorrectionfactor" id="gpio_gpiopin_0_intensitycorrectionfactor_value" onchange="
+                              (!validity.rangeUnderflow || (value = 1)) && (!validity.rangeOverflow || (value = 100));
+                              gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
+                              gatherChangedParameter(this.form, true);
+                            " />
+                      %
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_intensitycorrectionfactor</td>
+                </tr>
+                <tr>
+                  <td class="indent1">
+                    <span>Flash Time</span>
+                  </td>
+                  <td>
+                    <form id="takeimage_flashlight_flashtime_form">
+                      <input required type="number" min="100" step="100" value="2000" name="takeimage.flashlight.flashtime" id="takeimage_flashlight_flashtime_value" onchange="
+                              (!validity.rangeUnderflow || (value = 100)) && (!validity.stepMismatch || (value = this.value));
+                              gatherChangedParameter(this.form, true);
+                            " />
+                      Milliseconds
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_takeimage_flashlight_flashtime</td>
+                </tr>
+                <tr>
+                  <td class="indent1">
+                    <span>Flash Intensity</span>
+                  </td>
+                  <td>
+                    <form id="takeimage_flashlight_flashintensity_form">
+                      <input required type="number" min="0" max="100" value="50" name="takeimage.flashlight.flashintensity" id="takeimage_flashlight_flashintensity_value" onchange="
+                              (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 100));
+                              gatherChangedParameter(this.form, true);
+                            " />
+                      %
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_takeimage_flashlight_flashintensity</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top: 15px;">
+              <button id="saveFlashlightCfgBtn" class="button btn-action btn-wide" onclick="saveFlashlightSetup()">Save Flashlight Setup</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD: Image Preview -->
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Preview Image</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <label style="cursor: pointer;">
+                <input type="checkbox" id="auto_capture_toggle" onchange="autoRefreshRawImage(this.checked)" /> Auto-Refresh
+              </label>
+              <button id="refreshBtn" class="button btn-action" onclick="manualRefreshRawImage()" style="width: 160px; height: 32px; padding: 5px 15px;">Refresh</button>
+            </div>
+          </div>
+          <div class="card-body" style="text-align: center;">
+            <img id="raw_preview_img" alt="Image Preview" />
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Camera Configuration -->
+      <div id="desc-step2" class="steps step-content" style="display: none">
+        <div><strong>Step 2: Camera / Flashlight Configuration</strong></div>
+      </div>
+
+      <!-- STEP 3: Alignment Marker Configuration -->
+      <div id="desc-step3" class="steps step-content" style="display: none">
+        <div><strong>Step 3: Alignment Marker Configuration</strong></div>
+      </div>
+
+      <!-- STEP 4: Number Sequences Configuration -->
+      <div id="desc-step4" class="steps step-content" style="display: none">
+        <div><strong>Step 4: Number Sequences And ROIs Configuration</strong></div>
+      </div>
+
+      <!-- STEP 5: Finalization -->
+      <div id="desc-step5" class="steps" style="display: none">
+        <div class="step-content"><strong>Step 5: Configure WebUI Security & Complete Initial Setup</strong></div>
+        <table class="table">
+          <colgroup>
+            <col span="1" style="width: 310px" />
+            <col span="1" style="width: 330px" />
+            <col span="1" />
+          </colgroup>
+          <tr>
+            <th colspan="3">WebUI Security</th>
+          </tr>
+          <tr>
+            <td class="indent1">
+              <span>Authentication</span>
             </td>
-        </tr>
-        <tr>
             <td>
-                <button class="button" id="restart" onclick="clickStart()">Restart Setup</button>
-                <button class="button" id="previous" onclick="clickPrevious()">Previous Step</button>
-                <button class="button" id="next" onclick="clickNext()">Next Step</button>
-                <button class="button" id="skip" onclick="clickAbort()">Abort Setup</button>
-                <span style="margin:0px; float:right;">Setup Progress:<br><progress id="progressBar" value="0" max="5" style="width:120px;"></progress></span>
+              <form id="webui_httpauth_authmode_form">
+                <select class="classvisibility_init" name="webui.httpauth.authmode" id="webui_httpauth_authmode_value" onchange="
+                      setClassVisibility('classvisibility_webui_httpauth', this.value === '1');
+                      gatherChangedParameter(this.form, true);
+                    ">
+                  <option value="0" selected>Disabled</option>
+                  <option value="1">Enabled</option>
+                </select>
+              </form>
             </td>
-        </tr>
-    </table>
+            <td style="visibility: hidden">$TOOLTIP_webui_httpauth_authmode</td>
+          </tr>
+          <tr class="classvisibility_webui_httpauth">
+            <td class="indent2">
+              <span>Username</span>
+            </td>
+            <td>
+              <form id="webui_httpauth_username_form">
+                <input type="text" name="webui.httpauth.username" id="webui_httpauth_username_value" onchange="gatherChangedParameter(this.form)" />
+              </form>
+            </td>
+            <td style="visibility: hidden">$TOOLTIP_webui_httpauth_username</td>
+          </tr>
+          <tr class="classvisibility_webui_httpauth">
+            <td class="indent2">
+              <span>Password</span>
+            </td>
+            <td>
+              <form class="wrapper" id="webui_httpauth_password_form">
+                <input type="password" name="webui.httpauth.password" id="webui_httpauth_password_value" autocomplete="on" onchange="gatherChangedParameter(this.form)" />
+                <span toggle="#webui_httpauth_password_value" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+              </form>
+            </td>
+            <td style="visibility: hidden">$TOOLTIP_webui_httpauth_password</td>
+          </tr>
+        </table>
 
-    <hr>
-
-    <div class="h_iframe_explain" id="h_iframe_explain">
-        <iframe name="explaincontent" id ="explaincontent" src="" allowfullscreen></iframe>
+        <div class="info-box">
+          <p><b>INITIAL SETUP COMPLETED</b></p>
+          <p>Congratulations! You have completed the initial setup and you are now ready to switch to the operational web interface!</p>
+          <p>
+            Once you push the button below, the intial setup wizard will be completed and the device will be automatically switch to
+            operational web interface. If configuration is error free, the device will automatically start with first processing. It will take
+            some time until you get the first reading.
+          </p>
+          <p><button class="button btn-action btn-wide" onclick="completeSetup()">Complete Setup Wizard</button></p>
+        </div>
+      </div>
+      <div id="desc-step99" class="steps" style="display: none">
+        <div class="step-content"><strong>Step 5: Initial Setup Aborted</strong></div>
+        <div class="warning-box">
+          <p><b>INITIAL SETUP ABORTED</b></p>
+          <p>
+            Once you push the button below, the intial setup wizard will be aborted and the device will be automatically switch to operational
+            web interface. Please be aware: The configuration of the device is not or only partly adapted to your needs!
+          </p>
+          <p>Configuration can still be adapted / completed using operational web interface.</p>
+          <p><button class="button btn-action btn-wide" onclick="abortSetup()">Abort Setup Wizard</button></p>
+        </div>
+      </div>
     </div>
 
-    <div class="h_iframe" id="h_iframe">
-        <iframe style="padding-right:0px" id ="maincontent" src="" onload="resizeIframe(this)" allowfullscreen></iframe>
-        <iframe id ="stream" src="" allowfullscreen></iframe>
-    </div>
+    <iframe id="maincontent" src="" onload="resizeIframe(this)" frameborder="0"></iframe>
+  </main>
 
+  <script src="jquery.min.js?v=$COMMIT_HASH"></script>
+  <script src="global.js?v=$COMMIT_HASH"></script>
+  <script>
+    let isFlashlightCfgAutoRefreshActive = false;
 
-<script src="global_common.js?v=$COMMIT_HASH"></script>
-<script>
-    let step = parseInt(sessionStorage.getItem("setupStep")); // Load actual setup step from session storage
-    let setupCompleted = false;
-    document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
-    document.getElementById("progressBar").value = 0;
-
-    function saveStep()
-    {
-        sessionStorage.setItem("setupStep", step); // Store actual setup step into session storage
-    }
-
-    function clickStart()
-    {
-        step = 0;
-        saveStep();
-        setupCompleted = false;
-        document.getElementById('stream').src = "";
-        document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
-        LoadStep();
-    }
-
-    function clickAbort()
-    {
-        setupCompleted = false;
-        step = 5;
-        saveStep();
-        document.getElementById('stream').src = "";
-        document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
-        LoadStep();
-    }
-
-    function clickNext()
-    {
-        step++;
-        if (step > 5) {
-            step = 5;
+    const SetupWizard = {
+      // Configuration & State
+      state: { step: parseInt(sessionStorage.getItem('setupStep')) || 0 },
+      // DOM Elements Cache
+      el: {
+        mainContent: document.getElementById('maincontent'),
+        progressBar: document.getElementById('progressBar'),
+        nextBtn: document.getElementById('next'),
+        prevBtn: document.getElementById('previous'),
+        restartBtn: document.getElementById('restart'),
+        skipBtn: document.getElementById('skip'),
+      },
+      // Initialization
+      async init() {
+        // Theme Control
+        const isLight = document.documentElement.classList.contains('light');
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+          themeToggle.checked = isLight;
         }
-        saveStep();
-        document.getElementById('stream').src = "";
-        document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
-        LoadStep();
-    }
-
-    function clickPrevious()
-    {
-        step--;
-        if (step < 0) {
-            step = 0;
-        }
-        saveStep();
-        document.getElementById('stream').src = "";
-        document.getElementById('stream').style.display = "none";   // Make sure that stream iframe is always hidden
-        LoadStep();
-    }
-
-    function LoadStep()
-    {
-        if (isNaN(step)) {
-            step = 0;
+        if (UI.main) {
+          UI.main.addEventListener('load', () => {
+            syncIframeTheme();
+            UI.main.classList.add('ready');
+          });
         }
 
+        try {
+          await loadConfig();
+          this.syncConfigToUI();
+          this.renderStep();
+          this.initEventListeners();
+        } catch (err) {
+          console.error('Failed to initialize setup:', err);
+        }
+      },
+      initEventListeners() {
+        // Password Toggle Logic
+        document.querySelectorAll('.toggle-password').forEach((el) => {
+          el.addEventListener('click', function() {
+            const input = document.querySelector(this.getAttribute('toggle'));
+            input.type = input.type === 'password' ? 'text' : 'password';
+          });
+        });
+      },
+      // Navigation Logic
+      navigate(targetStep) {
+        if (targetStep < 0) targetStep = 0;
+        if (targetStep > 5 && targetStep < 99) targetStep = 5;
+        this.state.step = targetStep;
+        sessionStorage.setItem('setupStep', this.state.step);
+        this.syncConfigToUI();
+        this.renderStep();
+      },
+      // UI Rendering
+      renderStep() {
+        const step = this.state.step;
+        const toggle = document.getElementById('auto_capture_toggle');
+        if (toggle) toggle.checked = false;
+        document.querySelectorAll('.steps').forEach((el) => {
+          el.style.display = 'none';
+        });
+        const currentDesc = document.getElementById(`desc-step${step}`);
+        if (currentDesc) currentDesc.style.display = 'block';
+        this.el.progressBar.value = step === 99 ? 5 : step;
+        this.el.restartBtn.disabled = step === 0;
+        this.el.prevBtn.disabled = step === 0 || step === 99;
+        this.el.nextBtn.disabled = step === 5 || step === 99;
+        this.el.skipBtn.disabled = step === 5 || step === 99;
+        this.el.mainContent.style.display = 'none';
         switch (step) {
-        case 0: // Start page
-            document.getElementById('maincontent').src = 'setup_explain_0.html?v=$COMMIT_HASH';
-            document.getElementById('maincontent').style.display = "";
-            document.getElementById('h_iframe_explain').style.display = "none";
-            document.getElementById("restart").disabled = true;
-            document.getElementById("previous").disabled = true;
-            document.getElementById("next").disabled = false;
-            document.getElementById("skip").disabled = false;
-            document.getElementById("progressBar").value = 0;
-            setupCompleted = false;
+          case 1:
+            manualRefreshRawImage();
             break;
-
-        case 1: // Live stream
-            document.getElementById('maincontent').style.display = "none";
-            document.getElementById('maincontent').src = '';
-            document.getElementById('h_iframe_explain').style.display = "";
-            document.getElementById('h_iframe_explain').style="height:320px;"
-            document.getElementById('explaincontent').style="height:370px;"
-            document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'setup_explain_1.html?v=$COMMIT_HASH';
-            document.getElementById("restart").disabled = false;
-            document.getElementById("previous").disabled = false;
-            document.getElementById("next").disabled = false;
-            document.getElementById("skip").disabled = false;
-            document.getElementById('h_iframe').style="height:480px;"
-            document.getElementById('stream').style="height:480px;"
-            document.getElementById("progressBar").value = 1;
-            setupCompleted = false;
-
-            // Needs to be the last statement because it's blocking webserver
-            setTimeout(function() {
-                document.getElementById('stream').src = getDomainname() + '/camera?task=stream_flashlight';
-                document.getElementById('stream').style.display = "";
-            }, 100);
+          case 2:
+            this.loadIframe('edit_reference.html');
             break;
-
-        case 2: // Reference image
-            document.getElementById('maincontent').src = 'edit_reference.html?v=$COMMIT_HASH#description';
-            document.getElementById('maincontent').style.display = "";
-            document.getElementById('h_iframe_explain').style.display = "";
-            document.getElementById('h_iframe_explain').style="height:45px;"
-            document.getElementById('explaincontent').style="height:45px;"
-            document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'setup_explain_2.html?v=$COMMIT_HASH';
-            document.getElementById("restart").disabled = false;
-            document.getElementById("previous").disabled = false;
-            document.getElementById("next").disabled = false;
-            document.getElementById("skip").disabled = false;
-            document.getElementById("progressBar").value = 2;
-            setupCompleted = false;
+          case 3:
+            this.loadIframe('edit_alignment.html');
             break;
-
-        case 3: // Alignment marker
-            document.getElementById('maincontent').src = 'edit_alignment.html?v=$COMMIT_HASH#description';
-            document.getElementById('h_iframe_explain').style.display = "";
-            document.getElementById('h_iframe_explain').style="height:45px;"
-            document.getElementById('explaincontent').style="height:45px;"
-            document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'setup_explain_3.html?v=$COMMIT_HASH';
-            document.getElementById("restart").disabled = false;
-            document.getElementById("previous").disabled = false;
-            document.getElementById("next").disabled = false;
-            document.getElementById("skip").disabled = false;
-            document.getElementById("progressBar").value = 3;
-            setupCompleted = false;
-            break;
-
-        case 4: // Number sequences incl. ROIs
-            document.getElementById('maincontent').src = 'edit_sequence.html?v=$COMMIT_HASH#description';
-            document.getElementById('h_iframe_explain').style.display = "";
-            document.getElementById('h_iframe_explain').style="height:45px;"
-            document.getElementById('explaincontent').style="height:45px;"
-            document.getElementById('explaincontent').scrolling="no"
-            document.getElementById('explaincontent').src = 'setup_explain_4.html?v=$COMMIT_HASH';
-            document.getElementById("restart").disabled = false;
-            document.getElementById("previous").disabled = false;
-            document.getElementById("next").disabled = false;
-            document.getElementById("skip").disabled = false;
-            document.getElementById("progressBar").value = 4;
-            setupCompleted = true;
-            break;
-
-        case 5: // Setup completed / aborted
-            document.getElementById('h_iframe').style="height:660px;"
-            document.getElementById('maincontent').style="height:660px;"
-
-            if (setupCompleted) {
-                document.getElementById('maincontent').src = 'setup_explain_5.html?v=$COMMIT_HASH';
-            }
-            else {
-                document.getElementById('maincontent').src = 'setup_explain_5_abort.html?v=$COMMIT_HASH';
-                document.getElementById("previous").disabled = true;
-            }
-
-            document.getElementById('h_iframe_explain').style.display = "none";
-            document.getElementById("skip").disabled = true;
-            document.getElementById("restart").disabled = false;
-            document.getElementById("next").disabled = true;
-            document.getElementById("progressBar").value = 5;
+          case 4:
+            this.loadIframe('edit_sequence.html');
             break;
         }
+        this.loadRSSI();
+      },
+      loadIframe(url) {
+        UI.main.classList.remove('ready');
+        this.el.mainContent.style.display = 'block';
+        this.el.mainContent.src = `${url}?v=$COMMIT_HASH#description`;
+      },
+      // Data & Completion Logic
+      syncConfigToUI() {
+        let jsonConfigKeyified = [];
+        [jsonConfig, jsonConfigKeyified] = getConfigFromStorage(2);
+        parseCurrentParametrization(jsonConfigKeyified);
+        if (this.state.step == 1) // Only required for flashlight config
+          initGpioSection();
+        triggerClassElementOnChange('classvisibility_init');
+        if (typeof jsonConfigModifiedDelta !== 'undefined') {
+          jsonConfigModifiedDelta = {};
+        }
+      },
+      async finalizeSetup(isAbort = false) {
+        const msg = isAbort ? 'Do you want to abort the setup and switch to operational web interface?' :
+          'Do you want to complete the setup mode and switch to operational web interface?';
+        if (!confirm(msg)) return;
+        jsonConfigModifiedDelta = jsonConfigModifiedDelta || {};
+        jsonConfigModifiedDelta.operationmode = jsonConfigModifiedDelta.operationmode || {};
+        jsonConfigModifiedDelta.operationmode.opmode = 1; // Switch to automatic mode
 
-        loadRSSI();
+        sessionStorage.removeItem('setupStep');
+
+        try {
+          firework.launch(isAbort ? 'Initial setup aborted' : 'Initial setup completed', isAbort ? 'warning' : 'success', 10000);
+          await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
+        } catch (error) {
+          firework.launch('Saving setup failed. Check config and/or logs.', 'danger', 30000);
+          console.error('Finalize setup failed:', error);
+        }
+
+        // Loading operational web interface in any case
+        firework.launch('Loading operational web interface...', 'success', 10000);
+        setTimeout(() => {
+          window.parent.location.assign(getDomainname());
+        }, 7000);
+      },
+      async loadRSSI() {
+        const res = await apiCall('/info?type=wlan_rssi');
+        if (!res.ok) return;
+        renderRssi(res.ok ? parseInt(res.data, 10) : null);
+      },
+    };
+
+    // GPIO Configuration Helper Functions
+    function initGpioSection() {
+      getGpioPins();
     }
 
-    function loadRSSI()
-    {
-        let url = getDomainname() + '/info?type=wlan_rssi';
+    function getGpioPins() {
+      let gpioPinSelection = $("[id$='gpionumber_value']").find('option').remove().end();
+      let firstEnabledPinFound = false;
+      let idx = 0;
+      for (let i = 0; i < jsonConfig.gpio.gpiopin.length; ++i) {
+        gpioPinSelection.append(new Option('GPIO' + jsonConfig.gpio.gpiopin[i].gpionumber, jsonConfig.gpio.gpiopin[i].gpionumber));
+        if (!firstEnabledPinFound && jsonConfig.gpio.gpiopin[i].pinenabled) {
+          firstEnabledPinFound = true;
+          idx = i;
+        }
+      }
+      gpioPinSelection.prop('selectedIndex', idx);
+      gpioPinSelectAfterChange(true);
+      getGpioPinUsage(parseInt(gpioPinSelection[0].value));
+      gpioPinModeChanged();
+    }
 
-        let xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                const rssi = xhttp.responseText;
+    function getGpioPinUsage(gpioNumberSelected) {
+      let gpioPinModeSel = document.querySelector("[id$='pinmode_value']");
+      for (let i = 0; i < jsonConfig.gpio.gpiopin.length; i++) {
+        if (jsonConfig.gpio.gpiopin[i].gpionumber == gpioNumberSelected) {
+          if (jsonConfig.gpio.gpiopin[i].gpiousage.substring(0, 10) == 'flashlight') {
+            gpioPinModeSel.options[0].removeAttribute('hidden');
+          } else {
+            gpioPinModeSel.options[0].setAttribute('hidden', 'true');
+          }
+          if (jsonConfig.gpio.gpiopin[i].gpiousage.substring(0, 10) == 'restricted') {
+            $('#gpio_gpiopin_pinmode_restrictedusagetext')
+              .text('(⚠ DEFAULT: ' + jsonConfig.gpio.gpiopin[i].gpiousage.substring(12).replace(/\-/g, ' ').toUpperCase() + ')')
+              .show();
+          } else {
+            $('#gpio_gpiopin_pinmode_restrictedusagetext').hide();
+          }
+          break;
+        }
+      }
+    }
 
-                // Hide info if not relevant (connected via ethernet)
-                if (rssi == -255) {
-                    document.getElementById("wlan_rssi_info").style.display = "None";
-                    return;
-                }
-
-                if (rssi >= -55) {
-                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Excellent (" + rssi + "dBm)");
-                }
-                else if (rssi < -55 && rssi >= -67) {
-                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Good (" + rssi + "dBm)");
-                }
-                else if (rssi < -67 && rssi >= -78) {
-                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Fair (" + rssi + "dBm)");
-                }
-                else if (rssi < -78 && rssi >= -85) {
-                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Weak (" + rssi + "dBm)");
-                }
-                else {
-                    document.getElementById('wlan_rssi').value = ("WLAN Signal: Unreliable (" + rssi + "dBm)");
-                }
+    function gpioPinModeChanged() {
+      const isCustomized = document.getElementById('gpio_customizationenabled_value').value == 'true';
+      if (isCustomized) {
+        document.getElementById('takeimage_flashlightgpiomapping_value').innerText = 'Customized';
+      } else {
+        let defaultFound = false;
+        if (jsonConfig && jsonConfig.gpio && jsonConfig.gpio.gpiopin) {
+          for (let i = 0; i < jsonConfig.gpio.gpiopin.length; ++i) {
+            let usage = jsonConfig.gpio.gpiopin[i].gpiousage || '';
+            if (usage.substring(0, 10) == 'flashlight') {
+              document.getElementById('takeimage_flashlightgpiomapping_value').innerText =
+                'Board Default [GPIO' + jsonConfig.gpio.gpiopin[i].gpionumber + ', ' + usage.substring(11).toUpperCase() + ']';
+              defaultFound = true;
+              break;
             }
+          }
+        }
+        if (!defaultFound) {
+          document.getElementById('takeimage_flashlightgpiomapping_value').innerText = 'No Board Default. Use Customization';
+        }
+      }
+      let pinEnabledEl = document.querySelectorAll('[id$="pinenabled_value"]')[0];
+      let pinEnabled = pinEnabledEl ? pinEnabledEl.value == 'true' : false;
+      if (!isCustomized || !pinEnabled) {
+        setClassVisibility('gpio_show_logiclevel', false);
+        setClassVisibility('gpio_show_smartled', false);
+        setClassVisibility('gpio_show_intersity_correction', false);
+        return;
+      }
+      let elPinMode = document.querySelectorAll('[id$="pinmode_value"]')[0];
+      if (elPinMode.value == 'flashlight-smartled') {
+        setClassVisibility('gpio_show_smartled', true);
+        setClassVisibility('gpio_show_intersity_correction', true);
+      } else {
+        setClassVisibility('gpio_show_smartled', false);
+        setClassVisibility('gpio_show_intersity_correction', false);
+      }
+      if (elPinMode.value == 'flashlight-digital') {
+        setClassVisibility('gpio_show_logiclevel', true);
+      } else {
+        setClassVisibility('gpio_show_logiclevel', false);
+      }
+    }
+
+    function gpioPinSelectAfterChange(init = false) {
+      let gpioPinSelect = $("[id$='gpionumber_value']")[0];
+      $('.form_gpio_config')
+        .children()
+        .each(function() {
+          this.name =
+            this.name.split('.gpiopin.')[0] +
+            '.gpiopin.' +
+            gpioPinSelect.selectedIndex.toString() +
+            '.' +
+            this.name.split('.gpiopin.')[1].substring(2);
+          this.id = this.name.replace(/\./g, '_') + '_value';
+        });
+      let jsonConfigModified = deepMergeObjects(jsonConfig, jsonConfigModifiedDelta);
+      let jsonConfigModifiedKeyified = jsonObjectKeyify(jsonConfigModified);
+      parseCurrentParametrization(jsonConfigModifiedKeyified);
+      if (!init) {
+        $("[id$='pinenabled_value']")[0].onchange();
+        getGpioPinUsage(gpioPinSelect.value);
+      }
+    }
+
+    async function saveFlashlightSetup() {
+      const toggle = document.getElementById('auto_capture_toggle');
+      if (toggle) toggle.checked = false;
+      stepFlashCfgBusy(true);
+      try {
+        // Sequentially await configuration save, then force image refresh
+        await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
+        SetupWizard.syncConfigToUI();
+        await manualRefreshRawImage();
+      } catch (error) {
+        console.error('Failed to save flashlight configuration:', error);
+        stepFlashCfgBusy(false);
+      }
+    }
+
+    function manualRefreshRawImage(showSpinner = true) {
+      stepFlashCfgBusy(true);
+
+      return new Promise((resolve) => {
+        const imgPreview = document.getElementById('raw_preview_img');
+        if (!imgPreview) {
+          stepFlashCfgBusy(false);
+          resolve(false);
+          return;
+        }
+
+        let isFinished = false;
+
+        const cleanup = () => {
+          if (isFinished) return;
+          isFinished = true;
+          if (showSpinner) {
+            imgPreview.classList.remove('is-loading');
+          }
+          stepFlashCfgBusy(false);
         };
 
-        xhttp.timeout = 10000;  // 10 seconds
-        xhttp.open("GET", url, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
+        // Ensures it's at least 15 seconds or longer if your config dictates it
+        const flashTime = jsonConfig?.takeimage?.flashlight?.flashtime || 0;
+        const timeoutMs = Math.max(flashTime + 15000, 15000);
+
+        const timeoutId = setTimeout(() => {
+          cleanup();
+          imgPreview.src = noImageAvailable;
+          firework.launch('Failed to load image | Timeout.', 'danger', 30000);
+          resolve(false);
+        }, timeoutMs);
+
+        if (showSpinner) {
+          imgPreview.classList.add('is-loading');
+          imgPreview.src = loaderSpinner;
+        }
+
+        const rawImg = new Image();
+
+        rawImg.onload = function() {
+          if (isFinished) return;
+          clearTimeout(timeoutId);
+          cleanup();
+          imgPreview.src = rawImg.src;
+          resolve(true);
+        };
+
+        rawImg.onerror = function() {
+          if (isFinished) return;
+          clearTimeout(timeoutId);
+          cleanup();
+          imgPreview.src = noImageAvailable;
+          firework.launch('Failed to load image | Error', 'danger', 30000);
+          resolve(false);
+        };
+
+        rawImg.src = `${getDomainname()}/img_tmp/raw.jpg?t=${new Date().getTime()}`;
+      });
     }
 
-    LoadStep();
+    async function autoRefreshRawImage(isEnabled) {
+      const toggleEl = document.getElementById('auto_capture_toggle');
+      if (toggleEl) {
+        toggleEl.checked = isEnabled;
+      }
 
-</script>
+      if (!isEnabled || isFlashlightCfgAutoRefreshActive) return;
 
+      let ok = false;
+      try {
+        isFlashlightCfgAutoRefreshActive = true;
+        ok = await manualRefreshRawImage(false);
+      } finally {
+        isFlashlightCfgAutoRefreshActive = false;
+      }
+
+      const checkToggle = document.getElementById('auto_capture_toggle');
+      if (checkToggle && checkToggle.checked) {
+        if (!ok) await new Promise((r) => setTimeout(r, 2000));
++        autoRefreshRawImage(true);
+      }
+    }
+
+    // Update Navigation & Action Buttons Interlock State
+    function stepFlashCfgBusy(busy) {
+      const saveBtn = document.getElementById('saveFlashlightCfgBtn');
+      if (saveBtn) saveBtn.disabled = busy;
+
+      const refreshBtn = document.getElementById('refreshBtn');
+      if (refreshBtn) refreshBtn.disabled = busy;
+
+      SetupWizard.el.restartBtn.disabled = busy;
+      SetupWizard.el.prevBtn.disabled = busy;
+      SetupWizard.el.nextBtn.disabled = busy;
+      SetupWizard.el.skipBtn.disabled = busy;
+    }
+
+    // Global hooks for HTML onclick attributes
+    window.clickRestart = () => SetupWizard.navigate(0);
+    window.clickNext = () => SetupWizard.navigate(SetupWizard.state.step + 1);
+    window.clickPrevious = () => SetupWizard.navigate(SetupWizard.state.step - 1);
+    window.clickAbort = () => SetupWizard.navigate(99);
+    window.completeSetup = () => SetupWizard.finalizeSetup(false);
+    window.abortSetup = () => SetupWizard.finalizeSetup(true);
+
+    // Run on load
+    document.addEventListener('DOMContentLoaded', () => SetupWizard.init());
+  </script>
 </body>
+
 </html>

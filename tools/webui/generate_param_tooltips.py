@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-Grab all parameter files (markdown) and convert them to HTML tooltips
+Grab all parameter files (markdown), convert them to HTML,
+and compile them into a centralized JSON file for tooltips.
 """
 import os
 import glob
 import shutil
 import sys
 import subprocess
+import json
+import gzip
 
 
 # check for missing markdown package
@@ -36,99 +39,109 @@ except Exception:
         print(f"Argument missing: Provide parent folder of sd-card folder")
         sys.exit(1)
 
-# Define HTML directory
-htmlSourceDir = os.path.join(rootPath, "sd-card", "html")
 htmlTempDir = os.path.join(rootPath, ".builds", "html_compiled")
-
-# Prepare folder (if not yet prepared by calling script)
-if not os.path.exists(htmlTempDir):
-    print(f"Prepare folders...")
-    shutil.copytree(htmlSourceDir, htmlTempDir)
-
 parameterDocsFolder = os.path.join(rootPath, "docs", "Configuration", "Parameter")
+htmlSourceDir = os.path.join(rootPath, "sd-card", "html")
 
-configPage = "edit_config_param.html"
-referenceImagePage = "edit_reference.html"
-setupSecurityPage = "setup_explain_5.html"
+# The new centralized JSON file destination
+jsonOutPath = os.path.join(htmlTempDir, "tooltips.json")
+jsonOutPathGz = os.path.join(htmlTempDir, "tooltips.json.gz")
 
-htmlTooltipPrefix = (
-    '<div class="rst-content"><div class="tooltip">'
-    '<img src="help.png" width="20px"><span class="tooltiptext">'
-)
-htmlTooltipSuffix = "</span></div></div>"
+# Pages to clean up
+pagesToUpdate = ["edit_config_param.html", "edit_reference.html", "setup.html"]
 
+# Dictionary to hold all documentation: { "section_parameter": "<html>...</html>" }
+tooltip_database = {}
 
-def injectTooltip(pageFile, search, replace):
-    """Replace placeholders in a page with generated tooltip HTML"""
+def update_html_triggers(pageFile, section, parameter):
+    """
+    Replaces old hidden placeholders with a modern lightweight trigger.
+    The trigger uses data-help to reference the key in tooltips.json.
+    """
     pagePath = os.path.join(htmlTempDir, pageFile)
     if not os.path.isfile(pagePath):
         return
 
+    # This matches your existing HTML table structure
+    search_pattern = f'<td style="visibility: hidden">$TOOLTIP_{section}_{parameter}</td>'
+    replace_pattern = f'<td><div class="tooltip-trigger" data-help="{section}_{parameter}"></div></td>'
+
+    # Handle the "hidden div" variant if present
+    search_pattern_div = f'<div hidden>$TOOLTIP_{section}_{parameter}</div>'
+    replace_pattern_div = f'<div class="tooltip-trigger" data-help="{section}_{parameter}" style="display:inline-block;"></div>'
+
     with open(pagePath, "r", encoding="utf-8") as f:
         content = f.read()
 
-    content = content.replace(search, replace)
+    content = content.replace(search_pattern, replace_pattern)
+    content = content.replace(search_pattern_div, replace_pattern_div)
 
     with open(pagePath, "w", encoding="utf-8") as f:
         f.write(content)
 
-
-def generateHtmlTooltip(section, parameter, mdFile):
-    """Convert markdown file to HTML tooltip and inject into pages"""
+def process_markdown_to_json(section, parameter, mdFile):
+    """Converts MD to HTML and adds it to our JSON dictionary"""
     with open(mdFile, "r", encoding="utf-8") as f:
         mdContent = f.read()
 
-    htmlTooltip = markdown.markdown(mdContent, extensions=["admonition", "tables"])
-    htmlTooltip = htmlTooltip.replace("a href", "a target=_blank href")
-    htmlTooltip = htmlTooltip.replace(
-        'href="../', 'href="https://jomjol.github.io/AI-on-the-edge-device-docs/'
-    )
-    htmlTooltip = htmlTooltip.replace("../img/", "/")
-    htmlTooltip = htmlTooltipPrefix + htmlTooltip + htmlTooltipSuffix
+    # Convert Markdown to HTML
+    html = markdown.markdown(mdContent, extensions=["admonition", "tables"])
 
-    # Inject into relevant pages
-    injectTooltip(
-        configPage,
-        f"<th hidden>$TOOLTIP_{section}_{parameter}</th>",
-        f'<th style="font-weight: unset;">{htmlTooltip}</th>',
-    )
-    injectTooltip(
-        configPage,
-        f'<td style="visibility:hidden">$TOOLTIP_{section}_{parameter}</td>',
-        f"<td>{htmlTooltip}</td>",
-    )
-    injectTooltip(
-        referenceImagePage,
-        f'<td style="visibility:hidden">$TOOLTIP_{section}_{parameter}</td>',
-        f"<td>{htmlTooltip}</td>",
-    )
-    injectTooltip(
-        setupSecurityPage,
-        f'<td style="visibility:hidden">$TOOLTIP_{section}_{parameter}</td>',
-        f"<td>{htmlTooltip}</td>",
-    )
+    # Clean up links for AI-on-the-edge docs
+    html = html.replace("a href", "a target=_blank href")
+    html = html.replace('href="../', 'href="https://jomjol.github.io/AI-on-the-edge-device-docs/')
+    html = html.replace("../img/", "/")
 
+    # Store in dict
+    key = f"{section}_{parameter}"
+    tooltip_database[key] = html
+
+    # Update all relevant HTML pages to point to this key
+    for page in pagesToUpdate:
+        update_html_triggers(page, section, parameter)
 
 # -------------------------------------------------------------------------------------------------
-# Generate parameter tooltips
+# Main Execution
 # -------------------------------------------------------------------------------------------------
-print(f"Generate parameter tooltips...")
+print(f"Generating modern centralized tooltips...")
+
+# 1. Prepare HTML build directory and copy source HTML tree first
+os.makedirs(htmlTempDir, exist_ok=True)
+if os.path.isdir(htmlSourceDir):
+    print(f"Prepare html folder...")
+    shutil.copytree(htmlSourceDir, htmlTempDir, dirs_exist_ok=True)
+
+# 2. Copy parameter-help images directly to htmlTempDir root to match root-relative URLs (e.g., ../img/ -> /)
+paramImgFolder = os.path.join(parameterDocsFolder, "img")
+if os.path.isdir(paramImgFolder):
+    for imgFile in glob.glob(os.path.join(paramImgFolder, "*")):
+        if os.path.isfile(imgFile):
+            print(f"Prepare images folder...")
+            shutil.copy2(imgFile, htmlTempDir)
+
+# 3. Process parameter documentation markdown files
 folders = sorted(d for d in glob.glob(os.path.join(parameterDocsFolder, "*")) if os.path.isdir(d))
 
 for folder in folders:
     folderName = os.path.basename(folder)
-
-    files = sorted(f for f in glob.glob(os.path.join(folder, "*")) if os.path.isfile(f))
-
     if folderName.lower() == "img":
-        for file in files:
-            shutil.copy2(file, docsMainFolder)
-    else:
-        for file in files:
-            if not file.endswith(".md"):
-                continue
-            parameter = os.path.splitext(os.path.basename(file))[0]
-            parameter = parameter.replace("<", "").replace(">", "")
-            generateHtmlTooltip(folderName.lower(), parameter.lower(), file)
+        continue
 
-print(f"Parameter tooltip generation completed")
+    files = sorted(f for f in glob.glob(os.path.join(folder, "*.md")))
+    for file in files:
+        parameter = os.path.splitext(os.path.basename(file))[0].lower()
+        parameter = parameter.replace("<", "").replace(">", "")
+        process_markdown_to_json(folderName.lower(), parameter, file)
+
+# Write JSON file
+json_string = json.dumps(tooltip_database, indent=None) # Dropping indentation saves space before compression
+
+# Raw tooltips (optional)
+# with open(jsonOutPath, "w", encoding="utf-8") as f:
+#     f.write(json_string)
+
+# Gzipped tooltips
+with gzip.open(jsonOutPathGz, "wt", encoding="utf-8", compresslevel=9) as f:
+    f.write(json_string)
+
+print(f"Success: {len(tooltip_database)} tooltips compiled into {jsonOutPathGz}")

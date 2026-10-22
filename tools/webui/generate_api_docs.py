@@ -109,8 +109,11 @@ for folderPath in folders:
     imgFolder = os.path.join(folderPath, "img")
     if os.path.exists(imgFolder):
         for imgFile in sorted(glob.glob(os.path.join(imgFolder, "*"))):
-            if os.path.isfile(imgFile):
-                shutil.copy2(imgFile, htmlTempDir + "/")
+            if not os.path.isfile(imgFile):
+                continue
+            if os.path.basename(imgFile).lower() in ("thumbs.db", "desktop.ini"):
+                continue
+            shutil.copy2(imgFile, htmlTempDir)
 
 # Write markdown files to HTML folder
 for apiType, outputFile in apiFiles.items():
