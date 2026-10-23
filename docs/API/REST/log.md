@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-### REST API Endpoint: `/log`
+### REST API Endpoint: `log`
 
 `http://IP-ADDRESS/log`
 

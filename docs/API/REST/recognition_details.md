@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API Endpoint: `/recognition_details`
+## REST API Endpoint: `recognition_details`
 
 `http://IP-ADDRESS/recognition_details`
 

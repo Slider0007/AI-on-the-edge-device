@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: config
+## REST API Endpoint: `config`
 
 `http://IP-ADDRESS/config`
 

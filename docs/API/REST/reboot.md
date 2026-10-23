@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API Endpoint: `/reboot`
+## REST API Endpoint: `reboot`
 
 `http://IP-ADDRESS/reboot`
 

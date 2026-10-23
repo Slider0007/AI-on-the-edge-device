@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API Endpoint: `/cycle_start`
+## REST API Endpoint: `cycle_start`
 
 `http://IP-ADDRESS/cycle_start`
 

@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: img_tmp
+## REST API Endpoint: `img_tmp`
 
 `http://IP-ADDRESS/img_tmp`
 

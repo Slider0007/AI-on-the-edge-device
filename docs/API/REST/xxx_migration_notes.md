@@ -4,7 +4,7 @@
 
 ### Migration from v17.x to v18.x
 
-No endpoints removed or renamed, but check chnagelog and/or API description for changes of existing APIs.
+No endpoints removed or renamed, but check changelog and/or API description for changes of existing APIs.
 
 ### Migration from v16.x to v17.x
 

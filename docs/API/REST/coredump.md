@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: coredump
+## REST API Endpoint: `coredump`
 
 `http://IP-ADDRESS/coredump`
 

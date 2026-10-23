@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API Endpoint: `/fileserver`
+## REST API Endpoint: `fileserver`
 
 `http://IP-ADDRESS/fileserver/<path>`
 

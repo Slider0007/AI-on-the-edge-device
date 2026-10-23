@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: camera
+## REST API Endpoint: `camera`
 
 `http://IP-ADDRESS/camera`
 
@@ -16,7 +16,8 @@ Payload:
         - Content type: `HTML`
         - Content: `camera:vx`
     - `capture` Capture image (single shot) with given parameter set and response either to REST API or save to SD card
-      - Full or delta parameter update is possible
+      - If no parameter at all is handed over, actual stored parametrization is used
+      - Full or delta parametrization is possible
       - Possible parameter:
         - `flashtime` Flash Time [100 .. &infin; milliseconds]
         - `flashintensity` Flash Intensity [0 .. 100 %]

@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API Endpoint: `/upload`
+## REST API Endpoint: `upload`
 
 `http://IP-ADDRESS/upload/<path>`
 

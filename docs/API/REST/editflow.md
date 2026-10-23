@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API Endpoint: `/editflow`
+## REST API Endpoint: `editflow`
 
 `http://IP-ADDRESS/editflow?task=<action>`
 
