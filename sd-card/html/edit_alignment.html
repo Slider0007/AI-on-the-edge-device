@@ -259,9 +259,9 @@
         resultMsg: 'Marker successfully updated',
         httpObj: {
           405: (r) => ({
-            msg: `Marker update only possible in any IDLE state. Wait a few moments and repeat action. [${String(r.data).split(' | ')[1]?.trim() || 'Unknown State'}]`,
+            msg: `Marker update available in IDLE state only. Please retry shortly. [${String(r.data).split(' | ')[1]?.trim() || 'Unknown State'}]`,
             type: 'warning',
-            time: 4000,
+            time: 2000,
           }),
         },
       });
