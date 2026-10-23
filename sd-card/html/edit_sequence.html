@@ -220,17 +220,11 @@
                 <tr>
                   <td>
                     x
-                    <input type="number" id="refx" min="1" onchange="
-                          !validity.rangeUnderflow || (value = 1);
-                          onValueManualChanged();
-                        " />
+                    <input type="number" id="refx" min="1" onchange="!validity.rangeUnderflow || (value = 1); onValueManualChanged();" />
                   </td>
                   <td>
                     Δx
-                    <input type="number" id="refdx" min="1" onchange="
-                          !validity.rangeUnderflow || (value = 1);
-                          onValueManualChangedDx();
-                        " />
+                    <input type="number" id="refdx" min="1" onchange="!validity.rangeUnderflow || (value = 1); onValueManualChangedDx();" />
                   </td>
                   <td class="digit">
                     <input type="checkbox" id="lockAspectRatio" value="1" onclick="onClickLockAspectRatio()" checked />
@@ -244,17 +238,11 @@
                 <tr>
                   <td>
                     y
-                    <input type="number" id="refy" min="1" onchange="
-                          !validity.rangeUnderflow || (value = 1);
-                          onValueManualChanged();
-                        " />
+                    <input type="number" id="refy" min="1" onchange="!validity.rangeUnderflow || (value = 1); onValueManualChanged();" />
                   </td>
                   <td>
                     Δy
-                    <input type="number" id="refdy" min="1" onchange="
-                          !validity.rangeUnderflow || (value = 1);
-                          onValueManualChanged();
-                        " />
+                    <input type="number" id="refdy" min="1" onchange="!validity.rangeUnderflow || (value = 1); onValueManualChanged();" />
                   </td>
                   <td class="digit">
                     <input type="checkbox" id="lockSizesDigit" value="1" onclick="onClickLockSizes()" checked />
@@ -270,10 +258,8 @@
                   <td class="digit">
                     <input type="checkbox" id="lockSpaceEquidistant" value="1" onclick="onClickLockSpaceEquidistant()" checked />
                     <label for="lockSpaceEquidistant">Keep equidistance of
-                      <input style="margin-right: 0px; width: 40px" type="number" id="space" min="0" onchange="
-                            !validity.rangeUnderflow || (value = 0);
-                            onValueManualChangedSpace();
-                          " />
+                      <input style="margin-right: 0px; width: 40px" type="number" id="space" min="0"
+                        onchange="!validity.rangeUnderflow || (value = 0);onValueManualChangedSpace();" />
                       between all ROIs</label>
                   </td>
                   <td class="analog">
@@ -349,12 +335,16 @@
       if (jsonConfigModifiedDelta.digit.enabled) {
         setClassVisibility('visibilityDigitAnalog', jsonConfigModifiedDelta.analog.enabled);
         const digitOpt = document.querySelector("#roiTypeSelection option[value='digit']");
+
         if (digitOpt) digitOpt.disabled = false;
+
         document.getElementById('roiTypeSelection').value = 'digit';
       } else {
         setClassVisibility('visibilityDigitAnalog', false);
         const digitOpt = document.querySelector("#roiTypeSelection option[value='digit']");
+
         if (digitOpt) digitOpt.disabled = true;
+
         document.getElementById('roiTypeSelection').value = 'analog';
       }
       RefreshROI();
@@ -374,12 +364,16 @@
       if (jsonConfigModifiedDelta.analog.enabled) {
         setClassVisibility('visibilityDigitAnalog', jsonConfigModifiedDelta.digit.enabled);
         const analogOpt = document.querySelector("#roiTypeSelection option[value='analog']");
+
         if (analogOpt) analogOpt.disabled = false;
+
         document.getElementById('roiTypeSelection').value = 'analog';
       } else {
         setClassVisibility('visibilityDigitAnalog', false);
         const analogOpt = document.querySelector("#roiTypeSelection option[value='analog']");
+
         if (analogOpt) analogOpt.disabled = true;
+
         document.getElementById('roiTypeSelection').value = 'digit';
       }
       RefreshROI();
@@ -410,10 +404,13 @@
       if (promptResult === null) {
         return; //break out of the function early because prompt was aborted
       }
-      let sequenceName = promptResult.toLowerCase();
-      let erg = CreateNumberSequence(sequenceName);
+
+      const sequenceName = promptResult.toLowerCase();
+      const erg = CreateNumberSequence(sequenceName);
+
       if (erg != '') firework.launch(erg, 'danger', 30000);
       else fillSequenceSelectionOptions(sequenceName);
+
       onTypeChanged();
     }
 
@@ -421,43 +418,31 @@
       if (sequenceName.length == 0) {
         return 'Number sequence name must not be empty';
       }
-      if (
-        sequenceName.indexOf('.') >= 0 ||
-        sequenceName.indexOf(',') >= 0 ||
-        sequenceName.indexOf(' ') >= 0 ||
-        sequenceName.indexOf('"') >= 0
-      ) {
+
+      if (sequenceName.indexOf('.') >= 0 || sequenceName.indexOf(',') >= 0 || sequenceName.indexOf(' ') >= 0 || sequenceName.indexOf('"') >= 0) {
         return 'Number sequence name must not contain , . " or a space';
       }
+
       for (let i = 0; i < jsonConfigModifiedDelta.numbersequences.sequence.length; ++i) {
         if (jsonConfigModifiedDelta.numbersequences.sequence[i]['sequencename'] == sequenceName)
           return 'Number sequence name is already existing';
       }
-      jsonConfigModifiedDelta.numbersequences.sequence.push({
-        sequenceid: -1,
-        sequencename: sequenceName
-      });
-      jsonConfigModifiedDelta.digit.sequence.push({
-        sequenceid: -1,
-        sequencename: sequenceName,
-        roi: []
-      });
-      jsonConfigModifiedDelta.analog.sequence.push({
-        sequenceid: -1,
-        sequencename: sequenceName,
-        roi: []
-      });
+
+      jsonConfigModifiedDelta.numbersequences.sequence.push({ sequenceid: -1, sequencename: sequenceName });
+      jsonConfigModifiedDelta.digit.sequence.push({ sequenceid: -1, sequencename: sequenceName, roi: [] });
+      jsonConfigModifiedDelta.analog.sequence.push({ sequenceid: -1, sequencename: sequenceName, roi: [] });
       return '';
     }
 
     function onClickRenameSequence() {
-      let sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
+      const sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
       const promptResult = prompt('Please enter a new name for the selected number sequence', sequenceName);
       if (promptResult === null) {
         return; //break out of the function early because prompt was aborted
       }
-      let sequenceNameNew = promptResult.toLowerCase();
-      let erg = RenameNumberSequence(sequenceSelection.selectedIndex, sequenceNameNew);
+      const sequenceNameNew = promptResult.toLowerCase();
+      const erg = RenameNumberSequence(sequenceSelection.selectedIndex, sequenceNameNew);
+
       if (erg != '') firework.launch(erg, 'danger', 5000);
       else fillSequenceSelectionOptions(sequenceNameNew);
     }
@@ -466,12 +451,7 @@
       if (sequenceNameNew.length == 0) {
         return 'Number sequence name must not be empty';
       }
-      if (
-        sequenceNameNew.indexOf('.') >= 0 ||
-        sequenceNameNew.indexOf(',') >= 0 ||
-        sequenceNameNew.indexOf(' ') >= 0 ||
-        sequenceNameNew.indexOf('"') >= 0
-      ) {
+      if (sequenceNameNew.indexOf('.') >= 0 || sequenceNameNew.indexOf(',') >= 0 || sequenceNameNew.indexOf(' ') >= 0 || sequenceNameNew.indexOf('"') >= 0) {
         return 'Number sequence name must not contain , . " or a space';
       }
       for (let i = 0; i < jsonConfigModifiedDelta.numbersequences.sequence.length; ++i) {
@@ -479,6 +459,7 @@
           return 'Number sequence name is already existing';
       }
       if (idx == -1) return 'Invalid number sequence index';
+
       jsonConfigModifiedDelta.numbersequences.sequence[idx].sequencename = sequenceNameNew;
       jsonConfigModifiedDelta.digit.sequence[idx]['sequencename'] = sequenceNameNew;
       jsonConfigModifiedDelta.analog.sequence[idx]['sequencename'] = sequenceNameNew;
@@ -487,7 +468,8 @@
 
     function onClickDeleteSequence() {
       if (confirm('The entire number sequence will be removed.\n Do you really want to proceed?')) {
-        let erg = DeleteNumberSequence(sequenceSelection.selectedIndex);
+        const erg = DeleteNumberSequence(sequenceSelection.selectedIndex);
+
         if (erg != '') firework.launch(erg, 'danger', 5000);
         fillSequenceSelectionOptions();
       }
@@ -497,6 +479,7 @@
     function DeleteNumberSequence(idx) {
       if (jsonConfigModifiedDelta.numbersequences.sequence.length == 1)
         return 'One number sequence is mandatory. Therefore this cannot be deleted';
+
       jsonConfigModifiedDelta.numbersequences.sequence.splice(idx, 1);
       jsonConfigModifiedDelta.digit.sequence.splice(idx, 1);
       jsonConfigModifiedDelta.analog.sequence.splice(idx, 1);
@@ -510,8 +493,8 @@
     }
 
     function onClickNewROI() {
-      let sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
-      let roiSelection = document.getElementById('ROISelect');
+      const sequenceName = sequenceSelection.options[sequenceSelection.selectedIndex].text;
+      const roiSelection = document.getElementById('ROISelect');
       if (typeSelection.value == 'digit') {
         if (jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length > 0) {
           if (jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length > 1) {
@@ -520,14 +503,12 @@
               parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].x) -
               parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[0].dx);
           }
-          let roiX =
+          const roiX =
             parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].x) +
             parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].dx) +
             parseInt(space);
-          erg = CreateROI(
-            'digit',
-            sequenceName,
-            roiX,
+
+          erg = CreateROI('digit', sequenceName, roiX,
             parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].y),
             parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].dx),
             parseInt(jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].dy),
@@ -547,18 +528,19 @@
               parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].x) -
               parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[0].dx);
           }
-          let roiX =
+          const roiX =
             parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].x) +
             parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].dx);
-          erg = CreateROI(
-            'analog',
-            sequenceName,
-            roiX,
+
+          erg = CreateROI('analog', sequenceName, roiX,
             parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].y),
             parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].dx),
             parseInt(jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelection.length - 1].dy),
           );
-        } else erg = CreateROI('analog', sequenceName, 15, 140, 100, 100);
+        } else {
+          erg = CreateROI('analog', sequenceName, 15, 140, 100, 100);
+        }
+
         if (erg != '') {
           firework.launch(erg, 'danger', 30000);
         } else {
@@ -572,22 +554,9 @@
       for (i = 0; i < jsonConfigModifiedDelta[type]['sequence'].length; ++i) {
         if (jsonConfigModifiedDelta[type]['sequence'][i]['sequencename'] == sequenceName) {
           if (typeSelection.value == 'digit') {
-            jsonConfigModifiedDelta[type]['sequence'][i]['roi'].push({
-              x: parseInt(x),
-              y: parseInt(y),
-              dx: parseInt(dx),
-              dy: parseInt(dy),
-              ar: dx / dy,
-            });
+            jsonConfigModifiedDelta[type]['sequence'][i]['roi'].push({ x: parseInt(x), y: parseInt(y), dx: parseInt(dx), dy: parseInt(dy), ar: dx / dy });
           } else if (typeSelection.value == 'analog') {
-            jsonConfigModifiedDelta[type]['sequence'][i]['roi'].push({
-              x: parseInt(x),
-              y: parseInt(y),
-              dx: parseInt(dx),
-              dy: parseInt(dy),
-              ccw: false,
-              ar: dx / dy,
-            });
+            jsonConfigModifiedDelta[type]['sequence'][i]['roi'].push({ x: parseInt(x), y: parseInt(y), dx: parseInt(dx), dy: parseInt(dy), ccw: false, ar: dx / dy });
           }
           return '';
         }
@@ -601,12 +570,14 @@
       }
       if (typeSelection.value == 'digit') {
         jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.splice(roiSelected, 1);
+
         if (roiSelected > jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length - 1) {
           roiSelected = jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi.length - 1;
         }
         RefreshROI();
       } else if (typeSelection.value == 'analog') {
         jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.splice(roiSelected, 1);
+
         if (roiSelected > jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1) {
           roiSelected = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1;
         }
@@ -680,8 +651,7 @@
     }
 
     function onClickCCW() {
-      jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ccw =
-        document.getElementById('CCW').checked;
+      jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ccw = document.getElementById('CCW').checked;
       RefreshROI();
     }
 
@@ -1363,9 +1333,11 @@
     }
 
     function mouseDown(e) {
-      let zw = getCoords(this);
-      rect.startX = e.pageX - zw.left;
-      rect.startY = e.pageY - zw.top;
+      const coords = getCoords(this);
+      rect.startX = e.pageX - coords.left;
+      rect.startY = e.pageY - coords.top;
+      rect.centerX = rect.startX;
+      rect.centerY = rect.startY;
       document.getElementById('refx').value = rect.startX;
       document.getElementById('refy').value = rect.startY;
       drag = true;
@@ -1393,42 +1365,48 @@
         if (jsonConfigModifiedDelta[typeSelection.value].sequence[sequenceSelection.selectedIndex].roi.length == 0) {
           return;
         }
-        let zw = getCoords(this);
+        const coords = getCoords(this);
+        const mouseX = e.pageX - coords.left;
+        const mouseY = e.pageY - coords.top;
+
         if (typeSelection.value == 'digit') {
           if (lockAspectRatio) {
-            rect.h = e.pageY - zw.top - rect.startY;
+            rect.h = mouseX - rect.startY;
             rect.w = Math.round(rect.h * jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
           } else {
-            rect.w = e.pageX - zw.left - rect.startX;
-            rect.h = e.pageY - zw.top - rect.startY;
+            rect.w = mouseX - rect.startX;
+            rect.h = mouseX - rect.startY;
           }
           document.getElementById('refdx').value = rect.w;
           document.getElementById('refdy').value = rect.h;
           RefreshDraw();
         } else if (typeSelection.value == 'analog') {
-          if (lockAspectRatioAnalog) {
-            rect.h = e.pageY - zw.top - rect.startY;
+          if (lockAspectRatio) {
+            rect.h = Math.abs(mouseY - rect.centerY) * 2;
             rect.w = Math.round(rect.h * jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
           } else {
-            rect.w = e.pageX - zw.left - rect.startX;
-            rect.h = e.pageY - zw.top - rect.startY;
+            rect.w = Math.abs(mouseX - rect.centerX) * 2;
+            rect.h = Math.abs(mouseY - rect.centerY) * 2;
           }
-          document.getElementById('refdx').value = rect.w;
-          document.getElementById('refdy').value = rect.h;
+
+          rect.startX = rect.centerX - rect.w / 2;
+          rect.startY = rect.centerY - rect.h / 2;
+          document.getElementById("refx").value = Math.round(rect.startX);
+          document.getElementById("refy").value = Math.round(rect.startY);
           RefreshDraw();
         }
       } else {
         RefreshDraw();
-        let zw = getCoords(this);
-        let x = e.pageX - zw.left;
-        let y = e.pageY - zw.top;
+        const coords = getCoords(this);
+        const mouseX = e.pageX - coords.left;
+        const mouseY = e.pageY - coords.top;
         context.lineWidth = 1;
         context.strokeStyle = 'rgb(160, 160, 160)';
         context.beginPath();
-        context.moveTo(0, y);
+        context.moveTo(0, mouseY);
         context.lineTo(canvas.width, y);
-        context.moveTo(x, 0);
-        context.lineTo(x, canvas.height);
+        context.moveTo(mouseX, 0);
+        context.lineTo(mouseX, canvas.height);
         context.stroke();
       }
     }
