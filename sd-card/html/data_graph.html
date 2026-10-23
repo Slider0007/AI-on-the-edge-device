@@ -232,7 +232,7 @@
 
       const datasets = await Promise.all(
         filesInRange.map(async (f) => {
-          const res = await apiCallNotify(`/fileserver/log/data/${f}`, { timeout: 30000 }, { action: `Fetch ${f}` });
+          const res = await apiCallNotify(`/fileserver/log/data/${f}`, { timeout: 60000 }, { action: `Fetch ${f}` });
           if (!res.ok) throw new Error(`Failed to fetch ${f} (${res.status ?? res.error})`);
 
           fetchedFiles.set(f, res.data);
