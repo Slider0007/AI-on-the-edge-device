@@ -12,7 +12,7 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
   },
   "takeimage": {
     "flashlight": {
-      "flashtime": 2000,
+      "flashtime": 1000,
       "flashintensity": 50
     },
     "camera": {
@@ -400,10 +400,6 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
       "overviewpage": {
         "enabled": true,
         "refreshtime": 5
-      },
-      "datagraphpage": {
-        "enabled": false,
-        "refreshtime": 60
       }
     }
   }

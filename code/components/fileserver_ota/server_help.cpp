@@ -252,52 +252,6 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
 }
 
 
-/* bool isValidIsoTimestamp(const char *isoStr)
-{
-    if (!isoStr) {
-        return false;
-    }
-
-    // Strictly accept 16 chars (YYYY-MM-DDTHH:MM) or 19 chars (YYYY-MM-DDTHH:MM:SS)
-    size_t len = strlen(isoStr);
-    if (len != 16 && len != 19) {
-        return false;
-    }
-
-    // Delimiters
-    if (isoStr[4] != '-' || isoStr[7] != '-') {
-        return false;
-    }
-    if (isoStr[10] != 'T' && isoStr[10] != ' ') {
-        return false;
-    }
-    if (isoStr[13] != ':') {
-        return false;
-    }
-
-    // Digits for YYYY-MM-DD HH:MM
-    for (int i = 0; i < 16; i++) {
-        if (i == 4 || i == 7 || i == 10 || i == 13) {
-            continue;
-        }
-        if (!isdigit(static_cast<unsigned char>(isoStr[i]))) {
-            return false;
-        }
-    }
-
-    // Seconds (:SS)
-    if (len == 19) {
-        if (isoStr[16] != ':') {
-            return false;
-        }
-        if (!isdigit(static_cast<unsigned char>(isoStr[17])) || !isdigit(static_cast<unsigned char>(isoStr[18]))) {
-            return false;
-        }
-    }
-
-    return true;
-} */
-
 bool isValidIsoTimestamp(const char *isoStr)
 {
     if (!isoStr) {

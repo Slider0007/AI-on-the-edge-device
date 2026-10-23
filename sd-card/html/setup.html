@@ -402,7 +402,7 @@
         </ol>
         <hr />
 
-        <h3>Actions / Diagnostic</h3>
+        <h3>Further Actions</h3>
         <div class="button-group">
           <button type="button" class="button button-small" onclick="openLogModal()">Show Log</button>
           <button type="button" class="button button-small" onclick="window.location.replace(getDomainname() + '/sys_reboot.html?v=$COMMIT_HASH#reboot');">Reboot
@@ -894,6 +894,7 @@
         jsonConfigModifiedDelta.operationmode.opmode = 1; // Switch to automatic mode
 
         sessionStorage.removeItem('setupStep');
+        document.cookie = 'page=dashboard.html?v=$COMMIT_HASH;path=/;SameSite=Lax';
 
         try {
           firework.launch(isAbort ? 'Initial setup aborted' : 'Initial setup completed', isAbort ? 'warning' : 'success', 10000);

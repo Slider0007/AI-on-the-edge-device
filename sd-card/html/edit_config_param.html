@@ -2866,47 +2866,6 @@
                   </td>
                   <td style="visibility: hidden">$TOOLTIP_webui_autorefresh_overviewpage_refreshtime</td>
                 </tr>
-
-                <tr>
-                  <td style="padding: 15px 12px 5px 12px; border-top: 1px solid var(--border)" colspan="3">
-                    <b style="color: var(--text-secondary); text-transform: uppercase">Data Graph & Data Viewer</b>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="indent1">
-                    <span>Page Auto Refresh</span>
-                  </td>
-                  <td>
-                    <form id="webui_autorefresh_datagraphpage_enabled_form">
-                      <select class="classvisibility_init" name="webui.autorefresh.datagraphpage.enabled" id="webui_autorefresh_datagraphpage_enabled_value" onchange="
-                            setClassVisibility('classvisibility_webui_autorefresh_datagraphpage_enabled', this.value);
-                            gatherChangedParameter(this.form);
-                          ">
-                        <option value="false" selected>Disabled</option>
-                        <option value="true">Enabled</option>
-                      </select>
-                    </form>
-                  </td>
-                  <td style="visibility: hidden">$TOOLTIP_webui_autorefresh_datagraphpage_enabled</td>
-                </tr>
-
-                <tr class="classvisibility_webui_autorefresh_datagraphpage_enabled">
-                  <td class="indent2">
-                    <span>Refresh Time</span>
-                  </td>
-                  <td>
-                    <form id="webui_autorefresh_datagraphpage_refreshtime_form">
-                      <input required type="number" min="1" value="60" name="webui.autorefresh.datagraphpage.refreshtime"
-                        id="webui_autorefresh_datagraphpage_refreshtime_value" onchange="
-                            !validity.rangeUnderflow || (value = 1);
-                            gatherChangedParameter(this.form, true);
-                          " />
-                      Seconds
-                    </form>
-                  </td>
-                  <td style="visibility: hidden">$TOOLTIP_webui_autorefresh_datagraphpage_refreshtime</td>
-                </tr>
               </tbody>
             </table>
           </div>

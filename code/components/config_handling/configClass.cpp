@@ -818,9 +818,6 @@ void ConfigClass::parseSectionWebUi(bool unityTest)
 
     cJsonUtils::parseBool(webui, {"autorefresh", "overviewpage", "enabled"}, section.autoRefresh.overviewPage.enabled);
     cJsonUtils::parseIntClampedMin(webui, {"autorefresh", "overviewpage", "refreshtime"}, section.autoRefresh.overviewPage.refreshTime, 1);
-    cJsonUtils::parseBool(webui, {"autorefresh", "datagraphpage", "enabled"}, section.autoRefresh.dataGraphPage.enabled);
-    cJsonUtils::parseIntClampedMin(webui, {"autorefresh", "datagraphpage", "refreshtime"}, section.autoRefresh.dataGraphPage.refreshTime,
-                                   1);
 }
 
 
@@ -1240,10 +1237,6 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     cJSON *webuiAutorefreshOverview = addObj(webuiAutorefresh, "overviewpage");
     addEl(webuiAutorefreshOverview, "enabled", cfgDataTemp.sectionWebUi.autoRefresh.overviewPage.enabled);
     addEl(webuiAutorefreshOverview, "refreshtime", cfgDataTemp.sectionWebUi.autoRefresh.overviewPage.refreshTime);
-
-    cJSON *webuiAutorefreshDataGraph = addObj(webuiAutorefresh, "datagraphpage");
-    addEl(webuiAutorefreshDataGraph, "enabled", cfgDataTemp.sectionWebUi.autoRefresh.dataGraphPage.enabled);
-    addEl(webuiAutorefreshDataGraph, "refreshtime", cfgDataTemp.sectionWebUi.autoRefresh.dataGraphPage.refreshTime);
 
     // Print to preallocated buffer
     jsonBuffer[0] = '\0'; // Reset content

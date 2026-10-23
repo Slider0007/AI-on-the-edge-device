@@ -231,7 +231,7 @@ struct CfgData {
     // Take Image
     struct SectionTakeImage {
         struct Flashlight {
-            int flashTime = 2000;
+            int flashTime = 1000;
             int flashIntensity = 50;
         } flashlight;
         struct Camera {
@@ -474,10 +474,6 @@ struct CfgData {
                 bool enabled = true;
                 int refreshTime = 5;
             } overviewPage;
-            struct DataGraphPage {
-                bool enabled = false;
-                int refreshTime = 60;
-            } dataGraphPage;
         } autoRefresh;
     } sectionWebUi;
 };

@@ -357,8 +357,7 @@
 
       // Load data
       try {
-        await Promise.all([
-          loadConfig().then(() => loadHostname()), checkFwVersion(), homeAssistantSendDiscoveryVisibility()]);
+        await Promise.all([loadConfig().then(() => loadHostname()), checkFwVersion(), homeAssistantSendDiscoveryVisibility()]);
       } catch (e) {
         console.error('Initialization failed', e);
       }
