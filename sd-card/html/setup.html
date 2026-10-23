@@ -121,8 +121,7 @@
       border: 0pt;
       border-collapse: collapse;
       table-layout: fixed;
-      width: 700px;
-      margin-block-start: 10px;
+      width: 100%;
     }
 
     th {
@@ -401,6 +400,16 @@
             Configure WebUI security and complete setup
           </li>
         </ol>
+        <hr />
+
+        <h3>Actions / Diagnostic</h3>
+        <div class="button-group">
+          <button type="button" class="button button-small" onclick="openLogModal()">Show Log</button>
+          <button type="button" class="button button-small" onclick="window.location.replace(getDomainname() + '/sys_reboot.html?v=$COMMIT_HASH#reboot');">Reboot
+            Device</button>
+          <button type="button" class="button button-small" onclick="window.location.replace(getDomainname() + '/sys_ota.html?v=$COMMIT_HASH');">OTA Update</button>
+          <button type="button" class="button button-small" onclick="window.location.replace(getDomainname() + '/fileserver/');">File Server</button>
+        </div>
       </div>
 
       <!-- Step 1: Flashlight Setup & Lens Focus Adjustment -->
@@ -408,8 +417,8 @@
         <div class="step-content">
           <strong>Step 1: Basic Flashlight Setup & Lens Focus Adjustment</strong>
           <p>
-            Configure flashlight basic setup and save flashlight configuration before proceeding. Usually default configuration / mapping is sufficient.
-            Reconfiguration is only required if a customization is required, e.g. driving additional external LEDs or usage of specific pin or LED type, ...<br>
+            Configure flashlight basic setup and save flashlight basic configuration before proceeding. Usually default setup / mapping is sufficient.
+            Reconfiguration is only required if a customization is needed, e.g. drive additional external LEDs, use specific pin or use of specific LED type, ...<br>
             After image is visible in preview, adjust lens focus until image is as sharp as possible. Detailed instructions are available in the
             <a href="https://jomjol.github.io/AI-on-the-edge-device-docs/Reference-Image/#focus" target="_blank">focus adjustment guide</a><br>
             Verify that the flashlight does not create glare in critical processing areas. If the internal LED is insufficient or glare cannot be avoided,
@@ -417,7 +426,7 @@
           </p>
           <p>
             Note 1: Any pending image refresh is blocking saving or step change.<br>
-            Note 2: Camera configuration and flashlight fine-tuning is performed in next step.
+            Note 2: Camera parametrization and flashlight fine-tuning is performed in next step.
           </p>
         </div>
 
