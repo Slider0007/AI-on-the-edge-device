@@ -629,12 +629,15 @@ static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char 
             }
             else {
                 bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed,
-                                        "<td class=\"action-td\"><button class=\"button action-button\" "
-                                        "onclick=\"deleteEntry('%s','%s%s%s')\" title=\"Delete file\">&#10060;</button><button "
-                                        "class=\"button action-button\" onclick=\"downloadEntry('%s','%s%s')\" title=\"Download/Save "
-                                        "file\">&#128190;</button></td>",
-                                        entry->d_name, uripath, entry->d_name, (entry->d_type == DT_DIR) ? "?task=deldir" : "",
-                                        entry->d_name, uripath, entry->d_name);
+                                        "<td class=\"action-td\">"
+                                        "<button class=\"button action-button\" data-name=\"%s\" data-path=\"%s\" data-isdir=\"%s\" "
+                                        "onclick=\"deleteEntry(this.dataset.name, this.dataset.path + this.dataset.name + "
+                                        "this.dataset.isdir)\" title=\"Delete file\">&#10060;</button>"
+                                        "<button class=\"button action-button\" data-name=\"%s\" data-path=\"%s\" "
+                                        "onclick=\"downloadEntry(this.dataset.name, this.dataset.path + this.dataset.name)\" "
+                                        "title=\"Download/Save file\">&#128190;</button>"
+                                        "</td>",
+                                        entry->d_name, uripath, (entry->d_type == DT_DIR) ? "?task=deldir" : "", entry->d_name, uripath);
             }
         }
 

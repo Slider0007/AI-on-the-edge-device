@@ -610,9 +610,11 @@
       saveBtn.disabled = true;
 
       try {
-        // Copy markers to config folder first, then save/apply config
-        await apiCopy('/img_tmp/marker1.jpg', '/config/marker1.jpg');
-        await apiCopy('/img_tmp/marker2.jpg', '/config/marker2.jpg');
+        for (let i = 0; i < markerRoi.length; i++) {
+          if (markerRoi[i].modified) {
+            await apiCopy(`/img_tmp/marker${i + 1}.jpg`, `/config/marker${i + 1}.jpg`);
+          }
+        }
         await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
       } catch (error) {
         saveBtn.disabled = false;

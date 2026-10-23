@@ -258,7 +258,7 @@
       }
     }
 
-    function homeAssistantSendDiscoveryVisibility() {
+    async function homeAssistantSendDiscoveryVisibility() {
       try {
         const config = getConfigFromStorage();
 
@@ -274,7 +274,7 @@
       const res = await apiCallNotify('/mqtt?task=publish_ha_discovery', {}, { action: 'HA discovery request' });
       if (!res.ok) return;
 
-      launchApiFirework('Sending HA discovery topics scheduled. Processing in "Publish to MQTT" state.', 'success', 5000);
+      firework.launch('Sending HA discovery topics scheduled. Processing in "Publish to MQTT" state.', 'success', 5000);
     }
 
     function startLivestream(streamFlashlight) {
@@ -355,9 +355,13 @@
       }
       UI.main.src = page;
 
-      // Load data
       try {
-        await Promise.all([loadConfig().then(() => loadHostname()), checkFwVersion(), homeAssistantSendDiscoveryVisibility()]);
+        await loadConfig();
+        await Promise.all([
+          loadHostname(),
+          homeAssistantSendDiscoveryVisibility(),
+          checkFwVersion()
+        ]);
       } catch (e) {
         console.error('Initialization failed', e);
       }

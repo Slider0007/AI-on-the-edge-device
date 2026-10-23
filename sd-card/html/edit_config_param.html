@@ -271,7 +271,6 @@
                       <select class="classvisibility_init" name="operationmode.opmode" id="operationmode_opmode_value" onchange="
                             setClassVisibility('classvisibility_operationmode_opmode_auto', this.value == 1);
                             setClassVisibility('classvisibility_operationmode_opmode_demomode', this.value >= 0);
-                            this.value >= 0 ? $(operationmode_demomode_enabled_value).trigger('onchange') : null;
                             gatherChangedParameter(this.form, true);
                           ">
                         <option value="-1" selected>Setup</option>
@@ -311,9 +310,9 @@
                     <span>Use Demo Images</span>
                   </td>
                   <td>
-                    <form id="operationmode_demomode_enabled_form">
-                      <select name="operationmode.demomode.enabled" id="operationmode_demomode_enabled_value" onchange="
-                            setClassVisibility('classvisibility_operationmode_demomode_enabled', this.value);
+                    <form id="operationmode_usedemoimages_form">
+                      <select name="operationmode.usedemoimages" id="operationmode_usedemoimages_value" onchange="
+                            setClassVisibility('classvisibility_operationmode_usedemoimages', this.value);
                             gatherChangedParameter(this.form);
                           ">
                         <option value="false" selected>Disabled</option>
@@ -321,7 +320,7 @@
                       </select>
                     </form>
                   </td>
-                  <td style="visibility: hidden">$TOOLTIP_operationmode_demomode_enabled</td>
+                  <td style="visibility: hidden">$TOOLTIP_operationmode_usedemoimages</td>
                 </tr>
               </tbody>
             </table>
@@ -2942,8 +2941,8 @@
       $('#networkContainer').append($('<div>Scanning...</div>'));
       getWlanNetworks()
         .then((networkListObj) => {
-          el.removeChild(el.firstChild); // Remove Scanning...
-          if (networkListObj === 'undefined' || Object.entries(networkListObj.networks).length == 0) {
+          el.replaceChildren(); // Remove Scanning...
+          if (!networkListObj?.networks || Object.keys(networkListObj.networks).length === 0) {
             $('#networkContainer').append($('<div>No networks found</div>'));
             return;
           }
@@ -2976,7 +2975,7 @@
           });
         })
         .catch(() => {
-          el.removeChild(el.firstChild); // Remove Scanning...
+          el.replaceChildren(); // Remove Scanning...
           $('#networkContainer').append($('<div>No networks found</div>'));
           return;
         });

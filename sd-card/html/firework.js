@@ -72,13 +72,13 @@ const firework = {
   checkCookies() {
     const name = 'firework=';
     const decodedCookie = decodeURIComponent(document.cookie);
-    const ca = decodedCookie.split(';');
+    const ca = document.cookie.split(';');
 
     for (let i = 0; i < ca.length; i++) {
       let c = ca[i].trim();
       if (c.indexOf(name) === 0) {
         try {
-          const data = JSON.parse(c.substring(name.length));
+          const data = JSON.parse(decodeURIComponent(c.substring(name.length)));
           // Launch with a slight delay so the user sees the page load first
           setTimeout(() => {
             this.launch(data.message, data.type, data.display || 4000);

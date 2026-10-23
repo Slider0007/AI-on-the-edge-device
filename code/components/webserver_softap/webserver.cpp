@@ -655,7 +655,7 @@ esp_err_t handler_main(httpd_req_t *req)
             char buf[128];
             for (const uint32_t currentFlag : criticalFlags) {
                 if (isSetSystemStatusFlag(static_cast<SystemStatusFlag_t>(currentFlag))) {
-                    snprintf(buf, sizeof(buf), "<code>0x%08dX</code> - %s<br>", static_cast<unsigned>(currentFlag),
+                    snprintf(buf, sizeof(buf), "<code>0x%08X</code> - %s<br>", static_cast<unsigned>(currentFlag),
                              getStatusFlagName(currentFlag));
                     message += buf;
                 }

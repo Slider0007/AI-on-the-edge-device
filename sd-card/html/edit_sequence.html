@@ -1023,7 +1023,7 @@
       // Compare with non modified jsonConfig (new sequence initially uses decimalShift = 0)
       for (let i = 0; i < jsonConfig.numbersequences.sequence.length; i++) {
         if (jsonConfig.numbersequences.sequence[i].sequencename == sequenceName) {
-          decimalShift = document.getElementById('decimalShift').value = jsonConfig.postprocessing.sequence[i].decimalscaling;
+          decimalShift = document.getElementById('decimalShift').value = jsonConfig.postprocessing.sequence[i].decimalshift ?? 0;
         }
       }
       if (typeSelection.value == 'digit') {
@@ -1371,17 +1371,17 @@
 
         if (typeSelection.value == 'digit') {
           if (lockAspectRatio) {
-            rect.h = mouseX - rect.startY;
+            rect.h = mouseY - rect.startY;
             rect.w = Math.round(rect.h * jsonConfigModifiedDelta.digit.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
           } else {
             rect.w = mouseX - rect.startX;
-            rect.h = mouseX - rect.startY;
+            rect.h = mouseY - rect.startY;
           }
           document.getElementById('refdx').value = rect.w;
           document.getElementById('refdy').value = rect.h;
           RefreshDraw();
         } else if (typeSelection.value == 'analog') {
-          if (lockAspectRatio) {
+          if (lockAspectRatioAnalog) {
             rect.h = Math.abs(mouseY - rect.centerY) * 2;
             rect.w = Math.round(rect.h * jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi[roiSelected].ar);
           } else {
@@ -1404,7 +1404,7 @@
         context.strokeStyle = 'rgb(160, 160, 160)';
         context.beginPath();
         context.moveTo(0, mouseY);
-        context.lineTo(canvas.width, y);
+        context.lineTo(canvas.width, mouseY);
         context.moveTo(mouseX, 0);
         context.lineTo(mouseX, canvas.height);
         context.stroke();

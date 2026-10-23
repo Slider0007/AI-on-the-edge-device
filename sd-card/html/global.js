@@ -30,7 +30,10 @@ function getTestEnvironmentActive() {
 }
 
 function isDarkTheme() {
-  if (document.documentElement.classList.contains('light')) return false;
+  const cl = document.documentElement.classList;
+  if (cl.contains('dark')) return true;
+  if (cl.contains('light')) return false;
+
   return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 

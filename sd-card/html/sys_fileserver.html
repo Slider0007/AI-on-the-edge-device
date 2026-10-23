@@ -212,7 +212,7 @@
             console.error('Error creating ZIP:', err);
             firework.launch('Failed to create ZIP file', 'danger', 30000);
           } finally {
-            dismissApiFirework(toastId);
+            firework.dismiss(toastId);
           }
         });
 
@@ -277,19 +277,15 @@
           if (filePath.endsWith('/')) return firework.launch('File name not specified after path', 'danger', 5000);
           if (fileInput.files[0].size > MAX_FILE_SIZE) return firework.launch(`File size must be less than ${MAX_FILE_SIZE_STR}`, 'danger', 5000);
 
-          //const toastId = firework.launch('Uploading file. Please wait...', 'warning', 120000);
           fileInput.disabled = true;
           uploadBtn.disabled = true;
 
-          const res = await apiCallNotify(
-            '/upload' + filePath,
-            { method: 'POST', body: fileInput.files[0], timeout: 60000 },
+          const res = await apiCallNotify('/upload' + filePath, { method: 'POST', body: fileInput.files[0], timeout: 60000 },
             {
               action: 'Uploading',
               loadingMsg: "Uploading file. Please wait..."
             });
 
-          //dismissApiFirework(toastId);
           fileInput.disabled = false;
           uploadBtn.disabled = false;
 

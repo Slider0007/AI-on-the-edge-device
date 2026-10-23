@@ -96,7 +96,7 @@ const char *getPathFromUri(char *dest, const char *basePath, const char *uri, si
             const char decoded = static_cast<char>((high << 4) | low);
 
             // Reject URL decoding path separators
-            if (decoded == '/' || decoded == '\\') {
+            if (decoded == '/' || decoded == '\\' || static_cast<unsigned char>(decoded) < 0x20 || decoded == 0x7F) {
                 return NULL;
             }
 
@@ -360,7 +360,7 @@ long getOffsetForTime(FILE *filePtr, const char *targetIso, long fileSize)
                 timestampPtr++; // Increment past the space to the actual date
 
                 const size_t targetLen = strlen(targetIso);
-                const int compareLen = (int)std::min(targetLen, (size_t)16);
+                const int compareLen = (int)std::min(targetLen, (size_t)19);
 
                 bool isBefore = false;
                 // Compare the first 16 characters (YYYY-MM-DD HH:MM)

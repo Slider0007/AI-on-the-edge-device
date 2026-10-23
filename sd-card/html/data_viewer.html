@@ -477,11 +477,7 @@
       const select = document.getElementById('filterSeq');
       const currentVal = select.value;
       select.innerHTML = '<option value="all">All</option>';
-      Array.from(sequenceNames)
-        .sort()
-        .forEach((seq) => {
-          select.add(new Option(seq, seq));
-        });
+      Array.from(sequenceNames).sort().forEach((seq) => { select.add(new Option(seq, seq)); });
       select.value = currentVal;
     }
 
@@ -500,13 +496,23 @@
 
     async function reload() {
       const isDateRangeCtrlDisabled = !document.getElementById('dateRangeCtrl').checked;
-      const startTs = new Date(document.getElementById('startTime').value).getTime();
-      const endTs = new Date(document.getElementById('endTime').value).getTime();
+      let startTs, endTs;
+
+      if (isDateRangeCtrlDisabled) {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        startTs = d.getTime();
+        endTs = startTs + 24 * 3600000 - 1;
+      }
+      else {
+        startTs = new Date(document.getElementById('startTime').value).getTime();
+        endTs = new Date(document.getElementById('endTime').value).getTime();
+      }
 
       try {
         await fetchFilesInTimeRange(isDateRangeCtrlDisabled, startTs, endTs);
         populateSeqSelector();
-        applyFilter();
+        applyFilter(startTs, endTs);
 
         const now = new Date();
         document.getElementById('refreshTimestamp').value = now.toLocaleTimeString([], { hour12: false });
@@ -521,6 +527,28 @@
       let currentProgress = 30;
       bar.style.width = currentProgress + '%';
 
+      if (useTail) {
+        const today = new Date();
+        const p = (n) => n.toString().padStart(2, '0');
+        const todayFilename = `data_${today.getFullYear()}-${p(today.getMonth() + 1)}-${p(today.getDate())}.csv`;
+
+        const res = await apiCallNotify('/data', { timeout: 30000 }, { action: 'Fetch live data tail' });
+        if (res.ok) {
+          fetchedFiles.set(todayFilename, res.data);
+          updateSequenceNames(res.data);
+        } else {
+          console.error('Tail fetch failed:', res.error ?? res.status);
+          firework.launch('Failed to fetch live data', 'danger', 10000);
+        }
+
+        bar.style.width = '100%';
+        setTimeout(() => {
+          bar.style.width = '0%';
+        }, 300);
+        return;
+      }
+
+      // Historical range fetching
       const dataFileListObj = await getDataFileList();
 
       const filesInRange = dataFileListObj.files.filter((f) => {
@@ -537,8 +565,7 @@
           continue;
         }
 
-        const url = useTail ? '/data' : `/fileserver/log/data/${f}`;
-        const res = await apiCallNotify(url, { timeout: 30000 }, { action: `Fetch data file (${f})` });
+        const res = await apiCallNotify(`/fileserver/log/data/${f}`, { timeout: 30000 }, { action: `Fetch data file (${f})` });
 
         if (!res.ok) {
           console.error('Fetch failed | ', f, res.error ?? res.status);
@@ -564,24 +591,27 @@
       }, 300);
     }
 
-    function applyFilter() {
-      const startTs = new Date(document.getElementById('startTime').value).getTime();
-      const endTs = new Date(document.getElementById('endTime').value).getTime();
+    function applyFilter(customStartTs, customEndTs) {
+      const isDateRangeCtrlDisabled = !document.getElementById('dateRangeCtrl').checked;
+      let startTs, endTs;
+
+      if (isDateRangeCtrlDisabled || customStartTs === undefined) {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        startTs = d.getTime();
+        endTs = startTs + 24 * 3600000 - 1;
+      } else {
+        startTs = customStartTs;
+        endTs = customEndTs;
+      }
 
       const sortedFilenames = Array.from(fetchedFiles.keys()).sort((a, b) => {
         return parseFileDate(a) - parseFileDate(b);
       });
 
-      renderTable(
-        sortedFilenames
-          .filter((filename) => {
-            const fTime = parseFileDate(filename);
-            return fTime < endTs && fTime + 86400000 > startTs;
-          })
-          .map((filename) => fetchedFiles.get(filename)),
-        startTs,
-        endTs,
-      );
+      renderTable(sortedFilenames.filter((filename) => {
+        const fTime = parseFileDate(filename); return fTime < endTs && fTime + 86400000 > startTs;
+      }).map((filename) => fetchedFiles.get(filename)), startTs, endTs);
     }
 
     function getVirtualHeaderHeight() {
@@ -604,9 +634,8 @@
       const offset = contentScrollTop - rowIndex * VIRTUAL_ROW_HEIGHT;
 
       return {
-        rowIndex: Math.max(0, Math.min(rowIndex, Math.max(0, virtualRows.length - 1))),
-        offset,
-        atBottom: getScrollState(virtualContainer).atBottom,
+        rowIndex: Math.max(0, Math.min(rowIndex, Math.max(0, virtualRows.length - 1))), offset,
+        atBottom: getScrollState(virtualContainer).atBottom
       };
     }
 
@@ -639,7 +668,7 @@
 
       const headerHeight = getVirtualHeaderHeight();
       const contentScrollTop = Math.max(0, virtualContainer.scrollTop - headerHeight);
-      const viewportHeight = virtualContainer.clientHeight;
+      const viewportHeight = virtualContainer.clientHeight || virtualContainer.offsetHeight || 600;
 
       const firstVisibleRow = Math.floor(contentScrollTop / VIRTUAL_ROW_HEIGHT);
       const visibleRowCount = Math.ceil(viewportHeight / VIRTUAL_ROW_HEIGHT);
@@ -714,9 +743,8 @@
     }
 
     function rowToHtml(row) {
-      const dateDisplay = row.dateMatch
-        ? `<span>${escapeHtml(row.dateMatch[1])}</span> ` + escapeHtml(row.dateMatch[2])
-        : escapeHtml(row.timestamp);
+      const dateDisplay = row.dateMatch ? `<span>${escapeHtml(row.dateMatch[1])}</span> ` + escapeHtml(row.dateMatch[2]) :
+        escapeHtml(row.timestamp);
 
       let ocrHtml = '';
 
@@ -735,7 +763,6 @@
         ocrHtml += `<div class="ocr-value ${confClass}" ${tooltipAttr}tabindex="0">${ocrValue}</div>`;
       }
 
-      //const isModern = !isNaN(row.mscrVal) || !isNaN(row.dscrVal);
       const optionalScoreCells = hasModernFormat ? `
             <td class="numeric-right">
                 ${!isNaN(row.mscrVal) ? row.mscrVal.toFixed(2) : ''}
@@ -781,7 +808,7 @@
         `;
     }
 
-    function renderTable(csvFiles, startTime, endTime) {
+    /* function renderTable(csvFiles, startTime, endTime) {
       const filterStatus = document.getElementById('filterStat').value;
       const filterSeq = document.getElementById('filterSeq').value;
       const container = document.getElementById('scrollContainer');
@@ -864,7 +891,7 @@
               stats.digits[j].count++;
             }
           }
-          else { // @deprecated: Legacy data format support to be removed with next major release
+          else { // @Deprecated: Legacy data format support to be removed with next major release
             mscrVal = NaN;
             dscrVal = NaN;
             ocrValues = cols.slice(8);
@@ -877,20 +904,145 @@
           const statusClass = status === '000' || status === 'E91' ? 'status-ok' : 'status-err';
 
           rows.push({
-            timestamp,
-            dateMatch,
-            seqName,
-            actual: cols[3],
-            raw: cols[2],
-            fallback: cols[4],
-            rateMin: cols[5],
-            rateAbs: cols[6],
-            status,
-            statusClass,
-            mscrVal,
-            dscrVal,
-            ocrValues,
-            ocrConfs,
+            timestamp, dateMatch, seqName, actual: cols[3], raw: cols[2], fallback: cols[4], rateMin: cols[5],
+            rateAbs: cols[6], status, statusClass, mscrVal, dscrVal, ocrValues, ocrConfs
+          });
+        }
+      }
+
+      const thScore = document.getElementById('th-score');
+      const thMinscr = document.getElementById('th-minscr');
+      const thConfText = document.getElementById('th-conf-text');
+
+      if (thScore) thScore.style.display = hasModernFormat ? '' : 'none';
+      if (thMinscr) thMinscr.style.display = hasModernFormat ? '' : 'none';
+      if (thConfText) thConfText.style.display = hasModernFormat ? '' : 'none';
+
+      const mMscr = document.getElementById('m-mscr');
+      const mDscr = document.getElementById('m-dscr');
+      if (mMscr) mMscr.style.display = hasModernFormat ? '' : 'none';
+      if (mDscr) mDscr.style.display = hasModernFormat ? '' : 'none';
+
+      virtualRows = rows;
+      virtualStats = stats;
+
+      updateMeans(stats);
+
+      if (!rows.length) {
+        document.getElementById('dataBody').innerHTML = '<tr><td colspan="11" style="text-align:center;font-style:italic">No data</td></tr>';
+        updateScrollBtnVisibility();
+        return;
+      }
+
+      renderVirtualRows();
+
+      requestAnimationFrame(() => {
+        restoreVirtualPosition(oldPosition);
+      });
+    }*/
+
+    function renderTable(csvFiles, startTime, endTime) {
+      const filterStatus = document.getElementById('filterStat').value;
+      const filterSeq = document.getElementById('filterSeq').value;
+      const container = document.getElementById('scrollContainer');
+      virtualContainer = container;
+
+      const oldPosition = virtualRows.length ? getVirtualPosition() : { rowIndex: 0, offset: 0, atBottom: true };
+
+      const rows = [];
+      const stats = { mscr: { sum: 0, count: 0 }, dscr: { sum: 0, count: 0 }, digits: [] };
+      hasModernFormat = false;
+
+      for (const csvData of csvFiles) {
+        if (!csvData) continue;
+
+        const lines = csvData.split('\n');
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line) continue;
+
+          const cols = line.split(',');
+          if (cols.length < 8) continue;
+
+          const timestamp = cols[0];
+          const ts = new Date(timestamp).getTime();
+
+          if (isNaN(ts) || ts < startTime || ts > endTime) {
+            continue;
+          }
+
+          const seqName = cols[1];
+          const status = cols[7];
+
+          if (filterStatus === 'error' && (status === '000' || status === 'E91')) {
+            continue;
+          }
+
+          if (filterSeq !== 'all' && seqName !== filterSeq) {
+            continue;
+          }
+
+          let mscrVal, dscrVal, ocrValues, ocrConfs;
+          const possibleSeqLen = parseInt(cols[10], 10);
+          const isModernFormatRow = cols.length >= 11 && !isNaN(possibleSeqLen) && cols.length === 11 + (2 * possibleSeqLen);
+
+          if (isModernFormatRow) {
+            hasModernFormat = true;
+            mscrVal = parseFloat(cols[8]);
+            dscrVal = parseFloat(cols[9]);
+            const seqLen = possibleSeqLen;
+
+            if (!isNaN(mscrVal)) {
+              stats.mscr.sum += mscrVal;
+              stats.mscr.count++;
+            }
+            if (!isNaN(dscrVal)) {
+              stats.dscr.sum += dscrVal;
+              stats.dscr.count++;
+            }
+
+            ocrValues = cols.slice(11, 11 + seqLen);
+            const rawConfs = cols.slice(11 + seqLen, 11 + seqLen * 2);
+            ocrConfs = Array.from({ length: seqLen }, (_, j) => {
+              const val = rawConfs[j];
+              return val !== undefined && val !== '' ? parseFloat(val) : NaN;
+            });
+
+            for (let j = 0; j < ocrValues.length; j++) {
+              const val = ocrValues[j];
+              const hasValue = val !== undefined && val !== null && String(val).trim() !== '';
+              const conf = ocrConfs[j];
+              const isValid = !isNaN(conf) && conf !== -100;
+
+              if (!hasValue || !isValid) continue;
+
+              if (!stats.digits[j]) {
+                stats.digits[j] = { sum: 0, count: 0 };
+              }
+              stats.digits[j].sum += conf;
+              stats.digits[j].count++;
+            }
+          }
+          else {
+            mscrVal = NaN;
+            dscrVal = NaN;
+            ocrValues = cols.slice(8);
+            const seqLen = ocrValues.length;
+            if (seqLen === 0) continue;
+            ocrConfs = Array.from({ length: seqLen }, () => NaN);
+          }
+
+          // FAST OPTIMIZATION: Replace regex with lightning-fast string slicing
+          const dateMatch = timestamp.length >= 19
+            ? [timestamp, timestamp.substring(0, 10), timestamp.substring(11, 19)]
+            : null;
+
+          const statusClass = status === '000' || status === 'E91' ? 'status-ok' : 'status-err';
+
+          rows.push({
+            timestamp, dateMatch, seqName, actual: cols[3], raw: cols[2], fallback: cols[4], rateMin: cols[5],
+            rateAbs: cols[6], status, statusClass, mscrVal, dscrVal, ocrValues, ocrConfs
           });
         }
       }

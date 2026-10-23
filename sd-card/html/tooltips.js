@@ -4,6 +4,7 @@
   let showTimeout;
   let hideTimeout;
   let portal;
+  let showToken = 0;
 
   // Initialization: Create portal if it doesn't exist
   function initPortal() {
@@ -46,6 +47,10 @@
 
     if (left < 10) left = rect.right + 5;
 
+    // Clamp left position to stay within the viewport bounds
+    const maxLeft = window.innerWidth - portal.offsetWidth - 10;
+    left = Math.max(10, Math.min(left, maxLeft));
+
     if (top + portal.offsetHeight > window.innerHeight) {
       top = rect.top - portal.offsetHeight - 5;
     }
@@ -67,8 +72,14 @@
 
       if (trigger) {
         showTimeout = setTimeout(async () => {
+          const token = ++showToken;
           const key = trigger.getAttribute('data-help');
-          portal.innerHTML = await getHelp(key);
+          const html = await getHelp(key);
+
+          // If token changed (mouse left or new hover started), discard result
+          if (token !== showToken) return;
+
+          portal.innerHTML = html;
           portal.style.display = 'block';
           portal.style.visibility = 'hidden';
 
@@ -83,8 +94,7 @@
 
   document.addEventListener('mouseout', (e) => {
     const toElement = e.relatedTarget;
-
-    // Immediately stop any pending hide / show when we leave an element
+    showToken++;
     clearTimeout(hideTimeout);
     clearTimeout(showTimeout);
 
@@ -93,6 +103,7 @@
     }
 
     hideTimeout = setTimeout(() => {
+      showToken++;
       if (portal) {
         portal.style.display = 'none';
         portal.style.visibility = 'hidden';

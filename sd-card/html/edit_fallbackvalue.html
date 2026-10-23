@@ -115,14 +115,12 @@
       if (sel.selectedIndex === -1) return;
 
       const sequenceName = sel.options[sel.selectedIndex].text;
-      const cleanValue = parseFloat(document.getElementById('input_fallbackvalue').value.replace(',', '.'));
-
-      if (isNaN(cleanValue)) return firework.launch('Invalid number entered', 'warning', 2000);
-      if (cleanValue < 0) return firework.launch('Fallback value must be >= 0', 'warning', 2000);
+      const inputValue = parseFloat(document.getElementById('input_fallbackvalue').value.replace(',', '.'));
+      if (isNaN(inputValue)) return firework.launch('Invalid number entered', 'warning', 2000);
 
       if (btnEl) btnEl.disabled = true;
 
-      const endpoint = `/set_fallbackvalue?sequence=${encodeURIComponent(sequenceName)}&value=${encodeURIComponent(cleanValue)}`;
+      const endpoint = `/set_fallbackvalue?sequence=${encodeURIComponent(sequenceName)}&value=${encodeURIComponent(inputValue)}`;
       const res = await apiCallNotify(endpoint, {}, {
         action: 'Fallback value update',
         loadingMsg: 'Updating fallback value...',

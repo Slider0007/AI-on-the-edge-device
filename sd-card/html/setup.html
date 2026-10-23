@@ -730,8 +730,8 @@
           <p><b>INITIAL SETUP COMPLETED</b></p>
           <p>Congratulations! You have completed the initial setup and you are now ready to switch to the operational web interface!</p>
           <p>
-            Once you push the button below, the intial setup wizard will be completed and the device will be automatically switch to
-            operational web interface. If configuration is error free, the device will automatically start with first processing. It will take
+            Once you push the button below, the initial setup wizard will be completed and the device will automatically switch to operational
+            web interface. If configuration is error free, the device will automatically start with first processing. It will take
             some time until you get the first reading.
           </p>
           <p><button class="button btn-action btn-wide" onclick="completeSetup()">Complete Setup Wizard</button></p>
@@ -745,7 +745,7 @@
         <div class="warning-box">
           <p><b>INITIAL SETUP ABORTED</b></p>
           <p>
-            Once you push the button below, the intial setup wizard will be aborted and the device will be automatically switch to operational
+            Once you push the button below, the initial setup wizard will be aborted and the device will automatically switch to operational
             web interface. Please be aware: The configuration of the device is not or only partly adapted to your needs!
           </p>
           <p>Configuration can still be adapted / completed using operational web interface.</p>
@@ -897,7 +897,6 @@
         document.cookie = 'page=dashboard.html?v=$COMMIT_HASH;path=/;SameSite=Lax';
 
         try {
-          firework.launch(isAbort ? 'Initial setup aborted' : 'Initial setup completed', isAbort ? 'warning' : 'success', 10000);
           await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
         } catch (error) {
           firework.launch('Saving setup failed. Check config and/or logs.', 'danger', 30000);
@@ -905,7 +904,9 @@
         }
 
         // Loading operational web interface in any case
-        firework.launch('Loading operational web interface...', 'success', 10000);
+        firework.launch(isAbort ? 'Initial setup aborted. Loading operational web interface...' :
+          'Initial setup completed. Loading operational web interface...', isAbort ? 'warning' : 'success', 10000);
+
         setTimeout(() => {
           window.parent.location.assign(getDomainname());
         }, 7000);
@@ -1061,9 +1062,13 @@
           return;
         }
 
+        const previousBlobUrl = imgPreview.src && imgPreview.src.startsWith('blob:') ? imgPreview.src : null;
+        const releasePrevious = () => { if (previousBlobUrl) URL.revokeObjectURL(previousBlobUrl); };
+
         if (showSpinner) {
           imgPreview.classList.add('is-loading');
           imgPreview.src = loaderSpinner;
+          releasePrevious();
         }
 
         // Dynamically compute timeout based on flash time
@@ -1076,7 +1081,7 @@
             parseType: 'blob',
             httpObj: {
               403: (r) => ({
-                msg: 'Camera not detected / supported or not initialized. Check camera module installatiion',
+                msg: 'Camera not detected / supported or not initialized. Check camera module installation',
                 type: 'danger',
                 time: 30000,
               }),
@@ -1091,6 +1096,7 @@
 
           if (res.error || !res.ok) {
             imgPreview.src = noImageAvailable;
+            releasePrevious();
             resolve(false);
             return;
           }
@@ -1100,6 +1106,7 @@
           }
 
           imgPreview.src = URL.createObjectURL(res.data);
+          releasePrevious();
           resolve(true);
 
         } catch (error) {
@@ -1108,6 +1115,7 @@
           }
           stepFlashCfgBusy(false);
           imgPreview.src = noImageAvailable;
+          releasePrevious();
           resolve(false);
         }
       });

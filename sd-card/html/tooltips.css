@@ -14,8 +14,7 @@
   margin: -2px;
   /* Layout & Size */
   width: 600px;
-  min-width: 600px;
-  max-width: 600px;
+  max-width: calc(100vw - 20px);
   box-sizing: border-box;
   font-family: Arial, sans-serif;
   font-size: 14px;
@@ -32,9 +31,7 @@
 }
 
 @media screen and (max-width: 720px) {
-
-  body,
-  html {
+  #tooltip-portal {
     font-family: Arial, sans-serif;
     font-size: 16px;
     -webkit-text-size-adjust: 100%;

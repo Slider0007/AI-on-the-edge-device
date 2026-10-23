@@ -26,12 +26,12 @@
       font-family: monospace;
       font-size: 0.8rem;
       margin-top: 10px;
-      height: 55px;
-      max-height: 55px;
+      height: 58px;
+      max-height: 58px;
       overflow-y: auto;
       padding: 8px;
       border-radius: var(--card-radius);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border);
       display: flex;
       flex-direction: column-reverse;
     }
@@ -62,7 +62,7 @@
       <div class="card">
         <div class="card-header"><span>Backup Configuration</span></div>
         <div class="card-body">
-          <div style="border-bottom: 1px solid var(--border-color)">
+          <div style="border-bottom: 1px solid var(--border)">
             <button class="button btn-wide btn-action" id="startBackupButton" onclick="startBackup()">
               Create Backup
             </button>
@@ -76,15 +76,10 @@
         <div class="card-body">
           <div style="font-weight: bold"><span>A. Partial Restore</span></div>
           <div class="info-box">
-            <strong>💡 Tip: </strong>To restore specific configuration files,
-            upload them individually via the
+            <strong>💡 Tip: </strong>To restore specific configuration files, upload them individually via the
             <a href="/fileserver/config/" target="_self">File Server</a>.
           </div>
-          <div style="
-                font-weight: bold;
-                padding-top: 10px;
-                border-top: 1px solid var(--border);
-              ">
+          <div style="font-weight: bold; padding-top: 10px; border-top: 1px solid var(--border);">
             <span>B. Full Restore</span>
           </div>
           <div class="warning-box">
@@ -93,12 +88,7 @@
           </div>
           <form id="uploadForm" enctype="multipart/form-data" method="post">
             <input type="file" accept=".zip" name="fileSelector" id="fileSelector" onchange="validateFile()" />
-            <div style="
-                  color: var(--text-secondary);
-                  font-size: 0.85rem;
-                  margin-top: 5px;
-                  margin-bottom: 30px;
-                ">
+            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 5px; margin-bottom: 30px;">
               Supported File Type (max. 16MB): *.zip
             </div>
             <button class="button btn-wide btn-action" id="startRestoreButton" type="button" onclick="startRestore()" disabled>
@@ -106,12 +96,7 @@
             </button>
             <div style="margin-top: 20px">
               <progress id="progress-restore" value="0" max="100"></progress>
-              <div style="
-                    display: flex;
-                    justify-content: space-between;
-                    margin-top: 8px;
-                    color: var(--text-secondary);
-                  ">
+              <div style="display: flex; justify-content: space-between; margin-top: 8px; color: var(--text-secondary);">
                 <span id="status">Status: Idle</span>
                 <span id="loadedBytes"></span>
               </div>
@@ -188,11 +173,7 @@
       const url = urls[index];
       const name = getFilenameFromUrl(url);
 
-      setStatus(
-        retry === 0
-          ? `- ${name} (${index + 1}/${urls.length})`
-          : `<span style="color: gray">&nbsp;&nbsp;&nbsp;Retrying (${retry})...</span>`,
-      );
+      setStatus(retry === 0 ? `- ${name} (${index + 1}/${urls.length})` : `<span style="color: gray">&nbsp;&nbsp;&nbsp;Retrying (${retry})...</span>`,);
 
       // Retry with a longer timeout, or give up after MAX_RETRIES
       const retryOrFail = (reason) => {
@@ -248,53 +229,28 @@
       }
 
       const now = new Date();
-      const timestamp =
-        now.getFullYear() +
-        "-" +
-        String(now.getMonth() + 1).padStart(2, "0") +
-        "-" +
-        String(now.getDate()).padStart(2, "0") +
-        "_" +
-        String(now.getHours()).padStart(2, "0") +
-        "-" +
-        String(now.getMinutes()).padStart(2, "0") +
-        "-" +
-        String(now.getSeconds()).padStart(2, "0");
+      const timestamp = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0") + "_" +
+        String(now.getHours()).padStart(2, "0") + "-" + String(now.getMinutes()).padStart(2, "0") + "-" + String(now.getSeconds()).padStart(2, "0");
 
       // Add backup meta data
-      const meta = {
-        app: "AI-on-the-Edge Device [SLFork]",
-        timestamp: timestamp,
-      };
-      zipFiles["meta.json"] = new TextEncoder().encode(
-        JSON.stringify(meta, null, 2),
-      );
+      const meta = { app: "AI-on-the-Edge Device [SLFork]", timestamp: timestamp };
+      zipFiles["meta.json"] = new TextEncoder().encode(JSON.stringify(meta, null, 2));
 
       try {
         const zipData = fflate.zipSync(zipFiles, { level: 6 });
         const backupFileName = `${hostname}_${timestamp}.zip`;
         downloadBlob(zipData, backupFileName);
         setStatus(`Backup completed: ${backupFileName}`);
-        firework.launch(
-          `Backup completed: ${backupFileName}`,
-          "success",
-          5000,
-        );
+        firework.launch(`Backup completed: ${backupFileName}`, "success", 5000);
       } catch (err) {
         console.error("ZIP creation error:", err);
-        setStatus(
-          '<span style="color: red">Failed to create ZIP file. Error: ' +
-          err.message +
-          "</span>",
-        );
+        setStatus('<span style="color: red">Failed to create ZIP file. Error: ' + err.message + "</span>");
         _("startBackupButton").disabled = false;
       }
     }
 
     function downloadBlob(data, filename) {
-      const url = URL.createObjectURL(
-        new Blob([data], { type: "application/zip" }),
-      );
+      const url = URL.createObjectURL(new Blob([data], { type: "application/zip" }));
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;
@@ -312,9 +268,7 @@
     }
 
     function getFilenameFromUrl(url) {
-      const path = url.substring(
-        url.indexOf(CFG_BASE_PATH) + CFG_BASE_PATH.length,
-      );
+      const path = url.substring(url.indexOf(CFG_BASE_PATH) + CFG_BASE_PATH.length);
       return path.split("?")[0]; // Remove any query parameters
     }
 
@@ -362,52 +316,29 @@
         const zip = fflate.unzipSync(zipData);
 
         if (!zip["meta.json"]) {
-          firework.launch(
-            "Backup file cannot be validated ('meta.json' file missing)",
-            "danger",
-            30000,
-          );
+          firework.launch("Backup file cannot be validated ('meta.json' file missing)", "danger", 30000);
           return;
         }
 
         const metaContent = new TextDecoder().decode(zip["meta.json"]);
         const meta = JSON.parse(metaContent);
 
-        if (
-          !meta.app ||
-          meta.app.toLowerCase() !== "ai-on-the-edge device [slfork]"
-        ) {
-          firework.launch(
-            "Backup file invalid (app name: wrong or missing)",
-            "danger",
-            30000,
-          );
+        if (!meta.app || meta.app.toLowerCase() !== "ai-on-the-edge device [slfork]") {
+          firework.launch("Backup file invalid (app name: wrong or missing)", "danger", 30000,);
           return;
         }
 
         // All validations passed
-        firework.launch(
-          "Press 'Restore' to perform the config restore",
-          "success",
-          5000,
-        );
+        firework.launch("Press 'Restore' to perform the config restore", "success", 5000);
         _("startRestoreButton").disabled = false;
       } catch (err) {
-        firework.launch(
-          "Failed to validate ZIP file contents. Check structure and try again.",
-          "danger",
-          30000,
-        );
+        firework.launch("Failed to validate ZIP file contents. Check structure and try again.", "danger", 30000);
         console.error("ZIP validation error:", err);
       }
     }
 
     function startRestore() {
-      firework.launch(
-        "Do not reload this page or switch to another page while the restore is in progress",
-        "warning",
-        90000,
-      );
+      firework.launch("Do not reload this page or switch to another page while the restore is in progress", "warning", 90000);
 
       document.getElementById("startRestoreButton").disabled = true;
       document.getElementById("fileSelector").disabled = true;
@@ -427,24 +358,11 @@
         if (xhttp.status >= 200 && xhttp.status < 300) {
           uploadCompleteHandler({ response: xhttp.responseText });
         } else {
-          uploadErrorHandler({
-            type: "http",
-            status: xhttp.status,
-            statusText: xhttp.statusText,
-            response: xhttp.responseText,
-          });
+          uploadErrorHandler({ type: "http", status: xhttp.status, statusText: xhttp.statusText, response: xhttp.responseText });
         }
       });
-      xhttp.addEventListener(
-        "error",
-        () => uploadErrorHandler({ type: "network" }),
-        false,
-      );
-      xhttp.addEventListener(
-        "abort",
-        () => uploadErrorHandler({ type: "abort" }),
-        false,
-      );
+      xhttp.addEventListener("error", () => uploadErrorHandler({ type: "network" }), false);
+      xhttp.addEventListener("abort", () => uploadErrorHandler({ type: "abort" }), false);
 
       xhttp.open("POST", uploadPath);
       xhttp.withCredentials = true;
@@ -469,33 +387,23 @@
     function uploadProgressHandler(event) {
       const percent = (event.loaded / event.total) * 100;
       _("progress-restore").value = Math.round(percent);
-      _("status").innerHTML =
-        "Status: " + Math.round(percent) + "% uploaded. Please wait...";
-      _("loadedBytes").innerHTML =
-        "Uploaded " +
-        (event.loaded / 1024 / 1024).toFixed(2) +
-        " MB of " +
-        (event.total / 1024 / 1024).toFixed(2) +
-        " MB";
+      _("status").innerHTML = "Status: " + Math.round(percent) + "% uploaded. Please wait...";
+      _("loadedBytes").innerHTML = "Uploaded " + (event.loaded / 1024 / 1024).toFixed(2) + " MB of " + (event.total / 1024 / 1024).toFixed(2) + " MB";
     }
 
     function uploadErrorHandler(event) {
       let message;
       switch (event.type) {
-        case "http":
-          // Server's specific reason (set via httpd_resp_send_err on the device)
-          message =
-            event.response && event.response.trim().length > 0
-              ? event.response.trim()
-              : `HTTP ${event.status} ${event.statusText || ""}`.trim();
+        case 'http': // Server's specific reason
+          message = event.response && event.response.trim().length > 0 ? event.response.trim() : `HTTP ${event.status} ${event.statusText || ""}`.trim();
           break;
         case 'response':
           message = event.response?.trim() || 'Unexpected server response';
           break;
-        case "network":
+        case 'network':
           message = "Network error";
           break;
-        case "abort":
+        case 'abort':
           message = "Upload aborted";
           break;
         default:

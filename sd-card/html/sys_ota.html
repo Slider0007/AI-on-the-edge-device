@@ -122,7 +122,6 @@
     // Max size of an individual file. Make sure this value is same as that set in server_file.c
     const RELEASE_NOTES_URL = 'https://github.com/Slider0007/AI-on-the-edge-device/releases/latest';
 
-    let actionRuntime = 0;
     let updateTimer = null;
 
     function _(el) {
@@ -175,22 +174,14 @@
           // Check if board type of filename matches
           firework.launch("Press 'Install' to perform the OTA update", 'success', 5000);
         } else {
-          firework.launch(
-            'The selected OTA package does not match the detected board type. Please select proper OTA package ' +
-            "or press 'Install' to continue on own risk",
-            'warning',
-            10000,
-          );
+          firework.launch('The selected OTA package does not match the detected board type. Please select proper OTA package ' +
+            "or press 'Install' to continue on own risk", 'warning', 10000,);
         }
       } else if (filename == 'firmware.bin') {
         firework.launch("Press 'Install' to install MCU firmware", 'success', 5000);
       } else if (filename.endsWith('.zip') || filename.endsWith('.bin')) {
         // Warning but still accepted
-        firework.launch(
-          'The selected file does not fully match the expected name pattern. ' + "Press 'Install' to continue on own risk",
-          'warning',
-          10000,
-        );
+        firework.launch('The selected file does not fully match the expected name pattern. ' + "Press 'Install' to continue on own risk", 'warning', 10000,);
       } else {
         firework.launch('The selected file does not match the expected name pattern. Please select valid file', 'danger', 10000);
         return;
@@ -216,6 +207,7 @@
 
       const xhttp = new XMLHttpRequest();
       xhttp.upload.addEventListener('progress', uploadProgressHandler, false);
+
       xhttp.addEventListener('load', function () {
         if (xhttp.status >= 200 && xhttp.status < 300) {
           uploadCompleteHandler({ response: xhttp.responseText });
@@ -223,6 +215,7 @@
           uploadErrorHandler({ type: 'http', status: xhttp.status, statusText: xhttp.statusText, response: xhttp.responseText });
         }
       });
+
       xhttp.addEventListener('error', () => uploadErrorHandler({ type: 'network' }), false);
       xhttp.addEventListener('abort', () => uploadErrorHandler({ type: 'abort' }), false);
 
@@ -236,31 +229,31 @@
       _('progressBar').value = 0;
       _('loadedBytes').innerHTML = '';
 
-      if (event.response.startsWith('success')) {
-        _('status').innerText = 'Status: Installing...';
-        firework.launch('Update staged. The device will restart and install it', 'success', 5000);
-
-        actionRuntime = 0;
-        updateTimer = setTimeout(checkStatus, 2500);
+      if (!event.response.startsWith('success')) {
+        uploadErrorHandler({ type: 'response', response: event.response });
+        return;
       }
+
+      _('status').innerText = 'Status: Installing...';
+      firework.launch('Update staged. The device will restart and install it', 'success', 5000);
+      checkStatus();
     }
 
     function uploadProgressHandler(event) {
       const percent = (event.loaded / event.total) * 100;
       _('progressBar').value = Math.round(percent);
       _('status').innerHTML = 'Status: ' + Math.round(percent) + '% uploaded. Please wait...';
-      _('loadedBytes').innerHTML =
-        'Uploaded ' + (event.loaded / 1024 / 1024).toFixed(2) + ' MB of ' + (event.total / 1024 / 1024).toFixed(2) + ' MB';
+      _('loadedBytes').innerHTML = 'Uploaded ' + (event.loaded / 1024 / 1024).toFixed(2) + ' MB of ' + (event.total / 1024 / 1024).toFixed(2) + ' MB';
     }
 
     async function uploadErrorHandler(event) {
       let message;
       switch (event.type) {
-        case 'http': // Server's specific reason (set via httpd_resp_send_err on the device)
-          message =
-            event.response && event.response.trim().length > 0
-              ? event.response.trim()
-              : `HTTP ${event.status} ${event.statusText || ''}`.trim();
+        case 'http': // Server's specific reason
+          message = event.response && event.response.trim().length > 0 ? event.response.trim() : `HTTP ${event.status} ${event.statusText || ''}`.trim();
+          break;
+        case 'response':
+          message = event.response?.trim() || 'Unexpected server response';
           break;
         case 'network':
           //@Deprecated: Remove legacy OTA support once old API versions are no longer supported
@@ -323,12 +316,7 @@
     // --------------------------------------------------------------------------------
     async function hasLegacyOtaApi() {
       try {
-        const response = await fetch('/ota?task=api_check', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store',
-          signal: AbortSignal.timeout(2000),
-        });
+        const response = await fetch('/ota?task=api_check', { method: 'GET', credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(2000) });
         return response.status === 400; // Old handler exists and rejects the unknown task
       } catch {
         return false; // Device is unreachable; cannot determine API version
@@ -418,7 +406,7 @@
           legacyProcessOnServer();
         } else {
           // Handle error codes like 404, 500, etc.
-          uploadErrorHandler({ status: xhttp.status, statusText: xhttp.statusText, response: xhttp.responseText });
+          uploadErrorHandler({ type: 'http', status: xhttp.status, statusText: xhttp.statusText, response: xhttp.responseText });
         }
       });
       xhttp.addEventListener('error', () => uploadErrorHandler({ type: 'legacy_network' }), false);
