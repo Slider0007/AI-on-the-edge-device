@@ -19,6 +19,7 @@
 :root,
 :root.light {
   color-scheme: light;
+  --surface: rgba(211, 211, 211, 0.667);
   --surface-light: #ffffff;
   --surface-hover: #e2e8f0;
   --bg: #ffffff;
@@ -40,6 +41,7 @@
 /* Dark Theme */
 :root.dark {
   color-scheme: dark;
+  --surface: #334155;
   --surface-light: #1f2937;
   --surface-hover: #374151;
   --bg: #0f172a;
@@ -292,6 +294,64 @@ iframe.iframe.ready {
 .down {
   transform: rotate(45deg);
   margin: 0 0 3px 6px;
+}
+
+/* Button */
+.button {
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  width: 160px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 5px 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    filter 0.2s,
+    background-color 0.2s;
+  box-sizing: border-box;
+}
+
+.btn-wide {
+  width: 100%;
+  padding: 10px;
+  font-size: 1.1rem;
+}
+
+.btn-action {
+  background: var(--primary);
+  text-transform: uppercase;
+  color: white;
+  font-weight: bold;
+  border: 1px solid transparent;
+}
+
+.button:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.button.btn-action:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(1);
+  opacity: 0.75;
+}
+
+.btn-action:disabled {
+  cursor: not-allowed;
+  filter: grayscale(1);
+  opacity: 0.25;
 }
 
 /* Theme switch control */

@@ -12,7 +12,7 @@ Retrieve and query system log files with support for metadata, full dumps, and t
 
 * **Content-Type**: `text/plain`
 * **Cache Control**: `no-cache`
-* **Content Format**: Each row represents one message in TXT format (space-separated):
+* **Content Format**: Each row represents one message (TXT format, tab-separated):
 `[uptime] timestamp <log level> [source] message`
 * **Log Levels**:
   * `<ERR>`: Error

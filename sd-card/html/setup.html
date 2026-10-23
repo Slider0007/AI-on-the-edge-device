@@ -69,53 +69,8 @@
       gap: 8px;
     }
 
-    .button {
-      color: var(--text-main);
-      border: 1px solid #a0a0a0;
-      width: 130px;
-      text-align: center;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      padding: 5px 5px;
-      border-radius: var(--input-radius);
-      cursor: pointer;
-      font-size: inherit;
-      transition:
-        opacity 0.2s,
-        filter 0.2s,
-        background-color 0.2s;
-      box-sizing: border-box;
-    }
-
-    .button:hover:not(:disabled) {
-      filter: brightness(0.9);
-    }
-
-    .button:disabled {
-      cursor: not-allowed;
-      filter: grayscale(1);
-      opacity: 0.75;
-    }
-
-    .btn-action {
-      background: var(--primary);
-      text-transform: uppercase;
-      color: white;
-      font-weight: bold;
-      border: 1px solid transparent;
-    }
-
-    .button.btn-action:hover:not(:disabled) {
-      filter: brightness(1.1);
-    }
-
-    .btn-wide {
-      width: 100%;
-      padding: 10px;
-      font-size: 1.1rem;
+    .button-small {
+      width: 115px;
     }
 
     #next {
@@ -127,7 +82,7 @@
     }
 
     progress {
-      width: 120px;
+      width: 70px;
       height: 10px;
       accent-color: var(--primary);
     }
@@ -265,14 +220,14 @@
     }
 
     /* Preview Image & Loading Spinner Styles */
-    #raw_preview_img {
+    #preview_img {
       width: auto;
       height: 480px;
       display: block;
       margin: 0 auto;
     }
 
-    #raw_preview_img.is-loading {
+    #preview_img.is-loading {
       width: 50px;
       height: 480px;
       margin: 0 auto;
@@ -399,10 +354,11 @@
 
   <section class="controls">
     <div class="button-group">
-      <button class="button" id="restart" onclick="clickRestart()">Restart Wizard</button>
-      <button class="button" id="previous" onclick="clickPrevious()">Previous Step</button>
-      <button class="button btn-action" id="next" onclick="clickNext()">Next Step</button>
-      <button class="button" id="skip" onclick="clickAbort()">Abort Wizard</button>
+      <button class="button button-small" id="previous" onclick="clickPrevious()">Previous Step</button>
+      <button class="button btn-action button-small" id="next" onclick="clickNext()">Next Step</button>
+      <button class="button button-small" id="skip" onclick="clickAbort()">Abort Wizard</button>
+      <button type="button" class="button button-small" onclick="openLogModal()">Show Log</button>
+      <button type="button" class="button button-small" onclick="window.location.replace('sys_reboot.html?v=$COMMIT_HASH#reboot');">Reboot Device</button>
     </div>
     <div class="progress-container">
       <span>Progress</span><br />
@@ -419,7 +375,7 @@
           Welcome! This wizard configures your device for first use. Upon completion, the device will restart to the operational web
           interface. <strong>Note:</strong> All wizard settings remain accessible via the operational web interface.
         </p>
-        <p>Use <b>Next Step</b> or <b>Previous Step</b> to navigate. Select <b>Restart Wizard</b> to restart or <b>Abort Wizard</b> to skip this wizard.</p>
+        <p>Use <b>Next Step</b> or <b>Previous Step</b> to navigate. Select <b>Abort Wizard</b> to skip this wizard.</p>
         <hr />
 
         <h3>Setup Overview</h3>
@@ -681,13 +637,13 @@
             <span>Preview Image</span>
             <div style="display: flex; align-items: center; gap: 10px;">
               <label style="cursor: pointer;">
-                <input type="checkbox" id="auto_capture_toggle" onchange="autoRefreshRawImage(this.checked)" /> Auto-Refresh
+                <input type="checkbox" id="auto_capture_toggle" onchange="autoRefreshImage(this.checked)" /> Auto-Refresh
               </label>
-              <button id="refreshBtn" class="button btn-action" onclick="manualRefreshRawImage()" style="width: 160px; height: 32px; padding: 5px 15px;">Refresh</button>
+              <button id="refreshBtn" class="button btn-action" onclick="manualRefreshImage()" style="width: 160px; height: 32px; padding: 5px 15px;">Refresh</button>
             </div>
           </div>
           <div class="card-body" style="text-align: center;">
-            <img id="raw_preview_img" alt="Image Preview" />
+            <img id="preview_img" alt="Image Preview" />
           </div>
         </div>
       </div>
@@ -773,7 +729,10 @@
         </div>
       </div>
       <div id="desc-step99" class="steps" style="display: none">
-        <div class="step-content"><strong>Step 5: Initial Setup Aborted</strong></div>
+        <div class="step-content"><strong>Step 5: Abort Initial Setup</strong>
+          <button class="button" style="float: right" onclick="SetupWizard.navigate(0)">Restart Wizard</button>
+        </div>
+
         <div class="warning-box">
           <p><b>INITIAL SETUP ABORTED</b></p>
           <p>
@@ -782,6 +741,28 @@
           </p>
           <p>Configuration can still be adapted / completed using operational web interface.</p>
           <p><button class="button btn-action btn-wide" onclick="abortSetup()">Abort Setup Wizard</button></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Log Container -->
+    <div id="logModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width:720px; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
+      <div
+        style="background-color: var(--surface-light); color: var(--text-main); margin: 10% auto; padding: 20px; border: 1px solid var(--border); width: 95%; max-width: 720px; border-radius: var(--container-radius); box-shadow: var(--shadow);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h3 style="margin: 0; color: var(--text-main);">Log Viewer</h3>
+          <button type="button" onclick="closeLogModal()"
+            style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-main);">&times;</button>
+        </div>
+        <hr style="border: none; border-top: 1px solid var(--border); margin-bottom: 15px;" />
+
+        <!-- Scrollable Log Output Area -->
+        <pre id="logContent"
+          style="background-color: var(--bg-light); color: var(--text-main); padding: 12px; border-radius: var(--card-radius); border: 1px solid var(--border); max-height: 400px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; margin: 0;">Loading log...</pre>
+
+        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="button btn-action" onclick="fetchLogData()">Refresh</button>
+          <button type="button" class="button" onclick="closeLogModal()">Close</button>
         </div>
       </div>
     </div>
@@ -803,7 +784,6 @@
         progressBar: document.getElementById('progressBar'),
         nextBtn: document.getElementById('next'),
         prevBtn: document.getElementById('previous'),
-        restartBtn: document.getElementById('restart'),
         skipBtn: document.getElementById('skip'),
       },
       // Initialization
@@ -859,14 +839,13 @@
         const currentDesc = document.getElementById(`desc-step${step}`);
         if (currentDesc) currentDesc.style.display = 'block';
         this.el.progressBar.value = step === 99 ? 5 : step;
-        this.el.restartBtn.disabled = step === 0;
         this.el.prevBtn.disabled = step === 0 || step === 99;
         this.el.nextBtn.disabled = step === 5 || step === 99;
         this.el.skipBtn.disabled = step === 5 || step === 99;
         this.el.mainContent.style.display = 'none';
         switch (step) {
           case 1:
-            manualRefreshRawImage();
+            manualRefreshImage();
             break;
           case 2:
             this.loadIframe('edit_reference.html');
@@ -927,6 +906,14 @@
         renderRssi(res.ok ? parseInt(res.data, 10) : null);
       },
     };
+
+    // Global hooks for HTML onclick attributes
+    window.clickRestart = () => SetupWizard.navigate(0);
+    window.clickNext = () => SetupWizard.navigate(SetupWizard.state.step + 1);
+    window.clickPrevious = () => SetupWizard.navigate(SetupWizard.state.step - 1);
+    window.clickAbort = () => SetupWizard.navigate(99);
+    window.completeSetup = () => SetupWizard.finalizeSetup(false);
+    window.abortSetup = () => SetupWizard.finalizeSetup(true);
 
     // GPIO Configuration Helper Functions
     function initGpioSection() {
@@ -1041,79 +1028,82 @@
       const toggle = document.getElementById('auto_capture_toggle');
       if (toggle) toggle.checked = false;
       stepFlashCfgBusy(true);
+
       try {
         // Sequentially await configuration save, then force image refresh
         await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
         SetupWizard.syncConfigToUI();
-        await manualRefreshRawImage();
+        stepFlashCfgBusy(false);
       } catch (error) {
         console.error('Failed to save flashlight configuration:', error);
         stepFlashCfgBusy(false);
       }
     }
 
-    function manualRefreshRawImage(showSpinner = true) {
+    function manualRefreshImage(showSpinner = true) {
       stepFlashCfgBusy(true);
 
-      return new Promise((resolve) => {
-        const imgPreview = document.getElementById('raw_preview_img');
+      return new Promise(async (resolve) => {
+        const imgPreview = document.getElementById('preview_img');
         if (!imgPreview) {
           stepFlashCfgBusy(false);
           resolve(false);
           return;
         }
 
-        let isFinished = false;
-
-        const cleanup = () => {
-          if (isFinished) return;
-          isFinished = true;
-          if (showSpinner) {
-            imgPreview.classList.remove('is-loading');
-          }
-          stepFlashCfgBusy(false);
-        };
-
-        // Ensures it's at least 15 seconds or longer if your config dictates it
-        const flashTime = jsonConfig?.takeimage?.flashlight?.flashtime || 0;
-        const timeoutMs = Math.max(flashTime + 15000, 15000);
-
-        const timeoutId = setTimeout(() => {
-          cleanup();
-          imgPreview.src = noImageAvailable;
-          firework.launch('Failed to load image | Timeout.', 'danger', 30000);
-          resolve(false);
-        }, timeoutMs);
-
         if (showSpinner) {
           imgPreview.classList.add('is-loading');
           imgPreview.src = loaderSpinner;
         }
 
-        const rawImg = new Image();
+        // Dynamically compute timeout based on flash time
+        const flashTime = jsonConfig?.takeimage?.flashlight?.flashtime || 0;
+        const timeoutMs = Math.max(flashTime + 15000, 15000);
 
-        rawImg.onload = function () {
-          if (isFinished) return;
-          clearTimeout(timeoutId);
-          cleanup();
-          imgPreview.src = rawImg.src;
+        try {
+          const res = await apiCallNotify('/camera?task=capture', { timeout: timeoutMs }, {
+            action: 'Capturing image',
+            parseType: 'blob',
+            httpObj: {
+              403: (r) => ({
+                msg: 'Camera not detected / supported or not initialized. Check camera module installatiion',
+                type: 'danger',
+                time: 30000,
+              }),
+            },
+          });
+
+          // Cleanup UI states
+          if (showSpinner) {
+            imgPreview.classList.remove('is-loading');
+          }
+          stepFlashCfgBusy(false);
+
+          if (res.error || !res.ok) {
+            imgPreview.src = noImageAvailable;
+            resolve(false);
+            return;
+          }
+
+          if (imgPreview.src && imgPreview.src.startsWith('blob:')) {
+            URL.revokeObjectURL(imgPreview.src);
+          }
+
+          imgPreview.src = URL.createObjectURL(res.data);
           resolve(true);
-        };
 
-        rawImg.onerror = function () {
-          if (isFinished) return;
-          clearTimeout(timeoutId);
-          cleanup();
+        } catch (error) {
+          if (showSpinner) {
+            imgPreview.classList.remove('is-loading');
+          }
+          stepFlashCfgBusy(false);
           imgPreview.src = noImageAvailable;
-          firework.launch('Failed to load image | Error', 'danger', 30000);
           resolve(false);
-        };
-
-        rawImg.src = `${getDomainname()}/img_tmp/raw.jpg?t=${new Date().getTime()}`;
+        }
       });
     }
 
-    async function autoRefreshRawImage(isEnabled) {
+    async function autoRefreshImage(isEnabled) {
       const toggleEl = document.getElementById('auto_capture_toggle');
       if (toggleEl) {
         toggleEl.checked = isEnabled;
@@ -1124,7 +1114,7 @@
       let ok = false;
       try {
         isFlashlightCfgAutoRefreshActive = true;
-        ok = await manualRefreshRawImage(false);
+        ok = await manualRefreshImage(false);
       } finally {
         isFlashlightCfgAutoRefreshActive = false;
       }
@@ -1132,7 +1122,7 @@
       const checkToggle = document.getElementById('auto_capture_toggle');
       if (checkToggle && checkToggle.checked) {
         if (!ok) await new Promise((r) => setTimeout(r, 2000));
-        +        autoRefreshRawImage(true);
+        autoRefreshImage(true);
       }
     }
 
@@ -1144,19 +1134,41 @@
       const refreshBtn = document.getElementById('refreshBtn');
       if (refreshBtn) refreshBtn.disabled = busy;
 
-      SetupWizard.el.restartBtn.disabled = busy;
       SetupWizard.el.prevBtn.disabled = busy;
       SetupWizard.el.nextBtn.disabled = busy;
       SetupWizard.el.skipBtn.disabled = busy;
     }
 
-    // Global hooks for HTML onclick attributes
-    window.clickRestart = () => SetupWizard.navigate(0);
-    window.clickNext = () => SetupWizard.navigate(SetupWizard.state.step + 1);
-    window.clickPrevious = () => SetupWizard.navigate(SetupWizard.state.step - 1);
-    window.clickAbort = () => SetupWizard.navigate(99);
-    window.completeSetup = () => SetupWizard.finalizeSetup(false);
-    window.abortSetup = () => SetupWizard.finalizeSetup(true);
+    function openLogModal() {
+      document.getElementById('logModal').style.display = 'block';
+      fetchLogData();
+    }
+
+    function closeLogModal() {
+      document.getElementById('logModal').style.display = 'none';
+    }
+
+    async function fetchLogData() {
+      const logPre = document.getElementById('logContent');
+      logPre.textContent = 'Loading log...';
+
+      const res = await apiCall('/log');
+
+      if (res.ok) {
+        logPre.textContent = res.data;
+        logPre.scrollTop = logPre.scrollHeight; // Auto-scroll to latest log entries
+      } else {
+        logPre.textContent = 'Error loading log: ' + (res.data || res.error || 'Unknown error');
+      }
+    }
+
+    // Close modal when clicking outside the modal box
+    window.onclick = function (event) {
+      const modal = document.getElementById('logModal');
+      if (event.target === modal) {
+        closeLogModal();
+      }
+    }
 
     // Run on load
     document.addEventListener('DOMContentLoaded', () => SetupWizard.init());
