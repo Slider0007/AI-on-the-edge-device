@@ -4,12 +4,10 @@
   --warning: #f59e0b;
   --error: #ef4444;
   --primary: #0366d6;
-
   --container-radius: 0.9rem;
   --card-radius: 0.6rem;
   --input-radius: 0.3rem;
   --transition-speed: 0.2s;
-
   --card-gap: 20px;
   --reduced-width: 720px;
 }
@@ -18,23 +16,18 @@
 :root,
 :root.light {
   color-scheme: light;
-
   --surface: rgba(211, 211, 211, 0.667);
   --surface-hover: #f6f8fa;
-
   --bg: #ffffff;
   --bg-light: #e2e8f0;
   --bg-header: #e2e8f0;
   --bg-toast: rgba(255, 255, 255, 0.95);
   --bg-tooltip: #dfe1e4;
   --bg-tooltip-header: #c7cee0;
-
   --text-main: #1b1f23;
   --text-secondary: #64748b;
-
   --border: rgb(225, 228, 232);
   --shadow: 0 4px 12px rgba(20, 30, 50, 0.3);
-
   --info-box-bg: #e7f3ff;
   --info-box-border: #0366d6;
   --warning-box-bg: #fdf0f0;
@@ -44,23 +37,18 @@
 /* Dark Theme */
 :root.dark {
   color-scheme: dark;
-
   --surface: #334155;
   --surface-hover: #374151;
-
   --bg: #0f172a;
   --bg-light: #1e293b;
   --bg-header: #1e293b;
   --bg-toast: rgba(30, 41, 59, 0.92);
   --bg-tooltip: #7684a0;
   --bg-tooltip-header: #516077;
-
   --text-main: #f8fafc;
   --text-secondary: #94a3b8;
-
   --border: rgba(51, 65, 85, 0.31);
   --shadow: 0 4px 12px rgba(70, 70, 70, 0.3);
-
   --info-box-bg: rgba(131, 166, 206, 0.15);
   --info-box-border: #38bdf8;
   --warning-box-bg: rgba(245, 158, 11, 0.1);
@@ -81,6 +69,7 @@ body {
 }
 
 @media screen and (max-width: 720px) {
+
   body,
   html {
     font-size: 16px;
@@ -110,11 +99,8 @@ body {
   justify-content: center;
   align-items: center;
   width: 24px;
-  /* Fixed width for the icon slot */
   height: 24px;
-  /* Fixed height */
   font-size: 1.1rem;
-  /* Control symbol size independently */
   margin-right: 4px;
   vertical-align: middle;
   line-height: 0;

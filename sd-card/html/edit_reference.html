@@ -1,746 +1,761 @@
 <!doctype html>
 <html lang="en" xml:lang="en">
-  <head>
-    <title>Reference Image</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <script>
-      try {
-        const theme = localStorage.getItem('theme');
-        if (theme === 'light' || theme === 'dark') {
-          document.documentElement.classList.add(theme);
-        }
-      } catch (e) {}
-    </script>
+<head>
+  <title>Reference Image</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
-
-    <style>
-      .header-actions {
-        display: flex;
-        gap: 8px;
+  <script>
+    try {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'light' || theme === 'dark') {
+        document.documentElement.classList.add(theme);
       }
+    } catch (e) { }
+  </script>
 
-      .header-actions .button {
-        margin: 0;
-      }
+  <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
 
-      th,
-      td {
-        height: 40px;
-      }
+  <style>
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
 
-      .camParameter-table {
-        width: 100%;
-        table-layout: fixed;
-        padding: 0px 10px 0px 0px;
-      }
+    .header-actions .button {
+      margin: 0;
+    }
 
-      .camParameter form {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        clear: both;
-      }
+    th,
+    td {
+      height: 40px;
+    }
 
-      .camParameter output {
-        min-width: 32px;
-        text-align: left;
-        flex-shrink: 0;
-        font-family: monospace;
-      }
+    .camParameter-table {
+      width: 100%;
+      table-layout: fixed;
+      padding: 0px 10px 0px 0px;
+    }
 
-      .camParameter input[type='range'],
-      .camParameter select {
-        flex-grow: 1;
-        width: 100%;
-        min-width: 0; /* Prevents overflow in narrow flex containers */
-      }
+    .camParameter form {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      clear: both;
+    }
 
-      input[type='number'],
-      select {
-        font-family: inherit;
-        font-size: inherit;
-        width: 60px;
-        margin-right: 10px;
-        padding: 3px 5px;
-        display: inline-block;
-        border: 1px solid var(--border);
-        vertical-align: middle;
-        border-radius: var(--input-radius);
-      }
+    .camParameter output {
+      min-width: 32px;
+      text-align: left;
+      flex-shrink: 0;
+      font-family: monospace;
+    }
 
-      #tooltip-portal {
-        min-width: 325px !important;
-        width: 325px !important;
-        max-width: 325px !important;
-      }
+    .camParameter input[type='range'],
+    .camParameter select {
+      flex-grow: 1;
+      width: 100%;
+      /* Prevents overflow in narrow flex containers */
+      min-width: 0;
+    }
 
-      td:has(.tooltip-trigger) {
-        text-align: right;
-        padding-right: 5px;
-      }
-    </style>
+    input[type='number'],
+    select {
+      font-family: inherit;
+      font-size: inherit;
+      width: 60px;
+      margin-right: 10px;
+      padding: 3px 5px;
+      display: inline-block;
+      border: 1px solid var(--border);
+      vertical-align: middle;
+      border-radius: var(--input-radius);
+    }
 
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
-    <script src="firework.js?v=$COMMIT_HASH"></script>
-    <link href="tooltips.css?v=$COMMIT_HASH" rel="stylesheet" />
-    <script src="tooltips.js?v=$COMMIT_HASH"></script>
-  </head>
+    #tooltip-portal {
+      min-width: 325px !important;
+      width: 325px !important;
+      max-width: 325px !important;
+    }
 
-  <body>
-    <div class="container">
-      <div class="container-header">
-        <div class="container-title"><span>📸</span>Reference Image</div>
-        <details id="desc_details">
-          <summary id="desc_details_summary">CLICK HERE for usage info</summary>
-          <div class="info-box">
-            <p>
-              The reference image serves as the visual base for defining markers and ROIs; it provides feedback during setup but is not used
-              in live processing. Click <b>Create New Image</b> to capture one using your current settings, or use <b>Update Image</b> to
-              refresh it.<br />
-              For reliable evaluation, ensure the image is horizontally aligned. Use the 'Image Rotation' parameter to pre-rotate the image,
-              which allows the alignment algorithm to focus solely on correcting minor shifts.
-            </p>
-            <p>Once satisfied, click <b>Save And Apply</b> to activate your configuration immediately without a reboot.</p>
-          </div>
-        </details>
-      </div>
+    td:has(.tooltip-trigger) {
+      text-align: right;
+      padding-right: 5px;
+    }
+  </style>
 
-      <div class="container-content">
-        <div class="card">
-          <div class="card-header">
-            <span>Reference Image</span>
-            <div class="header-actions">
-              <input id="createreference" class="button" type="button" value="Create New Image" onclick="loadRawImage()" />
-              <input id="showactualimage" class="button" type="button" value="Show Actual Image" onclick="showReference()" disabled />
-            </div>
-          </div>
-          <div class="card-body">
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 480px; width: 100%">
-              <img id="img_loading" alt="Loading..." />
-              <canvas id="canvas" hidden></canvas>
-            </div>
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="firework.js?v=$COMMIT_HASH"></script>
+  <link href="tooltips.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="tooltips.js?v=$COMMIT_HASH"></script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="container-header">
+      <div class="container-title"><span>📸</span>Reference Image</div>
+      <details id="desc_details">
+        <summary id="desc_details_summary">CLICK HERE for usage info</summary>
+        <div class="info-box">
+          <p>
+            The reference image serves as the visual base for defining markers and ROIs; it provides feedback during setup but is not used
+            in live processing. Click <b>Create New Image</b> to capture one using your current settings, or use <b>Update Image</b> to
+            refresh it.<br />
+            For reliable evaluation, ensure the image is horizontally aligned. Use the 'Image Rotation' parameter to pre-rotate the image,
+            which allows the alignment algorithm to focus solely on correcting minor shifts.
+          </p>
+          <p>Once satisfied, click <b>Save And Apply</b> to activate your configuration immediately without a reboot.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="container-content">
+      <div class="card">
+        <div class="card-header">
+          <span>Reference Image</span>
+          <div class="header-actions">
+            <input id="createreference" class="button" type="button" value="Create New Image" onclick="loadRawImage()" />
+            <input id="showactualimage" class="button" type="button" value="Show Actual Image" onclick="showReference()" disabled />
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span>Parametrization</span>
-            <div class="header-actions">
-              <input class="button" type="button" id="take" onclick="doTake()" value="Update Image" disabled />
-              <input class="button btn-action" type="button" id="savereference" value="Save And Apply" onclick="saveReference()" disabled />
-            </div>
+        <div class="card-body">
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 480px; width: 100%">
+            <img id="img_loading" alt="Loading..." />
+            <canvas id="canvas" hidden></canvas>
           </div>
-          <div class="card-body">
-            <table class="camParameter-table">
-              <colgroup>
-                <col span="1" style="width: 4%" />
-                <col span="1" style="width: 21%" />
-                <col span="1" style="width: 23%" />
-                <col span="1" style="width: 8%" />
-                <col span="1" style="width: 21%" />
-                <col span="1" style="width: 23%" />
-              </colgroup>
+        </div>
+      </div>
 
-              <tr>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_zoomfactor</td>
-                <td>
-                  <span>Zoom Factor</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_zoomfactor_form">
-                    <output>1.00x</output>
-                    <input class="classvisibility_init" type="range" min="1000" max="4000" value="1000" name="takeimage.camera.zoomfactor" id="takeimage_camera_zoomfactor_value" onchange="
+      <div class="card">
+        <div class="card-header">
+          <span>Parametrization</span>
+          <div class="header-actions">
+            <input class="button" type="button" id="take" onclick="doTake()" value="Update Image" disabled />
+            <input class="button btn-action" type="button" id="savereference" value="Save And Apply" onclick="saveReference()" disabled />
+          </div>
+        </div>
+        <div class="card-body">
+          <table class="camParameter-table">
+            <colgroup>
+              <col span="1" style="width: 4%" />
+              <col span="1" style="width: 21%" />
+              <col span="1" style="width: 23%" />
+              <col span="1" style="width: 8%" />
+              <col span="1" style="width: 21%" />
+              <col span="1" style="width: 23%" />
+            </colgroup>
+
+            <tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_zoomfactor</td>
+              <td>
+                <span>Zoom Factor</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_zoomfactor_form">
+                  <output>1.00x</output>
+                  <input class="classvisibility_init" type="range" min="1000" max="4000" value="1000" name="takeimage.camera.zoomfactor"
+                    id="takeimage_camera_zoomfactor_value" onchange="
                         setVariableInputLimits();
                         setClassEnabled('classvisibility_takeimage_zoomfactor', this.value > 1000);
                         this.previousElementSibling.value = (this.value / 1000.0).toFixed(2) + 'x';
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_brightness</td>
-                <td>
-                  <span>Brightness</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_brightness_form">
-                    <output>0</output>
-                    <input class="classvisibility_init" type="range" min="-2" max="2" value="0" name="takeimage.camera.brightness" id="takeimage_camera_brightness_value" onchange="
+                </form>
+              </td>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_brightness</td>
+              <td>
+                <span>Brightness</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_brightness_form">
+                  <output>0</output>
+                  <input class="classvisibility_init" type="range" min="-2" max="2" value="0" name="takeimage.camera.brightness" id="takeimage_camera_brightness_value"
+                    onchange="
                         this.previousElementSibling.value = this.value;
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
-              </tr>
+                </form>
+              </td>
+            </tr>
 
-              <tr>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_zoomoffsetx</td>
-                <td>
-                  <span>Zoom Offset X</span>
-                </td>
-                <td class="camParameter classvisibility_takeimage_zoomfactor">
-                  <form id="takeimage_camera_zoomoffsetx_form">
-                    <output>0</output>
-                    <input class="classvisibility_init" type="range" min="-960" max="960" value="0" name="takeimage.camera.zoomoffsetx" id="takeimage_camera_zoomoffsetx_value" onchange="
+            <tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_zoomoffsetx</td>
+              <td>
+                <span>Zoom Offset X</span>
+              </td>
+              <td class="camParameter classvisibility_takeimage_zoomfactor">
+                <form id="takeimage_camera_zoomoffsetx_form">
+                  <output>0</output>
+                  <input class="classvisibility_init" type="range" min="-960" max="960" value="0" name="takeimage.camera.zoomoffsetx"
+                    id="takeimage_camera_zoomoffsetx_value" onchange="
                         this.previousElementSibling.value = this.value;
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
+                </form>
+              </td>
 
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_contrast</td>
-                <td>
-                  <span>Contrast</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_contrast_form">
-                    <output>0</output>
-                    <input class="classvisibility_init" type="range" min="-2" max="2" value="0" name="takeimage.camera.contrast" id="takeimage_camera_contrast_value" onchange="
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_contrast</td>
+              <td>
+                <span>Contrast</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_contrast_form">
+                  <output>0</output>
+                  <input class="classvisibility_init" type="range" min="-2" max="2" value="0" name="takeimage.camera.contrast" id="takeimage_camera_contrast_value"
+                    onchange="
                         this.previousElementSibling.value = this.value;
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
-              </tr>
+                </form>
+              </td>
+            </tr>
 
-              <tr>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_zoomoffsety</td>
-                <td>
-                  <span>Zoom Offset Y</span>
-                </td>
-                <td class="camParameter classvisibility_takeimage_zoomfactor">
-                  <form id="takeimage_camera_zoomoffsety_form">
-                    <output>0</output>
-                    <input class="classvisibility_init" type="range" min="-720" max="720" value="0" name="takeimage.camera.zoomoffsety" id="takeimage_camera_zoomoffsety_value" onchange="
+            <tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_zoomoffsety</td>
+              <td>
+                <span>Zoom Offset Y</span>
+              </td>
+              <td class="camParameter classvisibility_takeimage_zoomfactor">
+                <form id="takeimage_camera_zoomoffsety_form">
+                  <output>0</output>
+                  <input class="classvisibility_init" type="range" min="-720" max="720" value="0" name="takeimage.camera.zoomoffsety"
+                    id="takeimage_camera_zoomoffsety_value" onchange="
                         this.previousElementSibling.value = this.value;
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
+                </form>
+              </td>
 
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_saturation</td>
-                <td>
-                  <span>Saturation</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_saturation_form">
-                    <output>0</output>
-                    <input class="classvisibility_init" type="range" min="-2" max="2" value="0" name="takeimage.camera.saturation" id="takeimage_camera_saturation_value" onchange="
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_saturation</td>
+              <td>
+                <span>Saturation</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_saturation_form">
+                  <output>0</output>
+                  <input class="classvisibility_init" type="range" min="-2" max="2" value="0" name="takeimage.camera.saturation" id="takeimage_camera_saturation_value"
+                    onchange="
                         this.previousElementSibling.value = this.value;
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
-              </tr>
+                </form>
+              </td>
+            </tr>
 
-              <tr>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_mirrorimage</td>
-                <td>
-                  <span>Mirror Image</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_mirrorimage_form">
-                    <select name="takeimage.camera.mirrorimage" id="takeimage_camera_mirrorimage_value" onchange="gatherChangedParameter(this.form)">
-                      <option value="false" selected>Disabled</option>
-                      <option value="true">Enabled</option>
-                    </select>
-                  </form>
-                </td>
+            <tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_mirrorimage</td>
+              <td>
+                <span>Mirror Image</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_mirrorimage_form">
+                  <select name="takeimage.camera.mirrorimage" id="takeimage_camera_mirrorimage_value" onchange="gatherChangedParameter(this.form)">
+                    <option value="false" selected>Disabled</option>
+                    <option value="true">Enabled</option>
+                  </select>
+                </form>
+              </td>
 
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_sharpness</td>
-                <td>
-                  <span>Sharpness</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_sharpness_form">
-                    <output>0</output>
-                    <input class="classvisibility_init" type="range" min="-3" max="3" value="0" name="takeimage.camera.sharpness" id="takeimage_camera_sharpness_value" onchange="
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_sharpness</td>
+              <td>
+                <span>Sharpness</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_sharpness_form">
+                  <output>0</output>
+                  <input class="classvisibility_init" type="range" min="-3" max="3" value="0" name="takeimage.camera.sharpness" id="takeimage_camera_sharpness_value"
+                    onchange="
                         this.previousElementSibling.value = this.value;
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
-              </tr>
+                </form>
+              </td>
+            </tr>
 
-              <tr>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_flipimage</td>
-                <td>
-                  <span>Flip Image</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_flipimage_form">
-                    <select name="takeimage.camera.flipimage" id="takeimage_camera_flipimage_value" onchange="gatherChangedParameter(this.form)">
-                      <option value="false" selected>Disabled</option>
-                      <option value="true">Enabled</option>
-                    </select>
-                  </form>
-                </td>
+            <tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_flipimage</td>
+              <td>
+                <span>Flip Image</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_flipimage_form">
+                  <select name="takeimage.camera.flipimage" id="takeimage_camera_flipimage_value" onchange="gatherChangedParameter(this.form)">
+                    <option value="false" selected>Disabled</option>
+                    <option value="true">Enabled</option>
+                  </select>
+                </form>
+              </td>
 
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_specialeffect</td>
-                <td>
-                  <span>Special Effect</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_specialeffect_form">
-                    <select name="takeimage.camera.specialeffect" id="takeimage_camera_specialeffect_value" onchange="gatherChangedParameter(this.form, true)">
-                      <option value="0" selected>None</option>
-                      <option value="1">Negative</option>
-                      <option value="2">Grayscale</option>
-                      <option value="7">Gray+Negative</option>
-                    </select>
-                  </form>
-                </td>
-              </tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_specialeffect</td>
+              <td>
+                <span>Special Effect</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_specialeffect_form">
+                  <select name="takeimage.camera.specialeffect" id="takeimage_camera_specialeffect_value" onchange="gatherChangedParameter(this.form, true)">
+                    <option value="0" selected>None</option>
+                    <option value="1">Negative</option>
+                    <option value="2">Grayscale</option>
+                    <option value="7">Gray+Negative</option>
+                  </select>
+                </form>
+              </td>
+            </tr>
 
-              <tr>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_gaincontrolmode</td>
-                <td>
-                  <span>Gain Control</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_gaincontrolmode_form">
-                    <select class="classvisibility_init" name="takeimage.camera.gaincontrolmode" id="takeimage_camera_gaincontrolmode_value" onchange="
+            <tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_gaincontrolmode</td>
+              <td>
+                <span>Gain Control</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_gaincontrolmode_form">
+                  <select class="classvisibility_init" name="takeimage.camera.gaincontrolmode" id="takeimage_camera_gaincontrolmode_value" onchange="
                         setClassEnabled('classvisibility_takeimage_gaincontrolmode_manual', this.value == 0);
                         gatherChangedParameter(this.form, true);
                       ">
-                      <option value="0">Manual</option>
-                      <option value="1" selected>Auto</option>
-                    </select>
-                  </form>
-                </td>
+                    <option value="0">Manual</option>
+                    <option value="1" selected>Auto</option>
+                  </select>
+                </form>
+              </td>
 
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_exposurecontrolmode</td>
-                <td>
-                  <span>Exposure Control</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_camera_exposurecontrolmode_form">
-                    <select class="classvisibility_init" name="takeimage.camera.exposurecontrolmode" id="takeimage_camera_exposurecontrolmode_value" onchange="
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_exposurecontrolmode</td>
+              <td>
+                <span>Exposure Control</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_camera_exposurecontrolmode_form">
+                  <select class="classvisibility_init" name="takeimage.camera.exposurecontrolmode" id="takeimage_camera_exposurecontrolmode_value" onchange="
                         setClassEnabled('classvisibility_takeimage_exposurecontrolmode_auto', this.value > 0);
                         setClassEnabled('classvisibility_takeimage_exposurecontrolmode_manual', this.value == 0);
                         gatherChangedParameter(this.form, true);
                       ">
-                      <option value="0">Manual</option>
-                      <option value="1" selected>Auto</option>
-                      <option value="2">Auto (AEC2)</option>
-                    </select>
-                  </form>
-                </td>
-              </tr>
+                    <option value="0">Manual</option>
+                    <option value="1" selected>Auto</option>
+                    <option value="2">Auto (AEC2)</option>
+                  </select>
+                </form>
+              </td>
+            </tr>
 
-              <tr>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_manualgainvalue</td>
-                <td>
-                  <span>Manual Gain Value</span>
-                </td>
-                <td class="camParameter classvisibility_takeimage_gaincontrolmode_manual">
-                  <form id="takeimage_camera_manualgainvalue_form">
-                    <output>0</output>
-                    <input class="classvisibility_init" type="range" min="0" max="30" value="0" name="takeimage.camera.manualgainvalue" id="takeimage_camera_manualgainvalue_value" onchange="
+            <tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_manualgainvalue</td>
+              <td>
+                <span>Manual Gain Value</span>
+              </td>
+              <td class="camParameter classvisibility_takeimage_gaincontrolmode_manual">
+                <form id="takeimage_camera_manualgainvalue_form">
+                  <output>0</output>
+                  <input class="classvisibility_init" type="range" min="0" max="30" value="0" name="takeimage.camera.manualgainvalue"
+                    id="takeimage_camera_manualgainvalue_value" onchange="
                         this.previousElementSibling.value = this.value;
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
+                </form>
+              </td>
 
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_autoexposurelevel</td>
-                <td>
-                  <span>Auto Exposure Level</span>
-                </td>
-                <td class="camParameter classvisibility_takeimage_exposurecontrolmode_auto">
-                  <form id="takeimage_camera_autoexposurelevel_form">
-                    <output>0</output>
-                    <input class="classvisibility_init" type="range" min="-2" max="2" value="0" name="takeimage.camera.autoexposurelevel" id="takeimage_camera_autoexposurelevel_value" onchange="
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_autoexposurelevel</td>
+              <td>
+                <span>Auto Exposure Level</span>
+              </td>
+              <td class="camParameter classvisibility_takeimage_exposurecontrolmode_auto">
+                <form id="takeimage_camera_autoexposurelevel_form">
+                  <output>0</output>
+                  <input class="classvisibility_init" type="range" min="-2" max="2" value="0" name="takeimage.camera.autoexposurelevel"
+                    id="takeimage_camera_autoexposurelevel_value" onchange="
                         this.previousElementSibling.value = this.value;
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
-              </tr>
+                </form>
+              </td>
+            </tr>
 
-              <tr>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_flashlight_flashtime</td>
-                <td>
-                  <span>Flash Time</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_flashlight_flashtime_form">
-                    <input required type="number" min="100" step="100" value="2000" name="takeimage.flashlight.flashtime" id="takeimage_flashlight_flashtime_value" onchange="
+            <tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_flashlight_flashtime</td>
+              <td>
+                <span>Flash Time</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_flashlight_flashtime_form">
+                  <input required type="number" min="100" step="100" value="2000" name="takeimage.flashlight.flashtime" id="takeimage_flashlight_flashtime_value"
+                    onchange="
                         (!validity.rangeUnderflow || (value = 100)) && (!validity.stepMismatch || (value = parseInt(this.value)));
                         gatherChangedParameter(this.form, true);
                       " oninput="" />ms
-                  </form>
-                </td>
+                </form>
+              </td>
 
-                <td style="visibility: hidden">$TOOLTIP_takeimage_camera_manualexposurevalue</td>
-                <td>
-                  <span>Manual Exposure Value</span>
-                </td>
-                <td class="camParameter classvisibility_takeimage_exposurecontrolmode_manual">
-                  <form id="takeimage_camera_manualexposurevalue_form">
-                    <output>300</output>
-                    <input class="classvisibility_init" type="range" min="0" max="1920" value="0" name="takeimage.camera.manualexposurevalue" id="takeimage_camera_manualexposurevalue_value" onchange="
+              <td style="visibility: hidden">$TOOLTIP_takeimage_camera_manualexposurevalue</td>
+              <td>
+                <span>Manual Exposure Value</span>
+              </td>
+              <td class="camParameter classvisibility_takeimage_exposurecontrolmode_manual">
+                <form id="takeimage_camera_manualexposurevalue_form">
+                  <output>300</output>
+                  <input class="classvisibility_init" type="range" min="0" max="1920" value="0" name="takeimage.camera.manualexposurevalue"
+                    id="takeimage_camera_manualexposurevalue_value" onchange="
                         this.previousElementSibling.value = this.value;
                         gatherChangedParameter(this.form, true);
                       " />
-                  </form>
-                </td>
-              </tr>
+                </form>
+              </td>
+            </tr>
 
-              <tr>
-                <td style="visibility: hidden">$TOOLTIP_takeimage_flashlight_flashintensity</td>
-                <td>
-                  <span>Flash Intensity</span>
-                </td>
-                <td class="camParameter">
-                  <form id="takeimage_flashlight_flashintensity_form">
-                    <input required type="number" min="0" max="100" value="50" name="takeimage.flashlight.flashintensity" id="takeimage_flashlight_flashintensity_value" onchange="
+            <tr>
+              <td style="visibility: hidden">$TOOLTIP_takeimage_flashlight_flashintensity</td>
+              <td>
+                <span>Flash Intensity</span>
+              </td>
+              <td class="camParameter">
+                <form id="takeimage_flashlight_flashintensity_form">
+                  <input required type="number" min="0" max="100" value="50" name="takeimage.flashlight.flashintensity" id="takeimage_flashlight_flashintensity_value"
+                    onchange="
                         (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 100));
                         gatherChangedParameter(this.form, true);
                       " />%
-                  </form>
-                </td>
+                </form>
+              </td>
 
-                <td style="visibility: hidden">$TOOLTIP_imagealignment_imagerotation</td>
-                <td>
-                  <span>Image Rotation</span>
-                </td>
-                <td class="camParameter">
-                  <form id="imagealignment_imagerotation_form">
-                    <input required type="number" min="-180.0" max="180.0" step="0.1" value="0.0" name="imagealignment.imagerotation" id="imagealignment_imagerotation_value" onchange="
+              <td style="visibility: hidden">$TOOLTIP_imagealignment_imagerotation</td>
+              <td>
+                <span>Image Rotation</span>
+              </td>
+              <td class="camParameter">
+                <form id="imagealignment_imagerotation_form">
+                  <input required type="number" min="-180.0" max="180.0" step="0.1" value="0.0" name="imagealignment.imagerotation"
+                    id="imagealignment_imagerotation_value" onchange="
                         (!validity.rangeUnderflow || (value = -180.0)) &&
                           (!validity.rangeOverflow || (value = 180.0)) &&
                           (!validity.stepMismatch || (value = this.value));
                         drawRotated();
                         gatherChangedParameter(this.form);
                       " />°
-                  </form>
-                </td>
-              </tr>
-            </table>
-          </div>
+                </form>
+              </td>
+            </tr>
+          </table>
         </div>
       </div>
     </div>
+  </div>
 
-    <script src="global.js?v=$COMMIT_HASH"></script>
-    <script>
-      let canvas = document.getElementById('canvas');
-      let context = canvas.getContext('2d');
-      let imageObj = new Image();
-      let isActReference = false;
-      let currentBlobUrl = null;
+  <script src="global.js?v=$COMMIT_HASH"></script>
+  <script>
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
+    let imageObj = new Image();
+    let isActReference = false;
+    let currentBlobUrl = null;
 
-      function setVariableInputLimits() {
-        let sensorFrameSizeWidth = 1600; // Default
-        let sensorFrameSizeHeight = 1200; // Default
-        let autoExposureLimit = 2; // Default
+    function setVariableInputLimits() {
+      let sensorFrameSizeWidth = 1600; // Default
+      let sensorFrameSizeHeight = 1200; // Default
+      let autoExposureLimit = 2; // Default
 
-        // Logic for camera models remains the same
-        const cameraModel = jsonConfig.takeimage.camera.cameramodel;
+      // Logic for camera models remains the same
+      const cameraModel = jsonConfig.takeimage.camera.cameramodel;
 
-        if (cameraModel == 1) {
-          // OV2640
-          sensorFrameSizeWidth = 1600;
-          sensorFrameSizeHeight = 1200;
-          autoExposureLimit = 2;
-        } else if (cameraModel == 2) {
-          // OV3660
-          sensorFrameSizeWidth = 2048;
-          sensorFrameSizeHeight = 1536;
-          autoExposureLimit = 5;
-        } else if (cameraModel == 3) {
-          // OV5640
-          sensorFrameSizeWidth = 2560;
-          sensorFrameSizeHeight = 1920;
-          autoExposureLimit = 5;
-        } else {
-          firework.launch('Camera model unknown. Zoom factor range / limits may be wrong', 'warning', 5000);
-        }
-
-        // Helper to select elements and trigger change events
-        const zoomValEl = document.getElementById('takeimage_camera_zoomfactor_value');
-        const offsetXEl = document.getElementById('takeimage_camera_zoomoffsetx_value');
-        const offsetYEl = document.getElementById('takeimage_camera_zoomoffsety_value');
-        const aeLevelEl = document.getElementById('takeimage_camera_autoexposurelevel_value');
-        const manualExEl = document.getElementById('takeimage_camera_manualexposurevalue_value');
-
-        // Update Zoom Factor Max
-        zoomValEl.setAttribute('max', (sensorFrameSizeWidth * 1000) / 640);
-
-        // X Offset Calculation
-        let imageWidthZoomed = Math.floor((sensorFrameSizeWidth * 1000) / parseFloat(zoomValEl.value));
-        imageWidthZoomed += imageWidthZoomed % 4;
-
-        let imageZoomOffsetXMax = (sensorFrameSizeWidth - imageWidthZoomed) / 2;
-        offsetXEl.setAttribute('max', imageZoomOffsetXMax);
-        offsetXEl.setAttribute('min', -1 * imageZoomOffsetXMax);
-        offsetXEl.dispatchEvent(new Event('change'));
-
-        // Y Offset Calculation
-        let imageHeightZoomed = Math.floor((sensorFrameSizeHeight * 1000) / parseFloat(zoomValEl.value));
-        imageHeightZoomed += imageHeightZoomed % 4;
-
-        let imageZoomOffsetYMax = (sensorFrameSizeHeight - imageHeightZoomed) / 2;
-        offsetYEl.setAttribute('max', imageZoomOffsetYMax);
-        offsetYEl.setAttribute('min', -1 * imageZoomOffsetYMax);
-        offsetYEl.dispatchEvent(new Event('change'));
-
-        // Auto Exposure Limits
-        aeLevelEl.setAttribute('max', autoExposureLimit);
-        aeLevelEl.setAttribute('min', -1 * autoExposureLimit);
-        aeLevelEl.dispatchEvent(new Event('change'));
-
-        // Manual Exposure Limits
-        manualExEl.setAttribute('max', sensorFrameSizeHeight);
-        manualExEl.dispatchEvent(new Event('change'));
+      if (cameraModel == 1) {
+        // OV2640
+        sensorFrameSizeWidth = 1600;
+        sensorFrameSizeHeight = 1200;
+        autoExposureLimit = 2;
+      } else if (cameraModel == 2) {
+        // OV3660
+        sensorFrameSizeWidth = 2048;
+        sensorFrameSizeHeight = 1536;
+        autoExposureLimit = 5;
+      } else if (cameraModel == 3) {
+        // OV5640
+        sensorFrameSizeWidth = 2560;
+        sensorFrameSizeHeight = 1920;
+        autoExposureLimit = 5;
+      } else {
+        firework.launch('Camera model unknown. Zoom factor range / limits may be wrong', 'warning', 5000);
       }
 
-      async function doTake() {
-        // Helper to get value or return default
-        const getVal = (id, def) => {
-          const val = document.getElementById(id).value;
-          return val === '' ? def : val;
-        };
+      // Helper to select elements and trigger change events
+      const zoomValEl = document.getElementById('takeimage_camera_zoomfactor_value');
+      const offsetXEl = document.getElementById('takeimage_camera_zoomoffsetx_value');
+      const offsetYEl = document.getElementById('takeimage_camera_zoomoffsety_value');
+      const aeLevelEl = document.getElementById('takeimage_camera_autoexposurelevel_value');
+      const manualExEl = document.getElementById('takeimage_camera_manualexposurevalue_value');
 
-        const params = {
-          task: 'capture',
-          flashtime: getVal('takeimage_flashlight_flashtime_value', '2000'),
-          flashintensity: getVal('takeimage_flashlight_flashintensity_value', '50'),
-          brightness: getVal('takeimage_camera_brightness_value', '0'),
-          contrast: getVal('takeimage_camera_contrast_value', '0'),
-          saturation: getVal('takeimage_camera_saturation_value', '0'),
-          sharpness: getVal('takeimage_camera_sharpness_value', '0'),
-          exposurecontrolmode: getVal('takeimage_camera_exposurecontrolmode_value', '1'),
-          autoexposurelevel: getVal('takeimage_camera_autoexposurelevel_value', '0'),
-          manualexposurevalue: getVal('takeimage_camera_manualexposurevalue_value', '300'),
-          gaincontrolmode: getVal('takeimage_camera_gaincontrolmode_value', '1'),
-          manualgainvalue: getVal('takeimage_camera_manualgainvalue_value', '0'),
-          specialeffect: getVal('takeimage_camera_specialeffect_value', '0'),
-          mirror: getVal('takeimage_camera_mirrorimage_value', 'false'),
-          flip: getVal('takeimage_camera_flipimage_value', 'false'),
-          zoomfactor: getVal('takeimage_camera_zoomfactor_value', '1000'),
-          zoomx: getVal('takeimage_camera_zoomoffsetx_value', '0'),
-          zoomy: getVal('takeimage_camera_zoomoffsety_value', '0'),
-        };
+      // Update Zoom Factor Max
+      zoomValEl.setAttribute('max', (sensorFrameSizeWidth * 1000) / 640);
 
-        specialeffect = params.specialeffect;
+      // X Offset Calculation
+      let imageWidthZoomed = Math.floor((sensorFrameSizeWidth * 1000) / parseFloat(zoomValEl.value));
+      imageWidthZoomed += imageWidthZoomed % 4;
 
-        const res = await apiCallNotify(`/camera?${new URLSearchParams(params)}`, { timeout: 30000 }, {
-          action: 'Setting image parameter',
-          loadingMsg: 'Capturing image...',
-          parseType: 'blob',
-        });
+      let imageZoomOffsetXMax = (sensorFrameSizeWidth - imageWidthZoomed) / 2;
+      offsetXEl.setAttribute('max', imageZoomOffsetXMax);
+      offsetXEl.setAttribute('min', -1 * imageZoomOffsetXMax);
+      offsetXEl.dispatchEvent(new Event('change'));
 
-        if (!res.ok) {
-          document.getElementById('createreference').disabled = false;
-          showReference();
-          return;
-        }
+      // Y Offset Calculation
+      let imageHeightZoomed = Math.floor((sensorFrameSizeHeight * 1000) / parseFloat(zoomValEl.value));
+      imageHeightZoomed += imageHeightZoomed % 4;
 
-        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-        currentBlobUrl = URL.createObjectURL(res.data);
-        loadCanvas(currentBlobUrl, true);
-        isActReference = false;
+      let imageZoomOffsetYMax = (sensorFrameSizeHeight - imageHeightZoomed) / 2;
+      offsetYEl.setAttribute('max', imageZoomOffsetYMax);
+      offsetYEl.setAttribute('min', -1 * imageZoomOffsetYMax);
+      offsetYEl.dispatchEvent(new Event('change'));
 
-        document.getElementById('showactualimage').disabled = false;
-        document.getElementById('createreference').disabled = true;
-        document.getElementById('savereference').disabled = false;
+      // Auto Exposure Limits
+      aeLevelEl.setAttribute('max', autoExposureLimit);
+      aeLevelEl.setAttribute('min', -1 * autoExposureLimit);
+      aeLevelEl.dispatchEvent(new Event('change'));
+
+      // Manual Exposure Limits
+      manualExEl.setAttribute('max', sensorFrameSizeHeight);
+      manualExEl.dispatchEvent(new Event('change'));
+    }
+
+    async function doTake() {
+      // Helper to get value or return default
+      const getVal = (id, def) => {
+        const val = document.getElementById(id).value;
+        return val === '' ? def : val;
+      };
+
+      const params = {
+        task: 'capture',
+        flashtime: getVal('takeimage_flashlight_flashtime_value', '2000'),
+        flashintensity: getVal('takeimage_flashlight_flashintensity_value', '50'),
+        brightness: getVal('takeimage_camera_brightness_value', '0'),
+        contrast: getVal('takeimage_camera_contrast_value', '0'),
+        saturation: getVal('takeimage_camera_saturation_value', '0'),
+        sharpness: getVal('takeimage_camera_sharpness_value', '0'),
+        exposurecontrolmode: getVal('takeimage_camera_exposurecontrolmode_value', '1'),
+        autoexposurelevel: getVal('takeimage_camera_autoexposurelevel_value', '0'),
+        manualexposurevalue: getVal('takeimage_camera_manualexposurevalue_value', '300'),
+        gaincontrolmode: getVal('takeimage_camera_gaincontrolmode_value', '1'),
+        manualgainvalue: getVal('takeimage_camera_manualgainvalue_value', '0'),
+        specialeffect: getVal('takeimage_camera_specialeffect_value', '0'),
+        mirror: getVal('takeimage_camera_mirrorimage_value', 'false'),
+        flip: getVal('takeimage_camera_flipimage_value', 'false'),
+        zoomfactor: getVal('takeimage_camera_zoomfactor_value', '1000'),
+        zoomx: getVal('takeimage_camera_zoomoffsetx_value', '0'),
+        zoomy: getVal('takeimage_camera_zoomoffsety_value', '0'),
+      };
+
+      specialeffect = params.specialeffect;
+
+      const res = await apiCallNotify(`/camera?${new URLSearchParams(params)}`, { timeout: 30000 }, {
+        action: 'Setting image parameter',
+        loadingMsg: 'Capturing image...',
+        parseType: 'blob',
+      });
+
+      if (!res.ok) {
+        document.getElementById('createreference').disabled = false;
+        showReference();
+        return;
       }
 
-      function loadRawImage() {
-        setClassEnabled('camParameter', true); // Release input for all camera parameter
-        triggerClassElementOnChange('classvisibility_init'); // Init subparameter lock
-        jsonConfigModifiedDelta = {}; // Reset modified parameter container after visibility update
+      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      currentBlobUrl = URL.createObjectURL(res.data);
+      loadCanvas(currentBlobUrl, true);
+      isActReference = false;
 
-        doTake();
+      document.getElementById('showactualimage').disabled = false;
+      document.getElementById('createreference').disabled = true;
+      document.getElementById('savereference').disabled = false;
+    }
+
+    function loadRawImage() {
+      setClassEnabled('camParameter', true); // Release input for all camera parameter
+      triggerClassElementOnChange('classvisibility_init'); // Init subparameter lock
+      jsonConfigModifiedDelta = {}; // Reset modified parameter container after visibility update
+
+      doTake();
+    }
+
+    function drawRotated(_grid = true) {
+      context.fillStyle = 'rgb(250, 250, 250)';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.save();
+
+      // Handle rotation
+      let degrees = parseFloat(document.getElementById('imagealignment_imagerotation_value').value);
+
+      if (isActReference) {
+        context.drawImage(imageObj, 0, 0);
+      } else {
+        context.translate(canvas.width / 2, canvas.height / 2);
+        context.rotate((degrees * Math.PI) / 180);
+
+        // Handle special effect case 7 (grayscale + negative)
+        // Both effects together are not working when processed on camera
+        // Workaround: Process grayscale on camera + negative on MCU (processing) / browser (preview)
+        if (specialeffect == '7') context.filter = 'invert(1)';
+
+        context.drawImage(imageObj, -imageObj.width / 2, -imageObj.height / 2);
       }
 
-      function drawRotated(_grid = true) {
-        context.fillStyle = 'rgb(250, 250, 250)';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.save();
+      context.restore();
 
-        /* Handle rotation */
-        let degrees = parseFloat(document.getElementById('imagealignment_imagerotation_value').value);
+      if (_grid) drawGrid();
+    }
 
-        if (isActReference) {
-          context.drawImage(imageObj, 0, 0);
-        } else {
-          context.translate(canvas.width / 2, canvas.height / 2);
-          context.rotate((degrees * Math.PI) / 180);
+    function drawGrid() {
+      let w = canvas.width;
+      let h = canvas.height;
 
-          // Handle special effect case 7 (grayscale + negative)
-          // Both effects together are not working when processed on camera
-          // Workaround: Process grayscale on camera + negative on MCU (processing) / browser (preview)
-          if (specialeffect == '7') context.filter = 'invert(1)';
+      context.save();
+      context.lineWidth = 0.25;
+      context.strokeStyle = 'rgb(160, 160, 160)'; //'#00FF00';
 
-          context.drawImage(imageObj, -imageObj.width / 2, -imageObj.height / 2);
-        }
-
-        context.restore();
-
-        if (_grid) drawGrid();
-      }
-
-      function drawGrid() {
-        let w = canvas.width;
-        let h = canvas.height;
-
-        context.save();
-        context.lineWidth = 0.25;
-        context.strokeStyle = 'rgb(160, 160, 160)'; //'#00FF00';
-
-        for (let i = h / 2; i < h; i += 100) {
-          context.moveTo(0, i);
-          context.lineTo(w, i);
-          context.stroke();
-          context.moveTo(0, h - i);
-          context.lineTo(w, h - i);
-          context.stroke();
-        }
-
-        for (let i = w / 2; i < w; i += 100) {
-          context.moveTo(i, 0);
-          context.lineTo(i, h);
-          context.stroke();
-          context.moveTo(w - i, 0);
-          context.lineTo(w - i, h);
-          context.stroke();
-        }
-
-        context.restore();
-      }
-
-      function loadCanvas(dataURL, grid) {
-        document.getElementById('canvas').style.display = 'none';
-        document.getElementById('img_loading').style.display = 'block';
-
-        imageObj.onload = function () {
-          canvas.width = this.width;
-          canvas.height = this.height;
-
-          if (grid) {
-            drawRotated(true);
-            document.getElementById('take').disabled = false;
-          } else {
-            drawRotated(false);
-          }
-
-          // Ensure exactly one listener even after repeated image loads
-          canvas.removeEventListener('mousemove', mouseMove, false);
-          canvas.addEventListener('mousemove', mouseMove, false);
-
-          document.getElementById('canvas').style.display = 'block';
-          document.getElementById('img_loading').style.display = 'none';
-        };
-
-        imageObj.onerror = function () {
-          imageObj.onerror = null;
-          canvas.removeEventListener('mousemove', mouseMove, false);
-          imageObj.src = noImageAvailable;
-        };
-
-        imageObj.src = dataURL;
-      }
-
-      function getCoords(elem) {
-        // crossbrowser version
-        let box = elem.getBoundingClientRect();
-        let body = document.body;
-        let docEl = document.documentElement;
-        let scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-        let scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-        let clientTop = docEl.clientTop || body.clientTop || 0;
-        let clientLeft = docEl.clientLeft || body.clientLeft || 0;
-        let top = box.top + scrollTop - clientTop;
-        let left = box.left + scrollLeft - clientLeft;
-        return { top: Math.round(top), left: Math.round(left) };
-      }
-
-      function mouseMove(e) {
-        if (isActReference) drawRotated(false);
-        else drawRotated(true);
-
-        let zw = getCoords(this);
-        let x = e.pageX - zw.left;
-        let y = e.pageY - zw.top;
-
-        context.lineWidth = 1;
-        context.strokeStyle = 'rgb(160, 160, 160)';
-        context.beginPath();
-        context.moveTo(0, y);
-        context.lineTo(canvas.width, y);
-        context.moveTo(x, 0);
-        context.lineTo(x, canvas.height);
+      for (let i = h / 2; i < h; i += 100) {
+        context.moveTo(0, i);
+        context.lineTo(w, i);
+        context.stroke();
+        context.moveTo(0, h - i);
+        context.lineTo(w, h - i);
         context.stroke();
       }
 
-      function saveReference()
-      {
-          if (confirm('Are you sure you want to save and apply the new camera configuration and reference image?')) {
-              document.getElementById("savereference").disabled = true;
-
-              drawRotated(false);
-              saveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
-
-              saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
-          }
+      for (let i = w / 2; i < w; i += 100) {
+        context.moveTo(i, 0);
+        context.lineTo(i, h);
+        context.stroke();
+        context.moveTo(w - i, 0);
+        context.lineTo(w - i, h);
+        context.stroke();
       }
 
-      function showReference() {
-        if (currentBlobUrl) {
-          URL.revokeObjectURL(currentBlobUrl);
-          currentBlobUrl = null;
+      context.restore();
+    }
+
+    function loadCanvas(dataURL, grid) {
+      document.getElementById('canvas').style.display = 'none';
+      document.getElementById('img_loading').style.display = 'block';
+
+      imageObj.onload = function () {
+        canvas.width = this.width;
+        canvas.height = this.height;
+
+        if (grid) {
+          drawRotated(true);
+          document.getElementById('take').disabled = false;
+        } else {
+          drawRotated(false);
         }
-        let url = getDomainname() + '/fileserver/config/reference.jpg?' + Math.floor(Math.random() * 1000000 + 1);
-        loadCanvas(url, false);
-        isActReference = true;
 
-        document.getElementById('savereference').disabled = true;
-        document.getElementById('createreference').disabled = false;
-        document.getElementById('showactualimage').disabled = true;
-        document.getElementById('take').disabled = true;
+        // Ensure exactly one listener even after repeated image loads
+        canvas.removeEventListener('mousemove', mouseMove, false);
+        canvas.addEventListener('mousemove', mouseMove, false);
 
-        let jsonConfigKeyified = []; // Config: array as key-value pairs
-        [jsonConfig, jsonConfigKeyified] = getConfigFromStorage(2); // Get config
-        parseCurrentParametrization(jsonConfigKeyified);
+        document.getElementById('canvas').style.display = 'block';
+        document.getElementById('img_loading').style.display = 'none';
+      };
 
-        triggerClassElementOnChange('classvisibility_init'); // Init subparameter lock
-        setClassEnabled('camParameter', false); // Lock input for all camera parameter
+      imageObj.onerror = function () {
+        imageObj.onerror = null;
+        canvas.removeEventListener('mousemove', mouseMove, false);
+        imageObj.src = noImageAvailable;
+      };
+
+      imageObj.src = dataURL;
+    }
+
+    function getCoords(elem) {
+      // crossbrowser version
+      let box = elem.getBoundingClientRect();
+      let body = document.body;
+      let docEl = document.documentElement;
+      let scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+      let scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+      let clientTop = docEl.clientTop || body.clientTop || 0;
+      let clientLeft = docEl.clientLeft || body.clientLeft || 0;
+      let top = box.top + scrollTop - clientTop;
+      let left = box.left + scrollLeft - clientLeft;
+      return { top: Math.round(top), left: Math.round(left) };
+    }
+
+    function mouseMove(e) {
+      if (isActReference) drawRotated(false);
+      else drawRotated(true);
+
+      let zw = getCoords(this);
+      let x = e.pageX - zw.left;
+      let y = e.pageY - zw.top;
+
+      context.lineWidth = 1;
+      context.strokeStyle = 'rgb(160, 160, 160)';
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
+    }
+
+    function saveReference() {
+      if (confirm('Are you sure you want to save and apply the new camera configuration and reference image?')) {
+        document.getElementById("savereference").disabled = true;
+
+        drawRotated(false);
+        saveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
+
+        saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
       }
+    }
 
-      function loadConfigData() {
-        showReference();
-        setVariableInputLimits();
+    function showReference() {
+      if (currentBlobUrl) {
+        URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = null;
       }
+      let url = getDomainname() + '/fileserver/config/reference.jpg?' + Math.floor(Math.random() * 1000000 + 1);
+      loadCanvas(url, false);
+      isActReference = true;
 
-      /* hash #description open the details part of the page */
-      function openDescription() {
-        if (window.location.hash) {
-          let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
-          if (hash == 'description') document.getElementById('desc_details').open = true;
-        }
+      document.getElementById('savereference').disabled = true;
+      document.getElementById('createreference').disabled = false;
+      document.getElementById('showactualimage').disabled = true;
+      document.getElementById('take').disabled = true;
+
+      let jsonConfigKeyified = []; // Config: array as key-value pairs
+      [jsonConfig, jsonConfigKeyified] = getConfigFromStorage(2); // Get config
+      parseCurrentParametrization(jsonConfigKeyified);
+
+      triggerClassElementOnChange('classvisibility_init'); // Init subparameter lock
+      setClassEnabled('camParameter', false); // Lock input for all camera parameter
+    }
+
+    function loadConfigData() {
+      showReference();
+      setVariableInputLimits();
+    }
+
+    // hash #description open the details part of the page
+    function openDescription() {
+      if (window.location.hash) {
+        let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+        if (hash == 'description') document.getElementById('desc_details').open = true;
       }
+    }
 
-      async function init() {
-        openDescription();
+    async function init() {
+      openDescription();
 
-        const loader = document.getElementById('img_loading');
-        if (loader) loader.src = loaderSpinner;
+      const loader = document.getElementById('img_loading');
+      if (loader) loader.src = loaderSpinner;
 
-        try {
-          await loadConfig();
-          await loadConfigData();
-        } catch (err) {
-          firework.launch('Failed to load config. Retry or check logs', 'danger', 3000);
-          console.error('Failed to load config:', err);
-        }
+      try {
+        await loadConfig();
+        await loadConfigData();
+      } catch (err) {
+        firework.launch('Failed to load config. Retry or check logs', 'danger', 3000);
+        console.error('Failed to load config:', err);
       }
+    }
 
-      init();
-    </script>
-  </body>
+    init();
+  </script>
+</body>
+
 </html>

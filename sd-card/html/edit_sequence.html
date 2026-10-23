@@ -12,7 +12,7 @@
       if (theme === 'light' || theme === 'dark') {
         document.documentElement.classList.add(theme);
       }
-    } catch (e) {}
+    } catch (e) { }
   </script>
 
   <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
@@ -1092,7 +1092,7 @@
     function loadCanvas(dataURL) {
       document.getElementById('canvas').style.display = 'none';
       document.getElementById('img_loading').style.display = 'block';
-      imageObj.onload = function() {
+      imageObj.onload = function () {
         canvas.width = this.width;
         canvas.height = this.height;
         RefreshDraw();
@@ -1106,7 +1106,7 @@
         document.getElementById('img_loading').style.display = 'none';
         document.getElementById('canvas').style.display = 'block';
       };
-      imageObj.onerror = function() {
+      imageObj.onerror = function () {
         imageObj.onerror = null;
         canvas.removeEventListener('mousedown', mouseDown, false);
         canvas.removeEventListener('mouseup', mouseUp, false);
@@ -1131,15 +1131,15 @@
       }
       if (y - height - 8 >= 0) {
         // If no space on top of ROI place text below ROI
-        /* Background rectangle */
+        // Background rectangle
         context.fillRect(x - width / 2 - padding, y - height - 8, width + 2 * padding, height + 2 * padding);
-        /* Text */
+        // Text
         context.fillStyle = 'black';
         context.fillText(txt, x + padding / 2 - 1, y - height / 2 - 1);
       } else {
-        /* Background rectangle */
+        // Background rectangle
         context.fillRect(x - width / 2 - padding, y + dy + 4, width + 2 * padding, height + 2 * padding);
-        /* Text */
+        // Text
         context.fillStyle = 'black';
         context.fillText(txt, x + padding / 2 - 1, y + dy + height + 2 * padding);
       }
@@ -1434,22 +1434,21 @@
     }
 
 
-    function saveToConfig()
-    {
-        if (confirm("Are you sure you want to save and apply the new configuration?")) {
-            document.getElementById("saveconfig").disabled = true;
+    function saveToConfig() {
+      if (confirm("Are you sure you want to save and apply the new configuration?")) {
+        document.getElementById("saveconfig").disabled = true;
 
-			saveConfig(JSON.stringify(jsonConfigModifiedDelta), true).then(() => {
-                setTimeout(function() {
-                    loadConfigData();
-                    RefreshROI();
-                }, 500);
-			});
-        }
+        saveConfig(JSON.stringify(jsonConfigModifiedDelta), true).then(() => {
+          setTimeout(function () {
+            loadConfigData();
+            RefreshROI();
+          }, 500);
+        });
+      }
     }
 
 
-    /* hash #description open the details part of the page */
+    // hash #description open the details part of the page
     function openDescription() {
       if (window.location.hash) {
         let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character

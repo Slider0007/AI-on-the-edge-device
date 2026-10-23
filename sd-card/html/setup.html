@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en" xml:lang="en">
+
 <head>
   <title>AI-on-the-Edge Device | Initial Setup Wizard</title>
   <meta charset="UTF-8" />
@@ -596,18 +597,21 @@
                   <td>
                     <form class="form_gpio_config" id="gpio_gpiopin_smartled_color_form">
                       R
-                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorredchannel" id="gpio_gpiopin_0_smartled_colorredchannel_value" onchange="
+                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorredchannel"
+                        id="gpio_gpiopin_0_smartled_colorredchannel_value" onchange="
                               (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
                               gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                               gatherChangedParameter(this.form, true);
                             " />
                       G
-                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorgreenchannel" id="gpio_gpiopin_0_smartled_colorgreenchannel_value" onchange="
+                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorgreenchannel"
+                        id="gpio_gpiopin_0_smartled_colorgreenchannel_value" onchange="
                               (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
                               gatherChangedParameter(this.form, true);
                             " />
                       B
-                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorbluechannel" id="gpio_gpiopin_0_smartled_colorbluechannel_value" onchange="
+                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorbluechannel"
+                        id="gpio_gpiopin_0_smartled_colorbluechannel_value" onchange="
                               (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
                               gatherChangedParameter(this.form, true);
                             " />
@@ -620,7 +624,8 @@
                   <td class="indent2"><span>LED Intensity Correction</span></td>
                   <td>
                     <form class="form_gpio_config" id="gpio_gpiopin_intensitycorrectionfactor_form">
-                      <input required type="number" min="1" max="100" value="100" name="gpio.gpiopin.0.intensitycorrectionfactor" id="gpio_gpiopin_0_intensitycorrectionfactor_value" onchange="
+                      <input required type="number" min="1" max="100" value="100" name="gpio.gpiopin.0.intensitycorrectionfactor"
+                        id="gpio_gpiopin_0_intensitycorrectionfactor_value" onchange="
                               (!validity.rangeUnderflow || (value = 1)) && (!validity.rangeOverflow || (value = 100));
                               gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                               gatherChangedParameter(this.form, true);
@@ -636,7 +641,8 @@
                   </td>
                   <td>
                     <form id="takeimage_flashlight_flashtime_form">
-                      <input required type="number" min="100" step="100" value="2000" name="takeimage.flashlight.flashtime" id="takeimage_flashlight_flashtime_value" onchange="
+                      <input required type="number" min="100" step="100" value="2000" name="takeimage.flashlight.flashtime" id="takeimage_flashlight_flashtime_value"
+                        onchange="
                               (!validity.rangeUnderflow || (value = 100)) && (!validity.stepMismatch || (value = this.value));
                               gatherChangedParameter(this.form, true);
                             " />
@@ -651,7 +657,8 @@
                   </td>
                   <td>
                     <form id="takeimage_flashlight_flashintensity_form">
-                      <input required type="number" min="0" max="100" value="50" name="takeimage.flashlight.flashintensity" id="takeimage_flashlight_flashintensity_value" onchange="
+                      <input required type="number" min="0" max="100" value="50" name="takeimage.flashlight.flashintensity" id="takeimage_flashlight_flashintensity_value"
+                        onchange="
                               (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 100));
                               gatherChangedParameter(this.form, true);
                             " />
@@ -826,7 +833,7 @@
       initEventListeners() {
         // Password Toggle Logic
         document.querySelectorAll('.toggle-password').forEach((el) => {
-          el.addEventListener('click', function() {
+          el.addEventListener('click', function () {
             const input = document.querySelector(this.getAttribute('toggle'));
             input.type = input.type === 'password' ? 'text' : 'password';
           });
@@ -1012,7 +1019,7 @@
       let gpioPinSelect = $("[id$='gpionumber_value']")[0];
       $('.form_gpio_config')
         .children()
-        .each(function() {
+        .each(function () {
           this.name =
             this.name.split('.gpiopin.')[0] +
             '.gpiopin.' +
@@ -1085,7 +1092,7 @@
 
         const rawImg = new Image();
 
-        rawImg.onload = function() {
+        rawImg.onload = function () {
           if (isFinished) return;
           clearTimeout(timeoutId);
           cleanup();
@@ -1093,7 +1100,7 @@
           resolve(true);
         };
 
-        rawImg.onerror = function() {
+        rawImg.onerror = function () {
           if (isFinished) return;
           clearTimeout(timeoutId);
           cleanup();
@@ -1125,7 +1132,7 @@
       const checkToggle = document.getElementById('auto_capture_toggle');
       if (checkToggle && checkToggle.checked) {
         if (!ok) await new Promise((r) => setTimeout(r, 2000));
-+        autoRefreshRawImage(true);
+        +        autoRefreshRawImage(true);
       }
     }
 

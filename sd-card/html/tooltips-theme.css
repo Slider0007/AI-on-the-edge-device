@@ -5,9 +5,7 @@
  *
  * https://github.com/readthedocs/sphinx_rtd_theme
  */
-
 /* sphinx_rtd_theme version 1.0.0 | MIT license */
-
 .hidden {
   display: none !important;
   visibility: hidden;
@@ -292,10 +290,10 @@ html {
   height: auto;
 }
 
-.rst-content .section > a > img,
-.rst-content .section > img,
-.rst-content section > a > img,
-.rst-content section > img {
+.rst-content .section>a>img,
+.rst-content .section>img,
+.rst-content section>a>img,
+.rst-content section>img {
   margin-bottom: 24px;
 }
 
@@ -312,23 +310,23 @@ html {
 }
 
 .rst-content .admonition .last,
-.rst-content .admonition > :last-child,
+.rst-content .admonition> :last-child,
 .rst-content .caution .last,
-.rst-content .caution > :last-child,
+.rst-content .caution> :last-child,
 .rst-content .danger .last,
-.rst-content .danger > :last-child,
+.rst-content .danger> :last-child,
 .rst-content .error .last,
-.rst-content .error > :last-child,
+.rst-content .error> :last-child,
 .rst-content .hint .last,
-.rst-content .hint > :last-child,
+.rst-content .hint> :last-child,
 .rst-content .important .last,
-.rst-content .important > :last-child,
+.rst-content .important> :last-child,
 .rst-content .note .last,
-.rst-content .note > :last-child,
+.rst-content .note> :last-child,
 .rst-content .tip .last,
-.rst-content .tip > :last-child,
+.rst-content .tip> :last-child,
 .rst-content .warning .last,
-.rst-content .warning > :last-child {
+.rst-content .warning> :last-child {
   margin-bottom: 0;
 }
 
@@ -346,33 +344,33 @@ html {
   border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
-.rst-content .section ul li > *,
-.rst-content section ul li > * {
+.rst-content .section ul li>*,
+.rst-content section ul li>* {
   margin-top: 12px;
   margin-bottom: 12px;
 }
 
-.rst-content .section ul li > :first-child,
-.rst-content section ul li > :first-child {
+.rst-content .section ul li> :first-child,
+.rst-content section ul li> :first-child {
   margin-top: 0;
 }
 
-.rst-content .section ul li > p,
-.rst-content .section ul li > p:last-child,
-.rst-content section ul li > p,
-.rst-content section ul li > p:last-child {
+.rst-content .section ul li>p,
+.rst-content .section ul li>p:last-child,
+.rst-content section ul li>p,
+.rst-content section ul li>p:last-child {
   margin-bottom: 12px;
 }
 
-.rst-content .section ul li > p:only-child,
-.rst-content .section ul li > p:only-child:last-child,
-.rst-content section ul li > p:only-child,
-.rst-content section ul li > p:only-child:last-child {
+.rst-content .section ul li>p:only-child,
+.rst-content .section ul li>p:only-child:last-child,
+.rst-content section ul li>p:only-child,
+.rst-content section ul li>p:only-child:last-child {
   margin-bottom: 0;
 }
 
-.rst-content .section ul li > ul,
-.rst-content section ul li > ul {
+.rst-content .section ul li>ul,
+.rst-content section ul li>ul {
   margin-bottom: 12px;
 }
 

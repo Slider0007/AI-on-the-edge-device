@@ -1,730 +1,732 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <title>Data Viewer</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
 
-    <style>
-      :root {
-        --success-bg: #d4edda;
-        --success-text: #155724;
-        --warning-bg: #fff3cd;
-        --warning-text: #856404;
-        --danger-bg: #f8d7da;
-        --danger-text: #721c24;
-        --virtual-row-height: 29px;
+<head>
+  <title>Data Viewer</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
+
+  <style>
+    :root {
+      --success-bg: #d4edda;
+      --success-text: #155724;
+      --warning-bg: #fff3cd;
+      --warning-text: #856404;
+      --danger-bg: #f8d7da;
+      --danger-text: #721c24;
+      --virtual-row-height: 29px;
+    }
+
+    html,
+    body {
+      width: unset;
+      max-width: unset;
+    }
+
+    input[type='number'],
+    input[type='datetime-local'],
+    .date-input {
+      font-family: inherit;
+      font-size: inherit;
+      padding: 3px 5px;
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: var(--input-radius);
+      vertical-align: middle;
+      max-width: 195px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type='number'] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    input[type='datetime-local']::-webkit-datetime-edit {
+      display: inline-flex;
+      padding: 0;
+    }
+
+    .container {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .container-header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      gap: 6px;
+    }
+
+    .container-content {
+      position: relative;
+      padding: 0;
+      flex-grow: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    #scrollContainer {
+      flex: 1;
+      overflow: auto;
+    }
+
+    #loading-bar {
+      height: 2px;
+      width: 0%;
+      background: var(--primary);
+      z-index: 1000;
+      transition: width 0.3s ease;
+    }
+
+    .scroll-bottom-btn {
+      position: absolute;
+      right: 30px;
+      bottom: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      z-index: 500;
+      opacity: 1;
+      transform: translateY(0);
+      transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
+    }
+
+    .scroll-bottom-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .scroll-bottom-btn:hover {
+      filter: brightness(1.1);
+    }
+
+    .scroll-bottom-btn.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+    }
+
+    table {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-variant-numeric: tabular-nums;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--bg);
+      font-size: 12px;
+      min-width: 100%;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .thead-main th {
+      padding: 10px;
+      background: var(--bg-header);
+      color: var(--text-main);
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    .numeric-right {
+      text-align: right !important;
+    }
+
+    .thead-stats th {
+      padding: 1px 10px;
+      background: var(--bg-header);
+      border-bottom: 2px solid var(--border);
+    }
+
+    tr.virtual-data-row {
+      height: var(--virtual-row-height);
+    }
+
+    tr.virtual-data-row td {
+      height: var(--virtual-row-height);
+      box-sizing: border-box;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tr.virtual-data-row:hover td {
+      background-color: var(--surface-hover) !important;
+    }
+
+    tr.virtual-spacer {
+      height: 0;
+    }
+
+    tr.virtual-spacer td {
+      padding: 0 !important;
+      border: 0 !important;
+      height: 0;
+      line-height: 0;
+    }
+
+    .stat-select {
+      font-size: 12px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: var(--input-radius);
+    }
+
+    .status-badge {
+      padding: 0px 6px;
+      border-radius: var(--input-radius);
+      font-weight: normal;
+    }
+
+    .status-ok {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border: none;
+    }
+
+    .status-err {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border: none;
+    }
+
+    .ocr-container {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+    }
+
+    .ocr-value {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 32px;
+      border-radius: var(--input-radius);
+      font-size: 12px;
+      letter-spacing: -0.05em;
+      border: none;
+      cursor: pointer;
+      padding: 0px;
+      position: relative;
+    }
+
+    .ocr-value::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      background: var(--bg-tooltip);
+      color: var(--text-main);
+      padding: 4px 6px;
+      font-size: 12px;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 99;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transform: translateX(-50%) scale(0.85);
+      transition:
+        opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: 0.75s;
+    }
+
+    .ocr-value:hover::after,
+    .ocr-value:active::after,
+    .ocr-value:focus-visible::after,
+    .ocr-value.is-active::after {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+      transition-delay: 0.3s;
+    }
+
+    .ocr-value:not([data-tooltip]) {
+      cursor: auto !important;
+    }
+
+    .ocr-value:not([data-tooltip]):hover::after,
+    .ocr-value:not([data-tooltip]):active::after,
+    .ocr-value:not([data-tooltip]):focus-visible::after {
+      display: none !important;
+    }
+
+    .lvl-high {
+      background-color: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    .lvl-med {
+      background-color: var(--warning-bg);
+      color: var(--warning-text);
+    }
+
+    .lvl-low {
+      background-color: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    @media screen and (max-width: 720px) {
+
+      table,
+      thead th {
+        font-size: 14px;
       }
 
-      html,
-      body {
-        width: unset;
-        max-width: unset;
-      }
-
-      input[type='number'],
-      input[type='datetime-local'],
-      .date-input {
-        font-family: inherit;
-        font-size: inherit;
-        padding: 3px 5px;
-        display: inline-block;
-        border: 1px solid var(--border);
-        border-radius: var(--input-radius);
-        vertical-align: middle;
-        max-width: 195px;
-        -webkit-appearance: none;
-        appearance: none;
-      }
-
-      input[type='number'] {
-        -moz-appearance: textfield;
-        appearance: textfield;
-      }
-
-      input[type='datetime-local']::-webkit-datetime-edit {
-        display: inline-flex;
-        padding: 0;
-      }
-
-      .container {
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-      }
-
-      .container-header {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .header-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 18px;
-      }
-
-      .controls-row {
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
-        gap: 6px;
-      }
-
-      .container-content {
-        position: relative;
-        padding: 0;
-        flex-grow: 1;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-      }
-
-      #scrollContainer {
-        flex: 1;
-        overflow: auto;
-      }
-
-      #loading-bar {
-        height: 2px;
-        width: 0%;
-        background: var(--primary);
-        z-index: 1000;
-        transition: width 0.3s ease;
-      }
-
-      .scroll-bottom-btn {
-        position: absolute;
-        right: 30px;
-        bottom: 30px;
-        width: 50px;
-        height: 50px;
-        border-radius: 1rem;
-        border: 1px solid var(--border);
-        background: var(--primary);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-        z-index: 500;
-        opacity: 1;
-        transform: translateY(0);
-        transition:
-          opacity 0.15s ease,
-          transform 0.15s ease;
-      }
-
-      .scroll-bottom-btn svg {
-        width: 18px;
-        height: 18px;
-      }
-
-      .scroll-bottom-btn:hover {
-        filter: brightness(1.1);
-      }
-
-      .scroll-bottom-btn.hidden {
-        opacity: 0;
-        pointer-events: none;
-        transform: translateY(8px);
-      }
-
-      table {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-variant-numeric: tabular-nums;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: var(--bg);
-        font-size: 12px;
-        min-width: 100%;
-      }
-
-      thead {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-
-      .thead-main th {
-        padding: 10px;
-        background: var(--bg-header);
-        color: var(--text-main);
-        text-align: left;
-        text-transform: uppercase;
-      }
-
-      .numeric-right {
-        text-align: right !important;
-      }
-
-      .thead-stats th {
-        padding: 1px 10px;
-        background: var(--bg-header);
-        border-bottom: 2px solid var(--border);
-      }
-
-      tr.virtual-data-row {
-        height: var(--virtual-row-height);
-      }
-
-      tr.virtual-data-row td {
-        height: var(--virtual-row-height);
-        box-sizing: border-box;
-        padding: 6px 10px;
-        border-bottom: 1px solid var(--border);
-        white-space: nowrap;
-      }
-
-      tr.virtual-data-row:hover td {
-        background-color: var(--surface-hover) !important;
-      }
-
-      tr.virtual-spacer {
-        height: 0;
-      }
-
-      tr.virtual-spacer td {
-        padding: 0 !important;
-        border: 0 !important;
-        height: 0;
-        line-height: 0;
-      }
-
+      .ocr-value,
       .stat-select {
-        font-size: 12px;
-        padding: 4px;
-        border: 1px solid var(--border);
-        border-radius: var(--input-radius);
+        font-size: 14px !important;
       }
 
-      .status-badge {
-        padding: 0px 6px;
-        border-radius: var(--input-radius);
-        font-weight: normal;
+      .ocr-value:hover::after {
+        transition-delay: 0.05s;
       }
+    }
+  </style>
 
-      .status-ok {
-        background: var(--success-bg);
-        color: var(--success-text);
-        border: none;
-      }
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="firework.js?v=$COMMIT_HASH"></script>
+</head>
 
-      .status-err {
-        background: var(--danger-bg);
-        color: var(--danger-text);
-        border: none;
-      }
-
-      .ocr-container {
-        display: flex;
-        gap: 2px;
-        align-items: center;
-      }
-
-      .ocr-value {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 32px;
-        border-radius: var(--input-radius);
-        font-size: 12px;
-        letter-spacing: -0.05em;
-        border: none;
-        cursor: pointer;
-        padding: 0px;
-        position: relative;
-      }
-
-      .ocr-value::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: 125%;
-        left: 50%;
-        background: var(--bg-tooltip);
-        color: var(--text-main);
-        padding: 4px 6px;
-        font-size: 12px;
-        border-radius: 4px;
-        white-space: nowrap;
-        opacity: 0;
-        pointer-events: none;
-        z-index: 99;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        transform: translateX(-50%) scale(0.85);
-        transition:
-          opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-          transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        transition-delay: 0.75s;
-      }
-
-      .ocr-value:hover::after,
-      .ocr-value:active::after,
-      .ocr-value:focus-visible::after,
-      .ocr-value.is-active::after {
-        opacity: 1;
-        transform: translateX(-50%) scale(1);
-        transition-delay: 0.3s;
-      }
-
-      .ocr-value:not([data-tooltip]) {
-        cursor: auto !important;
-      }
-
-      .ocr-value:not([data-tooltip]):hover::after,
-      .ocr-value:not([data-tooltip]):active::after,
-      .ocr-value:not([data-tooltip]):focus-visible::after {
-        display: none !important;
-      }
-
-      .lvl-high {
-        background-color: var(--success-bg);
-        color: var(--success-text);
-      }
-
-      .lvl-med {
-        background-color: var(--warning-bg);
-        color: var(--warning-text);
-      }
-
-      .lvl-low {
-        background-color: var(--danger-bg);
-        color: var(--danger-text);
-      }
-
-      @media screen and (max-width: 720px) {
-        table,
-        thead th {
-          font-size: 14px;
-        }
-
-        .ocr-value,
-        .stat-select {
-          font-size: 14px !important;
-        }
-
-        .ocr-value:hover::after {
-          transition-delay: 0.05s;
-        }
-      }
-    </style>
-
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
-    <script src="firework.js?v=$COMMIT_HASH"></script>
-  </head>
-
-  <body>
-    <div class="container">
-      <div class="container-header">
-        <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%">
-          <div class="container-title"><span>📋</span>Data Viewer</div>
-          <div class="refresh-group">
-            <div id="autoRefreshSettings" class="refresh-settings is-disabled">
-              <input type="checkbox" id="autoRefreshCtrl" onchange="autoRefreshContent()" />
-              <label for="autoRefreshCtrl"> Auto Refresh </label>
-              <span>(</span>
-              <span class="timer-wrap">
-                <input type="number" id="autoRefreshTime" min="1" value="60" onchange="if (value < 1) value = 1; autoRefreshContent();" />
-              </span>
-              <span>) s</span>
-            </div>
-            <div class="refresh-timestamp">
-              <span style="font-size: 14px">↻</span>
-              <output id="refreshTimestamp">--:--:--</output>
-            </div>
+<body>
+  <div class="container">
+    <div class="container-header">
+      <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%">
+        <div class="container-title"><span>📋</span>Data Viewer</div>
+        <div class="refresh-group">
+          <div id="autoRefreshSettings" class="refresh-settings is-disabled">
+            <input type="checkbox" id="autoRefreshCtrl" onchange="autoRefreshContent()" />
+            <label for="autoRefreshCtrl"> Auto Refresh </label>
+            <span>(</span>
+            <span class="timer-wrap">
+              <input type="number" id="autoRefreshTime" min="1" value="60" onchange="if (value < 1) value = 1; autoRefreshContent();" />
+            </span>
+            <span>) s</span>
           </div>
-        </div>
-        <div class="header-row" style="display: flex; justify-content: flex-end; width: 100%">
-          <div class="controls-row">
-            <div>
-              <input type="checkbox" id="dateRangeCtrl" onchange="autoRefreshContent()" />
-              <label for="dateRangeCtrl"> Range: </label>
-            </div>
-            <div>
-              <input type="datetime-local" id="startTime" class="date-input" disabled />
-              <input type="datetime-local" id="endTime" class="date-input" disabled />
-            </div>
-            <div class="refresh-loader">
-              <div id="refreshLoadingImg" class="loader">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" class="spinner-svg">
-                  <path d="M12 3a9 9 0 1 1-6.36 2.64"></path>
-                </svg>
-              </div>
-              <button id="refreshButton" onclick="refreshContent()" class="button btn-action">Refresh</button>
-            </div>
+          <div class="refresh-timestamp">
+            <span style="font-size: 14px">↻</span>
+            <output id="refreshTimestamp">--:--:--</output>
           </div>
         </div>
       </div>
-
-      <div class="container-content">
-        <div id="loading-bar"></div>
-        <div id="scrollContainer">
-          <table>
-            <thead>
-              <tr class="thead-main">
-                <th>Timestamp</th>
-                <th>Sequence</th>
-                <th class="numeric-right">Actual</th>
-                <th class="numeric-right">Raw</th>
-                <th class="numeric-right">Fallback</th>
-                <th class="numeric-right">Rate/Min</th>
-                <th class="numeric-right">Rate/Abs</th>
-                <th>Status</th>
-                <th id="th-digits">Digit Result <span id="th-conf-text">+ Confidence</span></th>
-                <th id="th-score" class="numeric-right">Score</th>
-                <th id="th-minscr" class="numeric-right">MinScr</th>
-              </tr>
-
-              <tr id="statsRow" class="thead-stats filter-row-large">
-                <th></th>
-                <th style="text-align: left">
-                  <select id="filterSeq" onchange="applyFilter()" class="stat-select">
-                    <option value="all">All</option>
-                  </select>
-                </th>
-
-                <th colspan="5"></th>
-                <th style="text-align: left">
-                  <select id="filterStat" onchange="applyFilter()" class="stat-select">
-                    <option value="all">All</option>
-                    <option value="error">Errors</option>
-                  </select>
-                </th>
-
-                <th id="digitMeansContainer"></th>
-                <th id="m-mscr" class="numeric-right"></th>
-                <th id="m-dscr" class="numeric-right"></th>
-              </tr>
-            </thead>
-            <tbody id="dataBody"></tbody>
-          </table>
+      <div class="header-row" style="display: flex; justify-content: flex-end; width: 100%">
+        <div class="controls-row">
+          <div>
+            <input type="checkbox" id="dateRangeCtrl" onchange="autoRefreshContent()" />
+            <label for="dateRangeCtrl"> Range: </label>
+          </div>
+          <div>
+            <input type="datetime-local" id="startTime" class="date-input" disabled />
+            <input type="datetime-local" id="endTime" class="date-input" disabled />
+          </div>
+          <div class="refresh-loader">
+            <div id="refreshLoadingImg" class="loader">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" class="spinner-svg">
+                <path d="M12 3a9 9 0 1 1-6.36 2.64"></path>
+              </svg>
+            </div>
+            <button id="refreshButton" onclick="refreshContent()" class="button btn-action">Refresh</button>
+          </div>
         </div>
-        <button id="scrollToEndBtn" class="scroll-bottom-btn hidden" type="button" title="Scroll to end" aria-label="Scroll to end" onclick="scrollVirtualToBottom()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5v14"></path>
-            <path d="M6 13l6 6 6-6"></path>
-          </svg>
-        </button>
       </div>
     </div>
 
-    <script src="global.js?v=$COMMIT_HASH"></script>
-    <script>
-      let autoRefreshTimeoutHandle = null;
-      let refreshRunning = false;
-      let fetchedFiles = new Map();
-      const sequenceNames = new Set();
-      let hasModernFormat = false;
+    <div class="container-content">
+      <div id="loading-bar"></div>
+      <div id="scrollContainer">
+        <table>
+          <thead>
+            <tr class="thead-main">
+              <th>Timestamp</th>
+              <th>Sequence</th>
+              <th class="numeric-right">Actual</th>
+              <th class="numeric-right">Raw</th>
+              <th class="numeric-right">Fallback</th>
+              <th class="numeric-right">Rate/Min</th>
+              <th class="numeric-right">Rate/Abs</th>
+              <th>Status</th>
+              <th id="th-digits">Digit Result <span id="th-conf-text">+ Confidence</span></th>
+              <th id="th-score" class="numeric-right">Score</th>
+              <th id="th-minscr" class="numeric-right">MinScr</th>
+            </tr>
 
-      const VIRTUAL_ROW_HEIGHT = 29;
-      const VIRTUAL_BUFFER_ROWS = 12;
+            <tr id="statsRow" class="thead-stats filter-row-large">
+              <th></th>
+              <th style="text-align: left">
+                <select id="filterSeq" onchange="applyFilter()" class="stat-select">
+                  <option value="all">All</option>
+                </select>
+              </th>
 
-      let virtualRows = [];
-      let virtualStats = null;
+              <th colspan="5"></th>
+              <th style="text-align: left">
+                <select id="filterStat" onchange="applyFilter()" class="stat-select">
+                  <option value="all">All</option>
+                  <option value="error">Errors</option>
+                </select>
+              </th>
 
-      let virtualContainer = null;
-      let virtualScrollHandler = null;
-      let virtualRenderPending = false;
-      let scrollBtn = null;
+              <th id="digitMeansContainer"></th>
+              <th id="m-mscr" class="numeric-right"></th>
+              <th id="m-dscr" class="numeric-right"></th>
+            </tr>
+          </thead>
+          <tbody id="dataBody"></tbody>
+        </table>
+      </div>
+      <button id="scrollToEndBtn" class="scroll-bottom-btn hidden" type="button" title="Scroll to end" aria-label="Scroll to end" onclick="scrollVirtualToBottom()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14"></path>
+          <path d="M6 13l6 6 6-6"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
 
-      function escapeHtml(value) {
-        return String(value)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;');
+  <script src="global.js?v=$COMMIT_HASH"></script>
+  <script>
+    let autoRefreshTimeoutHandle = null;
+    let refreshRunning = false;
+    let fetchedFiles = new Map();
+    const sequenceNames = new Set();
+    let hasModernFormat = false;
+
+    const VIRTUAL_ROW_HEIGHT = 29;
+    const VIRTUAL_BUFFER_ROWS = 12;
+
+    let virtualRows = [];
+    let virtualStats = null;
+
+    let virtualContainer = null;
+    let virtualScrollHandler = null;
+    let virtualRenderPending = false;
+    let scrollBtn = null;
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getLevelClass(conf) {
+      if (isNaN(conf) || conf === -100) return '';
+      if (conf >= 0.9) return 'lvl-high';
+      if (conf >= 0.8) return 'lvl-med';
+      return 'lvl-low';
+    }
+
+    function updateSequenceNames(csv) {
+      for (const line of csv.split('\n')) {
+        if (!line) continue;
+        const comma = line.indexOf(',');
+        if (comma < 0) continue;
+        const end = line.indexOf(',', comma + 1);
+        const seq = line.slice(comma + 1, end < 0 ? undefined : end);
+        if (seq) sequenceNames.add(seq);
       }
+    }
 
-      function getLevelClass(conf) {
-        if (isNaN(conf) || conf === -100) return '';
-        if (conf >= 0.9) return 'lvl-high';
-        if (conf >= 0.8) return 'lvl-med';
-        return 'lvl-low';
+    function populateSeqSelector() {
+      const select = document.getElementById('filterSeq');
+      const currentVal = select.value;
+      select.innerHTML = '<option value="all">All</option>';
+      Array.from(sequenceNames)
+        .sort()
+        .forEach((seq) => {
+          select.add(new Option(seq, seq));
+        });
+      select.value = currentVal;
+    }
+
+    function parseFileDate(file) {
+      const match = file.match(/data_(\d{4}-\d{2}-\d{2})\.csv/);
+      if (!match) return null;
+      const [y, m, d] = match[1].split('-');
+      return new Date(+y, +m - 1, +d).getTime();
+    }
+
+    function isTodayFile(fileTime) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return fileTime === today.getTime();
+    }
+
+    async function reload() {
+      const isDateRangeCtrlDisabled = !document.getElementById('dateRangeCtrl').checked;
+      const startTs = new Date(document.getElementById('startTime').value).getTime();
+      const endTs = new Date(document.getElementById('endTime').value).getTime();
+
+      try {
+        await fetchFilesInTimeRange(isDateRangeCtrlDisabled, startTs, endTs);
+        populateSeqSelector();
+        applyFilter();
+
+        const now = new Date();
+        document.getElementById('refreshTimestamp').value = now.toLocaleTimeString([], { hour12: false });
+      } catch (err) {
+        firework.launch('Data loading failed', 'danger', 10000);
+        console.error('Data viewer reload failed:', err);
       }
+    }
 
-      function updateSequenceNames(csv) {
-        for (const line of csv.split('\n')) {
-          if (!line) continue;
-          const comma = line.indexOf(',');
-          if (comma < 0) continue;
-          const end = line.indexOf(',', comma + 1);
-          const seq = line.slice(comma + 1, end < 0 ? undefined : end);
-          if (seq) sequenceNames.add(seq);
+    async function fetchFilesInTimeRange(useTail, startTime, endTime) {
+      const bar = document.getElementById('loading-bar');
+      let currentProgress = 30;
+      bar.style.width = currentProgress + '%';
+
+      const dataFileListObj = await getDataFileList();
+
+      const filesInRange = dataFileListObj.files.filter((f) => {
+        const fileTime = parseFileDate(f);
+        if (!fileTime) return false;
+        const fileEnd = fileTime + 24 * 3600000;
+        return fileTime < endTime && fileEnd > startTime;
+      });
+
+      for (const f of filesInRange) {
+        const isToday = isTodayFile(parseFileDate(f));
+
+        if (fetchedFiles.has(f) && !isToday) {
+          continue;
         }
-      }
 
-      function populateSeqSelector() {
-        const select = document.getElementById('filterSeq');
-        const currentVal = select.value;
-        select.innerHTML = '<option value="all">All</option>';
-        Array.from(sequenceNames)
-          .sort()
-          .forEach((seq) => {
-            select.add(new Option(seq, seq));
-          });
-        select.value = currentVal;
-      }
+        const url = useTail ? '/data' : `/fileserver/log/data/${f}`;
+        const res = await apiCallNotify(url, { timeout: 30000 }, { action: `Fetch data file (${f})` });
 
-      function parseFileDate(file) {
-        const match = file.match(/data_(\d{4}-\d{2}-\d{2})\.csv/);
-        if (!match) return null;
-        const [y, m, d] = match[1].split('-');
-        return new Date(+y, +m - 1, +d).getTime();
-      }
-
-      function isTodayFile(fileTime) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return fileTime === today.getTime();
-      }
-
-      async function reload() {
-        const isDateRangeCtrlDisabled = !document.getElementById('dateRangeCtrl').checked;
-        const startTs = new Date(document.getElementById('startTime').value).getTime();
-        const endTs = new Date(document.getElementById('endTime').value).getTime();
+        if (!res.ok) {
+          console.error('Fetch failed | ', f, res.error ?? res.status);
+          continue;
+        }
 
         try {
-          await fetchFilesInTimeRange(isDateRangeCtrlDisabled, startTs, endTs);
-          populateSeqSelector();
-          applyFilter();
-
-          const now = new Date();
-          document.getElementById('refreshTimestamp').value = now.toLocaleTimeString([], { hour12: false });
-        } catch (err) {
-          firework.launch('Data loading failed', 'danger', 10000);
-          console.error('Data viewer reload failed:', err);
+          fetchedFiles.set(f, res.data);
+          updateSequenceNames(res.data);
+        } catch (e) {
+          firework.launch('Data processing failed', 'danger', 10000);
+          console.error('Processing failed for', f, e);
+          continue;
         }
-      }
 
-      async function fetchFilesInTimeRange(useTail, startTime, endTime) {
-        const bar = document.getElementById('loading-bar');
-        let currentProgress = 30;
+        currentProgress = Math.min(currentProgress + 5, 95);
         bar.style.width = currentProgress + '%';
-
-        const dataFileListObj = await getDataFileList();
-
-        const filesInRange = dataFileListObj.files.filter((f) => {
-          const fileTime = parseFileDate(f);
-          if (!fileTime) return false;
-          const fileEnd = fileTime + 24 * 3600000;
-          return fileTime < endTime && fileEnd > startTime;
-        });
-
-        for (const f of filesInRange) {
-          const isToday = isTodayFile(parseFileDate(f));
-
-          if (fetchedFiles.has(f) && !isToday) {
-            continue;
-          }
-
-          const url = useTail ? '/data' : `/fileserver/log/data/${f}`;
-          const res = await apiCallNotify(url, { timeout: 30000 }, { action: `Fetch data file (${f})` });
-
-          if (!res.ok) {
-            console.error('Fetch failed | ', f, res.error ?? res.status);
-            continue;
-          }
-
-          try {
-            fetchedFiles.set(f, res.data);
-            updateSequenceNames(res.data);
-          } catch (e) {
-            firework.launch('Data processing failed', 'danger', 10000);
-            console.error('Processing failed for', f, e);
-            continue;
-          }
-
-          currentProgress = Math.min(currentProgress + 5, 95);
-          bar.style.width = currentProgress + '%';
-        }
-
-        bar.style.width = '100%';
-        setTimeout(() => {
-          bar.style.width = '0%';
-        }, 300);
       }
 
-      function applyFilter() {
-        const startTs = new Date(document.getElementById('startTime').value).getTime();
-        const endTs = new Date(document.getElementById('endTime').value).getTime();
+      bar.style.width = '100%';
+      setTimeout(() => {
+        bar.style.width = '0%';
+      }, 300);
+    }
 
-        const sortedFilenames = Array.from(fetchedFiles.keys()).sort((a, b) => {
-          return parseFileDate(a) - parseFileDate(b);
-        });
+    function applyFilter() {
+      const startTs = new Date(document.getElementById('startTime').value).getTime();
+      const endTs = new Date(document.getElementById('endTime').value).getTime();
 
-        renderTable(
-          sortedFilenames
-            .filter((filename) => {
-              const fTime = parseFileDate(filename);
-              return fTime < endTs && fTime + 86400000 > startTs;
-            })
-            .map((filename) => fetchedFiles.get(filename)),
-          startTs,
-          endTs,
-        );
-      }
+      const sortedFilenames = Array.from(fetchedFiles.keys()).sort((a, b) => {
+        return parseFileDate(a) - parseFileDate(b);
+      });
 
-      function getVirtualHeaderHeight() {
-        if (!virtualContainer) return 0;
-        const thead = virtualContainer.querySelector('thead');
-        return thead ? thead.offsetHeight : 0;
-      }
+      renderTable(
+        sortedFilenames
+          .filter((filename) => {
+            const fTime = parseFileDate(filename);
+            return fTime < endTs && fTime + 86400000 > startTs;
+          })
+          .map((filename) => fetchedFiles.get(filename)),
+        startTs,
+        endTs,
+      );
+    }
 
-      function getScrollState(container) {
-        const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
-        return { scrollTop: container.scrollTop, maxScrollTop, atBottom: maxScrollTop - container.scrollTop <= 200 };
-      }
+    function getVirtualHeaderHeight() {
+      if (!virtualContainer) return 0;
+      const thead = virtualContainer.querySelector('thead');
+      return thead ? thead.offsetHeight : 0;
+    }
 
-      function getVirtualPosition() {
-        if (!virtualContainer) return null;
+    function getScrollState(container) {
+      const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
+      return { scrollTop: container.scrollTop, maxScrollTop, atBottom: maxScrollTop - container.scrollTop <= 200 };
+    }
 
-        const headerHeight = getVirtualHeaderHeight();
-        const contentScrollTop = Math.max(0, virtualContainer.scrollTop - headerHeight);
-        const rowIndex = Math.floor(contentScrollTop / VIRTUAL_ROW_HEIGHT);
-        const offset = contentScrollTop - rowIndex * VIRTUAL_ROW_HEIGHT;
+    function getVirtualPosition() {
+      if (!virtualContainer) return null;
 
-        return {
-          rowIndex: Math.max(0, Math.min(rowIndex, Math.max(0, virtualRows.length - 1))),
-          offset,
-          atBottom: getScrollState(virtualContainer).atBottom,
-        };
-      }
+      const headerHeight = getVirtualHeaderHeight();
+      const contentScrollTop = Math.max(0, virtualContainer.scrollTop - headerHeight);
+      const rowIndex = Math.floor(contentScrollTop / VIRTUAL_ROW_HEIGHT);
+      const offset = contentScrollTop - rowIndex * VIRTUAL_ROW_HEIGHT;
 
-      function createVirtualSpacer(height) {
-        if (height <= 0) return '';
-        return `
+      return {
+        rowIndex: Math.max(0, Math.min(rowIndex, Math.max(0, virtualRows.length - 1))),
+        offset,
+        atBottom: getScrollState(virtualContainer).atBottom,
+      };
+    }
+
+    function createVirtualSpacer(height) {
+      if (height <= 0) return '';
+      return `
           <tr class="virtual-spacer" aria-hidden="true">
               <td colspan="11" style="height:${height}px;"></td>
           </tr>
         `;
-      }
+    }
 
-      function updateScrollBtnVisibility() {
-        if (!scrollBtn || !virtualContainer) return;
-        const atBottom = getScrollState(virtualContainer).atBottom;
-        scrollBtn.classList.toggle('hidden', atBottom || !virtualRows.length);
-      }
+    function updateScrollBtnVisibility() {
+      if (!scrollBtn || !virtualContainer) return;
+      const atBottom = getScrollState(virtualContainer).atBottom;
+      scrollBtn.classList.toggle('hidden', atBottom || !virtualRows.length);
+    }
 
-      function renderVirtualRows() {
-        if (!virtualContainer) return;
+    function renderVirtualRows() {
+      if (!virtualContainer) return;
 
-        const body = document.getElementById('dataBody');
-        if (!body) return;
+      const body = document.getElementById('dataBody');
+      if (!body) return;
 
-        if (!virtualRows.length) {
-          body.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data</td></tr>';
-          updateScrollBtnVisibility();
-          return;
-        }
-
-        const headerHeight = getVirtualHeaderHeight();
-        const contentScrollTop = Math.max(0, virtualContainer.scrollTop - headerHeight);
-        const viewportHeight = virtualContainer.clientHeight;
-
-        const firstVisibleRow = Math.floor(contentScrollTop / VIRTUAL_ROW_HEIGHT);
-        const visibleRowCount = Math.ceil(viewportHeight / VIRTUAL_ROW_HEIGHT);
-
-        const start = Math.max(0, firstVisibleRow - VIRTUAL_BUFFER_ROWS);
-        const end = Math.min(virtualRows.length, firstVisibleRow + visibleRowCount + VIRTUAL_BUFFER_ROWS);
-
-        let html = '';
-        html += createVirtualSpacer(start * VIRTUAL_ROW_HEIGHT);
-
-        for (let i = start; i < end; i++) {
-          html += rowToHtml(virtualRows[i]);
-        }
-
-        html += createVirtualSpacer((virtualRows.length - end) * VIRTUAL_ROW_HEIGHT);
-
-        body.innerHTML = html;
+      if (!virtualRows.length) {
+        body.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data</td></tr>';
         updateScrollBtnVisibility();
+        return;
       }
 
-      function scheduleVirtualRender() {
-        if (virtualRenderPending) return;
-        virtualRenderPending = true;
-        requestAnimationFrame(() => {
-          virtualRenderPending = false;
-          renderVirtualRows();
-        });
+      const headerHeight = getVirtualHeaderHeight();
+      const contentScrollTop = Math.max(0, virtualContainer.scrollTop - headerHeight);
+      const viewportHeight = virtualContainer.clientHeight;
+
+      const firstVisibleRow = Math.floor(contentScrollTop / VIRTUAL_ROW_HEIGHT);
+      const visibleRowCount = Math.ceil(viewportHeight / VIRTUAL_ROW_HEIGHT);
+
+      const start = Math.max(0, firstVisibleRow - VIRTUAL_BUFFER_ROWS);
+      const end = Math.min(virtualRows.length, firstVisibleRow + visibleRowCount + VIRTUAL_BUFFER_ROWS);
+
+      let html = '';
+      html += createVirtualSpacer(start * VIRTUAL_ROW_HEIGHT);
+
+      for (let i = start; i < end; i++) {
+        html += rowToHtml(virtualRows[i]);
       }
 
-      function setupVirtualScroll() {
-        const container = document.getElementById('scrollContainer');
-        if (!container) return;
+      html += createVirtualSpacer((virtualRows.length - end) * VIRTUAL_ROW_HEIGHT);
 
-        if (virtualScrollHandler) {
-          container.removeEventListener('scroll', virtualScrollHandler);
-        }
+      body.innerHTML = html;
+      updateScrollBtnVisibility();
+    }
 
-        virtualContainer = container;
-        scrollBtn = document.getElementById('scrollToEndBtn');
+    function scheduleVirtualRender() {
+      if (virtualRenderPending) return;
+      virtualRenderPending = true;
+      requestAnimationFrame(() => {
+        virtualRenderPending = false;
+        renderVirtualRows();
+      });
+    }
 
-        virtualScrollHandler = () => {
-          updateScrollBtnVisibility();
-          scheduleVirtualRender();
-        };
+    function setupVirtualScroll() {
+      const container = document.getElementById('scrollContainer');
+      if (!container) return;
 
-        container.addEventListener('scroll', virtualScrollHandler, { passive: true });
+      if (virtualScrollHandler) {
+        container.removeEventListener('scroll', virtualScrollHandler);
       }
 
-      function scrollVirtualToBottom() {
-        if (!virtualContainer) return;
+      virtualContainer = container;
+      scrollBtn = document.getElementById('scrollToEndBtn');
 
-        virtualContainer.scrollTop = Math.max(0, virtualContainer.scrollHeight - virtualContainer.clientHeight);
+      virtualScrollHandler = () => {
         updateScrollBtnVisibility();
         scheduleVirtualRender();
+      };
+
+      container.addEventListener('scroll', virtualScrollHandler, { passive: true });
+    }
+
+    function scrollVirtualToBottom() {
+      if (!virtualContainer) return;
+
+      virtualContainer.scrollTop = Math.max(0, virtualContainer.scrollHeight - virtualContainer.clientHeight);
+      updateScrollBtnVisibility();
+      scheduleVirtualRender();
+    }
+
+    function restoreVirtualPosition(position) {
+      if (!virtualContainer || !position) return;
+
+      if (position.atBottom) {
+        scrollVirtualToBottom();
+        return;
       }
 
-      function restoreVirtualPosition(position) {
-        if (!virtualContainer || !position) return;
+      const headerHeight = getVirtualHeaderHeight();
+      const maxRowIndex = Math.max(0, virtualRows.length - 1);
+      const rowIndex = Math.min(position.rowIndex, maxRowIndex);
 
-        if (position.atBottom) {
-          scrollVirtualToBottom();
-          return;
-        }
+      virtualContainer.scrollTop = headerHeight + rowIndex * VIRTUAL_ROW_HEIGHT + position.offset;
+      updateScrollBtnVisibility();
+      scheduleVirtualRender();
+    }
 
-        const headerHeight = getVirtualHeaderHeight();
-        const maxRowIndex = Math.max(0, virtualRows.length - 1);
-        const rowIndex = Math.min(position.rowIndex, maxRowIndex);
+    function rowToHtml(row) {
+      const dateDisplay = row.dateMatch
+        ? `<span>${escapeHtml(row.dateMatch[1])}</span> ` + escapeHtml(row.dateMatch[2])
+        : escapeHtml(row.timestamp);
 
-        virtualContainer.scrollTop = headerHeight + rowIndex * VIRTUAL_ROW_HEIGHT + position.offset;
-        updateScrollBtnVisibility();
-        scheduleVirtualRender();
+      let ocrHtml = '';
+
+      for (let j = 0; j < row.ocrValues.length; j++) {
+        const value = row.ocrValues[j];
+        const hasValue = value !== undefined && value !== null && String(value).trim() !== '';
+
+        const conf = row.ocrConfs[j];
+        const isValid = !isNaN(conf) && conf !== -100;
+        const confLabel = isValid ? `${(conf * 100).toFixed(0)}%` : '';
+        const confClass = getLevelClass(isValid ? conf : NaN);
+
+        const ocrValue = escapeHtml(hasValue ? value : '?');
+        const tooltipAttr = isValid ? `data-tooltip="Conf: ${confLabel}" ` : '';
+
+        ocrHtml += `<div class="ocr-value ${confClass}" ${tooltipAttr}tabindex="0">${ocrValue}</div>`;
       }
 
-      function rowToHtml(row) {
-        const dateDisplay = row.dateMatch
-          ? `<span>${escapeHtml(row.dateMatch[1])}</span> ` + escapeHtml(row.dateMatch[2])
-          : escapeHtml(row.timestamp);
-
-        let ocrHtml = '';
-
-        for (let j = 0; j < row.ocrValues.length; j++) {
-          const value = row.ocrValues[j];
-          const hasValue = value !== undefined && value !== null && String(value).trim() !== '';
-
-          const conf = row.ocrConfs[j];
-          const isValid = !isNaN(conf) && conf !== -100;
-          const confLabel = isValid ? `${(conf * 100).toFixed(0)}%` : '';
-          const confClass = getLevelClass(isValid ? conf : NaN);
-
-          const ocrValue = escapeHtml(hasValue ? value : '?');
-          const tooltipAttr = isValid ? `data-tooltip="Conf: ${confLabel}" ` : '';
-
-          ocrHtml += `<div class="ocr-value ${confClass}" ${tooltipAttr}tabindex="0">${ocrValue}</div>`;
-        }
-
-        //const isModern = !isNaN(row.mscrVal) || !isNaN(row.dscrVal);
-        const optionalScoreCells = hasModernFormat ? `
+      //const isModern = !isNaN(row.mscrVal) || !isNaN(row.dscrVal);
+      const optionalScoreCells = hasModernFormat ? `
             <td class="numeric-right">
                 ${!isNaN(row.mscrVal) ? row.mscrVal.toFixed(2) : ''}
             </td>
@@ -733,7 +735,7 @@
             </td>
           ` : '';
 
-        return `
+      return `
           <tr class="virtual-data-row">
               <td>
                   ${dateDisplay}
@@ -767,254 +769,255 @@
               ${optionalScoreCells}
           </tr>
         `;
+    }
+
+    function renderTable(csvFiles, startTime, endTime) {
+      const filterStatus = document.getElementById('filterStat').value;
+      const filterSeq = document.getElementById('filterSeq').value;
+      const container = document.getElementById('scrollContainer');
+      virtualContainer = container;
+
+      const oldPosition = virtualRows.length ? getVirtualPosition() : { rowIndex: 0, offset: 0, atBottom: true };
+
+      const rows = [];
+      const stats = { mscr: { sum: 0, count: 0 }, dscr: { sum: 0, count: 0 }, digits: [] };
+      hasModernFormat = false;
+
+      for (const csvData of csvFiles) {
+        if (!csvData) continue;
+
+        const lines = csvData.split('\n');
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line) continue;
+
+          const cols = line.split(',');
+          if (cols.length < 8) continue;
+
+          const timestamp = cols[0];
+          const ts = new Date(timestamp).getTime();
+
+          if (ts < startTime || ts > endTime) {
+            continue;
+          }
+
+          const seqName = cols[1];
+          const status = cols[7];
+
+          if (filterStatus === 'error' && (status === '000' || status === 'E91')) {
+            continue;
+          }
+
+          if (filterSeq !== 'all' && seqName !== filterSeq) {
+            continue;
+          }
+
+          let mscrVal, dscrVal, ocrValues, ocrConfs;
+          const possibleSeqLen = parseInt(cols[10]);
+          const isModernFormatRow = cols.length >= 11 && !isNaN(possibleSeqLen) && cols.length === 11 + (2 * possibleSeqLen);
+
+          if (isModernFormatRow) {
+            hasModernFormat = true;
+            mscrVal = parseFloat(cols[8]);
+            dscrVal = parseFloat(cols[9]);
+            const seqLen = possibleSeqLen;
+
+            if (!isNaN(mscrVal)) {
+              stats.mscr.sum += mscrVal;
+              stats.mscr.count++;
+            }
+            if (!isNaN(dscrVal)) {
+              stats.dscr.sum += dscrVal;
+              stats.dscr.count++;
+            }
+
+            ocrValues = cols.slice(11, 11 + seqLen);
+            const rawConfs = cols.slice(11 + seqLen, 11 + seqLen * 2);
+            ocrConfs = Array.from({ length: seqLen }, (_, j) => {
+              const val = rawConfs[j];
+              return val !== undefined && val !== '' ? parseFloat(val) : NaN;
+            });
+
+            for (let j = 0; j < ocrValues.length; j++) {
+              const val = ocrValues[j];
+              const hasValue = val !== undefined && val !== null && String(val).trim() !== '';
+              const conf = ocrConfs[j];
+              const isValid = !isNaN(conf) && conf !== -100;
+
+              if (!hasValue || !isValid) continue;
+
+              if (!stats.digits[j]) {
+                stats.digits[j] = { sum: 0, count: 0 };
+              }
+              stats.digits[j].sum += conf;
+              stats.digits[j].count++;
+            }
+          }
+          else { // @deprecated: Legacy data format support to be removed with next major release
+            mscrVal = NaN;
+            dscrVal = NaN;
+            ocrValues = cols.slice(8);
+            const seqLen = ocrValues.length;
+            if (seqLen === 0) continue;
+            ocrConfs = Array.from({ length: seqLen }, () => NaN);
+          }
+
+          const dateMatch = timestamp.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})/);
+          const statusClass = status === '000' || status === 'E91' ? 'status-ok' : 'status-err';
+
+          rows.push({
+            timestamp,
+            dateMatch,
+            seqName,
+            actual: cols[3],
+            raw: cols[2],
+            fallback: cols[4],
+            rateMin: cols[5],
+            rateAbs: cols[6],
+            status,
+            statusClass,
+            mscrVal,
+            dscrVal,
+            ocrValues,
+            ocrConfs,
+          });
+        }
       }
 
-      function renderTable(csvFiles, startTime, endTime) {
-        const filterStatus = document.getElementById('filterStat').value;
-        const filterSeq = document.getElementById('filterSeq').value;
-        const container = document.getElementById('scrollContainer');
-        virtualContainer = container;
+      const thScore = document.getElementById('th-score');
+      const thMinscr = document.getElementById('th-minscr');
+      const thConfText = document.getElementById('th-conf-text');
 
-        const oldPosition = virtualRows.length ? getVirtualPosition() : { rowIndex: 0, offset: 0, atBottom: true };
+      if (thScore) thScore.style.display = hasModernFormat ? '' : 'none';
+      if (thMinscr) thMinscr.style.display = hasModernFormat ? '' : 'none';
+      if (thConfText) thConfText.style.display = hasModernFormat ? '' : 'none';
 
-        const rows = [];
-        const stats = { mscr: { sum: 0, count: 0 }, dscr: { sum: 0, count: 0 }, digits: [] };
-        hasModernFormat = false;
+      const mMscr = document.getElementById('m-mscr');
+      const mDscr = document.getElementById('m-dscr');
+      if (mMscr) mMscr.style.display = hasModernFormat ? '' : 'none';
+      if (mDscr) mDscr.style.display = hasModernFormat ? '' : 'none';
 
-        for (const csvData of csvFiles) {
-          if (!csvData) continue;
+      virtualRows = rows;
+      virtualStats = stats;
 
-          const lines = csvData.split('\n');
+      updateMeans(stats);
 
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            if (!line) continue;
+      if (!rows.length) {
+        document.getElementById('dataBody').innerHTML = '<tr><td colspan="11" style="text-align:center;font-style:italic">No data</td></tr>';
+        updateScrollBtnVisibility();
+        return;
+      }
 
-            const cols = line.split(',');
-            if (cols.length < 8) continue;
+      renderVirtualRows();
 
-            const timestamp = cols[0];
-            const ts = new Date(timestamp).getTime();
+      requestAnimationFrame(() => {
+        restoreVirtualPosition(oldPosition);
+      });
+    }
 
-            if (ts < startTime || ts > endTime) {
-              continue;
-            }
+    function updateMeans(stats) {
+      document.getElementById('m-mscr').innerText = stats.mscr.count > 0 ? (stats.mscr.sum / stats.mscr.count).toFixed(2) : '';
+      document.getElementById('m-dscr').innerText = stats.dscr.count > 0 ? (stats.dscr.sum / stats.dscr.count).toFixed(2) : '';
 
-            const seqName = cols[1];
-            const status = cols[7];
+      let html = '<div class="ocr-container">';
 
-            if (filterStatus === 'error' && (status === '000' || status === 'E91')) {
-              continue;
-            }
+      stats.digits.forEach((digit) => {
+        if (digit && digit.count > 0) {
+          const mean = digit.sum / digit.count;
+          const meanDisplay = `${(mean * 100).toFixed(0)}%`;
 
-            if (filterSeq !== 'all' && seqName !== filterSeq) {
-              continue;
-            }
-
-            let mscrVal, dscrVal, ocrValues, ocrConfs;
-            const possibleSeqLen = parseInt(cols[10]);
-            const isModernFormatRow = cols.length >= 11 && !isNaN(possibleSeqLen) && cols.length === 11 + (2 * possibleSeqLen);
-
-            if (isModernFormatRow) {
-              hasModernFormat = true;
-              mscrVal = parseFloat(cols[8]);
-              dscrVal = parseFloat(cols[9]);
-              const seqLen = possibleSeqLen;
-
-              if (!isNaN(mscrVal)) {
-                stats.mscr.sum += mscrVal;
-                stats.mscr.count++;
-              }
-              if (!isNaN(dscrVal)) {
-                stats.dscr.sum += dscrVal;
-                stats.dscr.count++;
-              }
-
-              ocrValues = cols.slice(11, 11 + seqLen);
-              const rawConfs = cols.slice(11 + seqLen, 11 + seqLen * 2);
-              ocrConfs = Array.from({ length: seqLen }, (_, j) => {
-                const val = rawConfs[j];
-                return val !== undefined && val !== '' ? parseFloat(val) : NaN;
-              });
-
-              for (let j = 0; j < ocrValues.length; j++) {
-                const val = ocrValues[j];
-                const hasValue = val !== undefined && val !== null && String(val).trim() !== '';
-                const conf = ocrConfs[j];
-                const isValid = !isNaN(conf) && conf !== -100;
-
-                if (!hasValue || !isValid) continue;
-
-                if (!stats.digits[j]) {
-                  stats.digits[j] = { sum: 0, count: 0 };
-                }
-                stats.digits[j].sum += conf;
-                stats.digits[j].count++;
-              }
-            }
-            else { // @deprecated: Legacy data format support to be removed with next major release
-              mscrVal = NaN;
-              dscrVal = NaN;
-              ocrValues = cols.slice(8);
-              const seqLen = ocrValues.length;
-              if (seqLen === 0) continue;
-              ocrConfs = Array.from({ length: seqLen }, () => NaN);
-            }
-
-            const dateMatch = timestamp.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})/);
-            const statusClass = status === '000' || status === 'E91' ? 'status-ok' : 'status-err';
-
-            rows.push({
-              timestamp,
-              dateMatch,
-              seqName,
-              actual: cols[3],
-              raw: cols[2],
-              fallback: cols[4],
-              rateMin: cols[5],
-              rateAbs: cols[6],
-              status,
-              statusClass,
-              mscrVal,
-              dscrVal,
-              ocrValues,
-              ocrConfs,
-            });
-          }
+          html += `<div class="ocr-value ${getLevelClass(mean)}" data-tooltip="Conf (mean): ${meanDisplay}" tabindex="0">${meanDisplay}</div>`;
         }
+      });
 
-        const thScore = document.getElementById('th-score');
-        const thMinscr = document.getElementById('th-minscr');
-        const thConfText = document.getElementById('th-conf-text');
+      document.getElementById('digitMeansContainer').innerHTML = html + '</div>';
+    }
 
-        if (thScore) thScore.style.display = hasModernFormat ? '' : 'none';
-        if (thMinscr) thMinscr.style.display = hasModernFormat ? '' : 'none';
-        if (thConfText) thConfText.style.display = hasModernFormat ? '' : 'none';
+    async function refreshContent(auto = false) {
+      if (refreshRunning) return;
+      refreshRunning = true;
 
-        const mMscr = document.getElementById('m-mscr');
-        const mDscr = document.getElementById('m-dscr');
-        if (mMscr) mMscr.style.display = hasModernFormat ? '' : 'none';
-        if (mDscr) mDscr.style.display = hasModernFormat ? '' : 'none';
+      const btn = document.getElementById('refreshButton');
+      const loader = document.getElementById('refreshLoadingImg');
 
-        virtualRows = rows;
-        virtualStats = stats;
+      if (!auto) btn.disabled = true;
+      loader?.classList.add('is-loading');
 
-        updateMeans(stats);
+      try {
+        await reload();
+      } catch (err) {
+        console.error('Refresh failed:', err);
+      } finally {
+        refreshRunning = false;
+        setTimeout(function () {
+          if (!auto) btn.disabled = false;
+          loader?.classList.remove('is-loading');
+        }, 200);
+      }
+    }
 
-        if (!rows.length) {
-          document.getElementById('dataBody').innerHTML = '<tr><td colspan="11" style="text-align:center;font-style:italic">No data</td></tr>';
-          updateScrollBtnVisibility();
+    function autoRefreshContent() {
+      const isAutoRefresh = document.getElementById('autoRefreshCtrl').checked;
+      const autoRefreshSettings = document.getElementById('autoRefreshSettings');
+      const autoRefreshTime = document.getElementById('autoRefreshTime');
+      const startTimeEl = document.getElementById('startTime');
+      const endTimeEl = document.getElementById('endTime');
+      const dateRangeCtrlEl = document.getElementById('dateRangeCtrl');
+
+      autoRefreshSettings.classList.toggle('is-disabled', !isAutoRefresh);
+      autoRefreshTime.disabled = !isAutoRefresh;
+      startTimeEl.disabled = !dateRangeCtrlEl.checked;
+      endTimeEl.disabled = !dateRangeCtrlEl.checked;
+
+      if (autoRefreshTimeoutHandle) {
+        clearTimeout(autoRefreshTimeoutHandle);
+        autoRefreshTimeoutHandle = null;
+      }
+
+      if (isAutoRefresh) {
+        const delayMs = parseInt(autoRefreshTime.value) * 1000;
+
+        if (!delayMs || delayMs <= 0) {
+          document.getElementById('autoRefreshCtrl').checked = false;
+          autoRefreshSettings.classList.add('is-disabled');
           return;
         }
 
-        renderVirtualRows();
-
-        requestAnimationFrame(() => {
-          restoreVirtualPosition(oldPosition);
-        });
+        autoRefreshTimeoutHandle = setTimeout(() => {
+          refreshContent(true).then(autoRefreshContent);
+        }, delayMs);
       }
+    }
 
-      function updateMeans(stats) {
-        document.getElementById('m-mscr').innerText = stats.mscr.count > 0 ? (stats.mscr.sum / stats.mscr.count).toFixed(2) : '';
-        document.getElementById('m-dscr').innerText = stats.dscr.count > 0 ? (stats.dscr.sum / stats.dscr.count).toFixed(2) : '';
+    function initAutoRefreshContent() {
+      autoRefreshContent();
+    }
 
-        let html = '<div class="ocr-container">';
+    async function init() {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
 
-        stats.digits.forEach((digit) => {
-          if (digit && digit.count > 0) {
-            const mean = digit.sum / digit.count;
-            const meanDisplay = `${(mean * 100).toFixed(0)}%`;
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
 
-            html += `<div class="ocr-value ${getLevelClass(mean)}" data-tooltip="Conf (mean): ${meanDisplay}" tabindex="0">${meanDisplay}</div>`;
-          }
-        });
+      const format = (dt) => {
+        const p = (n) => n.toString().padStart(2, '0');
+        return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}T${p(dt.getHours())}:${p(dt.getMinutes())}`;
+      };
 
-        document.getElementById('digitMeansContainer').innerHTML = html + '</div>';
-      }
+      document.getElementById('startTime').value = format(startOfDay);
+      document.getElementById('endTime').value = format(endOfDay);
 
-      async function refreshContent(auto = false) {
-        if (refreshRunning) return;
-        refreshRunning = true;
+      jsonConfig = getConfigFromStorage();
 
-        const btn = document.getElementById('refreshButton');
-        const loader = document.getElementById('refreshLoadingImg');
+      setupVirtualScroll();
+      initAutoRefreshContent();
+      refreshContent();
+    }
 
-        if (!auto) btn.disabled = true;
-        loader?.classList.add('is-loading');
+    init();
+  </script>
+</body>
 
-        try {
-          await reload();
-        } catch (err) {
-          console.error('Refresh failed:', err);
-        } finally {
-          refreshRunning = false;
-          setTimeout(function () {
-            if (!auto) btn.disabled = false;
-            loader?.classList.remove('is-loading');
-          }, 200);
-        }
-      }
-
-      function autoRefreshContent() {
-        const isAutoRefresh = document.getElementById('autoRefreshCtrl').checked;
-        const autoRefreshSettings = document.getElementById('autoRefreshSettings');
-        const autoRefreshTime = document.getElementById('autoRefreshTime');
-        const startTimeEl = document.getElementById('startTime');
-        const endTimeEl = document.getElementById('endTime');
-        const dateRangeCtrlEl = document.getElementById('dateRangeCtrl');
-
-        autoRefreshSettings.classList.toggle('is-disabled', !isAutoRefresh);
-        autoRefreshTime.disabled = !isAutoRefresh;
-        startTimeEl.disabled = !dateRangeCtrlEl.checked;
-        endTimeEl.disabled = !dateRangeCtrlEl.checked;
-
-        if (autoRefreshTimeoutHandle) {
-          clearTimeout(autoRefreshTimeoutHandle);
-          autoRefreshTimeoutHandle = null;
-        }
-
-        if (isAutoRefresh) {
-          const delayMs = parseInt(autoRefreshTime.value) * 1000;
-
-          if (!delayMs || delayMs <= 0) {
-            document.getElementById('autoRefreshCtrl').checked = false;
-            autoRefreshSettings.classList.add('is-disabled');
-            return;
-          }
-
-          autoRefreshTimeoutHandle = setTimeout(() => {
-            refreshContent(true).then(autoRefreshContent);
-          }, delayMs);
-        }
-      }
-
-      function initAutoRefreshContent() {
-        autoRefreshContent();
-      }
-
-      async function init() {
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
-
-        const format = (dt) => {
-          const p = (n) => n.toString().padStart(2, '0');
-          return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}T${p(dt.getHours())}:${p(dt.getMinutes())}`;
-        };
-
-        document.getElementById('startTime').value = format(startOfDay);
-        document.getElementById('endTime').value = format(endOfDay);
-
-        jsonConfig = getConfigFromStorage();
-
-        setupVirtualScroll();
-        initAutoRefreshContent();
-        refreshContent();
-      }
-
-      init();
-    </script>
-  </body>
 </html>

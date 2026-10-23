@@ -1,181 +1,184 @@
 <!doctype html>
 <html lang="en" xml:lang="en">
-  <head>
-    <title>Set Fallback Value</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
-    <style>
-      input[type='number'],
-      select {
-        font-family: inherit;
-        font-size: inherit;
-        padding: 3px 5px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        max-width: 150px;
-        overflow: hidden;
-        appearance: textfield;
-        -moz-appearance: textfield; /* Hide arrows Firefox */
-      }
 
-      /* Hide arrows Chrome/Safari */
-      #input_fallbackvalue::-webkit-outer-spin-button,
-      #input_fallbackvalue::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
+<head>
+  <title>Set Fallback Value</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
+  <style>
+    input[type='number'],
+    select {
+      font-family: inherit;
+      font-size: inherit;
+      padding: 3px 5px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      max-width: 150px;
+      overflow: hidden;
+      appearance: textfield;
+      /* Hide arrows Firefox */
+      -moz-appearance: textfield;
+    }
 
-      input[readonly] {
-        border-color: var(--border);
-        color: var(--text-secondary);
-        cursor: not-allowed;
-      }
-    </style>
+    /* Hide arrows Chrome/Safari */
+    #input_fallbackvalue::-webkit-outer-spin-button,
+    #input_fallbackvalue::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
 
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
-    <script src="firework.js?v=$COMMIT_HASH"></script>
-  </head>
+    input[readonly] {
+      border-color: var(--border);
+      color: var(--text-secondary);
+      cursor: not-allowed;
+    }
+  </style>
 
-  <body>
-    <div class="container">
-      <div class="container-header">
-        <div class="container-title"><span>🛡️</span>Set Fallback Value</div>
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="firework.js?v=$COMMIT_HASH"></script>
+</head>
 
-        <div class="info-box"><strong>📖 Fallback Value?</strong> The Fallback Value is the last successful valid reading.</div>
-      </div>
+<body>
+  <div class="container">
+    <div class="container-header">
+      <div class="container-title"><span>🛡️</span>Set Fallback Value</div>
 
-      <div class="container-content">
-        <div style="margin-bottom: 20px">
-          <label for="sequence_selection" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px">Select Sequence</label>
-          <select id="sequence_selection" style="width: 170px" onchange="sequenceChanged()"></select>
-        </div>
-
-        <div style="display: flex; gap: 20px">
-          <div style="flex: 1">
-            <label for="current_fallbackvalue" style="display: block; font-size: 0.85rem; margin-bottom: 4px">Current Value</label>
-            <input type="number" id="current_fallbackvalue" readonly />
-          </div>
-          <div style="flex: 1">
-            <label for="input_fallbackvalue" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px">Enter New Value</label>
-            <input required type="number" id="input_fallbackvalue" step="any" /><br />
-            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 5px">Pre-filled with 'Raw Value'</div>
-          </div>
-          <div style="flex: 1">
-            <label for="result" style="display: block; font-size: 0.85rem; margin-bottom: 4px">Updated Value</label>
-            <input type="number" id="result" readonly />
-          </div>
-        </div>
-        <button class="button btn-wide btn-action" id="btn" type="button" onclick="setFallbackValue()">Update Fallback Value</button>
-      </div>
+      <div class="info-box"><strong>📖 Fallback Value?</strong> The Fallback Value is the last successful valid reading.</div>
     </div>
 
-    <script src="global.js?v=$COMMIT_HASH"></script>
-    <script>
-      let fallbackLoadController = null;
-      let fallbackLoadRequestToken = 0;
+    <div class="container-content">
+      <div style="margin-bottom: 20px">
+        <label for="sequence_selection" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px">Select Sequence</label>
+        <select id="sequence_selection" style="width: 170px" onchange="sequenceChanged()"></select>
+      </div>
 
-      function resetResultUI() {
-        const resultField = document.getElementById('result');
-        if (resultField) resultField.value = '';
+      <div style="display: flex; gap: 20px">
+        <div style="flex: 1">
+          <label for="current_fallbackvalue" style="display: block; font-size: 0.85rem; margin-bottom: 4px">Current Value</label>
+          <input type="number" id="current_fallbackvalue" readonly />
+        </div>
+        <div style="flex: 1">
+          <label for="input_fallbackvalue" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px">Enter New Value</label>
+          <input required type="number" id="input_fallbackvalue" step="any" /><br />
+          <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 5px">Pre-filled with 'Raw Value'</div>
+        </div>
+        <div style="flex: 1">
+          <label for="result" style="display: block; font-size: 0.85rem; margin-bottom: 4px">Updated Value</label>
+          <input type="number" id="result" readonly />
+        </div>
+      </div>
+      <button class="button btn-wide btn-action" id="btn" type="button" onclick="setFallbackValue()">Update Fallback Value</button>
+    </div>
+  </div>
+
+  <script src="global.js?v=$COMMIT_HASH"></script>
+  <script>
+    let fallbackLoadController = null;
+    let fallbackLoadRequestToken = 0;
+
+    function resetResultUI() {
+      const resultField = document.getElementById('result');
+      if (resultField) resultField.value = '';
+    }
+
+    function sequenceChanged() {
+      resetResultUI();
+      loadFallbackValue();
+    }
+
+    function fillSequenceSelectionOptions() {
+      const select = document.getElementById('sequence_selection');
+
+      if (!select || !jsonConfig?.numbersequences?.sequence) return;
+
+      select.innerHTML = '';
+      jsonConfig.numbersequences.sequence.forEach((seq, i) => {
+        select.add(new Option(seq.sequencename, i));
+      });
+    }
+
+    async function setFallbackValue() {
+      const sel = document.getElementById('sequence_selection');
+      const btnEl = document.getElementById('btn');
+
+      if (sel.selectedIndex === -1) return;
+
+      const sequenceName = sel.options[sel.selectedIndex].text;
+      const cleanValue = parseFloat(document.getElementById('input_fallbackvalue').value.replace(',', '.'));
+
+      if (isNaN(cleanValue)) return firework.launch('Invalid number entered', 'warning', 2000);
+      if (cleanValue < 0) return firework.launch('Fallback value must be >= 0', 'warning', 2000);
+
+      if (btnEl) btnEl.disabled = true;
+
+      const endpoint = `/set_fallbackvalue?sequence=${encodeURIComponent(sequenceName)}&value=${encodeURIComponent(cleanValue)}`;
+      const res = await apiCallNotify(endpoint, {}, {
+        action: 'Fallback value update',
+        loadingMsg: 'Updating fallback value...',
+        resultMsg: 'Fallback value successfully updated',
+      });
+
+      if (btnEl) btnEl.disabled = false;
+      if (!res.ok) return;
+
+      const value = res.data.trim();
+      document.getElementById('result').value = value;
+      document.getElementById('current_fallbackvalue').value = value; // Sync current value immediately
+    }
+
+    async function loadFallbackValue() {
+      const sel = document.getElementById('sequence_selection');
+
+      if (sel.selectedIndex === -1) return;
+
+      const sequenceName = sel.options[sel.selectedIndex].text;
+      resetResultUI();
+      const requestToken = ++fallbackLoadRequestToken;
+
+      // Cancel requests of the previous selection
+      fallbackLoadController?.abort();
+      fallbackLoadController = new AbortController();
+      const init = { signal: fallbackLoadController.signal };
+
+      const [fallbackRes, rawValueRes] = await Promise.all([
+        apiCallNotify(`/set_fallbackvalue?sequence=${encodeURIComponent(sequenceName)}`, init, { action: 'Fallback value request' }),
+        apiCallNotify('/process_data?type=raw_value', init, { action: 'Raw value request' }),
+      ]);
+
+      // Safety net: ignore results that finished before the abort
+      if (requestToken !== fallbackLoadRequestToken) return;
+
+      if (fallbackRes.ok) {
+        document.getElementById('current_fallbackvalue').value = fallbackRes.data;
       }
 
-      function sequenceChanged() {
-        resetResultUI();
-        loadFallbackValue();
-      }
+      if (rawValueRes.ok) {
+        const rawLines = rawValueRes.data ? rawValueRes.data.split(/\r?\n/) : [];
+        const targetLine = rawLines.map((line) => line.split('\t')).find((parts) => parts[0] === sequenceName);
 
-      function fillSequenceSelectionOptions() {
-        const select = document.getElementById('sequence_selection');
-
-        if (!select || !jsonConfig?.numbersequences?.sequence) return;
-
-        select.innerHTML = '';
-        jsonConfig.numbersequences.sequence.forEach((seq, i) => {
-          select.add(new Option(seq.sequencename, i));
-        });
-      }
-
-      async function setFallbackValue() {
-        const sel = document.getElementById('sequence_selection');
-        const btnEl = document.getElementById('btn');
-
-        if (sel.selectedIndex === -1) return;
-
-        const sequenceName = sel.options[sel.selectedIndex].text;
-        const cleanValue = parseFloat(document.getElementById('input_fallbackvalue').value.replace(',', '.'));
-
-        if (isNaN(cleanValue)) return firework.launch('Invalid number entered', 'warning', 2000);
-        if (cleanValue < 0) return firework.launch('Fallback value must be >= 0', 'warning', 2000);
-
-        if (btnEl) btnEl.disabled = true;
-
-        const endpoint = `/set_fallbackvalue?sequence=${encodeURIComponent(sequenceName)}&value=${encodeURIComponent(cleanValue)}`;
-        const res = await apiCallNotify(endpoint, {}, {
-          action: 'Fallback value update',
-          loadingMsg: 'Updating fallback value...',
-          resultMsg: 'Fallback value successfully updated',
-        });
-
-        if (btnEl) btnEl.disabled = false;
-        if (!res.ok) return;
-
-        const value = res.data.trim();
-        document.getElementById('result').value = value;
-        document.getElementById('current_fallbackvalue').value = value; // Sync current value immediately
-      }
-
-      async function loadFallbackValue() {
-        const sel = document.getElementById('sequence_selection');
-
-        if (sel.selectedIndex === -1) return;
-
-        const sequenceName = sel.options[sel.selectedIndex].text;
-        resetResultUI();
-        const requestToken = ++fallbackLoadRequestToken;
-
-        // Cancel requests of the previous selection
-        fallbackLoadController?.abort();
-        fallbackLoadController = new AbortController();
-        const init = { signal: fallbackLoadController.signal };
-
-        const [fallbackRes, rawValueRes] = await Promise.all([
-          apiCallNotify(`/set_fallbackvalue?sequence=${encodeURIComponent(sequenceName)}`, init, { action: 'Fallback value request' }),
-          apiCallNotify('/process_data?type=raw_value', init, { action: 'Raw value request' }),
-        ]);
-
-        // Safety net: ignore results that finished before the abort
-        if (requestToken !== fallbackLoadRequestToken) return;
-
-        if (fallbackRes.ok) {
-          document.getElementById('current_fallbackvalue').value = fallbackRes.data;
-        }
-
-        if (rawValueRes.ok) {
-          const rawLines = rawValueRes.data ? rawValueRes.data.split(/\r?\n/) : [];
-          const targetLine = rawLines.map((line) => line.split('\t')).find((parts) => parts[0] === sequenceName);
-
-          if (targetLine && targetLine[1] !== undefined && targetLine[1].trim() !== '') {
-            const val = parseFloat(targetLine[1]);
-            if (!Number.isNaN(val)) {
-              document.getElementById('input_fallbackvalue').value = val;
-            }
+        if (targetLine && targetLine[1] !== undefined && targetLine[1].trim() !== '') {
+          const val = parseFloat(targetLine[1]);
+          if (!Number.isNaN(val)) {
+            document.getElementById('input_fallbackvalue').value = val;
           }
         }
       }
+    }
 
-      async function init() {
-        try {
-          await loadConfig();
-          jsonConfig = getConfigFromStorage();
-          fillSequenceSelectionOptions();
-          await loadFallbackValue();
-        } catch (e) {
-          console.error('Initialization failed:', e);
-        }
+    async function init() {
+      try {
+        await loadConfig();
+        jsonConfig = getConfigFromStorage();
+        fillSequenceSelectionOptions();
+        await loadFallbackValue();
+      } catch (e) {
+        console.error('Initialization failed:', e);
       }
+    }
 
-      init();
-    </script>
-  </body>
+    init();
+  </script>
+</body>
+
 </html>

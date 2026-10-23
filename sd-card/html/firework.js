@@ -4,7 +4,7 @@ const firework = {
       const container = document.createElement('div');
       container.id = 'fw-container';
 
-      /* Special case: index.html */
+      // Special case: index.html
       if (document.querySelector('.menu')) {
         Object.assign(container.style, { left: '300px' });
       }

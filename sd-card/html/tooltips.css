@@ -12,7 +12,6 @@
   border: 1px solid var(--border);
   background-clip: padding-box;
   margin: -2px;
-
   /* Layout & Size */
   width: 600px;
   min-width: 600px;
@@ -25,7 +24,6 @@
   z-index: 99999;
   display: none;
   pointer-events: auto;
-
   /* Scroll logic */
   max-height: 80vh;
   overflow-y: auto;
@@ -34,6 +32,7 @@
 }
 
 @media screen and (max-width: 720px) {
+
   body,
   html {
     font-family: Arial, sans-serif;
@@ -116,7 +115,6 @@
   transition:
     transform 0.2s ease-in-out,
     background-color 0.2s ease-in-out;
-
   /* Encoded SVG mask */
   -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>');
   mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>');

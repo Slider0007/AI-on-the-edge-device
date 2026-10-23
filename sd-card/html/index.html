@@ -1,371 +1,373 @@
 <!doctype html>
 <html lang="en" xml:lang="en">
-  <head>
-    <title>AI-on-the-Edge Device</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=720, initial-scale=1" />
 
-    <script>
-      // Theme Control
-      (function () {
-        const savedTheme = localStorage.getItem('theme') || (document.cookie.match(/(?:^|; )theme=(light|dark)/) || [])[1];
-        // If user saved a preference, use it; otherwise read live system theme
-        const systemIsDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = savedTheme ? savedTheme : (systemIsDark ? 'dark' : 'light');
-        document.documentElement.classList.remove(theme === 'dark' ? 'light' : 'dark');
-        document.documentElement.classList.add(theme);
-      })();
-    </script>
+<head>
+  <title>AI-on-the-Edge Device</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=720, initial-scale=1" />
 
-    <link rel="icon" type="image/x-icon" href="favicon.ico?v=$COMMIT_HASH" />
-    <link rel="icon" type="image/svg+xml" href="icon.svg?v=$COMMIT_HASH" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/icon-apple-touch.png?v=$COMMIT_HASH" />
-    <link rel="manifest" type="application/manifest+json" href="/site.webmanifest?v=$COMMIT_HASH" />
-    <link rel="stylesheet" href="style.css?v=$COMMIT_HASH" type="text/css" />
+  <script>
+    // Theme Control
+    (function () {
+      const savedTheme = localStorage.getItem('theme') || (document.cookie.match(/(?:^|; )theme=(light|dark)/) || [])[1];
+      // If user saved a preference, use it; otherwise read live system theme
+      const systemIsDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme ? savedTheme : (systemIsDark ? 'dark' : 'light');
+      document.documentElement.classList.remove(theme === 'dark' ? 'light' : 'dark');
+      document.documentElement.classList.add(theme);
+    })();
+  </script>
 
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
-    <script src="firework.js?v=$COMMIT_HASH"></script>
-    <script src="global.js?v=$COMMIT_HASH"></script>
-    <script>
-      const UI = {
-        get deviceName() {
-          return document.getElementById('device-name');
-        },
-        get main() {
-          return document.getElementById('maincontent');
-        },
-        get submenus() {
-          return document.querySelectorAll('.submenu');
-        },
-        get hasDiscovery() {
-          return document.getElementById('HASendDiscovery');
-        },
-      };
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=$COMMIT_HASH" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg?v=$COMMIT_HASH" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon-apple-touch.png?v=$COMMIT_HASH" />
+  <link rel="manifest" type="application/manifest+json" href="/site.webmanifest?v=$COMMIT_HASH" />
+  <link rel="stylesheet" href="style.css?v=$COMMIT_HASH" type="text/css" />
 
-      let streamPopup;
-      let streamFlashlight = false;
-      let streamWindowFeatures =
-        'channelmode=no,directories=no,fullscreen=no,' +
-        'location=no,dependent=yes,menubar=no,resizable=no,scrollbars=no,' +
-        'status=no,toolbar=no,titlebar=no,' +
-        'left=10,top=250,width=640px,height=480px';
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="firework.js?v=$COMMIT_HASH"></script>
+  <script src="global.js?v=$COMMIT_HASH"></script>
+  <script>
+    const UI = {
+      get deviceName() {
+        return document.getElementById('device-name');
+      },
+      get main() {
+        return document.getElementById('maincontent');
+      },
+      get submenus() {
+        return document.querySelectorAll('.submenu');
+      },
+      get hasDiscovery() {
+        return document.getElementById('HASendDiscovery');
+      },
+    };
 
-      function getCookie(cname) {
-        const name = cname + '=';
-        const decodedCookie = decodeURIComponent(document.cookie);
-        const ca = decodedCookie.split(';');
-        const cookie = ca.find((row) => row.trim().startsWith(name));
-        return cookie ? cookie.trim().substring(name.length) : '';
+    let streamPopup;
+    let streamFlashlight = false;
+    let streamWindowFeatures =
+      'channelmode=no,directories=no,fullscreen=no,' +
+      'location=no,dependent=yes,menubar=no,resizable=no,scrollbars=no,' +
+      'status=no,toolbar=no,titlebar=no,' +
+      'left=10,top=250,width=640px,height=480px';
+
+    function getCookie(cname) {
+      const name = cname + '=';
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      const cookie = ca.find((row) => row.trim().startsWith(name));
+      return cookie ? cookie.trim().substring(name.length) : '';
+    }
+
+    function loadPage(page) {
+      // Ensure that stream popup is closed because it's blocking web interface
+      if (typeof streamPopup !== 'undefined' && streamPopup) streamPopup.close();
+
+      document.cookie = `page=${page};path=/;SameSite=Lax`;
+
+      if (UI.main) {
+        UI.main.classList.remove('ready');
+        UI.main.src = page;
       }
 
-      function loadPage(page) {
-        // Ensure that stream popup is closed because it's blocking web interface
-        if (typeof streamPopup !== 'undefined' && streamPopup) streamPopup.close();
+      // Clear visibility and close mobile expanded menus
+      UI.submenus?.forEach((el) => (el.style.visibility = 'hidden'));
+      document.querySelectorAll('.menu li.is-open').forEach((el) => el.classList.remove('is-open'));
+    }
 
-        document.cookie = `page=${page};path=/;SameSite=Lax`;
+    function resetMenu() {
+      UI.submenus.forEach((el) => (el.style.visibility = 'visible'));
+    }
 
-        if (UI.main) {
-          UI.main.classList.remove('ready');
-          UI.main.src = page;
-        }
+    function toggleMenu() {
+      const nav = document.querySelector('.menu > ul');
+      const btn = document.getElementById('burgerBtn');
+      nav.classList.toggle('is-open');
+      btn.classList.toggle('is-open');
+    }
 
-        // Clear visibility and close mobile expanded menus
-        UI.submenus?.forEach((el) => (el.style.visibility = 'hidden'));
-        document.querySelectorAll('.menu li.is-open').forEach((el) => el.classList.remove('is-open'));
-      }
+    // Mobile submenu tap-to-expand
+    function initMobileSubmenus() {
+      document.querySelectorAll('.menu li').forEach((li) => {
+        const link = li.querySelector(':scope > a');
+        const sub = li.querySelector(':scope > ul');
+        if (!sub || !link) return;
 
-      function resetMenu() {
-        UI.submenus.forEach((el) => (el.style.visibility = 'visible'));
-      }
-
-      function toggleMenu() {
-        const nav = document.querySelector('.menu > ul');
-        const btn = document.getElementById('burgerBtn');
-        nav.classList.toggle('is-open');
-        btn.classList.toggle('is-open');
-      }
-
-      // Mobile submenu tap-to-expand
-      function initMobileSubmenus() {
-       document.querySelectorAll('.menu li').forEach((li) => {
-          const link = li.querySelector(':scope > a');
-          const sub = li.querySelector(':scope > ul');
-         if (!sub || !link) return;
-
-         link.addEventListener('click', (e) => {
-            if (window.innerWidth > 720) return;
-            e.preventDefault();
-            li.classList.toggle('is-open');
-          });
+        link.addEventListener('click', (e) => {
+          if (window.innerWidth > 720) return;
+          e.preventDefault();
+          li.classList.toggle('is-open');
         });
-      }
-      window.addEventListener('DOMContentLoaded', initMobileSubmenus);
+      });
+    }
+    window.addEventListener('DOMContentLoaded', initMobileSubmenus);
 
-      // Theme Control
-      function setTheme(isLight) {
-        const theme = isLight ? 'light' : 'dark';
-        const oldTheme = isLight ? 'dark' : 'light';
-        document.documentElement.classList.remove(oldTheme);
-        document.documentElement.classList.add(theme);
-        localStorage.setItem('theme', theme);
-        document.cookie = `theme=${theme};path=/;max-age=${60 * 60 * 24 * 400};SameSite=Lax`;
+    // Theme Control
+    function setTheme(isLight) {
+      const theme = isLight ? 'light' : 'dark';
+      const oldTheme = isLight ? 'dark' : 'light';
+      document.documentElement.classList.remove(oldTheme);
+      document.documentElement.classList.add(theme);
+      localStorage.setItem('theme', theme);
+      document.cookie = `theme=${theme};path=/;max-age=${60 * 60 * 24 * 400};SameSite=Lax`;
 
-        syncIframeTheme();
-      }
+      syncIframeTheme();
+    }
 
-      function syncIframeTheme() {
-        const isLight = document.documentElement.classList.contains('light');
+    function syncIframeTheme() {
+      const isLight = document.documentElement.classList.contains('light');
 
-        try {
-          const iframeWin = UI.main?.contentWindow;
-          const iframeDoc = iframeWin?.document?.documentElement;
+      try {
+        const iframeWin = UI.main?.contentWindow;
+        const iframeDoc = iframeWin?.document?.documentElement;
 
-          if (iframeDoc) {
-            iframeDoc.classList.remove(isLight ? 'dark' : 'light');
-            iframeDoc.classList.add(isLight ? 'light' : 'dark');
-            iframeWin.refreshTheme?.();
-          }
-        }
-        catch {
-          const iframeWin = UI.main?.contentWindow;
-          if (iframeWin) {
-            iframeWin.postMessage({
-              type: 'SYNC_THEME',
-              theme: isLight ? 'light' : 'dark'
-            }, '*');
-          }
+        if (iframeDoc) {
+          iframeDoc.classList.remove(isLight ? 'dark' : 'light');
+          iframeDoc.classList.add(isLight ? 'light' : 'dark');
+          iframeWin.refreshTheme?.();
         }
       }
-    </script>
-  </head>
+      catch {
+        const iframeWin = UI.main?.contentWindow;
+        if (iframeWin) {
+          iframeWin.postMessage({
+            type: 'SYNC_THEME',
+            theme: isLight ? 'light' : 'dark'
+          }, '*');
+        }
+      }
+    }
+  </script>
+</head>
 
-  <body>
-    <div class="main">
-      <header class="header">
-        <div class="header-main">
-          <img src="favicon.ico" alt="ico" class="brand-logo" />
-          <div class="brand-text">
-            <h1 class="brand-font">AI-on-the-Edge Device</h1>
-            <div class="device-name">
-              <span>Device Name: </span>
-              <span id="device-name">Loading...</span>
-            </div>
+<body>
+  <div class="main">
+    <header class="header">
+      <div class="header-main">
+        <img src="favicon.ico" alt="ico" class="brand-logo" />
+        <div class="brand-text">
+          <h1 class="brand-font">AI-on-the-Edge Device</h1>
+          <div class="device-name">
+            <span>Device Name: </span>
+            <span id="device-name">Loading...</span>
           </div>
         </div>
-        <label class="theme-switch">
-          <input type="checkbox" id="themeToggle" onchange="setTheme(this.checked)" />
-          <span class="track">
-            <span class="thumb">
-              <svg class="icon-sun" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 3v1.5M12 19.5V21M4.9 4.9l1.1 1.1M18 18l1.1 1.1M3 12h1.5M19.5 12H21M4.9 19.1l1.1-1.1M18 6l1.1-1.1" />
-              </svg>
-              <svg class="icon-moon" viewBox="0 0 24 24">
-                <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
-              </svg>
-            </span>
+      </div>
+      <label class="theme-switch">
+        <input type="checkbox" id="themeToggle" onchange="setTheme(this.checked)" />
+        <span class="track">
+          <span class="thumb">
+            <svg class="icon-sun" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 3v1.5M12 19.5V21M4.9 4.9l1.1 1.1M18 18l1.1 1.1M3 12h1.5M19.5 12H21M4.9 19.1l1.1-1.1M18 6l1.1-1.1" />
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24">
+              <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
+            </svg>
           </span>
-        </label>
-      </header>
+        </span>
+      </label>
+    </header>
 
-      <nav class="menu" onmouseover="resetMenu()">
-        <ul>
-          <li><a onclick="loadPage('dashboard.html?v=$COMMIT_HASH')">Dashboard</a></li>
+    <nav class="menu" onmouseover="resetMenu()">
+      <ul>
+        <li><a onclick="loadPage('dashboard.html?v=$COMMIT_HASH')">Dashboard</a></li>
 
-          <li>
-            <a>Data<i class="arrow down"></i></a>
-            <ul class="submenu">
-              <li><a onclick="loadPage(getDomainname() + '/recognition_details')">Recognition Details</a></li>
-              <li><a onclick="loadPage('data_graph.html?v=$COMMIT_HASH')">Data Graph</a></li>
-              <li><a onclick="loadPage('data_viewer.html?v=$COMMIT_HASH')">Data Viewer</a></li>
-              <li><a onclick="loadPage(getDomainname() + '/fileserver/log/data/')">Data Files</a></li>
-            </ul>
-          </li>
+        <li>
+          <a>Data<i class="arrow down"></i></a>
+          <ul class="submenu">
+            <li><a onclick="loadPage(getDomainname() + '/recognition_details')">Recognition Details</a></li>
+            <li><a onclick="loadPage('data_graph.html?v=$COMMIT_HASH')">Data Graph</a></li>
+            <li><a onclick="loadPage('data_viewer.html?v=$COMMIT_HASH')">Data Viewer</a></li>
+            <li><a onclick="loadPage(getDomainname() + '/fileserver/log/data/')">Data Files</a></li>
+          </ul>
+        </li>
 
-          <li>
-            <a>Settings<i class="arrow down"></i></a>
-            <ul class="submenu">
-              <li><a onclick="loadPage('edit_fallbackvalue.html?v=$COMMIT_HASH')">Set Fallback Value</a></li>
-              <li><a onclick="loadPage('edit_config_param.html?v=$COMMIT_HASH')">Configuration</a></li>
-              <li><a onclick="loadPage('edit_reference.html?v=$COMMIT_HASH')">Reference Image</a></li>
-              <li><a onclick="loadPage('edit_alignment.html?v=$COMMIT_HASH')">Alignment Marker</a></li>
-              <li><a onclick="loadPage('edit_sequence.html?v=$COMMIT_HASH')">Number Sequences</a></li>
-            </ul>
-          </li>
+        <li>
+          <a>Settings<i class="arrow down"></i></a>
+          <ul class="submenu">
+            <li><a onclick="loadPage('edit_fallbackvalue.html?v=$COMMIT_HASH')">Set Fallback Value</a></li>
+            <li><a onclick="loadPage('edit_config_param.html?v=$COMMIT_HASH')">Configuration</a></li>
+            <li><a onclick="loadPage('edit_reference.html?v=$COMMIT_HASH')">Reference Image</a></li>
+            <li><a onclick="loadPage('edit_alignment.html?v=$COMMIT_HASH')">Alignment Marker</a></li>
+            <li><a onclick="loadPage('edit_sequence.html?v=$COMMIT_HASH')">Number Sequences</a></li>
+          </ul>
+        </li>
 
-          <li>
-            <a>System<i class="arrow down"></i></a>
-            <ul class="submenu">
-              <li><a onclick="loadPage('sys_backup.html?v=$COMMIT_HASH')">Backup / Restore</a></li>
-              <li><a onclick="loadPage('sys_ota.html?v=$COMMIT_HASH')">OTA Update</a></li>
-              <li><a onclick="loadPage('sys_log.html?v=$COMMIT_HASH')">Log Viewer</a></li>
-              <li><a onclick="loadPage(getDomainname() + '/fileserver/')">File Server</a></li>
-              <li>
-                <a>Livestream <i class="arrow right"></i></a>
-                <ul>
-                  <li><a onclick="startLivestream(false)">Livestream (Flash off)</a></li>
-                  <li><a onclick="startLivestream(true)">Livestream (Flash on)</a></li>
-                </ul>
-              </li>
-              <li><a onclick="loadPage('sys_reboot.html?v=$COMMIT_HASH')">Reboot</a></li>
-              <li><a onclick="loadPage('sys_info.html?v=$COMMIT_HASH')">System Info</a></li>
-              <li>
-                <a>Documentation<i class="arrow right"></i></a>
-                <ul>
-                  <li><a onclick="loadPage('doc_api_rest.html?v=$COMMIT_HASH')">REST API</a></li>
-                  <li><a onclick="loadPage('doc_api_mqtt.html?v=$COMMIT_HASH')">MQTT API</a></li>
-                  <li><a onclick="loadPage('doc_api_prometheus.html?v=$COMMIT_HASH')">Prometheus API</a></li>
-                  <li><a onclick="loadPage('doc_api_webhook.html?v=$COMMIT_HASH')">Webhook API</a></li>
-                </ul>
-              </li>
-            </ul>
-          </li>
+        <li>
+          <a>System<i class="arrow down"></i></a>
+          <ul class="submenu">
+            <li><a onclick="loadPage('sys_backup.html?v=$COMMIT_HASH')">Backup / Restore</a></li>
+            <li><a onclick="loadPage('sys_ota.html?v=$COMMIT_HASH')">OTA Update</a></li>
+            <li><a onclick="loadPage('sys_log.html?v=$COMMIT_HASH')">Log Viewer</a></li>
+            <li><a onclick="loadPage(getDomainname() + '/fileserver/')">File Server</a></li>
+            <li>
+              <a>Livestream <i class="arrow right"></i></a>
+              <ul>
+                <li><a onclick="startLivestream(false)">Livestream (Flash off)</a></li>
+                <li><a onclick="startLivestream(true)">Livestream (Flash on)</a></li>
+              </ul>
+            </li>
+            <li><a onclick="loadPage('sys_reboot.html?v=$COMMIT_HASH')">Reboot</a></li>
+            <li><a onclick="loadPage('sys_info.html?v=$COMMIT_HASH')">System Info</a></li>
+            <li>
+              <a>Documentation<i class="arrow right"></i></a>
+              <ul>
+                <li><a onclick="loadPage('doc_api_rest.html?v=$COMMIT_HASH')">REST API</a></li>
+                <li><a onclick="loadPage('doc_api_mqtt.html?v=$COMMIT_HASH')">MQTT API</a></li>
+                <li><a onclick="loadPage('doc_api_prometheus.html?v=$COMMIT_HASH')">Prometheus API</a></li>
+                <li><a onclick="loadPage('doc_api_webhook.html?v=$COMMIT_HASH')">Webhook API</a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
 
-          <li>
-            <a>Control<i class="arrow down"></i></a>
-            <ul class="submenu">
-              <li><a onclick="manualCycleStart()">Start Cycle</a></li>
-              <li id="HASendDiscovery" style="display: none">
-                <a onclick="homeAssistantSendDiscovery()">Resend HA Discovery</a>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </nav>
+        <li>
+          <a>Control<i class="arrow down"></i></a>
+          <ul class="submenu">
+            <li><a onclick="manualCycleStart()">Start Cycle</a></li>
+            <li id="HASendDiscovery" style="display: none">
+              <a onclick="homeAssistantSendDiscovery()">Resend HA Discovery</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
 
-      <iframe title="maincontent" class="iframe" id="maincontent"></iframe>
-    </div>
+    <iframe title="maincontent" class="iframe" id="maincontent"></iframe>
+  </div>
 
-    <script>
-      const CYCLE_START_NOTIFY = {
-        '001': { msg: 'Cycle start triggered', type: 'success', time: 2000 },
-        '002': { msg: 'Cycle start scheduled. Start new cycle after actual cycle is completed', type: 'success', time: 3000 },
-        '003': { msg: 'Cycle start triggered. Restore from state \'Initialization Delayed\'', type: 'success', time: 3000 },
-        '099': { msg: 'Cycle start rejected. Process not (yet) initialized', type: 'danger', time: 30000 },
+  <script>
+    const CYCLE_START_NOTIFY = {
+      '001': { msg: 'Cycle start triggered', type: 'success', time: 2000 },
+      '002': { msg: 'Cycle start scheduled. Start new cycle after actual cycle is completed', type: 'success', time: 3000 },
+      '003': { msg: 'Cycle start triggered. Restore from state \'Initialization Delayed\'', type: 'success', time: 3000 },
+      '099': { msg: 'Cycle start rejected. Process not (yet) initialized', type: 'danger', time: 30000 },
+    };
+
+    async function manualCycleStart() {
+      const res = await apiCallNotify('/cycle_start', {}, { action: 'Cycle start request', resultMsg: CYCLE_START_NOTIFY });
+      if (!res.ok) return;
+
+      const code = res.data.substring(0, 3);
+      if (!CYCLE_START_NOTIFY[code]) return;
+
+      try {
+        UI.main.contentWindow.location.reload();
+      } catch {
+        UI.main.src = UI.main.src;
+      }
+    }
+
+    function homeAssistantSendDiscoveryVisibility() {
+      try {
+        const config = getConfigFromStorage();
+
+        if (config?.mqtt?.enabled && config?.mqtt?.homeassistant?.discoveryenabled) {
+          if (UI.hasDiscovery) UI.hasDiscovery.style.display = '';
+        }
+      } catch (error) {
+        console.error('Error updating HA discovery visibility:', error);
+      }
+    }
+
+    async function homeAssistantSendDiscovery() {
+      const res = await apiCallNotify('/mqtt?task=publish_ha_discovery', {}, { action: 'HA discovery request' });
+      if (!res.ok) return;
+
+      launchApiFirework('Sending HA discovery topics scheduled. Processing in "Publish to MQTT" state.', 'success', 5000);
+    }
+
+    function startLivestream(streamFlashlight) {
+      if (streamPopup) streamPopup.close();
+
+      const task = streamFlashlight ? 'stream_flashlight' : 'stream';
+      const name = streamFlashlight ? 'LivestreamWithLight' : 'Livestream';
+
+      streamPopup = window.open(`${getDomainname()}/camera?task=${task}`, name, streamWindowFeatures);
+      streamPopup?.focus();
+    }
+
+    async function loadHostname() {
+      const res = await apiCall('/info?type=hostname');
+      if (!res.ok || !res.data) return;
+
+      const hostname = res.data.trim();
+      document.title = `${hostname} | AI-on-the-Edge Device`;
+      if (UI.deviceName) UI.deviceName.innerText = hostname;
+    }
+
+    async function fetchFwVersion(type) {
+      const res = await apiCall(`/info?type=${type}`);
+      return res.ok ? res.data : '';
+    }
+
+    async function checkFwVersion() {
+      const [fwRaw, uiRaw] = await Promise.all([fetchFwVersion('firmware_version'), fetchFwVersion('html_version')]);
+
+      if (!fwRaw || !uiRaw) {
+        console.error(`Failed to compare firmware version strings.`);
+        return;
+      }
+
+      // Extract short hash (last word, first 7 chars)
+      const getHash = (str) => {
+        if (typeof str !== 'string') return '';
+        const last = str.trim().split(/\s+/).pop() || '';
+        const hash = last.substring(0, 7);
+        return /^[0-9a-fA-F]{7}$/.test(hash) ? hash : '';
       };
 
-      async function manualCycleStart() {
-        const res = await apiCallNotify('/cycle_start', {}, { action: 'Cycle start request', resultMsg: CYCLE_START_NOTIFY });
-        if (!res.ok) return;
+      const fWGitHash = getHash(fwRaw);
+      const webUiHash = getHash(uiRaw);
 
-        const code = res.data.substring(0, 3);
-        if (!CYCLE_START_NOTIFY[code]) return;
-
-        try {
-          UI.main.contentWindow.location.reload();
-        } catch {
-          UI.main.src = UI.main.src;
-        }
+      if (!fWGitHash || !webUiHash) {
+        firework.launch("Failed to parse firmware or WebUI hash. Check logs for more details.", 'warning', 10000);
+        console.error('Failed to parse firmware or WebUI hash');
+        return;
       }
 
-      function homeAssistantSendDiscoveryVisibility() {
-        try {
-          const config = getConfigFromStorage();
+      if (fWGitHash !== webUiHash) {
+        firework.launch("Web interface version does not match the firmware version. It's strongly advised to use matching version. Check logs for more details.",
+          'warning', 10000);
+      }
+    }
 
-          if (config?.mqtt?.enabled && config?.mqtt?.homeassistant?.discoveryenabled) {
-            if (UI.hasDiscovery) UI.hasDiscovery.style.display = '';
-          }
-        } catch (error) {
-          console.error('Error updating HA discovery visibility:', error);
-        }
+    async function init() {
+      // Theme Control
+      const isLight = document.documentElement.classList.contains('light');
+      const themeToggle = document.getElementById('themeToggle');
+      if (themeToggle) {
+        themeToggle.checked = isLight;
       }
 
-      async function homeAssistantSendDiscovery() {
-        const res = await apiCallNotify('/mqtt?task=publish_ha_discovery', {}, { action: 'HA discovery request' });
-        if (!res.ok) return;
-
-        launchApiFirework('Sending HA discovery topics scheduled. Processing in "Publish to MQTT" state.', 'success', 5000);
+      if (UI.main) {
+        UI.main.addEventListener('load', () => {
+          syncIframeTheme();
+          UI.main.classList.add('ready');
+        });
       }
 
-      function startLivestream(streamFlashlight) {
-        if (streamPopup) streamPopup.close();
-
-        const task = streamFlashlight ? 'stream_flashlight' : 'stream';
-        const name = streamFlashlight ? 'LivestreamWithLight' : 'Livestream';
-
-        streamPopup = window.open(`${getDomainname()}/camera?task=${task}`, name, streamWindowFeatures);
-        streamPopup?.focus();
+      // Cookie management
+      let page = getCookie('page');
+      if (!page || page.includes('sys_reboot.html') || page.includes('overview.html')) {
+        page = 'dashboard.html?v=$COMMIT_HASH';
+        document.cookie = `page=${page};path=/;SameSite=Lax`;
       }
+      UI.main.src = page;
 
-      async function loadHostname() {
-        const res = await apiCall('/info?type=hostname');
-        if (!res.ok || !res.data) return;
-
-        const hostname = res.data.trim();
-        document.title = `${hostname} | AI-on-the-Edge Device`;
-        if (UI.deviceName) UI.deviceName.innerText = hostname;
+      // Load data
+      try {
+        await Promise.all([
+          loadConfig().then(() => loadHostname()), checkFwVersion(), homeAssistantSendDiscoveryVisibility()]);
+      } catch (e) {
+        console.error('Initialization failed', e);
       }
+    }
 
-      async function fetchFwVersion(type) {
-        const res = await apiCall(`/info?type=${type}`);
-        return res.ok ? res.data : '';
-      }
+    // Initialize as soon as DOM is ready
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
 
-      async function checkFwVersion() {
-        const [fwRaw, uiRaw] = await Promise.all([fetchFwVersion('firmware_version'), fetchFwVersion('html_version')]);
-
-        if (!fwRaw || !uiRaw) {
-          console.error(`Failed to compare firmware version strings.`);
-          return;
-        }
-
-        // Extract short hash (last word, first 7 chars)
-        const getHash = (str) => {
-          if (typeof str !== 'string') return '';
-          const last = str.trim().split(/\s+/).pop() || '';
-          const hash = last.substring(0, 7);
-          return /^[0-9a-fA-F]{7}$/.test(hash) ? hash : '';
-        };
-
-        const fWGitHash = getHash(fwRaw);
-        const webUiHash = getHash(uiRaw);
-
-        if (!fWGitHash || !webUiHash) {
-          firework.launch("Failed to parse firmware or WebUI hash. Check logs for more details.",'warning', 10000);
-          console.error('Failed to parse firmware or WebUI hash');
-          return;
-        }
-
-        if (fWGitHash !== webUiHash) {
-          firework.launch("Web interface version does not match the firmware version. It's strongly advised to use matching version. Check logs for more details.",
-            'warning', 10000);
-        }
-      }
-
-      async function init() {
-        // Theme Control
-        const isLight = document.documentElement.classList.contains('light');
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-          themeToggle.checked = isLight;
-        }
-
-        if (UI.main) {
-          UI.main.addEventListener('load', () => {
-            syncIframeTheme();
-            UI.main.classList.add('ready');
-          });
-        }
-
-        // Cookie management
-        let page = getCookie('page');
-        if (!page || page.includes('sys_reboot.html') || page.includes('overview.html')) {
-          page = 'dashboard.html?v=$COMMIT_HASH';
-          document.cookie = `page=${page};path=/;SameSite=Lax`;
-        }
-        UI.main.src = page;
-
-        // Load data
-        try {
-          await Promise.all([
-            loadConfig().then(() => loadHostname()), checkFwVersion(), homeAssistantSendDiscoveryVisibility()]);
-        } catch (e) {
-          console.error('Initialization failed', e);
-        }
-      }
-
-      // Initialize as soon as DOM is ready
-      window.addEventListener('DOMContentLoaded', init);
-    </script>
-  </body>
 </html>
