@@ -370,6 +370,8 @@
         return null;
       }
 
+      document.getElementById('refreshTimestamp').value = new Date().toLocaleTimeString([], { hour12: false });
+
       const d = res.data;
       try {
         renderSequenceCards(d);
@@ -440,8 +442,6 @@
       try {
         const key = await loadProcessData();
         if (key === null) return; // device not answering: skip the image
-
-        document.getElementById('refreshTimestamp').value = new Date().toLocaleTimeString([], { hour12: false });
 
         // Manual refresh always reloads the image; auto refresh only when cycle or step changed
         if (!auto || key !== lastImageKey) {
