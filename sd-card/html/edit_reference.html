@@ -727,7 +727,6 @@
     }
 
     function loadConfigData() {
-      showReference();
       setVariableInputLimits();
     }
 
@@ -744,6 +743,7 @@
 
       const loader = document.getElementById('img_loading');
       if (loader) loader.src = loaderSpinner;
+      showReference();
 
       try {
         await loadConfig();

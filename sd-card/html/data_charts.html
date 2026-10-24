@@ -2,7 +2,7 @@
 <html lang="en" xml:lang="en">
 
 <head>
-  <title>Data Graph</title>
+  <title>Data Charts</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -83,7 +83,7 @@
   <div class="container">
     <div class="container-header">
       <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%">
-        <div class="container-title"><span>📈</span>Data Graph</div>
+        <div class="container-title"><span>📈</span>Data Charts</div>
         <div id="status" style="color: var(--text-secondary); font-style: italic"></div>
         <div class="refresh-group">
           <div id="autoRefreshSettings" class="refresh-settings is-disabled">
@@ -622,11 +622,11 @@
       } catch (err) {
         console.error('Refresh failed:', err);
       } finally {
-        refreshRunning = false;
         setTimeout(() => {
           if (!auto) btn.disabled = false;
           loader?.classList.remove('is-loading');
-        }, 200);
+        }, 50);
+        refreshRunning = false;
       }
     }
 
@@ -667,8 +667,8 @@
       try {
         [dataFileListObj] = await Promise.all([getDataFileList(), loadConfig()]);
       } catch (err) {
-        firework.launch('Failed loading data for graph page. Please repeat or check logs', 'danger', 30000);
-        console.error('Failed loading data for graph page. Error:', err);
+        firework.launch('Failed loading data. Please repeat or check logs', 'danger', 30000);
+        console.error('Failed loading data. Error:', err);
         return;
       }
 

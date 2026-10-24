@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>Data Viewer</title>
+  <title>Data Table</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -336,7 +336,7 @@
   <div class="container">
     <div class="container-header">
       <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%">
-        <div class="container-title"><span>📋</span>Data Viewer</div>
+        <div class="container-title"><span>📋</span>Data Table</div>
         <div class="refresh-group">
           <div id="autoRefreshSettings" class="refresh-settings is-disabled">
             <input type="checkbox" id="autoRefreshCtrl" onchange="autoRefreshContent()" />
@@ -518,7 +518,7 @@
         document.getElementById('refreshTimestamp').value = now.toLocaleTimeString([], { hour12: false });
       } catch (err) {
         firework.launch('Data loading failed', 'danger', 10000);
-        console.error('Data viewer reload failed:', err);
+        console.error('Data loading failed:', err);
       }
     }
 
@@ -973,11 +973,11 @@
       } catch (err) {
         console.error('Refresh failed:', err);
       } finally {
-        refreshRunning = false;
         setTimeout(function () {
           if (!auto) btn.disabled = false;
           loader?.classList.remove('is-loading');
-        }, 200);
+        }, 50);
+        refreshRunning = false;
       }
     }
 

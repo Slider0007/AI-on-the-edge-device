@@ -48,7 +48,7 @@ jsonOutPath = os.path.join(htmlTempDir, "tooltips.json")
 jsonOutPathGz = os.path.join(htmlTempDir, "tooltips.json.gz")
 
 # Pages to clean up
-pagesToUpdate = ["edit_config_param.html", "edit_reference.html", "setup.html"]
+pagesToUpdate = ["edit_configuration.html", "edit_reference.html", "setup.html"]
 
 # Dictionary to hold all documentation: { "section_parameter": "<html>...</html>" }
 tooltip_database = {}

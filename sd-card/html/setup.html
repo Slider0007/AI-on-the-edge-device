@@ -26,6 +26,10 @@
       max-width: 721px;
     }
 
+    * {
+      box-sizing: unset;
+    }
+
     #fw-container {
       right: max(20px, calc(100vw - 721px + 20px)) !important;
     }
@@ -356,8 +360,8 @@
       <button class="button button-small" id="previous" onclick="clickPrevious()">Previous Step</button>
       <button class="button btn-action button-small" id="next" onclick="clickNext()">Next Step</button>
       <button class="button button-small" id="skip" onclick="clickAbort()">Abort Wizard</button>
-      <button type="button" class="button button-small" onclick="openLogModal()">Show Log</button>
-      <button type="button" class="button button-small" onclick="window.location.replace('sys_reboot.html?v=$COMMIT_HASH#reboot');">Reboot Device</button>
+      <button type="button" class="button button-small" onclick="openFrameModal(getDomainname() + '/sys_log.html?v=$COMMIT_HASH')">Log Viewer</button>
+      <button type="button" class="button button-small" onclick="openFrameModal(getDomainname() + '/sys_reboot.html?v=$COMMIT_HASH#reboot')">Reboot Device</button>
     </div>
     <div class="progress-container">
       <span>Progress</span><br />
@@ -404,11 +408,11 @@
 
         <h3>Further Actions</h3>
         <div class="button-group">
-          <button type="button" class="button button-small" onclick="openLogModal()">Show Log</button>
-          <button type="button" class="button button-small" onclick="window.location.replace(getDomainname() + '/sys_reboot.html?v=$COMMIT_HASH#reboot');">Reboot
-            Device</button>
-          <button type="button" class="button button-small" onclick="window.location.replace(getDomainname() + '/sys_ota.html?v=$COMMIT_HASH');">OTA Update</button>
-          <button type="button" class="button button-small" onclick="window.location.replace(getDomainname() + '/fileserver/');">File Server</button>
+          <button type="button" class="button" onclick="openFrameModal(getDomainname() + '/sys_reboot.html?v=$COMMIT_HASH#reboot')">Reboot Device</button>
+          <button type="button" class="button" onclick="openFrameModal(getDomainname() + '/sys_log.html?v=$COMMIT_HASH')">Log Viewer</button>
+          <button type="button" class="button" onclick="openFrameModal(getDomainname() + '/sys_ota.html?v=$COMMIT_HASH')">OTA Update</button>
+          <button type="button" class="button" onclick="openFrameModal(getDomainname() + '/sys_info.html?v=$COMMIT_HASH')">System Info</button>
+          <button type="button" class="button" onclick="openFrameModal(getDomainname() + '/fileserver/')">File Explorer</button>
         </div>
       </div>
 
@@ -754,24 +758,13 @@
       </div>
     </div>
 
-    <!-- Modal Log Container -->
-    <div id="logModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width:720px; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
-      <div
-        style="background-color: var(--surface-light); color: var(--text-main); margin: 10% auto; padding: 20px; border: 1px solid var(--border); width: 95%; max-width: 720px; border-radius: var(--container-radius); box-shadow: var(--shadow);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h3 style="margin: 0; color: var(--text-main);">Log Viewer</h3>
-          <button type="button" onclick="closeLogModal()"
-            style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-main);">&times;</button>
-        </div>
-        <hr style="border: none; border-top: 1px solid var(--border); margin-bottom: 15px;" />
-
-        <!-- Scrollable Log Output Area -->
-        <pre id="logContent"
-          style="background-color: var(--bg-light); color: var(--text-main); padding: 12px; border-radius: var(--card-radius); border: 1px solid var(--border); max-height: 400px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; margin: 0;">Loading log...</pre>
-
-        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
-          <button type="button" class="button btn-action" onclick="fetchLogData()">Refresh</button>
-          <button type="button" class="button" onclick="closeLogModal()">Close</button>
+    <!-- Modal Frame Container -->
+    <div id="frameModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 721px; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
+      <div style="background-color: var(--surface-light); color: var(--text-main); margin: 20% auto; width: 100%; max-width: 721px;
+          border-radius: var(--container-radius); box-shadow: var(--shadow);">
+        <iframe id="frameModalContent" src="about:blank" style="width: 100%; height: 75vh; border: 1px solid var(--border); border-radius: var(--card-radius);"></iframe>
+        <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+          <button type="button" class="button" onclick="closeFrameModal()">Close</button>
         </div>
       </div>
     </div>
@@ -1157,35 +1150,33 @@
       SetupWizard.el.skipBtn.disabled = busy;
     }
 
-    function openLogModal() {
-      document.getElementById('logModal').style.display = 'block';
-      fetchLogData();
+    function openFrameModal(url) {
+      const frame = document.getElementById('frameModalContent');
+      frame.onload = () => { // same-origin only; silently skipped otherwise
+        try {
+          const isLight = document.documentElement.classList.contains('light');
+          const root = frame.contentWindow.document.documentElement;
+          root.classList.remove(isLight ? 'dark' : 'light');
+          root.classList.add(isLight ? 'light' : 'dark');
+          frame.contentWindow.refreshTheme?.();
+        } catch {
+          // ignore
+        }
+      };
+      frame.src = url;
+      document.getElementById('frameModal').style.display = 'block';
     }
 
-    function closeLogModal() {
-      document.getElementById('logModal').style.display = 'none';
-    }
-
-    async function fetchLogData() {
-      const logPre = document.getElementById('logContent');
-      logPre.textContent = 'Loading log...';
-
-      const res = await apiCall('/log');
-
-      if (res.ok) {
-        logPre.textContent = res.data;
-        logPre.scrollTop = logPre.scrollHeight; // Auto-scroll to latest log entries
-      } else {
-        logPre.textContent = 'Error loading log: ' + (res.data || res.error || 'Unknown error');
-      }
+    function closeFrameModal() {
+      const frame = document.getElementById('frameModalContent');
+      frame.onload = null;
+      frame.src = 'about:blank'; // abort pending loads / stop page scripts
+      document.getElementById('frameModal').style.display = 'none';
     }
 
     // Close modal when clicking outside the modal box
     window.onclick = function (event) {
-      const modal = document.getElementById('logModal');
-      if (event.target === modal) {
-        closeLogModal();
-      }
+      if (event.target === document.getElementById('frameModal')) closeFrameModal();
     }
 
     // Run on load

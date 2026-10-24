@@ -907,12 +907,14 @@
 
       try {
         await reload();
+      } catch (err) {
+        console.error('Refresh failed:', err);
       } finally {
-        refreshRunning = false;
         setTimeout(function () {
           if (!auto) btn.disabled = false;
           loader?.classList.remove('is-loading');
-        }, 200);
+        }, 50);
+        refreshRunning = false;
       }
     }
 

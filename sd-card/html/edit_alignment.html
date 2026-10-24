@@ -649,13 +649,12 @@
 
       const loader = document.getElementById('img_loading');
       if (loader) loader.src = loaderSpinner;
+      loadReferenceImage();
 
       const saveBtn = document.getElementById('savemarker');
       const updateBtn = document.getElementById('updatemarker');
       if (saveBtn) saveBtn.disabled = true;
       if (updateBtn) updateBtn.disabled = true;
-
-      loadReferenceImage(); // Starts already in background
 
       try {
         await loadConfig();

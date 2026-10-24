@@ -1447,16 +1447,22 @@
       jsonConfigModifiedDelta.digit = structuredClone(jsonConfig.digit);
       jsonConfigModifiedDelta.analog = new Object();
       jsonConfigModifiedDelta.analog = structuredClone(jsonConfig.analog);
-      loadReferenceImage();
+
       fillSequenceSelectionOptions();
       analogProcessingChanged(true);
       digitProcessingChanged(true);
       onTypeChanged();
+
       document.getElementById('saveconfig').disabled = true;
     }
+
     async function init() {
       openDescription();
-      document.getElementById('img_loading').setAttribute('src', loaderSpinner);
+
+      const loader = document.getElementById('img_loading');
+      if (loader) loader.src = loaderSpinner;
+      loadReferenceImage();
+
       try {
         await loadConfig();
         loadConfigData();
