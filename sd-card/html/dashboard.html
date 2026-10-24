@@ -493,8 +493,6 @@
       await loadROIImage();
       await loadProcessData();
 
-      autoRefreshContent();
-
       try {
         await loadConfig();
         const { enabled, refreshtime } = getConfigFromStorage().webui.autorefresh.overviewpage;
@@ -503,6 +501,8 @@
       } catch (e) {
         console.error('Failed to load config | Error: ', e);
       }
+
+      autoRefreshContent();
     }
 
     init();

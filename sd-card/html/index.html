@@ -226,7 +226,7 @@
           <ul class="submenu">
             <li><a onclick="manualCycleStart()">Start Cycle</a></li>
             <li id="HASendDiscovery" style="display: none">
-              <a onclick="homeAssistantSendDiscovery()">Resend HA Discovery</a>
+              <a onclick="homeAssistantPublishDiscoveryTopics()">Publish Discovery Topics</a>
             </li>
           </ul>
         </li>
@@ -270,11 +270,11 @@
       }
     }
 
-    async function homeAssistantSendDiscovery() {
+    async function homeAssistantPublishDiscoveryTopics() {
       const res = await apiCallNotify('/mqtt?task=publish_ha_discovery', {}, { action: 'HA discovery request' });
       if (!res.ok) return;
 
-      firework.launch('Sending HA discovery topics scheduled. Processing in "Publish to MQTT" state.', 'success', 5000);
+      firework.launch("Publishing Home Assistant discovery topics scheduled. Will be processed during state 'Publish to MQTT'", 'success', 5000);
     }
 
     function startLivestream(streamFlashlight) {
