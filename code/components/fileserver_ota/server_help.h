@@ -14,6 +14,6 @@ esp_err_t setContentTypeFromFile(httpd_req_t *req, const char *filename);
 esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath);
 
 bool isValidIsoTimestamp(const char *isoStr);
-long getOffsetForTime(FILE *filePtr, const char *targetIso, long fileSize);
+long getOffsetForTime(FILE *filePtr, const char *targetIso, long fileSize, bool includeTimeAtBoundery);
 
 #endif // SERVERHELP_H

@@ -290,12 +290,11 @@
       background: var(--dbg-main);
     }
 
-    .no-data-msg {
+    .no-logs-msg {
       position: absolute;
       top: 3%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 12px;
       color: var(--text-secondary);
       font-style: italic;
       pointer-events: none;
@@ -467,7 +466,7 @@
       <div id="scrollContainer" class="log-table-container">
         <div id="scrollPhantom" class="log-scroll-phantom"></div>
         <div id="logViewport" class="log-viewport"></div>
-        <div id="noDataMessage" class="no-data-msg hidden">No data available</div>
+        <div id="noDataMessage" class="no-logs-msg hidden">No log entries</div>
       </div>
 
       <button id="scrollToEndBtn" class="scroll-bottom-btn hidden" type="button" title="Scroll to end" aria-label="Scroll to end" onclick="scrollVirtualToBottom()">
@@ -913,7 +912,7 @@
         setTimeout(function () {
           if (!auto) btn.disabled = false;
           loader?.classList.remove('is-loading');
-        }, 50);
+        }, 100);
         refreshRunning = false;
       }
     }

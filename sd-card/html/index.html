@@ -349,7 +349,8 @@
 
       // Cookie management
       let page = getCookie('page');
-      if (!page || page.includes('sys_reboot.html') || page.includes('overview.html')) {
+      const removedPages = ['overview.html', 'data_graph.html', 'data_viewer.html'];
+      if (!page || page.includes('sys_reboot.html') || removedPages.some((p) => page.includes(p))) {
         page = 'dashboard.html?v=$COMMIT_HASH';
         document.cookie = `page=${page};path=/;SameSite=Lax`;
       }

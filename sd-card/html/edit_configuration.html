@@ -3094,9 +3094,10 @@
         if (document.getElementById('gpio_customizationenabled_value').value == 'true') {
           document.getElementById('takeimage_flashlightgpiomapping_value').innerText = 'Customized [GPIO Section]';
         } else {
-          if (jsonConfig.gpio.gpiopin[i].gpiousage.substring(0, 10) == 'flashlight') {
+          const usage = jsonConfig.gpio.gpiopin[i].gpiousage || '';
+          if (usage.substring(0, 10) == 'flashlight') {
             document.getElementById('takeimage_flashlightgpiomapping_value').innerText =
-              'Default [GPIO' + jsonConfig.gpio.gpiopin[i].gpionumber + ']';
+              'Board Default [GPIO' + jsonConfig.gpio.gpiopin[i].gpionumber + ', ' + usage.substring(11).toUpperCase() + ']';
           }
         }
       }

@@ -693,14 +693,20 @@
       context.stroke();
     }
 
-    function saveReference() {
-      if (confirm('Are you sure you want to save and apply the new camera configuration and reference image?')) {
-        document.getElementById("savereference").disabled = true;
+    async function saveReference() {
+      if (!confirm('Are you sure you want to save and apply the new camera configuration and reference image?')) return;
 
+      const saveBtn = document.getElementById('savereference');
+      saveBtn.disabled = true;
+
+      try {
         drawRotated(false);
-        saveCanvasToImage(canvas, "/config/reference.jpg", true, getDomainname());
-
-        saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
+        const ok = await saveCanvasToImage(canvas, '/config/reference.jpg', true, getDomainname());
+        if (!ok) throw new Error('Reference image upload failed');
+        await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
+      } catch (error) {
+        saveBtn.disabled = false;
+        console.error('Save reference failed:', error);
       }
     }
 

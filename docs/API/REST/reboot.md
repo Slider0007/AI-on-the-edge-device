@@ -10,7 +10,7 @@ Trigger an instant device reboot.
 
 ### General Information
 
-* **HTTP Method**: `GET` (or `POST`)
+* **HTTP Method**: `GET`
 * **Content-Type**: `text/plain`
 * **Cache Control**: `no-cache`
 * **Description**: Sends a confirmation message and immediately initiates a system reboot.

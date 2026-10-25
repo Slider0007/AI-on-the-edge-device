@@ -110,6 +110,25 @@ const char *getPathFromUri(char *dest, const char *basePath, const char *uri, si
 
     *out = '\0';
 
+    const char *rel = dest + basePathLength;
+    while (*rel != '\0') {
+        while (*rel == '/') {
+            ++rel;
+        }
+
+        const char *end = strchr(rel, '/');
+        const size_t segmentLength = end ? static_cast<size_t>(end - rel) : strlen(rel);
+        if (segmentLength == 2 && rel[0] == '.' && rel[1] == '.') {
+            return NULL;
+        }
+
+        if (!end) {
+            break;
+        }
+        rel = end + 1;
+    }
+
+
     return dest + basePathLength;
 }
 
@@ -327,7 +346,7 @@ bool isValidIsoTimestamp(const char *isoStr)
 }
 
 
-long getOffsetForTime(FILE *filePtr, const char *targetIso, long fileSize)
+long getOffsetForTime(FILE *filePtr, const char *targetIso, long fileSize, bool includeTimeAtBoundery)
 {
     // Validate input: ensure target string exists and is long enough for a date
     if (!targetIso || strlen(targetIso) < 10) {
@@ -361,8 +380,8 @@ long getOffsetForTime(FILE *filePtr, const char *targetIso, long fileSize)
 
                 const size_t targetLen = strlen(targetIso);
                 const int compareLen = (int)std::min(targetLen, (size_t)19);
+                bool isBefore = includeTimeAtBoundery; // A prefix-equal line counts as "before" for an inclusive bound
 
-                bool isBefore = false;
                 // Compare the first 16 characters (YYYY-MM-DD HH:MM)
                 for (int i = 0; i < compareLen; i++) {
                     // Skip index 10: 'T' in ISO vs ' ' in log file
@@ -381,7 +400,7 @@ long getOffsetForTime(FILE *filePtr, const char *targetIso, long fileSize)
                 }
 
                 if (isBefore) {
-                    // Time at 'mid' is too early; search the upper half
+                    // Time at 'mid' is too early (or includeTimeAtBoundery match); search the upper half
                     low = mid + 1;
                     resultOffset = ftell(filePtr); // Store current position as best match so far
                 }

@@ -48,6 +48,7 @@ select {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-family: inherit;
 }
 
 .fa-fw {
@@ -83,18 +84,8 @@ select {
   content: '\1F50E \FE0E';
 }
 
-.rst-content .admonition-title:before {
-  content: '';
-}
-
 .fa-eye:before {
   content: '\1F441';
-}
-
-.fa,
-.icon,
-.rst-content .admonition-title {
-  font-family: inherit;
 }
 
 .fa:before,
@@ -129,6 +120,7 @@ a .rst-content .admonition-title {
   line-height: 24px;
   margin-bottom: 24px;
   background: #e7f2fa;
+  clear: both;
 }
 
 .rst-content .admonition-title {
@@ -192,6 +184,42 @@ a .rst-content .admonition-title {
   margin-bottom: 0;
 }
 
+.rst-content .admonition .last,
+.rst-content .admonition> :last-child,
+.rst-content .caution .last,
+.rst-content .caution> :last-child,
+.rst-content .danger .last,
+.rst-content .danger> :last-child,
+.rst-content .error .last,
+.rst-content .error> :last-child,
+.rst-content .hint .last,
+.rst-content .hint> :last-child,
+.rst-content .important .last,
+.rst-content .important> :last-child,
+.rst-content .note .last,
+.rst-content .note> :last-child,
+.rst-content .tip .last,
+.rst-content .tip> :last-child,
+.rst-content .warning .last,
+.rst-content .warning> :last-child {
+  margin-bottom: 0;
+}
+
+.rst-content .admonition-title:before {
+  margin-right: 4px;
+  content: '';
+}
+
+.rst-content .admonition table {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.rst-content .admonition table td,
+.rst-content .admonition table th {
+  background: transparent !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
 button {
   font-size: 100%;
   margin: 0;
@@ -223,26 +251,6 @@ button[disabled] {
 
 small {
   font-size: 80%;
-}
-
-.rst-content code {
-  white-space: nowrap;
-  max-width: 100%;
-  background: #fff;
-  border: 1px solid #e1e4e5;
-  font-size: 75%;
-  padding: 0 5px;
-  font-family:
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    Liberation Mono,
-    Courier New,
-    Courier,
-    monospace;
-  color: #e74c3c;
-  overflow-x: auto;
 }
 
 .rst-content .section ul,
@@ -297,53 +305,6 @@ html {
   margin-bottom: 24px;
 }
 
-.rst-content .admonition,
-.rst-content .caution,
-.rst-content .danger,
-.rst-content .error,
-.rst-content .hint,
-.rst-content .important,
-.rst-content .note,
-.rst-content .tip,
-.rst-content .warning {
-  clear: both;
-}
-
-.rst-content .admonition .last,
-.rst-content .admonition> :last-child,
-.rst-content .caution .last,
-.rst-content .caution> :last-child,
-.rst-content .danger .last,
-.rst-content .danger> :last-child,
-.rst-content .error .last,
-.rst-content .error> :last-child,
-.rst-content .hint .last,
-.rst-content .hint> :last-child,
-.rst-content .important .last,
-.rst-content .important> :last-child,
-.rst-content .note .last,
-.rst-content .note> :last-child,
-.rst-content .tip .last,
-.rst-content .tip> :last-child,
-.rst-content .warning .last,
-.rst-content .warning> :last-child {
-  margin-bottom: 0;
-}
-
-.rst-content .admonition-title:before {
-  margin-right: 4px;
-}
-
-.rst-content .admonition table {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.rst-content .admonition table td,
-.rst-content .admonition table th {
-  background: transparent !important;
-  border-color: rgba(0, 0, 0, 0.1) !important;
-}
-
 .rst-content .section ul li>*,
 .rst-content section ul li>* {
   margin-top: 12px;
@@ -378,8 +339,17 @@ html {
   text-align: center;
 }
 
+/*
+ * Code blocks and inline code styling (consolidated)
+ */
 .rst-content code {
-  color: #000;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid #e1e4e5;
+  font-size: 75%;
+  padding: 2px 5px;
   font-family:
     SFMono-Regular,
     Menlo,
@@ -389,17 +359,13 @@ html {
     Courier New,
     Courier,
     monospace;
-  padding: 2px 5px;
+  color: #e74c3c;
+  overflow-x: auto;
 }
 
 .rst-content code em {
   font-size: 100% !important;
   line-height: normal;
-}
-
-a .rst-content code {
-  font-weight: 700;
-  color: #404040;
 }
 
 .rst-content pre {
@@ -414,59 +380,16 @@ a .rst-content code {
     monospace;
 }
 
-.rst-content a code {
-  color: #2980b9;
-}
-
-/*
- * Wrap inline code samples otherwise they shoot of the side and
- * can't be read at all.
- *
- * https://github.com/mkdocs/mkdocs/issues/313
- * https://github.com/mkdocs/mkdocs/issues/233
- * https://github.com/mkdocs/mkdocs/issues/834
- */
-.rst-content code {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  padding: 2px 5px;
-}
-
-/**
- * Make code blocks display as blocks and give them the appropriate
- * font size and padding.
- *
- * https://github.com/mkdocs/mkdocs/issues/855
- * https://github.com/mkdocs/mkdocs/issues/834
- * https://github.com/mkdocs/mkdocs/issues/233
- */
 .rst-content pre code {
   white-space: pre;
   word-wrap: normal;
   display: block;
   padding: 12px;
   font-size: 12px;
-}
-
-/**
- * Fix code colors
- *
- * https://github.com/mkdocs/mkdocs/issues/2027
- */
-.rst-content code {
-  color: #e74c3c;
-}
-
-.rst-content pre code {
   color: #000;
   background: #f8f8f8;
 }
 
-/*
- * Fix link colors when the link text is inline code.
- *
- * https://github.com/mkdocs/mkdocs/issues/718
- */
 a code {
   color: #2980b9;
 }
@@ -479,11 +402,11 @@ a:visited code {
   color: #9b59b6;
 }
 
-/*
- * Improve inline code blocks within admonitions.
- *
- * https://github.com/mkdocs/mkdocs/issues/656
- */
+.rst-content a code {
+  font-weight: 700;
+  color: #2980b9;
+}
+
 .rst-content .admonition code {
   color: #404040;
   border: 1px solid #c7c9cb;

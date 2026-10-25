@@ -317,10 +317,10 @@ static esp_err_t handler_logfiles(httpd_req_t *req)
 
         // Apply Time Offsets
         if (i == 0 && endVal.size() >= 10) {
-            endOff = getOffsetForTime(file, endVal.c_str(), fileSize);
+            endOff = getOffsetForTime(file, endVal.c_str(), fileSize, true);
         }
         if (i == files.size() - 1 && startVal.size() >= 10) {
-            startOff = getOffsetForTime(file, startVal.c_str(), fileSize);
+            startOff = getOffsetForTime(file, startVal.c_str(), fileSize, false);
         }
 
         long available = endOff - startOff;
@@ -362,7 +362,8 @@ static esp_err_t handler_logfiles(httpd_req_t *req)
         // Set buffer to SD card allocation size of 512 byte (newlib default: 128 byte) -> reduce system read/write calls
         setvbuf(file, NULL, _IOFBF, 512);
 
-        fseek(file, seg.start, SEEK_SET);
+        // Start one byte early: a segment that begins on a line boundary keeps its first line
+        fseek(file, seg.start > 0 ? seg.start - 1 : 0, SEEK_SET);
 
         // Align to next newline if we jumped into the middle of a file
         if (seg.start > 0) {
@@ -643,7 +644,7 @@ static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char 
 
         bufSizeUsed += snprintf(buffer + bufSizeUsed, bufSize - bufSizeUsed, "</tr>\n");
 
-        if (bufSize - bufSizeUsed < 768) {
+        if (bufSizeUsed >= bufSize || bufSize - bufSizeUsed < 3072) {
             sendChunk();
         }
 

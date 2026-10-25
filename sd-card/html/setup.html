@@ -970,7 +970,7 @@
         let defaultFound = false;
         if (jsonConfig && jsonConfig.gpio && jsonConfig.gpio.gpiopin) {
           for (let i = 0; i < jsonConfig.gpio.gpiopin.length; ++i) {
-            let usage = jsonConfig.gpio.gpiopin[i].gpiousage || '';
+            const usage = jsonConfig.gpio.gpiopin[i].gpiousage || '';
             if (usage.substring(0, 10) == 'flashlight') {
               document.getElementById('takeimage_flashlightgpiomapping_value').innerText =
                 'Board Default [GPIO' + jsonConfig.gpio.gpiopin[i].gpionumber + ', ' + usage.substring(11).toUpperCase() + ']';

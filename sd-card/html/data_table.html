@@ -595,11 +595,14 @@
       const isDateRangeCtrlDisabled = !document.getElementById('dateRangeCtrl').checked;
       let startTs, endTs;
 
-      if (isDateRangeCtrlDisabled || customStartTs === undefined) {
+      if (isDateRangeCtrlDisabled) {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
         startTs = d.getTime();
         endTs = startTs + 24 * 3600000 - 1;
+      } else if (customStartTs === undefined) {
+        startTs = new Date(document.getElementById('startTime').value).getTime();
+        endTs = new Date(document.getElementById('endTime').value).getTime();
       } else {
         startTs = customStartTs;
         endTs = customEndTs;
@@ -661,7 +664,7 @@
       if (!body) return;
 
       if (!virtualRows.length) {
-        body.innerHTML = '<tr><td colspan="11" style="text-align:center;">No data</td></tr>';
+        body.innerHTML = '<tr><td colspan="11" style="text-align:center;font-style:italic;padding-top:20px;">No data entries</td></tr>';
         updateScrollBtnVisibility();
         return;
       }
@@ -930,7 +933,8 @@
       updateMeans(stats);
 
       if (!rows.length) {
-        document.getElementById('dataBody').innerHTML = '<tr><td colspan="11" style="text-align:center;font-style:italic">No data</td></tr>';
+        document.getElementById('dataBody').innerHTML =
+          '<tr><td colspan="11" style="text-align:center;font-style:italic;padding-top:20px;">No data entries</td></tr>';
         updateScrollBtnVisibility();
         return;
       }
@@ -976,7 +980,7 @@
         setTimeout(function () {
           if (!auto) btn.disabled = false;
           loader?.classList.remove('is-loading');
-        }, 50);
+        }, 100);
         refreshRunning = false;
       }
     }
