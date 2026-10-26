@@ -862,15 +862,16 @@
 
         try {
           await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
+          firework.launch(isAbort ? 'Initial setup aborted. Loading operational web interface...' :
+            'Initial setup completed. Loading operational web interface...', isAbort ? 'warning' : 'success', 10000);
         } catch (error) {
-          firework.launch('Saving setup failed. Check config and/or logs.', 'danger', 30000);
-          console.error('Finalize setup failed:', error);
+          const errorMsg = error.message || error;
+          firework.launch('Failed saving configuration. (Error: ' + errorMsg + '). Check config and/or logs after ' +
+            'operational web interface is loaded (System > Log Viewer). Loading operational web interface...', 'danger', 10000);
+          console.error('Saving setup failed:', error);
         }
 
         // Loading operational web interface in any case
-        firework.launch(isAbort ? 'Initial setup aborted. Loading operational web interface...' :
-          'Initial setup completed. Loading operational web interface...', isAbort ? 'warning' : 'success', 10000);
-
         setTimeout(() => {
           window.parent.location.assign(getDomainname());
         }, 7000);
