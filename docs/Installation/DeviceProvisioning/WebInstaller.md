@@ -87,7 +87,8 @@ Before starting the provisioning process, make sure the following are ready:
 
 #### **Step 9: Run Initial Setup Wizard**
 - Once the device is up, the **Initial Setup Wizard** will guide you through:
+  - Setup flashlight & camera configuration
   - Creating a reference image
   - Defining the alignment marker
-  - Setting up number sequences (digit detection)  
+  - Setting up number sequences (digit detection)
 ![Initial Setup Wizard](../../../images/initial_setup_wizard.jpg)

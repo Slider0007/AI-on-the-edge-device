@@ -22,17 +22,17 @@ Further details can be found in the respective REST API endpoint description.
 | [/camera](camera.md)                 | Camera Capture, Stream, Parametrization + Flashlight| HTML       | 
 | [/gpio](gpio.md)                     | Read / Control GPIO                                | JSON + HTML | 
 | [/mqtt](mqtt.md)                     | Publish HA discovery topics / Device info topics   | HTML        | 
-| [/data](data.md)                     | Data of today (last 80kB)                          | JSON + HTML        | 
-| [/log](log.md)                       | Log of today (last 80kB)                           | JSON + HTML        | 
+| [/data](data.md)                     | Data of today (last 80kB)                          | JSON + HTML | 
+| [/log](log.md)                       | Log of today (last 80kB)                           | JSON + HTML | 
 | [/ota](ota.md)                       | Over The Air Update                                | HTML        | 
 | [/reboot](reboot.md)                 | Trigger Reboot                                     | HTML        | 
 | [/wlan](wlan.md)                     | WLAN Scan                                          | JSON        |
 | [/coredump](coredump.md)             | Handle Core Dumps (Software Exception)             | HTML        | 
-| [/fileserver](fileserver.md)         | Fileserver (File Download / Show Folder Content)   | JSON + HTML        | 
+| [/fileserver](fileserver.md)         | Fileserver (File Download / Show Folder Content)   | JSON + HTML | 
 | [/upload](upload.md)                 | File Upload (POST)                                 | HTML        | 
 | [/delete](delete.md)                 | File / Folder Deletion (POST)                      | HTML        | 
 | [/img_tmp](img_tmp.md)               | Load Process Images From RAM                       | HTML        | 
-| /                                    | WebUI (Redirected to `index.html` or `setup.html`, <br>GZIP comporession supported) | HTML        | 
+| /                                    | WebUI (Redirected to `index.html` or `setup.html`, <br>GZIP compression supported) | HTML | 
 
 
 *Endpoints which are marked as deprecated will be completely removed (functionality merged in another endpoint) or 

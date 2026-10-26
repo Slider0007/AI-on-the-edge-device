@@ -52,12 +52,14 @@ and converted into a digital reading, ready to be sent or accessed through vario
 
 
 ## Impressions
-### Hardware
-<img src="images/watermeter_all.jpg" width="266"><img src="images/main.jpg" width="266"><img src="images/size.png" width="266"> 
+### Installation Example
+#### Watermeter using ESP32CAM board
+<img src="images/device_watermeter.jpg" width="266"><img src="images/device_case.jpg" width="266"><img src="images/device_size.png" width="266"> 
 
 
-### Web Interface
-<img src="images/webinterface_overview.png" width="800"> 
+### Software
+#### Web Interface (≥ v18.0.0)
+<img src="images/webinterface_dashboard.jpg" width="800"> 
 
 
 ## Supported Hardware
