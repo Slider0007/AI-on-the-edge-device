@@ -787,22 +787,27 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script>
-            try {
-                const theme = localStorage.getItem('theme');
-                if (theme === 'light' || theme === 'dark') {
-                    document.documentElement.classList.add(theme);
+            (function () {
+                let theme;
+                try { theme = localStorage.getItem('theme'); } catch (e) { }
+                if (theme !== 'light' && theme !== 'dark') {
+                    try { theme = document.cookie.match(/(?:^|; )theme=(light|dark)/)?.[1]; } catch (e) { }
+                    if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 }
-            } catch (e) {}
-            window.addEventListener('message', (event) => {
-              if (event.data && event.data.type === 'SYNC_THEME') {
-                const theme = event.data.theme;
-                const isLight = theme === 'light';
-                document.documentElement.classList.remove(isLight ? 'dark' : 'light');
-                document.documentElement.classList.add(isLight ? 'light' : 'dark');
-                try {
-                    localStorage.setItem('theme', theme);
-                } catch (e) {}
-              }
+                document.documentElement.classList.remove('light', 'dark');
+                document.documentElement.classList.add(theme);
+            })();
+            window.addEventListener('storage', (e) => {
+                if (e.key !== 'theme') return;
+                const theme = e.newValue;
+                if (theme !== 'light' && theme !== 'dark') return;
+                const d = document.documentElement;
+                if (d.classList.contains(theme)) return;
+                d.classList.remove('light', 'dark');
+                d.classList.add(theme);
+                const t = document.getElementById('themeToggle'); // exists only in index.html
+                if (t) t.checked = theme === 'light';
+                if (typeof refreshTheme === 'function') refreshTheme();
             });
         </script>
         <link rel="stylesheet" href="/style-iframe.css">

@@ -7,12 +7,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <script>
-    try {
-      const theme = localStorage.getItem('theme');
-      if (theme === 'light' || theme === 'dark') {
-        document.documentElement.classList.add(theme);
+    // Theme Control
+    (function () {
+      let theme;
+      try { theme = localStorage.getItem('theme'); } catch (e) { }
+      if (theme !== 'light' && theme !== 'dark') {
+        try { theme = document.cookie.match(/(?:^|; )theme=(light|dark)/)?.[1]; } catch (e) { }
+        if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
-    } catch (e) { }
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+    })();
   </script>
 
   <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
@@ -280,7 +285,7 @@
     }
 
     function plotlyTheme() {
-      const dark = isDarkTheme();
+      const dark = document.documentElement.classList.contains('dark');
       const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
       const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim();
 
@@ -317,14 +322,13 @@
       };
     }
 
-    // Called from setTheme() function in index.html to detect mode change
+    // Called from theme sync listener (global.js)ssss
     function refreshTheme() {
       if (!window.Plotly) return;
-
       const theme = plotlyTheme();
       ['chartTrend', 'chartDailyTotal', 'chartCycleStats'].forEach((id) => {
         const el = document.getElementById(id);
-        if (el && el.data) Plotly.relayout(el, theme);
+        if (el?.data) Plotly.react(el, el.data, { ...el.layout, ...theme }, el._context);
       });
     }
 

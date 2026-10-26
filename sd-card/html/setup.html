@@ -9,11 +9,13 @@
   <script>
     // Theme Control
     (function () {
-      const savedTheme = localStorage.getItem('theme') || (document.cookie.match(/(?:^|; )theme=(light|dark)/) || [])[1];
-      // If user saved a preference, use it; otherwise read live system theme
-      const systemIsDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = savedTheme ? savedTheme : (systemIsDark ? 'dark' : 'light');
-      document.documentElement.classList.remove(theme === 'dark' ? 'light' : 'dark');
+      let theme;
+      try { theme = localStorage.getItem('theme'); } catch (e) { }
+      if (theme !== 'light' && theme !== 'dark') {
+        try { theme = document.cookie.match(/(?:^|; )theme=(light|dark)/)?.[1]; } catch (e) { }
+        if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.classList.remove('light', 'dark');
       document.documentElement.classList.add(theme);
     })();
   </script>
@@ -274,37 +276,14 @@
       const cookie = ca.find((row) => row.trim().startsWith(name));
       return cookie ? cookie.trim().substring(name.length) : '';
     }
+
     // Theme Control
     function setTheme(isLight) {
       const theme = isLight ? 'light' : 'dark';
-      const oldTheme = isLight ? 'dark' : 'light';
-      document.documentElement.classList.remove(oldTheme);
-      document.documentElement.classList.add(theme);
-      localStorage.setItem('theme', theme);
+      document.documentElement.classList.toggle('light', isLight);
+      document.documentElement.classList.toggle('dark', !isLight);
+      try { localStorage.setItem('theme', theme); } catch (e) { }
       document.cookie = `theme=${theme};path=/;max-age=${60 * 60 * 24 * 400};SameSite=Lax`;
-      syncIframeTheme();
-    }
-
-    function syncIframeTheme() {
-      const isLight = document.documentElement.classList.contains('light');
-      try {
-        const iframeWin = UI.main?.contentWindow;
-        const iframeDoc = iframeWin?.document?.documentElement;
-        if (iframeDoc) {
-          iframeDoc.classList.remove(isLight ? 'dark' : 'light');
-          iframeDoc.classList.add(isLight ? 'light' : 'dark');
-          iframeWin.refreshTheme?.();
-        }
-      } catch {
-        const iframeWin = UI.main?.contentWindow;
-        if (iframeWin) {
-          iframeWin.postMessage({
-            type: 'SYNC_THEME',
-            theme: isLight ? 'light' : 'dark'
-          }, '*');
-          iframeWin.refreshTheme?.();
-        }
-      }
     }
   </script>
 
@@ -791,17 +770,9 @@
       // Initialization
       async init() {
         // Theme Control
-        const isLight = document.documentElement.classList.contains('light');
         const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-          themeToggle.checked = isLight;
-        }
-        if (UI.main) {
-          UI.main.addEventListener('load', () => {
-            syncIframeTheme();
-            UI.main.classList.add('ready');
-          });
-        }
+        if (themeToggle) themeToggle.checked = document.documentElement.classList.contains('light');
+        if (UI.main) { UI.main.addEventListener('load', () => { UI.main.classList.add('ready'); }); }
 
         try {
           await loadConfig();
