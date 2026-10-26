@@ -4,7 +4,14 @@
 
 ### Migration from v17.x to v18.x
 
-No endpoints removed or renamed, but check changelog and/or API description for changes of existing APIs.
+No endpoints removed or renamed, but check changelog and/or API description for changes of existing endpoints.
+
+Modfied endpoints (Functionality moved to other endpoints):
+
+| REST API Endpoint                    | Description                                        | HTML / JSON | Functionality moved to   
+|:-------------------------------------|:---------------------------------------------------|:------------|:-----------
+| [/editflow](editflow.md)             | Parametrization Helper                             | HTML        | `/data`, `/fileserver`
+
 
 ### Migration from v16.x to v17.x
 

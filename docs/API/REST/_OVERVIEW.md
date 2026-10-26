@@ -32,7 +32,7 @@ Further details can be found in the respective REST API endpoint description.
 | [/upload](upload.md)                 | File Upload (POST)                                 | HTML        | 
 | [/delete](delete.md)                 | File / Folder Deletion (POST)                      | HTML        | 
 | [/img_tmp](img_tmp.md)               | Load Process Images From RAM                       | HTML        | 
-| /                                    | WebUI (Redirected to `index.html` or `setup.html`) | HTML        | 
+| /                                    | WebUI (Redirected to `index.html` or `setup.html`, <br>GZIP comporession supported) | HTML        | 
 
 
 *Endpoints which are marked as deprecated will be completely removed (functionality merged in another endpoint) or 

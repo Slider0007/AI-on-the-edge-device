@@ -646,8 +646,8 @@ esp_err_t handler_main(httpd_req_t *req)
 
             // Headline
             message += "<h1>AI-on-the-Edge Device</h1><br>"
-                       "<b>Critical errors occurred, preventing the standard process and web interface from starting</b><br><br>"
-                       "<b>Detected Issues:</b><br>";
+                       "<b>Critical errors occurred, preventing the operational web interface from starting!</b><br><br>"
+                       "<b>Detected Critical Errors:</b><br>";
 
             // Error codes
             constexpr uint32_t criticalFlags[] = {SYSTEM_STATUS_PSRAM_BAD, SYSTEM_STATUS_HEAP_TOO_SMALL, SYSTEM_STATUS_SDCARD_CHECK_BAD,
@@ -662,14 +662,14 @@ esp_err_t handler_main(httpd_req_t *req)
             }
 
             // Info and buttons
-            message += "<br>Please check logs with 'Log Viewer' and/or more detailed "
-                       "<a href=\"https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Troubleshooting/Reduced_WebUI.md\" "
-                       "target=\"_blank\">error code description</a>.<br><br>";
+            message +=
+                "<br><a href=\"https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Troubleshooting/Reduced_WebUI.md\" "
+                "target=\"_blank\">Error Documentation</a>.<br><br>";
             message += "<button onclick=\"window.location.href='/reboot';\">Reboot Device</button>";
-            message += "&nbsp;<button onclick=\"window.open('/sys_ota.html');\">OTA Update</button>";
-            message += "&nbsp;<button onclick=\"window.open('/sys_fileserver.html');\">Fileserver</button>";
             message += "&nbsp;<button onclick=\"window.open('/sys_log.html');\">Log Viewer</button>";
-            message += "&nbsp;<button onclick=\"window.open('/sys_info.html');\">Show System Info</button>";
+            message += "&nbsp;<button onclick=\"window.open('/sys_ota.html');\">OTA Update</button>";
+            message += "&nbsp;<button onclick=\"window.open('/fileserver/');\">File Explorer</button>";
+            message += "&nbsp;<button onclick=\"window.open('/sys_info.html');\">System Info</button>";
             httpd_resp_send(req, message.c_str(), HTTPD_RESP_USE_STRLEN);
             return ESP_OK;
         }
