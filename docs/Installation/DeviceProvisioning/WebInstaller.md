@@ -65,27 +65,17 @@ Before starting the provisioning process, make sure the following are ready:
 
 ---
 
-#### **Step 6: Upload SD Card Content**
-- In the device provisiong interface, upload the **firmware ZIP file** (same file used for flashing)  
-![Upload ZIP File](../../../images/webinstaller_upload_sdcard_content.jpg)
+#### **Step 6: Install Firmware / SD Card Content**
+- In the device provisioning interface, upload the **firmware ZIP file** (same file used for flashing)
+- Click **"UPLOAD & INSTALL"** to begin uploading the file
+- The device will reboot and install the package (MCU + SD-card)
+- After finalization page is redirected automatically to main web interface
+- Optional: You can monitor installation progress or view logs in the Web Installer using **"Logs & Console"**
+![Upload ZIP File](../../../images/device_provisioning_firmware.jpg)
 
 ---
 
-#### **Step 7: Install SD Card Content**
-- Click **"Install"** to begin provisioning the SD card  
-- This step may take a few minutes  
-![Install SD Content](../../../images/webinstaller_install_sdcard_content.jpg)
-
----
-
-#### **Step 8: Reboot and Complete Setup**
-- The device will reboot after SD card installation is complete  
-- Refresh your browser or revisit the device (compare Step 5)  
-- Optional: You can monitor installation progress or view logs in the Web Installer under **"Logs & Console"**
-
----
-
-#### **Step 9: Run Initial Setup Wizard**
+#### **Step 7: Run Initial Setup Wizard**
 - Once the device is up, the **Initial Setup Wizard** will guide you through:
   - Setup flashlight & camera configuration
   - Creating a reference image

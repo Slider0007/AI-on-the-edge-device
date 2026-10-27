@@ -209,6 +209,13 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
 {
     ESP_LOGI(TAG, "File upload started: %s", filePath);
 
+    char *buffer = ((HttpServerData *)req->user_ctx)->scratch;
+    if (!buffer) {
+        std::string msg = "Failed to process request. No internal buffer allocated";
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
+        return ESP_FAIL;
+    }
+
     FILE *file = fopen(filePath, "wb");
     if (!file) {
         std::string msg = "Failed to create file: " + std::string(filePath);
@@ -219,7 +226,6 @@ esp_err_t receiveRequestBodyToFile(httpd_req_t *req, const char *filePath)
     // Related to article: https://blog.drorgluska.com/2022/06/esp32-sd-card-optimization.html
     setvbuf(file, NULL, _IOFBF, 512);
 
-    char *buffer = ((HttpServerData *)req->user_ctx)->scratch;
     int received = 0;
     int remaining = req->content_len;
     int totalSize = remaining;

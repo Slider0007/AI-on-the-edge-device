@@ -21,23 +21,22 @@ Follow the instructions in the [Web Installer guide](WebInstaller.md), starting 
 
 2. Open your browser and go to [http://192.168.4.1](http://192.168.4.1), then follow the steps below:
 
-   **2.1.** Provide WiFi credentials:  
-   ![Set WiFi Credentials](../../../images/webinstaller_set_wifi_credentials.jpg)
+   **2.1.** Configure WLAN Network
 
-   **2.2.** Upload the firmware package  
-   *(Download from the GitHub release page, e.g., `AI-on-the-edge-device__{Board Type}__*.zip`)*  
-   ![Upload Firmware Package](../../../images/webinstaller_install_sdcard_content.jpg)
+   ![Set WiFi Credentials](../../../images/device_provisioning_network.jpg)
 
-   **2.3.** Start the installation process  
-   ![Install Firmware Package](../../../images/webinstaller_install_sdcard_content.jpg)
+   **2.2.** Install Firmware / SD Card Content
+   - In the device provisioning interface, select the **firmware ZIP file** (to be downloaded from [GitHub Releases](https://github.com/Slider0007/AI-on-the-edge-device/releases/latest))
+   - Click **"UPLOAD & INSTALL"** to begin uploading the file
+   - The device will reboot and install the package (MCU + SD-card)
+   - Optional: You can monitor installation progress or view logs in the Web Installer using **"Logs & Console"**
+   ![Upload ZIP File](../../../images/device_provisioning_firmware.jpg)
 
-3. The device will reboot and install the necessary content. Once the process is complete, the device 
-will automatically connect to the configured **Wi-Fi** or **Ethernet** network (default: DHCP).
-
-4. Reload the page or access the device using one of the following:
+3. After installation is completed, access the device using one of the following
+   - Webinstaller: `VISIT DEVICE` button
    - Hostname: [http://watermeter](http://watermeter)
    - mDNS: [http://watermeter.local](http://watermeter.local)
-   - Or check your router logs to find the assigned IP address
+   - IP-Address: Or check your router logs to find the assigned IP address
 
-   You will be guided through the **Initial Setup Wizard**:  
+4. You will be guided through the **Initial Setup Wizard**:  
    ![Initial Setup Wizard](../../../images/initial_setup_wizard.jpg)
