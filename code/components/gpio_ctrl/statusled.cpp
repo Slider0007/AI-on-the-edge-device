@@ -64,6 +64,16 @@ static void task_StatusLED(void *pvParameter)
             if (!StatusLEDDataInt.bInfinite) {
                 ++i;
             }
+            else {
+                // Periodically check if cancellation was requested during infinite looping
+                if (xSemaphoreTake(xStatusLedMutex, 0) == pdTRUE) {
+                    bool cancel = !StatusLEDData.bProcessingRequest;
+                    xSemaphoreGive(xStatusLedMutex);
+                    if (cancel) {
+                        break;
+                    }
+                }
+            }
 
             // Source Blinks
             for (int j = 0; j < StatusLEDDataInt.iSourceBlinkCnt; ++j) {
