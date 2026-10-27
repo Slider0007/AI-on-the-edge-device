@@ -124,6 +124,15 @@ inline void validateStructure(std::string &structureName)
 
 inline bool isValidIpAddress(const char *ipAddress)
 {
+    if (!ipAddress) {
+        return false;
+    }
+
+    // Allow empty IP-address field
+    if (ipAddress[0] == '\0') {
+        return true;
+    }
+
     struct sockaddr_in sa;
     return inet_pton(AF_INET, ipAddress, &(sa.sin_addr)) == 1;
 }
