@@ -2,7 +2,6 @@ FILE(GLOB_RECURSE app_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_
 
 idf_component_register(SRCS ${app_sources}
                     INCLUDE_DIRS "."
-                    REQUIRES unity esp_timer esp_wifi jomjol_tfliteclass jomjol_helper jomjol_controlcamera jomjol_mqtt
-                            jomjol_influxdb jomjol_fileserver_ota jomjol_image_proc jomjol_wlan)
-
+                    REQUIRES unity esp_timer esp_wifi cjson tflite_ctrl misc_helper camera_ctrl mqtt_ctrl influxdb_ctrl
+                        webhook_ctrl fileserver_ota image_handling network_ctrl config_handling)
 
