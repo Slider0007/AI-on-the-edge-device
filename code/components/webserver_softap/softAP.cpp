@@ -44,7 +44,7 @@ html,body{max-width:1024px;margin:0;padding:0;font-family:Arial,sans-serif;font-
 color:var(--text-on-dark);padding:10px 15px;line-height:1.3}
 .brand-font{font-size:1.5rem;font-weight:bold;margin:0;letter-spacing:.01em}
 .device-name{font-size:1rem;color:#c7d2fe;margin:0}
-main{max-width:640px;margin:0 auto;padding:16px}
+main{max-width:720px;margin:0 auto;padding:16px}
 h2{font-size:1.2rem;margin:0 0 .6em}
 .steps{display:flex;gap:8px;margin:0 0 16px;padding:0;list-style:none}
 .steps li{flex:1;padding:10px 8px;background:var(--surface);color:var(--text-secondary);
@@ -102,7 +102,7 @@ async function save(){
 }</script>)HTML";
 
 static const char PAGE_STEP2[] = R"HTML(<section class="card"><h2>Install Firmware Package (MCU + SD-CARD)</h2>
-<p class="hint">Select <code>AI-on-the-edge-device__{Board Type}__*.zip</code>. The device reboots and installs it automatically (up to 2 min). Do not power off.</p>
+<p class="hint">Select a firmware package <code>AI-on-the-edge-device__{Board Type}__*.zip</code><br>The device reboots and installs it automatically (up to 2 min). Do not power off.</p>
 <input id="file" type="file" accept=".zip">
 <button id="up" class="button btn-action btn-wide" onclick="upload()">Upload &amp; Install</button>
 <progress id="prog" max="100" value="0" hidden></progress><p id="msg" role="status"></p></section>

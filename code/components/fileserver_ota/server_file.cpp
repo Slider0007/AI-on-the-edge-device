@@ -40,6 +40,11 @@ static const char *TAG = "SERVER_FILE";
 static const std::unordered_set<std::string> noRedirectFiles = {"/config/marker1.jpg",  "/config/marker2.jpg",  "/config/reference.jpg",
                                                                 "/img_tmp/marker1.jpg", "/img_tmp/marker2.jpg", "/img_tmp/reference.jpg"};
 
+// Files with sensitive content (e.g. passwords) or some content to hide completely
+// @Deprecated: Keep up to now even ini file support already dropped, but files could still be on device
+static const std::unordered_set<std::string> sensitiveContent = {
+    "wlan.ini", "wlan_ini.bak", "config.ini", "config_ini.bak", "system volume information", "thumbs.db"};
+
 
 static esp_err_t getDirFileList(httpd_req_t *req, const char *path, std::initializer_list<const char *> filterExts = {})
 {
@@ -589,6 +594,12 @@ static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char 
             break;
         }
 
+        // Skip sensitive files
+        // @Deprecated: Keep up to now even ini file support already dropped, but files could still be on device
+        if (sensitiveContent.count(entry->d_name) > 0) {
+            continue;
+        }
+
         // Parse entry type
         entryType = (entry->d_type == DT_DIR ? "directory" : "file");
 
@@ -680,18 +691,25 @@ static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char 
 // Handler to download a file from server (sd card)
 static esp_err_t download_get_handler(httpd_req_t *req)
 {
-    char filePath[FILE_PATH_MAX];
+    char fullPath[FILE_PATH_MAX];
     struct stat fileStat;
 
-    const char *filename = getPathFromUri(filePath, ((HttpServerData *)req->user_ctx)->basePathFileserver,
-                                          req->uri + sizeof("/fileserver") - 1, sizeof(filePath));
-    if (!filename) {
+    const char *relativePath = getPathFromUri(fullPath, ((HttpServerData *)req->user_ctx)->basePathFileserver,
+                                              req->uri + sizeof("/fileserver") - 1, sizeof(fullPath));
+    if (!relativePath) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Path malformed or too long");
         return ESP_FAIL;
     }
 
+    //  Deny access for special files with sensitive data
+    // @Deprecated: Keep up to now even ini file support already dropped, but files could still be on device
+    if (sensitiveContent.count(toLower(getFileName(fullPath))) > 0) {
+        httpd_resp_send_err(req, HTTPD_403_FORBIDDEN, "Access denied (Sensitive data)");
+        return ESP_FAIL;
+    }
+
     // List directory either as JSON list or HTML formatted (If URI has trailing slash '/')
-    if (filename[strlen(filename) - 1] == '/') {
+    if (relativePath[strlen(relativePath) - 1] == '/') {
         bool readonly = false;
         bool showAllFiles = true;
         char query[64];
@@ -699,7 +717,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
             char param[16];
             if (httpd_query_key_value(query, "filelist", param, sizeof(param)) == ESP_OK) {
-                return getDirFileList(req, filePath);
+                return getDirFileList(req, fullPath);
             }
             if (httpd_query_key_value(query, "readonly", param, sizeof(param)) == ESP_OK) {
                 readonly = (strcmp(param, "true") == 0);
@@ -709,18 +727,18 @@ static esp_err_t download_get_handler(httpd_req_t *req)
             }
         }
 
-        return getDirectory(req, filePath, filename, readonly, showAllFiles);
+        return getDirectory(req, fullPath, relativePath, readonly, showAllFiles);
     }
 
     // Check: File not available
-    if (stat(filePath, &fileStat) == -1) {
+    if (stat(fullPath, &fileStat) == -1) {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Invalid path: File not found");
         return ESP_FAIL;
     }
 
-    FILE *file = fopen(filePath, "rb");
+    FILE *file = fopen(fullPath, "rb");
     if (!file) {
-        std::string msg = "Failed to read file :" + std::string(filePath);
+        std::string msg = "Failed to read file :" + std::string(fullPath);
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, msg.c_str());
         return ESP_FAIL;
     }
@@ -730,7 +748,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     setvbuf(file, NULL, _IOFBF, 512);
 
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
-    setContentTypeFromFile(req, filename);
+    setContentTypeFromFile(req, relativePath);
 
     char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
     size_t bytesRead = 0;
@@ -739,7 +757,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
         if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
             fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);
-            std::string msg = "Failed to send file :" + std::string(filePath);
+            std::string msg = "Failed to send file :" + std::string(fullPath);
             return ESP_FAIL;
         }
     }
@@ -754,15 +772,15 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 // Handler to upload a file to server (sd card)
 static esp_err_t upload_post_handler(httpd_req_t *req)
 {
-    char filePath[FILE_PATH_MAX];
-    const char *filename = getPathFromUri(filePath, ((HttpServerData *)req->user_ctx)->basePathFileserver, req->uri + sizeof("/upload") - 1,
-                                          sizeof(filePath));
-    if (!filename) {
+    char fullPath[FILE_PATH_MAX];
+    const char *relativePath = getPathFromUri(fullPath, ((HttpServerData *)req->user_ctx)->basePathFileserver,
+                                              req->uri + sizeof("/upload") - 1, sizeof(fullPath));
+    if (!relativePath) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Path malformed or too long");
         return ESP_FAIL;
     }
 
-    if (filename[strlen(filename) - 1] == '/') {
+    if (relativePath[strlen(relativePath) - 1] == '/') {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Trailing slash");
         return ESP_FAIL;
     }
@@ -772,25 +790,25 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    if (fileExists(filePath)) {
+    if (fileExists(fullPath)) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "File already exists");
         return ESP_FAIL;
     }
 
-    if (receiveRequestBodyToFile(req, filePath) != ESP_OK) {
+    if (receiveRequestBodyToFile(req, fullPath) != ESP_OK) {
         return ESP_FAIL; // Error response already sent
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File saved: " + std::string(filename));
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File saved: " + std::string(relativePath));
 
-    if (noRedirectFiles.count(filename) > 0) {
+    if (noRedirectFiles.count(relativePath) > 0) {
         httpd_resp_set_status(req, HTTPD_200); // Response without redirection request -> Avoid reloading of folder content
-        std::string msg = "File saved successfully: " + std::string(filename);
+        std::string msg = "File saved successfully: " + std::string(relativePath);
         httpd_resp_sendstr(req, msg.c_str());
         return ESP_OK;
     }
     else {
-        std::string redirectPath = getParentPath(filename) + "?full=false";
+        std::string redirectPath = getParentPath(relativePath) + "?full=false";
         httpd_resp_set_hdr(req, "Location", redirectPath.c_str()); // Redirect to parent directory
         httpd_resp_set_status(req, HTTPD_303_SEE_OTHER);
         httpd_resp_sendstr(req, "");
@@ -802,22 +820,21 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 // Handler to delete a file or folder content from server (sd card)
 static esp_err_t delete_post_handler(httpd_req_t *req)
 {
-    char filePath[FILE_PATH_MAX];
+    char fullPath[FILE_PATH_MAX];
     struct stat fileStat;
     char query[200];
     char valuechar[30];
     std::string task;
 
-    // Get filename from URI
-    const char *filename = getPathFromUri(filePath, ((HttpServerData *)req->user_ctx)->basePathFileserver, req->uri + sizeof("/delete") - 1,
-                                          sizeof(filePath));
+    const char *relativePath = getPathFromUri(fullPath, ((HttpServerData *)req->user_ctx)->basePathFileserver,
+                                              req->uri + sizeof("/delete") - 1, sizeof(fullPath));
 
-    if (!filename) {
+    if (!relativePath) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Malformed or too long");
         return ESP_FAIL;
     }
 
-    std::string filenameStr(filename);
+    std::string relativePathStr(relativePath);
 
     // Parse query string
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
@@ -829,16 +846,16 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
     // Handle directory deletion
     if (task.compare("deldir") == 0) {
         // Remove trailing slash
-        if (filenameStr.back() == '/') {
-            filenameStr.pop_back();
+        if (relativePathStr.back() == '/') {
+            relativePathStr.pop_back();
         }
 
-        if (deleteAllFilesInDirectory(filePath, true, true) != ESP_OK) {
+        if (deleteAllFilesInDirectory(fullPath, true, true) != ESP_OK) {
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to delete files in directory");
             return ESP_FAIL;
         }
 
-        std::string redirectPath = getParentPath(filenameStr) + "?full=false";
+        std::string redirectPath = getParentPath(relativePathStr) + "?full=false";
         httpd_resp_set_hdr(req, "Location", redirectPath.c_str()); // Redirect to parent directory
         httpd_resp_set_status(req, HTTPD_303_SEE_OTHER);
         httpd_resp_sendstr(req, "");
@@ -846,34 +863,34 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
     }
 
     // Handle single file deletion
-    if (filenameStr.back() == '/') {
+    if (relativePathStr.back() == '/') {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Trailing slash");
         return ESP_FAIL;
     }
 
     // Check for file presence
-    if (stat(filePath, &fileStat) == -1) {
+    if (stat(fullPath, &fileStat) == -1) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: File not found");
         return ESP_FAIL;
     }
 
     // Delete file
-    if (unlink(filePath) != 0) {
-        std::string msg = "Failed to delete file: " + std::string(filePath);
+    if (unlink(fullPath) != 0) {
+        std::string msg = "Failed to delete file: " + relativePathStr;
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
         return ESP_FAIL;
     }
 
-    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File deleted: " + filenameStr);
+    LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File deleted: " + relativePathStr);
 
-    if (noRedirectFiles.count(filenameStr) > 0) {
+    if (noRedirectFiles.count(relativePathStr) > 0) {
         httpd_resp_set_status(req, HTTPD_200);
-        std::string msg = "File deleted successfully: " + filenameStr;
+        std::string msg = "File deleted successfully: " + relativePathStr;
         httpd_resp_sendstr(req, msg.c_str());
         return ESP_OK;
     }
     else {
-        std::string redirectPath = getParentPath(filenameStr) + "?full=false";
+        std::string redirectPath = getParentPath(relativePathStr) + "?full=false";
         httpd_resp_set_hdr(req, "Access-Control-Expose-Headers", "Location");
         httpd_resp_set_hdr(req, "Location", redirectPath.c_str()); // Redirect to parent directory
         httpd_resp_set_status(req, HTTPD_303_SEE_OTHER);
