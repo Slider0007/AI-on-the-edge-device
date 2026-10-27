@@ -157,6 +157,13 @@ void forceStatusLedOff(void)
     StatusLEDData.bInfinite = false;
     StatusLEDData.iSourceBlinkCnt = 0;
     StatusLEDData.iCodeBlinkCnt = 0;
+    
+    // Immediately kill the running background LED task if active
+    if (xHandleTaskStatusLED != nullptr) {
+        TaskHandle_t tempHandle = xHandleTaskStatusLED;
+        xHandleTaskStatusLED = nullptr;
+        vTaskDelete(tempHandle);
+    }
 
     applyPhysicalLedState(false);
 
