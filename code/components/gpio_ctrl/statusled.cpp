@@ -64,6 +64,16 @@ static void task_StatusLED(void *pvParameter)
             if (!StatusLEDDataInt.bInfinite) {
                 ++i;
             }
+            else {
+                // Periodically check if cancellation was requested during infinite looping
+                if (xSemaphoreTake(xStatusLedMutex, 0) == pdTRUE) {
+                    bool cancel = !StatusLEDData.bProcessingRequest;
+                    xSemaphoreGive(xStatusLedMutex);
+                    if (cancel) {
+                        break;
+                    }
+                }
+            }
 
             // Source Blinks
             for (int j = 0; j < StatusLEDDataInt.iSourceBlinkCnt; ++j) {
@@ -157,13 +167,6 @@ void forceStatusLedOff(void)
     StatusLEDData.bInfinite = false;
     StatusLEDData.iSourceBlinkCnt = 0;
     StatusLEDData.iCodeBlinkCnt = 0;
-    
-    // Immediately kill the running background LED task if active
-    if (xHandleTaskStatusLED != nullptr) {
-        TaskHandle_t tempHandle = xHandleTaskStatusLED;
-        xHandleTaskStatusLED = nullptr;
-        vTaskDelete(tempHandle);
-    }
 
     applyPhysicalLedState(false);
 
