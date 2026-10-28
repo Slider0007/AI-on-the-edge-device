@@ -4,9 +4,6 @@ Whenever a critical error occurs during boot process which avoids loading of reg
 
 The error code(s) get printed with specific error codes. This page lists the possible error codes, their meaning and possible solutions.
 
-Note: Error codes defined in source code: [Error Codes](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/code/components/jomjol_helper/system.h).
-
-
 ## Critical Errors
 Those Errors make the normal operation of the device impossible.
 Most likely they are caused by a hardware issue!

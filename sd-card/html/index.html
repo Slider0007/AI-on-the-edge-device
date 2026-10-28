@@ -4,7 +4,7 @@
 <head>
   <title>AI-on-the-Edge Device</title>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=720, initial-scale=1" />
+  <meta name="viewport" content="width=720" />
 
   <script>
     // Theme Control
@@ -315,7 +315,10 @@
 
       // Cookie management
       let page = getCookie('page');
-      const removedPages = ['overview.html', 'data_graph.html', 'data_viewer.html'];
+
+      //@Deprecated: Keep for migration purpose
+      const removedPages = ['overview.html', 'data_graph.html', 'data_viewer.html', 'edit_config_param.html', 'sys_ota_page.html', 'sys_reboot_page.html'];
+
       if (!page || page.includes('sys_reboot.html') || removedPages.some((p) => page.includes(p))) {
         page = 'dashboard.html?v=$COMMIT_HASH';
         document.cookie = `page=${page};path=/;SameSite=Lax`;

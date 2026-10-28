@@ -4,7 +4,7 @@
 <head>
   <title>Log Viewer</title>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=720" />
 
   <script>
     // Theme Control
@@ -297,7 +297,7 @@
 
     .no-logs-msg {
       position: absolute;
-      top: 3%;
+      top: 4%;
       left: 50%;
       transform: translate(-50%, -50%);
       color: var(--text-secondary);
@@ -471,7 +471,7 @@
       <div id="scrollContainer" class="log-table-container">
         <div id="scrollPhantom" class="log-scroll-phantom"></div>
         <div id="logViewport" class="log-viewport"></div>
-        <div id="noDataMessage" class="no-logs-msg hidden">No log entries</div>
+        <div id="noDataMessage" class="no-logs-msg hidden">No entries</div>
       </div>
 
       <button id="scrollToEndBtn" class="scroll-bottom-btn hidden" type="button" title="Scroll to end" aria-label="Scroll to end" onclick="scrollVirtualToBottom()">

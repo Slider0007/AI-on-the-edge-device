@@ -785,7 +785,7 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
     std::string txt = R"(<!DOCTYPE html><html><head>
         <title>Recognition Details</title>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=720" />
         <script>
             (function () {
                 let theme;

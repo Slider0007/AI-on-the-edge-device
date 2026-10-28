@@ -4,7 +4,7 @@
 <head>
   <title>Backup/Restore Configuration</title>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=720" />
 
   <script>
     // Theme Control
@@ -334,7 +334,7 @@
         }
 
         // All validations passed
-        firework.launch("Press 'Restore' to perform the config restore", "success", 5000);
+        firework.launch("Press 'Restore' to perform the config restore", "success", 2000);
         _("startRestoreButton").disabled = false;
       } catch (err) {
         firework.launch("Failed to validate ZIP file contents. Check structure and try again.", "danger", 30000);

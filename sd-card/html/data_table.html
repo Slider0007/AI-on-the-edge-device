@@ -4,7 +4,7 @@
 <head>
   <title>Data Table</title>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=720" />
 
   <script>
     // Theme Control
@@ -150,6 +150,13 @@
       opacity: 0;
       pointer-events: none;
       transform: translateY(8px);
+    }
+
+    .no-data-msg {
+      padding-top: 20px;
+      text-align: center;
+      font-style: italic;
+      color: var(--text-secondary);
     }
 
     table {
@@ -669,7 +676,7 @@
       if (!body) return;
 
       if (!virtualRows.length) {
-        body.innerHTML = '<tr><td colspan="11" style="text-align:center;font-style:italic;padding-top:20px;">No data entries</td></tr>';
+        body.innerHTML = '<tr><td colspan="11" class="no-data-msg">No entries</td></tr>';
         updateScrollBtnVisibility();
         return;
       }
@@ -939,7 +946,7 @@
 
       if (!rows.length) {
         document.getElementById('dataBody').innerHTML =
-          '<tr><td colspan="11" style="text-align:center;font-style:italic;padding-top:20px;">No data entries</td></tr>';
+          '<tr><td colspan="11" class="no-data-msg">No entries</td></tr>';
         updateScrollBtnVisibility();
         return;
       }

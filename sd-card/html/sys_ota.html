@@ -4,7 +4,7 @@
 <head>
   <title>OTA Update</title>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=720" />
 
   <script>
     // Theme Control
@@ -41,7 +41,7 @@
       align-items: center;
       gap: 10px;
       font-weight: 600;
-      margin: 10px 0 10px;
+      margin: 20px 0 10px;
     }
 
     input[type='file'] {
@@ -177,10 +177,10 @@
       ) {
         if (document.getElementById('board_type').innerText.toLowerCase() == filename.split('__')[1]) {
           // Check if board type of filename matches
-          firework.launch("Press 'Install' to perform the OTA update", 'success', 5000);
+          firework.launch("Press 'Install' to perform the OTA update", 'success', 2000);
         } else {
           firework.launch('The selected OTA package does not match the detected board type. Please select proper OTA package ' +
-            "or press 'Install' to continue on own risk", 'warning', 10000,);
+            "or press 'Install' to continue on own risk", 'warning', 10000);
         }
       } else if (filename == 'firmware.bin') {
         firework.launch("Press 'Install' to install MCU firmware", 'success', 5000);
