@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "cJsonUtils.h"
 #include "configClass.h"
 #include "helper.h"
 #include "ClassLogFile.h"
@@ -30,76 +31,6 @@ void migrateConfiguration(cJSON *cJsonObject)
                             "Migration for v" + std::to_string(migratedVersion) + " is not supported. Check configuration manually.");
 
         return;
-    }
-
-    //*************************************************************************************************
-    // Migrate from version 6 to version 7
-    // Date: September 2027
-    // Description: Remove fast alignment algorithm ()
-    //*************************************************************************************************
-    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 6) {
-        // Update config version
-        // ---------------------
-        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
-        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
-        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
-                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
-
-        // Update parameter
-        // ---------------------
-        auto &sectionAlignment = ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment;
-        if (sectionAlignment.alignmentAlgo == 2) { // formerly ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR --> Migrate to default
-            sectionAlignment.alignmentAlgo = ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH;
-        }
-    }
-
-    //*************************************************************************************************
-    // Migrate from version 5 to version 6
-    // Date: August 2025
-    // Description: Implement function to set time manually (#275)
-    //*************************************************************************************************
-    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 5) {
-        // Update config version
-        // ---------------------
-        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
-        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
-        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
-                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
-
-        // Update parameter
-        // ---------------------
-        const cJSON *objEl = cJSON_GetObjectItem(
-            cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"), "processstartinterlock");
-        if (cJSON_IsBool(objEl)) {
-            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.time.processStartInterlock = objEl->valueint;
-        }
-    }
-
-    //*************************************************************************************************
-    // Migrate from version 4 to version 5
-    // Date: July 2025
-    // Description: Support Waveshare ESP32S3-ETH board with ethernet interface (#274)
-    //*************************************************************************************************
-    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 4) {
-        // Update config version
-        // ---------------------
-        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
-        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
-        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
-                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
-
-        // Update parameter
-        // ---------------------
-        const cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "hostname");
-        if (cJSON_IsString(objEl)) {
-            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.hostname = objEl->valuestring;
-        }
     }
 
     //*************************************************************************************************
@@ -133,7 +64,103 @@ void migrateConfiguration(cJSON *cJsonObject)
         }
     }
 
+    //*************************************************************************************************
+    // Migrate from version 4 to version 5
+    // Date: July 2025
+    // Description: Support Waveshare ESP32S3-ETH board with ethernet interface (#274)
+    //*************************************************************************************************
+    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 4) {
+        // Update config version
+        // ---------------------
+        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
+                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
+
+        // Update parameter
+        // ---------------------
+        const cJSON *objEl = cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "wlan"), "hostname");
+        if (cJSON_IsString(objEl)) {
+            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.hostname = objEl->valuestring;
+        }
+    }
+
+    //*************************************************************************************************
+    // Migrate from version 5 to version 6
+    // Date: August 2025
+    // Description: Implement function to set time manually (#275)
+    //*************************************************************************************************
+    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 5) {
+        // Update config version
+        // ---------------------
+        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
+                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
+
+        // Update parameter
+        // ---------------------
+        const cJSON *objEl = cJSON_GetObjectItem(
+            cJSON_GetObjectItem(cJSON_GetObjectItem(cJSON_GetObjectItem(cJsonObject, "network"), "time"), "ntp"), "processstartinterlock");
+        if (cJSON_IsBool(objEl)) {
+            ConfigClass::getInstance()->cfgTmp()->sectionNetwork.time.processStartInterlock = objEl->valueint;
+        }
+    }
+
+    //*************************************************************************************************
+    // Migrate from version 6 to version 7
+    // Date: September 2026
+    // Description: Remove fast alignment algorithm (#397)
+    //*************************************************************************************************
+    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 6) {
+        // Update config version
+        // ---------------------
+        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
+                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
+
+        // Update parameter
+        // ---------------------
+        auto &sectionAlignment = ConfigClass::getInstance()->cfgTmp()->sectionImageAlignment;
+        if (sectionAlignment.alignmentAlgo == 2) { // formerly ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH_SIMILAR --> Migrate to default
+            sectionAlignment.alignmentAlgo = ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH;
+        }
+    }
+
+    //*************************************************************************************************
+    // Migrate from version 7 to version 8
+    // Date: October 2026
+    // Description: Complete rework of WebUI (#414)
+    //*************************************************************************************************
+    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 7) {
+        // Update config version
+        // ---------------------
+        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
+                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
+
+        // Update parameter
+        // ---------------------
+        cJSON *webui = cJSON_GetObjectItem(cJsonObject, "webui");
+        auto &section = ConfigClass::getInstance()->cfgTmp()->sectionWebUi;
+        cJsonUtils::parseBool(webui, {"autorefresh", "overviewpage", "enabled"}, section.autoRefresh.dashboard.enabled);
+        cJsonUtils::parseIntClampedMin(webui, {"autorefresh", "overviewpage", "refreshtime"}, section.autoRefresh.dashboard.refreshTime, 1);
+    }
+
+
+    // -------------------------------------------------------------------------------------------------
     // Backup config file (run only if config migration performed)
+    // -------------------------------------------------------------------------------------------------
     if (migratedVersion >= 3) {
         std::string ConfigBackupFile = std::string(CONFIG_PERSISTENCE_FILE_BACKUP) + "_v" + std::to_string(migratedVersion);
         deleteFile(ConfigBackupFile);

@@ -397,7 +397,7 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
       "password": ""
     },
     "autorefresh": {
-      "overviewpage": {
+      "dashboard": {
         "enabled": true,
         "refreshtime": 5
       }

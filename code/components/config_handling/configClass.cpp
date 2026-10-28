@@ -816,8 +816,8 @@ void ConfigClass::parseSectionWebUi(bool unityTest)
     cJsonUtils::parseString(webui, {"httpauth", "username"}, section.httpAuth.username);
     parseSecretParameter(webui, {"httpauth", "password"}, section.httpAuth.password, "webui_httpauth", unityTest);
 
-    cJsonUtils::parseBool(webui, {"autorefresh", "overviewpage", "enabled"}, section.autoRefresh.overviewPage.enabled);
-    cJsonUtils::parseIntClampedMin(webui, {"autorefresh", "overviewpage", "refreshtime"}, section.autoRefresh.overviewPage.refreshTime, 1);
+    cJsonUtils::parseBool(webui, {"autorefresh", "dashboard", "enabled"}, section.autoRefresh.dashboard.enabled);
+    cJsonUtils::parseIntClampedMin(webui, {"autorefresh", "dashboard", "refreshtime"}, section.autoRefresh.dashboard.refreshTime, 1);
 }
 
 
@@ -1234,9 +1234,9 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
 
     cJSON *webuiAutorefresh = addObj(webui, "autorefresh");
 
-    cJSON *webuiAutorefreshOverview = addObj(webuiAutorefresh, "overviewpage");
-    addEl(webuiAutorefreshOverview, "enabled", cfgDataTemp.sectionWebUi.autoRefresh.overviewPage.enabled);
-    addEl(webuiAutorefreshOverview, "refreshtime", cfgDataTemp.sectionWebUi.autoRefresh.overviewPage.refreshTime);
+    cJSON *webuiAutorefreshDashboard = addObj(webuiAutorefresh, "dashboard");
+    addEl(webuiAutorefreshDashboard, "enabled", cfgDataTemp.sectionWebUi.autoRefresh.dashboard.enabled);
+    addEl(webuiAutorefreshDashboard, "refreshtime", cfgDataTemp.sectionWebUi.autoRefresh.dashboard.refreshTime);
 
     // Print to preallocated buffer
     jsonBuffer[0] = '\0'; // Reset content

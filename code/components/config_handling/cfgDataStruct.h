@@ -217,7 +217,7 @@ struct TLSParams {
 struct CfgData {
     // Config File
     struct SectionConfig {
-        int version = 7; // NOTE: Increment whenever existing parameter names changed or any migration is required
+        int version = 8; // NOTE: Increment whenever existing parameter names changed or any migration is required
         std::string lastModified = "";
     } sectionConfig;
 
@@ -470,10 +470,10 @@ struct CfgData {
             std::string password = "";
         } httpAuth;
         struct AutoRefresh {
-            struct OverviewPage {
+            struct Dashboard {
                 bool enabled = true;
                 int refreshTime = 5;
-            } overviewPage;
+            } dashboard;
         } autoRefresh;
     } sectionWebUi;
 };

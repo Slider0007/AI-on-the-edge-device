@@ -4,7 +4,7 @@
 <head>
   <title>Dashboard</title>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=720" />
 
   <script>
     // Theme Control
@@ -500,7 +500,7 @@
 
       try {
         await loadConfig();
-        const { enabled, refreshtime } = getConfigFromStorage().webui.autorefresh.overviewpage;
+        const { enabled, refreshtime } = getConfigFromStorage().webui.autorefresh.dashboard;
         document.getElementById('autoRefreshCtrl').checked = enabled;
         document.getElementById('autoRefreshTime').value = refreshtime;
       } catch (e) {

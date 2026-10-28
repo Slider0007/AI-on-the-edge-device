@@ -4,7 +4,7 @@
 <head>
   <title>Configuration</title>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=720" />
 
   <script>
     // Theme Control
@@ -2841,9 +2841,9 @@
                     <span>Page Auto Refresh</span>
                   </td>
                   <td>
-                    <form id="webui_autorefresh_overviewpage_enabled_form">
-                      <select class="classvisibility_init" name="webui.autorefresh.overviewpage.enabled" id="webui_autorefresh_overviewpage_enabled_value" onchange="
-                            setClassVisibility('classvisibility_webui_autorefresh_overviewpage_enabled', this.value);
+                    <form id="webui_autorefresh_dashboard_enabled_form">
+                      <select class="classvisibility_init" name="webui.autorefresh.dashboard.enabled" id="webui_autorefresh_dashboard_enabled_value" onchange="
+                            setClassVisibility('classvisibility_webui_autorefresh_dashboard_enabled', this.value);
                             gatherChangedParameter(this.form);
                           ">
                         <option value="false">Disabled</option>
@@ -2851,24 +2851,24 @@
                       </select>
                     </form>
                   </td>
-                  <td style="visibility: hidden">$TOOLTIP_webui_autorefresh_overviewpage_enabled</td>
+                  <td style="visibility: hidden">$TOOLTIP_webui_autorefresh_dashboard_enabled</td>
                 </tr>
 
-                <tr class="classvisibility_webui_autorefresh_overviewpage_enabled">
+                <tr class="classvisibility_webui_autorefresh_dashboard_enabled">
                   <td class="indent2">
                     <span>Refresh Time</span>
                   </td>
                   <td>
-                    <form id="webui_autorefresh_overviewpage_refreshtime_form">
-                      <input required type="number" min="1" value="5" name="webui.autorefresh.overviewpage.refreshtime"
-                        id="webui_autorefresh_overviewpage_refreshtime_value" onchange="
+                    <form id="webui_autorefresh_dashboard_refreshtime_form">
+                      <input required type="number" min="1" value="5" name="webui.autorefresh.dashboard.refreshtime" id="webui_autorefresh_dashboard_refreshtime_value"
+                        onchange="
                             !validity.rangeUnderflow || (value = 1);
                             gatherChangedParameter(this.form, true);
                           " />
                       Seconds
                     </form>
                   </td>
-                  <td style="visibility: hidden">$TOOLTIP_webui_autorefresh_overviewpage_refreshtime</td>
+                  <td style="visibility: hidden">$TOOLTIP_webui_autorefresh_dashboard_refreshtime</td>
                 </tr>
               </tbody>
             </table>
