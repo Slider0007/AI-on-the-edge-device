@@ -33,7 +33,7 @@ Retrieve and query system log files with support for metadata, full dumps, and t
 #### 2. Get Logs by Timestamp Range
 * **Payload**: `/log?start=YYYY-MM-DDTHH:MM:SS&end=YYYY-MM-DDTHH:MM:SS`
 * **Description**: Filters and streams log entries across multiple log files matching the given ISO timestamp range (inclusive, ordered oldest to newest). 
-* **Note**: If the output exceeds the maximum stream size limit (2 MB), the response is safely truncated with a `... --TRUNCATED_SIZELIMIT--\n` marker.
+* **Note**: If the output exceeds the maximum stream size limit (5 MB), the response is safely truncated with a `... --TRUNCATED_SIZELIMIT--\n` marker.
 
 #### 3. Get Full Data Entries (unlimited)
 * **Payload**: `/log?type=full` (Optional: can be combined with `start` and/or `end` parameters)

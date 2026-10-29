@@ -113,7 +113,7 @@
 #define MAX_FILE_SIZE_STR "16MB"
 
 #define LOGFILE_LAST_PART_BYTES (80*1024)       // Size of partial log file to return
-#define LOGFILE_MAX_STREAM_BYTES (2000*1024)    // Max transmision size to limit loading time
+#define LOGFILE_MAX_STREAM_BYTES (5000*1024)    // Max transmision size to limit loading time
 
 #define WEBSERVER_SCRATCH_BUFSIZE   32768
 #define SERVER_OTA_SCRATCH_BUFSIZE  8192

@@ -27,7 +27,7 @@ void migrateConfiguration(cJSON *cJsonObject)
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.version = ConfigClass::getInstance()->get()->sectionConfig.version;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = "";
 
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+        LogFile.writeToFile(ESP_LOG_INFO, TAG,
                             "Migration for v" + std::to_string(migratedVersion) + " is not supported. Check configuration manually.");
 
         return;
@@ -44,7 +44,7 @@ void migrateConfiguration(cJSON *cJsonObject)
         migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+        LogFile.writeToFile(ESP_LOG_INFO, TAG,
                             "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
                                 std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
 
@@ -75,7 +75,7 @@ void migrateConfiguration(cJSON *cJsonObject)
         migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+        LogFile.writeToFile(ESP_LOG_INFO, TAG,
                             "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
                                 std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
 
@@ -98,7 +98,7 @@ void migrateConfiguration(cJSON *cJsonObject)
         migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+        LogFile.writeToFile(ESP_LOG_INFO, TAG,
                             "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
                                 std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
 
@@ -122,7 +122,7 @@ void migrateConfiguration(cJSON *cJsonObject)
         migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+        LogFile.writeToFile(ESP_LOG_INFO, TAG,
                             "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
                                 std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
 
@@ -145,7 +145,7 @@ void migrateConfiguration(cJSON *cJsonObject)
         migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
         ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+        LogFile.writeToFile(ESP_LOG_INFO, TAG,
                             "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
                                 std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
 

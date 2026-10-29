@@ -835,7 +835,7 @@
           url += `?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
         }
 
-        const res = await apiCallNotify(url, { timeout: elements.dateRangeCtrl.checked ? 60000 : 15000 }, { action: 'Log request' });
+        const res = await apiCallNotify(url, { timeout: elements.dateRangeCtrl.checked ? 90000 : 15000 }, { action: 'Log request' });
 
         if (!res.ok) {
           if (res.error === 'timeout') {
@@ -850,7 +850,7 @@
         updateStats();
 
         if (res.data.includes('--TRUNCATED_SIZELIMIT--')) {
-          elements.status.innerHTML = '⚠️ <b>Log Truncated (Max. 2MB)</b>';
+          elements.status.innerHTML = '⚠️ <b>Log Truncated (Max. 5MB)</b>';
         }
 
         elements.refreshTs.value = new Date().toLocaleTimeString([], { hour12: false });
