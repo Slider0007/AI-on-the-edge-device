@@ -955,9 +955,9 @@ static esp_err_t coredump_handler(httpd_req_t *req)
     // Save core dump file
     // Debug with esp-coredump (https://github.com/espressif/esp-coredump) --> e.g. install with "pip install esp-coredump"
     // Generic: esp-coredump info_corefile --gdb <path_to_gdb_bin> --rom-elf <soc_specific_rom_elf_file> --core-format raw
-    //  --core <downloaded coredump file (FIRMWARE_BOARDTYPE-coredump-elf.bin)> firmware.elf (firmware debug zip --> firmware.elf)
+    //  --core <downloaded coredump file (firmware_BOARDTYPE-coredump.elf)> firmware.elf (firmware debug zip --> firmware.elf)
     // Example: esp-coredump info_corefile --gdb <tool-xtensa-esp-elf-gdb/bin/xtensa-esp32-elf-gdb.exe>
-    //  --rom-elf esp32_rev0_rom.elf --core-format raw --core firmware_ESP32CAM_coredump-elf.bin firmware.elf
+    //  --rom-elf esp32_rev0_rom.elf --core-format raw --core firmware_ESP32CAM_coredump.elf firmware.elf
     if (task.compare("save") == 0) {
         if (coreDumpGetSummaryRetVal != ESP_OK) { // Skip save request if no core dump is available (empty partition)
             httpd_resp_sendstr(req, "Skip request, no core dump available");
@@ -971,7 +971,7 @@ static esp_err_t coredump_handler(httpd_req_t *req)
         replaceAll(firmware, "(", "_");
         replaceAll(firmware, ")", "_");
 
-        std::string attachmentFile = "attachment;filename=" + firmware + "_" + getBoardType() + "_coredump-elf.bin";
+        std::string attachmentFile = "attachment;filename=" + firmware + "_" + getBoardType() + "_coredump.elf";
         httpd_resp_set_type(req, "application/octet-stream");
         httpd_resp_set_hdr(req, "Content-Disposition", attachmentFile.c_str());
 

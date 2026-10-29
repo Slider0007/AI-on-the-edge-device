@@ -171,10 +171,7 @@
       }
 
       // Check if the filename is valid
-      if (
-        /(^AI-on-the-edge-device__update__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename) ||
-        /(^AI-on-the-edge-device__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename)
-      ) {
+      if (/(^AI-on-the-edge-device__)[a-zRC0-9()_\-.]*(\.zip$)/i.test(filename)) {
         if (document.getElementById('board_type').innerText.toLowerCase() == filename.split('__')[1]) {
           // Check if board type of filename matches
           firework.launch("Press 'Install' to perform the OTA update", 'success', 2000);
@@ -185,7 +182,6 @@
       } else if (filename == 'firmware.bin') {
         firework.launch("Press 'Install' to install MCU firmware", 'success', 5000);
       } else if (filename.endsWith('.zip') || filename.endsWith('.bin')) {
-        // Warning but still accepted
         firework.launch('The selected file does not fully match the expected name pattern. ' + "Press 'Install' to continue on own risk", 'warning', 10000,);
       } else {
         firework.launch('The selected file does not match the expected name pattern. Please select valid file', 'danger', 10000);

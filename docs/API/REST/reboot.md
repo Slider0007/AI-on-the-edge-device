@@ -4,7 +4,7 @@
 
 `http://IP-ADDRESS/reboot`
 
-Trigger an instant device reboot.
+Trigger a controlled device reboot.
 
 ---
 

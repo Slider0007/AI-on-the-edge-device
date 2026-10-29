@@ -548,7 +548,9 @@
 
       specialeffect = params.specialeffect;
 
-      const res = await apiCallNotify(`/camera?${new URLSearchParams(params)}`, { timeout: 30000 }, {
+      const flashTime = parseInt(params.flashtime, 10) || 1000;
+      const timeoutMs = Math.max(flashTime + 10000, 15000);
+      const res = await apiCallNotify(`/camera?${new URLSearchParams(params)}`, { timeout: timeoutMs }, {
         action: 'Setting image parameter',
         loadingMsg: 'Capturing image...',
         parseType: 'blob',

@@ -230,8 +230,8 @@ httpd_handle_t start_webserverAP(void)
 
     httpd_handle_t server = NULL;
     if (httpd_start(&server, &config) != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to start webserver (access point). Power cycle to retry...");
-        doRebootOTA();
+        ESP_LOGE(TAG, "Failed to start webserver (access point). Device is rebooting...");
+        esp_restart();
         return NULL;
     }
 

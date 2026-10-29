@@ -544,13 +544,13 @@
         const p = (n) => n.toString().padStart(2, '0');
         const todayFilename = `data_${today.getFullYear()}-${p(today.getMonth() + 1)}-${p(today.getDate())}.csv`;
 
-        const res = await apiCallNotify('/data', { timeout: 30000 }, { action: 'Fetch live data tail' });
+        const res = await apiCallNotify('/data', {}, { action: 'Fetch live data tail' });
         if (res.ok) {
           fetchedFiles.set(todayFilename, res.data);
           updateSequenceNames(res.data);
         } else {
-          console.error('Tail fetch failed:', res.error ?? res.status);
-          firework.launch('Failed to fetch live data', 'danger', 10000);
+          console.error('Failed to fetch data (tail):', res.error ?? res.status);
+          firework.launch('Failed to fetch data', 'danger', 10000);
         }
 
         bar.style.width = '100%';
@@ -577,7 +577,7 @@
           continue;
         }
 
-        const res = await apiCallNotify(`/fileserver/log/data/${f}`, { timeout: 30000 }, { action: `Fetch data file (${f})` });
+        const res = await apiCallNotify(`/fileserver/log/data/${f}`, { timeout: 60000 }, { action: `Fetch data file (${f})` });
 
         if (!res.ok) {
           console.error('Fetch failed | ', f, res.error ?? res.status);

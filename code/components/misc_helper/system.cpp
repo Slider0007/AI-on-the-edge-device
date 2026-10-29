@@ -308,7 +308,7 @@ void setSystemStatusFlag(SystemStatusFlag_t flag)
 
 void clearSystemStatusFlag(SystemStatusFlag_t flag)
 {
-    systemStatus = systemStatus | ~flag; // clear bit
+    systemStatus = systemStatus & ~static_cast<unsigned int>(flag); // clear bit
 
     char buf[20];
     snprintf(buf, sizeof(buf), "0x%08X", systemStatus);

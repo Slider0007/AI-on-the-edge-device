@@ -835,7 +835,7 @@
           url += `?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
         }
 
-        const res = await apiCallNotify(url, { timeout: 30000 }, { action: 'Log request' });
+        const res = await apiCallNotify(url, { timeout: elements.dateRangeCtrl.checked ? 60000 : 15000 }, { action: 'Log request' });
 
         if (!res.ok) {
           if (res.error === 'timeout') {
@@ -858,7 +858,6 @@
         currentProgress = Math.min(currentProgress + 5, 95);
         elements.bar.style.width = currentProgress + '%';
       } catch (e) {
-        // Only local processing errors can land here (ensureSeconds, processLogs, updateStats)
         console.error('Log processing failed:', e);
         elements.status.innerHTML = '⚠️ <b>Loading Error</b>';
         firework.launch('Log processing failed', 'danger', 10000);

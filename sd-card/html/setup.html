@@ -556,12 +556,14 @@
                       <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorgreenchannel"
                         id="gpio_gpiopin_0_smartled_colorgreenchannel_value" onchange="
                               (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
+                              gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                               gatherChangedParameter(this.form, true);
                             " />
                       B
                       <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorbluechannel"
                         id="gpio_gpiopin_0_smartled_colorbluechannel_value" onchange="
                               (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
+                              gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                               gatherChangedParameter(this.form, true);
                             " />
                     </form>
@@ -722,7 +724,7 @@
         </div>
       </div>
       <div id="desc-step99" class="steps" style="display: none">
-        <div class="step-content"><strong>Step 5: Abort Initial Setup</strong>
+        <div class="step-content"><strong>Abort Initial Setup</strong>
           <button class="button" style="float: right" onclick="SetupWizard.navigate(0)">Restart Wizard</button>
         </div>
 
@@ -1039,12 +1041,11 @@
 
         // Dynamically compute timeout based on flash time
         const flashTime = jsonConfig?.takeimage?.flashlight?.flashtime || 0;
-        const timeoutMs = Math.max(flashTime + 15000, 15000);
+        const timeoutMs = Math.max(flashTime + 10000, 15000);
 
         try {
           const res = await apiCallNotify('/camera?task=capture', { timeout: timeoutMs }, {
-            action: 'Capturing image',
-            parseType: 'blob',
+            action: 'Capturing image', parseType: 'blob',
             httpObj: {
               403: (r) => ({
                 msg: 'Camera not detected / supported or not initialized. Check camera module installation',

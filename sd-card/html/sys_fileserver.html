@@ -242,7 +242,7 @@
           if (!confirm(question)) return;
 
           const loadingMsg = isDir ? "Deleting folder. Please wait..." : "Deleting file..."
-          const res = await apiCallNotify('/delete' + url, { method: 'POST', timeout: 120000 },
+          const res = await apiCallNotify('/delete' + url, { method: 'POST', timeout: isDir ? 120000 : 20000 },
             {
               action: 'Deletion',
               loadingMsg: loadingMsg

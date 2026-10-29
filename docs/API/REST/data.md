@@ -42,4 +42,4 @@ Retrieve and query system data and CSV log files with support for metadata, full
 
 #### 4. Get API Name and Version
 * **Payload**: `/data?type=api_name`
-* **Description**: Returns the current API identifier and version string (`data:vX`).
+* **Description**: Returns the current API identifier and version string (e.g. `data:vX`).

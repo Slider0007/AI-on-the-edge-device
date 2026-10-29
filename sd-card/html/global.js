@@ -302,7 +302,7 @@ function launchNotifyEntry(entry, fallbackType, fallbackDuration) {
  * @returns {Promise<Response>}
  */
 async function fetchWrapper(endpoint, init = {}) {
-  const { timeout = 10000, ...rest } = init;
+  const { timeout = 15000, ...rest } = init;
   const options = { credentials: 'include', cache: 'no-store', ...rest };
 
   if (options.signal === undefined) {
@@ -470,7 +470,7 @@ async function reloadConfig() {
 async function saveConfig(data, reload = false) {
   const res = await apiCallNotify(
     reload ? '/config?reload=true' : '/config',
-    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data, timeout: 15000 },
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data },
     {
       action: 'Save config',
       loadingMsg: 'Save and apply configuration...',
@@ -485,7 +485,7 @@ async function saveConfig(data, reload = false) {
 }
 
 async function loadConfig() {
-  const res = await apiCallNotify('/config', { timeout: 15000 }, { action: 'Loading config', parseType: 'json' });
+  const res = await apiCallNotify('/config', {}, { action: 'Loading config', parseType: 'json' });
   if (!res.ok || !res.data) throw apiError(`Loading config failed (${res.error ?? `Status: ${res.status}`})`, res);
 
   try {
@@ -612,7 +612,7 @@ function loadImage(url, altUrl) {
   img.onerror = img.onabort = fallback;
   img.onload = () => clearTimeout(timer);
   img.src = url;
-  timer = setTimeout(fallback, 10000);
+  timer = setTimeout(fallback, 15000);
   return img;
 }
 

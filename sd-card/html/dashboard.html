@@ -411,7 +411,7 @@
       const now = Date.now();
 
       return new Promise((resolve) => {
-        const timer = setTimeout(() => resolve(false), 10000); // never keep the refresh lock forever
+        const timer = setTimeout(() => resolve(false), 15000); // never keep the refresh lock forever
         const done = (ok) => {
           clearTimeout(timer);
           resolve(ok);

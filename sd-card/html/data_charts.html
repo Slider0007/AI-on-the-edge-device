@@ -427,7 +427,7 @@
       const totalSum = dailyValues.length > 0 ? dailyValues.reduce((a, b) => a + b, 0) : 0;
 
       // Average of daily differences
-      const avgValue = parseFloat((totalSum / dailyValues.length).toFixed(3));
+      const avgValue = dailyValues.length ? parseFloat((totalSum / dailyValues.length).toFixed(3)) : 0;
       const avgLine = dailyDates.map(() => avgValue);
 
       const dailyTraces = [

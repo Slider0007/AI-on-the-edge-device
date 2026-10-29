@@ -220,27 +220,6 @@ a .rst-content .admonition-title {
   border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
-button {
-  font-size: 100%;
-  margin: 0;
-  vertical-align: baseline;
-  *vertical-align: middle;
-  cursor: pointer;
-  line-height: normal;
-  -webkit-appearance: button;
-  *overflow: visible;
-}
-
-button::-moz-focus-inner,
-input::-moz-focus-inner {
-  border: 0;
-  padding: 0;
-}
-
-button[disabled] {
-  cursor: default;
-}
-
 .mirror {
   -webkit-transform: scaleX(-1);
   -moz-transform: scaleX(-1);
@@ -281,10 +260,6 @@ small {
 .rst-content .section ul li li li,
 .rst-content section ul li li li {
   list-style: square;
-}
-
-html {
-  font-size: 14px;
 }
 
 .rst-content h1,

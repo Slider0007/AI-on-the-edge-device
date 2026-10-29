@@ -1049,7 +1049,7 @@
             'x' + Number(10 ** (-1 * multiplierDecshift)).toFixed(fixedDecimals_decshift);
         } else if (!jsonConfigModifiedDelta.digit.enabled && jsonConfigModifiedDelta.analog.enabled) {
           // Only Analog
-          multiplier = jsonConfig.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1 - roiSelected;
+          multiplier = jsonConfigModifiedDelta.analog.sequence[sequenceSelection.selectedIndex].roi.length - 1 - roiSelected;
           multiplierDecshift = fixedDecimals_decshift = multiplier + Number(decimalShift);
           if (multiplierDecshift > 0) fixedDecimals_decshift = 0;
           if (fixedDecimals_decshift < 0) {

@@ -743,7 +743,6 @@ static std::string recognitionDetailsRoiSection(const std::string &title, const 
             html += "<div style=\"flex: 0 1 100px; text-align:center;\">";
             if (roi->CNNResult > -1) {
                 html += "<div style=\"font-weight:bold;\">" + roi->sCNNResult + "</div>";
-                // Note: you can handle width precision here or in another helper
                 html += "<img src=\"/img_tmp/" + roi->param->roiName + "_org.jpg\" style=\"width:100%; border:1px solid var(--border);\">";
             }
             else {
@@ -827,7 +826,7 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
         </details></div><div class="container-content">)";
 
     // Not initialized state
-    if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
+    if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING || cycleCounter == 0) {
         txt += "<div class=\"warning-box\" style=\"text-align:center; padding:20px;\">";
         txt += "<div style=\"margin-top:0;\">Progressing...</div>";
         txt += "<p>Image recognition details are accessible once the device is initialized and cycle is completed</p>";

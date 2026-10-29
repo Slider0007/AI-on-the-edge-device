@@ -325,17 +325,16 @@
       }
       UI.main.src = page;
 
-      try {
-        await loadConfig();
-        await Promise.all([
-          loadHostname(),
-          homeAssistantSendDiscoveryVisibility(),
-          checkFwVersion()
-        ]);
-      } catch (e) {
-        console.error('Initialization failed', e);
-      }
+      loadHostname();
+
+      loadConfig()
+        .then(homeAssistantSendDiscoveryVisibility)
+        .catch((e) => console.error('Failed to load config', e));
+
+      checkFwVersion();
     }
+
+
 
     // Initialize as soon as DOM is ready
     window.addEventListener('DOMContentLoaded', init);

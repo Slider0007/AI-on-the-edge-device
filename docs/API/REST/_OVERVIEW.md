@@ -22,8 +22,8 @@ Further details can be found in the respective REST API endpoint description.
 | [/camera](camera.md)                 | Camera Capture, Stream, Parametrization + Flashlight| HTML       | 
 | [/gpio](gpio.md)                     | Read / Control GPIO                                | JSON + HTML | 
 | [/mqtt](mqtt.md)                     | Publish HA discovery topics / Device info topics   | HTML        | 
-| [/data](data.md)                     | Data of today (last 80kB)                          | JSON + HTML | 
-| [/log](log.md)                       | Log of today (last 80kB)                           | JSON + HTML | 
+| [/data](data.md)                     | Data Log                                           | JSON + HTML | 
+| [/log](log.md)                       | Device Log                                         | JSON + HTML | 
 | [/ota](ota.md)                       | Over The Air Update                                | HTML        | 
 | [/reboot](reboot.md)                 | Trigger Reboot                                     | HTML        | 
 | [/wlan](wlan.md)                     | WLAN Scan                                          | JSON        |

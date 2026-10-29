@@ -24,7 +24,7 @@ Manually trigger, schedule, or force the start of a new process cycle.
     * *Example*: `001: Cycle start triggered by REST API (15:54:07)`
   * **`002` (Scheduled Trigger)**: Returned when the system is currently busy (e.g., processing images, publishing data, or running additional tasks). The request is registered and scheduled.
     * *Example*: `002: Cycle start triggered by REST API got scheduled (15:54:07)`
-  * **`003` (Abort Delay)**: Returned when the system is in a delayed initialization state. Aborts the delay and starts the cycle immediately.
+  * **`003` (Abort Delay and Reinit)**: Returned when the system is in a delayed initialization state. Aborts the delay and resumes initialization without the delay.
     * *Example*: `003: Cycle start triggered by REST API abort initialization delay (15:54:07)`
   * **`E90` (Rejected)**: Returned when the request is rejected because the main task is not initialized.
     * *Example*: `E90: Cycle start triggered by REST API. Main task not initialized. Request rejected (15:54:07)`

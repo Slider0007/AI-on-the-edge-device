@@ -4,8 +4,6 @@
 
 ### Migration from v17.x to v18.x
 
-No endpoints removed or renamed, but check changelog and/or API description for changes of existing endpoints.
-
 Modified endpoints (Functionality moved to other endpoints):
 
 | REST API Endpoint                    | Description                                        | HTML / JSON | Functionality moved  

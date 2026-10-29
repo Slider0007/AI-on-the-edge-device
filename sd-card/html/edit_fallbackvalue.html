@@ -163,7 +163,7 @@
       if (requestToken !== fallbackLoadRequestToken) return;
 
       if (fallbackRes.ok) {
-        document.getElementById('current_fallbackvalue').value = fallbackRes.data;
+        document.getElementById('current_fallbackvalue').value = String(fallbackRes.data ?? '').trim();
       }
 
       if (rawValueRes.ok) {
