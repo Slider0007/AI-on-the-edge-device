@@ -66,7 +66,7 @@ Before starting the provisioning process, make sure the following are ready:
 ---
 
 #### **Step 6: Install Firmware / SD Card Content**
-- In the device provisioning interface, upload the **firmware ZIP file** (same file used for flashing)
+- In the device provisioning interface, upload the **firmware ZIP file** for your board (see Preconditions)
 - Click **"UPLOAD & INSTALL"** to begin uploading the file
 - The device will reboot and install the package (MCU + SD-card)
 - After finalization page is redirected automatically to main web interface

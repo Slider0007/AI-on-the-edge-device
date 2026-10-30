@@ -161,10 +161,7 @@
   <div class="container">
     <header class="container-header">
       <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%">
-        <div class="container-title">
-          <span>🏠</span>
-          Dashboard
-        </div>
+        <div class="container-title"><span>🏠</span>Dashboard</div>
         <div class="refresh-group">
           <div class="refresh-loader">
             <button id="refreshButton" class="button btn-action" style="width: 135px" onclick="refreshContent()">Refresh</button>
@@ -406,28 +403,26 @@
       el.textContent = isErrorState && value < 0 ? '⚠ Process error detected. Check logs' : '';
     }
 
-    function loadROIImage() {
+    function loadImage() {
       const imgEl = document.getElementById('img');
-      const now = Date.now();
 
       return new Promise((resolve) => {
-        const timer = setTimeout(() => resolve(false), 15000); // never keep the refresh lock forever
+        const timer = setTimeout(() => resolve(false), 15000); // safety timeout
         const done = (ok) => {
           clearTimeout(timer);
+          imgEl.classList.remove('is-loading');
           resolve(ok);
         };
 
-        imgEl.onload = () => {
-          imgEl.classList.remove('is-loading');
-          done(true);
-        };
+        imgEl.onload = () => done(true);
+        imgEl.onabort = () => done(false);
         imgEl.onerror = () => {
           imgEl.onerror = null;
-          imgEl.src = noImageAvailable;
+          imgEl.src = typeof noImageAvailable !== 'undefined' ? noImageAvailable : '';
           done(false);
         };
-        imgEl.onabort = () => done(false);
-        imgEl.src = `${getDomainname()}/img_tmp/alg_roi.jpg?v=${now}`;
+
+        imgEl.src = `${getDomainname()}/img_tmp/alg_roi.jpg?v=${Date.now()}`;
       });
     }
 
@@ -450,7 +445,7 @@
 
         // Manual refresh always reloads the image; auto refresh only when cycle or step changed
         if (!auto || key !== lastImageKey) {
-          await loadROIImage();
+          await loadImage();
           lastImageKey = key;
         }
       } catch (error) {
@@ -492,11 +487,11 @@
     }
 
     async function init() {
-      const imgEl = document.getElementById('img');
-      if (imgEl) imgEl.src = loaderSpinner;
+      // Show image spinner
+      if (typeof loaderSpinner !== 'undefined') document.getElementById('img').src = loaderSpinner;
 
-      await loadROIImage();
-      await loadProcessData();
+      lastImageKey = await loadProcessData();
+      loadImage();
 
       try {
         await loadConfig();
@@ -509,6 +504,10 @@
 
       autoRefreshContent();
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.parent.postMessage({ type: 'iframe-ready' }, '*');
+    });
 
     init();
   </script>

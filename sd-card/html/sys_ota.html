@@ -429,6 +429,10 @@
 
     getBoardType();
     getFirmwareVersion();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.parent.postMessage({ type: 'iframe-ready' }, '*');
+    });
   </script>
 </body>
 

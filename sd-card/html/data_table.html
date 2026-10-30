@@ -1056,6 +1056,10 @@
       refreshContent();
     }
 
+    window.addEventListener('DOMContentLoaded', () => {
+      window.parent.postMessage({ type: 'iframe-ready' }, '*');
+    });
+
     init();
   </script>
 </body>

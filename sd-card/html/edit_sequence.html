@@ -1473,6 +1473,11 @@
         console.error('Initialization failed:', error);
       }
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.parent.postMessage({ type: 'iframe-ready' }, '*');
+    });
+
     init();
   </script>
 </body>

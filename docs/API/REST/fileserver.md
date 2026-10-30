@@ -36,6 +36,7 @@ Browse, list and download files and directories from the SD card via HTTP GET re
 
 ### Limitations & Error Responses
 
-* **Path Malformed or Too Long (`400 Bad Request`)**: Fails if the path exceeds `FILE_PATH_MAX` (255).
+* **Path Malformed or Too Long (`400 Bad Request`)**: Fails if the path exceeds `FILE_PATH_MAX` (255) or for requests with not allowed characters.
 * **File Not Found (`404 Not Found`)**: Fails if the requested file or directory does not exist on the filesystem.
+* **Not Allowed (`403 Forbidden `)**: Fails if the requested file or directory contains sensitive data (e.g. passwords) or shall be kept hidden.
 * **Server Read/Stream Failures (`500 Internal Server Error` / `ESP_FAIL`)**: Fails if the file cannot be read or chunks fail to send over the connection.

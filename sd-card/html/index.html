@@ -68,7 +68,7 @@
       document.cookie = `page=${page};path=/;SameSite=Lax`;
 
       if (UI.main) {
-        UI.main.classList.remove('ready');
+        UI.main.classList.remove('ready'); // Hide iframe until loaded
         UI.main.src = page;
       }
 
@@ -311,6 +311,8 @@
       // Theme Control
       const themeToggle = document.getElementById('themeToggle');
       if (themeToggle) themeToggle.checked = document.documentElement.classList.contains('light');
+
+      // Fallback: reveal on load for pages that never post 'iframe-ready'
       if (UI.main) { UI.main.addEventListener('load', () => { UI.main.classList.add('ready'); }); }
 
       // Cookie management
@@ -326,14 +328,15 @@
       UI.main.src = page;
 
       loadHostname();
-
-      loadConfig()
-        .then(homeAssistantSendDiscoveryVisibility)
-        .catch((e) => console.error('Failed to load config', e));
-
+      loadConfig().then(homeAssistantSendDiscoveryVisibility).catch((e) => console.error('Failed to load config', e));
       checkFwVersion();
     }
 
+    // Listen for the iframe ready
+    window.addEventListener('message', (event) => {
+      if (event.source !== UI.main?.contentWindow) return;
+      if (event.data?.type === 'iframe-ready') UI.main.classList.add('ready');
+    });
 
 
     // Initialize as soon as DOM is ready

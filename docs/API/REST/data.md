@@ -10,7 +10,7 @@ Retrieve and query system data and CSV log files with support for metadata, full
 
 ### General Information
 
-* **Content-Type**: `text/plain`
+* **Content-Type**: `text/plain` (query for filelist: `application/json`)`
 * **Cache Control**: `no-cache`
 * **Content Format**: Each row represents one processed cycle (CSV format, comma-separated):
   `time, sequence name, raw value, actual value, fallback value, rate per min, absolute change, process status, results of digit ROIs, results of analog ROIs`

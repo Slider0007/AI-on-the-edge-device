@@ -84,7 +84,7 @@ static esp_err_t getDirFileList(httpd_req_t *req, const char *path, std::initial
     closedir(dir);
 
     // Final serialization check
-    char *jsonChar = cJSON_Print(cJSONObject);
+    char *jsonChar = cJSON_PrintUnformatted(cJSONObject);
     cJSON_Delete(cJSONObject);
 
     esp_err_t retVal = ESP_OK;

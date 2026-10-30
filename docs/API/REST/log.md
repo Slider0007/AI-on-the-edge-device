@@ -10,7 +10,7 @@ Retrieve and query system log files with support for metadata, full dumps, and t
 
 ### General Information
 
-* **Content-Type**: `text/plain`
+* **Content-Type**: `text/plain` (query for filelist: `application/json`)
 * **Cache Control**: `no-cache`
 * **Content Format**: Each row represents one message (TXT format, tab-separated):
 `[uptime] timestamp <log level> [source] message`
