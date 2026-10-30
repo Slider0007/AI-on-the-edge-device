@@ -58,8 +58,8 @@ and converted into a digital reading, ready to be sent or accessed through vario
 
 
 ### Software
-#### Web Interface (≥ v18.0.0)
-<img src="images/webinterface_dashboard.jpg" width="800"> 
+#### Web Interface (left: ≥ v18, right: < v18)
+<img src="images/webinterface_dashboard.jpg" width="403"><img src="images/webinterface_v17.png" width="397"> 
 
 
 ## Supported Hardware
