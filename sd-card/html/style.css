@@ -227,11 +227,6 @@ iframe.iframe.ready {
   font-weight: bold;
 }
 
-.menu li.active>a {
-  color: var(--primary);
-  border-bottom: 2px solid var(--primary);
-}
-
 /* Submenu Base Logic */
 .menu li ul {
   background: var(--surface-light);
