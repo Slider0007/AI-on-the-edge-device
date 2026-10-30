@@ -209,13 +209,14 @@ iframe.iframe.ready {
 
 /* Menu Links Hover & Active States */
 .menu li:hover>a,
-.menu li.active>a,
 .menu li.is-open>a {
   color: var(--primary);
   background: rgba(255, 255, 255, 0.05);
 }
 
 .menu li.active>a {
+  color: var(--primary);
+  background: rgba(255, 255, 255, 0.05);
   border-bottom: 2px solid var(--primary);
 }
 
