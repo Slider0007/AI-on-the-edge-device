@@ -31,18 +31,10 @@
   <script src="global.js?v=$COMMIT_HASH"></script>
   <script>
     const UI = {
-      get deviceName() {
-        return document.getElementById('device-name');
-      },
-      get main() {
-        return document.getElementById('maincontent');
-      },
-      get submenus() {
-        return document.querySelectorAll('.submenu');
-      },
-      get hasDiscovery() {
-        return document.getElementById('HASendDiscovery');
-      },
+      get deviceName() { return document.getElementById('device-name'); },
+      get main() { return document.getElementById('maincontent'); },
+      get submenus() { return document.querySelectorAll('.submenu'); },
+      get hasDiscovery() { return document.getElementById('HASendDiscovery'); },
     };
 
     let streamPopup;
@@ -52,6 +44,15 @@
       'location=no,dependent=yes,menubar=no,resizable=no,scrollbars=no,' +
       'status=no,toolbar=no,titlebar=no,' +
       'left=10,top=250,width=640px,height=480px';
+
+    // Theme Control
+    function setTheme(isLight) {
+      const theme = isLight ? 'light' : 'dark';
+      document.documentElement.classList.toggle('light', isLight);
+      document.documentElement.classList.toggle('dark', !isLight);
+      try { localStorage.setItem('theme', theme); } catch (e) { }
+      document.cookie = `theme=${theme};path=/;max-age=${60 * 60 * 24 * 400};SameSite=Lax`;
+    }
 
     function getCookie(cname) {
       const name = cname + '=';
@@ -72,20 +73,30 @@
         UI.main.src = page;
       }
 
-      // Clear visibility and close mobile expanded menus
-      UI.submenus?.forEach((el) => (el.style.visibility = 'hidden'));
-      document.querySelectorAll('.menu li.is-open').forEach((el) => el.classList.remove('is-open'));
+      closeMenu();
+    }
+
+    function closeMenu() {
+      document.querySelectorAll('.menu ul ul').forEach((el) => {
+        el.style.visibility = 'hidden';
+      });
+      document.querySelectorAll('.menu li.is-open').forEach((el) => {
+        el.classList.remove('is-open');
+      });
+    }
+
+    function closeMenuBranch(li) {
+      li.classList.remove('is-open');
+      li.querySelectorAll('li.is-open').forEach((el) => el.classList.remove('is-open'));
+      li.querySelectorAll('ul').forEach((el) => {
+        el.style.visibility = 'hidden';
+      });
     }
 
     function resetMenu() {
-      UI.submenus.forEach((el) => (el.style.visibility = 'visible'));
-    }
-
-    function toggleMenu() {
-      const nav = document.querySelector('.menu > ul');
-      const btn = document.getElementById('burgerBtn');
-      nav.classList.toggle('is-open');
-      btn.classList.toggle('is-open');
+      document.querySelectorAll('.menu ul ul').forEach((el) => {
+        el.style.visibility = '';
+      });
     }
 
     // Mobile submenu tap-to-expand
@@ -96,22 +107,44 @@
         if (!sub || !link) return;
 
         link.addEventListener('click', (e) => {
-          if (window.innerWidth > 720) return;
+          // Allow standard hover on desktop devices that support true hover with a fine pointer
+          if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
           e.preventDefault();
-          li.classList.toggle('is-open');
+          e.stopPropagation();
+
+          const willOpen = !li.classList.contains('is-open');
+
+          // Close sibling branches
+          li.parentElement.querySelectorAll(':scope > li.is-open').forEach((el) => {
+            if (el !== li) closeMenuBranch(el);
+          });
+
+          if (willOpen) {
+            sub.style.visibility = 'visible';
+            li.classList.add('is-open');
+          } else {
+            closeMenuBranch(li);
+          }
         });
       });
+
+      // Close menu when clicking a leaf link or somewhere outside of menu tree
+      const menu = document.querySelector('.menu');
+      if (menu) {
+        menu.addEventListener('click', (e) => {
+          const a = e.target.closest('a');
+          if (!a || a.parentElement.querySelector(':scope > ul')) return;
+          closeMenu();
+        });
+        document.addEventListener('click', (e) => {
+          if (menu && !menu.contains(e.target)) {
+            closeMenu();
+          }
+        });
+      }
     }
     window.addEventListener('DOMContentLoaded', initMobileSubmenus);
-
-    // Theme Control
-    function setTheme(isLight) {
-      const theme = isLight ? 'light' : 'dark';
-      document.documentElement.classList.toggle('light', isLight);
-      document.documentElement.classList.toggle('dark', !isLight);
-      try { localStorage.setItem('theme', theme); } catch (e) { }
-      document.cookie = `theme=${theme};path=/;max-age=${60 * 60 * 24 * 400};SameSite=Lax`;
-    }
   </script>
 </head>
 
@@ -312,7 +345,7 @@
       const themeToggle = document.getElementById('themeToggle');
       if (themeToggle) themeToggle.checked = document.documentElement.classList.contains('light');
 
-      // Fallback: reveal on load for pages that never post 'iframe-ready'
+      // Fallback: Reveal on load for pages that never post 'iframe-ready'
       if (UI.main) { UI.main.addEventListener('load', () => { UI.main.classList.add('ready'); }); }
 
       // Cookie management

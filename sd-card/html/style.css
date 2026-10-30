@@ -86,7 +86,9 @@ body {
   }
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -199,14 +201,29 @@ iframe.iframe.ready {
   text-decoration: none;
   font-family: Arial, sans-serif;
   font-weight: bold;
+  cursor: pointer;
   transition:
     color var(--transition-speed),
     background var(--transition-speed);
 }
 
-.menu li:hover>a {
+/* Menu Links Hover & Active States */
+.menu li:hover>a,
+.menu li.active>a,
+.menu li.is-open>a {
   color: var(--primary);
   background: rgba(255, 255, 255, 0.05);
+}
+
+.menu li.active>a {
+  border-bottom: 2px solid var(--primary);
+}
+
+/* Submenu active item highlight */
+.menu li ul li.active>a {
+  background-color: var(--surface-hover);
+  color: var(--primary);
+  font-weight: bold;
 }
 
 .menu li.active>a {
@@ -214,7 +231,7 @@ iframe.iframe.ready {
   border-bottom: 2px solid var(--primary);
 }
 
-/* Submenu Logic */
+/* Submenu Base Logic */
 .menu li ul {
   background: var(--surface-light);
   display: block;
@@ -238,25 +255,41 @@ iframe.iframe.ready {
     visibility var(--transition-speed);
 }
 
-.menu li:hover>ul {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-  transform: scaleY(1) translateY(0);
+/* Desktop */
+@media (hover: hover) and (pointer: fine) {
+  .menu li:hover>a {
+    color: var(--primary);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .menu li:hover>ul {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .menu ul li ul li:hover>ul {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
 }
 
-/* Fly-out Logic */
+/* Mobile & Touch */
+.menu li.is-open>ul {
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+}
+
+/* Fly-out Default Logic */
 .menu ul li ul li ul {
   top: -6px;
   left: 100%;
   transform: translateX(10px);
-}
-
-.menu ul li ul li:hover>ul {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateX(0);
 }
 
 /* Submenu Links */
