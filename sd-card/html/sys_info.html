@@ -1,781 +1,622 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xml:lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<title>Info</title>
+  <title>System Info</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=720" />
 
-	<style>
-		h1 {font-size: 1.8em;}
-		h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-		h3 {font-size: 16px; background-color: lightgray; padding: 5px; margin: 10px 0px 3px 0px;}
-		p {font-size: 1em;}
+  <script>
+    // Theme Control
+    (function () {
+      let theme;
+      try { theme = localStorage.getItem('theme'); } catch (e) { }
+      if (theme !== 'light' && theme !== 'dark') {
+        try { theme = document.cookie.match(/(?:^|; )theme=(light|dark)/)?.[1]; } catch (e) { }
+        if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+    })();
+  </script>
 
-		body, html {
-			font-size: 100%;
-			text-size-adjust: 100%;
-			-webkit-text-size-adjust: 100%;
-		}
+  <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
 
-		th {
-			vertical-align: middle;
-			text-align: left;
-			font-size: 1em;
-			background-color: lightgray;
-			padding: 5px;
-		}
+  <style>
+    .card-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-		td {
-			padding: 5px 5px 5px 5px;
-			border-width: 1px;
-			border-color: rgb(240, 240, 240);
-		}
+    .card-table tr td {
+      padding: 8px 16px;
+      font-size: 1rem;
+      color: var(--text-main);
+    }
 
-		output {
-			padding-left:5px;
-		}
+    .card-table tr:last-child td {
+      border-bottom: none;
+    }
 
-		.badge-success {
-			color: #fff;
-			background-color: #28a745;
-		}
+    .label {
+      width: 40%;
+      color: var(--text-secondary);
+    }
 
-		.badge-warning {
-			color: #212529;
-			background-color: #ffc107;
-		}
+    .val {
+      text-align: left;
+      word-break: break-all;
+    }
 
-		.badge-error {
-			color: #fff;
-			background-color: #dc3545;
-		}
+    .badge {
+      padding: 2px 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: var(--card-radius);
+      color: var(--bg);
+    }
 
-		.badge-disabled {
-			color: #fff;
-			background-color: #646363;
-		}
+    .badge-success {
+      background-color: var(--success);
+    }
 
-		.badge {
-			padding: 3px 5px;
-			font-size: 85%;
-			font-weight: 700;
-			line-height: 1;
-			text-align: center;
-			white-space: nowrap;
-			vertical-align: baseline;
-			border-radius: .25rem;
-		}
+    .badge-warning {
+      background-color: var(--warning);
+      color: var(--text-main);
+    }
 
-		.button {
-            padding: 5px 10px;
-            width: 120px;
-            font-size: 16px;
-        }
+    .badge-error {
+      background-color: var(--error);
+    }
 
-		table {
-			width: 660px;
-			table-layout: fixed;
-			border-collapse:collapse;
-			margin-block-start: 10px;
-		}
-	</style>
+    .badge-disabled {
+      background-color: var(--text-secondary);
+    }
 
-	<script src="global_common.js?v=$COMMIT_HASH"></script>
-	<script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
-    <script src="js.cookie.min.js?v=$COMMIT_HASH"></script>
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
-    <script src="firework.js?v=$COMMIT_HASH"></script>
+    .button-group {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer {
+      grid-column: 1 / -1;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      padding: 20px 0;
+    }
+  </style>
+
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
-<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
-	<h2>System Info</h2>
-	<table>
-		<colgroup>
-			<col span="1" style="width: 35%;">
-			<col span="1" style="width: 65%;">
-		</colgroup>
-		<tr>
-			<h3>Process</h3>
-		</tr>
-		<tr>
-			<td>Process Status</td>
-			<td class="td-badge">
-				<output class="badge" id="process_status"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Process Interval</td>
-			<td>
-				<output id="process_interval"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Process Time</td>
-			<td>
-				<output id="process_time"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Cycle Counter</td>
-			<td>
-				<output id="cycle_counter"></output>
-			</td>
-		</tr>
-	</table>
+<body>
+  <div class="container">
+    <div class="container-header">
+      <div class="container-title"><span>📟</span>System Info</div>
+    </div>
 
-	<table>
-		<colgroup>
-			<col span="1" style="width: 35%;">
-			<col span="1" style="width: 65%;">
-		</colgroup>
-		<tr>
-			<h3>Services</h3>
-		</tr>
-		<tr>
-			<td>Data Logging (SD Card) </td>
-			<td class="td-badge">
-				<output class="badge" id="datalogging_sdcard_status"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>MQTT</td>
-			<td class="td-badge">
-				<output class="badge" id="mqtt_status"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>InfluxDB v1.x</td>
-			<td class="td-badge">
-				<output class="badge" id="influxdbv1_status"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>InfluxDB v2.x</td>
-			<td class="td-badge">
-				<output class="badge" id="influxdbv2_status"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Webhook</td>
-			<td class="td-badge">
-				<output class="badge" id="webhook_status"></output>
-			</td>
-		</tr>
-	</table>
+    <div class="container-content">
+      <div class="card">
+        <div class="card-header">Process</div>
+        <div class="card-body">
+          <table class="card-table">
+            <tr>
+              <td class="label">Process Status</td>
+              <td class="val"><output class="badge" id="process_status"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Process Interval</td>
+              <td class="val"><output id="process_interval"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Process Time</td>
+              <td class="val"><output id="process_time"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Cycle Counter</td>
+              <td class="val"><output id="cycle_counter"></output></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Services</div>
+        <div class="card-body">
+          <table class="card-table">
+            <tr>
+              <td class="label">Data Logging (SD Card)</td>
+              <td class="val"><output class="badge" id="datalogging_sdcard_status"></output></td>
+            </tr>
+            <tr>
+              <td class="label">MQTT</td>
+              <td class="val"><output class="badge" id="mqtt_status"></output></td>
+            </tr>
+            <tr>
+              <td class="label">InfluxDB v1.x</td>
+              <td class="val"><output class="badge" id="influxdbv1_status"></output></td>
+            </tr>
+            <tr>
+              <td class="label">InfluxDB v2.x</td>
+              <td class="val"><output class="badge" id="influxdbv2_status"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Webhook</td>
+              <td class="val"><output class="badge" id="webhook_status"></output></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Time</div>
+        <div class="card-body">
+          <table class="card-table">
+            <tr>
+              <td class="label">Time Sync (NTP)</td>
+              <td class="val"><output class="badge" id="ntp_syncstatus"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Start Time</td>
+              <td class="val"><output id="device_starttime"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Current Time</td>
+              <td class="val"><output id="current_time"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Device Uptime</td>
+              <td class="val"><output id="device_uptime"></output></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Network</div>
+        <div class="card-body">
+          <table class="card-table">
+            <tr>
+              <td class="label">Operation Mode</td>
+              <td class="val"><output id="network_opmode"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Connection Status</td>
+              <td class="val"><output class="badge" id="connection_status"></output></td>
+            </tr>
+            <tr id="wlan_ssid_info">
+              <td class="label">Network Name (SSID)</td>
+              <td class="val"><output id="wlan_ssid"></output></td>
+            </tr>
+            <tr id="wlan_rssi_info">
+              <td class="label">Signal Strength (RSSI)</td>
+              <td class="val"><output id="wlan_rssi"></output></td>
+            </tr>
+            <tr id="wlan_channel_info">
+              <td class="label">WLAN Channel</td>
+              <td class="val"><output id="wlan_channel"></output></td>
+            </tr>
+            <tr>
+              <td class="label">MAC Address</td>
+              <td class="val"><output id="mac_address"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Network Configuration</td>
+              <td class="val"><output id="network_config"></output></td>
+            </tr>
+            <tr>
+              <td class="label">IPv4 Address</td>
+              <td class="val"><output id="ipv4_address"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Netmask Address</td>
+              <td class="val"><output id="netmask_address"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Gateway Address</td>
+              <td class="val"><output id="gateway_address"></output></td>
+            </tr>
+            <tr>
+              <td class="label">DNS Address</td>
+              <td class="val"><output id="dns_address"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Hostname</td>
+              <td class="val"><output id="hostname"></output></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Device</div>
+        <div class="card-body">
+          <table class="card-table">
+            <tr>
+              <td class="label">Board Type</td>
+              <td class="val"><output id="board_type"></output></td>
+            </tr>
+            <tr>
+              <td class="label">SOC Model</td>
+              <td class="val"><output id="chip_model"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Cores</td>
+              <td class="val"><output id="chip_cores"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Revision</td>
+              <td class="val"><output id="chip_revision"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Frequency</td>
+              <td class="val"><output id="chip_frequency"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Temperature</td>
+              <td class="val"><output id="chip_temp"></output></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Camera</div>
+        <div class="card-body">
+          <table class="card-table">
+            <tr>
+              <td class="label">Type</td>
+              <td class="val"><output id="camera_type"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Frequency</td>
+              <td class="val"><output id="camera_frequency"></output></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">SD Card</div>
+        <div class="card-body">
+          <table class="card-table">
+            <tr>
+              <td class="label">Name</td>
+              <td class="val"><output id="sd_name"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Manufacturer</td>
+              <td class="val"><output id="sd_manufacturer"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Capacity</td>
+              <td class="val"><output id="sd_capacity"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Sector Size</td>
+              <td class="val"><output id="sd_sector_size"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Partition Allocation Size</td>
+              <td class="val"><output id="sd_partition_alloc_size"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Partition Size</td>
+              <td class="val"><output id="sd_partition_size"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Partition Free Space</td>
+              <td class="val"><output id="sd_partition_free"></output></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Memory</div>
+        <div class="card-body">
+          <table class="card-table">
+            <tr>
+              <td class="label">Total Free (Int + Ext)</td>
+              <td class="val"><output id="heap_total_free"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Ext. RAM - Free</td>
+              <td class="val"><output id="heap_spiram_free"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Ext. RAM - Largest Free Block</td>
+              <td class="val"><output id="heap_spiram_largest_free"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Ext. RAM - Min Free</td>
+              <td class="val"><output id="heap_spiram_min_free"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Int. RAM - Free</td>
+              <td class="val"><output id="heap_internal_free"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Int. RAM - Largest Free Block</td>
+              <td class="val"><output id="heap_internal_largest_free"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Int. RAM - Min Free</td>
+              <td class="val"><output id="heap_internal_min_free"></output></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Firmware</div>
+        <div class="card-body">
+          <table class="card-table">
+            <tr>
+              <td class="label">Firmware Version</td>
+              <td class="val"><output id="firmware_version"></output></td>
+            </tr>
+            <tr>
+              <td class="label">WebUI Version</td>
+              <td class="val"><output id="html_version"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Build Time</td>
+              <td class="val"><output id="build_time"></output></td>
+            </tr>
+            <tr>
+              <td class="label">Config Version</td>
+              <td class="val"><output id="config_version"></output></td>
+            </tr>
+            <tr>
+              <td class="label">ESP-IDF Version</td>
+              <td class="val"><output id="idf_version"></output></td>
+            </tr>
+            <tr>
+              <td class="label" style="border-bottom: none">Core Dump</td>
+              <td class="val" style="border-bottom: none">
+                <div class="button-group" style="padding: 0; justify-content: flex-start">
+                  <button class="button" id="showCoreDump" type="button" style="width: 100px" onclick="coreDump('show')">Show</button>
+                  <button class="button" id="saveCoreDump" type="button" style="width: 100px" onclick="
+                        window.open(getDomainname() + '/coredump?task=save', '_self');
+                        firework.launch('Core dump info saved', 'success', 2000);
+                      " disabled>
+                    Save
+                  </button>
+                  <button class="button" id="clearCoreDump" type="button" style="width: 100px" onclick="coreDump('clear')" disabled>
+                    Clear
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td id="coreDumpData" colspan="2" style="padding: 10px 16px" hidden>
+                <textarea id="coreDumpDataContent" style="
+                      height: 90px;
+                      width: 100%;
+                      resize: none;
+                      border: 1px solid var(--border);
+                      border-radius: var(--input-radius);
+                      font-family: monospace;
+                      font-size: 0.9rem;
+                      padding: 5px;
+                    " readonly></textarea>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    Copyright &copy; 2020 - 2026 by Jomjol and others<br />
+    Forked version by <a href="https://github.com/Slider0007/AI-on-the-edge-device" target="_blank">Slider0007</a>
+  </div>
 
-	<table>
-		<colgroup>
-			<col span="1" style="width: 35%;">
-			<col span="1" style="width: 65%;">
-		</colgroup>
-		<tr>
-			<h3>Time</h3>
-		</tr>
-		<tr>
-			<td>Time Sync (NTP)</td>
-			<td class="td-badge">
-				<output class="badge" id="ntp_syncstatus"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Start Time</td>
-			<td>
-				<output id="device_starttime"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Current Time</td>
-			<td>
-				<output id="current_time"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Device Uptime</td>
-			<td>
-				<output id="device_uptime"></output>
-			</td>
-		</tr>
-	</table>
+  <script src="global.js?v=$COMMIT_HASH"></script>
+  <script>
+    function addClassToElement(_element, _class) {
+      let element = document.getElementById(_element);
+      if (!element) return;
+      element.classList.remove('badge-success', 'badge-warning', 'badge-error', 'badge-disabled');
+      element.classList.add(_class);
+    }
 
-	<table>
-		<colgroup>
-			<col span="1" style="width: 35%;">
-			<col span="1" style="width: 65%;">
-		</colgroup>
-		<tr>
-			<h3>Network</h3>
-		</tr>
-		<tr>
-			<td>Operation Mode</td>
-			<td>
-				<output id="network_opmode"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Connection Status</td>
-			<td class="td-badge">
-				<output class="badge" id="connection_status"></output>
-			</td>
-		</tr>
-		<tr id="wlan_ssid_info">
-			<td>Network Name (SSID)</td>
-			<td>
-				<output id="wlan_ssid"></output>
-			</td>
-		</tr>
-		<tr id="wlan_rssi_info">
-			<td>Signal Strength (RSSI)</td>
-			<td>
-				<output id="wlan_rssi"></output>
-			</td>
-		</tr>
-		<tr id="wlan_channel_info">
-			<td>WLAN Channel</td>
-			<td>
-				<output id="wlan_channel"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>MAC Address</td>
-			<td>
-				<output id="mac_address"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Network Configuration</td>
-			<td>
-				<output id="network_config"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>IPv4 Address</td>
-			<td>
-				<output id="ipv4_address"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Netmask Address</td>
-			<td>
-				<output id="netmask_address"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Gateway Address</td>
-			<td>
-				<output id="gateway_address"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>DNS Address</td>
-			<td>
-				<output id="dns_address"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Hostname</td>
-			<td>
-				<output id="hostname"></output>
-			</td>
-		</tr>
-	</table>
+    function formatIsoDatetime(value) {
+      if (typeof value !== 'string' || value.length < 24) {
+        return value || 'Unknown';
+      }
+      return value.substring(0, 10) + ' ' + value.substring(11, 19) + ' (UTC' + value.substring(19, 24) + ')';
+    }
 
-	<table>
-		<colgroup>
-			<col span="1" style="width: 35%;">
-			<col span="1" style="width: 65%;">
-		</colgroup>
-		<tr>
-			<h3>Device</h3>
-		</tr>
-		<tr>
-			<td>Board Type</td>
-			<td>
-				<output id="board_type"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>SOC Model</td>
-			<td>
-				<output id="chip_model"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Cores</td>
-			<td>
-				<output id="chip_cores"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Revision</td>
-			<td>
-				<output id="chip_revision"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Frequency</td>
-			<td>
-				<output id="chip_frequency"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Temperature</td>
-			<td>
-				<output id="chip_temp"></output>
-			</td>
-		</tr>
-	</table>
+    function renderVersionField(targetId, versionValue) {
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      target.textContent = '';
 
-	<table>
-		<colgroup>
-			<col span="1" style="width: 35%;">
-			<col span="1" style="width: 65%;">
-		</colgroup>
-		<tr>
-			<h3>Camera</h3>
-		</tr>
-		<tr>
-			<td>Type</td>
-			<td>
-				<output id="camera_type"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Frequency</td>
-			<td>
-				<output id="camera_frequency"></output>
-			</td>
-		</tr>
-	</table>
+      if (!versionValue || versionValue === '?' || versionValue === '') {
+        target.textContent = 'Unknown';
+        return;
+      }
 
-	<table>
-		<colgroup>
-			<col span="1" style="width: 35%;">
-			<col span="1" style="width: 65%;">
-		</colgroup>
-		<tr>
-			<h3>SD Card</h3>
-		</tr>
-		<tr>
-			<td>Name</td>
-			<td>
-				<output id="sd_name"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Manufacturer</td>
-			<td>
-				<output id="sd_manufacturer"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Capacity</td>
-			<td>
-				<output id="sd_capacity"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Sector Size</td>
-			<td>
-				<output id="sd_sector_size"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Partition Allocation Size</td>
-			<td>
-				<output id="sd_partition_alloc_size"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Partition Size</td>
-			<td>
-				<output id="sd_partition_size"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Partition Free Space</td>
-			<td>
-				<output id="sd_partition_free"></output>
-			</td>
-		</tr>
-	</table>
+      const parts = String(versionValue).split('Commit: ');
+      if (parts.length < 2 || parts[1].length < 7) {
+        target.textContent = versionValue;
+        return;
+      }
 
-	<table>
-		<colgroup>
-			<col span="1" style="width: 35%;">
-			<col span="1" style="width: 65%;">
-		</colgroup>
-		<tr>
-			<h3>Memory</h3>
-		</tr>
-		<tr>
-			<td>Total Free (Int + Ext)</td>
-			<td>
-				<output id="heap_total_free"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Ext. RAM - Free</td>
-			<td>
-				<output id="heap_spiram_free"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Ext. RAM - Largest Free Block</td>
-			<td>
-				<output id="heap_spiram_largest_free"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Ext. RAM - Min Free</td>
-			<td>
-				<output id="heap_spiram_min_free"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Int. RAM - Free</td>
-			<td>
-				<output id="heap_internal_free"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Int. RAM - Largest Free Block</td>
-			<td>
-				<output id="heap_internal_largest_free"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Int. RAM - Min Free</td>
-			<td>
-				<output id="heap_internal_min_free"></output>
-			</td>
-		</tr>
-	</table>
+      const commit = parts[1].substring(0, 7);
+      if (!/^[0-9a-fA-F]{7}$/.test(commit)) {
+        target.textContent = versionValue;
+        return;
+      }
 
+      target.append(document.createTextNode(parts[0] + 'Commit: '));
+      const link = document.createElement('a');
+      link.href = `https://github.com/Slider0007/AI-on-the-edge-device/commits/${commit}`;
+      link.target = '_blank';
+      link.textContent = commit;
+      target.appendChild(link);
+      target.append(document.createTextNode(')'));
+    }
 
-	<table>
-		<colgroup>
-			<col span="1" style="width: 35%;">
-			<col span="1" style="width: 65%;">
-		</colgroup>
-		<tr>
-			<h3>Build</h3>
-		</tr>
-		<tr>
-			<td>Firmware Version</td>
-			<td>
-				<output id="firmware_version"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Firmware Build Time</td>
-			<td>
-				<output id="build_time"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Web Interface Version</td>
-			<td>
-				<output id="html_version"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Config Version</td>
-			<td>
-				<output id="config_version"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>ESP-IDF Version</td>
-			<td>
-				<output id="idf_version"></output>
-			</td>
-		</tr>
-		<tr>
-			<td>Core Dump</td>
-			<td>
-				<button class="button" id="showCoreDump" type="button"
-					onclick="coreDump('show')">Show</button>
-				<button class="button" id="saveCoreDump" type="button"
-					onclick="window.open(getDomainname() + '/coredump?task=save', '_self');
-						firework.launch('Core dump info saved', 'success', 2000);" disabled>Save</button>
-				<button class="button" id="clearCoreDump" type="button"
-					onclick="coreDump('clear')" disabled>Clear</button>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2">
-				<textarea id="coreDumpData" style="height:90px; width:100%; resize:none;" readonly hidden></textarea>
-			</td>
-		</tr>
-	</table>
+    async function loadInfoData() {
+      const res = await apiCallNotify('/info', {}, { action: 'Loading info', parseType: 'json' });
+      if (!res.ok || !res.data) return;
 
-	<table>
-		<tr>
-			<h3>Copyright</h3>
-		</tr>
-		<tr>
-			<td>
-				Copyright &copy; 2020 - 2026 by <a href="https://github.com/jomjol/AI-on-the-edge-device" target=_blank>Jomjol</a> and others<br>
-				Remark: This is a forked version by <a href="https://github.com/Slider0007/AI-on-the-edge-device" target=_blank>Slider0007</a>
-			</td>
-		</tr>
+      const _jsonData = res.data;
+      document.getElementById('process_status').textContent = _jsonData.process_status;
+      if (_jsonData.process_status.substr(0, 10) == 'Processing') addClassToElement('process_status', 'badge-success');
+      else addClassToElement('process_status', 'badge-error');
+
+      document.getElementById('process_interval').textContent = _jsonData.process_interval + ' Minutes';
+      document.getElementById('process_time').textContent = _jsonData.process_time + ' Seconds';
+      document.getElementById('cycle_counter').textContent = _jsonData.cycle_counter;
+
+      document.getElementById('datalogging_sdcard_status').textContent = _jsonData.datalogging_sdcard_status;
+      if (_jsonData.datalogging_sdcard_status == 'Enabled') addClassToElement('datalogging_sdcard_status', 'badge-success');
+      else if (_jsonData.datalogging_sdcard_status == 'Disabled') addClassToElement('datalogging_sdcard_status', 'badge-disabled');
+      else {
+        document.getElementById('datalogging_sdcard_status').textContent += ' (Unknown Status)';
+        addClassToElement('datalogging_sdcard_status', 'badge-error');
+      }
+
+      document.getElementById('mqtt_status').textContent = _jsonData.mqtt_status;
+      if (_jsonData.mqtt_status.substring(0, 9) == 'Connected') addClassToElement('mqtt_status', 'badge-success');
+      else if (_jsonData.mqtt_status == 'Disconnected') addClassToElement('mqtt_status', 'badge-error');
+      else if (_jsonData.mqtt_status == 'Disabled') addClassToElement('mqtt_status', 'badge-disabled');
+      else {
+        document.getElementById('mqtt_status').textContent += ' (Unknown Status)';
+        addClassToElement('mqtt_status', 'badge-error');
+      }
+
+      document.getElementById('influxdbv1_status').textContent = _jsonData.influxdbv1_status;
+      if (_jsonData.influxdbv1_status.substring(0, 7) == 'Enabled') addClassToElement('influxdbv1_status', 'badge-success');
+      else if (_jsonData.influxdbv1_status == 'Disabled') addClassToElement('influxdbv1_status', 'badge-disabled');
+      else {
+        document.getElementById('influxdbv1_status').textContent += ' (Unknown Status)';
+        addClassToElement('influxdbv1_status', 'badge-error');
+      }
+
+      document.getElementById('influxdbv2_status').textContent = _jsonData.influxdbv2_status;
+      if (_jsonData.influxdbv2_status.substring(0, 7) == 'Enabled') addClassToElement('influxdbv2_status', 'badge-success');
+      else if (_jsonData.influxdbv2_status == 'Disabled') addClassToElement('influxdbv2_status', 'badge-disabled');
+      else {
+        document.getElementById('influxdbv2_status').textContent += ' (Unknown Status)';
+        addClassToElement('influxdbv2_status', 'badge-error');
+      }
+
+      document.getElementById('webhook_status').textContent = _jsonData.webhook_status;
+      if (_jsonData.webhook_status.substring(0, 7) == 'Enabled') addClassToElement('webhook_status', 'badge-success');
+      else if (_jsonData.webhook_status == 'Disabled') addClassToElement('webhook_status', 'badge-disabled');
+      else {
+        document.getElementById('webhook_status').textContent += ' (Unknown Status)';
+        addClassToElement('webhook_status', 'badge-error');
+      }
+
+      document.getElementById('ntp_syncstatus').textContent = _jsonData.ntp_syncstatus;
+      if (_jsonData.ntp_syncstatus == 'Synchronized') addClassToElement('ntp_syncstatus', 'badge-success');
+      else if (_jsonData.ntp_syncstatus == 'Not Synchronized') addClassToElement('ntp_syncstatus', 'badge-warning');
+      else if (_jsonData.ntp_syncstatus == 'Disabled') addClassToElement('ntp_syncstatus', 'badge-disabled');
+      else {
+        document.getElementById('ntp_syncstatus').textContent += ' (Unknown Status)';
+        addClassToElement('ntp_syncstatus', 'badge-error');
+      }
+
+      document.getElementById('device_starttime').textContent = formatIsoDatetime(_jsonData.device_starttime);
+
+      document.getElementById('current_time').textContent = formatIsoDatetime(_jsonData.current_time);
+
+      document.getElementById('device_uptime').textContent = formatUptime(_jsonData.device_uptime);
+
+      document.getElementById('network_opmode').textContent = _jsonData.network_opmode;
+      document.getElementById('connection_status').textContent = _jsonData.connection_status;
+      if (_jsonData.connection_status == 'Connected') addClassToElement('connection_status', 'badge-success');
+      else addClassToElement('connection_status', 'badge-error');
+
+      // Show only if info relevant (Connected via WLAN)
+      if (_jsonData.wlan_ssid != 'undefined') document.getElementById('wlan_ssid').textContent = _jsonData.wlan_ssid;
+      else document.getElementById('wlan_ssid_info').style.display = 'None';
+
+      // Show only if info relevant (Connected via WLAN)
+      if (_jsonData.wlan_rssi != -255) document.getElementById('wlan_rssi').textContent = _jsonData.wlan_rssi + ' dBm';
+      else document.getElementById('wlan_rssi_info').style.display = 'None';
+
+      // Show only if info relevant (Connected via WLAN)
+      if (_jsonData.wlan_channel != -1) document.getElementById('wlan_channel').textContent = _jsonData.wlan_channel;
+      else document.getElementById('wlan_channel_info').style.display = 'None';
+
+      document.getElementById('mac_address').textContent = _jsonData.mac_address;
+      document.getElementById('network_config').textContent = _jsonData.network_config;
+      document.getElementById('ipv4_address').textContent = _jsonData.ipv4_address;
+      document.getElementById('netmask_address').textContent = _jsonData.netmask_address;
+      document.getElementById('gateway_address').textContent = _jsonData.gateway_address;
+      document.getElementById('dns_address').textContent = _jsonData.dns_address;
+      document.getElementById('hostname').textContent = _jsonData.hostname;
+
+      document.getElementById('board_type').textContent = _jsonData.board_type;
+      document.getElementById('chip_model').textContent = _jsonData.chip_model;
+      document.getElementById('chip_cores').textContent = _jsonData.chip_cores;
+      document.getElementById('chip_revision').textContent = _jsonData.chip_revision;
+      document.getElementById('chip_frequency').textContent = _jsonData.chip_frequency + ' Mhz';
+      document.getElementById('chip_temp').textContent = _jsonData.chip_temp + ' °C';
+
+      document.getElementById('camera_type').textContent = _jsonData.camera_type;
+      document.getElementById('camera_frequency').textContent = _jsonData.camera_frequency + '  Mhz';
+
+      document.getElementById('sd_name').textContent = _jsonData.sd_name;
+      document.getElementById('sd_manufacturer').textContent = _jsonData.sd_manufacturer;
+      document.getElementById('sd_capacity').textContent = _jsonData.sd_capacity + ' MB';
+      document.getElementById('sd_sector_size').textContent = _jsonData.sd_sector_size + ' byte';
+      document.getElementById('sd_partition_alloc_size').textContent = _jsonData.sd_partition_alloc_size + ' byte';
+      document.getElementById('sd_partition_size').textContent = _jsonData.sd_partition_size + ' MB';
+      document.getElementById('sd_partition_free').textContent = _jsonData.sd_partition_free + ' MB';
+
+      document.getElementById('heap_total_free').textContent = _jsonData.heap_total_free + ' byte';
+      document.getElementById('heap_internal_free').textContent = _jsonData.heap_internal_free + ' byte';
+      document.getElementById('heap_internal_largest_free').textContent = _jsonData.heap_internal_largest_free + ' byte';
+      document.getElementById('heap_internal_min_free').textContent = _jsonData.heap_internal_min_free + ' byte';
+      document.getElementById('heap_spiram_free').textContent = _jsonData.heap_spiram_free + ' byte';
+      document.getElementById('heap_spiram_largest_free').textContent = _jsonData.heap_spiram_largest_free + ' byte';
+      document.getElementById('heap_spiram_min_free').textContent = _jsonData.heap_spiram_min_free + ' byte';
+
+      renderVersionField('firmware_version', _jsonData.firmware_version);
+      renderVersionField('html_version', _jsonData.html_version);
+
+      document.getElementById('build_time').textContent = formatIsoDatetime(_jsonData.build_time);
+
+      document.getElementById('config_version').textContent = _jsonData.config_version;
+      document.getElementById('idf_version').textContent = _jsonData.idf_version;
+    }
+
+    function setCoreDumpAvailable(available, text = '') {
+      document.getElementById('coreDumpData').hidden = !available;
+      if (available) document.getElementById('coreDumpDataContent').textContent = text;
+      document.getElementById('saveCoreDump').disabled = !available;
+      document.getElementById('clearCoreDump').disabled = !available;
+    }
+
+    async function coreDump(task) {
+      const res = await apiCallNotify(`/coredump?task=${task}`, {}, {
+        action: 'Core dump request',
+        httpObj: { 404: 'Core dump request failed. Status: 404 - Not found' },
+      });
+      if (!res.ok) return;
+
+      if (task === 'show') {
+        const available = res.data !== 'No core dump available';
+        setCoreDumpAvailable(available, res.data);
+        firework.launch(available ? 'Show core dump backtrace summary' : 'No core dump available', 'success', 2000);
+      } else if (task === 'save') {
+        firework.launch('Core dump file saved', 'success', 2000);
+      } else if (task === 'clear') {
+        setCoreDumpAvailable(false);
+        firework.launch('Core dump partition cleared', 'success', 2000);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.parent.postMessage({ type: 'iframe-ready' }, '*');
+    });
+
+    loadInfoData();
+  </script>
 </body>
-</html>
 
-
-<script>
-	function loadInfoData()
-	{
-		let url = getDomainname() + '/info';
-		let xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				const _jsonData = JSON.parse(xhttp.responseText);
-				document.getElementById("process_status").value = _jsonData.process_status;
-				if (_jsonData.process_status.substr(0,10) == "Processing")
-					addClassToElement("process_status", "badge-success");
-				else
-					addClassToElement("process_status", "badge-error");
-
-				document.getElementById("process_interval").value = _jsonData.process_interval + " Minutes";
-				document.getElementById("process_time").value = _jsonData.process_time + " Seconds";
-				document.getElementById("cycle_counter").value = _jsonData.cycle_counter;
-
-				document.getElementById("datalogging_sdcard_status").value = _jsonData.datalogging_sdcard_status;
-				if (_jsonData.datalogging_sdcard_status == "Enabled")
-					addClassToElement("datalogging_sdcard_status", "badge-success");
-				else if (_jsonData.datalogging_sdcard_status == "Disabled")
-					addClassToElement("datalogging_sdcard_status", "badge-disabled");
-				else {
-					document.getElementById("datalogging_sdcard_status").value += " (Unknown Status)"
-					addClassToElement("datalogging_sdcard_status", "badge-error");
-				}
-
-				document.getElementById("mqtt_status").value = _jsonData.mqtt_status;
-				if (_jsonData.mqtt_status.substring(0,9) == "Connected")
-					addClassToElement("mqtt_status", "badge-success");
-				else if (_jsonData.mqtt_status == "Disconnected")
-					addClassToElement("mqtt_status", "badge-error");
-				else if (_jsonData.mqtt_status == "Disabled")
-					addClassToElement("mqtt_status", "badge-disabled");
-				else {
-					document.getElementById("mqtt_status").value += " (Unknown Status)"
-					addClassToElement("mqtt_status", "badge-error");
-				}
-
-				document.getElementById("influxdbv1_status").value = _jsonData.influxdbv1_status;
-				if (_jsonData.influxdbv1_status.substring(0,7) == "Enabled")
-					addClassToElement("influxdbv1_status", "badge-success");
-				else if (_jsonData.influxdbv1_status == "Disabled")
-					addClassToElement("influxdbv1_status", "badge-disabled");
-				else {
-					document.getElementById("influxdbv1_status").value += " (Unknown Status)"
-					addClassToElement("influxdbv1_status", "badge-error");
-				}
-
-				document.getElementById("influxdbv2_status").value = _jsonData.influxdbv2_status;
-				if (_jsonData.influxdbv2_status.substring(0,7) == "Enabled")
-					addClassToElement("influxdbv2_status", "badge-success");
-				else if (_jsonData.influxdbv2_status == "Disabled")
-					addClassToElement("influxdbv2_status", "badge-disabled");
-				else {
-					document.getElementById("influxdbv2_status").value += " (Unknown Status)"
-					addClassToElement("influxdbv2_status", "badge-error");
-				}
-
-				document.getElementById("webhook_status").value = _jsonData.webhook_status;
-				if (_jsonData.webhook_status.substring(0,7) == "Enabled")
-					addClassToElement("webhook_status", "badge-success");
-				else if (_jsonData.webhook_status == "Disabled")
-					addClassToElement("webhook_status", "badge-disabled");
-				else {
-					document.getElementById("webhook_status").value += " (Unknown Status)"
-					addClassToElement("webhook_status", "badge-error");
-				}
-
-				document.getElementById("ntp_syncstatus").value = _jsonData.ntp_syncstatus
-				if (_jsonData.ntp_syncstatus == "Synchronized")
-					addClassToElement("ntp_syncstatus", "badge-success");
-				else if (_jsonData.ntp_syncstatus == "Not Synchronized")
-					addClassToElement("ntp_syncstatus", "badge-warning");
-				else if (_jsonData.ntp_syncstatus == "Disabled")
-					addClassToElement("ntp_syncstatus", "badge-disabled");
-				else {
-					document.getElementById("ntp_syncstatus").value += " (Unknown Status)"
-					addClassToElement("ntp_syncstatus", "badge-error");
-				}
-
-				//Input format (ISO): 2023-10-23T14:26:34+0200
-				document.getElementById("device_starttime").value = _jsonData.device_starttime.substr(0,10) + " " +
-																	 _jsonData.device_starttime.substr(11,8) + " (UTC" +
-																	 _jsonData.device_starttime.substr(19,5) + ")";
-
-				//Input format (ISO): 2023-10-23T14:26:34+0200
-				document.getElementById("current_time").value = _jsonData.current_time.substr(0,10) + " " +
-												_jsonData.current_time.substr(11,8) + " (UTC" +
-												_jsonData.current_time.substr(19,5) + ")";
-
-				document.getElementById("device_uptime").value = formatUptime(_jsonData.device_uptime);
-
-				document.getElementById("network_opmode").value = _jsonData.network_opmode;
-				document.getElementById("connection_status").value = _jsonData.connection_status;
-				if (_jsonData.connection_status == "Connected")
-					addClassToElement("connection_status", "badge-success");
-				else
-					addClassToElement("connection_status", "badge-error");
-
-				// Show only if info relevant (Connected via WLAN)
-				if (_jsonData.wlan_ssid != "undefined")
-					document.getElementById("wlan_ssid").value = _jsonData.wlan_ssid;
-				else
-					document.getElementById("wlan_ssid_info").style.display = "None";
-
-				// Show only if info relevant (Connected via WLAN)
-				if (_jsonData.wlan_rssi != -255)
-					document.getElementById("wlan_rssi").value = _jsonData.wlan_rssi + " dBm";
-				else
-					document.getElementById("wlan_rssi_info").style.display = "None";
-
-				// Show only if info relevant (Connected via WLAN)
-				if (_jsonData.wlan_channel != -1)
-					document.getElementById("wlan_channel").value = _jsonData.wlan_channel;
-				else
-					document.getElementById("wlan_channel_info").style.display = "None";
-
-				document.getElementById("mac_address").value = _jsonData.mac_address;
-				document.getElementById("network_config").value = _jsonData.network_config;
-				document.getElementById("ipv4_address").value = _jsonData.ipv4_address;
-				document.getElementById("netmask_address").value = _jsonData.netmask_address;
-				document.getElementById("gateway_address").value = _jsonData.gateway_address;
-				document.getElementById("dns_address").value = _jsonData.dns_address;
-				document.getElementById("hostname").value =_jsonData.hostname;
-
-				document.getElementById("board_type").value = _jsonData.board_type;
-				document.getElementById("chip_model").value = _jsonData.chip_model;
-				document.getElementById("chip_cores").value = _jsonData.chip_cores;
-				document.getElementById("chip_revision").value = _jsonData.chip_revision;
-				document.getElementById("chip_frequency").value = _jsonData.chip_frequency + " Mhz";
-				document.getElementById("chip_temp").value = _jsonData.chip_temp + " °C";
-
-				document.getElementById("camera_type").value = _jsonData.camera_type;
-				document.getElementById("camera_frequency").value = _jsonData.camera_frequency + "  Mhz";
-
-				document.getElementById("sd_name").value = _jsonData.sd_name;
-				document.getElementById("sd_manufacturer").value = _jsonData.sd_manufacturer;
-				document.getElementById("sd_capacity").value = _jsonData.sd_capacity + " MB";
-				document.getElementById("sd_sector_size").value = _jsonData.sd_sector_size + " byte";
-				document.getElementById("sd_partition_alloc_size").value = _jsonData.sd_partition_alloc_size + " byte";
-				document.getElementById("sd_partition_size").value = _jsonData.sd_partition_size + " MB";
-				document.getElementById("sd_partition_free").value = _jsonData.sd_partition_free + " MB";
-
-				document.getElementById("heap_total_free").value = _jsonData.heap_total_free + " byte";
-				document.getElementById("heap_internal_free").value = _jsonData.heap_internal_free + " byte";
-				document.getElementById("heap_internal_largest_free").value = _jsonData.heap_internal_largest_free + " byte";
-				document.getElementById("heap_internal_min_free").value = _jsonData.heap_internal_min_free + " byte";
-				document.getElementById("heap_spiram_free").value = _jsonData.heap_spiram_free + " byte";
-				document.getElementById("heap_spiram_largest_free").value = _jsonData.heap_spiram_largest_free + " byte";
-				document.getElementById("heap_spiram_min_free").value = _jsonData.heap_spiram_min_free + " byte";
-
-				const FirmwareVersionSplit = _jsonData.firmware_version.split('Commit: ');
-				const FirmwareVersionCommit = FirmwareVersionSplit[1].substring(0, 7);
-				const FirmwareVersionString = FirmwareVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" +
-										FirmwareVersionCommit + "\" target=\"_blank\">" + FirmwareVersionCommit + "</a>)";
-				document.getElementById("firmware_version").innerHTML = FirmwareVersionString;
-
-				//Input format (ISO): 2023-10-23T14:26:34+0000
-				document.getElementById("build_time").value = _jsonData.build_time.substr(0,10) + " " +
-												 _jsonData.build_time.substr(11,8) + " (UTC" +
-												 _jsonData.build_time.substr(19,5) + ")";
-
-				if (_jsonData.html_version === "?") {
-					document.getElementById("html_version").innerHTML = "Unknown";
-				}
-				else {
-					const HTMLVersionSplit = _jsonData.html_version.split('Commit: ');
-					const HTMLVersionCommit = HTMLVersionSplit[1].substring(0, 7);
-					const HTMLVersionString = HTMLVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" +
-										HTMLVersionCommit + "\" target=\"_blank\">" + HTMLVersionCommit + "</a>)";
-					document.getElementById("html_version").innerHTML = HTMLVersionString;
-				}
-
-				document.getElementById("config_version").value = _jsonData.config_version;
-				document.getElementById("idf_version").value = _jsonData.idf_version;
-			}
-		};
-
-		xhttp.timeout = 10000; // 10 Seconds
-		xhttp.open("GET", url, true);
-		xhttp.withCredentials = true;
-		xhttp.send();
-	}
-
-
-	function addClassToElement(_element, _class)
-	{
-		let element = document.getElementById(_element);
-		element.classList.add(_class);
-	}
-
-
-	function coreDump(task)
-	{
-		let url = getDomainname() + '/coredump?task=' + task;
-		let xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-            if (this.readyState == 4) {
-                if (this.status >= 200 && this.status < 300) {
-					if (task === "show") {
-						if (xhttp.responseText === "No core dump available") {
-							document.getElementById("coreDumpData").hidden = true;
-							document.getElementById("saveCoreDump").disabled = true;
-							document.getElementById("clearCoreDump").disabled = true;
-							firework.launch('No core dump available', 'success', 2000);
-						}
-						else {
-							document.getElementById("coreDumpData").hidden = false;
-							document.getElementById("coreDumpData").innerHTML = xhttp.responseText;
-							document.getElementById("saveCoreDump").disabled = false;
-							document.getElementById("clearCoreDump").disabled = false;
-							firework.launch('Show core dump backtrace summary', 'success', 2000);
-						}
-					}
-					else if (task === "save") {
-						// @TODO: Embed save function as well (drawback: file download needs to be handled manually)
-						firework.launch('Core dump file saved', 'success', 2000);
-					}
-					else if (task === "clear") {
-						document.getElementById("coreDumpData").hidden = true;
-						document.getElementById("saveCoreDump").disabled = true;
-						document.getElementById("clearCoreDump").disabled = true;
-						firework.launch('Core dump partition cleared', 'success', 2000);
-					}
-                }
-                else if (this.status >= 400) {
-					firework.launch("Core dump request failed. Status: " + this.status + " " +
-						(this.status == 404 ? "Not found" : this.responseText), 'danger', 30000);
-					console.error("Core dump request failed. Status: " + this.status + " " +
-						(this.status == 404 ? "Not found" : this.responseText));
-                }
-				else {
-					firework.launch("Core dump request failed. Status: Rejected, no response", 'danger', 30000);
-				}
-            }
-        };
-
-		xhttp.timeout = 10000; // 10 seconds
-		xhttp.open("GET", url, true);
-		xhttp.withCredentials = true;
-		xhttp.send();
-	}
-
-
-	function init()
-	{
-		loadInfoData();
-	}
-
-	init();
-
-</script>
-
-</body>
 </html>

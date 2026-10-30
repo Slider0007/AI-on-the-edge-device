@@ -1,32 +1,42 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: fileserver
+## REST API Endpoint: `fileserver`
 
-`http://IP-ADDRESS/fileserver`
+`http://IP-ADDRESS/fileserver/<path>`
 
-This endpoint provides access to the file system of the SD card. Depending on the request path, 
-it either returns the contents of a file or renders the contents of a folder as an HTML table.
+Browse, list and download files and directories from the SD card via HTTP GET requests.
 
-Payload:
-1. Get file content (URL that ends with a filename) 
-    - Example: `/fileserver/log/message/log_2024-01-11.txt`
-    - Response:
-      - Content type: `HTML`
-      - Content: Content of file
+---
 
-2. Show folder content as HTML table (URL that ends with a trailing slash `/`)
-    1. Show all files in folder
-      - Example: `/fileserver/config/` or `/fileserver/config/?full=true`
-      - Response:
-        - Content type: `HTML`
-        - Content: Content of folder (HTML file table)
-    2. Show only first 100 items in folder
-      - Example: `/fileserver/config/?full=false`
-      - Response:
-        - Content type: `HTML`
-        - Content: Content of folder (HTML file table with first 100 items only)
-    3. Show all files in folder (read-only)
-      - Example: `/fileserver/config/?readonly=true`
-      - Response:
-        - Content type: `HTML`
-        - Content: Content of folder (HTML file table without `Action` column)
+### General Information
+
+* **HTTP Method**: `GET`
+* **Cache Control**: `no-cache`
+
+---
+
+### Request Syntax & Operations
+
+#### 1. Directory Listing & File Management
+* **Payload / URL**: `/fileserver/<dir-path>/` (Must end with a trailing slash `/`)
+* **Query Parameters**:
+  * `?filelist=true`: Returns a JSON-formatted list of files in the directory.
+  * `?readonly=true` (or `false`): Sets the directory view mode.
+  * `?full=true` (or `false`): Controls whether to show all files (`showAllFiles`).
+* **Response**: HTML formatted directory view or JSON file list.
+
+#### 2. File Download
+* **Payload / URL**: `/fileserver/<file-path>` (No trailing slash)
+* **Description**: Downloads the specified file from storage.
+* **Response**: 
+  * **Content-Type**: Automatically determined based on file extension (`setContentTypeFromFile`).
+  * **Content**: Binary file stream chunked via scratch buffer.
+
+---
+
+### Limitations & Error Responses
+
+* **Path Malformed or Too Long (`400 Bad Request`)**: Fails if the path exceeds `FILE_PATH_MAX` (255) or for requests with not allowed characters.
+* **File Not Found (`404 Not Found`)**: Fails if the requested file or directory does not exist on the filesystem.
+* **Not Allowed (`403 Forbidden `)**: Fails if the requested file or directory contains sensitive data (e.g. passwords) or shall be kept hidden.
+* **Server Read/Stream Failures (`500 Internal Server Error` / `ESP_FAIL`)**: Fails if the file cannot be read or chunks fail to send over the connection.

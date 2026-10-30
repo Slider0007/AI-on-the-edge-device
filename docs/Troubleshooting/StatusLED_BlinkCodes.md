@@ -1,7 +1,5 @@
 This page lists possible blink codes of the onboard status LED, their meaning and possible solutions.
 
-The error code source definition can be found [here](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/code/components/jomjol_helper/statusled.h).
-
 # Design
 
   * 250ms blink code to identify source
@@ -180,8 +178,8 @@ If system is configured to be synced with a NTP server the sync status is checke
 ### `OTA process ongoing`
 An OTA is performed right now. Please wait until OTA is completed. System is rebooting automatically. If system is not coming up, please check serial console output.
 
-### `Soft AP started (for remote config)`
-The built-in access point functionality is started to perform initial remote remote setup. Further description: [Installation --> `Section Remote Setup using the built-in Access Point`](https://jomjol.github.io/AI-on-the-edge-device-docs/Installation/)
+### `Device's Access Point activated (Device provisioning only)`
+The built-in access point functionality is started for [device provisioning](https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Installation/DeviceProvisioning/SDCardProvisioning.md)
 
 
 

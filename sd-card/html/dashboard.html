@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=720" />
+
+  <script>
+    // Theme Control
+    (function () {
+      let theme;
+      try { theme = localStorage.getItem('theme'); } catch (e) { }
+      if (theme !== 'light' && theme !== 'dark') {
+        try { theme = document.cookie.match(/(?:^|; )theme=(light|dark)/)?.[1]; } catch (e) { }
+        if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
+
+  <style>
+    html,
+    body {
+      width: unset;
+      max-width: unset;
+    }
+
+    input[type='number'] {
+      font-size: inherit;
+    }
+
+    .container {
+      margin: 0;
+    }
+
+    .container-content {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .card-header {
+      padding: 8px 5px;
+    }
+
+    .data-panel {
+      flex: 0 0 340px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--card-gap);
+    }
+
+    .value-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .value-table tr td {
+      padding: 5px 7px;
+    }
+
+    .label {
+      font-size: inherit;
+      width: 110px;
+    }
+
+    .val {
+      font-size: inherit;
+      text-align: right;
+    }
+
+    .actual-value {
+      font-weight: bold;
+    }
+
+    .tooltip {
+      position: relative;
+      cursor: help;
+    }
+
+    .tooltip .tooltiptext {
+      font-family: inherit;
+      font-size: inherit;
+      visibility: hidden;
+      width: 170px;
+      background-color: var(--bg-tooltip);
+      color: var(--text-main);
+      text-align: center;
+      border-radius: var(--input-radius);
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      right: 0;
+      opacity: 0;
+      transition:
+        opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: 0.75s;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+      transition-delay: 0.3s;
+    }
+
+    #processerror {
+      padding-left: 10px;
+      color: var(--error);
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    #img:not([src]),
+    #img[src=''] {
+      visibility: hidden;
+    }
+
+    #img {
+      min-width: 0;
+      max-width: 640px;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    #img.is-loading {
+      width: 50px;
+      height: 50px;
+      margin: 20px auto;
+      object-fit: contain;
+    }
+
+    .status-err .status-text {
+      color: var(--error);
+    }
+
+    @media screen and (max-width: 720px) {
+      .container-content {
+        flex-direction: column-reverse;
+        align-items: normal;
+        gap: 20px;
+      }
+
+      #img {
+        min-height: 440px;
+      }
+    }
+  </style>
+
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="firework.js?v=$COMMIT_HASH"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header class="container-header">
+      <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%">
+        <div class="container-title"><span>🏠</span>Dashboard</div>
+        <div class="refresh-group">
+          <div class="refresh-loader">
+            <button id="refreshButton" class="button btn-action" style="width: 135px" onclick="refreshContent()">Refresh</button>
+            <div id="refreshLoadingImg" class="loader">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" class="spinner-svg">
+                <path d="M12 3a9 9 0 1 1-6.36 2.64"></path>
+              </svg>
+            </div>
+          </div>
+
+          <div id="autoRefreshSettings" class="refresh-settings">
+            <input type="checkbox" id="autoRefreshCtrl" onchange="autoRefreshContent()" checked />
+            <label for="autoRefreshCtrl">Auto Refresh</label>
+            <span>(</span>
+            <span class="timer-wrap">
+              <input type="number" id="autoRefreshTime" min="1" onchange="if (value < 1) value = 1; autoRefreshContent();" />
+            </span>
+            <span>) s</span>
+          </div>
+
+          <div class="refresh-timestamp">
+            <span style="font-size: 14px">↻</span>
+            <output id="refreshTimestamp">--:--:--</output>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="container-content">
+      <div class="data-panel">
+        <div id="dynamic-sequences" style="display: contents">
+          <div class="card" id="sequence-placeholder-card">
+            <div class="card-header">Sequence: --</div>
+            <div class="card-body">
+              <table class="value-table">
+                <tr>
+                  <td class="label">Actual Value</td>
+                  <td class="val">--</td>
+                </tr>
+                <tr>
+                  <td class="label">Fallback Value</td>
+                  <td class="val">--</td>
+                </tr>
+                <tr>
+                  <td class="label">Raw Value</td>
+                  <td class="val">--</td>
+                </tr>
+                <tr>
+                  <td class="label">Value Status</td>
+                  <td class="val">--</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="process-state-card">
+          <div class="card-header">Process State</div>
+          <div class="card-body">
+            <table class="value-table">
+              <tr>
+                <td class="label" id="statusflow">--</td>
+              </tr>
+            </table>
+            <div id="processerror"></div>
+          </div>
+        </div>
+        <div class="card" id="system-info-card">
+          <div class="card-header">System Info</div>
+          <div class="card-body">
+            <table class="value-table">
+              <tr>
+                <td class="label">Device Uptime</td>
+                <td class="val"><output id="device_uptime">--</output></td>
+              </tr>
+              <tr>
+                <td class="label">Cycle Counter</td>
+                <td class="val"><output id="cycle_counter">--</output></td>
+              </tr>
+              <tr id="wlan_rssi_info">
+                <td class="label">WLAN Signal</td>
+                <td class="val">
+                  <div style="display: flex; align-items: center; gap: 6px; justify-content: flex-end">
+                    <output id="wlan_rssi">-</output>
+                    <span>
+                      <svg id="rssi_svg" width="20" height="16" viewBox="0 0 24 16" fill="currentColor" style="overflow: visible">
+                        <rect class="bar" x="1" y="12" width="3" height="4" rx="1" />
+                        <rect class="bar" x="7" y="8" width="3" height="8" rx="1" />
+                        <rect class="bar" x="13" y="4" width="3" height="12" rx="1" />
+                        <rect class="bar" x="19" y="0" width="3" height="16" rx="1" />
+                      </svg>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Image View</div>
+        <div class="card-body" style="display: flex; justify-content: center">
+          <img class="is-loading" id="img" src="" />
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="global.js?v=$COMMIT_HASH"></script>
+  <script>
+    let autoRefreshTimeoutHandle = null;
+    let refreshRunning = false;
+    let lastImageKey = null;
+
+    const STATUS_TEXT = {
+      '000': ['Valid'],
+      'W01': ['Empty / Invalid Data'],
+      'E91': ['Rate Negative', 'Use Fallback Value'],
+      'E92': ['Rate Too High (<)', 'Use Fallback Value'],
+      'E93': ['Rate Too High (>)', 'Use Fallback Value'],
+    };
+
+    const ERROR_STATES = [
+      'initialization - delayed',
+      'initialization failed',
+      'setup mode',
+      'idle - no autostart',
+      'idle - waiting for autostart',
+    ];
+
+    function statusContent(val) {
+      const text = String(val ?? '');
+      const entry = STATUS_TEXT[text.substring(0, 3)];
+      if (!entry) return text;
+
+      const frag = document.createDocumentFragment();
+      frag.append(entry[0]);
+      if (entry[1]) {
+        const hint = document.createElement('small');
+        hint.textContent = entry[1];
+        frag.append(document.createElement('br'), hint);
+      }
+      return frag;
+    }
+
+    function renderSequenceCards(data) {
+      const container = document.getElementById('dynamic-sequences');
+      if (!container) return;
+      container.textContent = '';
+
+      const show = (v) => (v === null || v === undefined || v === '' ? '--' : String(v));
+
+      const makeRow = (label, content, extraClass = '') => {
+        const tr = document.createElement('tr');
+        const labelTd = tr.insertCell();
+        labelTd.className = 'label';
+        labelTd.textContent = label;
+        const valTd = tr.insertCell();
+        valTd.className = `val ${extraClass}`.trim();
+        if (content instanceof Node) valTd.appendChild(content);
+        else valTd.textContent = show(content);
+        return tr;
+      };
+
+      for (const seq of Object.keys(data.actual_value ?? {})) {
+        const fallback = show(data.fallback_value?.[seq]);
+        const fbTime = String(data.timestamp_fallbackvalue?.[seq] ?? '');
+        const statusCode = String(data.value_status?.[seq] ?? '').substring(0, 3);
+        const statusClass = ['', '000', 'E91'].includes(statusCode) ? 'status-valid' : 'status-err';
+
+        let fallbackContent = fallback;
+        if (fallback !== '--' && fallback !== 'Disabled' && fbTime.length >= 19) {
+          const tooltip = document.createElement('div');
+          tooltip.className = 'tooltip';
+          tooltip.textContent = fallback;
+          const tip = document.createElement('span');
+          tip.className = 'tooltiptext';
+          tip.textContent = `${fbTime.substring(0, 10)} ${fbTime.substring(11, 19)}`;
+          tooltip.appendChild(tip);
+          fallbackContent = tooltip;
+        }
+
+        const table = document.createElement('table');
+        table.className = `value-table ${statusClass}`;
+        table.createTBody().append(
+          makeRow('Actual Value', data.actual_value[seq], 'actual-value'),
+          makeRow('Fallback Value', fallbackContent),
+          makeRow('Raw Value', data.raw_value?.[seq]),
+          makeRow('Value Status', statusContent(data.value_status?.[seq]), 'status-text'),
+        );
+
+        const header = document.createElement('div');
+        header.className = 'card-header';
+        header.textContent = `Sequence: ${seq}`;
+        const body = document.createElement('div');
+        body.className = 'card-body';
+        body.appendChild(table);
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.append(header, body);
+        container.appendChild(card);
+      }
+    }
+
+    async function loadProcessData() {
+      const res = await apiCall('/process_data', {}, { parseType: 'json' });
+      if (!res.ok || !res.data) {
+        if (res.error !== 'aborted') console.warn('Process data request failed:', res.error ?? res.status);
+        return null;
+      }
+
+      document.getElementById('refreshTimestamp').value = new Date().toLocaleTimeString([], { hour12: false });
+
+      const d = res.data;
+      try {
+        renderSequenceCards(d);
+
+        document.getElementById('statusflow').textContent = d.process_state;
+        loadProcessError(d.process_error, d.process_state);
+
+        document.getElementById('device_uptime').textContent = formatUptime(d.device_uptime);
+        document.getElementById('cycle_counter').textContent = d.cycle_counter;
+
+        const rssiInfo = document.getElementById('wlan_rssi_info');
+        rssiInfo.style.display = d.wlan_rssi === -255 ? 'none' : ''; // hide the row when the device reports no WLAN
+        renderRssi(d.wlan_rssi);
+      } catch (e) {
+        console.error('Rendering process data failed | ', e);
+      }
+
+      return `${d.cycle_counter}|${d.process_state}`;
+    }
+
+    function loadProcessError(value, processState) {
+      const el = document.getElementById('processerror');
+      if (!el) return;
+
+      const state = String(processState ?? '').toLowerCase();
+      const isErrorState = ERROR_STATES.some((s) => state.includes(s));
+      el.textContent = isErrorState && value < 0 ? '⚠ Process error detected. Check logs' : '';
+    }
+
+    function loadImage() {
+      const imgEl = document.getElementById('img');
+
+      return new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(false), 15000); // safety timeout
+        const done = (ok) => {
+          clearTimeout(timer);
+          imgEl.classList.remove('is-loading');
+          resolve(ok);
+        };
+
+        imgEl.onload = () => done(true);
+        imgEl.onabort = () => done(false);
+        imgEl.onerror = () => {
+          imgEl.onerror = null;
+          imgEl.src = typeof noImageAvailable !== 'undefined' ? noImageAvailable : '';
+          done(false);
+        };
+
+        imgEl.src = `${getDomainname()}/img_tmp/alg_roi.jpg?v=${Date.now()}`;
+      });
+    }
+
+    async function refreshContent(auto = false) {
+      if (refreshRunning) return;
+      refreshRunning = true;
+
+      const btn = document.getElementById('refreshButton');
+      const loader = document.getElementById('refreshLoadingImg');
+
+      if (!auto) {
+        btn.disabled = true;
+      }
+
+      loader?.classList.add('is-loading');
+
+      try {
+        const key = await loadProcessData();
+        if (key === null) return; // device not answering: skip the image
+
+        // Manual refresh always reloads the image; auto refresh only when cycle or step changed
+        if (!auto || key !== lastImageKey) {
+          await loadImage();
+          lastImageKey = key;
+        }
+      } catch (error) {
+        console.error('Refresh failed:', error);
+      } finally {
+        setTimeout(() => {
+          if (!auto) btn.disabled = false;
+          loader?.classList.remove('is-loading');
+        }, 100);
+        refreshRunning = false;
+      }
+    }
+
+    function autoRefreshContent() {
+      const isAutoRefresh = document.getElementById('autoRefreshCtrl').checked;
+      const autoRefreshSettings = document.getElementById('autoRefreshSettings');
+      const autoRefreshTime = document.getElementById('autoRefreshTime');
+
+      autoRefreshSettings.classList.toggle('is-disabled', !isAutoRefresh);
+      autoRefreshTime.disabled = !isAutoRefresh;
+
+      if (autoRefreshTimeoutHandle) {
+        clearTimeout(autoRefreshTimeoutHandle);
+        autoRefreshTimeoutHandle = null;
+      }
+
+      if (isAutoRefresh) {
+        const delayMs = parseInt(autoRefreshTime.value) * 1000;
+
+        if (!delayMs || delayMs <= 0) {
+          document.getElementById('autoRefreshCtrl').checked = false;
+          autoRefreshSettings.classList.add('is-disabled');
+          return;
+        }
+        autoRefreshTimeoutHandle = setTimeout(() => {
+          refreshContent(true).then(autoRefreshContent);
+        }, delayMs);
+      }
+    }
+
+    async function init() {
+      // Show image spinner
+      if (typeof loaderSpinner !== 'undefined') document.getElementById('img').src = loaderSpinner;
+
+      lastImageKey = await loadProcessData();
+      loadImage();
+
+      try {
+        await loadConfig();
+        const { enabled, refreshtime } = getConfigFromStorage().webui.autorefresh.dashboard;
+        document.getElementById('autoRefreshCtrl').checked = enabled;
+        document.getElementById('autoRefreshTime').value = refreshtime;
+      } catch (e) {
+        console.error('Failed to load config | Error: ', e);
+      }
+
+      autoRefreshContent();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.parent.postMessage({ type: 'iframe-ready' }, '*');
+    });
+
+    init();
+  </script>
+</body>
+
+</html>

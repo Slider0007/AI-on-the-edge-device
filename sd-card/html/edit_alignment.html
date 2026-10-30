@@ -1,210 +1,193 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xml:lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Alignment marker</title>
+  <title>Alignment marker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=720" />
 
-    <style>
-        h1 {font-size: 1.8em;}
-        h2 {font-size: 1.5em; margin-block-start: 0.0em; margin-block-end: 0.2em;}
-        h3 {font-size: 1.2em;}
-        p {font-size: 1em;}
+  <script>
+    // Theme Control
+    (function () {
+      let theme;
+      try { theme = localStorage.getItem('theme'); } catch (e) { }
+      if (theme !== 'light' && theme !== 'dark') {
+        try { theme = document.cookie.match(/(?:^|; )theme=(light|dark)/)?.[1]; } catch (e) { }
+        if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+    })();
+  </script>
 
-        body, html {
-            font-size: 100%;
-            -webkit-text-size-adjust: 100%;
-            text-size-adjust: 100%;
-        }
+  <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
 
-        input[type=number] {
-            width: 60px;
-            margin-right: 10px;
-            padding: 3px 5px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
+  <style>
+    input[type='number'],
+    input[type='text'] {
+      font-size: inherit;
+      width: 60px;
+      padding: 3px 5px;
+      vertical-align: middle;
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: var(--input-radius);
+    }
 
-        input[type=text] {
-            padding: 3px 5px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
+    input[type='number'] {
+      width: 60px;
+    }
 
-        input:out-of-range {
-        background-color: rgba(255, 0, 0, 0.25);
-        border: 1px solid red;
-        }
+    select {
+      font-size: inherit;
+      padding: 3px 5px;
+      display: inline-block;
+      border: 1px solid var(--border);
+      min-width: 100px;
+      vertical-align: middle;
+      border-radius: var(--input-radius);
+    }
 
-        select {
-            padding: 3px 5px;
-            display: inline-block;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            margin-right: 10px;
-            min-width: 100px;
-            vertical-align: middle;
-        }
+    th,
+    td {
+      padding: 5px 0px 5px 0px;
+    }
 
-        .button {
-            padding: 5px 10px;
-            width: 205px;
-            font-size: 16px;
-        }
+    table {
+      width: 100%;
+      padding: 5px 0px 5px 0px;
+      table-layout: fixed;
+    }
+  </style>
 
-        th, td {
-            padding: 5px 5px 5px 0px;
-        }
-
-        table {
-            width: 660px;
-            padding: 5px 5px 5px 0px;
-            table-layout: fixed;
-        }
-
-        details {
-            text-align: justify;
-            font-size: 16px;
-            margin-right: 10px;
-        }
-    </style>
-
-    <script src="jquery-3.6.0.min.js?v=$COMMIT_HASH"></script>
-    <script src="js.cookie.min.js?v=$COMMIT_HASH"></script>
-    <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet">
-    <script src="firework.js?v=$COMMIT_HASH"></script>
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="firework.js?v=$COMMIT_HASH"></script>
 </head>
 
-<body style="font-family: arial; padding: 0px 10px; width:660px; max-width:660px;">
-
-	<h2>Alignment Marker</h2>
-    <details id="desc_details">
-        <summary><b>CLICK HERE</b> for usage description
-        </summary>
-        <p>
+<body>
+  <div class="container">
+    <div class="container-header">
+      <div class="container-title"><span>🎯</span>Alignment Marker</div>
+      <details id="desc_details">
+        <summary id="desc_details_summary">CLICK HERE for usage info</summary>
+        <div class="info-box">
+          <p>
             The two alignment marker are required to correct possible small misalignments of the image position. The possible misalignment
-            is determined by an alignment algorithm, which works according to the principle of SAD (sum of absolute differences).
-            In a defined search window (Parameter: Search Field X / Y), the algorithm attempts to match the image pattern of the alignment
-            marker image (Marker 1 and Marker 2) as congruently as possible. The derived correction factors are applied to the image for an
-            orientation correction (rotation around the image center and / or linear shift).<br>
-
-            When defining the marker position, please make sure that the distance between the two markers is as large as possible
-            and that they are ideally arranged with respect to the center of the image, e.g. one marker to the left or top of the
-            center and one to the right or bottom. The markers should not be placed over a variable part of the image, e.g. other
-            ROIs or moving parts.<br>
-
-            The marker size should only be as large as necessary to depict a clean, high-contrast edge or contour.
-            (Tip: The smaller the marker area, the faster the processing).<br>
-
+            is determined by an alignment algorithm, which works according to the principle of SAD (sum of absolute differences). In a
+            defined search window (Parameter: Search Field X / Y), the algorithm attempts to match the image pattern of the alignment
+            marker image (Marker 1 and Marker 2) as congruently as possible. The derived correction factors are applied to the image for
+            an orientation correction (rotation around the image center and / or linear shift).<br />
+            The marker size should only be as large as necessary to depict a clean, high-contrast edge or contour. (Tip: The smaller the
+            marker area, the faster the processing).<br />
             The histogram can be used to find image sections with high contrast or only to better evaluate the already marked areas.
-            (Note: 'Default' alignment algorithm is using only RED color channel of image. Only 'High Accuracy' alignment algorithm
-            is using all three channels (RGB) with the drawback of three times the processing time.)
-        </p>
-        <p>
-            Select an alignment marker area using drag and dop feature by mouse operation or by manually entering the coordinates
-            and sizes in the respective fields. After placement of a first alignment marker area, push the <b>"Update Marker"</b>
-            button. Choose to second alignment marker with <b>"Marker"</b> dropdown and repeat the procedure.
-        </p>
-        <p>
-            After the definition of both alignment marker is completed don't forget to save the new configuration with the button
-            <b>"Save And Apply"</b>. The new configuration gets automatically applied. No reboot is required.
-        </p>
-    </details>
-    <hr>
+          </p>
+          <p>
+            Select a marker from the dropdown, define its area by dragging the mouse or entering coordinates, and click
+            <b>Update Marker</b>. Once both are set, click <b>Save And Apply</b> to activate the changes immediately without a reboot.
+          </p>
+        </div>
+      </details>
+    </div>
 
-	<table>
-        <colgroup>
-            <col span="1" style="width: 19%;">
-            <col span="1" style="width: 21%;">
-            <col span="1" style="width: 30%;">
-            <col span="1" style="width: 30%;">
-        </colgroup>
-	    <tr>
-            <td colspan="2" style="height:25px;">Marker:
-                <select id="marker_selection" onchange="markerSelectionChanged()">
-                <option value="0" selected>Marker 1</option>
-                <option value="1" >Marker 2</option>
-                </select>
-            </td>
-            <td rowspan="3" style="vertical-align:top;">
-                Image<br><img style="padding-top:5px" id="marker_image">
-            <td rowspan="3" style="vertical-align:top;">
-                Histogram<br>
-                <canvas style="padding-top:5px" height="60" width="190" id="canvasHistogram"></canvas><br>
-                <div>
-                    <label><input name="rHistogramType" id="HistogramTypeValue" type="radio" checked>Value</label>
-                    <label><input name="rHistogramType" id="HistogramTypeRed" type="radio">Red</label>
-                    <label><input name="rHistogramType" id="HistogramTypeRGB" type="radio">RGB</label>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <td style="height:20px;padding-top: 10px; vertical-align: top;">
-                <form class="form_alignment_marker" id="imagealignment_marker_x_form">
-                    x <input type="number" min="1"
-                        name="imagealignment.marker.0.x" id="imagealignment_marker_x_value"
-                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged(); gatherChangedParameter(this.form, true)">
-                </form>
-            </td>
-            <td style="padding-top: 10px; vertical-align: top;">
-                <form class="form_alignment_marker" id="imagealignment_marker_dx_form">
-                    Δx <input type="number" min="1"
-                        name="imagealignment.marker.0.dx" id="imagealignment_marker_dx_value"
-                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
-                </form>
-            </td>
+    <div class="container-content">
+      <div class="card">
+        <div class="card-header"><span>Parametrization</span></div>
+        <div class="card-body" style="padding: 10px">
+          <table>
+            <colgroup>
+              <col span="1" style="width: 19%" />
+              <col span="1" style="width: 21%" />
+              <col span="1" style="width: 30%" />
+              <col span="1" style="width: 30%" />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td colspan="2" style="height: 25px">
+                  Marker:
+                  <select id="marker_selection" onchange="markerSelectionChanged()">
+                    <option value="0" selected>Marker 1</option>
+                    <option value="1">Marker 2</option>
+                  </select>
+                </td>
+                <td rowspan="3" style="vertical-align: top">
+                  <label>Image</label><br />
+                  <img style="padding-top: 5px" id="marker_image" />
+                </td>
+                <td rowspan="3" style="vertical-align: top">
+                  <label>Histogram</label><br />
+                  <canvas style="padding-top: 5px" height="60" width="190" id="canvasHistogram"></canvas><br />
+                  <div>
+                    <label><input name="rHistogramType" id="HistogramTypeValue" type="radio" checked />VALUE</label>
+                    <label><input name="rHistogramType" id="HistogramTypeRed" type="radio" />RED</label>
+                    <label><input name="rHistogramType" id="HistogramTypeRGB" type="radio" />RGB</label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="height: 20px; padding-top: 10px; vertical-align: top">
+                  <form class="form_alignment_marker" id="imagealignment_marker_x_form">
+                    <label for="imagealignment_marker_x_value">x</label>
+                    <input type="number" min="1" name="imagealignment.marker.0.x" id="imagealignment_marker_x_value" onchange="
+                          !validity.rangeUnderflow || (value = 1);
+                          onValueManualChanged();
+                          gatherChangedParameter(this.form, true);
+                        " />
+                  </form>
+                </td>
+                <td style="padding-top: 10px; vertical-align: top">
+                  <form class="form_alignment_marker" id="imagealignment_marker_dx_form">
+                    <label for="imagealignment_marker_dx_value">Δx</label>
+                    <input type="number" min="1" name="imagealignment.marker.0.dx" id="imagealignment_marker_dx_value" onchange="
+                          !validity.rangeUnderflow || (value = 1);
+                          onValueManualChanged();
+                        " />
+                  </form>
+                </td>
+              </tr>
+              <tr>
+                <td style="vertical-align: top">
+                  <form class="form_alignment_marker" id="imagealignment_marker_y_form">
+                    <label for="imagealignment_marker_y_value">y</label>
+                    <input type="number" min="1" name="imagealignment.marker.0.y" id="imagealignment_marker_y_value" onchange="
+                          !validity.rangeUnderflow || (value = 1);
+                          onValueManualChanged();
+                          gatherChangedParameter(this.form, true);
+                        " />
+                  </form>
+                </td>
+                <td style="vertical-align: top">
+                  <form class="form_alignment_marker" id="imagealignment_marker_dy_form">
+                    <label for="imagealignment_marker_dy_value">Δy</label>
+                    <input type="number" min="1" name="imagealignment.marker.0.dy" id="imagealignment_marker_dy_value" onchange="
+                          !validity.rangeUnderflow || (value = 1);
+                          onValueManualChanged();
+                        " />
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div colspan="4" style="display: flex; justify-content: flex-end; gap: 8px; width: 100%">
+            <input disabled class="button" type="button" id="updatemarker" value="Update Marker" onclick="RequestMarkerCut()" />
+            <input disabled class="button btn-action" type="submit" id="savemarker" onclick="saveToConfig()" value="Save And Apply" />
+          </div>
+        </div>
+      </div>
 
-        </tr>
-        <tr>
-            <td style="vertical-align: top;">
-                <form class="form_alignment_marker" id="imagealignment_marker_y_form">
-                    y <input type="number" min="1"
-                        name="imagealignment.marker.0.y" id="imagealignment_marker_y_value"
-                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged(); gatherChangedParameter(this.form, true)">
-                </form>
-            </td>
-            <td style="vertical-align: top;">
-                <form class="form_alignment_marker" id="imagealignment_marker_dy_form">
-                    Δy <input type="number" min="1"
-                        name="imagealignment.marker.0.dy" id="imagealignment_marker_dy_value"
-                        onchange="(!validity.rangeUnderflow||(value=1));onValueManualChanged()">
-                </form>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="4"></td>
-        </tr>
-    </table>
+      <div class="card">
+        <div class="card-header"><span>Reference Image</span></div>
+        <div class="card-body">
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; width: 100%">
+            <img id="img_loading" alt="Loading..." />
+            <canvas id="canvas" hidden></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <table>
-        <colgroup>
-            <col span="1" style="width: 33%;">
-            <col span="1" style="width: 33%;">
-            <col span="1" style="width: 33%;">
-        </colgroup>
-        <tr>
-            <td style="vertical-align:bottom;"><b>Reference Image</b></td>
-            <td>
-                <input disabled style="float:right" class="button" type="button" id="updatemarker"
-                    value="Update Marker" onclick="RequestMarkerCut()"></td>
-            <td >
-                <input disabled style="font-weight:bold; float:right" class="button" type="submit"
-                    id="savemarker" onclick="SaveToConfig()" value="Save And Apply">
-            </td>
-        </tr>
-        <tr>
-            <td colspan="3" style="padding-right:0px; margin-right:0px">
-                <img id="img_loading" hidden>
-                <canvas style="max-width: 100%" id="canvas" hidden></canvas>
-            </td>
-        </tr>
-    </table>
-
-
-<script src="global_common.js?v=$COMMIT_HASH"></script>
-<script src="global_data.js?v=$COMMIT_HASH"></script>
-<script>
+  <script src="global.js?v=$COMMIT_HASH"></script>
+  <script>
     let canvas = document.getElementById('canvas');
     let context = canvas.getContext('2d');
     let imageObj = new Image();
@@ -213,504 +196,484 @@
     let marker_selected = 0;
     let markerRoi;
     let noReferenceImage = false;
-    let img1px = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
+    let img1px = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 
+    function markerSelectionChanged() {
+      const markerSelect = document.getElementById('marker_selection');
+      marker_selected = parseInt(markerSelect.value);
 
-    function markerSelectionChanged()
-    {
-        marker_selected = parseInt(document.getElementById("marker_selection").value);
+      // Get all children of elements with class .form_alignment_marker
+      const markerInputs = document.querySelectorAll('.form_alignment_marker > [name]');
 
-        // Rename elements to match new selection
-        $(".form_alignment_marker").children().each(function() {
-			this.name = this.name.split(".marker.")[0] + ".marker." +
-                marker_selected.toString() + "." + this.name.split(".marker.")[1].substring(2);
-		});
+      markerInputs.forEach((input) => {
+        const parts = input.name.split('.marker.');
+        if (parts.length === 2) {
+          const fieldName = parts[1].split('.')[1];
+          input.name = `${parts[0]}.marker.${marker_selected}.${fieldName}`;
+        }
+      });
 
-        RefreshMarker();
+      if (!Array.isArray(markerRoi) || !markerRoi[marker_selected]) return;
+      RefreshMarker();
     }
 
+    function onValueManualChanged() {
+      if (!drag) {
+        rect.startX = markerRoi[marker_selected].x = parseInt(document.getElementById('imagealignment_marker_x_value').value);
+        rect.startY = markerRoi[marker_selected].y = parseInt(document.getElementById('imagealignment_marker_y_value').value);
+        rect.w = markerRoi[marker_selected].dx = parseInt(document.getElementById('imagealignment_marker_dx_value').value);
+        rect.h = markerRoi[marker_selected].dy = parseInt(document.getElementById('imagealignment_marker_dy_value').value);
+      }
 
-    function onValueManualChanged()
-    {
-        if (!drag) {
-            rect.startX = markerRoi[marker_selected].x = parseInt(document.getElementById("imagealignment_marker_x_value").value);
-            rect.startY = markerRoi[marker_selected].y = parseInt(document.getElementById("imagealignment_marker_y_value").value);
-            rect.w = markerRoi[marker_selected].dx = parseInt(document.getElementById("imagealignment_marker_dx_value").value);
-            rect.h = markerRoi[marker_selected].dy = parseInt(document.getElementById("imagealignment_marker_dy_value").value);
+      // Validate ROI position
+      ROIPositionValidation(markerRoi[marker_selected]);
+
+      // Update ROI coordinates
+      rect.startX = document.getElementById('imagealignment_marker_x_value').value = markerRoi[marker_selected].x;
+      rect.startY = document.getElementById('imagealignment_marker_y_value').value = markerRoi[marker_selected].y;
+
+      // Gather all form changes
+      let classEl = document.getElementsByClassName('form_alignment_marker');
+      for (let i = 0; i < classEl.length; i++) {
+        for (let j = 0; j < classEl[i].elements.length; j++) {
+          gatherChangedParameter(classEl[i].elements[j].form, true);
         }
+      }
+
+      RefreshDraw();
+    }
+
+    async function RequestMarkerCut() {
+      if (!Array.isArray(markerRoi) || !markerRoi[marker_selected]) {
+        firework.launch('Marker data not initialized yet. Please wait a moment and retry.', 'warning', 4000);
+        return;
+      }
+
+      const roi = markerRoi[marker_selected];
+      roi.x = parseInt(document.getElementById('imagealignment_marker_x_value').value);
+      roi.y = parseInt(document.getElementById('imagealignment_marker_y_value').value);
+      roi.dx = parseInt(document.getElementById('imagealignment_marker_dx_value').value);
+      roi.dy = parseInt(document.getElementById('imagealignment_marker_dy_value').value);
+
+      const endpoint = `/editflow?task=cutref&in=/config/reference.jpg&out=/img_tmp/marker${marker_selected + 1}.jpg` +
+        `&x=${roi.x}&y=${roi.y}&dx=${roi.dx}&dy=${roi.dy}`;
+
+      const res = await apiCallNotify(endpoint, {}, {
+        action: 'Marker update', loadingMsg: 'Request marker update...', resultMsg: 'Marker successfully updated',
+        httpObj: {
+          405: (r) => ({
+            msg: `Marker update available in IDLE state only. Please retry shortly. [${String(r.data).split(' | ')[1]?.trim() || 'Unknown State'}]`,
+            type: 'warning',
+            time: 2000,
+          }),
+        }
+      });
+
+      document.getElementById('savemarker').disabled = false;
+      if (!res.ok) return;
+
+      roi.modified = true;
+      RefreshMarker();
+    }
+
+    function RefreshMarker() {
+      // Load marker image
+      let filenameurl = '/config/marker' + (marker_selected + 1).toString() + '.jpg';
+      if (markerRoi[marker_selected].modified) filenameurl = '/img_tmp/marker' + (marker_selected + 1).toString() + '.jpg';
+
+      document.getElementById('marker_image').src =
+        getDomainname() + '/fileserver' + filenameurl + '?' + Math.floor(Math.random() * 1000000 + 1);
+
+      // Load x,y coordinates from config
+      rect.startX = document.getElementById('imagealignment_marker_x_value').value = markerRoi[marker_selected].x;
+      rect.startY = document.getElementById('imagealignment_marker_y_value').value = markerRoi[marker_selected].y;
+
+      // Execute after marker image gets loaded
+      document.getElementById('marker_image').onload = function () {
+        // Load ROI dx, dy data derived from image size
+        rect.w = markerRoi[marker_selected].dx = document.getElementById('imagealignment_marker_dx_value').value = parseInt(this.width);
+        rect.h = markerRoi[marker_selected].dy = document.getElementById('imagealignment_marker_dy_value').value = parseInt(this.height);
 
         // Validate ROI position
         ROIPositionValidation(markerRoi[marker_selected]);
 
         // Update ROI coordinates
-        rect.startX = document.getElementById("imagealignment_marker_x_value").value = markerRoi[marker_selected].x;
-        rect.startY = document.getElementById("imagealignment_marker_y_value").value = markerRoi[marker_selected].y;
-
-        // Gather all form changes
-        let classEl = document.getElementsByClassName("form_alignment_marker");
-		for (let i = 0; i < classEl.length; i++) {
-			for (let j = 0; j < classEl[i].elements.length; j++) {
-				gatherChangedParameter(classEl[i].elements[j].form, true);
-			}
-		}
+        rect.startX = document.getElementById('imagealignment_marker_x_value').value = markerRoi[marker_selected].x;
+        rect.startY = document.getElementById('imagealignment_marker_y_value').value = markerRoi[marker_selected].y;
 
         RefreshDraw();
+        HistogramUpdate();
+      };
+
+      document.getElementById('marker_image').onerror = function () {
+        this.src = img1px; // Use 1px image if image loading failed
+        RefreshDraw();
+      };
     }
 
+    function RefreshDraw() {
+      if (noReferenceImage) return;
 
-    function RequestMarkerCut()
-    {
-        firework.launch('Request marker update...', 'success', 2000, true);
-        markerRoi[marker_selected].x = parseInt(document.getElementById("imagealignment_marker_x_value").value);
-        markerRoi[marker_selected].y = parseInt(document.getElementById("imagealignment_marker_y_value").value);
-        markerRoi[marker_selected].dx = parseInt(document.getElementById("imagealignment_marker_dx_value").value);
-        markerRoi[marker_selected].dy = parseInt(document.getElementById("imagealignment_marker_dy_value").value);
+      // Draw reference image
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(imageObj, 0, 0);
 
-        let url = getDomainname() + "/editflow?task=cutref&in=/config/reference.jpg&out=/img_tmp/marker" + (marker_selected + 1).toString() + ".jpg&x=" +
-                    markerRoi[marker_selected].x + "&y="  + markerRoi[marker_selected].y + "&dx=" +
-                    markerRoi[marker_selected].dx + "&dy=" + markerRoi[marker_selected].dy;
+      // During init, markerRoi is not defined yet OR no marker defined
+      if (typeof markerRoi === 'undefined' || markerRoi.length == 0) {
+        return;
+      }
 
-        let xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState == 4) {
-                if (this.status >= 200 && this.status < 300) {
-                    markerRoi[marker_selected].modified = true;
-                    RefreshMarker();
-                    document.getElementById("savemarker").disabled = false;
-                    firework.launch("Marker successfully updated", 'success', 2000);
-                }
-                else if (this.status == 403) {
-                    document.getElementById("savemarker").disabled = false;
-                    firework.launch("Marker update rejected. Process not (yet) initialized. Repeat action or check logs.", 'warning', 5000);
-                    console.error("Marker update rejected. Process not (yet) initialized. Response status: " + this.status);
-                }
-                else if (this.status == 405) {
-                    firework.launch("Marker update only possible in any IDLE state. Wait a few moments and repeat action. [" +
-                                        xhttp.responseText.split(" | ")[1] + "]", 'warning', 3000, true);
-                }
-                else {
-                    firework.launch("Marker update failed (Response status: " + this.status +
-                                    "). Repeat action or check logs.", 'danger', 30000);
-                    console.error("Marker update failed. Response status: " + this.status);
-                }
-            }
-        };
-
-        xhttp.timeout = 10000;  // 10 seconds
-        xhttp.open("GET", url, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
+      // Draw alignment marker overlay
+      let lw = 2;
+      context.lineWidth = lw;
+      context.strokeStyle = 'rgb(255, 51, 51)';
+      let x0 = parseInt(rect.startX) - parseInt(lw / 2);
+      let y0 = parseInt(rect.startY) - parseInt(lw / 2);
+      let dx = parseInt(rect.w) + parseInt(lw);
+      let dy = parseInt(rect.h) + parseInt(lw);
+      context.strokeRect(x0, y0, dx, dy);
     }
 
+    function ROIPositionValidation(ROI) {
+      let refImageWidth = 640;
+      let refImageHeight = 480;
 
-    function RefreshMarker()
-    {
-        // Load marker image
-        let filenameurl = ("/config/marker" + (marker_selected + 1).toString() + ".jpg");
-        if (markerRoi[marker_selected].modified)
-            filenameurl = ("/img_tmp/marker" + (marker_selected + 1).toString() + ".jpg");
+      if (parseInt(ROI.x) + parseInt(ROI.dx) >= refImageWidth) {
+        ROI.x = refImageWidth - parseInt(ROI.dx) - 1;
+        firework.launch(
+          'ROI partially or completely out of image area (x) -> Position automatically adapted. \
+                                    Please verify marker',
+          'warning',
+          5000,
+        );
+      } else if (parseInt(ROI.x) < 1) {
+        ROI.x = 1;
+        firework.launch(
+          'ROI partially or completely out of image area (x) -> Position automatically adapted. \
+                                Please verify marker',
+          'warning',
+          5000,
+        );
+      }
 
-        document.getElementById("marker_image").src = getDomainname() + "/fileserver" + filenameurl + "?" +
-                                                        Math.floor((Math.random() * 1000000) + 1);
-
-        // Load x,y coordinates from config
-        rect.startX = document.getElementById("imagealignment_marker_x_value").value = markerRoi[marker_selected].x;
-        rect.startY = document.getElementById("imagealignment_marker_y_value").value = markerRoi[marker_selected].y;
-
-        // Execute after marker image gets loaded
-        document.getElementById("marker_image").onload = function () {
-            // Load ROI dx, dy data derived from image size
-            rect.w = markerRoi[marker_selected].dx = document.getElementById("imagealignment_marker_dx_value").value = parseInt(this.width);
-            rect.h = markerRoi[marker_selected].dy = document.getElementById("imagealignment_marker_dy_value").value = parseInt(this.height);
-
-            // Validate ROI position
-            ROIPositionValidation(markerRoi[marker_selected]);
-
-            // Update ROI coordinates
-            rect.startX =document.getElementById("imagealignment_marker_x_value").value = markerRoi[marker_selected].x;
-            rect.startY = document.getElementById("imagealignment_marker_y_value").value = markerRoi[marker_selected].y;
-
-            RefreshDraw();
-            HistogramUpdate();
-        }
-
-        document.getElementById("marker_image").onerror = function () {
-            this.src=img1px; // Use 1px image if image loading failed
-            RefreshDraw();
-        }
+      if (parseInt(ROI.y) + parseInt(ROI.dy) >= refImageHeight) {
+        ROI.y = refImageHeight - parseInt(ROI.dy) - 1;
+        firework.launch(
+          'ROI partially or completely out of image area (y) -> Position automatically adapted. \
+                                Please verify marker',
+          'warning',
+          5000,
+        );
+      } else if (parseInt(ROI.y) < 1) {
+        ROI.y = 1;
+        firework.launch(
+          'ROI partially or completely out of image area (y) -> Position automatically adapted. \
+                                Please verify marker',
+          'warning',
+          5000,
+        );
+      }
     }
 
+    function loadCanvas(dataURL) {
+      document.getElementById('canvas').style.display = 'none';
+      document.getElementById('img_loading').style.display = 'block';
 
-    function RefreshDraw()
-    {
-        if (noReferenceImage)
-            return;
+      imageObj.onload = function () {
+        canvas.width = this.width;
+        canvas.height = this.height;
+        RefreshDraw();
 
-        // Draw reference image
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(imageObj, 0, 0);
+        canvas.addEventListener('mousedown', mouseDown, false);
+        canvas.addEventListener('mouseup', mouseUp, false);
+        canvas.addEventListener('mousemove', mouseMove, false);
 
-        // During init, markerRoi is not defined yet OR no marker defined
-        if (typeof markerRoi === 'undefined' || markerRoi.length == 0) {
-            return;
-        }
+        noReferenceImage = false;
 
-        // Draw alignment marker overlay
-        lw = 2;
-        context.lineWidth = lw;
-        context.strokeStyle = 'rgb(255, 51, 51)';
-        let x0 = parseInt(rect.startX) - parseInt(lw/2);
-        let y0 = parseInt(rect.startY) - parseInt(lw/2);
-        let dx = parseInt(rect.w) + parseInt(lw);
-        let dy = parseInt(rect.h) + parseInt(lw);
-        context.strokeRect(x0, y0, dx, dy);
+        document.getElementById('canvas').style.display = 'block';
+        document.getElementById('img_loading').style.display = 'none';
+      };
+
+      imageObj.onerror = function () {
+        imageObj.onerror = null;
+        canvas.removeEventListener('mousemove', mouseMove, false);
+        imageObj.src = noImageAvailable;
+      };
+
+      imageObj.src = dataURL;
     }
 
-
-    function ROIPositionValidation(ROI)
-    {
-        let refImageWidth = 640;
-        let refImageHeight = 480;
-
-        if ((parseInt(ROI.x) + parseInt(ROI.dx)) >= refImageWidth) {
-                ROI.x = refImageWidth - parseInt(ROI.dx) - 1;
-                firework.launch('ROI partially or completely out of image area (x) -> Position automatically adapted. \
-                                    Please verify marker', 'warning', 5000);
-        }
-        else if (parseInt(ROI.x) < 1) {
-            ROI.x = 1;
-            firework.launch('ROI partially or completely out of image area (x) -> Position automatically adapted. \
-                                Please verify marker', 'warning', 5000);
-        }
-
-        if ((parseInt(ROI.y) + parseInt(ROI.dy)) >= refImageHeight) {
-            ROI.y = refImageHeight - parseInt(ROI.dy) - 1;
-            firework.launch('ROI partially or completely out of image area (y) -> Position automatically adapted. \
-                                Please verify marker', 'warning', 5000);
-        }
-        else if (parseInt(ROI.y) < 1) {
-            ROI.y = 1;
-            firework.launch('ROI partially or completely out of image area (y) -> Position automatically adapted. \
-                                Please verify marker', 'warning', 5000);
-        }
+    function getCoords(elem) {
+      // crossbrowser version
+      let box = elem.getBoundingClientRect();
+      let body = document.body;
+      let docEl = document.documentElement;
+      let scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+      let scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+      let clientTop = docEl.clientTop || body.clientTop || 0;
+      let clientLeft = docEl.clientLeft || body.clientLeft || 0;
+      let top = box.top + scrollTop - clientTop;
+      let left = box.left + scrollLeft - clientLeft;
+      return { top: Math.round(top), left: Math.round(left) };
     }
 
-
-    function loadCanvas(dataURL)
-    {
-        $("#canvas").hide();
-        $("#img_loading").show();
-
-        imageObj.onload = function() {
-            canvas.width = this.width;
-            canvas.height = this.height;
-            RefreshDraw();
-
-            canvas.addEventListener('mousedown', mouseDown, false);
-            canvas.addEventListener('mouseup', mouseUp, false);
-            canvas.addEventListener('mousemove', mouseMove, false);
-
-            noReferenceImage = false;
-
-            $("#img_loading").hide();
-            $("#canvas").show();
-        };
-
-        imageObj.onerror = function() {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            context.textBaseline = "top";
-            context.textAlign = "left";
-            context.font = "16px arial";
-            context.fillText("No reference image", 10, 10);
-
-            canvas.removeEventListener('mousedown', mouseDown, false);
-            canvas.removeEventListener('mouseup', mouseUp, false);
-            canvas.removeEventListener('mousemove', mouseMove, false);
-
-            noReferenceImage = true;
-            document.getElementById("updatemarker").disabled = true;
-
-            $("#img_loading").hide();
-            $("#canvas").show();
-        };
-
-        imageObj.src = dataURL;
+    function mouseDown(e) {
+      let zw = getCoords(this);
+      rect.startX = e.pageX - zw.left;
+      rect.startY = e.pageY - zw.top;
+      document.getElementById('imagealignment_marker_x_value').value = rect.startX;
+      document.getElementById('imagealignment_marker_y_value').value = rect.startY;
+      drag = true;
     }
 
+    function mouseUp() {
+      drag = false;
 
-    function getCoords(elem) // crossbrowser version
-    {
-        let box = elem.getBoundingClientRect();
-        let body = document.body;
-        let docEl = document.documentElement;
-        let scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-        let scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-        let clientTop = docEl.clientTop || body.clientTop || 0;
-        let clientLeft = docEl.clientLeft || body.clientLeft || 0;
-        let top  = box.top +  scrollTop - clientTop;
-        let left = box.left + scrollLeft - clientLeft;
-        return { top: Math.round(top), left: Math.round(left) };
+      if (rect.w < 0) {
+        rect.w = -rect.w;
+        rect.startX -= rect.w;
+      }
+      if (rect.h < 0) {
+        rect.h = -rect.h;
+        rect.startY -= rect.h;
+      }
+      document.getElementById('imagealignment_marker_dx_value').value = rect.w;
+      document.getElementById('imagealignment_marker_dy_value').value = rect.h;
+      document.getElementById('imagealignment_marker_x_value').value = rect.startX;
+      document.getElementById('imagealignment_marker_y_value').value = rect.startY;
+
+      onValueManualChanged();
     }
 
+    function mouseMove(e) {
+      if (drag) {
+        let zw = getCoords(this);
+        rect.w = e.pageX - zw.left - rect.startX;
+        rect.h = e.pageY - zw.top - rect.startY;
+        document.getElementById('imagealignment_marker_dx_value').value = rect.w;
+        document.getElementById('imagealignment_marker_dy_value').value = rect.h;
+        RefreshDraw();
+      } else {
+        RefreshDraw();
 
-    function mouseDown(e)
-    {
-        zw = getCoords(this)
-        rect.startX = e.pageX - zw.left;
-        rect.startY = e.pageY - zw.top;
-        document.getElementById("imagealignment_marker_x_value").value =  rect.startX;
-        document.getElementById("imagealignment_marker_y_value").value =  rect.startY;
-        drag = true;
+        let zw = getCoords(this);
+        let x = e.pageX - zw.left;
+        let y = e.pageY - zw.top;
+
+        context.lineWidth = 1;
+        context.strokeStyle = 'rgb(160, 160, 160)';
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(canvas.width, y);
+        context.moveTo(x, 0);
+        context.lineTo(x, canvas.height);
+        context.stroke();
+      }
     }
 
+    function processImageHistogram(inImg) {
+      const width = inImg.width;
+      const height = inImg.height;
+      const src = new Uint32Array(inImg.data.buffer);
+      const isValueHistogram = document.getElementById('HistogramTypeValue').checked;
+      const isRedChannel = document.getElementById('HistogramTypeRed').checked;
 
-    function mouseUp()
-    {
-        drag = false;
+      let histBrightness = new Array(256).fill(0);
+      let histR = new Array(256).fill(0);
+      let histG = new Array(256).fill(0);
+      let histB = new Array(256).fill(0);
+      for (let i = 0; i < src.length; i++) {
+        let r = src[i] & 0xff;
+        let g = (src[i] >> 8) & 0xff;
+        let b = (src[i] >> 16) & 0xff;
+        histBrightness[r]++;
+        histBrightness[g]++;
+        histBrightness[b]++;
+        histR[r]++;
+        histG[g]++;
+        histB[b]++;
+      }
 
-        if (rect.w < 0) {
-            rect.w = -rect.w
-            rect.startX-=rect.w
-            }
-        if (rect.h < 0) {
-            rect.h = -rect.h
-            rect.startY-=rect.h
-            }
-        document.getElementById("imagealignment_marker_dx_value").value = rect.w;
-        document.getElementById("imagealignment_marker_dy_value").value = rect.h;
-        document.getElementById("imagealignment_marker_x_value").value = rect.startX;
-        document.getElementById("imagealignment_marker_y_value").value = rect.startY;
-
-        onValueManualChanged();
-    }
-
-
-    function mouseMove(e)
-    {
-        if (drag) {
-            zw = getCoords(this)
-            rect.w = (e.pageX - zw.left) - rect.startX;
-            rect.h = (e.pageY - zw.top) - rect.startY ;
-            document.getElementById("imagealignment_marker_dx_value").value = rect.w;
-            document.getElementById("imagealignment_marker_dy_value").value = rect.h;
-            RefreshDraw();
+      let maxBrightness = 0;
+      if (isValueHistogram) {
+        for (let i = 1; i < 256; i++) {
+          if (maxBrightness < histBrightness[i]) {
+            maxBrightness = histBrightness[i];
+          }
         }
-        else {
-            RefreshDraw();
-
-            zw = getCoords(this);
-            x = e.pageX - zw.left;
-            y = e.pageY - zw.top;
-
-            context.lineWidth = 1;
-            context.strokeStyle = 'rgb(160, 160, 160)';
-            context.beginPath();
-            context.moveTo(0,y);
-            context.lineTo(canvas.width, y);
-            context.moveTo(x, 0);
-            context.lineTo(x, canvas.height);
-            context.stroke();
-        }
-    }
-
-
-    function processImageHistogram(inImg)
-    {
-        const width = inImg.width;
-        const height = inImg.height;
-        const src = new Uint32Array(inImg.data.buffer);
-        const isValueHistogram = $("#HistogramTypeValue").prop('checked');
-        const isRedChannel = $("#HistogramTypeRed").prop('checked');
-
-        let histBrightness = (new Array(256)).fill(0);
-        let histR = (new Array(256)).fill(0);
-        let histG = (new Array(256)).fill(0);
-        let histB = (new Array(256)).fill(0);
-        for (let i = 0; i < src.length; i++) {
-            let r = src[i] & 0xFF;
-            let g = (src[i] >> 8) & 0xFF;
-            let b = (src[i] >> 16) & 0xFF;
-            histBrightness[r]++;
-            histBrightness[g]++;
-            histBrightness[b]++;
-            histR[r]++;
-            histG[g]++;
-            histB[b]++;
-        }
-
-        let maxBrightness = 0;
-        if (isValueHistogram) {
-            for (let i = 1; i < 256; i++) {
-                if (maxBrightness < histBrightness[i]) {
-                    maxBrightness = histBrightness[i]
-                }
-            }
-        }
-        else {
-            for (let i = 0; i < 256; i++) {
-                if (maxBrightness < histR[i]) {
-                    maxBrightness = histR[i]
-                }
-                else if (maxBrightness < histG[i]) {
-                    maxBrightness = histG[i]
-                }
-                else if (maxBrightness < histB[i]) {
-                    maxBrightness = histB[i]
-                }
-            }
-        }
-
-        const canvas = document.getElementById('canvasHistogram');
-        const ctx = canvas.getContext('2d');
-        let guideHeight = 4;
-        let startY = (canvas.height - guideHeight);
-        let dx = canvas.width / 256;
-        let dy = startY / maxBrightness;
-        ctx.lineWidth = dx;
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+      } else {
         for (let i = 0; i < 256; i++) {
-            let x = i * dx;
-            if (isValueHistogram) {
-                // Value
-                ctx.strokeStyle = "#000000";
-                ctx.beginPath();
-                ctx.moveTo(x, startY);
-                ctx.lineTo(x, startY - histBrightness[i] * dy);
-                ctx.closePath();
-                ctx.stroke();
-            }
-            else {
-                // Red
-                ctx.strokeStyle = "rgba(220,0,0,0.5)";
-                ctx.beginPath();
-                ctx.moveTo(x, startY);
-                ctx.lineTo(x, startY - histR[i] * dy);
-                ctx.closePath();
-                ctx.stroke();
-                if (!isRedChannel) {
-                    // Green
-                    ctx.strokeStyle = "rgba(0,210,0,0.5)";
-                    ctx.beginPath();
-                    ctx.moveTo(x, startY);
-                    ctx.lineTo(x, startY - histG[i] * dy);
-                    ctx.closePath();
-                    ctx.stroke();
-                    // Blue
-                    ctx.strokeStyle = "rgba(0,0,255,0.5)";
-                    ctx.beginPath();
-                    ctx.moveTo(x, startY);
-                    ctx.lineTo(x, startY - histB[i] * dy);
-                    ctx.closePath();
-                    ctx.stroke();
-                }
-            }
+          if (maxBrightness < histR[i]) {
+            maxBrightness = histR[i];
+          } else if (maxBrightness < histG[i]) {
+            maxBrightness = histG[i];
+          } else if (maxBrightness < histB[i]) {
+            maxBrightness = histB[i];
+          }
+        }
+      }
 
-            // Guide
-            ctx.strokeStyle = 'rgb(' + i + ', ' + i + ', ' + i + ')';
+      const canvas = document.getElementById('canvasHistogram');
+      const ctx = canvas.getContext('2d');
+
+      // Get colors
+      const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+      const valueColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim();
+
+      let guideHeight = 4;
+      let startY = canvas.height - guideHeight;
+      let dx = canvas.width / 256;
+      let dy = startY / maxBrightness;
+      ctx.lineWidth = dx;
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < 256; i++) {
+        let x = i * dx;
+        if (isValueHistogram) {
+          // Value
+          ctx.strokeStyle = valueColor;
+          ctx.beginPath();
+          ctx.moveTo(x, startY);
+          ctx.lineTo(x, startY - histBrightness[i] * dy);
+          ctx.closePath();
+          ctx.stroke();
+        } else {
+          // Red
+          ctx.strokeStyle = 'rgba(220,0,0,0.5)';
+          ctx.beginPath();
+          ctx.moveTo(x, startY);
+          ctx.lineTo(x, startY - histR[i] * dy);
+          ctx.closePath();
+          ctx.stroke();
+          if (!isRedChannel) {
+            // Green
+            ctx.strokeStyle = 'rgba(0,210,0,0.5)';
             ctx.beginPath();
             ctx.moveTo(x, startY);
-            ctx.lineTo(x, canvas.height);
+            ctx.lineTo(x, startY - histG[i] * dy);
             ctx.closePath();
             ctx.stroke();
-        }
-    }
-
-
-    function getImageData(el)
-    {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        const img = document.getElementById(el);
-
-        if (getTestEnvironmentActive()) { // Avoid error in testing mode: The canvas has been tainted by cross-origin data.
-            img.crossOrigin = "use-credentials";
+            // Blue
+            ctx.strokeStyle = 'rgba(0,0,255,0.5)';
+            ctx.beginPath();
+            ctx.moveTo(x, startY);
+            ctx.lineTo(x, startY - histB[i] * dy);
+            ctx.closePath();
+            ctx.stroke();
+          }
         }
 
-        canvas.width = img.width;
-        canvas.height = img.height;
-        context.drawImage(img, 0, 0);
-        return context.getImageData(0, 0, img.width, img.height);
+        // Guide
+        ctx.strokeStyle = 'rgb(' + i + ', ' + i + ', ' + i + ')';
+        ctx.beginPath();
+        ctx.moveTo(x, startY);
+        ctx.lineTo(x, canvas.height);
+        ctx.closePath();
+        ctx.stroke();
+      }
     }
 
+    function getImageData(el) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      const img = document.getElementById(el);
 
-    function HistogramUpdate(e)
-    {
-        processImageHistogram(getImageData('marker_image'));
+      if (getTestEnvironmentActive()) {
+        // Avoid error in testing mode: The canvas has been tainted by cross-origin data.
+        img.crossOrigin = 'use-credentials';
+      }
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+      context.drawImage(img, 0, 0);
+      return context.getImageData(0, 0, img.width, img.height);
+    }
+
+    function HistogramUpdate(e) {
+      processImageHistogram(getImageData('marker_image'));
+    }
+
+    // Called from setTheme() function in index.html to detect mode change
+    function refreshTheme() {
+      if (!document.getElementById('canvasHistogram')) return;
+
+      HistogramUpdate();
     }
 
     // Update histogram when radio button 'rHistogramType' changed
-    $('input[name="rHistogramType"]').on('click change', HistogramUpdate);
+    document.querySelectorAll('input[name="rHistogramType"]').forEach((radio) => {
+      radio.addEventListener('change', HistogramUpdate);
+    });
 
+    async function saveToConfig() {
+      if (!confirm('Are you sure you want to save the new alignment marker configuration?')) return;
 
-    function SaveToConfig()
-    {
-        if (confirm("Are you sure you want to save the new alignment marker configuration?")) {
-            document.getElementById("savemarker").disabled = true;
+      const saveBtn = document.getElementById('savemarker');
+      saveBtn.disabled = true;
 
-            // Copy alignment marker to config folder
-            fileCopyOnServer("/img_tmp/marker1.jpg", "/config/marker1.jpg", getDomainname(), false);
-            fileCopyOnServer("/img_tmp/marker2.jpg", "/config/marker2.jpg", getDomainname(), false);
-
-            saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
+      try {
+        for (let i = 0; i < markerRoi.length; i++) {
+          if (markerRoi[i].modified) {
+            await apiCopy(`/img_tmp/marker${i + 1}.jpg`, `/config/marker${i + 1}.jpg`);
+          }
         }
+        await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
+      } catch (error) {
+        saveBtn.disabled = false;
+        console.error('Save marker config failed: ', error);
+      }
     }
 
-
-    /* hash #description open the details part of the page */
-    function openDescription()
-    {
-        if(window.location.hash) {
-            let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
-            if(hash == 'description')
-                document.getElementById("desc_details").open = true;
-        }
+    // hash #description open the details part of the page
+    function openDescription() {
+      if (window.location.hash) {
+        let hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+        if (hash == 'description') document.getElementById('desc_details').open = true;
+      }
     }
 
+    function loadConfigData() {
+      jsonConfigModifiedDelta = {}; // Reset modified parameter container
+      jsonConfig = getConfigFromStorage(); // Get config
+      jsonConfigModifiedDelta.imagealignment = new Object();
+      jsonConfigModifiedDelta.imagealignment.marker = structuredClone(jsonConfig.imagealignment.marker);
+      markerRoi = jsonConfigModifiedDelta.imagealignment.marker; // Use shorter name variable
 
-    function loadConfigData()
-    {
-        jsonConfigModifiedDelta = {}; // Reset modified parameter container
-        jsonConfig = getConfigFromStorage(); // Get config
-        jsonConfigModifiedDelta.imagealignment = new Object();
-        jsonConfigModifiedDelta.imagealignment.marker = structuredClone(jsonConfig.imagealignment.marker);
-        markerRoi = jsonConfigModifiedDelta.imagealignment.marker; // Use shorter name variable
-
-        RefreshMarker();
+      RefreshMarker();
     }
 
-
-    function loadReferenceImage()
-    {
-        loadCanvas(getDomainname() + "/fileserver/config/reference.jpg?" + Math.floor((Math.random() * 1000000) + 1));
+    function loadReferenceImage() {
+      loadCanvas(getDomainname() + '/fileserver/config/reference.jpg?' + Math.floor(Math.random() * 1000000 + 1));
     }
 
+    async function init() {
+      openDescription();
 
-    function init()
-    {
-        openDescription();
+      const loader = document.getElementById('img_loading');
+      if (loader) loader.src = loaderSpinner;
+      loadReferenceImage();
 
-        $("#img_loading").attr("src", getDomainname() + '/img_loading.gif?v=$COMMIT_HASH');
-        loadReferenceImage();
+      const saveBtn = document.getElementById('savemarker');
+      const updateBtn = document.getElementById('updatemarker');
+      if (saveBtn) saveBtn.disabled = true;
+      if (updateBtn) updateBtn.disabled = true;
 
-        // @TODO. Check if config reloading can be avoided, because still up to date.
-        // Up to now reload config before every usage
-        /*if (noConfigInStorage())
-			loadConfig().then(() => loadConfigData());
-		else
-            loadConfigData();
-        */
-        loadConfig().then(() => loadConfigData());
-
-        document.getElementById("savemarker").disabled = true;
-        document.getElementById("updatemarker").disabled = false;
+      try {
+        await loadConfig();
+        await loadConfigData();
+        if (updateBtn) updateBtn.disabled = false;
+      } catch (error) {
+        console.error('Initialization failed:', error);
+      }
     }
 
+    window.addEventListener('DOMContentLoaded', () => {
+      window.parent.postMessage({ type: 'iframe-ready' }, '*');
+    });
 
     init();
-
-</script>
-
+  </script>
 </body>
+
 </html>

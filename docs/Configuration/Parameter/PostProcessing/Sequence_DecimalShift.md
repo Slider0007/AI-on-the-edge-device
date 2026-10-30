@@ -1,8 +1,8 @@
-# Parameter: Decimal Shift
+# Parameter: Decimal Scaling (10<sup>n</sup>)
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Decimal Shift       | [sequence].decimalshift
+| Parameter Name    | Decimal Scaling (10<sup>n</sup>) | [sequence].decimalshift
 | Default Value     | `0`                 | `0`
 | Input Options     | `-9` .. `9`         | `-9` .. `9`
 

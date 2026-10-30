@@ -1,0 +1,127 @@
+/* Import css file for basic tooltip theming */
+@import url('tooltips-theme.css');
+
+/* Base class for tooltip */
+#tooltip-portal {
+  /* Visuals */
+  background-color: var(--bg-tooltip);
+  color: black;
+  padding: 5px 10px 10px 10px;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  background-clip: padding-box;
+  margin: -2px;
+  /* Layout & Size */
+  width: 600px;
+  max-width: calc(100vw - 20px);
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.35;
+  position: fixed;
+  z-index: 99999;
+  display: none;
+  pointer-events: auto;
+  /* Scroll logic */
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-secondary) var(--bg-light);
+}
+
+@media screen and (max-width: 720px) {
+  #tooltip-portal {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
+/* Scrollbar styling */
+#tooltip-portal::-webkit-scrollbar {
+  width: 6px;
+}
+
+#tooltip-portal::-webkit-scrollbar-track {
+  background: var(--bg-light);
+}
+
+#tooltip-portal::-webkit-scrollbar-thumb {
+  background: var(--text-secondary);
+  border-radius: 10px;
+  opacity: 0.5;
+}
+
+/* Internal Typography & Tables */
+#tooltip-portal h1 {
+  font-size: 1.3em;
+  margin: 0.2em 0 0.3em 0;
+}
+
+#tooltip-portal h2 {
+  font-size: 1.2em;
+  margin: 1em 0 0.3em 0;
+}
+
+#tooltip-portal h3 {
+  font-size: 1em;
+  margin: 1em 0 0.3em 0;
+}
+
+#tooltip-portal table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 5px 0;
+}
+
+#tooltip-portal th {
+  background: var(--bg-tooltip-header);
+  padding: 5px;
+  text-align: left;
+}
+
+#tooltip-portal td {
+  padding: 5px;
+  border-bottom: 1px solid var(--border);
+}
+
+#tooltip-portal.rst-content {
+  font-size: inherit !important;
+}
+
+/* Trigger Area */
+.tooltip-trigger {
+  cursor: help;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  width: 18px;
+  height: 18px;
+}
+
+/* Pseudo-element renders the SVG icon */
+.tooltip-trigger::before {
+  content: "";
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-color: var(--text-secondary);
+  transition:
+    transform 0.2s ease-in-out,
+    background-color 0.2s ease-in-out;
+  /* Encoded SVG mask */
+  -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>');
+  mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.tooltip-trigger:hover::before {
+  transform: scale(1.15);
+  background-color: var(--primary);
+}

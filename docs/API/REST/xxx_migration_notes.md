@@ -2,6 +2,15 @@
 
 ## Migration notes
 
+### Migration from v17.x to v18.x
+
+Modified endpoints (Functionality moved to other endpoints):
+
+| REST API Endpoint                    | Description                                        | HTML / JSON | Functionality moved  
+|:-------------------------------------|:---------------------------------------------------|:------------|:-----------
+| [/editflow](editflow.md)             | Parametrization Helper                             | HTML        | `/editflow?task=data` -> `/data?type=filelist`<br>`/editflow?task=tflite` -> `/fileserver/config/models/?filelist=true`<br>`/editflow?task=certs` -> `/fileserver/config/certs/?filelist=true`
+
+
 ### Migration from v16.x to v17.x
 
 Mapping which new endpoint replaces functionality of removed endpoint:

@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: set_fallbackvalue
+## REST API Endpoint: `set_fallbackvalue`
 
 `http://IP-ADDRESS/set_fallbackvalue`
 

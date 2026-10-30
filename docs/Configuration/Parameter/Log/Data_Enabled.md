@@ -9,11 +9,7 @@
 
 ## Description
 
-Activate data logging of the results to the SD-Card. The data will be stored in 
-`/log/data/data_YYYY-MM-DD.csv`. 
-Check [`documentation`](https://jomjol.github.io/AI-on-the-edge-device-docs/data-logging) 
-for more details.
-
+Activate data logging of the results to the SD-Card. The data will be stored in `/log/data/data_YYYY-MM-DD.csv`.
 
 !!! Warning
     A SD-Card has limited write cycles.

@@ -301,22 +301,22 @@ void setSystemStatusFlag(SystemStatusFlag_t flag)
     systemStatus = systemStatus | flag; // set bit
 
     char buf[20];
-    snprintf(buf, sizeof(buf), "0x%08X", getSystemStatus());
+    snprintf(buf, sizeof(buf), "0x%08X", systemStatus);
     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "System status code: " + std::string(buf));
 }
 
 
 void clearSystemStatusFlag(SystemStatusFlag_t flag)
 {
-    systemStatus = systemStatus | ~flag; // clear bit
+    systemStatus = systemStatus & ~static_cast<unsigned int>(flag); // clear bit
 
     char buf[20];
-    snprintf(buf, sizeof(buf), "0x%08X", getSystemStatus());
+    snprintf(buf, sizeof(buf), "0x%08X", systemStatus);
     LogFile.writeToFile(ESP_LOG_ERROR, TAG, "System status code: " + std::string(buf));
 }
 
 
-int getSystemStatus(void)
+unsigned int getSystemStatus(void)
 {
     return systemStatus;
 }
@@ -324,14 +324,11 @@ int getSystemStatus(void)
 
 bool isSetSystemStatusFlag(SystemStatusFlag_t flag)
 {
-    // ESP_LOGE(TAG, "Flag (0x%08X) is set (0x%08X): %d", flag, systemStatus , ((systemStatus & flag) == flag));
-
     if ((systemStatus & flag) == flag) {
         return true;
     }
-    else {
-        return false;
-    }
+
+    return false;
 }
 
 

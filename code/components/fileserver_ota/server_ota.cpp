@@ -580,7 +580,7 @@ void checkOtaUpdate()
 
 
 // Uploads the OTA package, stages it and reboot
-static esp_err_t handler_ota(httpd_req_t *req)
+esp_err_t handler_ota(httpd_req_t *req)
 {
     static const char *uriPrefix = "/ota/";
     if (strncmp(req->uri, uriPrefix, strlen(uriPrefix)) != 0) {
@@ -704,7 +704,7 @@ void doReboot()
 
 void doRebootOTA()
 {
-    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot in 5sec");
+    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot in 5 seconds");
 
     markPlannedReboot();
 

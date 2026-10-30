@@ -1,8 +1,8 @@
-# Parameter: Analog/Digit Sync Value
+# Parameter: Dial-to-Wheel Detune
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Analog/Digit Sync Value | [sequence].analogdigitsyncvalue
+| Parameter Name    | Dial-to-Wheel Detune | [sequence].analogdigitsyncvalue
 | Default Value     | `9.2`               | `9.2`
 | Input Options     | `6.0` .. `9.9`      | `6.0` .. `9.9` 
 

@@ -593,7 +593,8 @@ esp_err_t handler_main(httpd_req_t *req)
         return httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid URI");
     }
 
-    const std::string basePath = ((struct HttpServerData *)req->user_ctx)->basePathRoot;
+    const auto *serverData = static_cast<HttpServerData *>(req->user_ctx);
+    const std::string &basePath = serverData->basePathRoot;
     std::string filepath = basePath;
 
     if (strcmp(req->uri, "/") == 0) {
@@ -603,41 +604,78 @@ esp_err_t handler_main(httpd_req_t *req)
         filepath.append("/html").append(req->uri);
 
         // Remove query part from URI if present
-        size_t queryPos = filepath.find('?');
+        const size_t queryPos = filepath.find('?');
         if (queryPos != std::string::npos) {
-            filepath = filepath.substr(0, queryPos);
+            filepath.resize(queryPos);
         }
     }
 
     if (filepath == "/sdcard/html/index.html") {
         // Check if critical errors prevent normal operation
-        if (isSetSystemStatusFlag(SYSTEM_STATUS_PSRAM_BAD) || isSetSystemStatusFlag(SYSTEM_STATUS_HEAP_TOO_SMALL) ||
-            isSetSystemStatusFlag(SYSTEM_STATUS_SDCARD_CHECK_BAD) || isSetSystemStatusFlag(SYSTEM_STATUS_FOLDER_CHECK_BAD)) {
-            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Critical error(s) occurred, redirect to reduced web interface");
+        constexpr uint32_t CRITICAL_ERROR_MASK = SYSTEM_STATUS_PSRAM_BAD | SYSTEM_STATUS_HEAP_TOO_SMALL | SYSTEM_STATUS_SDCARD_CHECK_BAD |
+                                                 SYSTEM_STATUS_FOLDER_CHECK_BAD;
 
-            std::string message = "<h1>AI on the Edge</h1><b>Critical error(s) occurred, which do not allow to start regular process and "
-                                  "web interface:</b><br>";
+        if (getSystemStatus() & CRITICAL_ERROR_MASK) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                "Critical errors occurred, preventing the standard process and web interface from starting");
 
-            char buf[20];
-            for (int i = 0; i < 32; i++) {
-                if (isSetSystemStatusFlag((SystemStatusFlag_t)(1 << i))) {
-                    snprintf(buf, sizeof(buf), "0x%08X", 1 << i);
-                    message += std::string(buf) + "<br>";
+            const auto getStatusFlagName = [](uint32_t flag) -> const char * {
+                switch (flag) {
+                    case SYSTEM_STATUS_PSRAM_BAD:
+                        return "PSRAM: Failed Or Missing";
+                    case SYSTEM_STATUS_HEAP_TOO_SMALL:
+                        return "Heap: Memory Too Low";
+                    case SYSTEM_STATUS_SDCARD_CHECK_BAD:
+                        return "SD Card: General Failure";
+                    case SYSTEM_STATUS_FOLDER_CHECK_BAD:
+                        return "SD Card: Missing Files Or Folders";
+                    default:
+                        return "Unknown Error";
+                }
+            };
+
+
+            std::string message;
+            message.reserve(2048);
+
+            // Basic styles
+            message = "<style>body{font-family:Arial;padding:20px;line-height:1.5;}"
+                      "button{margin:5px;padding:10px;cursor:pointer;border-radius:4px;"
+                      "border:1px solid #ccc;background:#f0f0f0;}"
+                      "code{background:#eee;padding:2px 4px;}</style>";
+
+            // Headline
+            message += "<h1>AI-on-the-Edge Device</h1><br>"
+                       "<b>Critical errors occurred, preventing the operational web interface from starting!</b><br><br>"
+                       "<b>Detected Critical Errors:</b><br>";
+
+            // Error codes
+            constexpr uint32_t criticalFlags[] = {SYSTEM_STATUS_PSRAM_BAD, SYSTEM_STATUS_HEAP_TOO_SMALL, SYSTEM_STATUS_SDCARD_CHECK_BAD,
+                                                  SYSTEM_STATUS_FOLDER_CHECK_BAD};
+            char buf[128];
+            for (const uint32_t currentFlag : criticalFlags) {
+                if (isSetSystemStatusFlag(static_cast<SystemStatusFlag_t>(currentFlag))) {
+                    snprintf(buf, sizeof(buf), "<code>0x%08X</code> - %s<br>", static_cast<unsigned>(currentFlag),
+                             getStatusFlagName(currentFlag));
+                    message += buf;
                 }
             }
 
-            message += "<br>Please check logs with \'Log Viewer\' and/or <a "
-                       "href=\"https://jomjol.github.io/AI-on-the-edge-device-docs/Error-Codes\" "
-                       "target=_blank>jomjol.github.io/AI-on-the-edge-device-docs/Error-Codes</a> for more information.";
-            message += "<br><br><button onclick=\"window.location.href='/reboot';\">Reboot</button>";
-            message += "&nbsp;<button onclick=\"window.open('/sys_ota_page.html');\">OTA Update</button>";
+            // Info and buttons
+            message +=
+                "<br><a href=\"https://github.com/Slider0007/AI-on-the-edge-device/blob/develop/docs/Troubleshooting/Reduced_WebUI.md\" "
+                "target=\"_blank\">Error Documentation</a>.<br><br>";
+            message += "<button onclick=\"window.location.href='/reboot';\">Reboot Device</button>";
             message += "&nbsp;<button onclick=\"window.open('/sys_log.html');\">Log Viewer</button>";
-            message += "&nbsp;<button onclick=\"window.open('/sys_info.html');\">Show System Info</button>";
-            httpd_resp_send(req, message.c_str(), message.length());
+            message += "&nbsp;<button onclick=\"window.open('/sys_ota.html');\">OTA Update</button>";
+            message += "&nbsp;<button onclick=\"window.open('/fileserver/');\">File Explorer</button>";
+            message += "&nbsp;<button onclick=\"window.open('/sys_info.html');\">System Info</button>";
+            httpd_resp_send(req, message.c_str(), HTTPD_RESP_USE_STRLEN);
             return ESP_OK;
         }
-        else if (flowctrl.getStatusSetupModus()) { // If in setup mode, redirect to setup page
-            ESP_LOGD(TAG, "System is in setup mode. Redirect from index.html --> setup.html");
+
+        if (flowctrl.getStatusSetupModus()) {
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "System is in setup mode. Redirect from index.html --> setup.html");
             filepath = "/sdcard/html/setup.html";
         }
     }

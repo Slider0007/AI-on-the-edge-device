@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cerrno>
-#include <climits>
 #include <string>
 #include <algorithm>
 #include <initializer_list>
@@ -12,7 +11,6 @@
 #include <esp_err.h>
 #include <cJSON.h>
 
-// #include "cfgDataStruct.h"
 #include "ClassLogFile.h"
 
 
@@ -275,7 +273,7 @@ inline void addElementHelper(cJSON *parent, const char *name, const std::string 
 
 
 // Create and attach a sub-object
-static cJSON *addObjectHelper(cJSON *parent, const char *name, esp_err_t &retVal)
+inline cJSON *addObjectHelper(cJSON *parent, const char *name, esp_err_t &retVal)
 {
     if (retVal != ESP_OK) {
         return NULL;
@@ -302,7 +300,7 @@ static cJSON *addObjectHelper(cJSON *parent, const char *name, esp_err_t &retVal
 }
 
 // Create and attach a sub-array
-static cJSON *addArrayHelper(cJSON *parent, const char *name, esp_err_t &retVal)
+inline cJSON *addArrayHelper(cJSON *parent, const char *name, esp_err_t &retVal)
 {
     if (retVal != ESP_OK) {
         return NULL;
@@ -329,7 +327,7 @@ static cJSON *addArrayHelper(cJSON *parent, const char *name, esp_err_t &retVal)
 }
 
 // Append a new object element to a parent array
-static cJSON *addArrayObjectHelper(cJSON *array, esp_err_t &retVal)
+inline cJSON *addArrayObjectHelper(cJSON *array, esp_err_t &retVal)
 {
     if (retVal != ESP_OK) {
         return NULL;
