@@ -868,7 +868,7 @@
 
           let mscrVal, dscrVal, ocrValues, ocrConfs;
           const possibleSeqLen = parseInt(cols[10]);
-          const isModernFormatRow = cols.length >= 11 && !isNaN(possibleSeqLen) && cols.length === 11 + (2 * possibleSeqLen);
+          const isModernFormatRow = false; // Forced to legacy format
 
           if (isModernFormatRow) {
             hasModernFormat = true;
