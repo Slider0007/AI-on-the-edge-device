@@ -920,8 +920,7 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
     if (publishHADiscoveryTopicDeviceInfo) {
         payload += std::string(", \"dev\": {") + "\"ids\":[\"" + nodeID + "\"]," + "\"cns\": [[\"mac\", \"" + getMac() + "\"]]," +
                    "\"name\":\"" + nodeID + "\"," + "\"mdl\":\"AI-on-the-Edge Device (" + getBoardType() + ")\"," +
-                   "\"mf\":\"AI-on-the-Edge\"," + "\"sw\":\"" + getFwVersion() + " [SLFork]\"," + "\"cu\":\"http://" + getIpAddress() +
-                   "\"}";
+                   "\"mf\":\"AI-on-the-Edge [SLFork]\"," + "\"sw\":\"" + getFwVersion() + "\",\"cu\":\"http://" + getIpAddress() + "\"}";
     }
     else { // Publish device reference and connections to group data together
         payload += std::string(", \"dev\": {") + "\"ids\":[\"" + nodeID + "\"]," + "\"cns\":[[\"mac\",\"" + getMac() + "\"]]}";
