@@ -324,7 +324,7 @@
           const parts = str.split(' @ ');
           return parts[1].trim(); // Commit
         }
-        return '';
+        return str; // Tag
       };
 
       const fWGitHash = getHash(fwRaw);

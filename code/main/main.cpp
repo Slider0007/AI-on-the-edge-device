@@ -174,15 +174,16 @@ extern "C" void app_main(void)
     // ********************************************
     const std::string fwVersion = getFwVersion();
     const std::string webUiVersion = getWebUiVersion();
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, "FW: " + fwVersion + " | Build time: " + getBuildTime() + " | WebUI: " + webUiVersion);
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "Firmware: " + fwVersion + " | WebUI: " + webUiVersion + " | Build time: " + getBuildTime());
 
     if (webUiVersion.empty() || webUiVersion.starts_with("?")) {
         LogFile.writeToFile(ESP_LOG_WARN, TAG, std::string("Failed to parse WebUI version (sdcard/html/version.txt)"));
     }
 
     if (webUiVersion != fwVersion) {
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "WebUI (" + webUiVersion + ") does not match firmware (" + fwVersion + ")");
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using firmware zip file");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG,
+                            "Version mismatch (Firmware: " + fwVersion + " | WebUI: " + webUiVersion +
+                                "). Repeat OTA update using firmware zip package");
     }
 
     // Check reboot reason
