@@ -798,7 +798,7 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     }
 
     if (req->content_len > MAX_FILE_SIZE) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "File size must be less than " MAX_FILE_SIZE_STR);
+        httpd_resp_send_err(req, HTTPD_413_CONTENT_TOO_LARGE, "File size must be less than " MAX_FILE_SIZE_STR);
         return ESP_FAIL;
     }
 
