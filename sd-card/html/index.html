@@ -320,9 +320,11 @@
       // Extract short hash (last word, first 7 chars)
       const getHash = (str) => {
         if (typeof str !== 'string') return '';
-        const last = str.trim().split(/\s+/).pop() || '';
-        const hash = last.substring(0, 7);
-        return /^[0-9a-fA-F]{7}$/.test(hash) ? hash : '';
+        if (str.includes(' @ ')) {
+          const parts = str.split(' @ ');
+          return parts[1].trim(); // Commit
+        }
+        return '';
       };
 
       const fWGitHash = getHash(fwRaw);

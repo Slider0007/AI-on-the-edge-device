@@ -14,7 +14,6 @@
 #include "psram.h"
 #endif // TASK_ANALYSIS_ON
 
-#include "../main/version.h" // Only include once
 #include "http_auth.h"
 #include "MainFlowControl.h"
 #include "ClassControlCamera.h"
@@ -38,10 +37,14 @@ struct HttpServerData *httpServerData = NULL;
 
 extern std::string deviceStartTimestamp;
 
+extern std::string getFwVersion(void);
+extern std::string getWebUiVersion(void);
+extern std::string getBuildTime(void);
+
 
 esp_err_t handler_get_info(httpd_req_t *req)
 {
-    const char *APIName = "info:v4"; // API name and version
+    const char *APIName = "info:v5"; // API name and version
     char _query[200];
     char _valuechar[30];
     std::string type;
@@ -245,22 +248,13 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddNumberToObject(cJSONObject, "heap_spiram_min_free", getESPHeapSizeSPIRAMMinFree()) == NULL) {
             retVal = ESP_FAIL;
         }
-        if (cJSON_AddStringToObject(cJSONObject, "git_branch", libfive_git_branch()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(cJSONObject, "git_tag", libfive_git_version()) == NULL) {
-            retVal = ESP_FAIL;
-        }
-        if (cJSON_AddStringToObject(cJSONObject, "git_revision", libfive_git_revision()) == NULL) {
-            retVal = ESP_FAIL;
-        }
         if (cJSON_AddStringToObject(cJSONObject, "firmware_version", getFwVersion().c_str()) == NULL) {
             retVal = ESP_FAIL;
         }
-        if (cJSON_AddStringToObject(cJSONObject, "html_version", getHTMLversion().c_str()) == NULL) {
+        if (cJSON_AddStringToObject(cJSONObject, "html_version", getWebUiVersion().c_str()) == NULL) {
             retVal = ESP_FAIL;
         }
-        if (cJSON_AddStringToObject(cJSONObject, "build_time", build_time()) == NULL) {
+        if (cJSON_AddStringToObject(cJSONObject, "build_time", getBuildTime().c_str()) == NULL) {
             retVal = ESP_FAIL;
         }
         if (cJSON_AddNumberToObject(cJSONObject, "config_version", getConfigVersion()) == NULL) {
@@ -528,28 +522,16 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_FAIL;
     }
 #endif // TASK_ANALYSIS_ON
-    else if (type.compare("git_branch") == 0) {
-        httpd_resp_sendstr(req, libfive_git_branch());
-        return ESP_OK;
-    }
-    else if (type.compare("git_tag") == 0) {
-        httpd_resp_sendstr(req, libfive_git_version());
-        return ESP_OK;
-    }
-    else if (type.compare("git_revision") == 0) {
-        httpd_resp_sendstr(req, libfive_git_revision());
-        return ESP_OK;
-    }
     else if (type.compare("firmware_version") == 0) {
         httpd_resp_sendstr(req, getFwVersion().c_str());
         return ESP_OK;
     }
     else if (type.compare("html_version") == 0) {
-        httpd_resp_sendstr(req, getHTMLversion().c_str());
+        httpd_resp_sendstr(req, getWebUiVersion().c_str());
         return ESP_OK;
     }
     else if (type.compare("build_time") == 0) {
-        httpd_resp_sendstr(req, build_time());
+        httpd_resp_sendstr(req, getBuildTime().c_str());
         return ESP_OK;
     }
     else if (type.compare("config_version") == 0) {

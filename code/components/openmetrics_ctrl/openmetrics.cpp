@@ -16,10 +16,9 @@
 #include "connect_wlan.h"
 #include "helper.h"
 
-extern std::string getFwVersion(void);
-
-
 static const char *TAG = "OPENMETRICS";
+
+extern std::string getFwVersion(void);
 
 
 /**

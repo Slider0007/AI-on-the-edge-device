@@ -430,30 +430,50 @@
       if (!target) return;
       target.textContent = '';
 
-      if (!versionValue || versionValue === '?' || versionValue === '') {
+      const val = versionValue != null ? String(versionValue).trim() : '';
+
+      // Handle empty or unknown values
+      if (!val || val === '?') {
         target.textContent = 'Unknown';
         return;
       }
 
-      const parts = String(versionValue).split('Commit: ');
-      if (parts.length < 2 || parts[1].length < 7) {
-        target.textContent = versionValue;
+      // WebUI version (or any non-firmware field) renders as plain text
+      if (targetId === 'html_version') {
+        target.textContent = val;
         return;
       }
 
-      const commit = parts[1].substring(0, 7);
-      if (!/^[0-9a-fA-F]{7}$/.test(commit)) {
-        target.textContent = versionValue;
-        return;
-      }
+      // Firmware version logic
+      if (val.includes(' @ ')) {
+        const parts = val.split(' @ ');
+        const commit = parts[1].trim();
 
-      target.append(document.createTextNode(parts[0] + 'Commit: '));
-      const link = document.createElement('a');
-      link.href = `https://github.com/Slider0007/AI-on-the-edge-device/commits/${commit}`;
-      link.target = '_blank';
-      link.textContent = commit;
-      target.appendChild(link);
-      target.append(document.createTextNode(')'));
+        // If dirty or N/A, display as plain text
+        if (commit.endsWith('+') || commit === 'N/A') {
+          target.textContent = val;
+        } else {
+          target.append(document.createTextNode(parts[0] + ' @ '));
+          const link = document.createElement('a');
+          link.href = `https://github.com/Slider0007/AI-on-the-edge-device/commit/${commit}`;
+          link.target = '_blank';
+          link.textContent = commit;
+          target.appendChild(link);
+        }
+      } else {
+        const tag = val;
+
+        // If dirty or N/A, display as plain text; otherwise link to release tag
+        if (tag.endsWith('+') || tag === 'N/A') {
+          target.textContent = tag;
+        } else {
+          const link = document.createElement('a');
+          link.href = `https://github.com/Slider0007/AI-on-the-edge-device/releases/tag/${tag}`;
+          link.target = '_blank';
+          link.textContent = tag;
+          target.appendChild(link);
+        }
+      }
     }
 
     async function loadInfoData() {

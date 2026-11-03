@@ -16,7 +16,6 @@ struct HttpServerData {
 extern struct HttpServerData *httpServerData;
 
 extern httpd_handle_t server;
-extern std::string getFwVersion(void);
 
 void allocateWebserverHelperMemory(void);
 httpd_handle_t startWebserver(void);

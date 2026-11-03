@@ -11,88 +11,51 @@
 // into the library by the version.cmake script
 extern "C" {
 extern const char *GIT_TAG;
-extern const char *GIT_REV;
 extern const char *GIT_BRANCH;
+extern const char *GIT_REV;
 extern const char *BUILD_TIME;
 }
 
 
-const char *build_time(void)
+std::string getBuildTime(void)
 {
-    return BUILD_TIME;
-}
-
-const char *libfive_git_version(void)
-{
-    return GIT_TAG;
-}
-
-const char *libfive_git_revision(void)
-{
-    return GIT_REV;
-}
-
-const char *libfive_git_branch(void)
-{
-    return GIT_BRANCH;
+    return std::string(BUILD_TIME);
 }
 
 
 std::string getFwVersion(void)
 {
-    std::string buf;
+    // Tag is not set
     if ((std::string(GIT_TAG) == "N/A") || (std::string(GIT_TAG) == "")) { // Tag not set, show branch
-        buf = "Develop: " + std::string(GIT_BRANCH);
+        return "Develop: " + std::string(GIT_BRANCH) + " @ " + std::string(GIT_REV);
     }
-    else { // Tag is set, ignore branch
-        buf = "Release: " + std::string(GIT_TAG);
-    }
-    buf = buf + " (Commit: " + std::string(GIT_REV) + ")";
 
-    return buf;
+    return std::string(GIT_TAG);
 }
 
 
-std::string getHTMLversion(void)
+std::string getWebUiVersion(void)
 {
-    char buf[100] = "?\0";
-    FILE *pFile;
+    char buf[128] = "?";
     std::string fn = formatFileName("/sdcard/html/version.txt");
-    pFile = fopen(fn.c_str(), "r");
+    FILE *pFile = fopen(fn.c_str(), "r");
 
     if (pFile == NULL) {
         return std::string(buf);
     }
 
-    fgets(buf, sizeof(buf), pFile); // Line 1: Version
-    fclose(pFile);
-
-    std::string value = std::string(buf);
-    value.erase(std::remove(value.begin(), value.end(), '\n'), value.end()); // Remove any newlines
-
-    return value;
-}
-
-
-std::string getHTMLcommit(void)
-{
-    char buf[100] = "?\0";
-    FILE *pFile;
-    std::string fn = formatFileName("/sdcard/html/version.txt");
-    pFile = fopen(fn.c_str(), "r");
-
-    if (pFile == NULL) {
-        return std::string(buf);
+    if (fgets(buf, sizeof(buf), pFile) != NULL) {
+        fclose(pFile);
+        std::string value = std::string(buf);
+        // Remove both carriage returns and newlines (\r and \n)
+        value.erase(std::remove(value.begin(), value.end(), '\n'), value.end());
+        value.erase(std::remove(value.begin(), value.end(), '\r'), value.end());
+        return value;
     }
 
-    fgets(buf, sizeof(buf), pFile); // Line 1: Version -> ignored
-    fgets(buf, sizeof(buf), pFile); // Line 2: Commit
     fclose(pFile);
-
-    std::string value = std::string(buf);
-    value.erase(std::remove(value.begin(), value.end(), '\n'), value.end()); // Remove any newlines
-
-    return value;
+    return std::string(buf);
 }
+
 
 #endif // _VERSION_H

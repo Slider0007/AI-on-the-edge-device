@@ -13,8 +13,8 @@
 #include <soc/rtc_cntl_reg.h>
 #endif // DISABLE_BROWNOUT_DETECTOR
 
+#include "version.h" // Only include once
 #include "configClass.h"
-#include "configMigration.h"
 #include "ClassControlCamera.h"
 #include "ClassLogFile.h"
 #include "helper.h"
@@ -44,15 +44,6 @@ static const char *TAG = "MAIN";
 
 
 std::string deviceStartTimestamp = "";
-
-extern const char *GIT_TAG;
-extern const char *GIT_REV;
-extern const char *GIT_BRANCH;
-extern const char *BUILD_TIME;
-
-extern std::string getFwVersion(void);
-extern std::string getHTMLversion(void);
-extern std::string getHTMLcommit(void);
 
 esp_err_t initNVSFlash();
 esp_err_t initSDCard();
@@ -181,16 +172,17 @@ extern "C" void app_main(void)
 
     // Check version information
     // ********************************************
-    LogFile.writeToFile(ESP_LOG_INFO, TAG, getFwVersion() + " | Build time: " + std::string(BUILD_TIME) + " | WebUI: " + getHTMLversion());
+    const std::string fwVersion = getFwVersion();
+    const std::string webUiVersion = getWebUiVersion();
+    LogFile.writeToFile(ESP_LOG_INFO, TAG, "FW: " + fwVersion + " | Build time: " + getBuildTime() + " | WebUI: " + webUiVersion);
 
-    if (getHTMLcommit().starts_with("?")) {
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, std::string("Failed to read file html/version.txt to parse WebUI version"));
+    if (webUiVersion.empty() || webUiVersion.starts_with("?")) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, std::string("Failed to parse WebUI version (sdcard/html/version.txt)"));
     }
 
-    if (getHTMLcommit().substr(0, 7) != std::string(GIT_REV).substr(0, 7)) { // Compare the first 7 characters of both hashes
-        LogFile.writeToFile(ESP_LOG_WARN, TAG,
-                            "WebUI version (" + getHTMLcommit() + ") does not match firmware version (" + std::string(GIT_REV) + ")");
-        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using AI-on-the-edge-device__board_type__*.zip");
+    if (webUiVersion != fwVersion) {
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "WebUI (" + webUiVersion + ") does not match firmware (" + fwVersion + ")");
+        LogFile.writeToFile(ESP_LOG_WARN, TAG, "Recommendation: Repeat OTA update using firmware zip file");
     }
 
     // Check reboot reason
