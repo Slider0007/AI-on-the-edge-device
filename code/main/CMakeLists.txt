@@ -14,12 +14,41 @@ if(NOT GIT_EXECUTABLE)
     set(GIT_REV "N/A")
     set(GIT_DIFF "")
 else()
-    # Ensure CMake re-runs configuration if git HEAD or index changes
-    if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
-        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-            "${CMAKE_SOURCE_DIR}/.git/HEAD"
-            "${CMAKE_SOURCE_DIR}/.git/index"
+    # Resolve the actual .git directory (supports worktrees where .git is a file)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --git-dir
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_DIR_PATH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+
+    if(GIT_DIR_PATH)
+        if(NOT IS_ABSOLUTE "${GIT_DIR_PATH}")
+            set(GIT_DIR_PATH "${CMAKE_SOURCE_DIR}/${GIT_DIR_PATH}")
+        endif()
+
+        # Core Git metadata files to track
+        set(GIT_DEPENDENCIES
+            "${GIT_DIR_PATH}/HEAD"
+            "${GIT_DIR_PATH}/index"
         )
+
+        # Track the active branch reference file (e.g., .git/refs/heads/main)
+        # so commits on the current branch correctly trigger a re-configure.
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-parse --symbolic-full-name HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_REF
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        if(GIT_REF AND EXISTS "${GIT_DIR_PATH}/${GIT_REF}")
+            list(APPEND GIT_DEPENDENCIES "${GIT_DIR_PATH}/${GIT_REF}")
+        endif()
+
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${GIT_DEPENDENCIES})
     endif()
 
     # Use ${GIT_EXECUTABLE} instead of raw "git"
@@ -60,7 +89,7 @@ else()
                         OUTPUT_STRIP_TRAILING_WHITESPACE
                         ERROR_QUIET)
 
-        if(GIT_DIFF_RES EQUAL 1 OR NOT GIT_UNTRACKED_SOURCES STREQUAL "")
+        if(NOT GIT_DIFF_RES EQUAL 0 OR NOT GIT_UNTRACKED_SOURCES STREQUAL "")
             set(GIT_DIFF "+")
         else()
             set(GIT_DIFF "")

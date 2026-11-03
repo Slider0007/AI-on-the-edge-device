@@ -310,33 +310,17 @@
     }
 
     async function checkFwVersion() {
-      const [fwRaw, uiRaw] = await Promise.all([fetchFwVersion('firmware_version'), fetchFwVersion('html_version')]);
+      const [fwVersion, uiVersion] = await Promise.all([
+        fetchFwVersion('firmware_version'),
+        fetchFwVersion('html_version')
+      ]);
 
-      if (!fwRaw || !uiRaw) {
-        console.error(`Failed to compare firmware version strings.`);
+      if (!fwVersion || !uiVersion) {
+        console.error('Failed to fetch firmware or WebUI version strings.');
         return;
       }
 
-      // Extract short hash (last word, first 7 chars)
-      const getHash = (str) => {
-        if (typeof str !== 'string') return '';
-        if (str.includes(' @ ')) {
-          const parts = str.split(' @ ');
-          return parts[1].trim(); // Commit
-        }
-        return str; // Tag
-      };
-
-      const fWGitHash = getHash(fwRaw);
-      const webUiHash = getHash(uiRaw);
-
-      if (!fWGitHash || !webUiHash) {
-        firework.launch("Failed to parse firmware or WebUI hash. Check logs for more details.", 'warning', 10000);
-        console.error('Failed to parse firmware or WebUI hash');
-        return;
-      }
-
-      if (fWGitHash !== webUiHash) {
+      if (fwVersion !== uiVersion) {
         firework.launch("Web interface version does not match the firmware version. It's strongly advised to use matching version. Check logs for more details.",
           'warning', 10000);
       }
