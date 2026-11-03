@@ -285,7 +285,7 @@
           fileInput.disabled = true;
           uploadBtn.disabled = true;
 
-          const res = await apiCallNotify('/upload' + filePath, { method: 'POST', body: fileInput.files[0], timeout: 60000 },
+          const res = await apiCallNotify('/upload' + filePath + '?overwrite=true', { method: 'POST', body: fileInput.files[0], timeout: 60000 },
             {
               action: 'Uploading',
               loadingMsg: "Uploading file. Please wait..."

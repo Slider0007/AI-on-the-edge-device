@@ -424,26 +424,16 @@ async function fetchJson(endpoint, action) {
 }
 
 const getWlanNetworks = () => fetchJson('/wlan?task=scan', 'WLAN scan request');
-const getLogFileList = () => fetchJson('/log?type=filelist', 'Log files request');
-const getDataFileList = () => fetchJson('/data?type=filelist', 'Data files request');
-const getTfliteFileList = () => fetchJson('/fileserver/config/models/?filelist=true', 'TFLite files request');
-const getCertFileList = () => fetchJson('/fileserver/config/certs/?filelist=true', 'Cert files request');
+const getLogFileList = () => fetchJson('/log?type=list_dir', 'Log files request');
+const getDataFileList = () => fetchJson('/data?type=list_dir', 'Data files request');
+const getTfliteFileList = () => fetchJson('/fileserver/config/models/?list_dir=true', 'TFLite files request');
+const getCertFileList = () => fetchJson('/fileserver/config/certs/?list_dir=true', 'Cert files request');
 
-async function apiCopy(_source, _target, _domainname = '', async = false) {
-  const endpoint = withDomain(_domainname, `/editflow?task=copy&in=${_source}&out=${_target}`);
+async function apiCopy(_source, _target, async = false) {
+  const endpoint = withDomain(getDomainname(), `/editflow?task=copy&in=${_source}&out=${_target}`);
   const res = await apiCallNotify(endpoint, { signal: async ? undefined : null }, { action: 'Copy file request' });
   if (!res.ok) throw apiError('Copy file request failed', res);
   return 'Copy file request successful';
-}
-
-async function apiDelete(_filename, _domainname = '') {
-  const res = await apiCallNotify(withDomain(_domainname, '/delete' + _filename), { method: 'POST' }, { action: 'File delete request' });
-  return res.ok;
-}
-
-async function apiUpload(_content, _filename, _domainname = '') {
-  const res = await apiCallNotify(withDomain(_domainname, '/upload' + _filename), { method: 'POST', body: _content }, { action: 'File send request' });
-  return res.ok;
 }
 
 /* ========================================================================== */
@@ -614,15 +604,4 @@ function loadImage(url, altUrl) {
   img.src = url;
   timer = setTimeout(fallback, 15000);
   return img;
-}
-
-async function saveCanvasToImage(_canvas, _filename, _delete = true, _domainname = '') {
-  const blob = await new Promise((resolve) => _canvas.toBlob(resolve, 'image/jpeg', 0.8));
-  if (!blob) return false;
-
-  if (_delete) {
-    await apiCall(withDomain(_domainname, '/delete' + _filename), { method: 'POST' });
-  }
-
-  return apiUpload(blob, _filename, _domainname);
 }

@@ -71,12 +71,40 @@ bool copyFile(std::string input, std::string output)
 }
 
 
-bool renameFile(std::string srcFile, std::string destFile)
+bool renameFile(const std::string &srcFile, const std::string &destFile)
 {
-    // Remove target file first to guarantee overwrite on FATFS / LittleFS
-    unlink(destFile.c_str());
+    std::string backupFile = destFile + "_backup";
+    bool hadExistingDest = false;
 
-    return (rename(srcFile.c_str(), destFile.c_str()) == 0);
+    // Backup destination (if existing)
+    if (access(destFile.c_str(), F_OK) == 0) {
+        unlink(backupFile.c_str());
+        if (rename(destFile.c_str(), backupFile.c_str()) == 0) {
+            hadExistingDest = true;
+        }
+        else {
+            ESP_LOGE(TAG, "Failed to backup existing destination: %s", destFile.c_str());
+            return false;
+        }
+    }
+
+    // Rename souce to destination
+    if (rename(srcFile.c_str(), destFile.c_str()) != 0) {
+        ESP_LOGE(TAG, "Failed to rename %s to %s", srcFile.c_str(), destFile.c_str());
+
+        if (hadExistingDest) { // Restore on failure
+            rename(backupFile.c_str(), destFile.c_str());
+        }
+
+        return false;
+    }
+
+    // Clean up backup
+    if (hadExistingDest) {
+        unlink(backupFile.c_str());
+    }
+
+    return true;
 }
 
 

@@ -20,17 +20,17 @@ Browse, list and download files and directories from the SD card via HTTP GET re
 #### 1. Directory Listing & File Management
 * **Payload / URL**: `/fileserver/<dir-path>/` (Must end with a trailing slash `/`)
 * **Query Parameters**:
-  * `?filelist=true`: Returns a JSON-formatted list of files in the directory.
-  * `?readonly=true` (or `false`): Sets the directory view mode.
-  * `?full=true` (or `false`): Controls whether to show all files (`showAllFiles`).
-* **Response**: HTML formatted directory view or JSON file list.
+  * `?list_dir=true`: Returns a JSON-formatted list of sub-folders and files in the directory
+  * `?readonly=true` (or `false`): Sets the directory view mode
+  * `?full=true` (or `false`): Controls whether to show all files (`showAllFiles`)
+* **Response**: HTML formatted directory view or JSON file list
 
 #### 2. File Download
 * **Payload / URL**: `/fileserver/<file-path>` (No trailing slash)
-* **Description**: Downloads the specified file from storage.
+* **Description**: Downloads the specified file from storage
 * **Response**: 
-  * **Content-Type**: Automatically determined based on file extension (`setContentTypeFromFile`).
-  * **Content**: Binary file stream chunked via scratch buffer.
+  * **Content-Type**: Automatically determined based on file extension (`setContentTypeFromFile`)
+  * **Content**: Binary file stream chunked via scratch buffer
 
 ---
 

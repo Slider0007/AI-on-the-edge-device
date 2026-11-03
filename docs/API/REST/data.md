@@ -37,8 +37,8 @@ Retrieve and query system data and CSV log files with support for metadata, full
   `2024-02-01T14:39:33+0100,main,146.364,146.364,146.364,0.0000,0.000,000,1.2,4.0,6.3,3.5,6.4`
 
 #### 3. Get Data File List (JSON-coded)
-* **Payload**: `/data?type=filelist`
-* **Description**: Returns a list of available CSV data files stored in the root data directory (JSON).
+* **Payload**: `/data?type=list_dir`
+* **Description**: Returns a list of available CSV data files (array in ´files`) stored in the data directory (JSON).
 
 #### 4. Get API Name and Version
 * **Payload**: `/data?type=api_name`

@@ -163,13 +163,12 @@ void migrateConfiguration(cJSON *cJsonObject)
     // -------------------------------------------------------------------------------------------------
     if (migratedVersion >= 3) {
         std::string ConfigBackupFile = std::string(CONFIG_PERSISTENCE_FILE_BACKUP) + "_v" + std::to_string(migratedVersion);
-        deleteFile(ConfigBackupFile);
 
         if (!renameFile(CONFIG_PERSISTENCE_FILE, ConfigBackupFile)) {
-            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Config migrated. Failed to create backup file: " + std::string(ConfigBackupFile));
+            LogFile.writeToFile(ESP_LOG_WARN, TAG, "Config migrated. Failed to create backup file: " + ConfigBackupFile);
             return;
         }
 
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config migrated. Backup file: " + std::string(ConfigBackupFile));
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Config migrated. Backup file: " + ConfigBackupFile);
     }
 }

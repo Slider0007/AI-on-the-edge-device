@@ -700,6 +700,14 @@
       context.stroke();
     }
 
+    async function saveCanvasToFile(canvas, destFile) {
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+      if (!blob) return false;
+
+      const res = await apiCallNotify(withDomain(getDomainname(), '/upload' + destFile + '?overwrite=true'), { method: 'POST', body: blob }, { action: 'Image save request' });
+      return res.ok;
+    }
+
     async function saveReference() {
       if (!confirm('Are you sure you want to save and apply the new camera configuration and reference image?')) return;
 
@@ -708,12 +716,16 @@
 
       try {
         drawRotated(false);
-        const ok = await saveCanvasToImage(canvas, '/config/reference.jpg', true, getDomainname());
-        if (!ok) throw new Error('Reference image upload failed');
+
+        const res = await saveCanvasToFile(canvas, '/config/reference.jpg');
+        if (!res) throw new Error('Reference image upload failed');
+
         await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
       } catch (error) {
-        saveBtn.disabled = false;
         console.error('Save reference failed:', error);
+      }
+      finally {
+        saveBtn.disabled = false;
       }
     }
 

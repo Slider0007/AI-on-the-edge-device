@@ -46,7 +46,7 @@ static const std::unordered_set<std::string> sensitiveContent = {
     "wlan.ini", "wlan_ini.bak", "config.ini", "config_ini.bak", "system volume information", "thumbs.db"};
 
 
-static esp_err_t getDirFileList(httpd_req_t *req, const char *path, std::initializer_list<const char *> filterExts = {})
+static esp_err_t getDirList(httpd_req_t *req, const char *path, std::initializer_list<const char *> filterExts = {})
 {
     // Setup headers (JSON is the standard for lists)
     httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
@@ -59,26 +59,34 @@ static esp_err_t getDirFileList(httpd_req_t *req, const char *path, std::initial
         return ESP_FAIL;
     }
 
-    // Build JSON (Ignoring granular NULL checks for readability/speed)
+    // Build JSON with separate arrays for folders and files
     cJSON *cJSONObject = cJSON_CreateObject();
+    cJSON *folders = cJSON_AddArrayToObject(cJSONObject, "folders");
     cJSON *files = cJSON_AddArrayToObject(cJSONObject, "files");
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_name[0] == '.') {
-            continue; // Skip hidden
+            continue; // Skip hidden files / . / ..
         }
 
-        bool match = (filterExts.size() == 0);
-        for (const char *ext : filterExts) {
-            if (getFileIsFiletype(entry->d_name, ext)) {
-                match = true;
-                break;
+        if (entry->d_type == DT_DIR) {
+            // Folders are added directly (extension filters do not apply to directories)
+            cJSON_AddItemToArray(folders, cJSON_CreateString(entry->d_name));
+        }
+        else {
+            // Files go through the extension filter check
+            bool match = (filterExts.size() == 0);
+            for (const char *ext : filterExts) {
+                if (getFileIsFiletype(entry->d_name, ext)) {
+                    match = true;
+                    break;
+                }
             }
-        }
 
-        if (match) {
-            cJSON_AddItemToArray(files, cJSON_CreateString(entry->d_name));
+            if (match) {
+                cJSON_AddItemToArray(files, cJSON_CreateString(entry->d_name));
+            }
         }
     }
     closedir(dir);
@@ -184,8 +192,8 @@ static esp_err_t handler_logfiles(httpd_req_t *req)
     }
 
     // Metadata Handlers
-    if (strcmp(typeVal, "filelist") == 0) {
-        return getDirFileList(req, LOG_LOGS_ROOT_FOLDER, {"txt"});
+    if (strcmp(typeVal, "list_dir") == 0) {
+        return getDirList(req, LOG_LOGS_ROOT_FOLDER, {"txt"});
     }
     else if (strcmp(typeVal, "api_name") == 0) {
         httpd_resp_set_type(req, "text/plain");
@@ -485,8 +493,8 @@ static esp_err_t handler_datafiles(httpd_req_t *req)
     else if (type.compare("full") == 0) {
         return sendDatafile(req, true);
     }
-    else if (type.compare("filelist") == 0) {
-        return getDirFileList(req, LOG_DATA_ROOT_FOLDER, {"csv"});
+    else if (type.compare("list_dir") == 0) {
+        return getDirList(req, LOG_DATA_ROOT_FOLDER, {"csv"});
     }
     else if (type.compare("api_name") == 0) {
         httpd_resp_set_type(req, "text/plain");
@@ -596,7 +604,7 @@ static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char 
 
         // Skip sensitive files
         // @Deprecated: Keep up to now even ini file support already dropped, but files could still be on device
-        if (sensitiveContent.count(entry->d_name) > 0) {
+        if (sensitiveContent.count(toLower(entry->d_name)) > 0) {
             continue;
         }
 
@@ -697,7 +705,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     const char *relativePath = getPathFromUri(fullPath, ((HttpServerData *)req->user_ctx)->basePathFileserver,
                                               req->uri + sizeof("/fileserver") - 1, sizeof(fullPath));
     if (!relativePath) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Path malformed or too long");
+        httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "Invalid path: Path malformed or too long");
         return ESP_FAIL;
     }
 
@@ -716,8 +724,8 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 
         if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
             char param[16];
-            if (httpd_query_key_value(query, "filelist", param, sizeof(param)) == ESP_OK) {
-                return getDirFileList(req, fullPath);
+            if (httpd_query_key_value(query, "list_dir", param, sizeof(param)) == ESP_OK) {
+                return getDirList(req, fullPath);
             }
             if (httpd_query_key_value(query, "readonly", param, sizeof(param)) == ESP_OK) {
                 readonly = (strcmp(param, "true") == 0);
@@ -773,10 +781,14 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 static esp_err_t upload_post_handler(httpd_req_t *req)
 {
     char fullPath[FILE_PATH_MAX];
+    char query[200];
+    char valuechar[30];
+    bool allowOverwrite = false;
+
     const char *relativePath = getPathFromUri(fullPath, ((HttpServerData *)req->user_ctx)->basePathFileserver,
                                               req->uri + sizeof("/upload") - 1, sizeof(fullPath));
     if (!relativePath) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Path malformed or too long");
+        httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "Invalid path: Path malformed or too long");
         return ESP_FAIL;
     }
 
@@ -790,13 +802,33 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    if (fileExists(fullPath)) {
+    // Parse query string to check for an explicit overwrite parameter
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        if (httpd_query_key_value(query, "overwrite", valuechar, sizeof(valuechar)) == ESP_OK) {
+            if (strcasecmp(valuechar, "true") == 0 || strcmp(valuechar, "1") == 0) {
+                allowOverwrite = true;
+            }
+        }
+    }
+
+    // Enforce safety check: reject if file exists and overwrite parameter wasn't passed
+    if (fileExists(fullPath) && !allowOverwrite) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "File already exists");
         return ESP_FAIL;
     }
 
-    if (receiveRequestBodyToFile(req, fullPath) != ESP_OK) {
+    // Atomic update via temporary staging file
+    std::string tempPath = std::string(fullPath) + "." + std::to_string(esp_random()) + ".tmp";
+
+    if (receiveRequestBodyToFile(req, tempPath.c_str()) != ESP_OK) {
+        std::remove(tempPath.c_str());
         return ESP_FAIL; // Error response already sent
+    }
+
+    if (!renameFile(tempPath, fullPath)) {
+        std::remove(tempPath.c_str());
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to save file atomically");
+        return ESP_FAIL;
     }
 
     LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "File saved: " + std::string(relativePath));
@@ -821,7 +853,6 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
 static esp_err_t delete_post_handler(httpd_req_t *req)
 {
     char fullPath[FILE_PATH_MAX];
-    struct stat fileStat;
     char query[200];
     char valuechar[30];
     std::string task;
@@ -830,7 +861,7 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
                                               req->uri + sizeof("/delete") - 1, sizeof(fullPath));
 
     if (!relativePath) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: Malformed or too long");
+        httpd_resp_send_err(req, HTTPD_414_URI_TOO_LONG, "Invalid path: Malformed or too long");
         return ESP_FAIL;
     }
 
@@ -869,8 +900,9 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
     }
 
     // Check for file presence
+    struct stat fileStat;
     if (stat(fullPath, &fileStat) == -1) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid path: File not found");
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Invalid path: File not found");
         return ESP_FAIL;
     }
 
@@ -887,7 +919,6 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         httpd_resp_set_status(req, HTTPD_200);
         std::string msg = "File deleted successfully: " + relativePathStr;
         httpd_resp_sendstr(req, msg.c_str());
-        return ESP_OK;
     }
     else {
         std::string redirectPath = getParentPath(relativePathStr) + "?full=false";
@@ -895,8 +926,9 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
         httpd_resp_set_hdr(req, "Location", redirectPath.c_str()); // Redirect to parent directory
         httpd_resp_set_status(req, HTTPD_303_SEE_OTHER);
         httpd_resp_sendstr(req, "");
-        return ESP_OK;
     }
+
+    return ESP_OK;
 }
 
 

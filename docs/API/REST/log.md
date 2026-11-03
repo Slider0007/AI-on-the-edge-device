@@ -40,8 +40,8 @@ Retrieve and query system log files with support for metadata, full dumps, and t
 * **Description**: Streams all log entries across available files without size limits. When filtered with a date range, returns all matching entries chronologically.
 
 #### 4. Get Log File List (JSON-coded)
-* **Payload**: `/log?type=filelist`
-* **Description**: Returns a list of available log files stored in the root logs directory (JSON).
+* **Payload**: `/log?type=list_dir`
+* **Description**: Returns a list of available log files stored (array in ´files`) in the logs directory (JSON).
 
 #### 5. Get API Name and Version
 * **Payload**: `/log?type=api_name`
