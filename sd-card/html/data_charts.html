@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en" xml:lang="en">
+
+<head>
+  <title>Data Charts</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=720" />
+
+  <script>
+    // Theme Control
+    (function () {
+      let theme;
+      try { theme = localStorage.getItem('theme'); } catch (e) { }
+      if (theme !== 'light' && theme !== 'dark') {
+        try { theme = document.cookie.match(/(?:^|; )theme=(light|dark)/)?.[1]; } catch (e) { }
+        if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
+  <style>
+    html,
+    body {
+      width: unset;
+      max-width: unset;
+    }
+
+    .container-header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      gap: 6px;
+    }
+
+    select,
+    input[type='number'],
+    input[type='datetime-local'] {
+      font-family: inherit;
+      font-size: inherit;
+      display: inline-block;
+      vertical-align: middle;
+      padding: 3px 5px;
+      border: 1px solid var(--border);
+      border-radius: var(--input-radius);
+      max-width: 195px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    select,
+    input[type='number'] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    input[type='datetime-local']::-webkit-datetime-edit {
+      display: inline-flex;
+      padding: 0;
+    }
+
+    .chart {
+      width: 100%;
+      min-height: 450px;
+    }
+  </style>
+
+  <link href="firework.css?v=$COMMIT_HASH" rel="stylesheet" />
+  <script src="firework.js?v=$COMMIT_HASH"></script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="container-header">
+      <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%">
+        <div class="container-title"><span>📈</span>Data Charts</div>
+        <div id="status" style="color: var(--text-secondary); font-style: italic"></div>
+        <div class="refresh-group">
+          <div id="autoRefreshSettings" class="refresh-settings is-disabled">
+            <input type="checkbox" id="autoRefreshCtrl" onchange="autoRefreshContent()" />
+            <label for="autoRefreshCtrl">Auto Refresh</label>
+            <span>(</span>
+            <span class="timer-wrap">
+              <input type="number" id="autoRefreshTime" min="1" value="60" onchange="if (value < 1) value = 1; autoRefreshContent();" />
+            </span>
+            <span>) s</span>
+          </div>
+
+          <div class="refresh-timestamp">
+            <span style="font-size: 14px">↻</span>
+            <output id="refreshTimestamp">--:--:--</output>
+          </div>
+        </div>
+      </div>
+      <div class="header-row">
+        <div class="controls-row">
+          <span>Sequence: </span>
+          <select id="sequenceSelection" style="width: 120px; max-width: 120px; min-width: 120px; white-space: nowrap; overflow: hidden"
+            onchange="refreshContent()"></select>
+        </div>
+      </div>
+      <div class="header-row" style="display: flex; justify-content: flex-end; width: 100%">
+        <div class="controls-row">
+          <div>
+            <input type="datetime-local" id="startTime" class="date-input" />
+            <input type="datetime-local" id="endTime" class="date-input" />
+          </div>
+          <div class="refresh-loader">
+            <div id="refreshLoadingImg" class="loader">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" class="spinner-svg">
+                <path d="M12 3a9 9 0 1 1-6.36 2.64"></path>
+              </svg>
+            </div>
+            <button id="refreshButton" onclick="refreshContent()" class="button btn-action">Refresh</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container-content">
+      <div class="card">
+        <div class="card-header">📈 Trend</div>
+        <div class="card-body">
+          <div style="margin-left: 10px" id="chartTrendLoadingText">
+            <p>Loading chart ...</p>
+          </div>
+          <div class="chart" id="chartTrend"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">📊 Total</div>
+        <div class="card-body">
+          <div style="margin-left: 10px" id="chartTotalLoadingText">
+            <p>Loading chart ...</p>
+          </div>
+          <div class="chart" id="chartDailyTotal"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">📊 Cycle Stats</div>
+        <div class="card-body">
+          <div style="margin-left: 10px" id="chartCycleStatsLoadingText">
+            <p>Loading chart ...</p>
+          </div>
+          <div class="chart" id="chartCycleStats"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="global.js?v=$COMMIT_HASH"></script>
+  <script>
+    let autoRefreshTimeoutHandle = null;
+    let refreshRunning = false;
+    let fetchedFiles = new Map();
+    let chartTraces = [],
+      dailyTraces = [];
+    let plotlyLoadPromise = null;
+
+    function setStatusMessage(message) {
+      document.getElementById('status').textContent = message || '';
+    }
+
+    function loadPlotlyOnce() {
+      if (window.Plotly) {
+        return Promise.resolve();
+      }
+
+      if (plotlyLoadPromise) {
+        return plotlyLoadPromise;
+      }
+
+      setStatusMessage('Loading chart engine...');
+      plotlyLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'plotly-basic.min.js?v=$COMMIT_HASH';
+        script.defer = true;
+        script.onload = () => {
+          setStatusMessage('');
+          resolve();
+        };
+        script.onerror = () => {
+          setStatusMessage('Failed loading chart engine');
+          reject(new Error('Failed to load plotly-basic.min.js'));
+        };
+        document.head.appendChild(script);
+      });
+
+      return plotlyLoadPromise;
+    }
+
+    function parseFileDate(file) {
+      const match = file.match(/data_(\d{4}-\d{2}-\d{2})\.csv/);
+
+      if (!match) {
+        return null;
+      }
+
+      const [y, m, d] = match[1].split('-');
+      return new Date(+y, +m - 1, +d).getTime();
+    }
+
+    function isTodayFile(fileTime) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      return fileTime === today.getTime();
+    }
+
+    async function fetchFilesInTimeRange(files, startTime, endTime) {
+      const filesInRange = files.filter((f) => {
+        const fileTime = parseFileDate(f);
+        if (!fileTime) {
+          return false;
+        }
+
+        if (isTodayFile(fileTime)) {
+          return fileTime + 24 * 3600 * 1000 > startTime && fileTime < endTime;
+        }
+
+        return fileTime && fileTime + 24 * 3600 * 1000 > startTime && fileTime < endTime && !fetchedFiles.has(f);
+      });
+
+      const datasets = await Promise.all(
+        filesInRange.map(async (f) => {
+          const res = await apiCallNotify(`/fileserver/log/data/${f}`, { timeout: 60000 }, { action: `Fetch ${f}` });
+          if (!res.ok) throw new Error(`Failed to fetch ${f} (${res.status ?? res.error})`);
+
+          fetchedFiles.set(f, res.data);
+          return { file: f, text: res.data };
+        }),
+      );
+
+      return datasets;
+    }
+
+    async function extractData(datasets, numberSequence, startTime, endTime) {
+      const rows = [];
+      datasets.forEach((txt) =>
+        txt.split('\n').forEach((line) => {
+          const cols = line.split(',');
+          if (cols.length >= 7 && cols[1] === numberSequence) {
+            const ts = new Date(cols[0]).getTime();
+            if ((!isNaN(startTime) ? ts >= startTime : true) && (!isNaN(endTime) ? ts <= endTime : true)) {
+              rows.push([ts, ...cols.slice(2)]);
+            }
+          }
+        }),
+      );
+
+      rows.sort((a, b) => a[0] - b[0]);
+
+      const x = [],
+        actual = [],
+        raw = [],
+        fallback = [],
+        ratePerMin = [],
+        ratePerInterval = [],
+        status = [];
+      rows.forEach(([ts, c2, c3, c4, c5, c6, c7]) => {
+        x.push(ts);
+        raw.push(isFinite(+c2) ? +c2 : null);
+        actual.push(isFinite(+c3) ? +c3 : null);
+        fallback.push(isFinite(+c4) ? +c4 : null);
+        ratePerMin.push(isFinite(+c5) ? +c5 : null);
+        ratePerInterval.push(isFinite(+c6) ? +c6 : null);
+        status.push(c7);
+      });
+
+      return { x, actual, raw, fallback, ratePerMin, ratePerInterval, status };
+    }
+
+    function plotlyTheme() {
+      const dark = document.documentElement.classList.contains('dark');
+      const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+      const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim();
+
+      const gridColor = dark ? 'rgba(255, 255, 255, 0.06)' : '#e5e5e5';
+      const zeroLineColor = dark ? 'rgba(255, 255, 255, 0.15)' : '#d3d3d3';
+      const lineColor = dark ? '#444' : '#ccc';
+
+      return {
+        template: {
+          layout: {
+            colorway: dark
+              ? ['#00cc96', '#636efa', '#ef553b', '#ab63fa', '#ffa15a', '#19d3f3', '#ff6692']
+              : ['#2ca02c', '#1f77b4', '#d62728', '#9467bd', '#ff7f0e', '#17becf', '#e377c2'],
+            font: { color: textColor },
+            xaxis: {
+              gridcolor: gridColor,
+              zerolinecolor: zeroLineColor,
+              linecolor: lineColor,
+              tickfont: { color: textColor }
+            },
+            yaxis: {
+              gridcolor: gridColor,
+              zerolinecolor: zeroLineColor,
+              linecolor: lineColor,
+              tickfont: { color: textColor }
+            },
+            legend: { bgcolor: bgColor, font: { color: textColor } },
+            hoverlabel: { bgcolor: bgColor, font: { color: textColor } },
+          },
+        },
+        plot_bgcolor: bgColor,
+        paper_bgcolor: bgColor,
+        font: { color: textColor },
+      };
+    }
+
+    // Called from theme sync listener (global.js)ssss
+    function refreshTheme() {
+      if (!window.Plotly) return;
+      const theme = plotlyTheme();
+      ['chartTrend', 'chartDailyTotal', 'chartCycleStats'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el?.data) Plotly.react(el, el.data, { ...el.layout, ...theme }, el._context);
+      });
+    }
+
+    function plotTrendChart({ x, actual, raw, fallback, ratePerMin, ratePerInterval }) {
+      chartTraces = [
+        { x, y: actual, name: 'Actual', type: 'scatter', mode: 'lines', line: { color: 'green' }, yaxis: 'y' },
+        {
+          x,
+          y: raw,
+          name: 'Raw',
+          type: 'scatter',
+          mode: 'lines',
+          line: { color: '#888' },
+          yaxis: 'y',
+          visible: 'legendonly',
+          connectgaps: true,
+        },
+        { x, y: fallback, name: 'Fallback', type: 'scatter', mode: 'lines', line: { color: 'blue' }, yaxis: 'y', visible: 'legendonly' },
+        { x, y: ratePerMin, name: 'Rate / Min', type: 'bar', marker: { color: 'magenta' }, yaxis: 'y2', opacity: 0.7 },
+        {
+          x,
+          y: ratePerInterval,
+          name: 'Rate / Interval',
+          type: 'bar',
+          marker: { color: 'cyan' },
+          yaxis: 'y2',
+          visible: 'legendonly',
+          opacity: 0.7,
+        },
+      ];
+
+      const chartLayout = {
+        autosize: true,
+        uirevision: true,
+        xaxis: { title: { text: 'Date/Time', font: { size: 16 } }, type: 'date' },
+        yaxis: { title: { text: 'Value', font: { size: 16 } } },
+        yaxis2: { title: { text: 'Rate', font: { size: 16 } }, overlaying: 'y', side: 'right' },
+        hovermode: 'x unified',
+        showlegend: true,
+        legend: { orientation: 'h', x: 0.05, y: 1.1 },
+        margin: { t: 60 },
+        ...plotlyTheme(),
+      };
+
+      const chartConfig = { responsive: true, displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ['select2d', 'lasso2d'] };
+
+      Plotly.react('chartTrend', chartTraces, chartLayout, chartConfig);
+
+      const now = new Date();
+      document.getElementById('refreshTimestamp').value = now.toLocaleTimeString([], { hour12: false });
+
+      document.getElementById('chartTrendLoadingText').innerHTML = '';
+    }
+
+    // Plot daily total
+    function calcDailyTotal(xTimestamps, values, startTime, endTime) {
+      const dailyMap = new Map();
+
+      xTimestamps.forEach((ts, i) => {
+        if (ts < startTime || ts > endTime) {
+          return;
+        }
+
+        const val = values[i];
+
+        if (val == null || isNaN(val)) {
+          return;
+        }
+
+        const d = new Date(ts);
+        const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+
+        if (!dailyMap.has(key)) {
+          dailyMap.set(key, []);
+        }
+
+        dailyMap.get(key).push(val);
+      });
+
+      const dailyDates = [],
+        dailyValues = [];
+      Array.from(dailyMap.entries())
+        .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+        .forEach(([key, arr]) => {
+          dailyValues.push(arr[arr.length - 1] - arr[0]);
+          const [year, month, day] = key.split('-').map(Number);
+          const date = new Date(year, month - 1, day);
+          dailyDates.push(date.getTime());
+        });
+
+      return { dailyDates, dailyValues };
+    }
+
+    function plotDailyTotalChart(dailyDates, dailyValues) {
+      // Calculate range sum
+      const totalSum = dailyValues.length > 0 ? dailyValues.reduce((a, b) => a + b, 0) : 0;
+
+      // Average of daily differences
+      const avgValue = dailyValues.length ? parseFloat((totalSum / dailyValues.length).toFixed(3)) : 0;
+      const avgLine = dailyDates.map(() => avgValue);
+
+      const dailyTraces = [
+        {
+          x: dailyDates,
+          y: dailyValues,
+          type: 'bar',
+          name: 'Daily',
+          marker: { color: 'rgba(128,0,128,0.5)' },
+          yaxis: 'y1',
+          width: dailyDates.length === 1 ? 24 * 60 * 60 * 1000 * 0.8 : undefined,
+        },
+        {
+          x: dailyDates,
+          y: avgLine,
+          type: 'scatter',
+          mode: 'lines',
+          name: 'Average (Range)',
+          line: { color: 'orange', width: 2, dash: 'dot' },
+          yaxis: 'y1',
+        },
+      ];
+
+      if (dailyDates.length > 0) {
+        dailyTraces.push({
+          x: [dailyDates[dailyDates.length - 1] + 12 * 3600 * 1000], // 12h after last date
+          y: [totalSum],
+          type: 'scatter',
+          mode: 'markers+text',
+          name: 'Total (Range)',
+          marker: { color: 'blue', size: 12, symbol: 'diamond' },
+          text: [`Σ ${totalSum.toFixed(3)}`],
+          textposition: 'bottom center',
+          yaxis: 'y2',
+        });
+      }
+
+      const dailyLayout = {
+        autosize: true,
+        uirevision: true,
+        xaxis: { title: { text: 'Day', font: { size: 16 } }, type: 'date', dtick: 86400000 },
+        yaxis: { title: { text: 'Value', font: { size: 16 } } },
+        yaxis2: {
+          title: { text: 'Total (Range)', font: { size: 16 } },
+          overlaying: 'y',
+          side: 'right',
+          showgrid: false,
+          rangemode: 'tozero',
+        },
+        hovermode: 'x unified',
+        showlegend: true,
+        legend: { orientation: 'h', x: 0.05, y: 1.1 },
+        margin: { t: 60 },
+        ...plotlyTheme(),
+      };
+
+      const chartConfig = { responsive: true, displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ['select2d', 'lasso2d'] };
+
+      Plotly.react('chartDailyTotal', dailyTraces, dailyLayout, chartConfig);
+
+      document.getElementById('chartTotalLoadingText').innerHTML = '';
+    }
+
+    // Plot cycle stats
+    function evalCycleStats(xTimestamps, valueStatus, startTime, endTime) {
+      const dailyMap = new Map();
+
+      for (let i = 0; i < xTimestamps.length; i++) {
+        const ts = xTimestamps[i];
+        if (ts < startTime || ts > endTime) {
+          continue;
+        }
+
+        const val = valueStatus[i];
+        if (!val) {
+          continue;
+        }
+
+        const d = new Date(ts);
+        const dayKey = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+
+        if (!dailyMap.has(dayKey)) {
+          dailyMap.set(dayKey, { good: 0, failed: 0 });
+        }
+
+        if (val === '000' || val === 'E91') {
+          dailyMap.get(dayKey).good += 1;
+        } else if (val === 'E92' || val === 'E93') {
+          dailyMap.get(dayKey).failed += 1;
+        }
+      }
+
+      const days = [],
+        goodCounts = [],
+        failedCounts = [];
+
+      Array.from(dailyMap.entries())
+        .sort((a, b) => {
+          const [yA, mA, dA] = a[0].split('-').map(Number);
+          const [yB, mB, dB] = b[0].split('-').map(Number);
+          return new Date(yA, mA - 1, dA) - new Date(yB, mB - 1, dB);
+        })
+        .forEach(([key, counts]) => {
+          const [year, month, day] = key.split('-').map(Number);
+          const date = new Date(year, month - 1, day);
+          days.push(date.getTime());
+          goodCounts.push(counts.good);
+          failedCounts.push(counts.failed);
+        });
+
+      return { days, goodCounts, failedCounts };
+    }
+
+    function plotCycleStatsChart(days, goodCounts, failedCounts) {
+      const traces = [
+        {
+          x: days,
+          y: goodCounts,
+          name: 'Good',
+          type: 'bar',
+          marker: { color: 'green' },
+          text: goodCounts.map((val, i) => {
+            const total = goodCounts[i] + failedCounts[i];
+            const pct = total > 0 ? ((val / total) * 100).toFixed(2) : 0;
+            return `Good: ${val} (${pct}%)`;
+          }),
+          hoverinfo: 'text',
+        },
+        {
+          x: days,
+          y: failedCounts,
+          name: 'Failed',
+          type: 'bar',
+          marker: { color: 'red' },
+          text: failedCounts.map((val, i) => {
+            const total = goodCounts[i] + failedCounts[i];
+            const pct = total > 0 ? ((val / total) * 100).toFixed(2) : 0;
+            return `Failed: ${val} (${pct}%)`;
+          }),
+          hoverinfo: 'text',
+        },
+      ];
+
+      const chartLayout = {
+        autosize: true,
+        uirevision: true,
+        xaxis: { title: { text: 'Day', font: { size: 16 } }, type: 'date', dtick: 86400000 },
+        yaxis: { title: { text: 'Cycle Count', font: { size: 16 } } },
+        barmode: 'stack',
+        hovermode: 'x unified',
+        margin: { t: 60 },
+        showlegend: true,
+        legend: { orientation: 'h', x: 0.08, y: 1.07 },
+        ...plotlyTheme(),
+      };
+
+      const chartConfig = { responsive: true, displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ['select2d', 'lasso2d'] };
+
+      Plotly.react('chartCycleStats', traces, chartLayout, chartConfig);
+
+      document.getElementById('chartCycleStatsLoadingText').innerHTML = '';
+    }
+
+    async function reload() {
+      const numberSequence = document.getElementById('sequenceSelection').value;
+      const startTime = new Date(document.getElementById('startTime').value).getTime();
+      const endTime = new Date(document.getElementById('endTime').value).getTime();
+      const files = dataFileListObj.files.sort();
+
+      const plotlyReady = loadPlotlyOnce();
+      await fetchFilesInTimeRange(files, startTime, endTime);
+      const dataSet = await extractData(Array.from(fetchedFiles.values()), numberSequence, startTime, endTime);
+      await plotlyReady;
+
+      plotTrendChart(dataSet);
+
+      const { dailyDates, dailyValues } = calcDailyTotal(dataSet.x, dataSet.actual, startTime, endTime);
+      plotDailyTotalChart(dailyDates, dailyValues);
+
+      const { days, goodCounts, failedCounts } = evalCycleStats(dataSet.x, dataSet.status.map(String), startTime, endTime);
+      plotCycleStatsChart(days, goodCounts, failedCounts);
+    }
+
+    async function refreshContent(auto = false) {
+      if (refreshRunning) return;
+      refreshRunning = true;
+
+      const btn = document.getElementById('refreshButton');
+      const loader = document.getElementById('refreshLoadingImg');
+
+      if (!auto) btn.disabled = true;
+      loader?.classList.add('is-loading');
+
+      try {
+        await reload();
+      } catch (err) {
+        console.error('Refresh failed:', err);
+      } finally {
+        setTimeout(() => {
+          if (!auto) btn.disabled = false;
+          loader?.classList.remove('is-loading');
+        }, 100);
+        refreshRunning = false;
+      }
+    }
+
+    function autoRefreshContent() {
+      const isAutoRefresh = document.getElementById('autoRefreshCtrl').checked;
+      const autoRefreshSettings = document.getElementById('autoRefreshSettings');
+      const autoRefreshTime = document.getElementById('autoRefreshTime');
+      const startTimeEl = document.getElementById('startTime');
+      const endTimeEl = document.getElementById('endTime');
+
+      autoRefreshSettings.classList.toggle('is-disabled', !isAutoRefresh);
+      autoRefreshTime.disabled = !isAutoRefresh;
+
+      if (autoRefreshTimeoutHandle) {
+        clearTimeout(autoRefreshTimeoutHandle);
+        autoRefreshTimeoutHandle = null;
+      }
+
+      if (isAutoRefresh) {
+        const delayMs = parseInt(autoRefreshTime.value) * 1000;
+
+        if (!delayMs || delayMs <= 0) {
+          document.getElementById('autoRefreshCtrl').checked = false;
+          autoRefreshSettings.classList.add('is-disabled');
+          return;
+        }
+        autoRefreshTimeoutHandle = setTimeout(() => {
+          refreshContent(true).then(autoRefreshContent);
+        }, delayMs);
+      }
+    }
+
+    function initAutoRefreshContent() {
+      autoRefreshContent();
+    }
+
+    async function init() {
+      try {
+        [dataFileListObj] = await Promise.all([getDataFileList(), loadConfig()]);
+      } catch (err) {
+        firework.launch('Failed loading data. Please repeat or check logs', 'danger', 30000);
+        console.error('Failed loading data. Error:', err);
+        return;
+      }
+
+      jsonConfig = getConfigFromStorage();
+
+      // Fill dropdown
+      jsonConfig.numbersequences.sequence.forEach((seq) => {
+        document.getElementById('sequenceSelection').add(new Option(seq.sequencename, seq.sequencename));
+      });
+
+      // Set default time to today
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const todaysEnd = new Date(todayMidnight.getTime() + 24 * 3600 * 1000 - 1);
+
+      function formatLocalDatetime(dt) {
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      }
+
+      document.getElementById('startTime').value = formatLocalDatetime(todayMidnight);
+      document.getElementById('endTime').value = formatLocalDatetime(todaysEnd);
+
+      // Preset with loading indicator
+      document.getElementById('refreshLoadingImg').src = loaderSpinner;
+
+      initAutoRefreshContent();
+      refreshContent();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.parent.postMessage({ type: 'iframe-ready' }, '*');
+    });
+
+    init();
+  </script>
+</body>
+
+</html>

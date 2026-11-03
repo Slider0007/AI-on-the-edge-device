@@ -217,7 +217,7 @@ struct TLSParams {
 struct CfgData {
     // Config File
     struct SectionConfig {
-        int version = 7; // NOTE: Increment whenever existing parameter names changed or any migration is required
+        int version = 8; // NOTE: Increment whenever existing parameter names changed or any migration is required
         std::string lastModified = "";
     } sectionConfig;
 
@@ -231,7 +231,7 @@ struct CfgData {
     // Take Image
     struct SectionTakeImage {
         struct Flashlight {
-            int flashTime = 2000;
+            int flashTime = 1000;
             int flashIntensity = 50;
         } flashlight;
         struct Camera {
@@ -470,14 +470,10 @@ struct CfgData {
             std::string password = "";
         } httpAuth;
         struct AutoRefresh {
-            struct OverviewPage {
+            struct Dashboard {
                 bool enabled = true;
                 int refreshTime = 5;
-            } overviewPage;
-            struct DataGraphPage {
-                bool enabled = false;
-                int refreshTime = 60;
-            } dataGraphPage;
+            } dashboard;
         } autoRefresh;
     } sectionWebUi;
 };

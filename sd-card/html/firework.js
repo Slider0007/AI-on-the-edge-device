@@ -1,77 +1,128 @@
-/**
- * Firework displays short notifications at top of page,
- * then fades out a few seconds later (no user interaction)
- * Source: https://www.jqueryscript.net/other/Simple-Top-Notification-Plugin-with-jQuery-firework-js.html
- *         https://github.com/smalldogs/fireworkjs
- * @param   m   string    message
- * @param   t   string    (optional) message type ('success', 'danger')
- * @param   l   number    (optional) length of time to display message in milliseconds
- * @param   o   boolean   (optional) True: Firework gets overlayed with the next one
- */
- ;(function ($, window) {
-  "use strict";
+const firework = {
+  init() {
+    if (!document.getElementById('fw-container')) {
+      const container = document.createElement('div');
+      container.id = 'fw-container';
 
-  window.firework = {
-    launch: function(m, t, l, o) {
-      if (typeof m != 'string') {
-        console.error('Error: Call to firework() without a message');
-        return false
+      // Special case: index.html
+      if (document.querySelector('.menu')) {
+        Object.assign(container.style, { left: '300px' });
       }
 
-      var c = 'firework' // css class(es)
-        , p = 10 // pixels from top or page to display
-        , d = new Date()
-        , s = d.getTime() // used to create unique element ids
-        , fid = "firework-"+ s; // firework id
-
-      if (typeof t !== 'undefined') c += ' '+ t; // add any user defined classes
-      if ((typeof o !== 'undefined') && Boolean(o)) c += ' ' + "overlay";  // Firework can be overlayed with next one
-
-      $('.firework').each(function(){ // account for existing fireworks and move new one below or overlay
-        if (!($(this).hasClass('overlay')))
-          p += parseInt($(this).height()) + 20
-      });
-
-      $('<div id="'+ fid +'" class="'+ c +'">'+ m +'<a onclick="firework.remove(\'#'+ fid +'\')"><img style="height:28px;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAABv1BMVEUAAAAAAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADMAADLAADPEhHgaGfjdXPjdHLjdHPhamnQFRXLAQHaSEfjdXTicnDSIyPNBgbplJT////+/v7lgoHMAQHVMTD439/wu7rPFRXRHBzzx8f66unYQD/NCwvtqan44eHWNjbZR0f67Ozxu7rPExLgZWT9+PjgaWnMAgLkgID+/f3+/PzjdnXUKin32djroaHNCgrPExPwuLj55OPywcD10NDSJCTWNzf44uL//v777+/bUFDgamrmh4fMAwPNDQ3xu7vRIB/YQUD55OT99vbSICD0ysn65+bZQkHNCQnrnp377u70yMjRHx799/f9+vricXHfZWXqmZjNBwfVLi343NzusLDODQ3NCAjroqL99fXeXl7NCgntp6b65+fWOTnUKyv33Nz319bTJyfeXVzmhobic3PqmpnMBQXRGxv1zs3109PRHx/QFxfzysr88fDaSUjRHR3fZGPfZmbfZ2fXPj7WODimAAA/y/GyAAAAAXRSTlMAQObYZgAAATJJREFUOMu1k1dXwlAQhHnJ7xgVEOti7xVUVOy9K/Yae8feu9E/7IQ8eEwu8iDuS/bsfOfsvXMnLlcSSvulEukxIlkArLK13wBSUtPcHm86x/BlZLo9Wdn4CeTkiog/Lx8aCgrZFhXDtqKklOOycqCikk1VNeyHRE0thbp6BIIiwQY4gcamkEhzS2uYXFs7nNdERyelrm6/SE8vVD6gr19kgPrgEJRGAcNcLxIaGVUDGsbGTSA8gThWY3LKBCJexFkxPSOxmp1TAphfoLhourG0rLgFEFgRWV3TIyTWN5w+YHOLyvbO7h4/+wcOJ3F4ROE4Cpycsjk7dwAXXCCXPgbhipbL9Y3tuW/vOL1/MPPw+MT2+cUGvL6968aHlaiooevGp3UKVeQ0VeT+N/YJf72/1hfNT1Koq1kYJgAAAABJRU5ErkJggg=="></a></div>')
-        .appendTo('body')
-        .animate({
-          opacity: 1,
-          top: p +'px'
-        });
-
-      setTimeout(function(){ firework.remove("#"+ fid) }, typeof l == "number" ? l : 1500);
-
-      return "#"+ fid;
-    },
-
-    remove : function(t) {
-      $(t)
-        .animate({
-          opacity: 0
-        })
-        .promise()
-        .done(function(){
-          $(t).remove()
-        })
-    },
-
-    sticky : function(m, t, l) {
-      Cookies.set("firework", JSON.stringify({ message: m, type: t, display: l }), { path: '/' });
+      document.body.appendChild(container);
     }
-  };
+  },
 
-  // Checks for firework cookie on dom ready
-  $(function() {
-    if (Cookies.get("firework")) {
-      try {
-        const ex = JSON.parse(Cookies.get("firework"));
-        setTimeout(function() {
-          firework.launch(ex.message, ex.type, parseInt(ex.display) > 0 ? parseInt(ex.display) : null);
-        }, 200);
-        Cookies.remove("firework", { path: '/' });
-      } catch (e) {
-        console.error("Invalid firework cookie JSON", e);
+  /**
+   * @param msg      string
+   * @param type     string
+   * @param duration number
+   * @param updateId string (Optional: if provided, will update existing toast with this ID)
+   */
+  launch(msg, type = 'default', duration = 3000, updateId = null) {
+    this.init();
+
+    // 1. Check if we are updating an existing toast
+    if (updateId) {
+      const existing = document.getElementById(updateId);
+      if (existing) {
+        existing.querySelector('.fw-body').innerHTML = msg;
+        existing.className = `firework-toast is-active ${type}`;
+
+        // Reset the timer if a new duration is provided
+        if (duration > 0) {
+          clearTimeout(existing.dataset.timerId);
+          const newTimer = setTimeout(() => this.dismiss(existing), duration);
+          existing.dataset.timerId = newTimer;
+        }
+        return updateId;
       }
     }
-  });
-})(jQuery, window);
+
+    // 2. Otherwise, create a new one
+    const container = document.getElementById('fw-container');
+    const fid = updateId || 'fw-' + Date.now();
+    const toast = document.createElement('div');
+    toast.id = fid;
+    toast.className = `firework-toast ${type}`;
+    toast.innerHTML = `
+            <div class="fw-body">${msg}</div>
+            <button class="fw-close">&times;</button>
+        `;
+
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('is-active'));
+
+    // Set the auto-dismiss timer
+    if (duration > 0) {
+      const timerId = setTimeout(() => this.dismiss(toast), duration);
+      toast.dataset.timerId = timerId; // Store timer ID on the element
+    }
+
+    toast.querySelector('.fw-close').onclick = () => this.dismiss(toast);
+    return fid;
+  },
+
+  sticky(m, t = 'default', l = 3000) {
+    const payload = JSON.stringify({ message: m, type: t, display: l });
+    // Sets cookie valid for current session, path root
+    document.cookie = `firework=${encodeURIComponent(payload)}; path=/; SameSite=Lax`;
+  },
+
+  checkCookies() {
+    const name = 'firework=';
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = document.cookie.split(';');
+
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i].trim();
+      if (c.indexOf(name) === 0) {
+        try {
+          const data = JSON.parse(decodeURIComponent(c.substring(name.length)));
+          // Launch with a slight delay so the user sees the page load first
+          setTimeout(() => {
+            this.launch(data.message, data.type, data.display || 4000);
+          }, 500);
+          // Clear cookie after reading
+          document.cookie = 'firework=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        } catch (e) {
+          console.error('Firework: Invalid cookie JSON');
+        }
+      }
+    }
+  },
+
+  dismiss(el) {
+    if (typeof el === 'string') {
+      el = document.getElementById(el);
+    }
+
+    if (!el || !(el instanceof Element)) return;
+
+    // Stop any pending auto-dismiss timers for this element
+    if (el.dataset.timerId) {
+      clearTimeout(el.dataset.timerId);
+    }
+
+    // Start the fade-out animation
+    el.classList.remove('is-active');
+
+    if (!el.parentNode) return;
+
+    // Clean removal after animation
+    const handler = (event) => {
+      if (event.target !== el) return;
+      el.removeEventListener('transitionend', handler);
+      el.remove();
+    };
+
+    el.addEventListener('transitionend', handler);
+
+    // Fallback: Force remove
+    setTimeout(() => {
+      if (el.parentNode) el.remove();
+    }, 600);
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => firework.checkCookies());

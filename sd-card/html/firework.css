@@ -1,40 +1,75 @@
-/* Firework JS */
-.firework {
-  background-color: #888;
-  border-color: #888;
-  border-radius: 6px;
-  color: #fff;
-  left: 10%;
-  padding: 5px;
+#fw-container {
   position: fixed;
+  top: 20px;
+  right: max(20px, calc(100vw - 1024px + 20px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.firework-toast {
+  pointer-events: auto;
+  min-width: 280px;
+  max-width: 400px;
+  background: var(--bg-toast);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-main);
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
   opacity: 0;
-  text-align: center;
-  top: 0px;
-  width: 80%;
-  min-width:30%;
-  max-width:580px;
-  z-index: 99;
-  font-size:110%;
+  transform: translateY(-40px) scale(0.95);
+  transition:
+    transform 0.4s cubic-bezier(0.2, 1, 0.3, 1),
+    opacity 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
-.firework a {
-  color: rgba(255, 255, 255, 0.9);
+
+.firework-toast.is-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.fw-body {
+  font-family: Arial, sans-serif;
+  font-size: inherit;
+  font-weight: bold;
+  line-height: 1.5;
+  text-align: justify;
+}
+
+.fw-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-secondary);
   cursor: pointer;
-  float: right;
-  margin: 0 -5px 0 0;
-  padding: 0 5px;
+  margin-left: 15px;
+  padding: 5px;
+  line-height: 1;
 }
-.firework.success {
-  background-color: #669936f0;
-  border-color: #669936;
-  color: #fff
+
+.fw-close:hover {
+  color: var(--text-main);
 }
-.firework.danger {
-  background-color: #E65A27f0;
-  border-color: #E65A27;
-  color: #fff
+
+.firework-toast.success {
+  border-left: 12px solid var(--success);
 }
-.firework.warning {
-  color: #5F612C;
-  background-color: #dbd567f0;
-  border-color: #DBD667;
+
+.firework-toast.warning {
+  border-left: 12px solid var(--warning);
+}
+
+.firework-toast.danger {
+  border-left: 12px solid var(--error);
 }

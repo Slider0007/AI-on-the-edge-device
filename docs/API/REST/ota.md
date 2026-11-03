@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: ota
+## REST API Endpoint: `ota`
 
 `http://IP-ADDRESS/ota`
 

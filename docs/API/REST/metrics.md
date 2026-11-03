@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: metrics
+## REST API Endpoint: `metrics`
 
 `http://IP-ADDRESS/metrics`
 

@@ -9,6 +9,7 @@ void checkOtaUpdate();
 void doReboot();
 void doRebootOTA();
 
+esp_err_t handler_ota(httpd_req_t *req);
 void registerOtaRebootUri(httpd_handle_t server);
 
 #endif // SERVEROTA_H

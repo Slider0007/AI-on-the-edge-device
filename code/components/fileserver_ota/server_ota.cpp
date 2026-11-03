@@ -580,7 +580,7 @@ void checkOtaUpdate()
 
 
 // Uploads the OTA package, stages it and reboot
-static esp_err_t handler_ota(httpd_req_t *req)
+esp_err_t handler_ota(httpd_req_t *req)
 {
     static const char *uriPrefix = "/ota/";
     if (strncmp(req->uri, uriPrefix, strlen(uriPrefix)) != 0) {
@@ -595,7 +595,7 @@ static esp_err_t handler_ota(httpd_req_t *req)
     }
 
     if (req->content_len == 0 || req->content_len > MAX_FILE_SIZE) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid file size, must be > 0 and < " MAX_FILE_SIZE_STR);
+        httpd_resp_send_err(req, HTTPD_413_CONTENT_TOO_LARGE, "Invalid file size, must be > 0 and < " MAX_FILE_SIZE_STR);
         return ESP_FAIL;
     }
 
@@ -704,7 +704,7 @@ void doReboot()
 
 void doRebootOTA()
 {
-    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot in 5sec");
+    LogFile.writeToFile(ESP_LOG_WARN, TAG, "Reboot in 5 seconds");
 
     markPlannedReboot();
 

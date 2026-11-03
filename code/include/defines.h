@@ -108,11 +108,12 @@
 
 // Server_file + (ota_page.html + upload_script.html)
 //******************************
-#define MAX_FILE_SIZE (8000*1024) // 8 MB Max size of an individual file. Make sure this value
-                                  // is same as that set in upload_script.html and ota_page.html!
-#define MAX_FILE_SIZE_STR "8MB"
+#define MAX_FILE_SIZE (16000*1024)  // 16 MB Max size of an individual file. Make sure this value
+                                    // is same as that set in upload_script.html and ota_page.html!
+#define MAX_FILE_SIZE_STR "16MB"
 
-#define LOGFILE_LAST_PART_BYTES 80 * 1024 // 80 kBytes  // Size of partial log file to return
+#define LOGFILE_LAST_PART_BYTES (80*1024)       // Size of partial log file to return
+#define LOGFILE_MAX_STREAM_BYTES (5000*1024)    // Max transmision size to limit loading time
 
 #define WEBSERVER_SCRATCH_BUFSIZE   32768
 #define SERVER_OTA_SCRATCH_BUFSIZE  8192

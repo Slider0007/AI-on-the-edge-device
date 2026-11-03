@@ -8,7 +8,7 @@ Configuration:
 - Integrity Check: CRC32
 
 
-You can view the dump log backtrace summary directly in the WebUI or you can download the complete dump file for further analysis. (`System > System Info > Section 'Build'`). The downloaded dump file name has to following syntax: `{firmware version}__{board_type}_coredump-elf.bin`
+You can view the dump log backtrace summary directly in the WebUI or you can download the complete dump file for further analysis. (`System > System Info > Section 'Firmware'`). The downloaded dump file name has to following syntax: `{firmware version}__{board_type}_coredump.elf`
 
 #### ESP-IDF provides a special tool to help to analyze the downloaded core dump file
 - Install [esp-coredump](https://github.com/espressif/esp-coredump) --> e.g. Installation using VSCode Platformio console: `pip install esp-coredump`
@@ -21,6 +21,6 @@ in `<path>/.platformio/packages`.
     ```
 - Example: 
     ```
-    esp-coredump info_corefile --gdb <path to tool-xtensa-esp-elf-gdb/bin/xtensa-esp32-elf-gdb.exe> --rom-elf esp32_rev0_rom.elf --core-format raw --core firmware_ESP32CAM_coredump-elf.bin firmware.elf
+    esp-coredump info_corefile --gdb <path to tool-xtensa-esp-elf-gdb/bin/xtensa-esp32-elf-gdb.exe> --rom-elf esp32_rev0_rom.elf --core-format raw --core firmware_ESP32CAM_coredump.elf firmware.elf
     ```
 

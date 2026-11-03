@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: mqtt
+## REST API Endpoint: `mqtt`
 
 `http://IP-ADDRESS/mqtt`
 

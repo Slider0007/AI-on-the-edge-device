@@ -1,555 +1,681 @@
-<!DOCTYPE html>
-<html lang="en" xml:lang="en">
+<!doctype html>
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Timezones</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        * {
-            box-sizing: border-box;
-            width: 660px;
-        }
+  <title>Timezones</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=720" />
 
-        body, html {
-            font-size: 100%;
-            -webkit-text-size-adjust: 100%;
-            text-size-adjust: 100%;
-        }
+  <script>
+    // Theme Control
+    (function () {
+      let theme;
+      try { theme = localStorage.getItem('theme'); } catch (e) { }
+      if (theme !== 'light' && theme !== 'dark') {
+        try { theme = document.cookie.match(/(?:^|; )theme=(light|dark)/)?.[1]; } catch (e) { }
+        if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+    })();
+  </script>
 
-        #myInput {
-            background-image: url('/css/searchicon.png');
-            background-position: 10px 10px;
-            background-repeat: no-repeat;
-            width: 100%;
-            font-size: 16px;
-            padding: 12px 20px 12px 40px;
-            border: 1px solid #ddd;
-            margin-bottom: 12px;
-        }
+  <link rel="stylesheet" href="style-iframe.css?v=$COMMIT_HASH" />
 
-        #data {
-            border-collapse: collapse;
-            width: 100%;
-            border: 1px solid #ddd;
-            font-size: 16px;
-        }
+  <style>
+    * {
+      box-sizing: border-box;
+      max-width: 680px;
+    }
 
-        #data th, #data td {
-            text-align: left;
-            padding: 12px;
+    #myInput {
+      background-image: url('/css/searchicon.png');
+      background-position: 10px 10px;
+      background-repeat: no-repeat;
+      width: 100%;
+      padding: 12px 20px 12px 40px;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+      border-radius: var(--input-radius);
+    }
 
-        }
+    #data {
+      border-collapse: collapse;
+      width: 100%;
+      border: 1px solid var(--border);
+    }
 
-        #data tr {
-            border-bottom: 1px solid #ddd;
-        }
+    #data th,
+    #data td {
+      text-align: left;
+      padding: 12px;
+    }
 
-        #data tr.header, #data tr:hover {
-            background-color: #f1f1f1;
-        }
-    </style>
+    #data tr {
+      border-bottom: 1px solid var(--border);
+    }
 
+    #data tr.header,
+    #data tr:hover {
+      background-color: var(--surface-hover);
+    }
+  </style>
 </head>
 
 <body>
+  <h2 style="font-size: 1.2em; margin-block-start: 0em; margin-block-end: 0.3em">Timezones</h2>
+  <input type="text" id="myInput" placeholder="Search for your region..." title="Type in a region" />
 
-    <h2>Timezones</h2>
+  <table id="data">
+    <thead>
+      <tr class="header">
+        <th>Region</th>
+        <th>Code</th>
+      </tr>
+    </thead>
+    <tbody id="timezoneRows"></tbody>
+  </table>
 
-    <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for your region..." title="Type in a region">
+  <p>
+    Source:
+    <a href="https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv" target="_blank"
+      rel="noopener noreferrer">https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv</a>
+  </p>
 
+  <script>
+    // Store each distinct POSIX timezone code once to avoid repeating long strings.
+    const timezoneCodes = [
+      "GMT0",
+      "EAT-3",
+      "CET-1",
+      "WAT-1",
+      "CAT-2",
+      "EET-2",
+      "<+01>-1",
+      "CET-1CEST,M3.5.0,M10.5.0/3",
+      "SAST-2",
+      "HST10HDT,M3.2.0,M11.1.0",
+      "AKST9AKDT,M3.2.0,M11.1.0",
+      "AST4",
+      "<-03>3",
+      "<-04>4<-03>,M10.1.0/0,M3.4.0/0",
+      "EST5",
+      "CST6CDT,M4.1.0,M10.5.0",
+      "CST6",
+      "<-04>4",
+      "<-05>5",
+      "MST7MDT,M3.2.0,M11.1.0",
+      "CST6CDT,M3.2.0,M11.1.0",
+      "MST7MDT,M4.1.0,M10.5.0",
+      "MST7",
+      "EST5EDT,M3.2.0,M11.1.0",
+      "AST4ADT,M3.2.0,M11.1.0",
+      "<-03>3<-02>,M3.5.0/-2,M10.5.0/-1",
+      "CST5CDT,M3.2.0/0,M11.1.0/1",
+      "PST8PDT,M3.2.0,M11.1.0",
+      "<-03>3<-02>,M3.2.0,M11.1.0",
+      "<-02>2",
+      "<-04>4<-03>,M9.1.6/24,M4.1.6/24",
+      "<-01>1<+00>,M3.5.0/0,M10.5.0/1",
+      "NST3:30NDT,M3.2.0,M11.1.0",
+      "<+11>-11",
+      "<+07>-7",
+      "<+10>-10",
+      "AEST-10AEDT,M10.1.0,M4.1.0/3",
+      "<+05>-5",
+      "NZST-12NZDT,M9.5.0,M4.1.0/3",
+      "<+03>-3",
+      "<+00>0<+02>-2,M3.5.0/1,M10.5.0/3",
+      "<+06>-6",
+      "EET-2EEST,M2.5.4/24,M10.5.5/1",
+      "<+12>-12",
+      "<+04>-4",
+      "EET-2EEST,M3.5.0/0,M10.5.0/0",
+      "<+08>-8",
+      "<+09>-9",
+      "<+0530>-5:30",
+      "EET-2EEST,M3.5.5/0,M10.5.5/0",
+      "EET-2EEST,M3.5.0/3,M10.5.0/4",
+      "EET-2EEST,M3.4.4/48,M10.5.5/1",
+      "HKT-8",
+      "WIB-7",
+      "WIT-9",
+      "IST-2IDT,M3.4.4/26,M10.5.0",
+      "<+0430>-4:30",
+      "PKT-5",
+      "<+0545>-5:45",
+      "IST-5:30",
+      "CST-8",
+      "WITA-8",
+      "PST-8",
+      "KST-9",
+      "<+0330>-3:30<+0430>,J79/24,J263/24",
+      "JST-9",
+      "<+0630>-6:30",
+      "WET0WEST,M3.5.0/1,M10.5.0",
+      "<-01>1",
+      "ACST-9:30ACDT,M10.1.0,M4.1.0/3",
+      "AEST-10",
+      "ACST-9:30",
+      "<+0845>-8:45",
+      "<+1030>-10:30<+11>-11,M10.1.0,M4.1.0",
+      "AWST-8",
+      "<+13>-13",
+      "<+14>-14",
+      "<+02>-2",
+      "<-10>10",
+      "<-11>11",
+      "<-12>12",
+      "<-06>6",
+      "<-07>7",
+      "<-08>8",
+      "<-09>9",
+      "UTC0",
+      "EET-2EEST,M3.5.0,M10.5.0/3",
+      "IST-1GMT0,M10.5.0,M3.5.0/1",
+      "GMT0BST,M3.5.0/1,M10.5.0",
+      "MSK-3",
+      "<+1245>-12:45<+1345>,M9.5.0/2:45,M4.1.0/3:45",
+      "<-06>6<-05>,M9.1.6/22,M4.1.6/22",
+      "<+12>-12<+13>,M11.2.0,M1.2.3/99",
+      "ChST-10",
+      "HST10",
+      "<-0930>9:30",
+      "SST11",
+      "<+11>-11<+12>,M10.1.0,M4.1.0/3"
+    ];
 
-    <table id="data">
-        <tr class="header">
-            <th>Region</th>
-            <th>Code</th>
-        </tr>
-        <tr><td>Africa/Abidjan</td><td>GMT0</td></tr>
-        <tr><td>Africa/Accra</td><td>GMT0</td></tr>
-        <tr><td>Africa/Addis_Ababa</td><td>EAT-3</td></tr>
-        <tr><td>Africa/Algiers</td><td>CET-1</td></tr>
-        <tr><td>Africa/Asmara</td><td>EAT-3</td></tr>
-        <tr><td>Africa/Bamako</td><td>GMT0</td></tr>
-        <tr><td>Africa/Bangui</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Banjul</td><td>GMT0</td></tr>
-        <tr><td>Africa/Bissau</td><td>GMT0</td></tr>
-        <tr><td>Africa/Blantyre</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Brazzaville</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Bujumbura</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Cairo</td><td>EET-2</td></tr>
-        <tr><td>Africa/Casablanca</td><td>&lt;+01>-1</td></tr>
-        <tr><td>Africa/Ceuta</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Africa/Conakry</td><td>GMT0</td></tr>
-        <tr><td>Africa/Dakar</td><td>GMT0</td></tr>
-        <tr><td>Africa/Dar_es_Salaam</td><td>EAT-3</td></tr>
-        <tr><td>Africa/Djibouti</td><td>EAT-3</td></tr>
-        <tr><td>Africa/Douala</td><td>WAT-1</td></tr>
-        <tr><td>Africa/El_Aaiun</td><td>&lt;+01>-1</td></tr>
-        <tr><td>Africa/Freetown</td><td>GMT0</td></tr>
-        <tr><td>Africa/Gaborone</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Harare</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Johannesburg</td><td>SAST-2</td></tr>
-        <tr><td>Africa/Juba</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Kampala</td><td>EAT-3</td></tr>
-        <tr><td>Africa/Khartoum</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Kigali</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Kinshasa</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Lagos</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Libreville</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Lome</td><td>GMT0</td></tr>
-        <tr><td>Africa/Luanda</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Lubumbashi</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Lusaka</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Malabo</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Maputo</td><td>CAT-2</td></tr>
-        <tr><td>Africa/Maseru</td><td>SAST-2</td></tr>
-        <tr><td>Africa/Mbabane</td><td>SAST-2</td></tr>
-        <tr><td>Africa/Mogadishu</td><td>EAT-3</td></tr>
-        <tr><td>Africa/Monrovia</td><td>GMT0</td></tr>
-        <tr><td>Africa/Nairobi</td><td>EAT-3</td></tr>
-        <tr><td>Africa/Ndjamena</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Niamey</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Nouakchott</td><td>GMT0</td></tr>
-        <tr><td>Africa/Ouagadougou</td><td>GMT0</td></tr>
-        <tr><td>Africa/Porto-Novo</td><td>WAT-1</td></tr>
-        <tr><td>Africa/Sao_Tome</td><td>GMT0</td></tr>
-        <tr><td>Africa/Tripoli</td><td>EET-2</td></tr>
-        <tr><td>Africa/Tunis</td><td>CET-1</td></tr>
-        <tr><td>Africa/Windhoek</td><td>CAT-2</td></tr>
-        <tr><td>America/Adak</td><td>HST10HDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Anchorage</td><td>AKST9AKDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Anguilla</td><td>AST4</td></tr>
-        <tr><td>America/Antigua</td><td>AST4</td></tr>
-        <tr><td>America/Araguaina</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/Buenos_Aires</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/Catamarca</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/Cordoba</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/Jujuy</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/La_Rioja</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/Mendoza</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/Rio_Gallegos</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/Salta</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/San_Juan</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/San_Luis</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/Tucuman</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Argentina/Ushuaia</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Aruba</td><td>AST4</td></tr>
-        <tr><td>America/Asuncion</td><td>&lt;-04>4&lt;-03>,M10.1.0/0,M3.4.0/0</td></tr>
-        <tr><td>America/Atikokan</td><td>EST5</td></tr>
-        <tr><td>America/Bahia</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Bahia_Banderas</td><td>CST6CDT,M4.1.0,M10.5.0</td></tr>
-        <tr><td>America/Barbados</td><td>AST4</td></tr>
-        <tr><td>America/Belem</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Belize</td><td>CST6</td></tr>
-        <tr><td>America/Blanc-Sablon</td><td>AST4</td></tr>
-        <tr><td>America/Boa_Vista</td><td>&lt;-04>4</td></tr>
-        <tr><td>America/Bogota</td><td>&lt;-05>5</td></tr>
-        <tr><td>America/Boise</td><td>MST7MDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Cambridge_Bay</td><td>MST7MDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Campo_Grande</td><td>&lt;-04>4</td></tr>
-        <tr><td>America/Cancun</td><td>EST5</td></tr>
-        <tr><td>America/Caracas</td><td>&lt;-04>4</td></tr>
-        <tr><td>America/Cayenne</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Cayman</td><td>EST5</td></tr>
-        <tr><td>America/Chicago</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Chihuahua</td><td>MST7MDT,M4.1.0,M10.5.0</td></tr>
-        <tr><td>America/Costa_Rica</td><td>CST6</td></tr>
-        <tr><td>America/Creston</td><td>MST7</td></tr>
-        <tr><td>America/Cuiaba</td><td>&lt;-04>4</td></tr>
-        <tr><td>America/Curacao</td><td>AST4</td></tr>
-        <tr><td>America/Danmarkshavn</td><td>GMT0</td></tr>
-        <tr><td>America/Dawson</td><td>MST7</td></tr>
-        <tr><td>America/Dawson_Creek</td><td>MST7</td></tr>
-        <tr><td>America/Denver</td><td>MST7MDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Detroit</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Dominica</td><td>AST4</td></tr>
-        <tr><td>America/Edmonton</td><td>MST7MDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Eirunepe</td><td>&lt;-05>5</td></tr>
-        <tr><td>America/El_Salvador</td><td>CST6</td></tr>
-        <tr><td>America/Fort_Nelson</td><td>MST7</td></tr>
-        <tr><td>America/Fortaleza</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Glace_Bay</td><td>AST4ADT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Godthab</td><td>&lt;-03>3&lt;-02>,M3.5.0/-2,M10.5.0/-1</td></tr>
-        <tr><td>America/Goose_Bay</td><td>AST4ADT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Grand_Turk</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Grenada</td><td>AST4</td></tr>
-        <tr><td>America/Guadeloupe</td><td>AST4</td></tr>
-        <tr><td>America/Guatemala</td><td>CST6</td></tr>
-        <tr><td>America/Guayaquil</td><td>&lt;-05>5</td></tr>
-        <tr><td>America/Guyana</td><td>&lt;-04>4</td></tr>
-        <tr><td>America/Halifax</td><td>AST4ADT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Havana</td><td>CST5CDT,M3.2.0/0,M11.1.0/1</td></tr>
-        <tr><td>America/Hermosillo</td><td>MST7</td></tr>
-        <tr><td>America/Indiana/Indianapolis</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Indiana/Knox</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Indiana/Marengo</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Indiana/Petersburg</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Indiana/Tell_City</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Indiana/Vevay</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Indiana/Vincennes</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Indiana/Winamac</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Inuvik</td><td>MST7MDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Iqaluit</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Jamaica</td><td>EST5</td></tr>
-        <tr><td>America/Juneau</td><td>AKST9AKDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Kentucky/Louisville</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Kentucky/Monticello</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Kralendijk</td><td>AST4</td></tr>
-        <tr><td>America/La_Paz</td><td>&lt;-04>4</td></tr>
-        <tr><td>America/Lima</td><td>&lt;-05>5</td></tr>
-        <tr><td>America/Los_Angeles</td><td>PST8PDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Lower_Princes</td><td>AST4</td></tr>
-        <tr><td>America/Maceio</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Managua</td><td>CST6</td></tr>
-        <tr><td>America/Manaus</td><td>&lt;-04>4</td></tr>
-        <tr><td>America/Marigot</td><td>AST4</td></tr>
-        <tr><td>America/Martinique</td><td>AST4</td></tr>
-        <tr><td>America/Matamoros</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Mazatlan</td><td>MST7MDT,M4.1.0,M10.5.0</td></tr>
-        <tr><td>America/Menominee</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Merida</td><td>CST6CDT,M4.1.0,M10.5.0</td></tr>
-        <tr><td>America/Metlakatla</td><td>AKST9AKDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Mexico_City</td><td>CST6CDT,M4.1.0,M10.5.0</td></tr>
-        <tr><td>America/Miquelon</td><td>&lt;-03>3&lt;-02>,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Moncton</td><td>AST4ADT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Monterrey</td><td>CST6CDT,M4.1.0,M10.5.0</td></tr>
-        <tr><td>America/Montevideo</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Montreal</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Montserrat</td><td>AST4</td></tr>
-        <tr><td>America/Nassau</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/New_York</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Nipigon</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Nome</td><td>AKST9AKDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Noronha</td><td>&lt;-02>2</td></tr>
-        <tr><td>America/North_Dakota/Beulah</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/North_Dakota/Center</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/North_Dakota/New_Salem</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Nuuk</td><td>&lt;-03>3&lt;-02>,M3.5.0/-2,M10.5.0/-1</td></tr>
-        <tr><td>America/Ojinaga</td><td>MST7MDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Panama</td><td>EST5</td></tr>
-        <tr><td>America/Pangnirtung</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Paramaribo</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Phoenix</td><td>MST7</td></tr>
-        <tr><td>America/Port_of_Spain</td><td>AST4</td></tr>
-        <tr><td>America/Port-au-Prince</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Porto_Velho</td><td>&lt;-04>4</td></tr>
-        <tr><td>America/Puerto_Rico</td><td>AST4</td></tr>
-        <tr><td>America/Punta_Arenas</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Rainy_River</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Rankin_Inlet</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Recife</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Regina</td><td>CST6</td></tr>
-        <tr><td>America/Resolute</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Rio_Branco</td><td>&lt;-05>5</td></tr>
-        <tr><td>America/Santarem</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Santiago</td><td>&lt;-04>4&lt;-03>,M9.1.6/24,M4.1.6/24</td></tr>
-        <tr><td>America/Santo_Domingo</td><td>AST4</td></tr>
-        <tr><td>America/Sao_Paulo</td><td>&lt;-03>3</td></tr>
-        <tr><td>America/Scoresbysund</td><td>&lt;-01>1&lt;+00>,M3.5.0/0,M10.5.0/1</td></tr>
-        <tr><td>America/Sitka</td><td>AKST9AKDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/St_Barthelemy</td><td>AST4</td></tr>
-        <tr><td>America/St_Johns</td><td>NST3:30NDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/St_Kitts</td><td>AST4</td></tr>
-        <tr><td>America/St_Lucia</td><td>AST4</td></tr>
-        <tr><td>America/St_Thomas</td><td>AST4</td></tr>
-        <tr><td>America/St_Vincent</td><td>AST4</td></tr>
-        <tr><td>America/Swift_Current</td><td>CST6</td></tr>
-        <tr><td>America/Tegucigalpa</td><td>CST6</td></tr>
-        <tr><td>America/Thule</td><td>AST4ADT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Thunder_Bay</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Tijuana</td><td>PST8PDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Toronto</td><td>EST5EDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Tortola</td><td>AST4</td></tr>
-        <tr><td>America/Vancouver</td><td>PST8PDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Whitehorse</td><td>MST7</td></tr>
-        <tr><td>America/Winnipeg</td><td>CST6CDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Yakutat</td><td>AKST9AKDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>America/Yellowknife</td><td>MST7MDT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>Antarctica/Casey</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Antarctica/Davis</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Antarctica/DumontDUrville</td><td>&lt;+10>-10</td></tr>
-        <tr><td>Antarctica/Macquarie</td><td>AEST-10AEDT,M10.1.0,M4.1.0/3</td></tr>
-        <tr><td>Antarctica/Mawson</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Antarctica/McMurdo</td><td>NZST-12NZDT,M9.5.0,M4.1.0/3</td></tr>
-        <tr><td>Antarctica/Palmer</td><td>&lt;-03>3</td></tr>
-        <tr><td>Antarctica/Rothera</td><td>&lt;-03>3</td></tr>
-        <tr><td>Antarctica/Syowa</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Antarctica/Troll</td><td>&lt;+00>0&lt;+02>-2,M3.5.0/1,M10.5.0/3</td></tr>
-        <tr><td>Antarctica/Vostok</td><td>&lt;+06>-6</td></tr>
-        <tr><td>Arctic/Longyearbyen</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Asia/Aden</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Asia/Almaty</td><td>&lt;+06>-6</td></tr>
-        <tr><td>Asia/Amman</td><td>EET-2EEST,M2.5.4/24,M10.5.5/1</td></tr>
-        <tr><td>Asia/Anadyr</td><td>&lt;+12>-12</td></tr>
-        <tr><td>Asia/Aqtau</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Aqtobe</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Ashgabat</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Atyrau</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Baghdad</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Asia/Bahrain</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Asia/Baku</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Asia/Bangkok</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Barnaul</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Beirut</td><td>EET-2EEST,M3.5.0/0,M10.5.0/0</td></tr>
-        <tr><td>Asia/Bishkek</td><td>&lt;+06>-6</td></tr>
-        <tr><td>Asia/Brunei</td><td>&lt;+08>-8</td></tr>
-        <tr><td>Asia/Chita</td><td>&lt;+09>-9</td></tr>
-        <tr><td>Asia/Choibalsan</td><td>&lt;+08>-8</td></tr>
-        <tr><td>Asia/Colombo</td><td>&lt;+0530>-5:30</td></tr>
-        <tr><td>Asia/Damascus</td><td>EET-2EEST,M3.5.5/0,M10.5.5/0</td></tr>
-        <tr><td>Asia/Dhaka</td><td>&lt;+06>-6</td></tr>
-        <tr><td>Asia/Dili</td><td>&lt;+09>-9</td></tr>
-        <tr><td>Asia/Dubai</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Asia/Dushanbe</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Famagusta</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Asia/Gaza</td><td>EET-2EEST,M3.4.4/48,M10.5.5/1</td></tr>
-        <tr><td>Asia/Hebron</td><td>EET-2EEST,M3.4.4/48,M10.5.5/1</td></tr>
-        <tr><td>Asia/Ho_Chi_Minh</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Hong_Kong</td><td>HKT-8</td></tr>
-        <tr><td>Asia/Hovd</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Irkutsk</td><td>&lt;+08>-8</td></tr>
-        <tr><td>Asia/Jakarta</td><td>WIB-7</td></tr>
-        <tr><td>Asia/Jayapura</td><td>WIT-9</td></tr>
-        <tr><td>Asia/Jerusalem</td><td>IST-2IDT,M3.4.4/26,M10.5.0</td></tr>
-        <tr><td>Asia/Kabul</td><td>&lt;+0430>-4:30</td></tr>
-        <tr><td>Asia/Kamchatka</td><td>&lt;+12>-12</td></tr>
-        <tr><td>Asia/Karachi</td><td>PKT-5</td></tr>
-        <tr><td>Asia/Kathmandu</td><td>&lt;+0545>-5:45</td></tr>
-        <tr><td>Asia/Khandyga</td><td>&lt;+09>-9</td></tr>
-        <tr><td>Asia/Kolkata</td><td>IST-5:30</td></tr>
-        <tr><td>Asia/Krasnoyarsk</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Kuala_Lumpur</td><td>&lt;+08>-8</td></tr>
-        <tr><td>Asia/Kuching</td><td>&lt;+08>-8</td></tr>
-        <tr><td>Asia/Kuwait</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Asia/Macau</td><td>CST-8</td></tr>
-        <tr><td>Asia/Magadan</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Asia/Makassar</td><td>WITA-8</td></tr>
-        <tr><td>Asia/Manila</td><td>PST-8</td></tr>
-        <tr><td>Asia/Muscat</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Asia/Nicosia</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Asia/Novokuznetsk</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Novosibirsk</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Omsk</td><td>&lt;+06>-6</td></tr>
-        <tr><td>Asia/Oral</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Phnom_Penh</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Pontianak</td><td>WIB-7</td></tr>
-        <tr><td>Asia/Pyongyang</td><td>KST-9</td></tr>
-        <tr><td>Asia/Qatar</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Asia/Qyzylorda</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Riyadh</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Asia/Sakhalin</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Asia/Samarkand</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Seoul</td><td>KST-9</td></tr>
-        <tr><td>Asia/Shanghai</td><td>CST-8</td></tr>
-        <tr><td>Asia/Singapore</td><td>&lt;+08>-8</td></tr>
-        <tr><td>Asia/Srednekolymsk</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Asia/Taipei</td><td>CST-8</td></tr>
-        <tr><td>Asia/Tashkent</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Tbilisi</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Asia/Tehran</td><td>&lt;+0330>-3:30&lt;+0430>,J79/24,J263/24</td></tr>
-        <tr><td>Asia/Thimphu</td><td>&lt;+06>-6</td></tr>
-        <tr><td>Asia/Tokyo</td><td>JST-9</td></tr>
-        <tr><td>Asia/Tomsk</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Ulaanbaatar</td><td>&lt;+08>-8</td></tr>
-        <tr><td>Asia/Urumqi</td><td>&lt;+06>-6</td></tr>
-        <tr><td>Asia/Ust-Nera</td><td>&lt;+10>-10</td></tr>
-        <tr><td>Asia/Vientiane</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Asia/Vladivostok</td><td>&lt;+10>-10</td></tr>
-        <tr><td>Asia/Yakutsk</td><td>&lt;+09>-9</td></tr>
-        <tr><td>Asia/Yangon</td><td>&lt;+0630>-6:30</td></tr>
-        <tr><td>Asia/Yekaterinburg</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Asia/Yerevan</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Atlantic/Azores</td><td>&lt;-01>1&lt;+00>,M3.5.0/0,M10.5.0/1</td></tr>
-        <tr><td>Atlantic/Bermuda</td><td>AST4ADT,M3.2.0,M11.1.0</td></tr>
-        <tr><td>Atlantic/Canary</td><td>WET0WEST,M3.5.0/1,M10.5.0</td></tr>
-        <tr><td>Atlantic/Cape_Verde</td><td>&lt;-01>1</td></tr>
-        <tr><td>Atlantic/Faroe</td><td>WET0WEST,M3.5.0/1,M10.5.0</td></tr>
-        <tr><td>Atlantic/Madeira</td><td>WET0WEST,M3.5.0/1,M10.5.0</td></tr>
-        <tr><td>Atlantic/Reykjavik</td><td>GMT0</td></tr>
-        <tr><td>Atlantic/South_Georgia</td><td>&lt;-02>2</td></tr>
-        <tr><td>Atlantic/St_Helena</td><td>GMT0</td></tr>
-        <tr><td>Atlantic/Stanley</td><td>&lt;-03>3</td></tr>
-        <tr><td>Australia/Adelaide</td><td>ACST-9:30ACDT,M10.1.0,M4.1.0/3</td></tr>
-        <tr><td>Australia/Brisbane</td><td>AEST-10</td></tr>
-        <tr><td>Australia/Broken_Hill</td><td>ACST-9:30ACDT,M10.1.0,M4.1.0/3</td></tr>
-        <tr><td>Australia/Currie</td><td>AEST-10AEDT,M10.1.0,M4.1.0/3</td></tr>
-        <tr><td>Australia/Darwin</td><td>ACST-9:30</td></tr>
-        <tr><td>Australia/Eucla</td><td>&lt;+0845>-8:45</td></tr>
-        <tr><td>Australia/Hobart</td><td>AEST-10AEDT,M10.1.0,M4.1.0/3</td></tr>
-        <tr><td>Australia/Lindeman</td><td>AEST-10</td></tr>
-        <tr><td>Australia/Lord_Howe</td><td>&lt;+1030>-10:30&lt;+11>-11,M10.1.0,M4.1.0</td></tr>
-        <tr><td>Australia/Melbourne</td><td>AEST-10AEDT,M10.1.0,M4.1.0/3</td></tr>
-        <tr><td>Australia/Perth</td><td>AWST-8</td></tr>
-        <tr><td>Australia/Sydney</td><td>AEST-10AEDT,M10.1.0,M4.1.0/3</td></tr>
-        <tr><td>Etc/GMT</td><td>GMT0</td></tr>
-        <tr><td>Etc/GMT-0</td><td>GMT0</td></tr>
-        <tr><td>Etc/GMT-1</td><td>&lt;+01>-1</td></tr>
-        <tr><td>Etc/GMT-10</td><td>&lt;+10>-10</td></tr>
-        <tr><td>Etc/GMT-11</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Etc/GMT-12</td><td>&lt;+12>-12</td></tr>
-        <tr><td>Etc/GMT-13</td><td>&lt;+13>-13</td></tr>
-        <tr><td>Etc/GMT-14</td><td>&lt;+14>-14</td></tr>
-        <tr><td>Etc/GMT-2</td><td>&lt;+02>-2</td></tr>
-        <tr><td>Etc/GMT-3</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Etc/GMT-4</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Etc/GMT-5</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Etc/GMT-6</td><td>&lt;+06>-6</td></tr>
-        <tr><td>Etc/GMT-7</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Etc/GMT-8</td><td>&lt;+08>-8</td></tr>
-        <tr><td>Etc/GMT-9</td><td>&lt;+09>-9</td></tr>
-        <tr><td>Etc/GMT+0</td><td>GMT0</td></tr>
-        <tr><td>Etc/GMT+1</td><td>&lt;-01>1</td></tr>
-        <tr><td>Etc/GMT+10</td><td>&lt;-10>10</td></tr>
-        <tr><td>Etc/GMT+11</td><td>&lt;-11>11</td></tr>
-        <tr><td>Etc/GMT+12</td><td>&lt;-12>12</td></tr>
-        <tr><td>Etc/GMT+2</td><td>&lt;-02>2</td></tr>
-        <tr><td>Etc/GMT+3</td><td>&lt;-03>3</td></tr>
-        <tr><td>Etc/GMT+4</td><td>&lt;-04>4</td></tr>
-        <tr><td>Etc/GMT+5</td><td>&lt;-05>5</td></tr>
-        <tr><td>Etc/GMT+6</td><td>&lt;-06>6</td></tr>
-        <tr><td>Etc/GMT+7</td><td>&lt;-07>7</td></tr>
-        <tr><td>Etc/GMT+8</td><td>&lt;-08>8</td></tr>
-        <tr><td>Etc/GMT+9</td><td>&lt;-09>9</td></tr>
-        <tr><td>Etc/GMT0</td><td>GMT0</td></tr>
-        <tr><td>Etc/Greenwich</td><td>GMT0</td></tr>
-        <tr><td>Etc/UCT</td><td>UTC0</td></tr>
-        <tr><td>Etc/Universal</td><td>UTC0</td></tr>
-        <tr><td>Etc/UTC</td><td>UTC0</td></tr>
-        <tr><td>Etc/Zulu</td><td>UTC0</td></tr>
-        <tr><td>Europe/Amsterdam</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Andorra</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Astrakhan</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Europe/Athens</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Belgrade</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Berlin</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Bratislava</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Brussels</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Bucharest</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Budapest</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Busingen</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Chisinau</td><td>EET-2EEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Copenhagen</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Dublin</td><td>IST-1GMT0,M10.5.0,M3.5.0/1</td></tr>
-        <tr><td>Europe/Gibraltar</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Guernsey</td><td>GMT0BST,M3.5.0/1,M10.5.0</td></tr>
-        <tr><td>Europe/Helsinki</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Isle_of_Man</td><td>GMT0BST,M3.5.0/1,M10.5.0</td></tr>
-        <tr><td>Europe/Istanbul</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Europe/Jersey</td><td>GMT0BST,M3.5.0/1,M10.5.0</td></tr>
-        <tr><td>Europe/Kaliningrad</td><td>EET-2</td></tr>
-        <tr><td>Europe/Kiev</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Kirov</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Europe/Lisbon</td><td>WET0WEST,M3.5.0/1,M10.5.0</td></tr>
-        <tr><td>Europe/Ljubljana</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/London</td><td>GMT0BST,M3.5.0/1,M10.5.0</td></tr>
-        <tr><td>Europe/Luxembourg</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Madrid</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Malta</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Mariehamn</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Minsk</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Europe/Monaco</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Moscow</td><td>MSK-3</td></tr>
-        <tr><td>Europe/Oslo</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Paris</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Podgorica</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Prague</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Riga</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Rome</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Samara</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Europe/San_Marino</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Sarajevo</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Saratov</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Europe/Simferopol</td><td>MSK-3</td></tr>
-        <tr><td>Europe/Skopje</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Sofia</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Stockholm</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Tallinn</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Tirane</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Ulyanovsk</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Europe/Uzhgorod</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Vaduz</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Vatican</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Vienna</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Vilnius</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Volgograd</td><td>&lt;+03>-3</td></tr>
-        <tr><td>Europe/Warsaw</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Zagreb</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Europe/Zaporozhye</td><td>EET-2EEST,M3.5.0/3,M10.5.0/4</td></tr>
-        <tr><td>Europe/Zurich</td><td>CET-1CEST,M3.5.0,M10.5.0/3</td></tr>
-        <tr><td>Indian/Antananarivo</td><td>EAT-3</td></tr>
-        <tr><td>Indian/Chagos</td><td>&lt;+06>-6</td></tr>
-        <tr><td>Indian/Christmas</td><td>&lt;+07>-7</td></tr>
-        <tr><td>Indian/Cocos</td><td>&lt;+0630>-6:30</td></tr>
-        <tr><td>Indian/Comoro</td><td>EAT-3</td></tr>
-        <tr><td>Indian/Kerguelen</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Indian/Mahe</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Indian/Maldives</td><td>&lt;+05>-5</td></tr>
-        <tr><td>Indian/Mauritius</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Indian/Mayotte</td><td>EAT-3</td></tr>
-        <tr><td>Indian/Reunion</td><td>&lt;+04>-4</td></tr>
-        <tr><td>Pacific/Apia</td><td>&lt;+13>-13</td></tr>
-        <tr><td>Pacific/Auckland</td><td>NZST-12NZDT,M9.5.0,M4.1.0/3</td></tr>
-        <tr><td>Pacific/Bougainville</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Pacific/Chatham</td><td>&lt;+1245>-12:45&lt;+1345>,M9.5.0/2:45,M4.1.0/3:45</td></tr>
-        <tr><td>Pacific/Chuuk</td><td>&lt;+10>-10</td></tr>
-        <tr><td>Pacific/Easter</td><td>&lt;-06>6&lt;-05>,M9.1.6/22,M4.1.6/22</td></tr>
-        <tr><td>Pacific/Efate</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Pacific/Enderbury</td><td>&lt;+13>-13</td></tr>
-        <tr><td>Pacific/Fakaofo</td><td>&lt;+13>-13</td></tr>
-        <tr><td>Pacific/Fiji</td><td>&lt;+12>-12&lt;+13>,M11.2.0,M1.2.3/99</td></tr>
-        <tr><td>Pacific/Funafuti</td><td>&lt;+12>-12</td></tr>
-        <tr><td>Pacific/Galapagos</td><td>&lt;-06>6</td></tr>
-        <tr><td>Pacific/Gambier</td><td>&lt;-09>9</td></tr>
-        <tr><td>Pacific/Guadalcanal</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Pacific/Guam</td><td>ChST-10</td></tr>
-        <tr><td>Pacific/Honolulu</td><td>HST10</td></tr>
-        <tr><td>Pacific/Kiritimati</td><td>&lt;+14>-14</td></tr>
-        <tr><td>Pacific/Kosrae</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Pacific/Kwajalein</td><td>&lt;+12>-12</td></tr>
-        <tr><td>Pacific/Majuro</td><td>&lt;+12>-12</td></tr>
-        <tr><td>Pacific/Marquesas</td><td>&lt;-0930>9:30</td></tr>
-        <tr><td>Pacific/Midway</td><td>SST11</td></tr>
-        <tr><td>Pacific/Nauru</td><td>&lt;+12>-12</td></tr>
-        <tr><td>Pacific/Niue</td><td>&lt;-11>11</td></tr>
-        <tr><td>Pacific/Norfolk</td><td>&lt;+11>-11&lt;+12>,M10.1.0,M4.1.0/3</td></tr>
-        <tr><td>Pacific/Noumea</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Pacific/Pago_Pago</td><td>SST11</td></tr>
-        <tr><td>Pacific/Palau</td><td>&lt;+09>-9</td></tr>
-        <tr><td>Pacific/Pitcairn</td><td>&lt;-08>8</td></tr>
-        <tr><td>Pacific/Pohnpei</td><td>&lt;+11>-11</td></tr>
-        <tr><td>Pacific/Port_Moresby</td><td>&lt;+10>-10</td></tr>
-        <tr><td>Pacific/Rarotonga</td><td>&lt;-10>10</td></tr>
-        <tr><td>Pacific/Saipan</td><td>ChST-10</td></tr>
-        <tr><td>Pacific/Tahiti</td><td>&lt;-10>10</td></tr>
-        <tr><td>Pacific/Tarawa</td><td>&lt;+12>-12</td></tr>
-        <tr><td>Pacific/Tongatapu</td><td>&lt;+13>-13</td></tr>
-        <tr><td>Pacific/Wake</td><td>&lt;+12>-12</td></tr>
-        <tr><td>Pacific/Wallis</td><td>&lt;+12>-12</td></tr>
-    </table>
+    // Each entry contains the region name and its index in timezoneCodes.
+    const timezones = [
+      ["Africa/Abidjan", 0],
+      ["Africa/Accra", 0],
+      ["Africa/Addis_Ababa", 1],
+      ["Africa/Algiers", 2],
+      ["Africa/Asmara", 1],
+      ["Africa/Bamako", 0],
+      ["Africa/Bangui", 3],
+      ["Africa/Banjul", 0],
+      ["Africa/Bissau", 0],
+      ["Africa/Blantyre", 4],
+      ["Africa/Brazzaville", 3],
+      ["Africa/Bujumbura", 4],
+      ["Africa/Cairo", 5],
+      ["Africa/Casablanca", 6],
+      ["Africa/Ceuta", 7],
+      ["Africa/Conakry", 0],
+      ["Africa/Dakar", 0],
+      ["Africa/Dar_es_Salaam", 1],
+      ["Africa/Djibouti", 1],
+      ["Africa/Douala", 3],
+      ["Africa/El_Aaiun", 6],
+      ["Africa/Freetown", 0],
+      ["Africa/Gaborone", 4],
+      ["Africa/Harare", 4],
+      ["Africa/Johannesburg", 8],
+      ["Africa/Juba", 4],
+      ["Africa/Kampala", 1],
+      ["Africa/Khartoum", 4],
+      ["Africa/Kigali", 4],
+      ["Africa/Kinshasa", 3],
+      ["Africa/Lagos", 3],
+      ["Africa/Libreville", 3],
+      ["Africa/Lome", 0],
+      ["Africa/Luanda", 3],
+      ["Africa/Lubumbashi", 4],
+      ["Africa/Lusaka", 4],
+      ["Africa/Malabo", 3],
+      ["Africa/Maputo", 4],
+      ["Africa/Maseru", 8],
+      ["Africa/Mbabane", 8],
+      ["Africa/Mogadishu", 1],
+      ["Africa/Monrovia", 0],
+      ["Africa/Nairobi", 1],
+      ["Africa/Ndjamena", 3],
+      ["Africa/Niamey", 3],
+      ["Africa/Nouakchott", 0],
+      ["Africa/Ouagadougou", 0],
+      ["Africa/Porto-Novo", 3],
+      ["Africa/Sao_Tome", 0],
+      ["Africa/Tripoli", 5],
+      ["Africa/Tunis", 2],
+      ["Africa/Windhoek", 4],
+      ["America/Adak", 9],
+      ["America/Anchorage", 10],
+      ["America/Anguilla", 11],
+      ["America/Antigua", 11],
+      ["America/Araguaina", 12],
+      ["America/Argentina/Buenos_Aires", 12],
+      ["America/Argentina/Catamarca", 12],
+      ["America/Argentina/Cordoba", 12],
+      ["America/Argentina/Jujuy", 12],
+      ["America/Argentina/La_Rioja", 12],
+      ["America/Argentina/Mendoza", 12],
+      ["America/Argentina/Rio_Gallegos", 12],
+      ["America/Argentina/Salta", 12],
+      ["America/Argentina/San_Juan", 12],
+      ["America/Argentina/San_Luis", 12],
+      ["America/Argentina/Tucuman", 12],
+      ["America/Argentina/Ushuaia", 12],
+      ["America/Aruba", 11],
+      ["America/Asuncion", 13],
+      ["America/Atikokan", 14],
+      ["America/Bahia", 12],
+      ["America/Bahia_Banderas", 15],
+      ["America/Barbados", 11],
+      ["America/Belem", 12],
+      ["America/Belize", 16],
+      ["America/Blanc-Sablon", 11],
+      ["America/Boa_Vista", 17],
+      ["America/Bogota", 18],
+      ["America/Boise", 19],
+      ["America/Cambridge_Bay", 19],
+      ["America/Campo_Grande", 17],
+      ["America/Cancun", 14],
+      ["America/Caracas", 17],
+      ["America/Cayenne", 12],
+      ["America/Cayman", 14],
+      ["America/Chicago", 20],
+      ["America/Chihuahua", 21],
+      ["America/Costa_Rica", 16],
+      ["America/Creston", 22],
+      ["America/Cuiaba", 17],
+      ["America/Curacao", 11],
+      ["America/Danmarkshavn", 0],
+      ["America/Dawson", 22],
+      ["America/Dawson_Creek", 22],
+      ["America/Denver", 19],
+      ["America/Detroit", 23],
+      ["America/Dominica", 11],
+      ["America/Edmonton", 19],
+      ["America/Eirunepe", 18],
+      ["America/El_Salvador", 16],
+      ["America/Fort_Nelson", 22],
+      ["America/Fortaleza", 12],
+      ["America/Glace_Bay", 24],
+      ["America/Godthab", 25],
+      ["America/Goose_Bay", 24],
+      ["America/Grand_Turk", 23],
+      ["America/Grenada", 11],
+      ["America/Guadeloupe", 11],
+      ["America/Guatemala", 16],
+      ["America/Guayaquil", 18],
+      ["America/Guyana", 17],
+      ["America/Halifax", 24],
+      ["America/Havana", 26],
+      ["America/Hermosillo", 22],
+      ["America/Indiana/Indianapolis", 23],
+      ["America/Indiana/Knox", 20],
+      ["America/Indiana/Marengo", 23],
+      ["America/Indiana/Petersburg", 23],
+      ["America/Indiana/Tell_City", 20],
+      ["America/Indiana/Vevay", 23],
+      ["America/Indiana/Vincennes", 23],
+      ["America/Indiana/Winamac", 23],
+      ["America/Inuvik", 19],
+      ["America/Iqaluit", 23],
+      ["America/Jamaica", 14],
+      ["America/Juneau", 10],
+      ["America/Kentucky/Louisville", 23],
+      ["America/Kentucky/Monticello", 23],
+      ["America/Kralendijk", 11],
+      ["America/La_Paz", 17],
+      ["America/Lima", 18],
+      ["America/Los_Angeles", 27],
+      ["America/Lower_Princes", 11],
+      ["America/Maceio", 12],
+      ["America/Managua", 16],
+      ["America/Manaus", 17],
+      ["America/Marigot", 11],
+      ["America/Martinique", 11],
+      ["America/Matamoros", 20],
+      ["America/Mazatlan", 21],
+      ["America/Menominee", 20],
+      ["America/Merida", 15],
+      ["America/Metlakatla", 10],
+      ["America/Mexico_City", 15],
+      ["America/Miquelon", 28],
+      ["America/Moncton", 24],
+      ["America/Monterrey", 15],
+      ["America/Montevideo", 12],
+      ["America/Montreal", 23],
+      ["America/Montserrat", 11],
+      ["America/Nassau", 23],
+      ["America/New_York", 23],
+      ["America/Nipigon", 23],
+      ["America/Nome", 10],
+      ["America/Noronha", 29],
+      ["America/North_Dakota/Beulah", 20],
+      ["America/North_Dakota/Center", 20],
+      ["America/North_Dakota/New_Salem", 20],
+      ["America/Nuuk", 25],
+      ["America/Ojinaga", 19],
+      ["America/Panama", 14],
+      ["America/Pangnirtung", 23],
+      ["America/Paramaribo", 12],
+      ["America/Phoenix", 22],
+      ["America/Port_of_Spain", 11],
+      ["America/Port-au-Prince", 23],
+      ["America/Porto_Velho", 17],
+      ["America/Puerto_Rico", 11],
+      ["America/Punta_Arenas", 12],
+      ["America/Rainy_River", 20],
+      ["America/Rankin_Inlet", 20],
+      ["America/Recife", 12],
+      ["America/Regina", 16],
+      ["America/Resolute", 20],
+      ["America/Rio_Branco", 18],
+      ["America/Santarem", 12],
+      ["America/Santiago", 30],
+      ["America/Santo_Domingo", 11],
+      ["America/Sao_Paulo", 12],
+      ["America/Scoresbysund", 31],
+      ["America/Sitka", 10],
+      ["America/St_Barthelemy", 11],
+      ["America/St_Johns", 32],
+      ["America/St_Kitts", 11],
+      ["America/St_Lucia", 11],
+      ["America/St_Thomas", 11],
+      ["America/St_Vincent", 11],
+      ["America/Swift_Current", 16],
+      ["America/Tegucigalpa", 16],
+      ["America/Thule", 24],
+      ["America/Thunder_Bay", 23],
+      ["America/Tijuana", 27],
+      ["America/Toronto", 23],
+      ["America/Tortola", 11],
+      ["America/Vancouver", 27],
+      ["America/Whitehorse", 22],
+      ["America/Winnipeg", 20],
+      ["America/Yakutat", 10],
+      ["America/Yellowknife", 19],
+      ["Antarctica/Casey", 33],
+      ["Antarctica/Davis", 34],
+      ["Antarctica/DumontDUrville", 35],
+      ["Antarctica/Macquarie", 36],
+      ["Antarctica/Mawson", 37],
+      ["Antarctica/McMurdo", 38],
+      ["Antarctica/Palmer", 12],
+      ["Antarctica/Rothera", 12],
+      ["Antarctica/Syowa", 39],
+      ["Antarctica/Troll", 40],
+      ["Antarctica/Vostok", 41],
+      ["Arctic/Longyearbyen", 7],
+      ["Asia/Aden", 39],
+      ["Asia/Almaty", 41],
+      ["Asia/Amman", 42],
+      ["Asia/Anadyr", 43],
+      ["Asia/Aqtau", 37],
+      ["Asia/Aqtobe", 37],
+      ["Asia/Ashgabat", 37],
+      ["Asia/Atyrau", 37],
+      ["Asia/Baghdad", 39],
+      ["Asia/Bahrain", 39],
+      ["Asia/Baku", 44],
+      ["Asia/Bangkok", 34],
+      ["Asia/Barnaul", 34],
+      ["Asia/Beirut", 45],
+      ["Asia/Bishkek", 41],
+      ["Asia/Brunei", 46],
+      ["Asia/Chita", 47],
+      ["Asia/Choibalsan", 46],
+      ["Asia/Colombo", 48],
+      ["Asia/Damascus", 49],
+      ["Asia/Dhaka", 41],
+      ["Asia/Dili", 47],
+      ["Asia/Dubai", 44],
+      ["Asia/Dushanbe", 37],
+      ["Asia/Famagusta", 50],
+      ["Asia/Gaza", 51],
+      ["Asia/Hebron", 51],
+      ["Asia/Ho_Chi_Minh", 34],
+      ["Asia/Hong_Kong", 52],
+      ["Asia/Hovd", 34],
+      ["Asia/Irkutsk", 46],
+      ["Asia/Jakarta", 53],
+      ["Asia/Jayapura", 54],
+      ["Asia/Jerusalem", 55],
+      ["Asia/Kabul", 56],
+      ["Asia/Kamchatka", 43],
+      ["Asia/Karachi", 57],
+      ["Asia/Kathmandu", 58],
+      ["Asia/Khandyga", 47],
+      ["Asia/Kolkata", 59],
+      ["Asia/Krasnoyarsk", 34],
+      ["Asia/Kuala_Lumpur", 46],
+      ["Asia/Kuching", 46],
+      ["Asia/Kuwait", 39],
+      ["Asia/Macau", 60],
+      ["Asia/Magadan", 33],
+      ["Asia/Makassar", 61],
+      ["Asia/Manila", 62],
+      ["Asia/Muscat", 44],
+      ["Asia/Nicosia", 50],
+      ["Asia/Novokuznetsk", 34],
+      ["Asia/Novosibirsk", 34],
+      ["Asia/Omsk", 41],
+      ["Asia/Oral", 37],
+      ["Asia/Phnom_Penh", 34],
+      ["Asia/Pontianak", 53],
+      ["Asia/Pyongyang", 63],
+      ["Asia/Qatar", 39],
+      ["Asia/Qyzylorda", 37],
+      ["Asia/Riyadh", 39],
+      ["Asia/Sakhalin", 33],
+      ["Asia/Samarkand", 37],
+      ["Asia/Seoul", 63],
+      ["Asia/Shanghai", 60],
+      ["Asia/Singapore", 46],
+      ["Asia/Srednekolymsk", 33],
+      ["Asia/Taipei", 60],
+      ["Asia/Tashkent", 37],
+      ["Asia/Tbilisi", 44],
+      ["Asia/Tehran", 64],
+      ["Asia/Thimphu", 41],
+      ["Asia/Tokyo", 65],
+      ["Asia/Tomsk", 34],
+      ["Asia/Ulaanbaatar", 46],
+      ["Asia/Urumqi", 41],
+      ["Asia/Ust-Nera", 35],
+      ["Asia/Vientiane", 34],
+      ["Asia/Vladivostok", 35],
+      ["Asia/Yakutsk", 47],
+      ["Asia/Yangon", 66],
+      ["Asia/Yekaterinburg", 37],
+      ["Asia/Yerevan", 44],
+      ["Atlantic/Azores", 31],
+      ["Atlantic/Bermuda", 24],
+      ["Atlantic/Canary", 67],
+      ["Atlantic/Cape_Verde", 68],
+      ["Atlantic/Faroe", 67],
+      ["Atlantic/Madeira", 67],
+      ["Atlantic/Reykjavik", 0],
+      ["Atlantic/South_Georgia", 29],
+      ["Atlantic/St_Helena", 0],
+      ["Atlantic/Stanley", 12],
+      ["Australia/Adelaide", 69],
+      ["Australia/Brisbane", 70],
+      ["Australia/Broken_Hill", 69],
+      ["Australia/Currie", 36],
+      ["Australia/Darwin", 71],
+      ["Australia/Eucla", 72],
+      ["Australia/Hobart", 36],
+      ["Australia/Lindeman", 70],
+      ["Australia/Lord_Howe", 73],
+      ["Australia/Melbourne", 36],
+      ["Australia/Perth", 74],
+      ["Australia/Sydney", 36],
+      ["Etc/GMT", 0],
+      ["Etc/GMT-0", 0],
+      ["Etc/GMT-1", 6],
+      ["Etc/GMT-10", 35],
+      ["Etc/GMT-11", 33],
+      ["Etc/GMT-12", 43],
+      ["Etc/GMT-13", 75],
+      ["Etc/GMT-14", 76],
+      ["Etc/GMT-2", 77],
+      ["Etc/GMT-3", 39],
+      ["Etc/GMT-4", 44],
+      ["Etc/GMT-5", 37],
+      ["Etc/GMT-6", 41],
+      ["Etc/GMT-7", 34],
+      ["Etc/GMT-8", 46],
+      ["Etc/GMT-9", 47],
+      ["Etc/GMT+0", 0],
+      ["Etc/GMT+1", 68],
+      ["Etc/GMT+10", 78],
+      ["Etc/GMT+11", 79],
+      ["Etc/GMT+12", 80],
+      ["Etc/GMT+2", 29],
+      ["Etc/GMT+3", 12],
+      ["Etc/GMT+4", 17],
+      ["Etc/GMT+5", 18],
+      ["Etc/GMT+6", 81],
+      ["Etc/GMT+7", 82],
+      ["Etc/GMT+8", 83],
+      ["Etc/GMT+9", 84],
+      ["Etc/GMT0", 0],
+      ["Etc/Greenwich", 0],
+      ["Etc/UCT", 85],
+      ["Etc/Universal", 85],
+      ["Etc/UTC", 85],
+      ["Etc/Zulu", 85],
+      ["Europe/Amsterdam", 7],
+      ["Europe/Andorra", 7],
+      ["Europe/Astrakhan", 44],
+      ["Europe/Athens", 50],
+      ["Europe/Belgrade", 7],
+      ["Europe/Berlin", 7],
+      ["Europe/Bratislava", 7],
+      ["Europe/Brussels", 7],
+      ["Europe/Bucharest", 50],
+      ["Europe/Budapest", 7],
+      ["Europe/Busingen", 7],
+      ["Europe/Chisinau", 86],
+      ["Europe/Copenhagen", 7],
+      ["Europe/Dublin", 87],
+      ["Europe/Gibraltar", 7],
+      ["Europe/Guernsey", 88],
+      ["Europe/Helsinki", 50],
+      ["Europe/Isle_of_Man", 88],
+      ["Europe/Istanbul", 39],
+      ["Europe/Jersey", 88],
+      ["Europe/Kaliningrad", 5],
+      ["Europe/Kiev", 50],
+      ["Europe/Kirov", 39],
+      ["Europe/Lisbon", 67],
+      ["Europe/Ljubljana", 7],
+      ["Europe/London", 88],
+      ["Europe/Luxembourg", 7],
+      ["Europe/Madrid", 7],
+      ["Europe/Malta", 7],
+      ["Europe/Mariehamn", 50],
+      ["Europe/Minsk", 39],
+      ["Europe/Monaco", 7],
+      ["Europe/Moscow", 89],
+      ["Europe/Oslo", 7],
+      ["Europe/Paris", 7],
+      ["Europe/Podgorica", 7],
+      ["Europe/Prague", 7],
+      ["Europe/Riga", 50],
+      ["Europe/Rome", 7],
+      ["Europe/Samara", 44],
+      ["Europe/San_Marino", 7],
+      ["Europe/Sarajevo", 7],
+      ["Europe/Saratov", 44],
+      ["Europe/Simferopol", 89],
+      ["Europe/Skopje", 7],
+      ["Europe/Sofia", 50],
+      ["Europe/Stockholm", 7],
+      ["Europe/Tallinn", 50],
+      ["Europe/Tirane", 7],
+      ["Europe/Ulyanovsk", 44],
+      ["Europe/Uzhgorod", 50],
+      ["Europe/Vaduz", 7],
+      ["Europe/Vatican", 7],
+      ["Europe/Vienna", 7],
+      ["Europe/Vilnius", 50],
+      ["Europe/Volgograd", 39],
+      ["Europe/Warsaw", 7],
+      ["Europe/Zagreb", 7],
+      ["Europe/Zaporozhye", 50],
+      ["Europe/Zurich", 7],
+      ["Indian/Antananarivo", 1],
+      ["Indian/Chagos", 41],
+      ["Indian/Christmas", 34],
+      ["Indian/Cocos", 66],
+      ["Indian/Comoro", 1],
+      ["Indian/Kerguelen", 37],
+      ["Indian/Mahe", 44],
+      ["Indian/Maldives", 37],
+      ["Indian/Mauritius", 44],
+      ["Indian/Mayotte", 1],
+      ["Indian/Reunion", 44],
+      ["Pacific/Apia", 75],
+      ["Pacific/Auckland", 38],
+      ["Pacific/Bougainville", 33],
+      ["Pacific/Chatham", 90],
+      ["Pacific/Chuuk", 35],
+      ["Pacific/Easter", 91],
+      ["Pacific/Efate", 33],
+      ["Pacific/Enderbury", 75],
+      ["Pacific/Fakaofo", 75],
+      ["Pacific/Fiji", 92],
+      ["Pacific/Funafuti", 43],
+      ["Pacific/Galapagos", 81],
+      ["Pacific/Gambier", 84],
+      ["Pacific/Guadalcanal", 33],
+      ["Pacific/Guam", 93],
+      ["Pacific/Honolulu", 94],
+      ["Pacific/Kiritimati", 76],
+      ["Pacific/Kosrae", 33],
+      ["Pacific/Kwajalein", 43],
+      ["Pacific/Majuro", 43],
+      ["Pacific/Marquesas", 95],
+      ["Pacific/Midway", 96],
+      ["Pacific/Nauru", 43],
+      ["Pacific/Niue", 79],
+      ["Pacific/Norfolk", 97],
+      ["Pacific/Noumea", 33],
+      ["Pacific/Pago_Pago", 96],
+      ["Pacific/Palau", 47],
+      ["Pacific/Pitcairn", 83],
+      ["Pacific/Pohnpei", 33],
+      ["Pacific/Port_Moresby", 35],
+      ["Pacific/Rarotonga", 78],
+      ["Pacific/Saipan", 93],
+      ["Pacific/Tahiti", 78],
+      ["Pacific/Tarawa", 43],
+      ["Pacific/Tongatapu", 75],
+      ["Pacific/Wake", 43],
+      ["Pacific/Wallis", 43]
+    ];
 
-    <p>Source: <a href=https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv target=_blank>https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv</a></p>
+    const rows = document.getElementById('timezoneRows');
+    const fragment = document.createDocumentFragment();
 
-<script>
-    function myFunction()
-    {
-        let input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("myInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("data");
-        tr = table.getElementsByTagName("tr");
-        for (i = 0; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td")[0];
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
-                }
-            }
-        }
+    for (const [region, codeIndex] of timezones) {
+      const row = document.createElement('tr');
+      const regionCell = document.createElement('td');
+      const codeCell = document.createElement('td');
+
+      regionCell.textContent = region;
+      codeCell.textContent = timezoneCodes[codeIndex];
+      row.append(regionCell, codeCell);
+      fragment.appendChild(row);
     }
 
-</script>
+    rows.appendChild(fragment);
 
+    // Filter rows by timezone region name, matching the original behavior.
+    document.getElementById('myInput').addEventListener('input', function () {
+      const filter = this.value.toUpperCase();
+
+      for (const row of rows.rows) {
+        const region = row.cells[0].textContent.toUpperCase();
+        row.style.display = region.includes(filter) ? '' : 'none';
+      }
+    });
+  </script>
 </body>
+
 </html>

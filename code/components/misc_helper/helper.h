@@ -9,7 +9,7 @@
 
 bool fileExists(std::string filename);
 bool copyFile(std::string input, std::string output);
-bool renameFile(std::string srcFile, std::string destFile);
+bool renameFile(const std::string &srcFile, const std::string &destFile);
 bool deleteFile(std::string file);
 bool isValidFilename(const std::string &filename);
 std::string getFileName(const std::string &path);

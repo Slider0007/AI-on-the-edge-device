@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: wlan
+## REST API Endpoint: `wlan`
 
 `http://IP-ADDRESS/wlan`
 

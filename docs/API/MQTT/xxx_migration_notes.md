@@ -2,6 +2,11 @@
 
 ## Migration notes
 
+### Migration from v17.x to v18.x
+
+No topics removed or renamed, but check changelog and/or API description for changes of existing APIs.
+
+
 ### Migration from v16.x to v17.x
 
 Mapping to which cluster renamed or moved topics are related to:

@@ -146,6 +146,10 @@ extern "C" void app_main(void)
     // ********************************************
     improvInit();
 
+    // Allocate webserver memory (in an early stage to avoid memory fragmentation)
+    // Note: Needs to be before AP is started (required for OTA file upload)
+    allocateWebserverHelperMemory();
+
     // Start access point for device provisioning if mandatory content / config is missing
     // Missing HTML content: html/index.html
     // Missing config: Empty SSID in config/config.json
@@ -209,9 +213,6 @@ extern "C" void app_main(void)
     else {
         LogFile.writeToFile(ESP_LOG_INFO, TAG, "Reset reason: " + getResetReason());
     }
-
-    // Allocate webserver memory (in an early stage to avoid memory fragmentation)
-    allocateWebserverHelperMemory();
 
     // Set CPU Frequency (default: 160Mhz)
     // Start before WLAN init to avoid frequency changes after WLAN init

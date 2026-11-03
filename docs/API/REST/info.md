@@ -1,6 +1,6 @@
 [Overview](_OVERVIEW.md) 
 
-## REST API endpoint: info
+## REST API Endpoint: `info`
 
 `http://IP-ADDRESS/info`
 

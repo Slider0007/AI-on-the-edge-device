@@ -343,7 +343,7 @@ esp_err_t handler_fallbackvalue(httpd_req_t *req)
 
 esp_err_t handler_editflow(httpd_req_t *req)
 {
-    const char *APIName = "editflow:v3"; // API name and version
+    const char *APIName = "editflow:v4"; // API name and version
     char query[200];
     char valuechar[30];
     std::string task;
@@ -354,20 +354,7 @@ esp_err_t handler_editflow(httpd_req_t *req)
         }
     }
 
-    if (task.compare("api_name") == 0) {
-        httpd_resp_sendstr(req, APIName);
-        return ESP_OK;
-    }
-    else if (task.compare("data") == 0) {
-        return getDataFileList(req);
-    }
-    else if (task.compare("tflite") == 0) {
-        return getTfliteFileList(req);
-    }
-    else if (task.compare("certs") == 0) {
-        return getCertFileList(req);
-    }
-    else if (task.compare("copy") == 0) {
+    if (task.compare("copy") == 0) {
         httpd_query_key_value(query, "in", valuechar, sizeof(valuechar));
         std::string in = std::string(valuechar);
         httpd_query_key_value(query, "out", valuechar, sizeof(valuechar));
@@ -437,6 +424,10 @@ esp_err_t handler_editflow(httpd_req_t *req)
 
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, "CutImage Done");
+    }
+    else if (task.compare("api_name") == 0) {
+        httpd_resp_sendstr(req, APIName);
+        return ESP_OK;
     }
     else {
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "E92: Task not found");
@@ -740,9 +731,37 @@ esp_err_t handler_process_data(httpd_req_t *req)
 }
 
 
+// Helper for rendering a single ROI list (Digit or Analog)
+static std::string recognitionDetailsRoiSection(const std::string &title, const auto &roiList, bool enabled)
+{
+    std::string html = "<div><div style=\"color:var(--text-secondary); margin-bottom:8px; border-bottom:1px solid #eee;\">" + title +
+                       "</div>";
+    html += "<div style=\"display:flex; flex-wrap:wrap; gap:10px;\">";
+
+    if (enabled && !roiList.empty()) {
+        for (const auto &roi : roiList) {
+            html += "<div style=\"flex: 0 1 100px; text-align:center;\">";
+            if (roi->CNNResult > -1) {
+                html += "<div style=\"font-weight:bold;\">" + roi->sCNNResult + "</div>";
+                html += "<img src=\"/img_tmp/" + roi->param->roiName + "_org.jpg\" style=\"width:100%; border:1px solid var(--border);\">";
+            }
+            else {
+                html += "<div style=\"color:var(--error);\">N/A</div><p style=\"font-size:0.75rem;\">No Image</p>";
+            }
+            html += "</div>";
+        }
+    }
+    else {
+        html += "<span style=\"font-style:italic; color:var(--text-secondary);\">Disabled</span>";
+    }
+    html += "</div></div>";
+    return html;
+}
+
+
 esp_err_t handler_recognition_details(httpd_req_t *req)
 {
-    const char *APIName = "recognition_details:v1"; // API name and version
+    const char *APIName = "recognition_details:v2";
     char query[100];
     char valuechar[30];
     std::string type;
@@ -753,157 +772,106 @@ esp_err_t handler_recognition_details(httpd_req_t *req)
         }
     }
 
-    httpd_resp_set_type(req, "text/html");
-
-    if (type.compare("api_name") == 0) {
+    if (type == "api_name") {
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_sendstr(req, APIName);
         return ESP_OK;
     }
 
-    /*++++++++++++++++++++++++++++++++++++++++*/
-    /* Page details */
-    std::string txt =
-        "<!DOCTYPE html><html lang=\"en\" xml:lang=\"en\"><head><meta charset=\"UTF-8\"><title>Recognition Details</title></head>\n";
-    txt += "<body style=\"width:660px;max-width:660px;font-family:arial;padding:0px 10px;font-size:100%;-webkit-text-size-adjust:100%; "
-           "text-size-adjust:100%;\">";
-    txt += "<h2 style=\"font-size:1.5em;margin-block-start:0.0em;margin-block-end:0.2em;\">Recognition Details</h2>\n";
-    txt += "<details id=\"desc_details\" style=\"font-size:16px;text-align:justify;margin-right:10px;\">\n";
-    txt += "<summary><strong>CLICK HERE</strong> for more information</summary>\n";
-    txt += "<p>On this page recognition details including the underlaying ROI image are visualized. "
-           "<br><strong>Be aware: The visualized infos are representing the last fully completed image evaluation of a digitization "
-           "cycle.</strong></p>";
-    txt += "<p>\"Raw Value\" represents the value which gets extracted and combined from all the single image results but without "
-           "correction of any of the post-processing checks / algorithms. The result after post-processing validation is represented with "
-           "\"Value\". In the sections \"Digit ROI\" and \"Analog ROI\" all single \"raw results\" of the respective ROI images (digit "
-           "styled ROI and "
-           "analog styled ROI) are visualized separated per number sequence. The taken image which was used for processing (including the "
-           "overlays "
-           "to highlight the relevant areas) is visualized at the bottom of this page.</p>";
-    txt += "</details><hr>\n";
+    httpd_resp_set_type(req, "text/html");
 
-    // Display message if flow is not initialized or image processing active
-    if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING) {
-        txt += "<h4>"
-               "Image recognition details are only accessible if initialization is completed and no image evaluation is ongoing. "
-               "Wait a few moments and refresh this page.</h4> Current state: " +
-               flowctrl.getActualProcessState();
-        httpd_resp_sendstr_chunk(req, txt.c_str());
+    // Header & Info Section
+    std::string txt = R"(<!DOCTYPE html><html><head>
+        <title>Recognition Details</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=720" />
+        <script>
+            (function () {
+                let theme;
+                try { theme = localStorage.getItem('theme'); } catch (e) { }
+                if (theme !== 'light' && theme !== 'dark') {
+                    try { theme = document.cookie.match(/(?:^|; )theme=(light|dark)/)?.[1]; } catch (e) { }
+                    if (!theme) theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.classList.remove('light', 'dark');
+                document.documentElement.classList.add(theme);
+            })();
+            window.addEventListener('storage', (e) => {
+                if (e.key !== 'theme') return;
+                const theme = e.newValue;
+                if (theme !== 'light' && theme !== 'dark') return;
+                const d = document.documentElement;
+                if (d.classList.contains(theme)) return;
+                d.classList.remove('light', 'dark');
+                d.classList.add(theme);
+                const t = document.getElementById('themeToggle'); // exists only in index.html
+                if (t) t.checked = theme === 'light';
+                if (typeof refreshTheme === 'function') refreshTheme();
+            });
+        </script>
+        <link rel="stylesheet" href="/style-iframe.css">
+        </head><body>)";
+
+    txt += R"(<div class="container"><div class="container-header">
+        <div class="container-title"><span>🔍</span>Recognition Details</div>
+        <details id="desc_details">
+            <summary><strong>CLICK HERE</strong> for more information</summary>
+            <div class="info-box">
+                <p>Visualizing the last fully completed image evaluation cycle.</p>
+                <p><strong>Raw Value:</strong> Uncorrected result<br>
+                <strong>Actual Value:</strong> Post-processed result<br>
+                <strong>ROI Sections:</strong> Single ROI results<br>
+                <strong>Processed Image:</strong> Full image with overlays</p>
+            </div>
+        </details></div><div class="container-content">)";
+
+    // Not initialized state
+    if (taskAutoFlowState < 3 || taskAutoFlowState == FLOW_TASK_STATE_IMG_PROCESSING || cycleCounter == 0) {
+        txt += "<div class=\"warning-box\" style=\"text-align:center; padding:20px;\">";
+        txt += "<div style=\"margin-top:0;\">Progressing...</div>";
+        txt += "<p>Image recognition details are accessible once the device is initialized and cycle is completed</p>";
+        txt += "<p style=\"color:var(--text-secondary);\">Current state: <strong>" + flowctrl.getActualProcessState() + "</strong></p>";
+        txt += "<div style=\"margin-top:20px;\"><button class=\"button btn-action btn-wide\" "
+               "onclick=\"window.location.reload();\">Refresh</button></div>";
+        txt += "</div></div></div></body></html>";
+        httpd_resp_sendstr(req, txt.c_str());
+        return ESP_OK;
     }
-    else {
-        /*++++++++++++++++++++++++++++++++++++++++*/
-        /* Result */
-        txt += "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;margin-top:40px;\">Result</h4>\n";
-        txt += "<table style=\"width:660px;border-collapse:collapse;table-layout:fixed;\">";
-        txt +=
-            "<tr><td style=\"font-weight:bold;width:40%;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid "
-            "lightgrey\">Number Sequence</td>"
-            "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Raw Value</td>"
-            "<td style=\"font-weight:bold;padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">Actual "
-            "Value</td></tr>";
 
-        for (const auto &sequence : flowctrl.getSequenceData()) {
-            txt += "<tr><td style=\"padding:3px 5px; text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
-                   sequence->sequenceName +
-                   "</td><td style=\"padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
-                   sequence->sRawValue +
-                   "</td><td style=\"padding:3px 5px;text-align:left;vertical-align:middle;border:1px solid lightgrey\">" +
-                   sequence->sActualValue + "</td></tr>";
-        }
+    // Return cycle results in chunks
+    httpd_resp_sendstr_chunk(req, txt.c_str());
 
-        txt += "</table>\n";
-        httpd_resp_sendstr_chunk(req, txt.c_str());
+    for (const auto &sequence : flowctrl.getSequenceData()) {
+        txt = "<div class=\"card\">";
+        txt += "<div class=\"card-header\">SEQUENCE: " + sequence->sequenceName + "</div>";
+        txt += "<div class=\"card-body\" style=\"padding:15px; display:flex; flex-direction:column; gap:20px;\">";
 
-        /*++++++++++++++++++++++++++++++++++++++++*/
-        /* Digit ROI */
-        txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Digit ROI</h4>\n";
-        txt += "<table style=\"border-spacing:5px;\">\n";
+        // Results Table
+        txt += "<div><div style=\"color:var(--text-secondary); margin-bottom:8px; border-bottom:1px solid #eee;\">RESULTS</div>";
+        txt += "<table style=\"width:100%; border-collapse:collapse; table-layout:fixed;\">";
+        txt += "<tr style=\"background-color:var(--bg-light); font-size:0.8rem;\"><td style=\"padding:5px 8px; border:1px solid "
+               "var(--border);\">Raw Value</td><td style=\"padding:5px 8px; border:1px solid var(--border);\">Actual Value</td></tr>";
+        txt += "<tr><td style=\"padding:8px; border:1px solid var(--border);\">" + sequence->sRawValue + "</td>";
+        txt += "<td style=\"padding:8px; border:1px solid var(--border); font-weight:bold;\">" + sequence->sActualValue +
+               "</td></tr></table></div>";
 
-        if (!ConfigClass::getInstance()->get()->sectionDigit.enabled) {
-            txt += "<tr><td>Digit ROI processing deactivated</td>";
-        }
-        else {
-            for (const auto &sequence : flowctrl.getSequenceData()) {
-                txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " +
-                       sequence->sequenceName + "</td></tr>\n";
-                txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
+        // Digit & Analog ROIs using helper
+        bool digitEnabled = ConfigClass::getInstance()->get()->sectionDigit.enabled;
+        bool analogEnabled = ConfigClass::getInstance()->get()->sectionAnalog.enabled;
+        txt += recognitionDetailsRoiSection("DIGIT ROI", sequence->digitRoi, digitEnabled);
+        txt += recognitionDetailsRoiSection("ANALOG ROI", sequence->analogRoi, analogEnabled);
 
-                if (!sequence->digitRoi.empty()) {
-                    for (const auto &roi : sequence->digitRoi) {
-                        if (roi->CNNResult > -1) { // Only show image if result is set, otherwise text "No Image"
-                            txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
-                                   roi->sCNNResult +
-                                   "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
-                                   "style=\"max-width:" +
-                                   to_stringWithPrecision(640 / (sequence->digitRoi.size() + 1), 0) + "px\" src=\"/img_tmp/" +
-                                   roi->param->roiName + "_org.jpg\"></p></td>\n";
-                        }
-                        else {
-                            txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
-                                   roi->sCNNResult +
-                                   "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\">No Image</p></td>\n";
-                        }
-                    }
-                }
-                else {
-                    txt += "<tr><td>No digit ROIs</td>";
-                }
-            }
-        }
-
-        txt += "</tr></table>\n";
-        httpd_resp_sendstr_chunk(req, txt.c_str());
-
-        /*++++++++++++++++++++++++++++++++++++++++*/
-        /* Analog ROI */
-        txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Analog ROI</h4>\n";
-        txt += "<table style=\"border-spacing:5px;\">\n";
-
-        if (!ConfigClass::getInstance()->get()->sectionAnalog.enabled) {
-            txt += "<tr><td>Analog ROI processing deactivated</td>";
-        }
-        else {
-            for (const auto &sequence : flowctrl.getSequenceData()) {
-                txt += "<tr><td style=\"font-weight:bold;vertical-align:bottom;\" colspan=\"3\">Number Sequence: " +
-                       sequence->sequenceName + "</td></tr>\n";
-                txt += "<tr style=\"text-align:center;vertical-align:top;\">\n";
-
-                if (!sequence->analogRoi.empty()) {
-                    for (const auto &roi : sequence->analogRoi) {
-                        if (roi->CNNResult > -1) { // Only show image if result is set, otherwise text "No Image"
-                            txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
-                                   roi->sCNNResult +
-                                   "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\"><img "
-                                   "style=\"max-width:" +
-                                   to_stringWithPrecision(640 / (sequence->analogRoi.size() + 1), 0) + "px\" src=\"/img_tmp/" +
-                                   roi->param->roiName + "_org.jpg\"></p></td>\n";
-                        }
-                        else {
-                            txt += "<td style=\"width:150px;\"><h4 style=\"margin-block-start:0.5em;margin-block-end:0.0em;\">" +
-                                   roi->sCNNResult +
-                                   "</h4><p style=\"margin-block-start:0.5em;margin-block-end:1.33em;\">No Image</p></td>\n";
-                        }
-                    }
-                }
-                else {
-                    txt += "<tr><td>No analog ROIs</td>";
-                }
-            }
-        }
-
-        txt += "</tr></table>\n";
-        httpd_resp_sendstr_chunk(req, txt.c_str());
-
-        /*++++++++++++++++++++++++++++++++++++++++*/
-        /* Show ALG_ROI image */
-        txt = "<h4 style=\"font-size:16px;background-color:lightgray;padding:5px;\">Processed Image (incl. Overlays)</h4>\n";
-        txt += "<img src=\"/img_tmp/alg_roi.jpg\">\n";
-        txt += "</body></html>\n";
+        txt += "</div></div>";
         httpd_resp_sendstr_chunk(req, txt.c_str());
     }
 
-    // Respond with an empty chunk to signal HTTP response completion
+    // Full Image Card & Closing tags
+    txt = "<div class=\"card\"><div class=\"card-header\">Processed Image (incl. Overlays)</div>";
+    txt += "<div class=\"card-body\"><img src=\"/img_tmp/alg_roi.jpg\" style=\"width:100%;\"></div></div>";
+    txt += "</div></div></body></html>";
+    httpd_resp_sendstr_chunk(req, txt.c_str());
     httpd_resp_sendstr_chunk(req, NULL);
+
     return ESP_OK;
 }
 
@@ -1163,7 +1131,6 @@ void task_autodoFlow(void *pvParameter)
 #endif // ENABLE_MQTT
 
                 flowctrl.postProcessEventHandler();
-                LogFile.removeOldDebugFiles();
             }
             else {
                 flowctrl.clearFlowStateEventInRowCounter();
@@ -1183,6 +1150,7 @@ void task_autodoFlow(void *pvParameter)
             // Cleanup outdated log and data files (retention policy)
             LogFile.removeOldLogFile();
             LogFile.removeOldDataLog();
+            LogFile.removeOldDebugFiles();
 
             // CPU Temp -> Logfile
             LogFile.writeToFile(ESP_LOG_DEBUG, TAG, "CPU Temperature: " + std::to_string((int)getSOCTemperature()) + "°C");

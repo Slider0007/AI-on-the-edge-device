@@ -1,6 +1,6 @@
 {
-    "name": "AI on the Edge",
-    "short_name": "",
+    "name": "AI-on-the-Edge Device",
+    "short_name": "AIotED",
     "icons": [
         {
             "src": "/icon-android-chrome-192x192.png",
