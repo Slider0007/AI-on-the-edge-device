@@ -1,74 +1,151 @@
-# This file was automatically generated for projects
-# without default 'CMakeLists.txt' file.
-
-##################################################################
+# ##################################################################
 # Extract GIT infos and set variables in version.cpp
-##################################################################
-execute_process(COMMAND git log --pretty=format:'%h' -n 1
-                OUTPUT_VARIABLE GIT_REV
-                ERROR_QUIET)
+# ##################################################################
+
+# Look for git executable
+find_program(GIT_EXECUTABLE NAMES git)
 
 string(TIMESTAMP BUILD_TIME "%Y-%m-%dT%H:%M:%S+0000" UTC)
 
-# Check whether we got any revision (which isn't
-# always the case, e.g. when someone downloaded a zip
-# file from Github instead of a checkout)
-if ("${GIT_REV}" STREQUAL "")
-    set(GIT_REV "N/A")
-    set(GIT_DIFF "")
+if(NOT GIT_EXECUTABLE)
+    message(STATUS "Git not found. Using default version placeholders")
     set(GIT_TAG "N/A")
     set(GIT_BRANCH "N/A")
+    set(GIT_REV "N/A")
+    set(GIT_DIFF "")
 else()
+    # Resolve the actual .git directory (supports worktrees where .git is a file)
     execute_process(
-        COMMAND bash -c "git diff --quiet --exit-code || echo +"
-        OUTPUT_VARIABLE GIT_DIFF)
-    execute_process(
-        COMMAND git rev-parse --abbrev-ref HEAD
-        OUTPUT_VARIABLE GIT_BRANCH)
-    execute_process(
-        COMMAND git describe --exact-match --tags
-        OUTPUT_VARIABLE GIT_TAG ERROR_QUIET)
+        COMMAND ${GIT_EXECUTABLE} rev-parse --git-dir
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_DIR_PATH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
 
-    string(STRIP "${GIT_REV}" GIT_REV)
-    string(SUBSTRING "${GIT_REV}" 1 7 GIT_REV)
-    string(STRIP "${GIT_DIFF}" GIT_DIFF)
-    string(STRIP "${GIT_BRANCH}" GIT_BRANCH)
+    if(GIT_DIR_PATH)
+        if(NOT IS_ABSOLUTE "${GIT_DIR_PATH}")
+            set(GIT_DIR_PATH "${CMAKE_SOURCE_DIR}/${GIT_DIR_PATH}")
+        endif()
 
-    string(COMPARE NOTEQUAL "${GIT_TAG}" "" GitTagNotEmpty)
-    if(GitTagNotEmpty)
-        string(STRIP "${GIT_TAG}" GIT_TAG)
+        # Core Git metadata files to track
+        set(GIT_DEPENDENCIES
+            "${GIT_DIR_PATH}/HEAD"
+            "${GIT_DIR_PATH}/index"
+        )
+
+        # Track the active branch reference file (e.g., .git/refs/heads/main)
+        # so commits on the current branch correctly trigger a re-configure.
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-parse --symbolic-full-name HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_REF
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        if(GIT_REF AND EXISTS "${GIT_DIR_PATH}/${GIT_REF}")
+            list(APPEND GIT_DEPENDENCIES "${GIT_DIR_PATH}/${GIT_REF}")
+        endif()
+
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${GIT_DEPENDENCIES})
+    endif()
+
+    # Use ${GIT_EXECUTABLE} instead of raw "git"
+    execute_process(COMMAND ${GIT_EXECUTABLE} log --pretty=format:%h --abbrev=7 -n 1
+                    OUTPUT_VARIABLE GIT_REV
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_QUIET)
+
+    if (GIT_REV STREQUAL "")
+        set(GIT_TAG "N/A")
+        set(GIT_BRANCH "N/A")
+        set(GIT_REV "N/A")
+        set(GIT_DIFF "")
     else()
-        set(GIT_TAG "N/A") # Set N/A if no tag was found
+        execute_process(COMMAND ${GIT_EXECUTABLE} describe --exact-match --tags
+                        OUTPUT_VARIABLE GIT_TAG
+                        OUTPUT_STRIP_TRAILING_WHITESPACE
+                        ERROR_QUIET)
+        if (GIT_TAG STREQUAL "")
+            set(GIT_TAG "N/A")
+        endif()
+
+        execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+                        OUTPUT_VARIABLE GIT_BRANCH
+                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+        if (GIT_BRANCH STREQUAL "")
+            set(GIT_BRANCH "N/A")
+        endif()
+
+        execute_process(COMMAND ${GIT_EXECUTABLE} diff-index --quiet HEAD --
+                        RESULT_VARIABLE GIT_DIFF_RES
+                        ERROR_QUIET)
+
+        execute_process(COMMAND ${GIT_EXECUTABLE} ls-files --others --exclude-standard "*.cpp" "*.c" "*.h" "*.hpp"
+                        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                        OUTPUT_VARIABLE GIT_UNTRACKED_SOURCES
+                        OUTPUT_STRIP_TRAILING_WHITESPACE
+                        ERROR_QUIET)
+
+        if(NOT GIT_DIFF_RES EQUAL 0 OR NOT GIT_UNTRACKED_SOURCES STREQUAL "")
+            set(GIT_DIFF "+")
+        else()
+            set(GIT_DIFF "")
+        endif()
     endif()
 endif()
 
-set(VERSION "const char* GIT_REV=\"${GIT_REV}${GIT_DIFF}\";
-const char* GIT_TAG=\"${GIT_TAG}\";
-const char* GIT_BRANCH=\"${GIT_BRANCH}\";
-const char* BUILD_TIME=\"${BUILD_TIME}\";")
-
-if ("${GIT_TAG}" STREQUAL "N/A" OR "${GIT_TAG}" STREQUAL "") # Tag not set, show branch
-    set(VERSION_HTML "Develop: ${GIT_BRANCH} (Commit: ${GIT_REV}${GIT_DIFF})\n${GIT_REV}")
-else() # Tag is set, ignore branch
-    set(VERSION_HTML "Release: ${GIT_TAG} (Commit: ${GIT_REV}${GIT_DIFF})\n${GIT_REV}")
+# Append dirty flag / tags
+if (GIT_TAG STREQUAL "N/A")
+    set(VERSION_TAG "N/A")
+    set(VERSION_HTML "Develop: ${GIT_BRANCH} @ ${GIT_REV}${GIT_DIFF}")
+else()
+    set(VERSION_TAG "${GIT_TAG}${GIT_DIFF}")
+    set(VERSION_HTML "${GIT_TAG}${GIT_DIFF}")
 endif()
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp)
-    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp VERSION_)
+# Escape quotes and backslashes for safe embedding in C string literals
+string(REPLACE "\\" "\\\\" ESCAPED_VERSION_TAG "${VERSION_TAG}")
+string(REPLACE "\"" "\\\"" ESCAPED_VERSION_TAG "${ESCAPED_VERSION_TAG}")
+
+string(REPLACE "\\" "\\\\" ESCAPED_GIT_BRANCH "${GIT_BRANCH}")
+string(REPLACE "\"" "\\\"" ESCAPED_GIT_BRANCH "${ESCAPED_GIT_BRANCH}")
+
+string(REPLACE "\\" "\\\\" ESCAPED_GIT_REV "${GIT_REV}${GIT_DIFF}")
+string(REPLACE "\"" "\\\"" ESCAPED_GIT_REV "${ESCAPED_GIT_REV}")
+
+set(VERSION "const char* GIT_TAG=\"${ESCAPED_VERSION_TAG}\";
+const char* GIT_BRANCH=\"${ESCAPED_GIT_BRANCH}\";
+const char* GIT_REV=\"${ESCAPED_GIT_REV}\";
+const char* BUILD_TIME=\"${BUILD_TIME}\";"
+)
+
+# Write version.cpp only if content has changed
+set(VERSION_FILE "${CMAKE_SOURCE_DIR}/main/version.cpp")
+if(EXISTS "${VERSION_FILE}")
+    file(READ "${VERSION_FILE}" VERSION_)
 else()
     set(VERSION_ "")
 endif()
 
-if (NOT "${VERSION}" STREQUAL "${VERSION_}")
-    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp "${VERSION}")
-    file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/../sd-card/html/version.txt "${VERSION_HTML}")
+if (NOT VERSION STREQUAL VERSION_)
+    file(WRITE "${VERSION_FILE}" "${VERSION}")
+
+    # Ensure target directory exists before writing external version file
+    get_filename_component(SD_HTML_DIR "${CMAKE_SOURCE_DIR}/../sd-card/html" ABSOLUTE)
+    file(MAKE_DIRECTORY "${SD_HTML_DIR}")
+    file(WRITE "${SD_HTML_DIR}/version.txt" "${VERSION_HTML}")
 endif()
-#######################################################################
-#######################################################################
+
+# #######################################################################
+# Component Registration
+# #######################################################################
 
 FILE(GLOB_RECURSE app_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 
 idf_component_register(SRCS ${app_sources}
                     INCLUDE_DIRS "."
                     REQUIRES esp_driver_sdmmc nvs_flash esp_psram esp_netif esp_hw_support config_handling camera_ctrl
-                        logfile_handling mainprocess_ctrl network_ctrl webserver_softap misc_helper openmetrics_ctrl)
+                                logfile_handling mainprocess_ctrl network_ctrl webserver_softap misc_helper openmetrics_ctrl)

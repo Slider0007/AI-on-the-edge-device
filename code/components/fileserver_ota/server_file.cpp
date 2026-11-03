@@ -35,6 +35,8 @@
 
 static const char *TAG = "SERVER_FILE";
 
+extern std::string getFwVersion();
+
 
 // Files that should not trigger a webserver redirect
 static const std::unordered_set<std::string> noRedirectFiles = {"/config/marker1.jpg",  "/config/marker2.jpg",  "/config/reference.jpg",
@@ -1000,10 +1002,9 @@ static esp_err_t coredump_handler(httpd_req_t *req)
         std::string firmware = getFwVersion();
         replaceAll(firmware, ":", "_");
         replaceAll(firmware, " ", "_");
-        replaceAll(firmware, "(", "_");
-        replaceAll(firmware, ")", "_");
+        replaceAll(firmware, "@", "");
 
-        std::string attachmentFile = "attachment;filename=" + firmware + "_" + getBoardType() + "_coredump.elf";
+        std::string attachmentFile = "attachment;filename=" + firmware + "_" + toLower(getBoardType()) + "_coredump.elf";
         httpd_resp_set_type(req, "application/octet-stream");
         httpd_resp_set_hdr(req, "Content-Disposition", attachmentFile.c_str());
 

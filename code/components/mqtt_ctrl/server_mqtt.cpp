@@ -22,10 +22,7 @@
 
 static const char *TAG = "SERVER_MQTT";
 
-
-extern const char *libfive_git_version(void);
-extern const char *libfive_git_revision(void);
-extern const char *libfive_git_branch(void);
+extern std::string getFwVersion();
 
 static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, int _qos);
 static bool publishHADiscoveryTopicDeviceInfo = true;
@@ -145,14 +142,7 @@ bool mqttServer_publishDeviceInfo(int _qos)
         jsonChar = NULL;
     }
 
-
-    // Prepare topic: device/info/version
-    std::string firmwareVersion = std::string(libfive_git_version());
-    if (firmwareVersion == "" || firmwareVersion == "N/A") {
-        firmwareVersion = std::string(libfive_git_branch()) + " (" + std::string(libfive_git_revision()) + ")";
-    }
-
-    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceInfoTopic + "firmware_version", firmwareVersion, _qos, true);
+    retVal &= publishMqttData(cfgDataPtr->mainTopic + deviceInfoTopic + "firmware_version", getFwVersion(), _qos, true);
 
     if (!retVal) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to publish device info");
@@ -928,15 +918,9 @@ static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, const int _
 
     // Publish complete general device info only once
     if (publishHADiscoveryTopicDeviceInfo) {
-        std::string firmwareVersion = std::string(libfive_git_version());
-        if (firmwareVersion == "" || firmwareVersion == "N/A") {
-            firmwareVersion = std::string(libfive_git_branch()) + " (" + std::string(libfive_git_revision()) + ")";
-        }
-
         payload += std::string(", \"dev\": {") + "\"ids\":[\"" + nodeID + "\"]," + "\"cns\": [[\"mac\", \"" + getMac() + "\"]]," +
-                   "\"name\":\"" + nodeID + "\"," + "\"mdl\":\"AI-on-the-Edge device (" + getBoardType() + ")\"," +
-                   "\"mf\":\"AI-on-the-Edge\"," + "\"sw\":\"" + firmwareVersion + " [SLFork]\"," + "\"cu\":\"http://" + getIpAddress() +
-                   "\"}";
+                   "\"name\":\"" + nodeID + "\"," + "\"mdl\":\"AI-on-the-Edge Device (" + getBoardType() + ")\"," +
+                   "\"mf\":\"AI-on-the-Edge [SLFork]\"," + "\"sw\":\"" + getFwVersion() + "\",\"cu\":\"http://" + getIpAddress() + "\"}";
     }
     else { // Publish device reference and connections to group data together
         payload += std::string(", \"dev\": {") + "\"ids\":[\"" + nodeID + "\"]," + "\"cns\":[[\"mac\",\"" + getMac() + "\"]]}";
