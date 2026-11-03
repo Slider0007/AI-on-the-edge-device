@@ -24,7 +24,7 @@ Delete individual files or recursively remove entire directories from the SD car
 * **Description**: Deletes the specified file from the storage.
 * **Response Behavior**:
   * **Default / Redirected Files**: Returns an HTTP `303 See Other` status code with a `Location` header redirecting to the parent directory.
-  * **Protected / Non-Redirect Files (`noRedirectFiles`)**: Returns HTTP `200 OK` with a plain text message (`File deleted successfully: <filename>`).
+  * **Protected / Non-Redirect Files**: Returns HTTP `200 OK` with a plain text message (`File deleted successfully: <filename>`).
 
 #### 2. Delete a Directory Recursively
 * **Payload / URL**: `/delete/<dir-path>/?task=deldir` (e.g., `/delete/config/?task=deldir`)
@@ -35,15 +35,12 @@ Delete individual files or recursively remove entire directories from the SD car
 
 ### Limitations & Error Responses
 
-* **Path Length & Format (`400 Bad Request`)**: 
-  * Fails if the path exceeds the maximum allowed length (`FILE_PATH_MAX` == 255) or is malformed.
+* **Path Format (`400 Bad Request`)**: 
   * Fails if a trailing slash is improperly included when attempting to delete a single file.
-* **File Not Found (`400 Bad Request`)**: 
+* **Path Length (`414 URI Too Long`)**: 
+  * Fails if the path exceeds the maximum allowed length (`FILE_PATH_MAX` == 255) or is malformed.
+* **File Not Found (`404 Not Found`)**: 
   * Fails if the target file does not exist on the filesystem (`stat` check fails).
 * **Server Execution Failures (`500 Internal Server Error`)**: 
   * Fails if the underlying system call to delete the file (`unlink`) returns an error.
   * Fails if recursive directory contents cannot be fully removed (`deleteAllFilesInDirectory` fails).
-
----
-
-> **Tip**: Ensure proper path formatting and check file permissions or existence before triggering deletions.
