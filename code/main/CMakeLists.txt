@@ -106,9 +106,19 @@ else()
     set(VERSION_HTML "${GIT_TAG}${GIT_DIFF}")
 endif()
 
-set(VERSION "const char* GIT_TAG=\"${VERSION_TAG}\";
-const char* GIT_BRANCH=\"${GIT_BRANCH}\";
-const char* GIT_REV=\"${GIT_REV}${GIT_DIFF}\";
+# Escape quotes and backslashes for safe embedding in C string literals
+string(REPLACE "\\" "\\\\" ESCAPED_VERSION_TAG "${VERSION_TAG}")
+string(REPLACE "\"" "\\\"" ESCAPED_VERSION_TAG "${ESCAPED_VERSION_TAG}")
+
+string(REPLACE "\\" "\\\\" ESCAPED_GIT_BRANCH "${GIT_BRANCH}")
+string(REPLACE "\"" "\\\"" ESCAPED_GIT_BRANCH "${ESCAPED_GIT_BRANCH}")
+
+string(REPLACE "\\" "\\\\" ESCAPED_GIT_REV "${GIT_REV}${GIT_DIFF}")
+string(REPLACE "\"" "\\\"" ESCAPED_GIT_REV "${ESCAPED_GIT_REV}")
+
+set(VERSION "const char* GIT_TAG=\"${ESCAPED_VERSION_TAG}\";
+const char* GIT_BRANCH=\"${ESCAPED_GIT_BRANCH}\";
+const char* GIT_REV=\"${ESCAPED_GIT_REV}\";
 const char* BUILD_TIME=\"${BUILD_TIME}\";"
 )
 
@@ -138,4 +148,4 @@ FILE(GLOB_RECURSE app_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_
 idf_component_register(SRCS ${app_sources}
                     INCLUDE_DIRS "."
                     REQUIRES esp_driver_sdmmc nvs_flash esp_psram esp_netif esp_hw_support config_handling camera_ctrl
-                             logfile_handling mainprocess_ctrl network_ctrl webserver_softap misc_helper openmetrics_ctrl)
+                                logfile_handling mainprocess_ctrl network_ctrl webserver_softap misc_helper openmetrics_ctrl)

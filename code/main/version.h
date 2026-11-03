@@ -54,12 +54,13 @@ std::string getWebUiVersion(void)
     }
     fclose(pFile);
 
+    // Remove any carriage returns (\r) if present
+    value.erase(std::remove(value.begin(), value.end(), '\r'), value.end());
+
     if (value.empty()) {
         return "?";
     }
 
-    // Remove any carriage returns (\r) if present
-    value.erase(std::remove(value.begin(), value.end(), '\r'), value.end());
     return value;
 }
 

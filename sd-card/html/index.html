@@ -315,7 +315,7 @@
         fetchFwVersion('html_version')
       ]);
 
-      if (!fwVersion || !uiVersion) {
+      if (!fwVersion || !uiVersion || uiVersion.startsWith('?')) {
         console.error('Failed to fetch firmware or WebUI version strings.');
         return;
       }
