@@ -22,6 +22,7 @@
 #include <esp_http_server.h>
 #include <cJSON.h>
 
+#include "../main/version.h"
 #include "webserver.h"
 #include "server_help.h"
 #include "ClassLogFile.h"
@@ -34,8 +35,6 @@
 
 
 static const char *TAG = "SERVER_FILE";
-
-extern std::string getFwVersion();
 
 
 // Files that should not trigger a webserver redirect

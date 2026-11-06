@@ -6,6 +6,13 @@
 ##################################################
 
 #
+# Application manager
+#
+CONFIG_APP_EXCLUDE_PROJECT_VER_VAR=y
+CONFIG_APP_EXCLUDE_PROJECT_NAME_VAR=y
+
+
+#
 # Bootloader config
 #
 CONFIG_BOOTLOADER_COMPILER_OPTIMIZATION_SIZE=y

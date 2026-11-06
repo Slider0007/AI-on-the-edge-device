@@ -14,6 +14,7 @@
 #include "psram.h"
 #endif // TASK_ANALYSIS_ON
 
+#include "../main/version.h"
 #include "http_auth.h"
 #include "MainFlowControl.h"
 #include "ClassControlCamera.h"
@@ -36,10 +37,6 @@ httpd_handle_t server = NULL;
 struct HttpServerData *httpServerData = NULL;
 
 extern std::string deviceStartTimestamp;
-
-extern std::string getFwVersion(void);
-extern std::string getWebUiVersion(void);
-extern std::string getBuildTime(void);
 
 
 esp_err_t handler_get_info(httpd_req_t *req)

@@ -62,12 +62,6 @@ jobs:
         ref: ${{ needs.prepare-release.outputs.tag_name }}
         submodules: recursive
 
-    - name: Set variables
-      id: vars
-      run: |
-        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-        echo "branch=$(echo ${{ github.ref_name }} | tr / __)" >> $GITHUB_OUTPUT
-
     - name: Cache PIO build files
       if: ${{ ! needs.prepare-release.outputs.release_created }} # do not use cached data when building a release
       uses: actions/cache@v6
@@ -79,7 +73,7 @@ jobs:
     - name: Setup python environment
       uses: actions/setup-python@v7
       with:
-        python-version: '3.11'
+        python-version: '3.15'
 
     - name: Install PlatformIO environment
       run: |
@@ -89,6 +83,13 @@ jobs:
 
     - name: Build firmware
       run: cd code; platformio run -e ${{ matrix.plat }}
+
+    - name: Read firmware version
+      id: ver
+      run: |
+        V=$(head -n1 sd-card/html/version.txt | tr -d '\r' | sed 's/[^A-Za-z0-9._+-]/_/g')
+        echo "Firmware version: $V"
+        echo "version=$V" >> "$GITHUB_OUTPUT"
 
     #########################################################################################
     ## Prepare firmware package
@@ -124,7 +125,7 @@ jobs:
     - name: Firmware package - Upload artifact
       uses: actions/upload-artifact@v7
       with:
-        name: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}"
+        name: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ steps.ver.outputs.version }}"
         path: ./artifact
 
     #########################################################################################
@@ -146,7 +147,7 @@ jobs:
     - name: Debug files package - Upload artifact
       uses: actions/upload-artifact@v7
       with:
-        name: "aioted__debug-files_developer-only__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}"
+        name: "aioted__debug-files_developer-only__${{ matrix.plat }}__SLFork_${{ steps.ver.outputs.version }}"
         path: ./debug
 
 
@@ -157,9 +158,6 @@ jobs:
 #########################################################################################
   upload-release-artifacts:
     runs-on: ubuntu-latest
-    outputs:
-      branch: ${{ steps.vars.outputs.branch }}
-      sha_short: ${{ steps.vars.outputs.sha_short }}
     needs: [prepare-release, build]
     if: ${{ needs.prepare-release.outputs.release_created }}
     strategy:
@@ -184,27 +182,20 @@ jobs:
       with:
         ref: ${{ needs.prepare-release.outputs.tag_name }}
 
-    - name: Set variables
-      id: vars
-      run: |
-        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-        echo "branch=$(echo ${{ github.ref_name }} | tr / __)" >> $GITHUB_OUTPUT
-
-    - name: Pull artifacts
+    - name: Pull artifact
       uses: actions/download-artifact@v8
+      with:
+        pattern: "AI-on-the-edge-device__${{ matrix.plat }}__*"
+        path: ./pkg
+        merge-multiple: true
 
-    - name: Prepare artifacts for release
+    - name: Prepare and upload release asset
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         rm -rf release
         mkdir -p release
-        cd "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ steps.vars.outputs.branch }}_${{ steps.vars.outputs.sha_short }}"
-        zip -r ../release/AI-on-the-edge-device__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip *
-        cd ..
-
-    - name: Upload artifacts to release tag
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run:
+        (cd pkg && zip -r "../release/AI-on-the-edge-device__${{ matrix.plat }}__SLFork_v${{ needs.prepare-release.outputs.version }}.zip" .)
         gh release upload ${{ needs.prepare-release.outputs.tag_name }} release/*
 
 
@@ -215,7 +206,7 @@ jobs:
 #########################################################################################
   upload-release-debug-artifact:
     runs-on: ubuntu-latest
-    needs: [prepare-release, build, upload-release-artifacts]
+    needs: [prepare-release, build]
     if: ${{ needs.prepare-release.outputs.release_created }}
 
     # Sets permissions of the GITHUB_TOKEN to allow uploading to the release
@@ -232,7 +223,7 @@ jobs:
     - name: Pull all debug artifacts
       uses: actions/download-artifact@v8
       with:
-        pattern: "aioted__debug-files_developer-only__*__SLFork_${{ needs.upload-release-artifacts.outputs.branch }}_${{ needs.upload-release-artifacts.outputs.sha_short }}"
+        pattern: "aioted__debug-files_developer-only__*"
         path: ./debug
         merge-multiple: false
 
@@ -248,7 +239,7 @@ jobs:
     - name: Upload combined debug artifact to release tag
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run:
+      run: |
         gh release upload ${{ needs.prepare-release.outputs.tag_name }} release/*
 
 #########################################################################################
@@ -258,7 +249,7 @@ jobs:
 #########################################################################################
   update-webinstaller:
     runs-on: ubuntu-latest
-    needs: [prepare-release, build, upload-release-artifacts]
+    needs: [prepare-release, build]
     if: ${{ needs.prepare-release.outputs.release_created }}
     strategy:
       max-parallel: 1
@@ -286,8 +277,9 @@ jobs:
     - name: Pull artifact
       uses: actions/download-artifact@v8
       with:
-        name: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_${{ needs.upload-release-artifacts.outputs.branch }}_${{ needs.upload-release-artifacts.outputs.sha_short }}"
+        pattern: "AI-on-the-edge-device__${{ matrix.plat }}__*"
         path: './artifacts/'
+        merge-multiple: true
 
     - name: Prepare data
       run: |
