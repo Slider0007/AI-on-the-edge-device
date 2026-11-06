@@ -2,12 +2,9 @@
  * Auto-level: find the digit band of a meter in a raw camera image and work out
  * the rotation that makes it horizontal and upright.
  *
- * Added in a modified version of AI-on-the-Edge Device [SLFork], not by the original authors.
- * Original project: https://github.com/Slider0007/AI-on-the-edge-device
- *
  * detectMeterRotation(imageData) returns null when no band is found, otherwise
  *   { angle, upright, band: {cx, cy, length, width}, scale }
- * angle:   degrees for InitialRotate, in -180..180 (positive = clockwise, as canvas.rotate)
+ * angle:   degrees for the image rotation parameter, in -180..180 (positive = clockwise, as canvas.rotate)
  * upright: "red-dials" or "position" (how up was decided) or "unknown"
  */
 var AutoLevel = (function () {
