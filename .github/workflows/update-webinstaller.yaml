@@ -69,3 +69,4 @@ jobs:
           & git commit -m "${{ matrix.plat }}: Update firmware files to ${{ steps.pull_artifacts.outputs.version }}"
           & git push
         }
+
