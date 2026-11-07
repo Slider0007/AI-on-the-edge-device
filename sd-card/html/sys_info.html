@@ -444,36 +444,46 @@
         return;
       }
 
-      // Firmware version logic
-      if (val.includes(' @ ')) {
-        const parts = val.split(' @ ');
-        const commit = parts[1].trim();
+      const REPO = 'https://github.com/Slider0007/AI-on-the-edge-device';
 
-        // If dirty or N/A, display as plain text
-        if (commit.endsWith('+') || commit === 'N/A') {
-          target.textContent = val;
-        } else {
-          target.append(document.createTextNode(parts[0] + ' @ '));
-          const link = document.createElement('a');
-          link.href = `https://github.com/Slider0007/AI-on-the-edge-device/commit/${commit}`;
-          link.target = '_blank';
-          link.textContent = commit;
-          target.appendChild(link);
-        }
-      } else {
-        const tag = val;
+      const addLink = (href, text) => {
+        const a = document.createElement('a');
+        a.href = href;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = text;
+        target.appendChild(a);
+      };
 
-        // If dirty or N/A, display as plain text; otherwise link to release tag
-        if (tag.endsWith('+') || tag === 'N/A') {
-          target.textContent = tag;
-        } else {
-          const link = document.createElement('a');
-          link.href = `https://github.com/Slider0007/AI-on-the-edge-device/releases/tag/${tag}`;
-          link.target = '_blank';
-          link.textContent = tag;
-          target.appendChild(link);
-        }
+      // Dirty build: no commit/tag to link to, show as plain text
+      if (val.endsWith('+') || val === 'N/A') {
+        target.textContent = val;
+        return;
       }
+
+      // Untagged build: [pr<N>-]<branch>-<rev7>
+      const m = val.match(/^(?:pr(\d+)-)?(.+)-([0-9a-f]{7})$/);
+      if (m) {
+        const [, pr, branch, commit] = m;
+        if (pr) {
+          // PR build: link the PR only (head commit may not exist in the main repo, e.g. forks)
+          addLink(`${REPO}/pull/${pr}`, `pr${pr}`);
+          target.append(document.createTextNode(`-${branch}-${commit}`));
+        } else {
+          target.append(document.createTextNode(`${branch}-`));
+          addLink(`${REPO}/commit/${commit}`, commit);
+        }
+        return;
+      }
+
+      // Release tag (v1.2.3 / 1.2.3): link to the release
+      if (/^v?\d+(\.\d+)+/.test(val)) {
+        addLink(`${REPO}/releases/tag/${encodeURIComponent(val)}`, val);
+        return;
+      }
+
+      // Anything else (e.g. "branch-unknown"): plain text
+      target.textContent = val;
     }
 
     async function loadInfoData() {
