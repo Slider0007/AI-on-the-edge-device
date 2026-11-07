@@ -154,11 +154,11 @@ def apply_github_pr_info(info):
         return
     try:
         with open(event_path, "r", encoding="utf-8") as f:
-            sha = json.load(f)["pull_request"]["head"]["sha"]
-        info["rev"] = sha[:7]
-        info["pr"] = str(payload["pull_request"]["number"])
+            pr_data = json.load(f)["pull_request"]
+        info["rev"] = pr_data["head"]["sha"][:7]
+        info["pr"] = str(pr_data["number"])
     except (KeyError, TypeError, OSError, ValueError) as e:
-        warn(f"could not read PR head SHA from event payload: {e}")
+        warn(f"could not read PR info from event payload: {e}")
 
 
 def collect_git_info(project_dir, ignore_paths):
