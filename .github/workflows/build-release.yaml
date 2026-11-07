@@ -250,6 +250,6 @@ jobs:
     if: ${{ needs.prepare-release.outputs.release_created }}
     permissions:
       contents: write
-    uses: ./.github/workflows/update-webinstaller.yml
+    uses: ./.github/workflows/update-webinstaller.yaml
     with:
       tag: ${{ needs.prepare-release.outputs.tag_name }}
