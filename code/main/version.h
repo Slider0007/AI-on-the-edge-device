@@ -6,11 +6,13 @@
 #include <cstdio>
 
 
+// Populated by script "scripts/generate_version.py"
 extern "C" {
 extern const char *const GIT_TAG;
 extern const char *const GIT_BRANCH;
 extern const char *const GIT_REV;
 extern const char *const BUILD_TIME;
+extern const char *const FW_VERSION;
 }
 
 inline std::string getBuildTime(void)
@@ -20,12 +22,7 @@ inline std::string getBuildTime(void)
 
 inline std::string getFwVersion(void)
 {
-    // Tag is not set
-    if ((std::string(GIT_TAG) == "N/A") || (std::string(GIT_TAG) == "")) { // Tag not set, show branch
-        return std::string(GIT_BRANCH) + " @ " + std::string(GIT_REV);
-    }
-
-    return std::string(GIT_TAG);
+    return std::string(FW_VERSION);
 }
 
 inline std::string getWebUiVersion(void)

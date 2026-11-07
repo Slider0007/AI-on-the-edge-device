@@ -1,9 +1,20 @@
 """PlatformIO pre-script: generate main/version.cpp and sd-card/html/version.txt.
 
+Version string:
+  tagged build    ->  <tag>[+]
+  untagged build  ->  [pr<N>-]<branch>-<rev>[+]      ('+' = dirty tree)
+  The full string goes to FW_VERSION (version.cpp) and version.txt, so firmware,
+  web UI and CI artifact names match. esp_app_desc.version is limited to 31
+  chars: it gets the same string with the branch part truncated (rev and '+'
+  are kept). GIT_TAG is "N/A" when untagged.
+
 Overrides (platformio.ini option / environment variable):
   PIO: custom_version_tag      / ENV: OVERRIDE_GIT_TAG     (string)
   PIO: custom_version_branch   / ENV: OVERRIDE_GIT_BRANCH  (string)
+  PIO: custom_version_rev      / ENV: OVERRIDE_GIT_REV     (string, first 7 chars used)
   PIO: custom_version_dirty    / ENV: OVERRIDE_DIRTY       (true|1|+)
+  The environment variable is only used if the platformio.ini option is not
+  set; an option in platformio.ini always wins over OVERRIDE_*.
 
 Environment:
   STRICT_VERSION=1        fail the build if git metadata can't be determined
@@ -153,7 +164,7 @@ def apply_github_pr_info(info):
     if not event_path:
         return
     try:
-        with open(event_path, "r", encoding="utf-8") as f:
+        with open(event_path, "r", encoding="utf-8-sig") as f:
             pr_data = json.load(f)["pull_request"]
         info["rev"] = pr_data["head"]["sha"][:7]
         info["pr"] = str(pr_data["number"])
@@ -220,6 +231,7 @@ const char* const GIT_TAG = "@GIT_TAG@";
 const char* const GIT_BRANCH = "@GIT_BRANCH@";
 const char* const GIT_REV = "@GIT_REV@";
 const char* const BUILD_TIME = "@BUILD_TIME@";
+const char* const FW_VERSION = "@FW_VERSION@";
 
 // Strong definition overrides IDF's weak one. Must live in .rodata_desc so it
 // sits at the fixed offset the bootloader/OTA/esptool expect.
@@ -267,6 +279,7 @@ def generate_version_header():
     # Overrides
     custom_tag = env.GetProjectOption("custom_version_tag", os.environ.get("OVERRIDE_GIT_TAG", ""))
     custom_branch = env.GetProjectOption("custom_version_branch", os.environ.get("OVERRIDE_GIT_BRANCH", ""))
+    custom_rev = env.GetProjectOption("custom_version_rev", os.environ.get("OVERRIDE_GIT_REV", ""))
     force_dirty = str(env.GetProjectOption("custom_version_dirty", os.environ.get("OVERRIDE_DIRTY", "")))
 
     git_info = collect_git_info(project_dir, [file_version_cpp, file_version_txt])
@@ -278,10 +291,12 @@ def generate_version_header():
         git_tag = custom_tag
     if custom_branch:
         git_branch = custom_branch
+    if custom_rev:
+        git_rev = custom_rev.strip()[:7]
     if force_dirty.lower() in ("true", "1", "+"):
         git_diff = "+"
 
-    have_overrides = bool(custom_tag and custom_branch)
+    have_overrides = bool(custom_tag or (custom_branch and custom_rev))
     if not git_info["ok"] and not have_overrides:
         msg = "git metadata unavailable and no complete override set; version will be 'unknown'"
         if os.environ.get("STRICT_VERSION") == "1":
@@ -312,6 +327,7 @@ def generate_version_header():
         "GIT_REV": f"{git_rev}{git_diff}",
         "BUILD_TIME": build_time,
         "IDF_APP_VERSION": idf_app_version,
+        "FW_VERSION": version_tag,   # full, untruncated, same string as version.txt
         "PROJECT_NAME": PROJECT_NAME,
     }
 
