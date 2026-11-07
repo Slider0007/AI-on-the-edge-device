@@ -156,12 +156,13 @@ def apply_github_pr_info(info):
         with open(event_path, "r", encoding="utf-8") as f:
             sha = json.load(f)["pull_request"]["head"]["sha"]
         info["rev"] = sha[:7]
+        info["pr"] = str(payload["pull_request"]["number"])
     except (KeyError, TypeError, OSError, ValueError) as e:
         warn(f"could not read PR head SHA from event payload: {e}")
 
 
 def collect_git_info(project_dir, ignore_paths):
-    info = {"tag": "N/A", "branch": "N/A", "rev": "", "dirty": "", "ok": False}
+    info = {"tag": "N/A", "branch": "N/A", "rev": "", "dirty": "", "pr": "", "ok": False}
     try:
         rev = git(project_dir, "rev-parse", "--short=7", "HEAD")
         if rev.returncode != 0 or not rev.stdout.strip():
@@ -290,10 +291,12 @@ def generate_version_header():
     if not git_rev:
         git_rev = "unknown"
 
+    pr = git_info.get("pr", "")
+    pr_branch = f"pr{pr}-{git_branch}" if pr else git_branch
     # Version strings
     if git_tag == "N/A":
-        version_tag = f"{git_branch}-{git_rev}{git_diff}"
-        idf_app_version = fit_version(git_branch, f"-{git_rev}{git_diff}")
+        version_tag = f"{pr_branch}-{git_rev}{git_diff}"
+        idf_app_version = fit_version(pr_branch, f"-{git_rev}{git_diff}")
     else:
         version_tag = f"{git_tag}{git_diff}"
         idf_app_version = fit_version(git_tag, git_diff)
