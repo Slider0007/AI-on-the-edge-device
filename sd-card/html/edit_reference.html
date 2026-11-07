@@ -466,7 +466,8 @@
     let imageObj = new Image();
     let isActReference = false;
     let currentBlobUrl = null;
-    let onImageLoaded = null;
+    let imageWaiter = null; // { resolve, reject } of the capture that Auto-tune waits for
+    let lockedCameraInputs = [];
     let autoTuneRunning = false;
     let lineMode = false;
     let lineStart = null;
@@ -566,6 +567,9 @@
 
       specialeffect = params.specialeffect;
 
+      setAnalysisEnabled(false); // Until the new image is decoded, the old one must not be analysed
+      document.getElementById('savereference').disabled = true;
+
       const flashTime = parseInt(params.flashtime, 10) || 1000;
       const timeoutMs = Math.max(flashTime + 10000, 15000);
       const res = await apiCallNotify(`/camera?${new URLSearchParams(params)}`, { timeout: timeoutMs }, {
@@ -585,14 +589,28 @@
       loadCanvas(currentBlobUrl, true, true);
       isActReference = false;
 
-      document.getElementById('showactualimage').disabled = false;
+      document.getElementById('showactualimage').disabled = autoTuneRunning;
       document.getElementById('createreference').disabled = true;
-      document.getElementById('savereference').disabled = autoTuneRunning;
-      document.getElementById('autolevel').disabled = false;
-      document.getElementById('rotate180').disabled = false;
-      document.getElementById('drawline').disabled = false;
-      document.getElementById('autotune').disabled = autoTuneRunning;
       return true;
+    }
+
+    function setAnalysisEnabled(enabled) {
+      document.getElementById('autolevel').disabled = !enabled;
+      document.getElementById('rotate180').disabled = !enabled;
+      document.getElementById('drawline').disabled = !enabled;
+      document.getElementById('autotune').disabled = !enabled || autoTuneRunning;
+      if (!enabled) cancelDrawLine();
+    }
+
+    // Auto-tune scores a fixed image region, so other camera settings (zoom, ...) must not change meanwhile
+    function lockCameraInputs(lock) {
+      if (lock) {
+        lockedCameraInputs = [...document.querySelectorAll('.camParameter input, .camParameter select')].filter((el) => !el.disabled);
+        lockedCameraInputs.forEach((el) => (el.disabled = true));
+      } else {
+        lockedCameraInputs.forEach((el) => (el.disabled = false));
+        lockedCameraInputs = [];
+      }
     }
 
     function getRotation() {
@@ -707,8 +725,11 @@
 
     function setCameraValue(id, value) {
       const el = document.getElementById(id);
+      const wasDisabled = el.disabled;
+      el.disabled = false; // A disabled field is skipped by FormData and would not be marked as changed
       el.value = value;
       el.dispatchEvent(new Event('change')); // Update output and mark parameter as changed
+      el.disabled = wasDisabled;
     }
 
     function setTuneValues(tune) {
@@ -718,16 +739,19 @@
     }
 
     async function takeImageAndWait() {
-      const loaded = new Promise((resolve) => {
-        onImageLoaded = resolve;
+      const loaded = new Promise((resolve, reject) => {
+        imageWaiter = { resolve, reject };
       });
+      let timer = null;
 
-      if (!(await doTake())) {
-        onImageLoaded = null;
-        throw new Error('Capture failed');
+      try {
+        if (!(await doTake())) throw new Error('Capture failed');
+
+        await Promise.race([loaded, new Promise((resolve, reject) => (timer = setTimeout(() => reject(new Error('Image load timeout')), 15000)))]);
+      } finally {
+        clearTimeout(timer);
+        imageWaiter = null;
       }
-
-      await Promise.race([loaded, new Promise((resolve, reject) => setTimeout(() => reject(new Error('Image load timeout')), 15000))]);
     }
 
     // Camera settings apply to every later measurement; only the digit band is scored
@@ -755,9 +779,11 @@
       let bestScore = -2;
 
       autoTuneRunning = true;
+      lockCameraInputs(true);
       document.getElementById('autotune').disabled = true;
       document.getElementById('savereference').disabled = true;
       document.getElementById('take').disabled = true;
+      document.getElementById('showactualimage').disabled = true;
 
       try {
         for (const intensity of intensities) {
@@ -781,13 +807,19 @@
         }
 
         setTuneValues(best);
-        autoTuneRunning = false; // Final image: release Save and Update again
-        await takeImageAndWait();
+        await takeImageAndWait(); // Controls stay locked until this final image is shown
+
+        autoTuneRunning = false;
+        lockCameraInputs(false);
+        document.getElementById('savereference').disabled = false;
+        document.getElementById('take').disabled = false;
+        document.getElementById('showactualimage').disabled = false;
+        document.getElementById('autotune').disabled = false;
         firework.launch(`Auto-tune: flash ${best.intensity}%, brightness ${best.brightness}, contrast ${best.contrast}. Save to keep it`, 'success', 8000);
       } catch (error) {
         console.error('Auto-tune stopped:', error);
         autoTuneRunning = false;
-        onImageLoaded = null;
+        lockCameraInputs(false);
         showReference(); // Back to the saved settings
         firework.launch('Auto-tune stopped, settings restored. Please create a new image', 'danger', 8000);
       }
@@ -857,7 +889,8 @@
       context.restore();
     }
 
-    function loadCanvas(dataURL, grid, autolevel = false) {
+    // fromCapture: image of a capture (not the saved reference), may be analysed and awaited
+    function loadCanvas(dataURL, grid, fromCapture = false) {
       document.getElementById('canvas').style.display = 'none';
       document.getElementById('img_loading').style.display = 'block';
 
@@ -879,18 +912,22 @@
         document.getElementById('canvas').style.display = 'block';
         document.getElementById('img_loading').style.display = 'none';
 
-        // Only when no rotation is set yet: never overwrite a manual correction or "Rotate 180°"
-        if (autolevel && !autoTuneRunning && getRotation() == 0) autoLevel();
+        if (!fromCapture) return;
 
-        if (onImageLoaded) {
-          const callback = onImageLoaded;
-          onImageLoaded = null;
-          callback();
-        }
+        setAnalysisEnabled(true);
+        document.getElementById('savereference').disabled = autoTuneRunning;
+
+        // Only when no rotation is set yet: never overwrite a manual correction or "Rotate 180°"
+        if (!autoTuneRunning && getRotation() == 0) autoLevel();
+
+        if (imageWaiter) imageWaiter.resolve();
       };
 
       imageObj.onerror = function () {
         imageObj.onerror = null;
+        if (fromCapture && imageWaiter) imageWaiter.reject(new Error('Image could not be decoded'));
+        fromCapture = false; // The placeholder below must not be analysed
+
         canvas.removeEventListener('mousemove', mouseMove, false);
         imageObj.src = noImageAvailable;
       };
@@ -970,6 +1007,8 @@
     }
 
     function showReference() {
+      if (autoTuneRunning) return;
+
       if (currentBlobUrl) {
         URL.revokeObjectURL(currentBlobUrl);
         currentBlobUrl = null;

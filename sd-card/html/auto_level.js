@@ -112,7 +112,9 @@ var AutoLevel = (function () {
         return bestDeg;
     }
 
-    /* Grow the white digits away: a band with bright digits is otherwise full of holes. */
+    /* Grow the white digits away: a band with bright digits is otherwise full of holes.
+       Pixels outside the image are ignored, so the erosion cannot cut a housing strip
+       loose from the border (it would then pass the border rejection). */
     function closeMask(mask, w, h, r) {
         function pass(input, keepIfAny) {
             var out = new Uint8Array(w * h);
@@ -122,8 +124,8 @@ var AutoLevel = (function () {
                     for (var dy = -r; dy <= r; dy++) {
                         for (var dx = -r; dx <= r; dx++) {
                             var yy = y + dy, xx = x + dx;
-                            var on = (yy >= 0 && yy < h && xx >= 0 && xx < w) ? input[yy * w + xx] : 0;
-                            if (on) any = true; else all = false;
+                            if (yy < 0 || yy >= h || xx < 0 || xx >= w) continue;
+                            if (input[yy * w + xx]) any = true; else all = false;
                         }
                     }
                     out[y * w + x] = (keepIfAny ? any : all) ? 1 : 0;
@@ -136,7 +138,8 @@ var AutoLevel = (function () {
 
     function findBand(img, closeRadius) {
         var w = img.w, h = img.h, thr = otsu(img.gray), mask = new Uint8Array(w * h);
-        for (var i = 0; i < w * h; i++) mask[i] = img.gray[i] < thr ? 1 : 0;
+        // Otsu puts the threshold bin itself in the dark class
+        for (var i = 0; i < w * h; i++) mask[i] = img.gray[i] < thr + 1 ? 1 : 0;
         if (closeRadius > 0) mask = closeMask(mask, w, h, closeRadius);
 
         var comps = components(mask, w, h), best = null, imageArea = w * h;
@@ -165,28 +168,37 @@ var AutoLevel = (function () {
         var b = boxAt(found.pts, img.w, deg);
         var cu = (b.minU + b.maxU) / 2, cv = (b.minV + b.maxV) / 2;
 
-        // Axis is known up to 180 degrees. Red dial pointers sit below the digits;
-        // v increases towards "below" when the image is rotated by -deg.
-        var redV = 0, redN = 0;
+        // Axis is known up to 180 degrees; v increases towards "below" when the image is rotated by -deg.
+        // Two independent hints for "up". Red pointers sit below the digits, but red printing
+        // can look the same, so red alone is never trusted: it must agree with the position.
+        var bandW = b.maxV - b.minV, redBelow = 0, redAbove = 0;
         for (var i = 0; i < img.w * img.h; i++) {
             if (!img.red[i]) continue;
-            var x = i % img.w, y = (i - x) / img.w;
-            redV += -x * b.s + y * b.c - cv; redN++;
+            var x = i % img.w, y = (i - x) / img.w, dv = -x * b.s + y * b.c - cv;
+            if (dv > bandW * 0.5) redBelow++;
+            else if (dv < -bandW * 0.5) redAbove++;
+        }
+        var redN = redBelow + redAbove, redVote = 0;
+        if (redN > img.w * img.h * 0.002 && Math.max(redBelow, redAbove) >= redN * 0.85) {
+            redVote = redAbove > redBelow ? 1 : -1;       // 1 = flip
+        }
+
+        // The band normally sits in the upper half of the meter face
+        var centreV = -img.w / 2 * b.s + img.h / 2 * b.c, posVote = 0;
+        if (Math.abs(centreV - cv) > bandW * 0.3) {
+            posVote = centreV < cv ? 1 : -1;
         }
 
         var flip, upright;
-        if (redN > img.w * img.h * 0.002 && Math.abs(redV / redN) > (b.maxV - b.minV) * 0.5) {
-            flip = redV < 0; upright = "red-dials";
+        if (redVote != 0 && redVote == posVote) {
+            flip = redVote > 0; upright = "red-dials";
+        }
+        else if (redVote == 0 && posVote != 0) {
+            flip = posVote > 0; upright = "position";
         }
         else {
-            // No dials: the band normally sits in the upper half of the meter face
-            var centreV = -img.w / 2 * b.s + img.h / 2 * b.c;
-            if (Math.abs(centreV - cv) > (b.maxV - b.minV) * 0.3) {
-                flip = centreV < cv; upright = "position";
-            }
-            else {
-                flip = false; upright = "unknown";
-            }
+            // No or conflicting hints: keep the rotation as small as possible
+            flip = Math.abs(deg) > 90; upright = "unknown";
         }
 
         var angle = -deg + (flip ? 180 : 0);
