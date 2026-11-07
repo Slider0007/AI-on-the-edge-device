@@ -64,7 +64,7 @@ The following infos are available:
 | `heap_spiram_largest_free`           | Heap External SPIRAM Largest Block Free [Byte]     | `2359296` 
 | `heap_spiram_min_free`               | Heap External SPIRAM Minimum Free [Byte]           | `1359368` 
 | `firmware_version`                   | MCU Firmware Version                               | `v17.4.1` 
-| `html_version`                       | WebUI Version                                      | `Develop: branch @ 3d7fed3+` 
+| `html_version`                       | WebUI Version                                      | `v17.4.1` 
 | `build_time`                         | MCU Firmware Build Time                            | `2024-01-23T21:32:23+0000` 
 | `config_version`                     | Config Version                                     | `1` 
 | `idf_version`                        | Espressif ESP IDF Development Framework Version    | `5.0.2` 
