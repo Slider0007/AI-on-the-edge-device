@@ -8,6 +8,7 @@
 #include <esp_private/esp_clk.h>
 #include <cJSON.h>
 
+#include "../main/version.h"
 #include "configClass.h"
 #include "http_auth.h"
 #include "ClassControlCamera.h"
@@ -22,7 +23,6 @@
 
 static const char *TAG = "SERVER_MQTT";
 
-extern std::string getFwVersion();
 
 static bool publishHADiscoveryTopic(const strHADiscoveryData *_data, int _qos);
 static bool publishHADiscoveryTopicDeviceInfo = true;

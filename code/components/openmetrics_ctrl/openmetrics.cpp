@@ -7,6 +7,7 @@
 #include <esp_log.h>
 #include <esp_private/esp_clk.h>
 
+#include "../main/version.h"
 #include "http_auth.h"
 #include "system.h"
 #include "ClassFlowDefineTypes.h"
@@ -17,8 +18,6 @@
 #include "helper.h"
 
 static const char *TAG = "OPENMETRICS";
-
-extern std::string getFwVersion(void);
 
 
 /**

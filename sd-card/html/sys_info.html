@@ -425,57 +425,6 @@
       return value.substring(0, 10) + ' ' + value.substring(11, 19) + ' (UTC' + value.substring(19, 24) + ')';
     }
 
-    function renderVersionField(targetId, versionValue) {
-      const target = document.getElementById(targetId);
-      if (!target) return;
-      target.textContent = '';
-
-      const val = versionValue != null ? String(versionValue).trim() : '';
-
-      // Handle empty or unknown values
-      if (!val || val === '?') {
-        target.textContent = 'Unknown';
-        return;
-      }
-
-      // WebUI version (or any non-firmware field) renders as plain text
-      if (targetId === 'html_version') {
-        target.textContent = val;
-        return;
-      }
-
-      // Firmware version logic
-      if (val.includes(' @ ')) {
-        const parts = val.split(' @ ');
-        const commit = parts[1].trim();
-
-        // If dirty or N/A, display as plain text
-        if (commit.endsWith('+') || commit === 'N/A') {
-          target.textContent = val;
-        } else {
-          target.append(document.createTextNode(parts[0] + ' @ '));
-          const link = document.createElement('a');
-          link.href = `https://github.com/Slider0007/AI-on-the-edge-device/commit/${commit}`;
-          link.target = '_blank';
-          link.textContent = commit;
-          target.appendChild(link);
-        }
-      } else {
-        const tag = val;
-
-        // If dirty or N/A, display as plain text; otherwise link to release tag
-        if (tag.endsWith('+') || tag === 'N/A') {
-          target.textContent = tag;
-        } else {
-          const link = document.createElement('a');
-          link.href = `https://github.com/Slider0007/AI-on-the-edge-device/releases/tag/${tag}`;
-          link.target = '_blank';
-          link.textContent = tag;
-          target.appendChild(link);
-        }
-      }
-    }
-
     async function loadInfoData() {
       const res = await apiCallNotify('/info', {}, { action: 'Loading info', parseType: 'json' });
       if (!res.ok || !res.data) return;
@@ -596,8 +545,9 @@
       document.getElementById('heap_spiram_largest_free').textContent = _jsonData.heap_spiram_largest_free + ' byte';
       document.getElementById('heap_spiram_min_free').textContent = _jsonData.heap_spiram_min_free + ' byte';
 
-      renderVersionField('firmware_version', _jsonData.firmware_version);
-      renderVersionField('html_version', _jsonData.html_version);
+      const validateVersion = (v) => (!v || v === '' || v === '?') ? 'Unknown' : v;
+      document.getElementById('firmware_version').textContent = validateVersion(_jsonData.firmware_version);
+      document.getElementById('html_version').textContent = validateVersion(_jsonData.html_version);
 
       document.getElementById('build_time').textContent = formatIsoDatetime(_jsonData.build_time);
 

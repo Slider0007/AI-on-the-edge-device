@@ -24,7 +24,7 @@ ai_on_the_edge_device_hardware_info{board_type="ESP32CAM",chip_model="ESP32",chi
 ai_on_the_edge_device_network_info{hostname="watermeter",ipv4_address="192.168.2.68",mac_address="40:22:D8:03:5F:AC"} 1
 # TYPE ai_on_the_edge_device_firmware_info gauge
 # HELP ai_on_the_edge_device_firmware_info Firmware info
-ai_on_the_edge_device_firmware_info{firmware_version="Develop: openmetrics-exporter (Commit: 432bb72)"} 1
+ai_on_the_edge_device_firmware_info{firmware_version="openmetrics-exporter-432bb72"} 1
 # TYPE ai_on_the_edge_device_device_uptime_seconds gauge
 # UNIT ai_on_the_edge_device_device_uptime_seconds seconds
 # HELP ai_on_the_edge_device_device_uptime_seconds Device uptime in seconds

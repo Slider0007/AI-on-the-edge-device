@@ -1,11 +1,56 @@
 name: Update Web Installer
 
+# Updates branch gh-pages-webinstaller with the firmware files of a release.
+# - Called from the release workflow (build-release.yaml) with the new tag or
+# - start manually using the latest tag.
+
 on:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Release tag (empty = latest release)'
+        required: false
+        type: string
 
+# Only one run at a time: all runs push to the same branch.
+concurrency:
+  group: update-webinstaller
+  cancel-in-progress: false
 
 jobs:
+  resolve-release-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.rel.outputs.tag }}
+    permissions:
+      contents: read
+    steps:
+    - name: Resolve release tag
+      id: rel
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_REPO: ${{ github.repository }}
+        INPUT_TAG: ${{ inputs.tag }}
+      run: |
+        # Normalize input first to catch whitespace-only strings
+        TAG=$(echo "$INPUT_TAG" | tr -d '[:space:]')
+
+        if [ -z "$TAG" ]; then
+          TAG=$(gh release view --json tagName --jq .tagName)
+          TAG=$(echo "$TAG" | tr -d '[:space:]')
+        fi
+
+        if [ -z "$TAG" ]; then
+          echo "::error::Failed to resolve a valid release tag."
+          exit 1
+        fi
+
+        echo "Release tag: $TAG"
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
   update-webinstaller:
+    needs: resolve-release-tag
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
@@ -19,10 +64,14 @@ jobs:
          - waveshare-esp32s3-eth
          - xiao-esp32s3-sense
 
-    # Sets permissions of the GITHUB_TOKEN to allow downloading artifacts
     permissions:
-      actions: read
       contents: write
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_TAG: ${{ needs.resolve-release-tag.outputs.tag }}
+      PLAT: ${{ matrix.plat }}
 
     steps:
     - name: Checkout branch gh-pages-webinstaller
@@ -30,42 +79,38 @@ jobs:
       with:
         ref: gh-pages-webinstaller
 
-    - name: Pull artifact from latest release
-      id: pull_artifacts
-      uses: dsaltares/fetch-gh-release-asset@master
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        regex: true
-        file: "AI-on-the-edge-device__${{ matrix.plat }}__SLFork_.*.zip"
-        target: './artifacts/'
+    - name: Download release asset
+      run: |
+        rm -rf ./artifacts
+        mkdir -p ./artifacts
+        gh release download "$RELEASE_TAG" \
+          --pattern "AI-on-the-edge-device__${PLAT}__SLFork_*.zip" \
+          --dir ./artifacts
 
     - name: Prepare data
       run: |
         echo "Updating files ..."
+        unzip -o ./artifacts/AI-on-the-edge-device__${PLAT}__SLFork_*.zip -d ./artifacts/pkg
 
-        rm -rf "./firmware/${{ matrix.plat }}/"
-        mkdir -p "./firmware/${{ matrix.plat }}/"
-
-        unzip ./artifacts/AI-on-the-edge-device__${{ matrix.plat }}__SLFork_*.zip -d ./artifacts/
-
-        mkdir -p ./firmware/${{ matrix.plat }}
-        cp -f ./artifacts/bootloader.bin ./firmware/${{ matrix.plat }}/bootloader.bin
-        cp -f ./artifacts/partitions.bin ./firmware/${{ matrix.plat }}/partitions.bin
-        cp -f ./artifacts/firmware.bin ./firmware/${{ matrix.plat }}/firmware.bin
+        rm -rf "./firmware/${PLAT}"
+        mkdir -p "./firmware/${PLAT}"
+        cp -f ./artifacts/pkg/bootloader.bin "./firmware/${PLAT}/bootloader.bin"
+        cp -f ./artifacts/pkg/partitions.bin "./firmware/${PLAT}/partitions.bin"
+        cp -f ./artifacts/pkg/firmware.bin   "./firmware/${PLAT}/firmware.bin"
 
         echo "Updating version strings (index.html, manifest) ..."
-        sed -i -E 's/Firmware: .*./\Firmware: <b\>${{ steps.pull_artifacts.outputs.version }}\<\/b\>/g' index.html
-        sed -i -E 's/"version":.*.,/"version": "${{ steps.pull_artifacts.outputs.version }}",/g' manifest_${{ matrix.plat }}.json
+        jq --arg ver "$RELEASE_TAG" '.version = $ver' "manifest_${PLAT}.json" > "manifest_${PLAT}.json.tmp"
+        mv "manifest_${PLAT}.json.tmp" "manifest_${PLAT}.json"
+
+        TAG_VERSION="$RELEASE_TAG" perl -pi -e 's|Firmware: .*|Firmware: <b>$ENV{TAG_VERSION}</b>|' index.html
 
     - name: Commit data to branch gh-pages-webinstaller
-      shell: pwsh
       run: |
-        & git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        & git config --local user.name "github-actions[bot]"
-        & git add .
-        & git diff HEAD --exit-code | Out-Null
-        if ($LASTEXITCODE -ne 0)
-        {
-          & git commit -m "${{ matrix.plat }}: Update firmware files to ${{ steps.pull_artifacts.outputs.version }}"
-          & git push
-        }
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        # Add only the installer files, never the downloaded ./artifacts
+        git add firmware index.html "manifest_${PLAT}.json"
+        if ! git diff --cached --quiet; then
+          git commit -m "${PLAT}: Update firmware files to ${RELEASE_TAG}"
+          git push
+        fi

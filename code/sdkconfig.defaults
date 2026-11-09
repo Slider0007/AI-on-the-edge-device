@@ -5,6 +5,7 @@
 # sdkconfig.{board_type} to apply your changes!
 ##################################################
 
+
 #
 # Bootloader config
 #

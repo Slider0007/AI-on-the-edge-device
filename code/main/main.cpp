@@ -13,7 +13,7 @@
 #include <soc/rtc_cntl_reg.h>
 #endif // DISABLE_BROWNOUT_DETECTOR
 
-#include "version.h" // Only include once
+#include "version.h"
 #include "configClass.h"
 #include "ClassControlCamera.h"
 #include "ClassLogFile.h"

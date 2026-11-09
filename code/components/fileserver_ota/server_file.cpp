@@ -22,6 +22,7 @@
 #include <esp_http_server.h>
 #include <cJSON.h>
 
+#include "../main/version.h"
 #include "webserver.h"
 #include "server_help.h"
 #include "ClassLogFile.h"
@@ -34,8 +35,6 @@
 
 
 static const char *TAG = "SERVER_FILE";
-
-extern std::string getFwVersion();
 
 
 // Files that should not trigger a webserver redirect
@@ -1000,9 +999,11 @@ static esp_err_t coredump_handler(httpd_req_t *req)
 
         // Get firmware and cleanup name to have proper filename
         std::string firmware = getFwVersion();
-        replaceAll(firmware, ":", "_");
-        replaceAll(firmware, " ", "_");
-        replaceAll(firmware, "@", "");
+        for (char &c : firmware) {
+            if (!isalnum(c) && c != '.' && c != '_' && c != '-') {
+                c = '_';
+            }
+        }
 
         std::string attachmentFile = "attachment;filename=" + firmware + "_" + toLower(getBoardType()) + "_coredump.elf";
         httpd_resp_set_type(req, "application/octet-stream");
