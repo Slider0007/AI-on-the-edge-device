@@ -15,7 +15,7 @@ The following infos are available:
 
 | JSON Property / HTML query `type=`   | Description                                        | Output
 |:-------------------------------------|:---------------------------------------------------|:-----------------------
-| `api_name`                           | Name of the API                                    | `info:v4`
+| `api_name`                           | Name of the API                                    | `info:vX`
 | `process_status`                     | Process Status<br><br>Possible States:<br>- `Processing (Automatic)`:  Timer-controlled automatic processing<br>- `Processing (Triggered Only)`: Manual triggered processing only<br>- `Not Processing / Not Ready`: Initializing / Initialization failed | `Processing (Automatic)`
 | `process_interval`                   | Process Interval [min]                             | `2.0`
 | `process_time`                       | Process Time [sec]                                 | `25`

@@ -22,7 +22,7 @@ Set the WIFI client power mode (not applicable for access point operation (stand
 |:---              |:---
 | `Power Saving Disabled`| Sleep mode disabled. Lowest latency, but highest consumption / heat generation -> Not recommended! Use with care! 
 | `Power Saving DTIM (Default)`| Sleep mode activated. Wakeup based on DTIM interval (usually every 100ms, depending on router/AP) -> Medium latency, reduced power consumption
-| `Power Saving Interval`| Sleep mode activated. Wakeup based on client defined fixed listen interval (DTIMs or broadcast data could be missed) -> Higher latency, lowest power consumption
+| `Power Saving Interval`| Sleep mode activated. Wakeup based on client defined fixed listen interval (hard-coded default: 3). Note: DTIMs or broadcast data could be missed -> Higher latency, lowest power consumption
 
 
 !!! Note

@@ -1128,10 +1128,16 @@ int getWifiRssi(void)
 
 bool getWifiPowerSavingEnabled()
 {
-    // Power mode 0:     disabled or N/A
-    // Power mode 1 / 2: enabled
-    return (getNetworkOpmodeType() == NETWORK_OPMODE_TYPE_WLAN &&
-            ConfigClass::getInstance()->get()->sectionSystem.powerManagement.wifi.powerMode > 0);
+    if (getNetworkOpmodeType() != NETWORK_OPMODE_TYPE_WLAN) {
+        return false;
+    }
+
+    wifi_ps_type_t psType;
+    if (esp_wifi_get_ps(&psType) == ESP_OK) {
+        return (psType != WIFI_PS_NONE);
+    }
+
+    return false;
 }
 
 
