@@ -2,7 +2,6 @@ name: Update Web Installer
 
 # Updates branch gh-pages-webinstaller with the firmware files of a release.
 # - Called from the release workflow (build-release.yml) with the new tag.
-# - Can be run manually; without a tag the latest release is used.
 
 on:
   workflow_dispatch:
@@ -24,7 +23,38 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  resolve-release-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.rel.outputs.tag }}
+    permissions:
+      contents: read
+    steps:
+    - name: Resolve release tag
+      id: rel
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_REPO: ${{ github.repository }}
+        INPUT_TAG: ${{ inputs.tag }}
+      run: |
+        # Normalize input first to catch whitespace-only strings
+        TAG=$(echo "$INPUT_TAG" | tr -d '[:space:]')
+
+        if [ -z "$TAG" ]; then
+          TAG=$(gh release view --json tagName --jq .tagName)
+          TAG=$(echo "$TAG" | tr -d '[:space:]')
+        fi
+
+        if [ -z "$TAG" ]; then
+          echo "::error::Failed to resolve a valid release tag."
+          exit 1
+        fi
+
+        echo "Release tag: $TAG"
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
   update-webinstaller:
+    needs: resolve-release-tag
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
@@ -44,7 +74,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
-      INPUT_TAG: ${{ inputs.tag }}
+      RELEASE_TAG: ${{ needs.resolve-release-tag.outputs.tag }}
       PLAT: ${{ matrix.plat }}
 
     steps:
@@ -53,29 +83,15 @@ jobs:
       with:
         ref: gh-pages-webinstaller
 
-    - name: Resolve release tag
-      id: rel
-      run: |
-        TAG="$INPUT_TAG"
-        if [ -z "$TAG" ]; then
-          TAG=$(gh release view --json tagName --jq .tagName)
-        fi
-        echo "Release tag: $TAG"
-        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-
     - name: Download release asset
-      env:
-        TAG: ${{ steps.rel.outputs.tag }}
       run: |
         rm -rf ./artifacts
         mkdir -p ./artifacts
-        gh release download "$TAG" \
+        gh release download "$RELEASE_TAG" \
           --pattern "AI-on-the-edge-device__${PLAT}__SLFork_*.zip" \
           --dir ./artifacts
 
     - name: Prepare data
-      env:
-        VER: ${{ steps.rel.outputs.tag }}
       run: |
         echo "Updating files ..."
         unzip -o ./artifacts/AI-on-the-edge-device__${PLAT}__SLFork_*.zip -d ./artifacts/pkg
@@ -87,18 +103,18 @@ jobs:
         cp -f ./artifacts/pkg/firmware.bin   "./firmware/${PLAT}/firmware.bin"
 
         echo "Updating version strings (index.html, manifest) ..."
-        sed -i -E "s|Firmware: .*|Firmware: <b>${VER}</b>|" index.html
-        sed -i -E "s|\"version\":[^,]*,|\"version\": \"${VER}\",|" "manifest_${PLAT}.json"
+        jq --arg ver "$RELEASE_TAG" '.version = $ver' "manifest_${PLAT}.json" > "manifest_${PLAT}.json.tmp"
+        mv "manifest_${PLAT}.json.tmp" "manifest_${PLAT}.json"
+
+        TAG_VERSION="$RELEASE_TAG" perl -pi -e 's|Firmware: .*|Firmware: <b>$ENV{TAG_VERSION}</b>|' index.html
 
     - name: Commit data to branch gh-pages-webinstaller
-      env:
-        VER: ${{ steps.rel.outputs.tag }}
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
         # Add only the installer files, never the downloaded ./artifacts
         git add firmware index.html "manifest_${PLAT}.json"
         if ! git diff --cached --quiet; then
-          git commit -m "${PLAT}: Update firmware files to ${VER}"
+          git commit -m "${PLAT}: Update firmware files to ${RELEASE_TAG}"
           git push
         fi

@@ -425,22 +425,26 @@
       return value.substring(0, 10) + ' ' + value.substring(11, 19) + ' (UTC' + value.substring(19, 24) + ')';
     }
 
+    // Parse version string:
+    // - Tagged release: v1.2.3 or v1.2.3+
+    // - PR build: pr<N>-<branch>-<rev7>[+]
+    // - Branch build: <branch>-<rev7>[+]
     function renderVersionField(targetId, versionValue) {
       const target = document.getElementById(targetId);
       if (!target) return;
       target.textContent = '';
 
-      const val = versionValue != null ? String(versionValue).trim() : '';
+      const rawVal = versionValue != null ? String(versionValue).trim() : '';
 
       // Handle empty or unknown values
-      if (!val || val === '?') {
+      if (!rawVal || rawVal === '?') {
         target.textContent = 'Unknown';
         return;
       }
 
       // WebUI version (or any non-firmware field) renders as plain text
       if (targetId === 'html_version') {
-        target.textContent = val;
+        target.textContent = rawVal;
         return;
       }
 
@@ -455,35 +459,49 @@
         target.appendChild(a);
       };
 
-      // Dirty build: no commit/tag to link to, show as plain text
-      if (val.endsWith('+') || val === 'N/A') {
-        target.textContent = val;
+      if (rawVal === 'N/A') {
+        target.textContent = rawVal;
         return;
       }
 
-      // Untagged build: [pr<N>-]<branch>-<rev7>
-      const m = val.match(/^(?:pr(\d+)-)?(.+)-([0-9a-f]{7})$/);
-      if (m) {
-        const [, pr, branch, commit] = m;
-        if (pr) {
-          // PR build: link the PR only (head commit may not exist in the main repo, e.g. forks)
-          addLink(`${REPO}/pull/${pr}`, `pr${pr}`);
-          target.append(document.createTextNode(`-${branch}-${commit}`));
-        } else {
-          target.append(document.createTextNode(`${branch}-`));
-          addLink(`${REPO}/commit/${commit}`, commit);
+      const isDirty = rawVal.endsWith('+');
+      const val = isDirty ? rawVal.slice(0, -1) : rawVal;
+
+      // 1. Release tag (v1.2.3 / 1.2.3): evaluated first so tags are never mistaken for commits
+      if (/^v?\d+(\.\d+)+/.test(val) && !/[0-9a-f]{7,}$/.test(val)) {
+        addLink(`${REPO}/releases/tag/${encodeURIComponent(val)}`, val);
+        if (isDirty) {
+          target.append(document.createTextNode('+'));
         }
         return;
       }
 
-      // Release tag (v1.2.3 / 1.2.3): link to the release
-      if (/^v?\d+(\.\d+)+/.test(val)) {
-        addLink(`${REPO}/releases/tag/${encodeURIComponent(val)}`, val);
+      // 2. Strict PR build check: requires explicit `pr<digits>-` prefix followed by branch and min. 7-char hash
+      const prMatch = val.match(/^pr(\d+)-(.+)-([0-9a-f]{7,})$/);
+      if (prMatch) {
+        const [, pr, branch, commit] = prMatch;
+        addLink(`${REPO}/pull/${pr}`, `pr${pr}`);
+        target.append(document.createTextNode(`-${branch}-${commit}`));
+        if (isDirty) {
+          target.append(document.createTextNode('+'));
+        }
         return;
       }
 
-      // Anything else (e.g. "branch-unknown"): plain text
-      target.textContent = val;
+      // 3. Standard branch build: <branch>-<rev7>
+      const branchMatch = val.match(/^(.+)-([0-9a-f]{7,})$/);
+      if (branchMatch) {
+        const [, branch, commit] = branchMatch;
+        target.append(document.createTextNode(`${branch}-`));
+        addLink(`${REPO}/commit/${commit}`, commit);
+        if (isDirty) {
+          target.append(document.createTextNode('+'));
+        }
+        return;
+      }
+
+      // Anything else: plain text
+      target.textContent = rawVal;
     }
 
     async function loadInfoData() {
