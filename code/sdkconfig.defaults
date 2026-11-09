@@ -5,12 +5,6 @@
 # sdkconfig.{board_type} to apply your changes!
 ##################################################
 
-#
-# Application manager
-#
-CONFIG_APP_EXCLUDE_PROJECT_VER_VAR=y
-CONFIG_APP_EXCLUDE_PROJECT_NAME_VAR=y
-
 
 #
 # Bootloader config
