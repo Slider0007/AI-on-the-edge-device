@@ -52,6 +52,6 @@ The following device status topics gets published during the `Publish To MQTT` s
 
 | Topic                       | Description                 | Output
 |:----------------------------|:----------------------------|:--------------     
-| `firmware_version`          | Firmware Version (MCU)      | `v17.0.0 (1234567)`
+| `firmware_version`          | Firmware Version (MCU)      | `v18.0.0-SLFork`
 
 

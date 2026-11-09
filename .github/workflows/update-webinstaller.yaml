@@ -1,7 +1,7 @@
 name: Update Web Installer
 
 # Updates branch gh-pages-webinstaller with the firmware files of a release.
-# - Called from the release workflow (build-release.yml) with the new tag or
+# - Called from the release workflow (build-release.yaml) with the new tag or
 # - start manually using the latest tag.
 
 on:

@@ -32,6 +32,7 @@ Both generated files (version.cpp, version.txt) should be in .gitignore.
 
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -130,7 +131,8 @@ def is_dirty(project_dir, ignore_paths):
     stat-only changes don't give false positives."""
     top = git(project_dir, "rev-parse", "--show-toplevel")
     if top.returncode != 0:
-        return False
+        warn(f"git rev-parse --show-toplevel failed: {top.stderr.strip()}")
+        return "ERROR"
     toplevel = top.stdout.strip()
 
     res = git(project_dir, "status", "--porcelain", "-z", "-uall")
@@ -229,6 +231,14 @@ def collect_git_info(project_dir, ignore_paths):
     return info
 
 
+def render_cpp(v):
+    replacements = {f"@{key}@": c_escape(val) for key, val in v.items()}
+    if not replacements:
+        return CPP_TEMPLATE
+    pattern = "|".join(re.escape(key) for key in replacements)
+    return re.sub(pattern, lambda match: replacements[match.group(0)], CPP_TEMPLATE)
+
+
 # --------------------------------------------------------------------------
 # version.cpp template (placeholders instead of f-string brace escaping)
 # --------------------------------------------------------------------------
@@ -278,14 +288,6 @@ const esp_app_desc_t esp_app_desc __attribute__((section(".rodata_desc"), used))
 #endif
 };
 """
-
-
-def render_cpp(v):
-    out = CPP_TEMPLATE
-    for key, val in v.items():
-        out = out.replace(f"@{key}@", c_escape(val))
-    return out
-
 
 # --------------------------------------------------------------------------
 # Main

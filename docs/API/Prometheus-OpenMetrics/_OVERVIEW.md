@@ -50,7 +50,7 @@ All information are static and provided by labels. The metric value is set to `1
 
 | Metric Label        | Description                 | Output
 |:--------------------|:----------------------------|:--------------     
-| `firmware_version`  | Firmware Version (MCU)      | `v17.0.0 (1234567)`
+| `firmware_version`  | Firmware Version (MCU)      | `v18.0.0-SLFork`
 
 
 #### 4. Heap Data Metric `ai_on_the_edge_device_heap_data_bytes`
