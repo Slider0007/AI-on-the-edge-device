@@ -35,6 +35,7 @@ std::string getWlanMac(void);
 std::string getWifiSsid(void);
 int getWifiChannel(void);
 int getWifiRssi(void);
+bool getWifiPowerSavingEnabled(void);
 
 bool getWlanFallbackActive(void);
 

@@ -883,7 +883,7 @@
       async loadRSSI() {
         const res = await apiCall('/info?type=wlan_rssi');
         if (!res.ok) return;
-        renderRssi(res.ok ? parseInt(res.data, 10) : null);
+        renderRssi(res.ok ? parseInt(res.data, 10) : null, document.getElementById('wlan_rssi'));
       },
     };
 

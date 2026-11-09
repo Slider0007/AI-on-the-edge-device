@@ -802,8 +802,11 @@ void ConfigClass::parseSectionNetwork(bool init, bool unityTest)
 
 void ConfigClass::parseSectionSystem()
 {
-    cJsonUtils::parseIntClamped(cJSON_GetObjectItem(cJsonObject, "system"), {"cpufrequency"}, cfgDataTemp.sectionSystem.cpuFrequency, 160,
-                                240);
+    cJSON *system = cJSON_GetObjectItem(cJsonObject, "system");
+    auto &section = cfgDataTemp.sectionSystem;
+    cJsonUtils::parseIntClamped(system, {"powermanagement", "cpu", "maxfrequency"}, section.powerManagement.cpu.maxFrequency, 160, 240);
+    cJsonUtils::parseIntClamped(system, {"powermanagement", "wifi", "powermode"}, section.powerManagement.wifi.powerMode, 0,
+                                WIFI_POWERSAVING_MAX - 1);
 }
 
 
@@ -1220,7 +1223,13 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     // System
     // ***************************
     cJSON *system = addObj(cJsonObject, "system");
-    addEl(system, "cpufrequency", cfgDataTemp.sectionSystem.cpuFrequency);
+    cJSON *powerMngt = addObj(system, "powermanagement");
+
+    cJSON *powerMngtCpu = addObj(powerMngt, "cpu");
+    addEl(powerMngtCpu, "maxfrequency", cfgDataTemp.sectionSystem.powerManagement.cpu.maxFrequency);
+
+    cJSON *powerMngtWifi = addObj(powerMngt, "wifi");
+    addEl(powerMngtWifi, "powermode", cfgDataTemp.sectionSystem.powerManagement.wifi.powerMode);
 
 
     // WebUI
