@@ -425,85 +425,6 @@
       return value.substring(0, 10) + ' ' + value.substring(11, 19) + ' (UTC' + value.substring(19, 24) + ')';
     }
 
-    // Parse version string:
-    // - Tagged release: v1.2.3 or v1.2.3+
-    // - PR build: pr<N>-<branch>-<rev7>[+]
-    // - Branch build: <branch>-<rev7>[+]
-    function renderVersionField(targetId, versionValue) {
-      const target = document.getElementById(targetId);
-      if (!target) return;
-      target.textContent = '';
-
-      const rawVal = versionValue != null ? String(versionValue).trim() : '';
-
-      // Handle empty or unknown values
-      if (!rawVal || rawVal === '?') {
-        target.textContent = 'Unknown';
-        return;
-      }
-
-      // WebUI version (or any non-firmware field) renders as plain text
-      if (targetId === 'html_version') {
-        target.textContent = rawVal;
-        return;
-      }
-
-      const REPO = 'https://github.com/Slider0007/AI-on-the-edge-device';
-
-      const addLink = (href, text) => {
-        const a = document.createElement('a');
-        a.href = href;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        a.textContent = text;
-        target.appendChild(a);
-      };
-
-      if (rawVal === 'N/A') {
-        target.textContent = rawVal;
-        return;
-      }
-
-      const isDirty = rawVal.endsWith('+');
-      const val = isDirty ? rawVal.slice(0, -1) : rawVal;
-
-      // 1. Release tag (v1.2.3 / 1.2.3): evaluated first so tags are never mistaken for commits
-      if (/^v?\d+(\.\d+)+/.test(val) && !/[0-9a-f]{7,}$/.test(val)) {
-        addLink(`${REPO}/releases/tag/${encodeURIComponent(val)}`, val);
-        if (isDirty) {
-          target.append(document.createTextNode('+'));
-        }
-        return;
-      }
-
-      // 2. Strict PR build check: requires explicit `pr<digits>-` prefix followed by branch and min. 7-char hash
-      const prMatch = val.match(/^pr(\d+)-(.+)-([0-9a-f]{7,})$/);
-      if (prMatch) {
-        const [, pr, branch, commit] = prMatch;
-        addLink(`${REPO}/pull/${pr}`, `pr${pr}`);
-        target.append(document.createTextNode(`-${branch}-${commit}`));
-        if (isDirty) {
-          target.append(document.createTextNode('+'));
-        }
-        return;
-      }
-
-      // 3. Standard branch build: <branch>-<rev7>
-      const branchMatch = val.match(/^(.+)-([0-9a-f]{7,})$/);
-      if (branchMatch) {
-        const [, branch, commit] = branchMatch;
-        target.append(document.createTextNode(`${branch}-`));
-        addLink(`${REPO}/commit/${commit}`, commit);
-        if (isDirty) {
-          target.append(document.createTextNode('+'));
-        }
-        return;
-      }
-
-      // Anything else: plain text
-      target.textContent = rawVal;
-    }
-
     async function loadInfoData() {
       const res = await apiCallNotify('/info', {}, { action: 'Loading info', parseType: 'json' });
       if (!res.ok || !res.data) return;
@@ -624,8 +545,9 @@
       document.getElementById('heap_spiram_largest_free').textContent = _jsonData.heap_spiram_largest_free + ' byte';
       document.getElementById('heap_spiram_min_free').textContent = _jsonData.heap_spiram_min_free + ' byte';
 
-      renderVersionField('firmware_version', _jsonData.firmware_version);
-      renderVersionField('html_version', _jsonData.html_version);
+      const validateVersion = (v) => (!v || v === '' || v === '?') ? 'Unknown' : v;
+      document.getElementById('firmware_version').textContent = validateVersion(_jsonData.firmware_version);
+      document.getElementById('html_version').textContent = validateVersion(_jsonData.html_version);
 
       document.getElementById('build_time').textContent = formatIsoDatetime(_jsonData.build_time);
 

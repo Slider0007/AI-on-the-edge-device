@@ -35,6 +35,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime, timezone
+import unicodedata
 
 Import("env")  # noqa: F821  (provided by PlatformIO/SCons)
 
@@ -212,7 +213,7 @@ def collect_git_info(project_dir, ignore_paths):
         apply_github_pr_info(info)
 
         # Check dirty status
-        dirty_status = is_dirty(project_dir, [file_version_cpp, file_version_txt])
+        dirty_status = is_dirty(project_dir, ignore_paths)
         if dirty_status == "ERROR":
             msg = "git status check failed; unable to verify clean repository state"
             if os.environ.get("STRICT_VERSION") == "1":
@@ -304,10 +305,16 @@ def generate_version_header():
     custom_rev = env.GetProjectOption("custom_version_rev", os.environ.get("OVERRIDE_GIT_REV", ""))
     force_dirty = str(env.GetProjectOption("custom_version_dirty", os.environ.get("OVERRIDE_DIRTY", "")))
 
-    # Reject control characters in override tag to prevent broken C++ string literals
-    if any(ord(c) < 32 for c in custom_tag):
-        sys.stderr.write("VERSION INFO: [ERROR] OVERRIDE_GIT_TAG contains invalid control characters or newlines.\n")
-        env.Exit(1)
+    # Reject control characters or newlines in overrides
+    for name, val in [
+        ("custom_version_tag / OVERRIDE_GIT_TAG", custom_tag),
+        ("custom_version_branch / OVERRIDE_GIT_BRANCH", custom_branch),
+        ("custom_version_rev / OVERRIDE_GIT_REV", custom_rev),
+        ("custom_version_dirty / OVERRIDE_DIRTY", force_dirty),
+    ]:
+        if val and any(unicodedata.category(c) == "Cc" for c in val):
+            sys.stderr.write(f"VERSION INFO: [ERROR] {name} contains invalid control characters or newlines.\n")
+            env.Exit(1)
 
     git_info = collect_git_info(project_dir, [file_version_cpp, file_version_txt])
 
