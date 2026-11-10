@@ -1128,7 +1128,8 @@ int getWifiRssi(void)
 
 bool getWifiPowerSavingEnabled()
 {
-    if (getNetworkOpmodeType() != NETWORK_OPMODE_TYPE_WLAN) {
+    wifi_mode_t wifiMode;
+    if (esp_wifi_get_mode(&wifiMode) != ESP_OK || wifiMode != WIFI_MODE_STA) {
         return false;
     }
 
