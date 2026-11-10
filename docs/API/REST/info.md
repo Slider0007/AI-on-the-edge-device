@@ -15,7 +15,7 @@ The following infos are available:
 
 | JSON Property / HTML query `type=`   | Description                                        | Output
 |:-------------------------------------|:---------------------------------------------------|:-----------------------
-| `api_name`                           | Name of the API                                    | `info:v4`
+| `api_name`                           | Name of the API                                    | `info:vX`
 | `process_status`                     | Process Status<br><br>Possible States:<br>- `Processing (Automatic)`:  Timer-controlled automatic processing<br>- `Processing (Triggered Only)`: Manual triggered processing only<br>- `Not Processing / Not Ready`: Initializing / Initialization failed | `Processing (Automatic)`
 | `process_interval`                   | Process Interval [min]                             | `2.0`
 | `process_time`                       | Process Time [sec]                                 | `25`
@@ -31,9 +31,10 @@ The following infos are available:
 | `device_uptime`                      | Device Uptime [sec]                                | `496`
 | `network_opmode`                     | Network Operation Mode<br><br>Possible states:<br>- `WLAN Client`<br>- `WLAN Access Point`<br>- `Ethernet`<br>- `Disabled` | `WLAN Client`
 | `connection_status`                  | Connection Status<br><br>Possible states:<br>- `Connected`<br>- `Disconnected` | `Connected`
-| `wlan_ssid`                          | WLAN SSID<br><br>Possible special value:<br>- `undefined`: WLAN disabled | `IOTNETWORK`
-| `wlan_rssi`                          | WLAN Signal Strength [dBm]<br><br>Possible special values:<br>- `-127`: Not connected<br>- `-255`: WLAN disabled | `-58`
-| `wlan_channel`                       | WLAN Channel<br><br>Possible special value:<br>- `-1`: WLAN disabled | `1` 
+| `wlan_ssid`                          | WiFi SSID<br><br>Possible special value:<br>- `undefined`: WLAN disabled | `IOTNETWORK`
+| `wlan_rssi`                          | WiFi Signal Strength [dBm]<br><br>Possible special values:<br>- `-127`: Not connected<br>- `-255`: WLAN disabled | `-58`
+| `wlan_channel`                       | WiFi Channel<br><br>Possible special value:<br>- `-1`: WLAN disabled | `1` 
+| `wifi_powersaving`                   | WiFi Power Saving<br><br>Possible states:<br>- `0`: Disabled<br>- `1`: Enabled | `1` 
 | `mac_address`                        | Device MAC Address                                 | `41:23:D9:01:5E:AA`
 | `network_config`                     | Network Configuration<br><br>Possible states:<br>- `DHCP`<br>- `Static`| `DHCP`
 | `ipv4_address`                       | Device IPv4 Address                                | `192.168.1.4`

@@ -157,6 +157,28 @@ void migrateConfiguration(cJSON *cJsonObject)
         cJsonUtils::parseIntClampedMin(webui, {"autorefresh", "overviewpage", "refreshtime"}, section.autoRefresh.dashboard.refreshTime, 1);
     }
 
+    //*************************************************************************************************
+    // Migrate from version 8 to version 9
+    // Date: November 2026
+    // Description: Make wifi-power saving adjustable (#423)
+    //*************************************************************************************************
+    if (ConfigClass::getInstance()->cfgTmp()->sectionConfig.version == 8) {
+        // Update config version
+        // ---------------------
+        migratedVersion = ConfigClass::getInstance()->cfgTmp()->sectionConfig.version;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.version += 1;
+        ConfigClass::getInstance()->cfgTmp()->sectionConfig.lastModified = ""; // Reset last modified
+        LogFile.writeToFile(ESP_LOG_INFO, TAG,
+                            "cfgData: Migrate v" + std::to_string(migratedVersion) + " > v" +
+                                std::to_string(ConfigClass::getInstance()->cfgTmp()->sectionConfig.version));
+
+        // Update parameter
+        // ---------------------
+        cJSON *system = cJSON_GetObjectItem(cJsonObject, "system");
+        auto &section = ConfigClass::getInstance()->cfgTmp()->sectionSystem;
+        cJsonUtils::parseIntClamped(system, {"cpufrequency"}, section.powerManagement.cpu.maxFrequency, 160, 240);
+    }
+
 
     // -------------------------------------------------------------------------------------------------
     // Backup config file (run only if config migration performed)

@@ -240,7 +240,7 @@
                 <td class="val"><output id="cycle_counter">--</output></td>
               </tr>
               <tr id="wlan_rssi_info">
-                <td class="label">WLAN Signal</td>
+                <td class="label">WiFi Signal</td>
                 <td class="val">
                   <div style="display: flex; align-items: center; gap: 6px; justify-content: flex-end">
                     <output id="wlan_rssi">-</output>
@@ -386,7 +386,7 @@
 
         const rssiInfo = document.getElementById('wlan_rssi_info');
         rssiInfo.style.display = d.wlan_rssi === -255 ? 'none' : ''; // hide the row when the device reports no WLAN
-        renderRssi(d.wlan_rssi);
+        renderRssi(d.wlan_rssi, document.getElementById('wlan_rssi'));
       } catch (e) {
         console.error('Rendering process data failed | ', e);
       }

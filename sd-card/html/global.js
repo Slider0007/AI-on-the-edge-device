@@ -64,8 +64,8 @@ function formatUptime(uptime) {
   return `${days}d ${addZero(hours)}h ${addZero(minutes)}m ${addZero(s % 60)}s`;
 }
 
-function renderRssi(value) {
-  const output = document.getElementById('wlan_rssi');
+function renderRssi(value, outputElement) {
+  const output = outputElement || document.getElementById('wlan_rssi');
   if (!output) return;
 
   const bars = document.querySelectorAll('#rssi_svg .bar');

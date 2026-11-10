@@ -2,7 +2,7 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
 
 {
   "config": {
-    "version": 7,
+    "version": 9,
     "lastmodified": ""
   },
   "operationmode": {
@@ -387,9 +387,16 @@ Modify JSON elements accordingly to test default values and stringfy as compact 
       "processstartinterlock": true
     }
   },
-  "system": {
-    "cpufrequency": 160
-  },
+	"system":	{
+		"powermanagement":	{
+			"cpu":	{
+				"maxfrequency":	160
+			},
+			"wifi":	{
+				"powermode":	1
+			}
+		}
+	},
   "webui": {
     "httpauth": {
       "authmode": 0,

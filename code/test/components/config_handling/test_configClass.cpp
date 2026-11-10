@@ -30,7 +30,7 @@ void test_configJsonParseAndSerialization()
     // Check default values (ESP32CAM device)
     ESP_LOGI(TAG_CFGTEST, "Check default values");
     std::string cfgDataExpexcted =
-        "{\"config\":{\"version\":8,\"lastmodified\":\"\"},\"operationmode\":{\"opmode\":-1,\"automaticprocessinterval\":\"1.00\","
+        "{\"config\":{\"version\":9,\"lastmodified\":\"\"},\"operationmode\":{\"opmode\":-1,\"automaticprocessinterval\":\"1.00\","
         "\"usedemoimages\":false},\"takeimage\":{\"flashlight\":{\"flashtime\":1000,\"flashintensity\":50},\"camera\":{\"cameramodel\":1,"
         "\"camerafrequency\":10,\"imagequality\":12,\"brightness\":0,\"contrast\":0,\"saturation\":0,\"sharpness\":0,"
         "\"exposurecontrolmode\":1,\"autoexposurelevel\":0,\"manualexposurevalue\":300,\"gaincontrolmode\":1,\"manualgainvalue\":0,"
@@ -86,9 +86,9 @@ void test_configJsonParseAndSerialization()
         "\"enabled\":false,\"rssithreshold\":-75}},\"wlanap\":{\"ssid\":\"AI-on-the-Edge "
         "Device\",\"password\":\"\",\"channel\":11,\"ipv4\":{\"ipaddress\":\"192.168.4.1\"}},\"time\":{\"timezone\":\"CET-1CEST,M3.5.0,M10."
         "5.0/"
-        "3\",\"ntp\":{\"timesyncenabled\":true,\"timeserver\":\"\"},\"processstartinterlock\":true}},\"system\":{\"cpufrequency\":160},"
-        "\"webui\":{\"httpauth\":{\"authmode\":0,\"username\":\"aiote\",\"password\":\"\"},\"autorefresh\":{\"dashboard\":{\"enabled\":"
-        "true,\"refreshtime\":5}}}}";
+        "3\",\"ntp\":{\"timesyncenabled\":true,\"timeserver\":\"\"},\"processstartinterlock\":true}},\"system\":{\"powermanagement\":{"
+        "\"cpu\":{\"maxfrequency\":160},\"wifi\":{\"powermode\":1}}},\"webui\":{\"httpauth\":{\"authmode\":0,\"username\":\"aiote\","
+        "\"password\":\"\"},\"autorefresh\":{\"dashboard\":{\"enabled\":true,\"refreshtime\":5}}}}";
     // std::string cfgDataExpexcted(config_json_default_expected_start, config_json_default_expected_end -
     // config_json_default_expected_start);
     ConfigClass::getInstance()->readConfigFile(true); // Use default config

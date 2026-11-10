@@ -161,7 +161,7 @@ bool setCPUFrequency(void)
         return false;
     }
 
-    int cpuFrequency = ConfigClass::getInstance()->get()->sectionSystem.cpuFrequency;
+    const int cpuFrequency = ConfigClass::getInstance()->get()->sectionSystem.powerManagement.cpu.maxFrequency;
     if (cpuFrequency == 160) { // 160 is the default
         // No change needed
     }
@@ -174,7 +174,7 @@ bool setCPUFrequency(void)
         }
     }
     else {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setCpuFrequency: CPU frequency not supported: " + cpuFrequency);
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "setCpuFrequency: CPU frequency not supported: " + std::to_string(cpuFrequency));
         return false;
     }
 

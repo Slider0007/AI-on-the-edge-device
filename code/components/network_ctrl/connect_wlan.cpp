@@ -355,6 +355,8 @@ esp_err_t initWifiClient(void)
     wifiConfig.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;     // Scan all channels instead of stopping after first match
     wifiConfig.sta.sort_method = WIFI_CONNECT_AP_BY_SIGNAL; // Sort by signal strength and keep up to 4 best APs
     wifiConfig.sta.failure_retry_cnt = 5;                   // Number of connection retries station will do before moving to next AP
+    wifiConfig.sta.listen_interval = 0; // Listen interval for power saving when WIFI_PS_MAX_MODEM is set (0 = default (3), 1 = always
+                                        // listen, 2 = listen every 2 beacon intervals, etc., )
 
 #ifdef WLAN_USE_MESH_ROAMING
     wifiConfig.sta.rm_enabled = 1;  // 802.11k (Radio Resource Management)
@@ -394,6 +396,23 @@ esp_err_t initWifiClient(void)
     if (retVal != ESP_OK) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_start: Error: " + intToHexString(retVal));
         return retVal;
+    }
+
+    // Set power management
+    if (ConfigClass::getInstance()->get()->sectionSystem.powerManagement.wifi.powerMode == WIFI_POWERSAVING_WAKEUP_BY_DTIM) {
+        esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Power saving enabled | Wakeup based on DTIM interval");
+    }
+    else if (ConfigClass::getInstance()->get()->sectionSystem.powerManagement.wifi.powerMode == WIFI_POWERSAVING_WAKEUP_BY_INTERVAL) {
+        esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Power saving enabled | Wakeup based on fixed interval");
+    }
+    else if (ConfigClass::getInstance()->get()->sectionSystem.powerManagement.wifi.powerMode == WIFI_POWERSAVING_DISABLED) {
+        esp_wifi_set_ps(WIFI_PS_NONE);
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Power saving disabled");
+    }
+    else {
+        esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
     }
 
     // Set hostname
@@ -1104,6 +1123,22 @@ int getWifiRssi(void)
     }
 
     return -255; // Unknown
+}
+
+
+bool getWifiPowerSavingEnabled()
+{
+    wifi_mode_t wifiMode;
+    if (esp_wifi_get_mode(&wifiMode) != ESP_OK || wifiMode != WIFI_MODE_STA) {
+        return false;
+    }
+
+    wifi_ps_type_t psType;
+    if (esp_wifi_get_ps(&psType) == ESP_OK) {
+        return (psType != WIFI_PS_NONE);
+    }
+
+    return false;
 }
 
 

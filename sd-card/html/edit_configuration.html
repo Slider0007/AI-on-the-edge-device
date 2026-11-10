@@ -2757,18 +2757,52 @@
               </colgroup>
               <tbody>
                 <tr>
-                  <td class="indent1">
-                    <span>CPU Frequency</span>
+                  <td style="padding: 15px 12px 5px 12px; border-top: 1px solid var(--border)" colspan="3">
+                    <b style="color: var(--text-secondary); text-transform: uppercase">Power Management</b>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="indent1" colspan="3">
+                    <span>CPU</span>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="indent2">
+                    <span>Frequency</span>
                   </td>
                   <td>
-                    <form id="system_cpufrequency_form">
-                      <select name="system.cpufrequency" id="system_cpufrequency_value" onchange="(gatherChangedParameter(this.form, true), rebootRequired())">
+                    <form id="system_powermanagement_cpu_maxfrequency_form">
+                      <select name="system.powermanagement.cpu.maxfrequency" id="system_powermanagement_cpu_maxfrequency_value"
+                        onchange="(gatherChangedParameter(this.form, true), rebootRequired())">
                         <option value="160" selected>160 MHz</option>
                         <option value="240">240 MHz</option>
                       </select>
                     </form>
                   </td>
-                  <td style="visibility: hidden">$TOOLTIP_system_cpufrequency</td>
+                  <td style="visibility: hidden">$TOOLTIP_system_powermanagement_cpu_maxfrequency</td>
+                </tr>
+
+                <tr>
+                  <td class="indent1" colspan="3">
+                    <span>WiFi</span>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="indent2"><span>Power Mode</span></td>
+                  <td>
+                    <form id="system_powermanagement_wifi_powermode_form">
+                      <select name="system.powermanagement.wifi.powermode" id="system_powermanagement_wifi_powermode_value"
+                        onchange="gatherChangedParameter(this.form, true), rebootRequired()">
+                        <option value="0">Power Saving Disabled</option>
+                        <option value="1" selected>Power Saving DTIM (Default)</option>
+                        <option value="2">Power Saving Interval</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility: hidden">$TOOLTIP_system_powermanagement_wifi_powermode</td>
                 </tr>
               </tbody>
             </table>
