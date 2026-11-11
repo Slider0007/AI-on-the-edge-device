@@ -578,24 +578,22 @@ CONFIG_WPA_11R_SUPPORT=n
     #endif
 
 //####################################################
-// NULLLAB ESP32S3-CAM
-// https://github.com/nulllaborg/esp32s3-cam
+// NULLLAB ESP32S3-CAM (Mapped for DFRobot DFR1154)
 //####################################################
 #elif defined(BOARD_NULLLAB_ESP32S3CAM)
     #ifndef BOARD_SDCARD_SDMMC_BUS_WIDTH_1
-        #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1              // Only 1 line SD card operation is supported (hardware related)
+        #define BOARD_SDCARD_SDMMC_BUS_WIDTH_1
     #endif
 
-    // SD card (operated with SDMMC peripheral)
-    #define GPIO_SDCARD_CLK                 GPIO_NUM_39
-    #define GPIO_SDCARD_CMD                 GPIO_NUM_38
-    #define GPIO_SDCARD_D0                  GPIO_NUM_40
+    // SD card (SDMMC peripheral mapped to DFRobot physical pins)
+    #define GPIO_SDCARD_CLK                 GPIO_NUM_12     // DFRobot SD CLK
+    #define GPIO_SDCARD_CMD                 GPIO_NUM_11     // DFRobot SD CMD / MOSI
+    #define GPIO_SDCARD_D0                  GPIO_NUM_13     // DFRobot SD D0 / MISO
     #define GPIO_SDCARD_D1                  GPIO_NUM_NC
     #define GPIO_SDCARD_D2                  GPIO_NUM_NC
-    #define GPIO_SDCARD_D3                  GPIO_NUM_NC
+    #define GPIO_SDCARD_D3                  GPIO_NUM_10     // DFRobot SD CS / D3
 
-
-    // Camera pin config (OV2640, OV3660, OV5460)
+    // Camera pin config (OV3660 / DFRobot Default)
     #define GPIO_CAMERA_PWDN       -1
     #define GPIO_CAMERA_RESET      -1
     #define GPIO_CAMERA_XCLK       GPIO_NUM_15
@@ -614,58 +612,34 @@ CONFIG_WPA_11R_SUPPORT=n
     #define GPIO_CAMERA_HREF       GPIO_NUM_7
     #define GPIO_CAMERA_PCLK       GPIO_NUM_13
 
-
-    // LEDs
-    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_2     // Onboard status LED (yellow-green, active high)
-    //#define GPIO_STATUS_LED_ONBOARD_LOWACTIVE            // Enable if status LED is low active
-
-    #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_3     // Onboard flashlight (2x LED, PWM)
-    #define GPIO_FLASHLIGHT_DEFAULT         GPIO_FLASHLIGHT_ONBOARD // Default flashlight GPIO pin (can be modified by activiating GPIO functionality in WebUI)
-
-    #define GPIO_FLASHLIGHT_DEFAULT_USE_PWM                // Default flashlight LED is PWM controlled
-    //#define GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED         // Default flashlight SmartLED (e.g. onboard WS2812X) controlled
-
-    #ifdef GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED
-        #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_TYPE       LED_WS2812 // Flashlight default: SmartLED type
-        #define GPIO_FLASHLIGHT_DEFAULT_SMARTLED_QUANTITY   1          // Flashlight default: SmartLED Quantity
-    #endif
-
+    // LEDs (DFRobot Board)
+    #define GPIO_STATUS_LED_ONBOARD         GPIO_NUM_2
+    #define GPIO_FLASHLIGHT_ONBOARD         GPIO_NUM_3     // DFRobot Flashlight LED
+    #define GPIO_FLASHLIGHT_DEFAULT         GPIO_FLASHLIGHT_ONBOARD
+    #define GPIO_FLASHLIGHT_DEFAULT_USE_PWM
 
     // Improv Serial / Improv WiFi
-    #define BOARD_FEATURE_USB                             // Use USB Serial/JTAG controller console (USB-OTG port)
+    #define BOARD_FEATURE_USB
 
-
-    // Spare GPIO
-    //-------------------------------------------------
-    // Options for usage defintion:
-    // - 'spare': Free to use
-    // - 'restricted: usage': Restricted usable (WebUI expert view)
-    // - 'flashlight-pwm' or 'flashlight-smartled' or 'flashlight-digital' (ON/OFF) -> Map to 'flashlight-default'
-    // --> flashlight-default -> flashlight-smartled (Onboard LED, smartled controlled)
-    //-------------------------------------------------
+    // Spare GPIO Definitions
     #define GPIO_SPARE_PIN_COUNT            6
-
-    #define GPIO_SPARE_1                    GPIO_FLASHLIGHT_DEFAULT // Flashlight default
+    #define GPIO_SPARE_1                    GPIO_FLASHLIGHT_DEFAULT
     #if defined(GPIO_FLASHLIGHT_DEFAULT_USE_PWM)
-        #define GPIO_SPARE_1_USAGE          FLASHLIGHT_PWM          // Define flashlight-default as ...
+        #define GPIO_SPARE_1_USAGE          FLASHLIGHT_PWM
     #elif defined(GPIO_FLASHLIGHT_DEFAULT_USE_SMARTLED)
-        #define GPIO_SPARE_1_USAGE          FLASHLIGHT_SMARTLED     // Define flashlight-default as ...
+        #define GPIO_SPARE_1_USAGE          FLASHLIGHT_SMARTLED
     #else
-        #define GPIO_SPARE_1_USAGE          FLASHLIGHT_DIGITAL      // Define flashlight-default as ...
+        #define GPIO_SPARE_1_USAGE          FLASHLIGHT_DIGITAL
     #endif
 
     #define GPIO_SPARE_2                    GPIO_NUM_14
     #define GPIO_SPARE_2_USAGE              "spare"
-
-    #define GPIO_SPARE_3                    GPIO_NUM_41
+    #define GPIO_SPARE_3                    GPIO_NUM_21
     #define GPIO_SPARE_3_USAGE              "spare"
-
-    #define GPIO_SPARE_4                    GPIO_NUM_42
+    #define GPIO_SPARE_4                    GPIO_NUM_46
     #define GPIO_SPARE_4_USAGE              "spare"
-
     #define GPIO_SPARE_5                    GPIO_NUM_47
     #define GPIO_SPARE_5_USAGE              "spare"
-
     #define GPIO_SPARE_6                    GPIO_NUM_48
     #define GPIO_SPARE_6_USAGE              "spare"
 
