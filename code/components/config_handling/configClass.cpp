@@ -193,10 +193,9 @@ bool ConfigClass::parseJsonFromFile(const char *jsonStr, bool unityTest)
         }
     } // Free serialization arena
 
-    // Persist updated configuration
+    // A failed write does not invalidate the configuration already loaded into memory.
     if (!unityTest && writeConfigFile() != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: Failed to write configuration file");
-        return false;
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "parseJsonFromFile: Failed to write configuration file | Using loaded configuration");
     }
 
     return true;
