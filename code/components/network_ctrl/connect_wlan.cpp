@@ -399,20 +399,27 @@ esp_err_t initWifiClient(void)
     }
 
     // Set power management
-    if (ConfigClass::getInstance()->get()->sectionSystem.powerManagement.wifi.powerMode == WIFI_POWERSAVING_WAKEUP_BY_DTIM) {
-        esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Power saving enabled | Wakeup based on DTIM interval");
+    const int powerMode = ConfigClass::getInstance()->get()->sectionSystem.powerManagement.wifi.powerMode;
+    wifi_ps_type_t requestedMode = WIFI_PS_MIN_MODEM;
+    const char *acceptedMessage = nullptr;
+    if (powerMode == WIFI_POWERSAVING_WAKEUP_BY_DTIM) {
+        acceptedMessage = "Power saving setting accepted | Wakeup based on DTIM interval";
     }
-    else if (ConfigClass::getInstance()->get()->sectionSystem.powerManagement.wifi.powerMode == WIFI_POWERSAVING_WAKEUP_BY_INTERVAL) {
-        esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Power saving enabled | Wakeup based on fixed interval");
+    else if (powerMode == WIFI_POWERSAVING_WAKEUP_BY_INTERVAL) {
+        requestedMode = WIFI_PS_MAX_MODEM;
+        acceptedMessage = "Power saving setting accepted | Wakeup based on fixed interval";
     }
-    else if (ConfigClass::getInstance()->get()->sectionSystem.powerManagement.wifi.powerMode == WIFI_POWERSAVING_DISABLED) {
-        esp_wifi_set_ps(WIFI_PS_NONE);
-        LogFile.writeToFile(ESP_LOG_INFO, TAG, "Power saving disabled");
+    else if (powerMode == WIFI_POWERSAVING_DISABLED) {
+        requestedMode = WIFI_PS_NONE;
+        acceptedMessage = "Power saving setting accepted | Disable";
     }
-    else {
-        esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+
+    retVal = esp_wifi_set_ps(requestedMode);
+    if (retVal != ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_ps: Error: " + intToHexString(retVal));
+    }
+    else if (acceptedMessage != nullptr) {
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, acceptedMessage);
     }
 
     // Set hostname
@@ -1126,19 +1133,19 @@ int getWifiRssi(void)
 }
 
 
-bool getWifiPowerSavingEnabled()
+int getWifiPowerSavingStatus()
 {
     wifi_mode_t wifiMode;
     if (esp_wifi_get_mode(&wifiMode) != ESP_OK || wifiMode != WIFI_MODE_STA) {
-        return false;
+        return -1; // Unavailable
     }
 
     wifi_ps_type_t psType;
     if (esp_wifi_get_ps(&psType) == ESP_OK) {
-        return (psType != WIFI_PS_NONE);
+        return psType == WIFI_PS_NONE ? 0 : 1;
     }
 
-    return false;
+    return -1; // Unavailable
 }
 
 

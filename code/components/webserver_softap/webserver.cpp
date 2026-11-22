@@ -158,7 +158,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         if (cJSON_AddNumberToObject(cJSONObject, "wlan_channel", getWifiChannel()) == NULL) {
             retVal = ESP_FAIL;
         }
-        if (cJSON_AddNumberToObject(cJSONObject, "wifi_powersaving", getWifiPowerSavingEnabled()) == NULL) {
+        if (cJSON_AddNumberToObject(cJSONObject, "wifi_powersaving", getWifiPowerSavingStatus()) == NULL) {
             retVal = ESP_FAIL;
         }
         if (cJSON_AddStringToObject(cJSONObject, "mac_address", getMac().c_str()) == NULL) {
@@ -383,7 +383,7 @@ esp_err_t handler_get_info(httpd_req_t *req)
         return ESP_OK;
     }
     else if (type.compare("wifi_powersaving") == 0) {
-        httpd_resp_sendstr(req, std::to_string(getWifiPowerSavingEnabled()).c_str());
+        httpd_resp_sendstr(req, std::to_string(getWifiPowerSavingStatus()).c_str());
         return ESP_OK;
     }
     else if (type.compare("mac_address") == 0) {

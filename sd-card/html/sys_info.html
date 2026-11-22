@@ -517,13 +517,17 @@
 
       // Show only if info relevant (Connected via wifi)
       if (_jsonData.network_opmode == "WLAN Client") {
-        if (_jsonData.wifi_powersaving > 0) {
+        if (_jsonData.wifi_powersaving === 1) {
           document.getElementById("wifi_powersaving").value = "Enabled";
           addClassToElement("wifi_powersaving", "badge-success");
         }
-        else {
+        else if (_jsonData.wifi_powersaving === 0) {
           document.getElementById("wifi_powersaving").value = "Disabled";
           addClassToElement("wifi_powersaving", "badge-disabled");
+        }
+        else {
+          document.getElementById("wifi_powersaving").value = "Unavailable";
+          addClassToElement("wifi_powersaving", "badge-warning");
         }
       }
       else {
