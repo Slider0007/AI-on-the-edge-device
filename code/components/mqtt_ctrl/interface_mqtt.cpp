@@ -56,7 +56,7 @@ bool publishMqttData(std::string _key, std::string _content, int _qos, bool _ret
     }
 
     if (mqttState.failedOnCycle == getFlowCycleCounter()) { // Already a failed transmission in this cycle
-        return true;                                        // Fail quietly
+        return false;                                       // Fail quietly
     }
 
     startMqttClient(); // Restart client if not started yet/anymore
