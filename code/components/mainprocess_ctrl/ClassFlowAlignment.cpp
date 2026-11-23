@@ -14,8 +14,6 @@
 
 
 static const char *TAG = "ALIGN";
-static constexpr int ALIGNMENT_GEOMETRY_ERROR = -1;
-static constexpr int ALIGNMENT_MATCH_ERROR = -2;
 
 
 ClassFlowAlignment::ClassFlowAlignment()
@@ -138,11 +136,12 @@ bool ClassFlowAlignment::doFlow(std::string time)
             LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                 "Fine alignment unsuccessful. Use alignment marker areas with sharp edges, unique shapes and high contrast "
                                 "on a sharply focused image");
-            setFlowStateHandlerEvent(ALIGNMENT_GEOMETRY_ERROR);
+            setFlowStateHandlerEvent(alignRetval);
         }
         else if (alignRetval != TPL_MATCH_OK) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Fine alignment aborted. Template match status: " + std::to_string(alignRetval));
-            setFlowStateHandlerEvent(ALIGNMENT_MATCH_ERROR);
+            // Flow errors must be negative, but ESP_ERR_TIMEOUT is positive.
+            setFlowStateHandlerEvent(alignRetval > TPL_MATCH_OK ? -alignRetval : alignRetval);
         }
 
         drawAlignmentMarker(imgAlgRoi);
@@ -173,7 +172,7 @@ void ClassFlowAlignment::doPostProcessEventHandling()
 {
     // Post cycle process handling can be included here. Function is called after processing cycle is completed
     for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
-        if (cfgDataPtr->debug.saveDebugInfo && getFlowState()->EventCode[i] == ALIGNMENT_GEOMETRY_ERROR) {
+        if (cfgDataPtr->debug.saveDebugInfo && getFlowState()->EventCode[i] == TPL_MATCH_FAILED) {
             time_t actualtime;
             time(&actualtime);
 
