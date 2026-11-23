@@ -130,7 +130,6 @@
                     <input type="number" min="1" name="imagealignment.marker.0.x" id="imagealignment_marker_x_value" onchange="
                           !validity.rangeUnderflow || (value = 1);
                           onValueManualChanged();
-                          gatherChangedParameter(this.form, true);
                         " />
                   </form>
                 </td>
@@ -151,7 +150,6 @@
                     <input type="number" min="1" name="imagealignment.marker.0.y" id="imagealignment_marker_y_value" onchange="
                           !validity.rangeUnderflow || (value = 1);
                           onValueManualChanged();
-                          gatherChangedParameter(this.form, true);
                         " />
                   </form>
                 </td>
@@ -195,6 +193,8 @@
     let drag = false;
     let marker_selected = 0;
     let markerRoi;
+    let stagedMarkers = [];
+    let markerOperationPending = false;
     let noReferenceImage = false;
     let img1px = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 
@@ -232,54 +232,60 @@
       rect.startX = document.getElementById('imagealignment_marker_x_value').value = markerRoi[marker_selected].x;
       rect.startY = document.getElementById('imagealignment_marker_y_value').value = markerRoi[marker_selected].y;
 
-      // Gather all form changes
-      let classEl = document.getElementsByClassName('form_alignment_marker');
-      for (let i = 0; i < classEl.length; i++) {
-        for (let j = 0; j < classEl[i].elements.length; j++) {
-          gatherChangedParameter(classEl[i].elements[j].form, true);
-        }
-      }
-
       RefreshDraw();
     }
 
+    function setMarkerOperationPending(pending) {
+      markerOperationPending = pending;
+      document.getElementById('updatemarker').disabled = pending;
+      document.getElementById('savemarker').disabled = pending || !stagedMarkers.some(Boolean);
+    }
+
     async function RequestMarkerCut() {
+      if (markerOperationPending) return;
       if (!Array.isArray(markerRoi) || !markerRoi[marker_selected]) {
         firework.launch('Marker data not initialized yet. Please wait a moment and retry.', 'warning', 4000);
         return;
       }
 
-      const roi = markerRoi[marker_selected];
-      roi.x = parseInt(document.getElementById('imagealignment_marker_x_value').value);
-      roi.y = parseInt(document.getElementById('imagealignment_marker_y_value').value);
-      roi.dx = parseInt(document.getElementById('imagealignment_marker_dx_value').value);
-      roi.dy = parseInt(document.getElementById('imagealignment_marker_dy_value').value);
+      const index = marker_selected;
+      const x = parseInt(document.getElementById('imagealignment_marker_x_value').value);
+      const y = parseInt(document.getElementById('imagealignment_marker_y_value').value);
+      const dx = parseInt(document.getElementById('imagealignment_marker_dx_value').value);
+      const dy = parseInt(document.getElementById('imagealignment_marker_dy_value').value);
+      const endpoint = `/editflow?task=cutref&in=/config/reference.jpg&out=/img_tmp/marker${index + 1}.jpg` +
+        `&x=${x}&y=${y}&dx=${dx}&dy=${dy}`;
 
-      const endpoint = `/editflow?task=cutref&in=/config/reference.jpg&out=/img_tmp/marker${marker_selected + 1}.jpg` +
-        `&x=${roi.x}&y=${roi.y}&dx=${roi.dx}&dy=${roi.dy}`;
+      setMarkerOperationPending(true);
+      try {
+        const res = await apiCallNotify(endpoint, {}, {
+          action: 'Marker update', loadingMsg: 'Request marker update...', resultMsg: 'Marker successfully updated',
+          httpObj: {
+            405: (r) => ({
+              msg: `Marker update available in IDLE state only. Please retry shortly. [${String(r.data).split(' | ')[1]?.trim() || 'Unknown State'}]`,
+              type: 'warning',
+              time: 2000,
+            }),
+          }
+        });
 
-      const res = await apiCallNotify(endpoint, {}, {
-        action: 'Marker update', loadingMsg: 'Request marker update...', resultMsg: 'Marker successfully updated',
-        httpObj: {
-          405: (r) => ({
-            msg: `Marker update available in IDLE state only. Please retry shortly. [${String(r.data).split(' | ')[1]?.trim() || 'Unknown State'}]`,
-            type: 'warning',
-            time: 2000,
-          }),
+        const previous = stagedMarkers[index];
+        if (res.ok) {
+          stagedMarkers[index] = { x, y };
+        } else if (res.status !== 403 && res.status !== 405) {
+          // The temporary image may have been overwritten before the response failed.
+          delete stagedMarkers[index];
         }
-      });
-
-      document.getElementById('savemarker').disabled = false;
-      if (!res.ok) return;
-
-      roi.modified = true;
-      RefreshMarker();
+        if (stagedMarkers[index] !== previous && marker_selected === index) RefreshMarker();
+      } finally {
+        setMarkerOperationPending(false);
+      }
     }
 
     function RefreshMarker() {
       // Load marker image
       let filenameurl = '/config/marker' + (marker_selected + 1).toString() + '.jpg';
-      if (markerRoi[marker_selected].modified) filenameurl = '/img_tmp/marker' + (marker_selected + 1).toString() + '.jpg';
+      if (stagedMarkers[marker_selected]) filenameurl = '/img_tmp/marker' + (marker_selected + 1).toString() + '.jpg';
 
       document.getElementById('marker_image').src =
         getDomainname() + '/fileserver' + filenameurl + '?' + Math.floor(Math.random() * 1000000 + 1);
@@ -607,21 +613,24 @@
     });
 
     async function saveToConfig() {
+      if (markerOperationPending || !stagedMarkers.some(Boolean)) return;
       if (!confirm('Are you sure you want to save the new alignment marker configuration?')) return;
 
-      const saveBtn = document.getElementById('savemarker');
-      saveBtn.disabled = true;
-
+      setMarkerOperationPending(true);
       try {
-        for (let i = 0; i < markerRoi.length; i++) {
-          if (markerRoi[i].modified) {
+        const savedMarkers = getConfigFromStorage().imagealignment.marker;
+        const marker = savedMarkers.map((saved, i) => stagedMarkers[i] || saved);
+        for (let i = 0; i < stagedMarkers.length; i++) {
+          if (stagedMarkers[i]) {
             await apiCopy(`/img_tmp/marker${i + 1}.jpg`, `/config/marker${i + 1}.jpg`);
           }
         }
-        await saveConfig(JSON.stringify(jsonConfigModifiedDelta), true);
+        await saveConfig(JSON.stringify({ imagealignment: { marker } }), true);
+        stagedMarkers = [];
       } catch (error) {
-        saveBtn.disabled = false;
         console.error('Save marker config failed: ', error);
+      } finally {
+        setMarkerOperationPending(false);
       }
     }
 
@@ -634,12 +643,7 @@
     }
 
     function loadConfigData() {
-      jsonConfigModifiedDelta = {}; // Reset modified parameter container
-      jsonConfig = getConfigFromStorage(); // Get config
-      jsonConfigModifiedDelta.imagealignment = new Object();
-      jsonConfigModifiedDelta.imagealignment.marker = structuredClone(jsonConfig.imagealignment.marker);
-      markerRoi = jsonConfigModifiedDelta.imagealignment.marker; // Use shorter name variable
-
+      markerRoi = structuredClone(getConfigFromStorage().imagealignment.marker);
       RefreshMarker();
     }
 
