@@ -146,6 +146,8 @@
       if (sel.selectedIndex === -1) return;
 
       const sequenceName = sel.options[sel.selectedIndex].text;
+      const inputField = document.getElementById('input_fallbackvalue');
+      inputField.value = '';
       resetResultUI();
       const requestToken = ++fallbackLoadRequestToken;
 
@@ -169,12 +171,11 @@
       if (rawValueRes.ok) {
         const rawLines = rawValueRes.data ? rawValueRes.data.split(/\r?\n/) : [];
         const targetLine = rawLines.map((line) => line.split('\t')).find((parts) => parts[0] === sequenceName);
+        const rawValue = targetLine?.[1]?.trim() ?? '';
+        const value = Number(rawValue);
 
-        if (targetLine && targetLine[1] !== undefined && targetLine[1].trim() !== '') {
-          const val = parseFloat(targetLine[1]);
-          if (!Number.isNaN(val)) {
-            document.getElementById('input_fallbackvalue').value = val;
-          }
+        if (/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(rawValue) && Number.isFinite(value)) {
+          inputField.value = value;
         }
       }
     }
