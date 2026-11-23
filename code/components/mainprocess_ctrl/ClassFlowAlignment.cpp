@@ -14,6 +14,8 @@
 
 
 static const char *TAG = "ALIGN";
+static constexpr int ALIGNMENT_GEOMETRY_ERROR = -1;
+static constexpr int ALIGNMENT_MATCH_ERROR = -2;
 
 
 ClassFlowAlignment::ClassFlowAlignment()
@@ -132,11 +134,15 @@ bool ClassFlowAlignment::doFlow(std::string time)
         cfgDataPtr->alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_3CH) {
         TplMatchStatus alignRetval = CImageTplMatch::invokeTplMatch(*flowImageData->imgProcess, imgAlgRoi, alignmentMarker[0],
                                                                     alignmentMarker[1]);
-        if (alignRetval == TPL_MATCH_FAILED) { // Alignment not successful
+        if (alignRetval == TPL_MATCH_FAILED) {
             LogFile.writeToFile(ESP_LOG_ERROR, TAG,
                                 "Fine alignment unsuccessful. Use alignment marker areas with sharp edges, unique shapes and high contrast "
                                 "on a sharply focused image");
-            setFlowStateHandlerEvent(-1); // Set error event code for post cycle error handler 'doPostProcessEventHandling'
+            setFlowStateHandlerEvent(ALIGNMENT_GEOMETRY_ERROR);
+        }
+        else if (alignRetval != TPL_MATCH_OK) {
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Fine alignment aborted. Template match status: " + std::to_string(alignRetval));
+            setFlowStateHandlerEvent(ALIGNMENT_MATCH_ERROR);
         }
 
         drawAlignmentMarker(imgAlgRoi);
@@ -167,8 +173,7 @@ void ClassFlowAlignment::doPostProcessEventHandling()
 {
     // Post cycle process handling can be included here. Function is called after processing cycle is completed
     for (int i = 0; i < getFlowState()->EventCode.size(); i++) {
-        if (cfgDataPtr->debug.saveDebugInfo && getFlowState()->EventCode[i] == -1) { // If saving error logs enabled and alignment failed
-                                                                                     // event
+        if (cfgDataPtr->debug.saveDebugInfo && getFlowState()->EventCode[i] == ALIGNMENT_GEOMETRY_ERROR) {
             time_t actualtime;
             time(&actualtime);
 
