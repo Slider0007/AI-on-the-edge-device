@@ -1,8 +1,8 @@
-# Parameter: Search Field Y
+# Parameter: Search Window Size Y
 
 |                   | WebUI               | REST API
 |:---               |:---                 |:----
-| Parameter Name    | Search Field Y      | searchfield.y
+| Parameter Name    | Search Window Size Y | searchfield.y
 | Default Value     | `20`                | `20`
 | Input Range       | `1` .. &infin;      | `1` .. &infin;
 | Unit              | Pixel               | Pixel  

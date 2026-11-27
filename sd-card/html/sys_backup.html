@@ -435,8 +435,8 @@
         const elapsed = Date.now() - start;
         _('progress-restore').value = Math.min(Math.round(elapsed / 1250), 100);
 
-        // Start polling after ~8 seconds
-        if (elapsed < 8000) continue;
+        // Start polling after ~12 seconds
+        if (elapsed < 12000) continue;
 
         const res = await apiCall('/index.html', { timeout: 2000 });
         if (res.ok) {
