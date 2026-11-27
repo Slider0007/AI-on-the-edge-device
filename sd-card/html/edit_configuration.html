@@ -874,9 +874,9 @@
                   <td>
                     <form id="digit_model_form">
                       <select required class="select_large" name="digit.model" id="digit_model_value" onchange="setClassVisibility('classvisibility_digit_model_class11',
-														$(digit_enabled_value).val() && this.value.includes('class11'));
+														$(digit_enabled_value).val() === 'true' && this.value.includes('class11'));
 							              setClassVisibility('classvisibility_digit_model_cont',
-                            $(digit_enabled_value).val() && this.value.includes('cont'));
+                            $(digit_enabled_value).val() === 'true'&& this.value.includes('cont'));
                             gatherChangedParameter(this.form)"></select>
                     </form>
                   </td>
@@ -2126,8 +2126,7 @@
             <form id="gpio_customizationenabled_form" style="text-transform: none; width: 298px; flex-shrink: 0">
               <select style="font-weight: bold" class="classvisibility_init" name="gpio.customizationenabled" id="gpio_customizationenabled_value" onchange="
                     setClassVisibility('classvisibility_gpio_customizationenabled', this.value);
-                    /* this.value == 'true' ? $('[id$=\'pinenabled_value\']').trigger('change') : null; */
-                    refreshGpioUi();
+                    this.value == 'true' ? $('[id$=\'pinenabled_value\']').trigger('change') : null;
                     gatherChangedParameter(this.form);
                   ">
                 <option value="false" selected>Disabled</option>
