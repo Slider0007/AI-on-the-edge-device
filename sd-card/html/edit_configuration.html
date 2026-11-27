@@ -3171,7 +3171,7 @@
         if (idx < 0 && p.pinenabled) idx = i;
       });
       sel.prop('selectedIndex', Math.max(idx, 0));
-      gpioPinSelectAfterChange(true);   // ends in refreshGpioUi()
+      gpioPinSelectAfterChange();
     }
 
     function getGpioPinUsage(gpioNumberSelected) {
@@ -3204,27 +3204,24 @@
     }
 
     function gpioPinModeChanged() {
-      const sel = $("[id$='gpionumber_value']")[0];
-      const pin = jsonConfig.gpio.gpiopin.find(p => p.gpionumber == sel.value);
-      const usage = pin?.gpiousage || '';
-      const pwm = usage == 'flashlight-pwm';
-      const smartled = usage == 'flashlight-smartled';
-      const flashlightgpiomapping = document.getElementById('takeimage_flashlightgpiomapping_value');
+      let pwm = false;
+      let smartled = false;
 
       for (let i = 0; i < jsonConfig.gpio.gpiopin.length; ++i) {
+        if (jsonConfig.gpio.gpiopin[i].gpiousage == 'flashlight-pwm') pwm = true;
+        if (jsonConfig.gpio.gpiopin[i].gpiousage == 'flashlight-smartled') smartled = true;
+
         if (document.getElementById('gpio_customizationenabled_value').value == 'true') {
-          if (flashlightgpiomapping) {
-            flashlightgpiomapping.innerText = 'Customized [GPIO Section]';
-          }
+          document.getElementById('takeimage_flashlightgpiomapping_value').innerText = 'Customized [GPIO Section]';
         } else {
+          const usage = jsonConfig.gpio.gpiopin[i].gpiousage || '';
           if (usage.substring(0, 10) == 'flashlight') {
-            if (flashlightgpiomapping) {
-              flashlightgpiomapping.innerText =
-                'Board Default [GPIO' + jsonConfig.gpio.gpiopin[i].gpionumber + ', ' + usage.substring(11).toUpperCase() + ']';
-            }
+            document.getElementById('takeimage_flashlightgpiomapping_value').innerText =
+              'Board Default [GPIO' + jsonConfig.gpio.gpiopin[i].gpionumber + ', ' + usage.substring(11).toUpperCase() + ']';
           }
         }
       }
+
       // Pin disabled, stopp here (code above needed to show flashlight mapping indicator)
       if (document.querySelectorAll('[id$="pinenabled_value"]')[0].value == 'false') return;
       let elPinMode = document.querySelectorAll('[id$="pinmode_value"]')[0];
@@ -3281,10 +3278,10 @@
 
     function refreshGpioUi() {
       const sel = $("[id$='gpionumber_value']")[0];
-      getGpioPinUsage(parseInt(sel.value));          // 1. option availability + fallback
+      getGpioPinUsage(parseInt(sel.value));
       const enabled = $("[id$='pinenabled_value']")[0].value == 'true';
       setClassVisibility('classvisibility_gpio_gpiopin_pinenabled', enabled);
-      gpioPinModeChanged();                          // 2. depends on valid pinmode
+      gpioPinModeChanged();
     }
 
     function sequenceSelectAfterChange(classEl, selectEl) {
