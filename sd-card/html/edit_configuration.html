@@ -563,7 +563,7 @@
                 </tr>
 
                 <tr class="classvisibility_takeimage_gaincontrolmode_manual">
-                  <td class="indent1">
+                  <td class="indent2">
                     <span>Manual Gain Value</span>
                   </td>
                   <td>
@@ -767,7 +767,7 @@
 
                 <tr class="classvisibility_imagealignment_algo_3">
                   <td class="indent2">
-                    <span>Search Field X</span>
+                    <span>Search Window Size X</span>
                   </td>
                   <td>
                     <form id="imagealignment_searchfield_x_form">
@@ -783,7 +783,7 @@
 
                 <tr class="classvisibility_imagealignment_algo_3">
                   <td class="indent2">
-                    <span>Search Field Y</span>
+                    <span>Search Window Size Y</span>
                   </td>
                   <td>
                     <form id="imagealignment_searchfield_y_form">
@@ -848,8 +848,8 @@
             <form id="digit_enabled_form" style="text-transform: none; width: 298px; flex-shrink: 0">
               <select style="font-weight: bold" class="classvisibility_init" name="digit.enabled" id="digit_enabled_value" onchange="
                     setClassVisibility('classvisibility_digit_enabled', this.value);
-                    $(digit_model_value).trigger('onchange');
-                    this.value == 'true' ? $(digit_debug_saveroiimages_value).trigger('onchange') : null;
+                    $(digit_model_value).trigger('change');
+                    this.value == 'true' ? $(digit_debug_saveroiimages_value).trigger('change') : null;
                     gatherChangedParameter(this.form);
                   ">
                 <option value="false" selected>Disabled</option>
@@ -873,10 +873,27 @@
                   </td>
                   <td>
                     <form id="digit_model_form">
-                      <select required class="select_large" name="digit.model" id="digit_model_value" onchange="gatherChangedParameter(this.form)"></select>
+                      <select required class="select_large" name="digit.model" id="digit_model_value" onchange="setClassVisibility('classvisibility_digit_model_class11',
+														$(digit_enabled_value).val() === 'true' && this.value.includes('class11'));
+							              setClassVisibility('classvisibility_digit_model_cont',
+                            $(digit_enabled_value).val() === 'true'&& this.value.includes('cont'));
+                            gatherChangedParameter(this.form)"></select>
                     </form>
                   </td>
                   <td style="visibility: hidden">$TOOLTIP_digit_model</td>
+                </tr>
+
+                <tr class="classvisibility_digit_enabled classvisibility_digit_model_cont">
+                  <td class="indent1">
+                    <span>CNN Good Threshold</span>
+                  </td>
+                  <td>
+                    <form id="digit_cnngoodthreshold_form">
+                      <input required type="number" min="0" max="1" step="0.01" value="0.00" name="digit.cnngoodthreshold" id="digit_cnngoodthreshold_value" onchange="(!validity.rangeUnderflow||(value=0)) && (!validity.rangeOverflow||(value=1)) &&
+                          (!validity.stepMismatch||(value=this.value));gatherChangedParameter(this.form)">
+                    </form>
+                  </td>
+                  <td style="visibility:hidden">$TOOLTIP_digit_cnngoodthreshold</td>
                 </tr>
 
                 <tr class="classvisibility_digit_enabled">
@@ -963,7 +980,7 @@
             <form id="analog_enabled_form" style="text-transform: none; width: 298px; flex-shrink: 0">
               <select style="font-weight: bold" class="classvisibility_init" name="analog.enabled" id="analog_enabled_value" onchange="
                     setClassVisibility('classvisibility_analog_enabled', this.value);
-                    this.value == 'true' ? $(analog_debug_saveroiimages_value).trigger('onchange') : null;
+                    this.value == 'true' ? $(analog_debug_saveroiimages_value).trigger('change') : null;
                     gatherChangedParameter(this.form);
                   ">
                 <option value="false" selected>Disabled</option>
@@ -1099,7 +1116,7 @@
 
                 <tr>
                   <td class="indent1">
-                    <span>Dial-to-Wheel Detune</span>
+                    <span>Analog/Digit Sync Value</span>
                   </td>
                   <td>
                     <form class="postprocessing_per_sequence" id="postprocessing_sequence_analogdigitsyncvalue_form">
@@ -1166,6 +1183,38 @@
                     </form>
                   </td>
                   <td style="visibility: hidden">$TOOLTIP_postprocessing_sequence_allownegativerate</td>
+                </tr>
+
+                <tr class="classvisibility_digit_model_class11 hidden">
+                  <td class="indent1">
+                    <span>Ignore Leading NaNs</span>
+                  </td>
+                  <td>
+                    <form class="postprocessing_per_sequence" id="postprocessing_sequence_ignoreleadingnan_form">
+                      <select name="postprocessing.sequence.0.ignoreleadingnan" id="postprocessing_sequence_0_ignoreleadingnan_value"
+                        onchange="gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+                        <option value="false">Disabled</option>
+                        <option value="true" selected>Enabled</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_ignoreleadingnan</td>
+                </tr>
+
+                <tr class="classvisibility_digit_model_class11 hidden">
+                  <td class="indent1">
+                    <span>Check Digit Increase Consistency</span>
+                  </td>
+                  <td>
+                    <form class="postprocessing_per_sequence" id="postprocessing_sequence_checkdigitincreaseconsistency_form">
+                      <select name="postprocessing.sequence.0.checkdigitincreaseconsistency" id="postprocessing_sequence_0_checkdigitincreaseconsistency_value"
+                        onchange="gatherChangedParameter(this.form);gatherChangedParameter(postprocessing_sequence_sequencename_form)">
+                        <option value="false">Disabled</option>
+                        <option value="true" selected>Enabled</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility:hidden">$TOOLTIP_postprocessing_sequence_checkdigitincreaseconsistency</td>
                 </tr>
 
                 <tr>
@@ -1277,7 +1326,7 @@
               <select style="font-weight: bold" class="classvisibility_init" name="mqtt.enabled" id="mqtt_enabled_value" onchange="
                     setClassVisibility('classvisibility_mqtt_enabled', this.value);
                     this.value == 'true'
-                      ? ($(mqtt_authmode_value).trigger('onchange'), $(mqtt_homeassistant_discoveryenabled_value).trigger('onchange'))
+                      ? ($(mqtt_authmode_value).trigger('change'), $(mqtt_homeassistant_discoveryenabled_value).trigger('change'))
                       : null;
                     gatherChangedParameter(this.form);
                   ">
@@ -1333,14 +1382,14 @@
                   <td>
                     <form id="mqtt_authmode_form">
                       <select name="mqtt.authmode" id="mqtt_authmode_value" onchange="
-                            $(mqtt_tls_servercertverification_value).trigger('onchange');
+                            $(mqtt_tls_servercertverification_value).trigger('change');
                             this.value == '1'
                               ? (setClassVisibility('classvisibility_mqtt_authmode_1', true),
                                 setClassVisibility('classvisibility_mqtt_authmode_2', false))
                               : this.value == '2'
                                 ? (setClassVisibility('classvisibility_mqtt_authmode_1', true),
                                   setClassVisibility('classvisibility_mqtt_authmode_2', true),
-                                  $(mqtt_tls_servercertverification_value).trigger('onchange'),
+                                  $(mqtt_tls_servercertverification_value).trigger('change'),
                                   gatherChangedParameter(mqtt_tls_cacert_form),
                                   gatherChangedParameter(mqtt_tls_clientcert_form),
                                   gatherChangedParameter(mqtt_tls_clientkey_form))
@@ -1543,7 +1592,7 @@
             <form id="influxdbv1_enabled_form" style="text-transform: none; width: 298px; flex-shrink: 0">
               <select style="font-weight: bold" class="classvisibility_init" name="influxdbv1.enabled" id="influxdbv1_enabled_value" onchange="
                     setClassVisibility('classvisibility_influxdbv1_enabled', this.value);
-                    this.value == 'true' ? $(influxdbv1_authmode_value).trigger('onchange') : null;
+                    this.value == 'true' ? $(influxdbv1_authmode_value).trigger('change') : null;
                     gatherChangedParameter(this.form);
                   ">
                 <option value="false" selected>Disabled</option>
@@ -1588,13 +1637,13 @@
                   <td>
                     <form id="influxdbv1_authmode_form">
                       <select name="influxdbv1.authmode" id="influxdbv1_authmode_value" onchange="
-                            $(influxdbv1_tls_servercertverification_value).trigger('onchange');
+                            $(influxdbv1_tls_servercertverification_value).trigger('change');
                             this.value == '1'
                               ? (setClassVisibility('classvisibility_influxdbv1_authtls', 'false'),
                                 setClassVisibility('classvisibility_influxdbv1_authbasic', 'true'))
                               : this.value == '2'
                                 ? (setClassVisibility('classvisibility_influxdbv1_authtls', 'true'),
-                                  $(influxdbv1_tls_servercertverification_value).trigger('onchange'),
+                                  $(influxdbv1_tls_servercertverification_value).trigger('change'),
                                   gatherChangedParameter(influxdbv1_tls_cacert_form),
                                   gatherChangedParameter(influxdbv1_tls_clientcert_form),
                                   gatherChangedParameter(influxdbv1_tls_clientkey_form))
@@ -1732,7 +1781,7 @@
             <form id="influxdbv2_enabled_form" style="text-transform: none; width: 298px; flex-shrink: 0">
               <select style="font-weight: bold" class="classvisibility_init" name="influxdbv2.enabled" id="influxdbv2_enabled_value" onchange="
                     setClassVisibility('classvisibility_influxdbv2_enabled', this.value);
-                    this.value == 'true' ? $(influxdbv2_authmode_value).trigger('onchange') : null;
+                    this.value == 'true' ? $(influxdbv2_authmode_value).trigger('change') : null;
                     gatherChangedParameter(this.form);
                   ">
                 <option value="false" selected>Disabled</option>
@@ -1788,10 +1837,10 @@
                   <td>
                     <form id="influxdbv2_authmode_form">
                       <select name="influxdbv2.authmode" id="influxdbv2_authmode_value" onchange="
-                            $(influxdbv2_tls_servercertverification_value).trigger('onchange');
+                            $(influxdbv2_tls_servercertverification_value).trigger('change');
                             this.value == '2'
                               ? (setClassVisibility('classvisibility_influxdbv2_authmode_2', 'true'),
-                                $(influxdbv2_tls_servercertverification_value).trigger('onchange'),
+                                $(influxdbv2_tls_servercertverification_value).trigger('change'),
                                 gatherChangedParameter(influxdbv2_tls_cacert_form),
                                 gatherChangedParameter(influxdbv2_tls_clientcert_form),
                                 gatherChangedParameter(influxdbv2_tls_clientkey_form))
@@ -1917,7 +1966,7 @@
             <form id="webhook_enabled_form" style="text-transform: none; width: 298px; flex-shrink: 0">
               <select style="font-weight: bold" class="classvisibility_init" name="webhook.enabled" id="webhook_enabled_value" onchange="
                     setClassVisibility('classvisibility_webhook_enabled', this.value);
-                    this.value == 'true' ? $(webhook_authmode_value).trigger('onchange') : null;
+                    this.value == 'true' ? $(webhook_authmode_value).trigger('change') : null;
                     gatherChangedParameter(this.form);
                   ">
                 <option value="false" selected>Disabled</option>
@@ -1975,13 +2024,13 @@
                   <td>
                     <form id="webhook_authmode_form">
                       <select name="webhook.authmode" id="webhook_authmode_value" onchange="
-                            $(webhook_tls_servercertverification_value).trigger('onchange');
+                            $(webhook_tls_servercertverification_value).trigger('change');
                             this.value == '1'
                               ? (setClassVisibility('classvisibility_webhook_authtls', 'false'),
                                 setClassVisibility('classvisibility_webhook_authbasic', 'true'))
                               : this.value == '2'
                                 ? (setClassVisibility('classvisibility_webhook_authtls', 'true'),
-                                  $(webhook_tls_servercertverification_value).trigger('onchange'),
+                                  $(webhook_tls_servercertverification_value).trigger('change'),
                                   gatherChangedParameter(webhook_tls_cacert_form),
                                   gatherChangedParameter(webhook_tls_clientcert_form),
                                   gatherChangedParameter(webhook_tls_clientkey_form))
@@ -2077,7 +2126,7 @@
             <form id="gpio_customizationenabled_form" style="text-transform: none; width: 298px; flex-shrink: 0">
               <select style="font-weight: bold" class="classvisibility_init" name="gpio.customizationenabled" id="gpio_customizationenabled_value" onchange="
                     setClassVisibility('classvisibility_gpio_customizationenabled', this.value);
-                    this.value == 'true' ? $('[id$=\'pinenabled_value\']').trigger('onchange') : null;
+                    this.value == 'true' ? $('[id$=\'pinenabled_value\']').trigger('change') : null;
                     gatherChangedParameter(this.form);
                   ">
                 <option value="false" selected>Disabled</option>
@@ -2113,8 +2162,7 @@
                   <td>
                     <form class="form_gpio_config" id="gpio_gpiopin_pinenabled_form">
                       <select name="gpio.gpiopin.0.pinenabled" id="gpio_gpiopin_0_pinenabled_value" onchange="
-                            setClassVisibility('classvisibility_gpio_gpiopin_pinenabled', this.value);
-                            this.value == 'true' ? $('[id$=\'pinmode_value\']').trigger('onchange') : null;
+                            refreshGpioUi();
                             gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                             gatherChangedParameter(this.form);
                           ">
@@ -2260,21 +2308,21 @@
                   <td>
                     <form class="form_gpio_config" id="gpio_gpiopin_smartled_color_form">
                       R
-                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorredchannel"
+                      <input required style="min-width: 51px; width: 51px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorredchannel"
                         id="gpio_gpiopin_0_smartled_colorredchannel_value" onchange="
                             (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
                             gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                             gatherChangedParameter(this.form, true);
                           " />
                       G
-                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorgreenchannel"
+                      <input required style="min-width: 51px; width: 51px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorgreenchannel"
                         id="gpio_gpiopin_0_smartled_colorgreenchannel_value" onchange="
                             (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
                             gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                             gatherChangedParameter(this.form, true);
                           " />
                       B
-                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorbluechannel"
+                      <input required style="min-width: 51px; width: 51px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorbluechannel"
                         id="gpio_gpiopin_0_smartled_colorbluechannel_value" onchange="
                             (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
                             gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
@@ -2300,6 +2348,39 @@
                   </td>
                   <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_intensitycorrectionfactor</td>
                 </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled">
+                  <td class="indent1">
+                    <span>Pin Expose To REST</span>
+                  </td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_exposetorest_form">
+                      <select name="gpio.gpiopin.0.exposetorest" id="gpio_gpiopin_0_exposetorest_value"
+                        onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)'>
+                        <option value="false">Disabled</option>
+                        <option value="true" selected>Enabled</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_exposetorest</td>
+                </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled">
+                  <td class="indent1">
+                    <span>Pin Expose To MQTT</span>
+                  </td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_exposetomqtt_form">
+                      <select name="gpio.gpiopin.0.exposetomqtt" id="gpio_gpiopin_0_exposetomqtt_value"
+                        onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)'>
+                        <option value="false">Disabled</option>
+                        <option value="true" selected>Enabled</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_exposetomqtt</td>
+                </tr>
+
               </tbody>
             </table>
           </div>
@@ -3057,7 +3138,7 @@
         max: imageZoomOffsetXMax,
         min: -1 * imageZoomOffsetXMax
       });
-      $('#takeimage_camera_zoomoffsetx_value').trigger('onchange');
+      $('#takeimage_camera_zoomoffsetx_value').trigger('change');
       let imageHeightZoomed = parseInt((sensorFrameSizeHeight * 1000) / $('#takeimage_camera_zoomfactor_value').val());
       imageHeightZoomed += imageHeightZoomed % 4; // Make it dividable by 4
       let imageZoomOffsetYMax = (sensorFrameSizeHeight - imageHeightZoomed) / 2;
@@ -3065,16 +3146,16 @@
         max: imageZoomOffsetYMax,
         min: -1 * imageZoomOffsetYMax
       });
-      $('#takeimage_camera_zoomoffsety_value').trigger('onchange');
+      $('#takeimage_camera_zoomoffsety_value').trigger('change');
       $('#takeimage_camera_autoexposurelevel_value').attr({
         max: autoExposureLimit,
         min: -1 * autoExposureLimit
       });
-      $('#takeimage_camera_autoexposurelevel_value').trigger('onchange');
+      $('#takeimage_camera_autoexposurelevel_value').trigger('change');
       $('#takeimage_camera_manualexposurevalue_value').attr({
         max: sensorFrameSizeHeight
       });
-      $('#takeimage_camera_manualexposurevalue_value').trigger('onchange');
+      $('#takeimage_camera_manualexposurevalue_value').trigger('change');
     }
 
     function initGpioSection() {
@@ -3082,54 +3163,53 @@
     }
 
     function getGpioPins() {
-      let gpioPinSelection = $("[id$='gpionumber_value']").find('option').remove().end();
-      let firstEnabledPinFound = false;
-      let idx = 0;
-      for (let i = 0; i < jsonConfig.gpio.gpiopin.length; ++i) {
-        gpioPinSelection.append(new Option('GPIO' + jsonConfig.gpio.gpiopin[i].gpionumber, jsonConfig.gpio.gpiopin[i].gpionumber));
-        if (!firstEnabledPinFound && jsonConfig.gpio.gpiopin[i].pinenabled) {
-          firstEnabledPinFound = true;
-          idx = i;
-        }
-      }
-      gpioPinSelection.prop('selectedIndex', idx);
-      gpioPinSelectAfterChange(true);
-      getGpioPinUsage(parseInt(gpioPinSelection[0].value));
-      gpioPinModeChanged(); // Show GPIO mapping in 'Take Image' section
+      const sel = $("[id$='gpionumber_value']").find('option').remove().end();
+      let idx = -1;
+      jsonConfig.gpio.gpiopin.forEach((p, i) => {
+        sel.append(new Option('GPIO' + p.gpionumber, p.gpionumber));
+        if (idx < 0 && p.pinenabled) idx = i;
+      });
+      sel.prop('selectedIndex', Math.max(idx, 0));
+      gpioPinSelectAfterChange();
     }
 
     function getGpioPinUsage(gpioNumberSelected) {
-      let gpioPinModeSel = document.querySelector("[id$='pinmode_value']");
-      // Check all pins to find selected pin
+      const modeSel = document.querySelector("[id$='pinmode_value']");
+      const defOpt = modeSel.options[0];            // flashlight-default
+
       for (let i = 0; i < jsonConfig.gpio.gpiopin.length; i++) {
-        if (jsonConfig.gpio.gpiopin[i].gpionumber == gpioNumberSelected) {
-          if (jsonConfig.gpio.gpiopin[i].gpiousage.substring(0, 10) == 'flashlight') {
-            // Special case: Default flashlight GPIO
-            // Show option "flashlight-default"
-            gpioPinModeSel.options[0].removeAttribute('hidden');
-          } else {
-            // Hide option "flashlight-default"
-            gpioPinModeSel.options[0].setAttribute('hidden', 'true');
-          }
-          // Show warning text for restricted pins
-          if (jsonConfig.gpio.gpiopin[i].gpiousage.substring(0, 10) == 'restricted') {
-            $('#gpio_gpiopin_pinmode_restrictedusagetext')
-              .text('(⚠ DEFAULT: ' + jsonConfig.gpio.gpiopin[i].gpiousage.substring(12).replace(/\-/g, ' ').toUpperCase() + ')')
-              .show();
-          } else {
-            $('#gpio_gpiopin_pinmode_restrictedusagetext').hide();
-          }
-          break;
+        const pin = jsonConfig.gpio.gpiopin[i];
+        if (pin.gpionumber != gpioNumberSelected) continue;
+
+        const usage = pin.gpiousage || '';
+        const isFlashDefault = usage.startsWith('flashlight');
+
+        defOpt.hidden = !isFlashDefault;
+        defOpt.disabled = !isFlashDefault;
+
+        if (!isFlashDefault && modeSel.value === defOpt.value) {
+          modeSel.value = 'input';
         }
+
+        if (usage.startsWith('restricted')) {
+          $('#gpio_gpiopin_pinmode_restrictedusagetext')
+            .text('(⚠ DEFAULT: ' + usage.substring(12).replace(/-/g, ' ').toUpperCase() + ')')
+            .show();
+        } else {
+          $('#gpio_gpiopin_pinmode_restrictedusagetext').hide();
+        }
+        break;
       }
     }
 
     function gpioPinModeChanged() {
       let pwm = false;
       let smartled = false;
+
       for (let i = 0; i < jsonConfig.gpio.gpiopin.length; ++i) {
         if (jsonConfig.gpio.gpiopin[i].gpiousage == 'flashlight-pwm') pwm = true;
         if (jsonConfig.gpio.gpiopin[i].gpiousage == 'flashlight-smartled') smartled = true;
+
         if (document.getElementById('gpio_customizationenabled_value').value == 'true') {
           document.getElementById('takeimage_flashlightgpiomapping_value').innerText = 'Customized [GPIO Section]';
         } else {
@@ -3140,6 +3220,7 @@
           }
         }
       }
+
       // Pin disabled, stopp here (code above needed to show flashlight mapping indicator)
       if (document.querySelectorAll('[id$="pinenabled_value"]')[0].value == 'false') return;
       let elPinMode = document.querySelectorAll('[id$="pinmode_value"]')[0];
@@ -3182,28 +3263,24 @@
       }
     }
 
-    function gpioPinSelectAfterChange(init = false) {
-      let gpioPinSelect = $("[id$='gpionumber_value']")[0];
-      // Rename elements to match new selection
-      $('.form_gpio_config')
-        .children()
-        .each(function () {
-          this.name =
-            this.name.split('.gpiopin.')[0] +
-            '.gpiopin.' +
-            gpioPinSelect.selectedIndex.toString() +
-            '.' +
-            this.name.split('.gpiopin.')[1].substring(2);
-          this.id = this.name.replace(/\./g, '_') + '_value';
-        });
-      // Reload content
-      let jsonConfigModified = deepMergeObjects(jsonConfig, jsonConfigModifiedDelta);
-      let jsonConfigModifiedKeyified = jsonObjectKeyify(jsonConfigModified);
-      parseCurrentParametrization(jsonConfigModifiedKeyified);
-      if (!init) {
-        $("[id$='pinenabled_value']")[0].onchange(); // Eval pin enabled state
-        getGpioPinUsage(gpioPinSelect.value);
-      }
+    function gpioPinSelectAfterChange() {
+      const idx = $("[id$='gpionumber_value']")[0].selectedIndex;
+      $('.form_gpio_config').children().each(function () {
+        if (!this.name) return;
+        this.name = this.name.replace(/\.gpiopin\.\d+\./, '.gpiopin.' + idx + '.');
+        this.id = this.name.replace(/\./g, '_') + '_value';
+      });
+      const merged = deepMergeObjects(jsonConfig, jsonConfigModifiedDelta);
+      parseCurrentParametrization(jsonObjectKeyify(merged));
+      refreshGpioUi();
+    }
+
+    function refreshGpioUi() {
+      const sel = $("[id$='gpionumber_value']")[0];
+      getGpioPinUsage(parseInt(sel.value));
+      const enabled = $("[id$='pinenabled_value']")[0].value == 'true';
+      setClassVisibility('classvisibility_gpio_gpiopin_pinenabled', enabled);
+      gpioPinModeChanged();
     }
 
     function sequenceSelectAfterChange(classEl, selectEl) {
@@ -3284,15 +3361,15 @@
         setClassVisibility('classvisibility_network_opmode_ap', 'false');
         setClassVisibility('classvisibility_network_opmode_offdelay', 'false');
         setClassVisibility('classvisibility_network_opmode_ethernet', 'false');
-        $(network_wlan_ipv4_networkconfig_value).trigger('onchange');
-        $(network_wlan_wlanroaming_enabled_value).trigger('onchange');
+        $(network_wlan_ipv4_networkconfig_value).trigger('change');
+        $(network_wlan_wlanroaming_enabled_value).trigger('change');
       } else if (opmode == '1') {
         setClassVisibility('classvisibility_network_opmode_client', 'true');
         setClassVisibility('classvisibility_network_opmode_ap', 'false');
         setClassVisibility('classvisibility_network_opmode_offdelay', 'true');
         setClassVisibility('classvisibility_network_opmode_ethernet', 'false');
-        $(network_wlan_ipv4_networkconfig_value).trigger('onchange');
-        $(network_wlan_wlanroaming_enabled_value).trigger('onchange');
+        $(network_wlan_ipv4_networkconfig_value).trigger('change');
+        $(network_wlan_wlanroaming_enabled_value).trigger('change');
       } else if (opmode == '2') {
         setClassVisibility('classvisibility_network_opmode_client', 'false');
         setClassVisibility('classvisibility_network_opmode_ap', 'true');
@@ -3312,7 +3389,7 @@
         }
         setClassVisibility('classvisibility_network_opmode_offdelay', 'false');
         setClassVisibility('classvisibility_network_opmode_ethernet', 'true');
-        $(network_ethernet_ipv4_networkconfig_value).trigger('onchange');
+        $(network_ethernet_ipv4_networkconfig_value).trigger('change');
       } else {
         console.error('Network operation mode unknown: ' + opmode);
       }

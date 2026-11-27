@@ -441,7 +441,7 @@
                     <form id="gpio_customizationenabled_form" style="text-transform: none; margin: 0;">
                       <select style="font-weight: bold" class="classvisibility_init" name="gpio.customizationenabled" id="gpio_customizationenabled_value" onchange="
                               setClassVisibility('classvisibility_gpio_customizationenabled', this.value);
-                              this.value == 'true' ? $('[id$=\'pinenabled_value\']').trigger('onchange') : null;
+                              this.value == 'true' ? $('[id$=\'pinenabled_value\']').trigger('change') : null;
                               gpioPinModeChanged();
                               gatherChangedParameter(this.form);
                             ">
@@ -458,8 +458,7 @@
                   <td>
                     <form class="form_gpio_config" id="gpio_gpiopin_gpionumber_form">
                       <select style="font-weight: bold" class="classvisibility_init" name="gpio.gpiopin.0.gpionumber" id="gpio_gpiopin_0_gpionumber_value" onchange="
-                              gpioPinSelectAfterChange();
-                              gatherChangedParameter(this.form, true);
+                              gpioPinSelectAfterChange(); gatherChangedParameter(this.form, true);
                             "></select>
                     </form>
                   </td>
@@ -472,7 +471,7 @@
                     <form class="form_gpio_config" id="gpio_gpiopin_pinenabled_form">
                       <select name="gpio.gpiopin.0.pinenabled" id="gpio_gpiopin_0_pinenabled_value" onchange="
                               setClassVisibility('classvisibility_gpio_gpiopin_pinenabled', this.value);
-                              this.value == 'true' ? $('[id$=\'pinmode_value\']').trigger('onchange') : null;
+                              this.value == 'true' ? $('[id$=\'pinmode_value\']').trigger('change') : null;
                               gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                               gatherChangedParameter(this.form);
                             ">
@@ -547,21 +546,21 @@
                   <td>
                     <form class="form_gpio_config" id="gpio_gpiopin_smartled_color_form">
                       R
-                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorredchannel"
+                      <input required style="min-width: 51px; width: 51px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorredchannel"
                         id="gpio_gpiopin_0_smartled_colorredchannel_value" onchange="
                               (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
                               gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                               gatherChangedParameter(this.form, true);
                             " />
                       G
-                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorgreenchannel"
+                      <input required style="min-width: 51px; width: 51px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorgreenchannel"
                         id="gpio_gpiopin_0_smartled_colorgreenchannel_value" onchange="
                               (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
                               gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
                               gatherChangedParameter(this.form, true);
                             " />
                       B
-                      <input required style="min-width: 55px; width: 55px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorbluechannel"
+                      <input required style="min-width: 51px; width: 51px" type="number" min="0" max="255" value="255" name="gpio.gpiopin.0.smartled.colorbluechannel"
                         id="gpio_gpiopin_0_smartled_colorbluechannel_value" onchange="
                               (!validity.rangeUnderflow || (value = 0)) && (!validity.rangeOverflow || (value = 255));
                               gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);
@@ -918,23 +917,31 @@
     }
 
     function getGpioPinUsage(gpioNumberSelected) {
-      let gpioPinModeSel = document.querySelector("[id$='pinmode_value']");
+      const modeSel = document.querySelector("[id$='pinmode_value']");
+      const defOpt = modeSel.options[0];            // flashlight-default
+
       for (let i = 0; i < jsonConfig.gpio.gpiopin.length; i++) {
-        if (jsonConfig.gpio.gpiopin[i].gpionumber == gpioNumberSelected) {
-          if (jsonConfig.gpio.gpiopin[i].gpiousage.substring(0, 10) == 'flashlight') {
-            gpioPinModeSel.options[0].removeAttribute('hidden');
-          } else {
-            gpioPinModeSel.options[0].setAttribute('hidden', 'true');
-          }
-          if (jsonConfig.gpio.gpiopin[i].gpiousage.substring(0, 10) == 'restricted') {
-            $('#gpio_gpiopin_pinmode_restrictedusagetext')
-              .text('(⚠ DEFAULT: ' + jsonConfig.gpio.gpiopin[i].gpiousage.substring(12).replace(/\-/g, ' ').toUpperCase() + ')')
-              .show();
-          } else {
-            $('#gpio_gpiopin_pinmode_restrictedusagetext').hide();
-          }
-          break;
+        const pin = jsonConfig.gpio.gpiopin[i];
+        if (pin.gpionumber != gpioNumberSelected) continue;
+
+        const usage = pin.gpiousage || '';
+        const isFlashDefault = usage.startsWith('flashlight');
+
+        defOpt.hidden = !isFlashDefault;
+        defOpt.disabled = !isFlashDefault;
+
+        if (!isFlashDefault && modeSel.value === defOpt.value) {
+          modeSel.selectedIndex = 1;
         }
+
+        if (usage.startsWith('restricted')) {
+          $('#gpio_gpiopin_pinmode_restrictedusagetext')
+            .text('(⚠ DEFAULT: ' + usage.substring(12).replace(/-/g, ' ').toUpperCase() + ')')
+            .show();
+        } else {
+          $('#gpio_gpiopin_pinmode_restrictedusagetext').hide();
+        }
+        break;
       }
     }
 
@@ -983,25 +990,23 @@
     }
 
     function gpioPinSelectAfterChange(init = false) {
-      let gpioPinSelect = $("[id$='gpionumber_value']")[0];
-      $('.form_gpio_config')
-        .children()
-        .each(function () {
-          this.name =
-            this.name.split('.gpiopin.')[0] +
-            '.gpiopin.' +
-            gpioPinSelect.selectedIndex.toString() +
-            '.' +
-            this.name.split('.gpiopin.')[1].substring(2);
-          this.id = this.name.replace(/\./g, '_') + '_value';
-        });
-      let jsonConfigModified = deepMergeObjects(jsonConfig, jsonConfigModifiedDelta);
-      let jsonConfigModifiedKeyified = jsonObjectKeyify(jsonConfigModified);
-      parseCurrentParametrization(jsonConfigModifiedKeyified);
-      if (!init) {
-        $("[id$='pinenabled_value']")[0].onchange();
-        getGpioPinUsage(gpioPinSelect.value);
-      }
+      const sel = $("[id$='gpionumber_value']")[0];
+      const idx = sel.selectedIndex;
+
+      $('.form_gpio_config').children().each(function () {
+        if (!this.name) return;
+        this.name = this.name.replace(/\.gpiopin\.\d+\./, '.gpiopin.' + idx + '.');
+        this.id = this.name.replace(/\./g, '_') + '_value';
+      });
+
+      const merged = deepMergeObjects(jsonConfig, jsonConfigModifiedDelta);
+      parseCurrentParametrization(jsonObjectKeyify(merged));
+
+      getGpioPinUsage(parseInt(sel.value));
+      const enabled = document.getElementById(
+        $("[id$='pinenabled_value']")[0].id).value == 'true';
+      setClassVisibility('classvisibility_gpio_gpiopin_pinenabled', enabled);
+      gpioPinModeChanged();
     }
 
     async function saveFlashlightSetup() {
