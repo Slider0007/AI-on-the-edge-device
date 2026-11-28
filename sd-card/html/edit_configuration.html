@@ -767,7 +767,7 @@
 
                 <tr class="classvisibility_imagealignment_algo_3">
                   <td class="indent2">
-                    <span>Search Window Size X</span>
+                    <span>Search Field X</span>
                   </td>
                   <td>
                     <form id="imagealignment_searchfield_x_form">
@@ -783,7 +783,7 @@
 
                 <tr class="classvisibility_imagealignment_algo_3">
                   <td class="indent2">
-                    <span>Search Window Size Y</span>
+                    <span>Search Field Y</span>
                   </td>
                   <td>
                     <form id="imagealignment_searchfield_y_form">
@@ -2283,6 +2283,38 @@
                   <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_pinname</td>
                 </tr>
 
+                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled">
+                  <td class="indent1">
+                    <span>Pin Expose To REST</span>
+                  </td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_exposetorest_form">
+                      <select name="gpio.gpiopin.0.exposetorest" id="gpio_gpiopin_0_exposetorest_value"
+                        onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)'>
+                        <option value="false">Disabled</option>
+                        <option value="true" selected>Enabled</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_exposetorest</td>
+                </tr>
+
+                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled">
+                  <td class="indent1">
+                    <span>Pin Expose To MQTT</span>
+                  </td>
+                  <td>
+                    <form class="form_gpio_config" id="gpio_gpiopin_exposetomqtt_form">
+                      <select name="gpio.gpiopin.0.exposetomqtt" id="gpio_gpiopin_0_exposetomqtt_value"
+                        onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)'>
+                        <option value="false">Disabled</option>
+                        <option value="true" selected>Enabled</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_exposetomqtt</td>
+                </tr>
+
                 <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled gpio_show_smartled">
                   <td class="indent1"><span>LED Type</span></td>
                   <td>
@@ -2348,39 +2380,6 @@
                   </td>
                   <td style="visibility: hidden">$TOOLTIP_gpio_gpiopin_intensitycorrectionfactor</td>
                 </tr>
-
-                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled">
-                  <td class="indent1">
-                    <span>Pin Expose To REST</span>
-                  </td>
-                  <td>
-                    <form class="form_gpio_config" id="gpio_gpiopin_exposetorest_form">
-                      <select name="gpio.gpiopin.0.exposetorest" id="gpio_gpiopin_0_exposetorest_value"
-                        onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)'>
-                        <option value="false">Disabled</option>
-                        <option value="true" selected>Enabled</option>
-                      </select>
-                    </form>
-                  </td>
-                  <td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_exposetorest</td>
-                </tr>
-
-                <tr class="classvisibility_gpio_customizationenabled classvisibility_gpio_gpiopin_pinenabled">
-                  <td class="indent1">
-                    <span>Pin Expose To MQTT</span>
-                  </td>
-                  <td>
-                    <form class="form_gpio_config" id="gpio_gpiopin_exposetomqtt_form">
-                      <select name="gpio.gpiopin.0.exposetomqtt" id="gpio_gpiopin_0_exposetomqtt_value"
-                        onchange='gatherChangedParameter(gpio_gpiopin_gpionumber_form, true);gatherChangedParameter(this.form)'>
-                        <option value="false">Disabled</option>
-                        <option value="true" selected>Enabled</option>
-                      </select>
-                    </form>
-                  </td>
-                  <td style="visibility:hidden">$TOOLTIP_gpio_gpiopin_exposetomqtt</td>
-                </tr>
-
               </tbody>
             </table>
           </div>
