@@ -145,7 +145,8 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMar
     const int ohStop = std::clamp(marker.targetY + marker.searchY, 0, std::max(1, imgHeight - tplHeight));
 
     int sadMin = INT_MAX;
-    const int consideredChannels = marker.alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH ? 1 : imgChannels;
+    const bool singleChannel = marker.alignmentAlgo == ALIGNALGO_ROTATE_AND_ALIGN_SAD_1CH;
+    const int tplChannels = singleChannel ? marker.markerImage->getChannels() : imgChannels;
 
     for (int yOuter = ohStart; yOuter <= ohStop; ++yOuter) {
         const uint8_t *pOrgStartRow = imgData + (yOuter * imgWidth * imgChannels);
@@ -159,18 +160,25 @@ TplMatchStatus IRAM_ATTR CImageTplMatch::tplMatchBySad(CImage &img, AlignmentMar
 
             for (int tplY = 0; tplY < tplHeight; ++tplY) {
                 const uint8_t *pOrgRow = pOrgStart + (tplY * imgWidth * imgChannels);
-                const uint8_t *pTplRow = pTplStart + (tplY * tplWidth * imgChannels);
+                const uint8_t *pTplRow = pTplStart + (tplY * tplWidth * tplChannels);
 
-                int tplX = 0;
-                const int tplEnd = tplWidth * consideredChannels;
-                for (; tplX + 4 <= tplEnd; tplX += 4) {
-                    sadSum += abs(pTplRow[tplX] - pOrgRow[tplX]) + abs(pTplRow[tplX + 1] - pOrgRow[tplX + 1]) +
-                              abs(pTplRow[tplX + 2] - pOrgRow[tplX + 2]) + abs(pTplRow[tplX + 3] - pOrgRow[tplX + 3]);
+                if (singleChannel) {
+                    // Compare the first channel of each pixel (red for RGB images).
+                    for (int x = 0; x < tplWidth; ++x) {
+                        sadSum += abs(pTplRow[x * tplChannels] - pOrgRow[x * imgChannels]);
+                    }
                 }
+                else {
+                    int tplX = 0;
+                    const int tplEnd = tplWidth * imgChannels;
+                    for (; tplX + 4 <= tplEnd; tplX += 4) {
+                        sadSum += abs(pTplRow[tplX] - pOrgRow[tplX]) + abs(pTplRow[tplX + 1] - pOrgRow[tplX + 1]) +
+                                  abs(pTplRow[tplX + 2] - pOrgRow[tplX + 2]) + abs(pTplRow[tplX + 3] - pOrgRow[tplX + 3]);
+                    }
 
-                // Process remaining pixels due to unrollment
-                for (; tplX < tplEnd; ++tplX) {
-                    sadSum += abs(pTplRow[tplX] - pOrgRow[tplX]);
+                    for (; tplX < tplEnd; ++tplX) {
+                        sadSum += abs(pTplRow[tplX] - pOrgRow[tplX]);
+                    }
                 }
 
                 // Early exit if SAD is already higher than sadMin
